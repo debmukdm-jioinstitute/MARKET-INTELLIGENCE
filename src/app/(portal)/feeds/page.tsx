@@ -16,7 +16,7 @@ export default function FeedsPage() {
       <PageHeader
         kicker="Data plane"
         title="Live market feeds"
-        subtitle="Aggregated RSS and open APIs — NSE, BSE, RBI, SEC EDGAR, Yahoo Finance, Stooq, Alpha Vantage, FRED, World Bank, IMF, OECD, MOSPI, and India benchmarks (TrueData fallback). Refreshes automatically."
+        subtitle="Aggregated RSS and open APIs — NSE, BSE, RBI, SEC EDGAR, Yahoo Finance, Stooq, Alpha Vantage, FRED, World Bank, IMF, OECD, MOSPI, and India benchmarks (Upstox primary, TrueData fallback). Refreshes automatically."
       />
       <button
         type="button"

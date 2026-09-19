@@ -112,7 +112,12 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     health("imf", "IMF Data", imf, (v) => Array.isArray(v) && v.length > 0),
     health("oecd", "OECD Data", oecd, (v) => Array.isArray(v) && v.length > 0),
     health("mospi", "MOSPI / data.gov.in", mospi, (v) => Array.isArray(v) && v.some((m) => m.points.length)),
-    health("biquote", "India live quotes", biquote, (v) => Array.isArray(v) && v.length > 0),
+    health(
+      "biquote",
+      "India live quotes (Upstox/Yahoo/TrueData)",
+      biquote,
+      (v) => Array.isArray(v) && v.length > 0,
+    ),
   ];
 
   return {
