@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { TerminalLayout } from "@/components/layout/terminal-layout";
+import { AuthProvider } from "@/components/providers/auth-provider";
+import "@fontsource/tiny5";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,14 +20,11 @@ export const metadata: Metadata = {
     "The world's best data-backed virtual portfolio management and investment intelligence platform.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <TerminalLayout>{children}</TerminalLayout>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
