@@ -1,15 +1,22 @@
 "use client";
 
+import { NewsStream } from "@/components/feeds/news-stream";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
+import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { analyzePortfolio, currentMarketValue } from "@/lib/analytics";
 import { formatPct, formatUsd } from "@/lib/format";
-import { MACRO, marketTape } from "@/lib/market";
+import { getReturn, lastClose, marketTape } from "@/lib/market";
 import Link from "next/link";
 import { useMemo } from "react";
 
+const TAPE_WATCH = ["SPY", "QQQ", "TLT", "GLD", "USO", "UUP", "HYG", "EEM", "NVDA", "AAPL"];
+
 export default function CommandPage() {
   const { portfolios } = usePortfolio();
+  const { data } = useFeedHub(60_000);
+  const live = quoteMap(data);
+
   const books = useMemo(
     () =>
       portfolios.map((p) => {
@@ -18,8 +25,25 @@ export default function CommandPage() {
       }),
     [portfolios],
   );
-  const tape = marketTape();
+
+  const tape = useMemo(() => {
+    const sim = marketTape();
+    return TAPE_WATCH.map((symbol) => {
+      const q = live.get(symbol);
+      const row = sim.find((r) => r.symbol === symbol);
+      return {
+        symbol,
+        name: row?.name ?? symbol,
+        last: q?.price ?? row?.last ?? lastClose(symbol),
+        chg: q?.changePct ?? row?.chg ?? getReturn(symbol, 1),
+        live: Boolean(q),
+      };
+    });
+  }, [live]);
+
   const aum = books.reduce((s, b) => s + b.mv, 0);
+  const cpi = data?.macro.find((m) => m.id.includes("cpi") || m.name.toLowerCase().includes("cpi"));
+  const fed = data?.macro.find((m) => m.id.includes("fed") || m.name.toLowerCase().includes("fed"));
 
   return (
     <div className="space-y-6">
@@ -31,8 +55,8 @@ export default function CommandPage() {
       <div className="grid gap-3 md:grid-cols-4">
         <Stat label="Platform AUM" value={formatUsd(aum)} />
         <Stat label="Active books" value={String(portfolios.length)} />
-        <Stat label="Macro nowcast CPI" value={`${MACRO[1]!.latest.toFixed(1)}%`} />
-        <Stat label="Fed funds" value={`${MACRO[3]!.latest.toFixed(2)}%`} />
+        <Stat label="Macro CPI (live)" value={cpi ? `${cpi.latest.toFixed(1)} ${cpi.unit}` : "—"} />
+        <Stat label="Policy rate (live)" value={fed ? `${fed.latest.toFixed(2)}%` : "—"} />
       </div>
       <div className="grid gap-4 xl:grid-cols-3">
         <Panel title="Books" subtitle="Click through to the working portfolio" className="xl:col-span-2">
@@ -57,11 +81,14 @@ export default function CommandPage() {
             ))}
           </div>
         </Panel>
-        <Panel title="Market tape" subtitle="Simulated closes, factor-consistent">
+        <Panel title="Market tape" subtitle="Yahoo / Stooq — auto refresh">
           <ul className="space-y-2 font-mono text-sm">
             {tape.map((row) => (
               <li key={row.symbol} className="flex justify-between">
-                <span>{row.symbol}</span>
+                <span>
+                  {row.symbol}
+                  {row.live ? <span className="text-emerald-400">*</span> : null}
+                </span>
                 <span className={row.chg >= 0 ? "text-emerald-400" : "text-rose-400"}>
                   {row.last.toFixed(2)} {formatPct(row.chg)}
                 </span>
@@ -70,10 +97,18 @@ export default function CommandPage() {
           </ul>
         </Panel>
       </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        <Jump href="/backtest" title="Backtest" copy="Replay allocation rules against the full simulated history." />
-        <Jump href="/optimizer" title="Optimize" copy="Max Sharpe, min vol, and risk-parity weights on the book universe." />
-        <Jump href="/scenarios" title="Stress" copy="Apply macro regimes and inspect P&L by name." />
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Panel title="Exchange & regulatory wire" subtitle="NSE · BSE · RBI · SEC" className="xl:col-span-2">
+          <NewsStream items={data?.news ?? []} limit={8} />
+          <Link href="/feeds" className="mt-3 inline-block text-xs text-primary hover:underline">
+            Open full feed console →
+          </Link>
+        </Panel>
+        <div className="grid gap-3">
+          <Jump href="/backtest" title="Backtest" copy="Replay allocation rules against the full simulated history." />
+          <Jump href="/optimizer" title="Optimize" copy="Max Sharpe, min vol, and risk-parity weights on the book universe." />
+          <Jump href="/scenarios" title="Stress" copy="Apply macro regimes and inspect P&L by name." />
+        </div>
       </div>
     </div>
   );

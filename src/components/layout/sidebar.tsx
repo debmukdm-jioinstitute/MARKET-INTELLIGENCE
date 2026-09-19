@@ -17,6 +17,7 @@ import {
   Shield,
   SlidersHorizontal,
   FileText,
+  Rss,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,6 +32,7 @@ const NAV = [
   { href: "/quant", label: "Quant", icon: FlaskConical },
   { href: "/macro", label: "Macro", icon: Globe2 },
   { href: "/markets", label: "Markets", icon: LineChart },
+  { href: "/feeds", label: "Data feeds", icon: Rss },
   { href: "/scenarios", label: "Scenarios", icon: Gauge },
   { href: "/optimizer", label: "Optimizer", icon: SlidersHorizontal },
   { href: "/backtest", label: "Backtest", icon: BarChart3 },

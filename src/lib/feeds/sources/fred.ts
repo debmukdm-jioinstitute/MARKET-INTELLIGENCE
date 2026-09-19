@@ -1,0 +1,49 @@
+import { feedFetch } from "@/lib/feeds/http";
+import type { LiveMacroSeries, MacroPoint } from "@/lib/feeds/types";
+
+const SERIES: { id: string; fred: string; name: string; unit: string }[] = [
+  { id: "fred_gdp", fred: "GDP", name: "US GDP", unit: "Bn USD" },
+  { id: "fred_cpi", fred: "CPIAUCSL", name: "US CPI", unit: "index" },
+  { id: "fred_unrate", fred: "UNRATE", name: "US Unemployment", unit: "%" },
+  { id: "fred_fedfunds", fred: "DFF", name: "Fed Funds Effective", unit: "%" },
+  { id: "fred_ust10", fred: "DGS10", name: "US 10Y Treasury", unit: "%" },
+  { id: "fred_vix", fred: "VIXCLS", name: "VIX", unit: "idx" },
+];
+
+async function fredObservations(seriesId: string, limit = 60): Promise<MacroPoint[]> {
+  const key = process.env.FRED_API_KEY;
+  if (!key) return [];
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${key}&file_type=json&sort_order=desc&limit=${limit}`;
+  const res = await feedFetch(url);
+  if (!res.ok) throw new Error(`FRED HTTP ${res.status}`);
+  const json = (await res.json()) as {
+    observations?: { date: string; value: string }[];
+  };
+  const rows = (json.observations ?? [])
+    .filter((o) => o.value !== ".")
+    .map((o) => ({ date: o.date, value: Number(o.value) }))
+    .filter((o) => Number.isFinite(o.value));
+  return rows.reverse();
+}
+
+export async function fetchFredMacro(): Promise<LiveMacroSeries[]> {
+  const key = process.env.FRED_API_KEY;
+  if (!key) return [];
+  const out: LiveMacroSeries[] = [];
+  for (const s of SERIES) {
+    const points = await fredObservations(s.fred, 48);
+    if (!points.length) continue;
+    const latest = points[points.length - 1]!.value;
+    const prev = points[points.length - 2]?.value ?? latest;
+    out.push({
+      id: s.id,
+      name: s.name,
+      unit: s.unit,
+      source: "fred",
+      latest,
+      change: latest - prev,
+      points,
+    });
+  }
+  return out;
+}
