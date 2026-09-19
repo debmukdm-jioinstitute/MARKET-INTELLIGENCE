@@ -3,6 +3,7 @@
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
 import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
+import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import {
   Sheet,
   SheetContent,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCandles } from "@/hooks/use-candles";
+import { useFundamentals } from "@/hooks/use-fundamentals";
 import { useUpstoxQuote } from "@/hooks/use-upstox-quote";
 import type { IndiaInstrument } from "@/lib/feeds/india/instruments";
 import type { CandleRange } from "@/lib/feeds/sources/upstox";
@@ -49,6 +51,10 @@ export function SecuritySheet({
   const { data: quote, loading, error } = useUpstoxQuote(instrument?.symbol ?? null, open);
   const [range, setRange] = useState<CandleRange>("3M");
   const { candles, loading: candlesLoading } = useCandles(instrument?.symbol ?? null, range, open);
+  const { data: fundamentals, loading: fundamentalsLoading } = useFundamentals(
+    instrument?.isin ?? null,
+    open,
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -127,6 +133,19 @@ export function SecuritySheet({
                   <CandlestickChart candles={candles} />
                 ) : (
                   <p className="text-xs text-muted-foreground">No candle data.</p>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                  Fundamentals — key ratios
+                </p>
+                {fundamentalsLoading && !fundamentals ? (
+                  <p className="text-xs text-muted-foreground">Loading fundamentals…</p>
+                ) : fundamentals ? (
+                  <KeyRatiosPanel snapshot={fundamentals} />
+                ) : (
+                  <p className="text-xs text-muted-foreground">No fundamentals data.</p>
                 )}
               </div>
             </>

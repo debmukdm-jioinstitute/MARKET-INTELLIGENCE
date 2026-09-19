@@ -12,3 +12,4 @@ export {
   fetchUpstoxOptionChain,
   fetchUpstoxOptionExpiries,
 } from "@/lib/feeds/sources/upstox/option-chain";
+export { fetchUpstoxKeyRatios } from "@/lib/feeds/sources/upstox/fundamentals";

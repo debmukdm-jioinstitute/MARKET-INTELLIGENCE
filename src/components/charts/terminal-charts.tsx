@@ -12,6 +12,11 @@ import {
   LineChart,
   Pie,
   PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -151,6 +156,23 @@ export function OiBars({
         <Bar dataKey="callOi" name="Call OI" fill="#34d399" radius={2} />
         <Bar dataKey="putOi" name="Put OI" fill="#fb7185" radius={2} />
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Company-vs-sector ratio profile — each metric normalized so sector = 1.0 (in-line). */
+export function RatioRadar({ data }: { data: { metric: string; company: number; sector: number }[] }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart data={data}>
+        <PolarGrid stroke="rgba(255,255,255,0.1)" />
+        <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: "#8b93a1" }} />
+        <PolarRadiusAxis tick={{ fontSize: 9, fill: "#8b93a1" }} />
+        <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Radar name="Sector (baseline)" dataKey="sector" stroke="#8b93a1" fill="#8b93a1" fillOpacity={0.1} />
+        <Radar name="Company" dataKey="company" stroke="#d4af37" fill="#d4af37" fillOpacity={0.35} />
+      </RadarChart>
     </ResponsiveContainer>
   );
 }
