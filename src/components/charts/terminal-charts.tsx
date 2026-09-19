@@ -45,7 +45,7 @@ export function NavChart({
         </defs>
         <CartesianGrid {...grid} vertical={false} />
         <XAxis dataKey="date" {...axis} minTickGap={48} />
-        <YAxis {...axis} width={64} tickFormatter={(v) => Number(v).toLocaleString()} />
+        <YAxis {...axis} width={64} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toLocaleString()} />
         <Tooltip
           contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }}
         />
@@ -116,7 +116,7 @@ export function Lines({
       <LineChart data={data}>
         <CartesianGrid {...grid} vertical={false} />
         <XAxis dataKey="date" {...axis} minTickGap={40} />
-        <YAxis {...axis} width={48} />
+        <YAxis {...axis} width={48} domain={["auto", "auto"]} />
         <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {keys.map((k) => (
