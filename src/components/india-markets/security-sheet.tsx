@@ -1,5 +1,6 @@
 "use client";
 
+import { CandlestickChart } from "@/components/charts/candlestick-chart";
 import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
 import {
@@ -9,14 +10,31 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCandles } from "@/hooks/use-candles";
 import { useUpstoxQuote } from "@/hooks/use-upstox-quote";
 import type { IndiaInstrument } from "@/lib/feeds/india/instruments";
+import type { CandleRange } from "@/lib/feeds/sources/upstox";
 import { fmtChgPct, fmtInr } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const UPSTOX_QUOTE_SOURCE = {
   provider: "Upstox",
   url: "https://upstox.com/developer/api-documentation/get-full-market-quote/",
+};
+
+const RANGE_LABEL: Record<CandleRange, string> = {
+  "1M": "1 month",
+  "3M": "3 months",
+  "6M": "6 months",
+  "1Y": "1 year",
 };
 
 export function SecuritySheet({
@@ -29,6 +47,8 @@ export function SecuritySheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { data: quote, loading, error } = useUpstoxQuote(instrument?.symbol ?? null, open);
+  const [range, setRange] = useState<CandleRange>("3M");
+  const { candles, loading: candlesLoading } = useCandles(instrument?.symbol ?? null, range, open);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -81,6 +101,33 @@ export function SecuritySheet({
                   Market depth (5 level)
                 </p>
                 <MarketDepthLadder buy={quote.depth.buy} sell={quote.depth.sell} />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    Price history
+                  </p>
+                  <Select value={range} onValueChange={(v) => setRange(v as CandleRange)}>
+                    <SelectTrigger className="h-7 w-[120px] text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(RANGE_LABEL) as CandleRange[]).map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {RANGE_LABEL[r]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {candlesLoading && !candles.length ? (
+                  <p className="text-xs text-muted-foreground">Loading candles…</p>
+                ) : candles.length ? (
+                  <CandlestickChart candles={candles} />
+                ) : (
+                  <p className="text-xs text-muted-foreground">No candle data.</p>
+                )}
               </div>
             </>
           ) : null}

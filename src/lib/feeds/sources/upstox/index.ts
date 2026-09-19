@@ -6,3 +6,5 @@ export {
   fetchUpstoxFullQuotes,
 } from "@/lib/feeds/sources/upstox/quotes";
 export type { DepthLevel, FullMarketQuote } from "@/lib/feeds/sources/upstox/quotes";
+export { fetchUpstoxHistoricalCandles, candleRangeToDates } from "@/lib/feeds/sources/upstox/candles";
+export type { Candle, CandleRange } from "@/lib/feeds/sources/upstox/candles";
