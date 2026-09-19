@@ -1,7 +1,7 @@
 "use client";
 
 import { Lines } from "@/components/charts/terminal-charts";
-import { SourceLink } from "@/components/dashboard/source-link";
+import { DataInfo } from "@/components/feeds/data-info";
 import type { FoSnapshot, IndexSnapshot, IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { fmtChgPct, fmtNum } from "@/lib/format-india";
 import Link from "next/link";
@@ -16,22 +16,22 @@ export function IndiaMoving({ data }: { data: IndiaDashboardPayload }) {
         <p className="text-sm text-muted-foreground">Indian market snapshot — live indices, volatility, breadth, F&amp;O.</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <IndexPanel snap={indiaMoving.nifty} />
-        <IndexPanel snap={indiaMoving.bankNifty} />
-        <VixPanel snap={indiaMoving.indiaVix} breadth={indiaMoving.breadth} />
+        <IndexPanel snap={indiaMoving.nifty} hubSyncedAt={data.fetchedAt} />
+        <IndexPanel snap={indiaMoving.bankNifty} hubSyncedAt={data.fetchedAt} />
+        <VixPanel snap={indiaMoving.indiaVix} breadth={indiaMoving.breadth} hubSyncedAt={data.fetchedAt} />
       </div>
-      <FoTeaser fo={indiaMoving.fo} />
+      <FoTeaser fo={indiaMoving.fo} hubSyncedAt={data.fetchedAt} />
     </section>
   );
 }
 
-function IndexPanel({ snap }: { snap: IndexSnapshot }) {
+function IndexPanel({ snap, hubSyncedAt }: { snap: IndexSnapshot; hubSyncedAt: string }) {
   const chart = (snap.history1m ?? []).map((p) => ({ date: p.date.slice(5), px: p.value }));
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-start justify-between">
         <h3 className="font-mono text-sm font-semibold">{snap.name}</h3>
-        <SourceLink source={snap.current.source} />
+        <DataInfo source={snap.current.source} hubSyncedAt={hubSyncedAt} />
       </div>
       <p className="mt-1 font-mono text-2xl tabular-nums">{fmtNum(snap.current.value)}</p>
       <p className={cn("font-mono text-sm", (snap.change1d ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400")}>
@@ -56,9 +56,11 @@ function IndexPanel({ snap }: { snap: IndexSnapshot }) {
 function VixPanel({
   snap,
   breadth,
+  hubSyncedAt,
 }: {
   snap: IndexSnapshot;
   breadth: IndiaDashboardPayload["indiaMoving"]["breadth"];
+  hubSyncedAt: string;
 }) {
   const hist = snap.history1m ?? [];
   const lows = hist.map((p) => p.value);
@@ -77,12 +79,20 @@ function VixPanel({
       <p className="font-mono text-[11px]">
         Adv {breadth.advances ?? "—"} · Dec {breadth.declines ?? "—"}
       </p>
-      <SourceLink source={snap.current.source} className="mt-2 inline-block" />
+      <span className="mt-2 inline-flex items-center text-[10px] text-muted-foreground">
+        Live <DataInfo source={snap.current.source} hubSyncedAt={hubSyncedAt} />
+      </span>
     </div>
   );
 }
 
-function FoTeaser({ fo }: { fo: { nifty: FoSnapshot; bankNifty: FoSnapshot } }) {
+function FoTeaser({
+  fo,
+  hubSyncedAt,
+}: {
+  fo: { nifty: FoSnapshot; bankNifty: FoSnapshot };
+  hubSyncedAt: string;
+}) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between">
@@ -92,14 +102,14 @@ function FoTeaser({ fo }: { fo: { nifty: FoSnapshot; bankNifty: FoSnapshot } }) 
         </Link>
       </div>
       <div className="mt-3 grid gap-4 md:grid-cols-2">
-        <FoCard title="NIFTY" row={fo.nifty} />
-        <FoCard title="BANK NIFTY" row={fo.bankNifty} />
+        <FoCard title="NIFTY" row={fo.nifty} hubSyncedAt={hubSyncedAt} />
+        <FoCard title="BANK NIFTY" row={fo.bankNifty} hubSyncedAt={hubSyncedAt} />
       </div>
     </div>
   );
 }
 
-function FoCard({ title, row }: { title: string; row: FoSnapshot }) {
+function FoCard({ title, row, hubSyncedAt }: { title: string; row: FoSnapshot; hubSyncedAt: string }) {
   return (
     <div className="rounded-md border border-border/80 p-3">
       <p className="font-mono text-xs font-semibold">{title}</p>
@@ -109,7 +119,9 @@ function FoCard({ title, row }: { title: string; row: FoSnapshot }) {
         <Stat k="Δ OI" v={row.changeOi != null ? row.changeOi.toLocaleString("en-IN") : "—"} />
         <Stat k="Max pain" v={row.maxPain != null ? fmtNum(row.maxPain, 0) : "—"} />
       </dl>
-      <SourceLink source={row.source} className="mt-2 inline-block" />
+      <span className="mt-2 inline-flex items-center text-[10px]">
+        NSE F&amp;O <DataInfo source={row.source} hubSyncedAt={hubSyncedAt} />
+      </span>
     </div>
   );
 }

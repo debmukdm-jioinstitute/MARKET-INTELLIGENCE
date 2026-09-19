@@ -11,6 +11,7 @@ import {
 import { formatPct, formatUsd } from "@/lib/format";
 import type { SecurityDetailPayload } from "@/lib/feeds/security-detail";
 import { cn } from "@/lib/utils";
+import { DataInfo } from "@/components/feeds/data-info";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -171,7 +172,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
               </h4>
               <ul className="mt-3 space-y-2 text-sm">
                 {data.sources.map((s) => (
-                  <li key={`${s.id}-${s.url}`}>
+                  <li key={`${s.id}-${s.url}`} className="flex items-start gap-1">
                     <a
                       href={s.url}
                       target="_blank"
@@ -180,7 +181,11 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                     >
                       {s.label}
                     </a>
-                    <span className="text-muted-foreground"> — {s.usedFor}</span>
+                    <DataInfo
+                      source={{ provider: s.label, url: s.url, asOf: data.quote.asOf }}
+                      hubSyncedAt={data.fetchedAt}
+                      note={s.usedFor}
+                    />
                   </li>
                 ))}
               </ul>

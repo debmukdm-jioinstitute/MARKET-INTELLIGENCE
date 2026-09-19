@@ -1,6 +1,6 @@
 "use client";
 
-import { SourceLink } from "@/components/dashboard/source-link";
+import { DataInfo } from "@/components/feeds/data-info";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { fmtChgPct, fmtNum } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
@@ -16,17 +16,17 @@ export function MarketPulse({ data }: { data: IndiaDashboardPayload }) {
         </span>
       </div>
       <div className="grid gap-3 lg:grid-cols-4">
-        <PulseCell label="NIFTY 50" q={pulse.nifty} />
-        <PulseCell label="SENSEX" q={pulse.sensex} />
-        <PulseCell label="BANK NIFTY" q={pulse.bankNifty} />
-        <PulseCell label="INDIA VIX" q={pulse.indiaVix} digits={2} />
-        <PulseCell label="USD/INR" q={pulse.usdInr} prefix="₹" />
-        <PulseCell label="10Y G-SEC" q={pulse.gsec10y} suffix="%" />
-        <PulseCell label="BRENT" q={pulse.brent} prefix="$" />
-        <PulseCell label="GOLD" q={pulse.gold} prefix="$" />
+        <PulseCell label="NIFTY 50" q={pulse.nifty} hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="SENSEX" q={pulse.sensex} hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="BANK NIFTY" q={pulse.bankNifty} hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="INDIA VIX" q={pulse.indiaVix} digits={2} hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="USD/INR" q={pulse.usdInr} prefix="₹" hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="10Y G-SEC" q={pulse.gsec10y} suffix="%" hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="BRENT" q={pulse.brent} prefix="$" hubSyncedAt={data.fetchedAt} />
+        <PulseCell label="GOLD" q={pulse.gold} prefix="$" hubSyncedAt={data.fetchedAt} />
       </div>
       <div className="mt-4 grid gap-4 border-t border-border pt-4 md:grid-cols-2">
-        <BreadthBlock breadth={pulse.breadth} />
+        <BreadthBlock breadth={pulse.breadth} hubSyncedAt={data.fetchedAt} />
       </div>
     </section>
   );
@@ -38,12 +38,14 @@ function PulseCell({
   prefix = "",
   suffix = "",
   digits = 2,
+  hubSyncedAt,
 }: {
   label: string;
   q: IndiaDashboardPayload["pulse"]["nifty"];
   prefix?: string;
   suffix?: string;
   digits?: number;
+  hubSyncedAt: string;
 }) {
   const up = (q.changePct ?? 0) >= 0;
   return (
@@ -57,12 +59,18 @@ function PulseCell({
       <p className={cn("font-mono text-xs", up ? "text-emerald-400" : "text-rose-400")}>
         {fmtChgPct(q.changePct ?? null)}
       </p>
-      <SourceLink source={q.source} />
+      <DataInfo source={q.source} hubSyncedAt={hubSyncedAt} />
     </div>
   );
 }
 
-function BreadthBlock({ breadth }: { breadth: IndiaDashboardPayload["pulse"]["breadth"] }) {
+function BreadthBlock({
+  breadth,
+  hubSyncedAt,
+}: {
+  breadth: IndiaDashboardPayload["pulse"]["breadth"];
+  hubSyncedAt: string;
+}) {
   const max = Math.max(breadth.advances ?? 0, breadth.declines ?? 0, 1);
   return (
     <div>
@@ -80,7 +88,9 @@ function BreadthBlock({ breadth }: { breadth: IndiaDashboardPayload["pulse"]["br
           <Bar label="DECLINES" value={breadth.declines} max={max} color="#f07178" />
         </div>
       ) : null}
-      <SourceLink source={breadth.source} className="mt-2 inline-block text-[10px] text-primary" />
+      <span className="mt-2 inline-flex items-center text-[10px] text-muted-foreground">
+        NSE breadth <DataInfo source={breadth.source} hubSyncedAt={hubSyncedAt} />
+      </span>
     </div>
   );
 }

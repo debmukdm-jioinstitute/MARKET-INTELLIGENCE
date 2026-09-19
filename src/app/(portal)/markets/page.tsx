@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataInfo } from "@/components/feeds/data-info";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";
@@ -9,7 +10,7 @@ import { UNIVERSE } from "@/lib/universe";
 import { cn } from "@/lib/utils";
 
 export default function MarketsPage() {
-  const { data, loading } = useFeedHub(60_000);
+  const { data, loading, hubSyncedAt } = useFeedHub(60_000);
   const live = quoteMap(data);
 
   const rows = UNIVERSE.map((u) => {
@@ -32,12 +33,18 @@ export default function MarketsPage() {
       <PageHeader
         kicker="Market data"
         title="Investable universe"
-        subtitle={
-          data
-            ? `Live last prices from Yahoo Finance / Stooq (hub sync ${new Date(data.fetchedAt).toLocaleTimeString()}). Longer history still uses the internal simulation for backtests.`
-            : "Loading live quotes…"
-        }
+        subtitle="Live last prices from Yahoo Finance chart API / Stooq. Click ⓘ on a row for source and fetch time."
       />
+      {hubSyncedAt ? (
+        <p className="text-xs text-muted-foreground">
+          Hub sync {new Date(hubSyncedAt).toLocaleString()}
+          <DataInfo
+            source={{ provider: "Feed hub", url: "/api/feeds/hub", asOf: hubSyncedAt }}
+            hubSyncedAt={hubSyncedAt}
+            note="Universe marks refresh on this interval."
+          />
+        </p>
+      ) : null}
       {loading && !data ? (
         <p className="text-sm text-muted-foreground">Connecting to feed hub…</p>
       ) : null}

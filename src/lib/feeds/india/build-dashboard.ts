@@ -11,8 +11,26 @@ import type { LiveQuote } from "@/lib/feeds/types";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
+export const INDIA_DASHBOARD_SYMBOLS = [
+  "^NSEI",
+  "^BSESN",
+  "^NSEBANK",
+  "^INDIAVIX",
+  "INR=X",
+  "IN10YT=RR",
+  "BZ=F",
+  "GC=F",
+  "^GSPC",
+  "^IXIC",
+  "^DJI",
+  "^TNX",
+  "DX-Y.NYB",
+  "^VIX",
+  "HG=F",
+] as const;
+
 const YAHOO = (sym: string) => ({
-  provider: "Yahoo Finance",
+  provider: "Yahoo Finance (chart API)",
   url: yahooFinanceUrl(sym),
 });
 
@@ -45,16 +63,19 @@ function ytdFromHistory(points: { date: string; value: number }[]) {
   return first.value ? last.value / first.value - 1 : null;
 }
 
-async function buildIndexSnapshot(sym: string, name: string, nseRow?: { last: number; percentChange: number; intraDayHigh?: number; intraDayLow?: number }) {
+async function buildIndexSnapshot(
+  sym: string,
+  name: string,
+  quote: LiveQuote | undefined,
+  nseRow?: { last: number; percentChange: number; intraDayHigh?: number; intraDayLow?: number },
+) {
   const history = await fetchYahooHistory(sym, "1y").catch(() => []);
-  const yahooQ = await fetchYahooQuotes([sym]).catch(() => []);
-  const y = yahooQ[0];
-  const current: QuoteField = y
+  const current: QuoteField = quote
     ? {
-        value: y.price,
-        change: y.change,
-        changePct: y.changePct,
-        source: { ...YAHOO(sym), asOf: y.asOf },
+        value: quote.price,
+        change: quote.change,
+        changePct: quote.changePct,
+        source: { ...YAHOO(sym), asOf: quote.asOf },
       }
     : nseRow
       ? {
@@ -139,7 +160,7 @@ async function fetchWorldBankIndicator(country: string, code: string, name: stri
       unit,
       direction,
       history12m: rows.slice(-12),
-      source: { provider: "World Bank", url },
+      source: { provider: "World Bank", url, asOf: new Date().toISOString() },
     };
   } catch {
     return {
@@ -155,51 +176,7 @@ async function fetchWorldBankIndicator(country: string, code: string, name: stri
   }
 }
 
-export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
-  const symbols = [
-    "^NSEI",
-    "^BSESN",
-    "^NSEBANK",
-    "^INDIAVIX",
-    "INR=X",
-    "IN10YT=RR",
-    "BZ=F",
-    "GC=F",
-    "^GSPC",
-    "^IXIC",
-    "^DJI",
-    "^TNX",
-    "DX-Y.NYB",
-    "^VIX",
-    "HG=F",
-  ];
-  const [yahooQuotes, nseIndices, breadth, foNifty, foBank, fiiDii, macroCpi, macroGdp, mospi, gsecHist, fxRes, iip] =
-    await Promise.all([
-      fetchYahooQuotes(symbols).catch(() => []),
-      fetchNseAllIndices().catch(() => []),
-      fetchNseBreadth(),
-      fetchNseOptionChain("NIFTY"),
-      fetchNseOptionChain("BANKNIFTY"),
-      fetchFiiDii(),
-      fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
-      fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),
-      fetchMospiMacro().catch(() => []),
-      fetchYahooHistory("IN10YT=RR", "1y").catch(() => []),
-      fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn"),
-      fetchWorldBankIndicator("IN", "NV.IND.MANF.KD.ZG", "IIP / Mfg growth", "% y/y"),
-    ]);
-
-  const ymap = new Map(yahooQuotes.map((q) => [q.symbol, q]));
-  const niftyNse = pickIndex(nseIndices, "NIFTY 50");
-  const bankNse = pickIndex(nseIndices, "NIFTY BANK");
-  const vixNse = pickIndex(nseIndices, "INDIA VIX");
-
-  const [niftySnap, bankSnap, vixSnap] = await Promise.all([
-    buildIndexSnapshot("^NSEI", "NIFTY 50", niftyNse),
-    buildIndexSnapshot("^NSEBANK", "BANK NIFTY", bankNse),
-    buildIndexSnapshot("^INDIAVIX", "INDIA VIX", vixNse),
-  ]);
-
+function buildPulseAndRadar(ymap: Map<string, LiveQuote>, breadth: Awaited<ReturnType<typeof fetchNseBreadth>>) {
   const pulse = {
     nifty: qFromYahoo(ymap, "^NSEI"),
     sensex: qFromYahoo(ymap, "^BSESN"),
@@ -208,7 +185,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     usdInr: qFromYahoo(ymap, "INR=X"),
     gsec10y: {
       ...qFromYahoo(ymap, "IN10YT=RR"),
-      source: { provider: "Yahoo Finance", url: yahooFinanceUrl("IN10YT=RR") },
+      source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") },
     },
     brent: qFromYahoo(ymap, "BZ=F"),
     gold: qFromYahoo(ymap, "GC=F"),
@@ -221,13 +198,15 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     dow: qFromYahoo(ymap, "^DJI"),
     us10y: {
       value: ymap.get("^TNX")?.price ?? null,
+      change: ymap.get("^TNX")?.change ?? null,
       changePct: ymap.get("^TNX")?.changePct ?? null,
-      source: YAHOO("^TNX"),
+      source: { ...YAHOO("^TNX"), asOf: ymap.get("^TNX")?.asOf },
     },
     dxy: {
       value: ymap.get("DX-Y.NYB")?.price ?? null,
+      change: ymap.get("DX-Y.NYB")?.change ?? null,
       changePct: ymap.get("DX-Y.NYB")?.changePct ?? null,
-      source: YAHOO("DX-Y.NYB"),
+      source: { ...YAHOO("DX-Y.NYB"), asOf: ymap.get("DX-Y.NYB")?.asOf },
     },
     vix: qFromYahoo(ymap, "^VIX"),
     brent: qFromYahoo(ymap, "BZ=F"),
@@ -246,7 +225,59 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     usdInr: globalRadar.usdInr.changePct ?? null,
   });
 
-  const repo = await fetchWorldBankIndicator("IN", "FR.INR.LEND", "Repo / lending (WB)", "%");
+  return { pulse, globalRadar, indiaImpact };
+}
+
+/** Fast path: live quotes + breadth + global radar (no NSE F&O / World Bank). */
+export async function buildIndiaDashboardQuick(): Promise<
+  Pick<IndiaDashboardPayload, "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact">
+> {
+  const symbols = [...INDIA_DASHBOARD_SYMBOLS];
+  const [yahooQuotes, breadth] = await Promise.all([
+    fetchYahooQuotes(symbols),
+    fetchNseBreadth(),
+  ]);
+  const ymap = new Map(yahooQuotes.map((q) => [q.symbol, q]));
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth);
+  return { fetchedAt: new Date().toISOString(), pulse, globalRadar, indiaImpact };
+}
+
+export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
+  const symbols = [...INDIA_DASHBOARD_SYMBOLS];
+  const yahooQuotes = await fetchYahooQuotes(symbols);
+  const ymap = new Map(yahooQuotes.map((q) => [q.symbol, q]));
+
+  const [nseIndices, breadth, foNifty, foBank, fiiDii, macroCpi, macroGdp, mospi, gsecHist, fxRes, iip, wpi, dep, credit, repo] =
+    await Promise.all([
+      fetchNseAllIndices().catch(() => []),
+      fetchNseBreadth(),
+      fetchNseOptionChain("NIFTY"),
+      fetchNseOptionChain("BANKNIFTY"),
+      fetchFiiDii(),
+      fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
+      fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),
+      fetchMospiMacro().catch(() => []),
+      fetchYahooHistory("IN10YT=RR", "1y").catch(() => []),
+      fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn"),
+      fetchWorldBankIndicator("IN", "NV.IND.MANF.KD.ZG", "IIP / Mfg growth", "% y/y"),
+      fetchWorldBankIndicator("IN", "FP.WPI.TOTL.ZG", "WPI", "% y/y"),
+      fetchWorldBankIndicator("IN", "FR.INR.DPST.GD.ZS", "Deposit / GDP proxy", "%"),
+      fetchWorldBankIndicator("IN", "FR.INR.TOTL.ZG", "Credit growth", "% y/y"),
+      fetchWorldBankIndicator("IN", "FR.INR.LEND", "Repo / lending (WB)", "%"),
+    ]);
+
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth);
+
+  const niftyNse = pickIndex(nseIndices, "NIFTY 50");
+  const bankNse = pickIndex(nseIndices, "NIFTY BANK");
+  const vixNse = pickIndex(nseIndices, "INDIA VIX");
+
+  const [niftySnap, bankSnap, vixSnap] = await Promise.all([
+    buildIndexSnapshot("^NSEI", "NIFTY 50", ymap.get("^NSEI"), niftyNse),
+    buildIndexSnapshot("^NSEBANK", "BANK NIFTY", ymap.get("^NSEBANK"), bankNse),
+    buildIndexSnapshot("^INDIAVIX", "INDIA VIX", ymap.get("^INDIAVIX"), vixNse),
+  ]);
+
   const mospiCpi = mospi.find((m) => m.points.length > 0);
   if (mospiCpi && mospiCpi.latest) {
     macroCpi.current = mospiCpi.latest;
@@ -255,12 +286,13 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     macroCpi.source = {
       provider: "MOSPI / data.gov.in",
       url: "https://www.mospi.gov.in/",
+      asOf: new Date().toISOString(),
     };
   }
 
   const indiaMacro: MacroRow[] = [
     macroCpi,
-    await fetchWorldBankIndicator("IN", "FP.WPI.TOTL.ZG", "WPI", "% y/y"),
+    wpi,
     macroGdp,
     repo,
     {
@@ -285,8 +317,8 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     },
     iip,
     fxRes,
-    await fetchWorldBankIndicator("IN", "FR.INR.DPST.GD.ZS", "Deposit / GDP proxy", "%"),
-    await fetchWorldBankIndicator("IN", "FR.INR.TOTL.ZG", "Credit growth", "% y/y"),
+    dep,
+    credit,
   ];
 
   const fiiRow = fiiDii.find((r) => r.category.toUpperCase().includes("FII"));

@@ -1,6 +1,7 @@
 "use client";
 
 import { NewsStream } from "@/components/feeds/news-stream";
+import { DataInfo } from "@/components/feeds/data-info";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { formatPct } from "@/lib/format";
@@ -30,7 +31,18 @@ export default function FeedsPage() {
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data ? (
         <>
-          <Panel title="Source health" subtitle={`Last hub sync ${new Date(data.fetchedAt).toLocaleString()}`}>
+          <Panel
+            title="Source health"
+            subtitle={
+              <span className="inline-flex items-center gap-1">
+                Last hub sync {new Date(data.fetchedAt).toLocaleString()}
+                <DataInfo
+                  source={{ provider: "Feed hub", url: "/api/feeds/hub", asOf: data.fetchedAt }}
+                  hubSyncedAt={data.fetchedAt}
+                />
+              </span>
+            }
+          >
             <SourceHealthGrid rows={data.health} />
           </Panel>
           <div className="grid gap-4 xl:grid-cols-2">

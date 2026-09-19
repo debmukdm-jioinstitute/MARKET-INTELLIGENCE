@@ -26,7 +26,9 @@ export default function DashboardPage() {
       >
         Refresh dashboard
       </button>
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading live India dashboard…</p> : null}
+      {loading && !data?.pulse?.nifty?.value ? (
+        <p className="text-sm text-muted-foreground">Loading market pulse…</p>
+      ) : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data ? (
         <>

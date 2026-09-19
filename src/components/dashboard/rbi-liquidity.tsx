@@ -1,6 +1,6 @@
 "use client";
 
-import { SourceLink } from "@/components/dashboard/source-link";
+import { DataInfo } from "@/components/feeds/data-info";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 
 export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
@@ -32,7 +32,9 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
             ))}
           </div>
         ) : null}
-        <SourceLink source={liq.source} className="mt-2 inline-block" />
+        <span className="mt-2 inline-flex items-center text-[10px]">
+          Source <DataInfo source={liq.source} hubSyncedAt={data.fetchedAt} />
+        </span>
       </div>
     </section>
   );

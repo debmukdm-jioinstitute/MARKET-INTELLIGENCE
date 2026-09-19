@@ -1,7 +1,7 @@
 "use client";
 
 import { Lines } from "@/components/charts/terminal-charts";
-import { SourceLink } from "@/components/dashboard/source-link";
+import { DataInfo } from "@/components/feeds/data-info";
 import type { IndiaDashboardPayload, MacroRow } from "@/lib/feeds/india/types";
 import { fmtNum } from "@/lib/format-india";
 
@@ -24,7 +24,7 @@ export function IndiaMacro({ data }: { data: IndiaDashboardPayload }) {
           </thead>
           <tbody>
             {data.indiaMacro.map((row) => (
-              <MacroTableRow key={row.id} row={row} />
+              <MacroTableRow key={row.id} row={row} hubSyncedAt={data.fetchedAt} />
             ))}
           </tbody>
         </table>
@@ -33,7 +33,7 @@ export function IndiaMacro({ data }: { data: IndiaDashboardPayload }) {
   );
 }
 
-function MacroTableRow({ row }: { row: MacroRow }) {
+function MacroTableRow({ row, hubSyncedAt }: { row: MacroRow; hubSyncedAt: string }) {
   const dir =
     row.direction === "up" ? "↑" : row.direction === "down" ? "↓" : row.direction === "flat" ? "→" : "—";
   const chart = row.history12m.map((p) => ({ date: p.date.slice(0, 7), v: p.value }));
@@ -57,7 +57,7 @@ function MacroTableRow({ row }: { row: MacroRow }) {
         )}
       </td>
       <td className="py-3">
-        <SourceLink source={row.source} />
+        <DataInfo source={row.source} hubSyncedAt={hubSyncedAt} />
       </td>
     </tr>
   );

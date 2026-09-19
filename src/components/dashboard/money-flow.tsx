@@ -1,7 +1,7 @@
 "use client";
 
 import { Donut } from "@/components/charts/terminal-charts";
-import { SourceLink } from "@/components/dashboard/source-link";
+import { DataInfo } from "@/components/feeds/data-info";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { fmtCr } from "@/lib/format-india";
 
@@ -22,8 +22,8 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
       <h2 className="font-heading text-lg font-semibold">India money flow</h2>
       <p className="text-xs text-muted-foreground">FII / DII from NSE when the feed responds. Longer windows need historical API.</p>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <FlowCard row={moneyFlow.fii} />
-        <FlowCard row={moneyFlow.dii} />
+        <FlowCard row={moneyFlow.fii} hubSyncedAt={data.fetchedAt} />
+        <FlowCard row={moneyFlow.dii} hubSyncedAt={data.fetchedAt} />
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div>
@@ -36,7 +36,9 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">—</p>
           )}
-          <SourceLink source={moneyFlow.fiiVsDii.source} className="mt-2 inline-block" />
+          <span className="mt-2 inline-flex items-center text-[10px]">
+            Source <DataInfo source={moneyFlow.fiiVsDii.source} hubSyncedAt={data.fetchedAt} />
+          </span>
         </div>
         {pie.length ? (
           <div className="h-[200px]">
@@ -47,7 +49,8 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
       <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
         {moneyFlow.extras.map((e) => (
           <li key={e.label}>
-            {e.label}: {e.value ?? "—"} (<SourceLink source={e.source} />)
+            {e.label}: {e.value ?? "—"}
+            <DataInfo source={e.source} hubSyncedAt={data.fetchedAt} />
           </li>
         ))}
       </ul>
@@ -55,7 +58,13 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
   );
 }
 
-function FlowCard({ row }: { row: IndiaDashboardPayload["moneyFlow"]["fii"] }) {
+function FlowCard({
+  row,
+  hubSyncedAt,
+}: {
+  row: IndiaDashboardPayload["moneyFlow"]["fii"];
+  hubSyncedAt: string;
+}) {
   return (
     <div className="rounded-md border border-border p-3">
       <p className="font-mono text-sm font-semibold">{row.label}</p>
@@ -65,7 +74,9 @@ function FlowCard({ row }: { row: IndiaDashboardPayload["moneyFlow"]["fii"] }) {
         <div className="flex justify-between"><dt>1M</dt><dd>{row.m1 != null ? fmtCr(row.m1) : "—"}</dd></div>
         <div className="flex justify-between"><dt>YTD</dt><dd>{row.ytd != null ? fmtCr(row.ytd) : "—"}</dd></div>
       </dl>
-      <SourceLink source={row.source} className="mt-2 inline-block" />
+      <span className="mt-2 inline-flex items-center text-[10px]">
+        Source <DataInfo source={row.source} hubSyncedAt={hubSyncedAt} />
+      </span>
     </div>
   );
 }

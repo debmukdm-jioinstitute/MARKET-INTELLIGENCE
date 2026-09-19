@@ -28,7 +28,7 @@ export function useFeedHub(refreshMs = 60_000) {
     return () => window.clearInterval(id);
   }, [reload, refreshMs]);
 
-  return { data, loading, error, reload };
+  return { data, loading, error, reload, hubSyncedAt: data?.fetchedAt };
 }
 
 export function quoteMap(data: FeedHubPayload | null) {
