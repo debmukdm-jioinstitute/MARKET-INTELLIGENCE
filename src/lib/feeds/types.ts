@@ -38,7 +38,7 @@ export type LiveQuote = {
   changePct: number;
   currency?: string;
   asOf: string;
-  provider: "yahoo" | "stooq" | "alphavantage" | "biquote";
+  provider: "yahoo" | "stooq" | "alphavantage" | "biquote" | "truedata";
 };
 
 export type MacroPoint = {

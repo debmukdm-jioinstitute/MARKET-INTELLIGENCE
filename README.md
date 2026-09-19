@@ -30,7 +30,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Live **quotes and headlines** are pulled server-side from open feeds (NSE/BSE/RBI RSS, SEC EDGAR, Yahoo Finance, Stooq, World Bank, IMF, OECD, MOSPI/data.gov.in, plus optional FRED and Alpha Vantage when API keys are set). See **Data feeds** in the portal and `GET /api/feeds/hub`.
+Live **quotes and headlines** are pulled server-side from open feeds (NSE/BSE/RBI RSS, SEC EDGAR, Yahoo Finance, Stooq, World Bank, IMF, OECD, MOSPI/data.gov.in, plus optional FRED and Alpha Vantage when API keys are set). India live quotes fall back to **TrueData** (authorised NSE/BSE/MCX vendor) when Yahoo has no data for a symbol — set `TRUEDATA_USERNAME` / `TRUEDATA_PASSWORD` to enable it. See **Data feeds** in the portal and `GET /api/feeds/hub`.
 
 Backtests and long-range analytics still use a **deterministic factor simulation** (2019–2026) so books stay coherent without paid historical entitlements.
 
