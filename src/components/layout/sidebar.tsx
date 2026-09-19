@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  Monitor,
   PieChart,
   Shield,
   SlidersHorizontal,
@@ -23,7 +24,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV = [
-  { href: "/app", label: "Command", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/app", label: "Command", icon: Monitor },
   { href: "/portfolio", label: "Portfolios", icon: Briefcase },
   { href: "/research", label: "Research", icon: BookOpen },
   { href: "/allocation", label: "Allocation", icon: PieChart },
@@ -55,7 +57,12 @@ export function Sidebar() {
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
         {NAV.map((item) => {
-          const active = item.href === "/app" ? path === "/app" : path.startsWith(item.href);
+          const active =
+            item.href === "/dashboard"
+              ? path === "/dashboard"
+              : item.href === "/app"
+                ? path === "/app"
+                : path.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link

@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
 
   if (session && (pathname === "/login" || pathname === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/app";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

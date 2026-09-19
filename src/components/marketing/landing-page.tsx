@@ -135,7 +135,7 @@ export function LandingPage() {
             <div className="flex items-center gap-2">
               {signedIn ? (
                 <Link
-                  href="/app"
+                  href="/dashboard"
                   className="rounded-full bg-[#f5f5f7] px-4 py-1.5 text-[13px] font-medium text-black transition hover:bg-white"
                 >
                   Open terminal
@@ -208,7 +208,7 @@ export function LandingPage() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href={signedIn ? "/app" : "/signup"}
+              href={signedIn ? "/dashboard" : "/signup"}
               className="rounded-full bg-[#f5f5f7] px-7 py-3 text-[15px] font-medium text-black shadow-[0_0_40px_-8px_rgba(255,255,255,0.5)] transition hover:scale-[1.02] hover:bg-white"
             >
               {signedIn ? "Open terminal →" : "Start managing free →"}
@@ -335,7 +335,7 @@ export function LandingPage() {
           </h2>
           <p className="mx-auto mt-4 max-w-md text-[#a1a1a6]">One account. One terminal. The whole story of modern portfolio management.</p>
           <Link
-            href={signedIn ? "/app" : "/signup"}
+            href={signedIn ? "/dashboard" : "/signup"}
             className="mt-8 inline-flex rounded-full bg-gradient-to-r from-[#ff9f0a] to-[#ffd60a] px-8 py-3.5 text-[15px] font-semibold text-black transition hover:brightness-110"
           >
             {signedIn ? "Enter MI Terminal" : "Create your free desk"}
@@ -355,7 +355,7 @@ export function LandingPage() {
               <div className="mt-3 flex flex-col gap-2">
                 <Link href="/login" className="hover:text-white">Sign in</Link>
                 <Link href="/signup" className="hover:text-white">Create account</Link>
-                <Link href="/app" className="hover:text-white">Terminal</Link>
+                <Link href="/dashboard" className="hover:text-white">Terminal</Link>
               </div>
             </div>
           </div>
