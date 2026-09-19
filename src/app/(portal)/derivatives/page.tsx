@@ -1,32 +1,104 @@
 "use client";
 
+import { DataInfo } from "@/components/feeds/data-info";
 import { SourceLink } from "@/components/dashboard/source-link";
+import { IvSmileChart, OiByStrikeChart } from "@/components/derivatives/greeks-charts";
+import { OptionChainControls } from "@/components/derivatives/option-chain-controls";
+import { OptionChainTable } from "@/components/derivatives/option-chain-table";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { useOptionChain, useOptionExpiries } from "@/hooks/use-option-chain";
+import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
 import type { FoSnapshot } from "@/lib/feeds/india/types";
 import { fmtNum } from "@/lib/format-india";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function DerivativesPage() {
-  const { data, loading, error } = useIndiaDashboard(55_000);
-  const fo = data?.indiaMoving.fo;
+  const [underlyingKey, setUnderlyingKey] = useState<string>(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY);
+  const { expiries, expiry, setExpiry, loading: expiriesLoading } = useOptionExpiries(underlyingKey);
+  const { data: snapshot, loading, error } = useOptionChain(underlyingKey, expiry);
+
+  const { data: legacy } = useIndiaDashboard(55_000);
+  const fo = legacy?.indiaMoving.fo;
 
   return (
     <div className="space-y-6">
       <PageHeader
         kicker="F&O"
         title="Derivatives dashboard"
-        subtitle="NSE index option chain analytics — PCR, open interest, max pain, and strike concentration."
+        subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
       />
-      <Link href="/dashboard" className="text-xs text-primary hover:underline">← Back to dashboard</Link>
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      <Link href="/dashboard" className="text-xs text-primary hover:underline">
+        ← Back to dashboard
+      </Link>
+
+      <Panel
+        title="Option chain"
+        subtitle={
+          <OptionChainControls
+            underlyingKey={underlyingKey}
+            onUnderlyingChange={(k) => {
+              setUnderlyingKey(k);
+              setExpiry("");
+            }}
+            expiry={expiry}
+            expiries={expiries}
+            onExpiryChange={setExpiry}
+            expiriesLoading={expiriesLoading}
+          />
+        }
+      >
+        {loading && !snapshot ? <p className="text-sm text-muted-foreground">Loading chain…</p> : null}
+        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+        {snapshot ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">
+              <Metric label="Spot" value={fmtNum(snapshot.underlyingSpot)} />
+              <Metric label="PCR" value={snapshot.pcr != null ? snapshot.pcr.toFixed(3) : "—"} />
+              <Metric label="Max pain" value={snapshot.maxPain != null ? fmtNum(snapshot.maxPain, 0) : "—"} />
+              <Metric label="Call OI" value={snapshot.totalCallOi?.toLocaleString("en-IN") ?? "—"} />
+              <Metric label="Put OI" value={snapshot.totalPutOi?.toLocaleString("en-IN") ?? "—"} />
+              <DataInfo source={snapshot.source} />
+            </div>
+
+            <OptionChainTable snapshot={snapshot} />
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">IV smile</p>
+                <div className="h-[220px]">
+                  <IvSmileChart snapshot={snapshot} />
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                  Open interest by strike
+                </p>
+                <div className="h-[220px]">
+                  <OiByStrikeChart snapshot={snapshot} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Panel>
+
       {fo ? (
         <div className="grid gap-4 xl:grid-cols-2">
-          <FoPanel title="NIFTY" snap={fo.nifty} />
-          <FoPanel title="BANK NIFTY" snap={fo.bankNifty} />
+          <FoPanel title="NIFTY (NSE reference)" snap={fo.nifty} />
+          <FoPanel title="BANK NIFTY (NSE reference)" snap={fo.bankNifty} />
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="text-muted-foreground">{label}: </span>
+      <span>{value}</span>
     </div>
   );
 }
@@ -63,13 +135,19 @@ function StrikeTable({ label, rows }: { label: string; rows: { strike: number; o
           </tr>
         </thead>
         <tbody className="font-mono">
-          {rows.length ? rows.map((r) => (
-            <tr key={r.strike} className="border-t border-border">
-              <td className="py-1">{r.strike}</td>
-              <td className="py-1 text-right">{r.oi.toLocaleString("en-IN")}</td>
+          {rows.length ? (
+            rows.map((r) => (
+              <tr key={r.strike} className="border-t border-border">
+                <td className="py-1">{r.strike}</td>
+                <td className="py-1 text-right">{r.oi.toLocaleString("en-IN")}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={2} className="py-2 text-muted-foreground">
+                No chain data
+              </td>
             </tr>
-          )) : (
-            <tr><td colSpan={2} className="py-2 text-muted-foreground">No chain data</td></tr>
           )}
         </tbody>
       </table>

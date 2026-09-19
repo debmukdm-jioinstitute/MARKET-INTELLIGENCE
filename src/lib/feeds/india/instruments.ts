@@ -47,3 +47,15 @@ export const INDIA_INDEX_INSTRUMENT_KEYS = {
 export function findIndiaInstrument(symbol: string): IndiaInstrument | undefined {
   return INDIA_EQUITIES.find((i) => i.symbol.toUpperCase() === symbol.toUpperCase());
 }
+
+/** Option-chain underlyings: the 3 index futures + this app's curated stock list (F&O-eligible large caps). */
+export const OPTION_UNDERLYINGS: { key: string; label: string; kind: "index" | "stock" }[] = [
+  { key: INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, label: "NIFTY", kind: "index" },
+  { key: INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, label: "BANKNIFTY", kind: "index" },
+  { key: INDIA_INDEX_INSTRUMENT_KEYS.FINNIFTY, label: "FINNIFTY", kind: "index" },
+  ...INDIA_EQUITIES.map((i) => ({ key: i.instrumentKey, label: i.symbol, kind: "stock" as const })),
+];
+
+export function findOptionUnderlying(key: string) {
+  return OPTION_UNDERLYINGS.find((u) => u.key === key);
+}

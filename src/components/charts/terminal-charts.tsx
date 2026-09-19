@@ -107,15 +107,17 @@ export function Donut({ data }: { data: { name: string; value: number }[] }) {
 export function Lines({
   data,
   keys,
+  xKey = "date",
 }: {
   data: Record<string, string | number>[];
   keys: { key: string; color: string; name: string }[];
+  xKey?: string;
 }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data}>
         <CartesianGrid {...grid} vertical={false} />
-        <XAxis dataKey="date" {...axis} minTickGap={40} />
+        <XAxis dataKey={xKey} {...axis} minTickGap={40} />
         <YAxis {...axis} width={48} domain={["auto", "auto"]} />
         <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -123,6 +125,32 @@ export function Lines({
           <Line key={k.key} type="monotone" dataKey={k.key} name={k.name} stroke={k.color} dot={false} strokeWidth={1.4} />
         ))}
       </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Grouped call-vs-put OI by strike — the classic option-chain "OI bars" view. */
+export function OiBars({
+  data,
+  xKey = "strike",
+}: {
+  data: Record<string, string | number>[];
+  xKey?: string;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data}>
+        <CartesianGrid {...grid} vertical={false} />
+        <XAxis dataKey={xKey} {...axis} minTickGap={24} />
+        <YAxis {...axis} width={56} tickFormatter={(v) => Number(v).toLocaleString()} />
+        <Tooltip
+          contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }}
+          formatter={(v) => Number(v).toLocaleString()}
+        />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Bar dataKey="callOi" name="Call OI" fill="#34d399" radius={2} />
+        <Bar dataKey="putOi" name="Put OI" fill="#fb7185" radius={2} />
+      </BarChart>
     </ResponsiveContainer>
   );
 }
