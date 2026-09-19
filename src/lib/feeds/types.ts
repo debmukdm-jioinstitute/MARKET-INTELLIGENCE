@@ -11,7 +11,8 @@ export type FeedSourceId =
   | "imf"
   | "oecd"
   | "mospi"
-  | "biquote";
+  | "biquote"
+  | "upstox";
 
 export type FeedHealth = {
   id: FeedSourceId;
