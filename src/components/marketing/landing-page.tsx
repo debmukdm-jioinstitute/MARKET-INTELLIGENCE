@@ -94,8 +94,8 @@ const FAQS = [
 ];
 
 export function LandingPage() {
-  const { user, ready } = useAuth();
-  const signedIn = ready && user;
+  const { user, ready, enterGuest, isGuest } = useAuth();
+  const hasAccess = ready && Boolean(user);
 
   return (
     <div className="marketing relative min-h-screen overflow-x-hidden bg-[#000000] text-[#f5f5f7] selection:bg-[#ff9f0a]/30">
@@ -133,15 +133,24 @@ export function LandingPage() {
               <a href="#plans" className="transition hover:text-white">Pricing</a>
             </nav>
             <div className="flex items-center gap-2">
-              {signedIn ? (
+              {hasAccess ? (
                 <Link
                   href="/dashboard"
                   className="rounded-full bg-[#f5f5f7] px-4 py-1.5 text-[13px] font-medium text-black transition hover:bg-white"
                 >
-                  Open terminal
+                  {isGuest ? "Continue exploring" : "Open terminal"}
                 </Link>
               ) : (
                 <>
+                  <button
+                    type="button"
+                    onClick={() => void enterGuest().then(() => {
+                      window.location.href = "/dashboard";
+                    })}
+                    className="rounded-full px-4 py-1.5 text-[13px] font-medium text-[#f5f5f7] transition hover:text-white"
+                  >
+                    Guest
+                  </button>
                   <Link
                     href="/login"
                     className="rounded-full px-4 py-1.5 text-[13px] font-medium text-[#f5f5f7] transition hover:text-white"
@@ -208,10 +217,10 @@ export function LandingPage() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href={signedIn ? "/dashboard" : "/signup"}
+              href={hasAccess ? "/dashboard" : "/signup"}
               className="rounded-full bg-[#f5f5f7] px-7 py-3 text-[15px] font-medium text-black shadow-[0_0_40px_-8px_rgba(255,255,255,0.5)] transition hover:scale-[1.02] hover:bg-white"
             >
-              {signedIn ? "Open terminal →" : "Start managing free →"}
+              {hasAccess ? "Open terminal →" : "Start managing free →"}
             </Link>
             <a
               href="#story"
@@ -335,10 +344,10 @@ export function LandingPage() {
           </h2>
           <p className="mx-auto mt-4 max-w-md text-[#a1a1a6]">One account. One terminal. The whole story of modern portfolio management.</p>
           <Link
-            href={signedIn ? "/dashboard" : "/signup"}
+            href={hasAccess ? "/dashboard" : "/signup"}
             className="mt-8 inline-flex rounded-full bg-gradient-to-r from-[#ff9f0a] to-[#ffd60a] px-8 py-3.5 text-[15px] font-semibold text-black transition hover:brightness-110"
           >
-            {signedIn ? "Enter MI Terminal" : "Create your free desk"}
+            {hasAccess ? "Enter MI Terminal" : "Create your free desk"}
           </Link>
         </section>
 

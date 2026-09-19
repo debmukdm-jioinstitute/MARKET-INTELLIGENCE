@@ -43,7 +43,7 @@ const NAV = [
 
 export function Sidebar() {
   const path = usePathname();
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const router = useRouter();
 
   return (
@@ -52,8 +52,16 @@ export function Sidebar() {
         <p className="font-[Tiny5] text-[11px] tracking-[0.18em] text-primary">MI TERMINAL</p>
         <h1 className="mt-1 font-heading text-lg font-semibold tracking-tight">Market Intelligence</h1>
         <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
-          {user?.name ?? "Virtual portfolio management"}
+          {isGuest ? "Guest explorer" : user?.name ?? "Virtual portfolio management"}
         </p>
+        {isGuest ? (
+          <Link
+            href="/signup"
+            className="mt-2 inline-block text-[10px] font-medium text-primary hover:underline"
+          >
+            Save desk → sign up
+          </Link>
+        ) : null}
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
         {NAV.map((item) => {

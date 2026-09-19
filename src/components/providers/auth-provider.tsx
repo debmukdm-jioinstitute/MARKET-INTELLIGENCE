@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  GUEST_SESSION,
   hashPassword,
+  isGuestUser,
   persistCookie,
   readSession,
   readUsers,
@@ -14,8 +16,10 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 type AuthCtx = {
   user: SessionUser | null;
   ready: boolean;
+  isGuest: boolean;
   signup: (input: { name: string; email: string; password: string }) => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
+  enterGuest: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -36,6 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       ready,
+      isGuest: isGuestUser(user),
+      async enterGuest() {
+        writeSession(GUEST_SESSION);
+        await persistCookie(GUEST_SESSION);
+        setUser(GUEST_SESSION);
+      },
       async signup({ name, email, password }) {
         const users = readUsers();
         const key = email.trim().toLowerCase();
@@ -48,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
         };
         writeUsers([...users, record]);
-        const session = { name: record.name, email: record.email };
+        const session = { name: record.name, email: record.email, guest: false };
         writeSession(session);
         await persistCookie(session);
         setUser(session);
@@ -59,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!match || match.passwordHash !== (await hashPassword(password))) {
           throw new Error("Invalid email or password.");
         }
-        const session = { name: match.name, email: match.email };
+        const session = { name: match.name, email: match.email, guest: false };
         writeSession(session);
         await persistCookie(session);
         setUser(session);

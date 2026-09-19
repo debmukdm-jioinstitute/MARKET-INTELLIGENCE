@@ -9,7 +9,7 @@ const inputClass =
   "h-12 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-[#f5f5f7] placeholder:text-[#636366] outline-none backdrop-blur-sm transition focus:border-[#ff9f0a]/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-[#ff9f0a]/30";
 
 export function AuthForm({ mode, next = "/dashboard" }: { mode: "login" | "signup"; next?: string }) {
-  const { login, signup } = useAuth();
+  const { login, signup, enterGuest } = useAuth();
   const router = useRouter();
   const dest = next.startsWith("/") ? next : "/dashboard";
   const [error, setError] = useState("");
@@ -69,6 +69,28 @@ export function AuthForm({ mode, next = "/dashboard" }: { mode: "login" | "signu
           {pending ? "Working…" : mode === "signup" ? "Start free →" : "Enter terminal →"}
         </button>
       </form>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={async () => {
+          setError("");
+          setPending(true);
+          try {
+            await enterGuest();
+            router.push(dest);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not start guest session.");
+          } finally {
+            setPending(false);
+          }
+        }}
+        className="mt-3 h-12 w-full rounded-xl border border-white/15 text-sm font-medium text-[#f5f5f7] transition hover:border-[#ff9f0a]/40 hover:bg-white/[0.04] disabled:opacity-50"
+      >
+        Explore as guest →
+      </button>
+      <p className="mt-2 text-center text-[11px] text-[#636366]">
+        No account required. Demo books only; create an account to save your desk.
+      </p>
       <p className="mt-6 text-sm text-[#86868b]">
         {mode === "signup" ? (
           <>
