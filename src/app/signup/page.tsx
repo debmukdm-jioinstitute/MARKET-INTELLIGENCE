@@ -7,7 +7,8 @@ export default async function SignupPage({
 }) {
   const { next } = await searchParams;
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f5f5f3] px-5 py-16">
+    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-black px-5 py-16">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(255,159,10,0.1),transparent)]" />
       <AuthForm mode="signup" next={next} />
     </main>
   );
