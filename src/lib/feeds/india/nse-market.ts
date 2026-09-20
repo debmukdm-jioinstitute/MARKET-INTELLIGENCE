@@ -26,53 +26,28 @@ export function pickIndex(rows: IndexRow[], name: string) {
   return rows.find((r) => r.index.toUpperCase().includes(name.toUpperCase()));
 }
 
-type StockRow = {
-  symbol: string;
-  lastPrice: number;
-  pChange: number;
-  yearHigh: number;
-  yearLow: number;
-};
-
+/**
+ * Whole-market breadth (advances/declines/unchanged) from `/api/allIndices`'s
+ * root-level fields — the stock-level `/api/equity-stockIndices` endpoint we
+ * used to scrape for this now 404s (NSE moved/retired it). 52W high/low
+ * counts come from NSE's dedicated 52-week-high/low endpoints instead of
+ * re-deriving them per-stock.
+ */
 export async function fetchNseBreadth(): Promise<BreadthSnapshot> {
-  try {
-    const json = await nseJson<{ data?: StockRow[] }>(
-      "/api/equity-stockIndices?index=NIFTY%20500",
-    );
-    const stocks = json.data ?? [];
-    let advances = 0;
-    let declines = 0;
-    let unchanged = 0;
-    let high52w = 0;
-    let low52w = 0;
-    for (const s of stocks) {
-      if (s.pChange > 0.05) advances += 1;
-      else if (s.pChange < -0.05) declines += 1;
-      else unchanged += 1;
-      if (s.yearHigh > 0 && s.lastPrice >= s.yearHigh * 0.995) high52w += 1;
-      if (s.yearLow > 0 && s.lastPrice <= s.yearLow * 1.005) low52w += 1;
-    }
-    return {
-      advances: stocks.length ? advances : null,
-      declines: stocks.length ? declines : null,
-      unchanged: stocks.length ? unchanged : null,
-      high52w: stocks.length ? high52w : null,
-      low52w: stocks.length ? low52w : null,
-      source: {
-        ...NSE_SOURCE,
-        url: "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20500",
-      },
-    };
-  } catch {
-    return {
-      advances: null,
-      declines: null,
-      unchanged: null,
-      high52w: null,
-      low52w: null,
-      source: NSE_SOURCE,
-    };
-  }
+  const [allIndices, high52, low52] = await Promise.all([
+    nseJson<{ advances?: number; declines?: number; unchanged?: number }>("/api/allIndices").catch(() => null),
+    nseJson<{ high?: number }>("/api/live-analysis-data-52weekhighstock").catch(() => null),
+    nseJson<{ low?: number }>("/api/live-analysis-data-52weeklowstock").catch(() => null),
+  ]);
+
+  return {
+    advances: allIndices?.advances ?? null,
+    declines: allIndices?.declines ?? null,
+    unchanged: allIndices?.unchanged ?? null,
+    high52w: high52?.high ?? null,
+    low52w: low52?.low ?? null,
+    source: NSE_SOURCE,
+  };
 }
 
 type OptionLeg = {
