@@ -1,4 +1,4 @@
-import type { IndiaDashboardPayload, IndiaImpact, MacroRow, QuoteField } from "@/lib/feeds/india/types";
+import type { FoSnapshot, IndiaDashboardPayload, IndiaImpact, MacroRow, QuoteField } from "@/lib/feeds/india/types";
 import {
   fetchFiiDii,
   fetchNseAllIndices,
@@ -8,13 +8,25 @@ import {
 } from "@/lib/feeds/india/nse-market";
 import { feedFetch } from "@/lib/feeds/http";
 import type { LiveQuote } from "@/lib/feeds/types";
+import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
-import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
+import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
 /** Indices Upstox has a stable instrument_key for — see INDIA_INSTRUMENT_KEYS. */
 const UPSTOX_INDIA_SYMBOLS = ["^NSEI", "^BSESN", "^NSEBANK", "^INDIAVIX"];
+
+/** Upstox option chain first (exchange-licensed, has Greeks), NSE scrape as last resort. */
+async function fetchFoSnapshot(
+  underlyingKey: string,
+  name: string,
+  nseSymbol: "NIFTY" | "BANKNIFTY",
+): Promise<FoSnapshot> {
+  const upstox = await fetchUpstoxFoSnapshot(underlyingKey, name).catch(() => null);
+  if (upstox) return upstox;
+  return fetchNseOptionChain(nseSymbol);
+}
 
 export const INDIA_DASHBOARD_SYMBOLS = [
   "^NSEI",
@@ -275,8 +287,8 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     await Promise.all([
       fetchNseAllIndices().catch(() => []),
       fetchNseBreadth(),
-      fetchNseOptionChain("NIFTY"),
-      fetchNseOptionChain("BANKNIFTY"),
+      fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY"),
+      fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY"),
       fetchFiiDii(),
       fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
       fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),

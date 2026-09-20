@@ -11,6 +11,7 @@ export type { Candle, CandleRange } from "@/lib/feeds/sources/upstox/candles";
 export {
   fetchUpstoxOptionChain,
   fetchUpstoxOptionExpiries,
+  fetchUpstoxFoSnapshot,
 } from "@/lib/feeds/sources/upstox/option-chain";
 export { fetchUpstoxKeyRatios } from "@/lib/feeds/sources/upstox/fundamentals";
 export { fetchUpstoxNews } from "@/lib/feeds/sources/upstox/news";

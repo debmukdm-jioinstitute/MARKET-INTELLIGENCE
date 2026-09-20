@@ -1,6 +1,7 @@
 import { feedFetch } from "@/lib/feeds/http";
 import { UPSTOX_BASE_URL, upstoxHeaders } from "@/lib/feeds/sources/upstox/client";
 import type { OptionChainRow, OptionChainSnapshot, OptionLegQuote } from "@/lib/feeds/derivatives/types";
+import type { FoSnapshot } from "@/lib/feeds/india/types";
 
 const OPTION_CHAIN_URL = `${UPSTOX_BASE_URL}/v2/option/chain`;
 const OPTION_CONTRACT_URL = `${UPSTOX_BASE_URL}/v2/option/contract`;
@@ -168,4 +169,39 @@ export async function fetchUpstoxOptionExpiries(underlyingKey: string): Promise<
   if (json.status !== "success" || !json.data) return [];
 
   return [...new Set(json.data.map((c) => c.expiry))].sort();
+}
+
+/**
+ * Legacy FoSnapshot-shaped summary (used by the dashboard's F&O teaser and
+ * derivatives/page.tsx's NSE reference cards) — Upstox chain + nearest expiry,
+ * so callers don't need to change shape. Returns null when unconfigured or
+ * when the underlying has no near-term expiry, so callers can fall back to
+ * the NSE scrape.
+ */
+export async function fetchUpstoxFoSnapshot(
+  underlyingKey: string,
+  underlyingName: string,
+): Promise<FoSnapshot | null> {
+  const headers = upstoxHeaders();
+  if (!headers) return null;
+
+  const expiries = await fetchUpstoxOptionExpiries(underlyingKey);
+  const nearest = expiries[0];
+  if (!nearest) return null;
+
+  const snapshot = await fetchUpstoxOptionChain(underlyingKey, underlyingName, nearest);
+  if (!snapshot) return null;
+
+  return {
+    symbol: underlyingName,
+    pcr: snapshot.pcr,
+    totalOi: (snapshot.totalCallOi ?? 0) + (snapshot.totalPutOi ?? 0) || null,
+    changeOi: snapshot.changeOi,
+    callOi: snapshot.totalCallOi,
+    putOi: snapshot.totalPutOi,
+    maxPain: snapshot.maxPain,
+    topCallStrikes: snapshot.topCallStrikes,
+    topPutStrikes: snapshot.topPutStrikes,
+    source: snapshot.source,
+  };
 }
