@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataInfo } from "@/components/feeds/data-info";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
@@ -25,6 +26,7 @@ export default function MarketsPage() {
       m1: getReturn(u.symbol, 21),
       y1: getReturn(u.symbol, 252),
       live: Boolean(q),
+      asOf: q?.asOf ?? hubSyncedAt,
     };
   });
 
@@ -36,13 +38,9 @@ export default function MarketsPage() {
         subtitle="Live last prices from Yahoo Finance chart API / Stooq. Click ⓘ on a row for source and fetch time."
       />
       {hubSyncedAt ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
           Hub sync {new Date(hubSyncedAt).toLocaleString()}
-          <DataInfo
-            source={{ provider: "Feed hub", url: "/api/feeds/hub", asOf: hubSyncedAt }}
-            hubSyncedAt={hubSyncedAt}
-            note="Universe marks refresh on this interval."
-          />
+          <MetricInfo id="data_quality" asOf={hubSyncedAt} iconSize="xs" />
         </p>
       ) : null}
       {loading && !data ? (
@@ -55,8 +53,18 @@ export default function MarketsPage() {
               <TableHead>Symbol</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Class</TableHead>
-              <TableHead className="text-right">Last</TableHead>
-              <TableHead className="text-right">1D</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Last
+                  <MetricInfo id="nav" name="Last Traded Price" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  1D
+                  <MetricInfo id="today_pnl" name="1-Day Percentage Return" iconSize="xs" />
+                </span>
+              </TableHead>
               <TableHead className="text-right">1M*</TableHead>
               <TableHead className="text-right">1Y*</TableHead>
             </TableRow>
@@ -64,11 +72,19 @@ export default function MarketsPage() {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.symbol}>
-                <TableCell className="font-mono">
-                  {row.symbol}
+                <TableCell className="font-mono flex items-center gap-1">
+                  <span>{row.symbol}</span>
                   {row.live ? (
                     <span className="ml-1 text-[9px] uppercase text-emerald-400">live</span>
                   ) : null}
+                  <MetricInfo
+                    id={row.symbol.toLowerCase()}
+                    name={`${row.name} (${row.symbol})`}
+                    provider="Yahoo Finance / Global Market Feeds"
+                    sourceUrl={`https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`}
+                    asOf={row.asOf}
+                    iconSize="xs"
+                  />
                 </TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell className="text-muted-foreground">{row.assetClass}</TableCell>

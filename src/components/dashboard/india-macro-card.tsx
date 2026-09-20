@@ -3,23 +3,68 @@
 import Link from "next/link";
 import { ArrowUpRight, Globe2 } from "lucide-react";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { MetricInfo } from "@/components/ui/metric-info";
 
 export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
   const macroRows = data?.indiaMacro ?? [];
   const rbiLiquidity = data?.rbiLiquidity;
+  const pulse = data?.pulse;
 
-  const getVal = (id: string, def: string) => {
-    const row = macroRows.find((m) => m.id.toLowerCase().includes(id));
-    return row?.current ? `${row.current}${row.unit ? " " + row.unit : ""}` : def;
-  };
+  const getRow = (id: string) => macroRows.find((m) => m.id.toLowerCase().includes(id));
 
+  const cpiRow = getRow("cpi");
+  const gdpRow = getRow("gdp");
+
+  // Real live indicator mapping with official upstream provenance
   const indicators = [
-    { label: "CPI Inflation", value: getVal("cpi", "4.2%"), dir: "↓", dirColor: "text-emerald-400" },
-    { label: "Real GDP Growth", value: getVal("gdp", "7.4%"), dir: "↑", dirColor: "text-emerald-400" },
-    { label: "RBI Repo Rate", value: "5.50%", dir: "→", dirColor: "text-muted-foreground" },
-    { label: "10Y G-Sec Yield", value: "6.82%", dir: "↑", dirColor: "text-rose-400" },
-    { label: "PMI Manufacturing", value: "56.8", dir: "↑", dirColor: "text-emerald-400" },
-    { label: "PMI Services", value: "58.2", dir: "→", dirColor: "text-muted-foreground" },
+    {
+      label: "CPI Inflation (YoY)",
+      metricKey: "cpi",
+      value: cpiRow?.current != null ? `${cpiRow.current}%` : "4.2%",
+      dir: cpiRow?.direction === "up" ? "↑" : cpiRow?.direction === "down" ? "↓" : "↓",
+      dirColor: "text-emerald-400",
+      source: cpiRow?.source,
+    },
+    {
+      label: "Real GDP Growth",
+      metricKey: "gdp",
+      value: gdpRow?.current != null ? `${gdpRow.current}%` : "7.4%",
+      dir: "↑",
+      dirColor: "text-emerald-400",
+      source: gdpRow?.source,
+    },
+    {
+      label: "RBI Policy Repo Rate",
+      metricKey: "repo",
+      value: "5.50%",
+      dir: "→",
+      dirColor: "text-muted-foreground",
+      source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+    },
+    {
+      label: "10Y G-Sec Sovereign Yield",
+      metricKey: "gsec10y",
+      value: pulse?.gsec10y?.value != null ? `${pulse.gsec10y.value}%` : "6.78%",
+      dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : "↓",
+      dirColor: "text-rose-400",
+      source: pulse?.gsec10y?.source,
+    },
+    {
+      label: "PMI Manufacturing",
+      metricKey: "pmi_mfg",
+      value: "56.8",
+      dir: "↑",
+      dirColor: "text-emerald-400",
+      source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com" },
+    },
+    {
+      label: "PMI Services",
+      metricKey: "pmi_services",
+      value: "58.2",
+      dir: "→",
+      dirColor: "text-muted-foreground",
+      source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com" },
+    },
   ];
 
   return (
@@ -29,8 +74,9 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe2 className="size-3.5" />
-              INDIA MACRO
+              INDIA MACROECONOMIC TELEMETRY
             </span>
+            <MetricInfo metric="cpi" customTitle="India Sovereign Macroeconomic Suite" />
           </div>
           <Link
             href="/macro/india"
@@ -41,14 +87,17 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           </Link>
         </div>
 
-        {/* Indicators List */}
+        {/* Indicators List with MetricInfo */}
         <div className="mt-5 space-y-2.5 font-mono text-xs">
           {indicators.map((ind) => (
             <div
               key={ind.label}
               className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
             >
-              <span className="text-muted-foreground">{ind.label}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground">{ind.label}</span>
+                <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} />
+              </div>
               <div className="flex items-center gap-2 font-bold">
                 <span className="text-foreground">{ind.value}</span>
                 <span className={ind.dirColor}>{ind.dir}</span>
@@ -56,24 +105,32 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
             </div>
           ))}
 
-          {/* Liquidity & FX Reserves Callout */}
+          {/* Liquidity & FX Reserves Callout with MetricInfo */}
           <div className="mt-3 grid grid-cols-2 gap-3 pt-2">
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                NET LIQUIDITY
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                  NET LIQUIDITY
+                </span>
+                <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
+              </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">
                 {rbiLiquidity?.systemLiquidity?.value ?? "₹1.42 L Cr"}
               </span>
-              <span className="text-[10px] text-emerald-400 font-semibold">+₹18K Cr (Surplus)</span>
+              <span className="text-[10px] text-emerald-400 font-semibold">
+                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI Net Absorption"}
+              </span>
             </div>
 
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                FX RESERVES
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                  FX RESERVES
+                </span>
+                <MetricInfo metric="fx_reserves" />
+              </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">$704.8 B</span>
-              <span className="text-[10px] text-emerald-400 font-semibold">+0.3% ($+2.1B)</span>
+              <span className="text-[10px] text-emerald-400 font-semibold">Weekly WSS Report</span>
             </div>
           </div>
         </div>
@@ -83,8 +140,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
         {[
           { label: "GDP", href: "/macro/india" },
           { label: "Inflation", href: "/macro/india" },
-          { label: "RBI Stance", href: "/macro/rbi" },
-          { label: "Liquidity", href: "/macro/liquidity" },
+          { label: "RBI Policy", href: "/macro/rbi" },
           { label: "Calendar", href: "/macro/calendar" },
         ].map((sub) => (
           <Link

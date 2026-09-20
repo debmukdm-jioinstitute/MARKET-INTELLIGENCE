@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { CorporateEventsCard } from "@/components/dashboard/corporate-events-card";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { Radio, Sparkles, Send, Bot, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +62,12 @@ export default function IntelligencePage() {
             <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-400">
               DESK ACTIVE
             </span>
+            <MetricInfo
+              id="data_quality"
+              name="Copilot Grounding & Ingestion Engine"
+              provider="NSE / BSE Filings & Market Feed Streams"
+              iconSize="xs"
+            />
           </div>
           <span className="text-[11px] font-mono text-muted-foreground">
             Model: Deep Institutional Quant Engine

@@ -1,6 +1,7 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PositionRow } from "@/lib/my-portfolio/types";
@@ -31,21 +32,57 @@ export function HoldingsList({
         <TableRow>
           <TableHead>Symbol</TableHead>
           <TableHead>Name</TableHead>
-          <TableHead className="text-right">Last</TableHead>
-          <TableHead className="text-right">Day</TableHead>
+          <TableHead className="text-right">
+            <span className="inline-flex items-center gap-1 justify-end">
+              Last
+              <MetricInfo id="nav" name="Last Traded Price" iconSize="xs" />
+            </span>
+          </TableHead>
+          <TableHead className="text-right">
+            <span className="inline-flex items-center gap-1 justify-end">
+              Day
+              <MetricInfo id="today_pnl" name="1-Day Gain / Loss" iconSize="xs" />
+            </span>
+          </TableHead>
           <TableHead className="text-right">Shares</TableHead>
-          <TableHead className="text-right">MV</TableHead>
-          <TableHead className="text-right">Wgt</TableHead>
-          <TableHead className="text-right">U. P&L</TableHead>
+          <TableHead className="text-right">
+            <span className="inline-flex items-center gap-1 justify-end">
+              MV
+              <MetricInfo id="nav" name="Total Market Value" iconSize="xs" />
+            </span>
+          </TableHead>
+          <TableHead className="text-right">
+            <span className="inline-flex items-center gap-1 justify-end">
+              Wgt
+              <MetricInfo id="concentration" name="Holding Weight" iconSize="xs" />
+            </span>
+          </TableHead>
+          <TableHead className="text-right">
+            <span className="inline-flex items-center gap-1 justify-end">
+              U. P&L
+              <MetricInfo id="total_return" name="Unrealized P&L" iconSize="xs" />
+            </span>
+          </TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
         {positions.map((row) => (
           <TableRow key={row.id}>
-            <TableCell className="font-mono font-medium text-primary">
-              {row.symbol}
-              <span className="ml-1 text-[9px] text-muted-foreground">{row.market}</span>
+            <TableCell className="font-mono font-medium text-primary flex items-center gap-1">
+              <span>{row.symbol}</span>
+              <span className="text-[9px] text-muted-foreground">{row.market}</span>
+              <MetricInfo
+                id={row.symbol.toLowerCase()}
+                name={`${row.name} (${row.symbol})`}
+                provider={row.market === "IN" ? "NSE / BSE India Live" : "NASDAQ / NYSE via Yahoo"}
+                sourceUrl={
+                  row.market === "IN"
+                    ? `https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(row.symbol)}`
+                    : `https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`
+                }
+                iconSize="xs"
+              />
             </TableCell>
             <TableCell className="text-muted-foreground">{row.name}</TableCell>
             <TableCell className="text-right font-mono">

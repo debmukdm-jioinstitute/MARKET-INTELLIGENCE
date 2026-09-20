@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { MetricInfo } from "@/components/ui/metric-info";
 import type { IpoListing } from "@/lib/feeds/ipo/types";
 import { fmtInr } from "@/lib/format-india";
 
@@ -29,23 +30,28 @@ export function IpoList({
           onClick={() => onSelect(ipo.id)}
         >
           <div className="flex items-start justify-between gap-2">
-            <p className="font-semibold leading-tight">{ipo.name}</p>
+            <div className="flex items-center gap-1">
+              <p className="font-semibold leading-tight">{ipo.name}</p>
+              <MetricInfo id="ipo_subscription" name={`${ipo.name} IPO`} iconSize="xs" />
+            </div>
             <Badge variant="outline" className="shrink-0 uppercase">
               {ipo.issueType}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">{ipo.industry}</p>
           <div className="flex items-center justify-between font-mono text-xs">
-            <span>
+            <span className="flex items-center gap-1">
               {fmtInr(ipo.minPrice)}–{fmtInr(ipo.maxPrice)}
+              <MetricInfo id="ipo_gmp" name="Price Band" iconSize="xs" />
             </span>
             <span className="text-muted-foreground">
               {ipo.biddingStartDate} → {ipo.biddingEndDate}
             </span>
           </div>
           {ipo.totalSubscription ? (
-            <p className="text-xs text-muted-foreground">
-              Subscribed {ipo.totalSubscription}x
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span>Subscribed {ipo.totalSubscription}x</span>
+              <MetricInfo id="ipo_subscription" name="Subscription Multiple" iconSize="xs" />
             </p>
           ) : null}
         </Card>

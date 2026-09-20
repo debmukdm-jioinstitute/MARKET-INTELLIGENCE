@@ -2,6 +2,7 @@
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { brinsonAttribution } from "@/lib/analytics";
 import { formatPct } from "@/lib/format";
@@ -28,9 +29,9 @@ export default function AttributionPage() {
         subtitle={`Allocation versus ${active.benchmark} plus within-sector selection. Interaction is shown for completeness.`}
       />
       <div className="grid gap-3 md:grid-cols-3">
-        <Tile label="Allocation effect" value={formatPct(total.allocation)} />
-        <Tile label="Selection effect" value={formatPct(total.selection)} />
-        <Tile label="Active return (approx.)" value={formatPct(total.total)} />
+        <Tile metricId="concentration" label="Allocation effect" value={formatPct(total.allocation)} />
+        <Tile metricId="alpha" label="Selection effect" value={formatPct(total.selection)} />
+        <Tile metricId="alpha" label="Active return (approx.)" value={formatPct(total.total)} />
       </div>
       <Panel title="Sector attribution">
         <Table>
@@ -39,9 +40,24 @@ export default function AttributionPage() {
               <TableHead>Sector</TableHead>
               <TableHead className="text-right">Weight</TableHead>
               <TableHead className="text-right">Sector return</TableHead>
-              <TableHead className="text-right">Allocation</TableHead>
-              <TableHead className="text-right">Selection</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Allocation
+                  <MetricInfo id="concentration" name="Allocation Effect" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Selection
+                  <MetricInfo id="alpha" name="Selection Effect" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Total
+                  <MetricInfo id="alpha" name="Total Brinson Contribution" iconSize="xs" />
+                </span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,10 +78,13 @@ export default function AttributionPage() {
   );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
+function Tile({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="rounded-lg border border-border bg-card p-4 space-y-1">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <MetricInfo id={metricId ?? "alpha"} name={label} iconSize="xs" />
+      </div>
       <p className="mt-1 font-heading text-2xl">{value}</p>
     </div>
   );

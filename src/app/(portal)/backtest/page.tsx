@@ -3,6 +3,7 @@
 import { NavChart } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { runBacktest, STRATEGY_PRESETS } from "@/lib/backtest";
 import { formatPct } from "@/lib/format";
 import { useMemo, useState } from "react";
@@ -30,11 +31,11 @@ export default function BacktestPage() {
         {preset.symbols.join(" · ")} · {preset.rebalance} rebalance
       </p>
       <div className="grid gap-3 md:grid-cols-5">
-        <Tile label="Total return" value={formatPct(result.stats.totalReturn)} />
-        <Tile label="CAGR" value={formatPct(result.stats.cagr)} />
-        <Tile label="Vol" value={formatPct(result.stats.vol)} />
-        <Tile label="Sharpe" value={result.stats.sharpe.toFixed(2)} />
-        <Tile label="Max DD" value={formatPct(result.stats.maxDrawdown)} />
+        <Tile metricId="total_return" label="Total return" value={formatPct(result.stats.totalReturn)} />
+        <Tile metricId="total_return" label="CAGR" value={formatPct(result.stats.cagr)} />
+        <Tile metricId="beta" label="Vol" value={formatPct(result.stats.vol)} />
+        <Tile metricId="sharpe" label="Sharpe" value={result.stats.sharpe.toFixed(2)} />
+        <Tile metricId="max_drawdown" label="Max DD" value={formatPct(result.stats.maxDrawdown)} />
       </div>
       <Panel title="Growth of $1" subtitle="Gold = strategy · Cyan = equal weight">
         <div className="h-[340px]">
@@ -53,10 +54,13 @@ export default function BacktestPage() {
   );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
+function Tile({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+    <div className="rounded-lg border border-border bg-card p-4 space-y-1">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+        <MetricInfo id={metricId ?? "sharpe"} name={label} iconSize="xs" />
+      </div>
       <p className="mt-1 text-xl font-semibold">{value}</p>
     </div>
   );

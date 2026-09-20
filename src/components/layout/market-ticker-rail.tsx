@@ -4,17 +4,19 @@ import Link from "next/link";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { MetricInfo } from "@/components/ui/metric-info";
 
 interface TickerItem {
   id: string;
+  metricKey: string;
   name: string;
   symbol: string;
   route: string;
-  price: number;
-  changePct: number;
+  price?: number | null;
+  changePct?: number | null;
   prefix?: string;
   suffix?: string;
-  isLive?: boolean;
+  source?: { provider: string; url: string; asOf?: string };
 }
 
 export function MarketTickerRail() {
@@ -22,102 +24,112 @@ export function MarketTickerRail() {
   const pulse = data?.pulse;
   const radar = data?.globalRadar;
 
-  // Real or canonical fallback data
+  // Real live stream data from official exchange/API feeds
   const tickers: TickerItem[] = [
     {
       id: "nifty50",
+      metricKey: "nifty50",
       name: "NIFTY 50",
       symbol: "^NSEI",
       route: "/markets/india/nifty50",
-      price: pulse?.nifty?.value ?? 25431.2,
-      changePct: pulse?.nifty?.changePct ?? 0.0072,
-      isLive: Boolean(pulse?.nifty?.value),
+      price: pulse?.nifty?.value,
+      changePct: pulse?.nifty?.changePct,
+      source: pulse?.nifty?.source,
     },
     {
       id: "sensex",
+      metricKey: "sensex",
       name: "SENSEX",
       symbol: "^BSESN",
       route: "/markets/india/sensex",
-      price: pulse?.sensex?.value ?? 83821.15,
-      changePct: pulse?.sensex?.changePct ?? 0.0061,
-      isLive: Boolean(pulse?.sensex?.value),
+      price: pulse?.sensex?.value,
+      changePct: pulse?.sensex?.changePct,
+      source: pulse?.sensex?.source,
     },
     {
       id: "banknifty",
+      metricKey: "banknifty",
       name: "BANK NIFTY",
       symbol: "^NSEBANK",
       route: "/markets/india/banknifty",
-      price: pulse?.bankNifty?.value ?? 54120.4,
-      changePct: pulse?.bankNifty?.changePct ?? 0.0112,
-      isLive: Boolean(pulse?.bankNifty?.value),
+      price: pulse?.bankNifty?.value,
+      changePct: pulse?.bankNifty?.changePct,
+      source: pulse?.bankNifty?.source,
     },
     {
       id: "vix",
+      metricKey: "vix",
       name: "INDIA VIX",
       symbol: "^INDIAVIX",
       route: "/markets/india/vix",
-      price: pulse?.indiaVix?.value ?? 14.82,
-      changePct: pulse?.indiaVix?.changePct ?? -0.032,
-      isLive: Boolean(pulse?.indiaVix?.value),
+      price: pulse?.indiaVix?.value,
+      changePct: pulse?.indiaVix?.changePct,
+      source: pulse?.indiaVix?.source,
     },
     {
       id: "usdinr",
+      metricKey: "usdinr",
       name: "USD/INR",
       symbol: "INR=X",
       route: "/markets/india/usdinr",
-      price: pulse?.usdInr?.value ?? 87.21,
-      changePct: pulse?.usdInr?.changePct ?? 0.0014,
+      price: pulse?.usdInr?.value,
+      changePct: pulse?.usdInr?.changePct,
       prefix: "₹",
-      isLive: Boolean(pulse?.usdInr?.value),
+      source: pulse?.usdInr?.source,
     },
     {
       id: "brent",
+      metricKey: "brent",
       name: "BRENT",
       symbol: "BZ=F",
       route: "/markets/india/brent",
-      price: pulse?.brent?.value ?? 72.4,
-      changePct: pulse?.brent?.changePct ?? 0.011,
+      price: pulse?.brent?.value,
+      changePct: pulse?.brent?.changePct,
       prefix: "$",
-      isLive: Boolean(pulse?.brent?.value),
+      source: pulse?.brent?.source,
     },
     {
       id: "gold",
+      metricKey: "gold",
       name: "GOLD",
       symbol: "GC=F",
       route: "/markets/india/gold",
-      price: pulse?.gold?.value ?? 3421.0,
-      changePct: pulse?.gold?.changePct ?? 0.008,
+      price: pulse?.gold?.value,
+      changePct: pulse?.gold?.changePct,
       prefix: "$",
-      isLive: Boolean(pulse?.gold?.value),
+      source: pulse?.gold?.source,
     },
     {
       id: "silver",
+      metricKey: "gold",
       name: "SILVER",
       symbol: "SI=F",
       route: "/markets/india/silver",
-      price: radar?.["SI=F"]?.value ?? 38.21,
-      changePct: radar?.["SI=F"]?.changePct ?? 0.017,
+      price: radar?.["SI=F"]?.value,
+      changePct: radar?.["SI=F"]?.changePct,
       prefix: "$",
-      isLive: Boolean(radar?.["SI=F"]?.value),
+      source: radar?.["SI=F"]?.source,
     },
     {
       id: "copper",
+      metricKey: "brent",
       name: "COPPER",
       symbol: "HG=F",
       route: "/markets/india/copper",
-      price: radar?.["HG=F"]?.value ?? 4.42,
-      changePct: radar?.["HG=F"]?.changePct ?? -0.004,
+      price: radar?.["HG=F"]?.value,
+      changePct: radar?.["HG=F"]?.changePct,
       prefix: "$",
-      isLive: Boolean(radar?.["HG=F"]?.value),
+      source: radar?.["HG=F"]?.source,
     },
     {
       id: "dxy",
+      metricKey: "dxy",
       name: "DXY",
       symbol: "DX-Y.NYB",
       route: "/markets/india/dxy",
-      price: radar?.["DX-Y.NYB"]?.value ?? 101.4,
-      changePct: radar?.["DX-Y.NYB"]?.changePct ?? -0.0022,
-      isLive: Boolean(radar?.["DX-Y.NYB"]?.value),
+      price: radar?.["DX-Y.NYB"]?.value,
+      changePct: radar?.["DX-Y.NYB"]?.changePct,
+      source: radar?.["DX-Y.NYB"]?.source,
     },
   ];
 
@@ -129,42 +141,57 @@ export function MarketTickerRail() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
           </span>
-          <span className="hidden sm:inline">LIVE RAIL</span>
+          <span className="hidden sm:inline">LIVE STREAM</span>
+          <MetricInfo metric="nifty50" customTitle="Market Ticker Rail Ingestion Engine" />
         </div>
 
         <div className="flex items-center gap-1 overflow-x-auto scrollbar-none px-1">
           {tickers.map((t) => {
-            const isPos = t.changePct >= 0;
+            const hasData = t.price != null;
+            const isPos = (t.changePct ?? 0) >= 0;
             return (
-              <Link
+              <div
                 key={t.id}
-                href={t.route}
-                className="group flex items-center gap-2 rounded px-2.5 py-1 transition-all hover:bg-accent/70 shrink-0 select-none"
-                title={`View ${t.name} institutional cockpit`}
+                className="group flex items-center gap-1.5 rounded px-2 py-0.5 hover:bg-accent/70 shrink-0 select-none transition-colors"
               >
-                <span className="font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                  {t.name}
-                </span>
-                <span className="font-medium text-foreground">
-                  {t.prefix ?? ""}
-                  {t.price.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                  {t.suffix ?? ""}
-                </span>
-                <span
-                  className={cn(
-                    "flex items-center gap-0.5 rounded px-1 text-[10px] font-semibold",
-                    isPos
-                      ? "text-emerald-400 bg-emerald-500/10"
-                      : "text-rose-400 bg-rose-500/10",
-                  )}
+                <Link
+                  href={t.route}
+                  className="flex items-center gap-1.5"
+                  title={`Open ${t.name} institutional cockpit`}
                 >
-                  {isPos ? "+" : ""}
-                  {formatPct(t.changePct)}
-                </span>
-              </Link>
+                  <span className="font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                    {t.name}
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {hasData ? (
+                      <>
+                        {t.prefix ?? ""}
+                        {t.price!.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                        {t.suffix ?? ""}
+                      </>
+                    ) : (
+                      "Connecting…"
+                    )}
+                  </span>
+                  {t.changePct != null ? (
+                    <span
+                      className={cn(
+                        "flex items-center gap-0.5 rounded px-1 text-[10px] font-semibold",
+                        isPos
+                          ? "text-emerald-400 bg-emerald-500/10"
+                          : "text-rose-400 bg-rose-500/10",
+                      )}
+                    >
+                      {isPos ? "+" : ""}
+                      {formatPct(t.changePct)}
+                    </span>
+                  ) : null}
+                </Link>
+                <MetricInfo metric={t.metricKey} sourceOverride={t.source} customTitle={t.name} />
+              </div>
             );
           })}
         </div>

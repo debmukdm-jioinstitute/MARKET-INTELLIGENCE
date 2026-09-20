@@ -2,6 +2,7 @@
 
 import { Lines } from "@/components/charts/terminal-charts";
 import { DataInfo } from "@/components/feeds/data-info";
+import { MetricInfo } from "@/components/ui/metric-info";
 import type { IndiaDashboardPayload, MacroRow } from "@/lib/feeds/india/types";
 import { fmtNum } from "@/lib/format-india";
 
@@ -39,7 +40,17 @@ function MacroTableRow({ row, hubSyncedAt }: { row: MacroRow; hubSyncedAt: strin
   const chart = row.history12m.map((p) => ({ date: p.date.slice(0, 7), v: p.value }));
   return (
     <tr className="border-b border-border/60">
-      <td className="py-3 pr-4 font-medium">{row.indicator}</td>
+      <td className="py-3 pr-4 font-medium flex items-center gap-1.5">
+        <span>{row.indicator}</span>
+        <MetricInfo
+          id={row.id}
+          name={row.indicator}
+          provider={row.source.provider}
+          sourceUrl={row.source.url}
+          asOf={row.source.asOf ?? hubSyncedAt}
+          iconSize="xs"
+        />
+      </td>
       <td className="py-3 pr-4 text-right font-mono">
         {row.current != null ? `${fmtNum(row.current)} ${row.unit}` : "—"}
       </td>
@@ -57,7 +68,14 @@ function MacroTableRow({ row, hubSyncedAt }: { row: MacroRow; hubSyncedAt: strin
         )}
       </td>
       <td className="py-3">
-        <DataInfo source={row.source} hubSyncedAt={hubSyncedAt} />
+        <MetricInfo
+          id={row.id}
+          name={row.indicator}
+          provider={row.source.provider}
+          sourceUrl={row.source.url}
+          asOf={row.source.asOf ?? hubSyncedAt}
+          iconSize="xs"
+        />
       </td>
     </tr>
   );

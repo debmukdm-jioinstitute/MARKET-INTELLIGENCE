@@ -6,6 +6,7 @@ import { IvSmileChart, OiByStrikeChart } from "@/components/derivatives/greeks-c
 import { OptionChainControls } from "@/components/derivatives/option-chain-controls";
 import { OptionChainTable } from "@/components/derivatives/option-chain-table";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { useOptionChain, useOptionExpiries } from "@/hooks/use-option-chain";
 import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
@@ -54,11 +55,11 @@ export default function DerivativesPage() {
         {snapshot ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">
-              <Metric label="Spot" value={fmtNum(snapshot.underlyingSpot)} />
-              <Metric label="PCR" value={snapshot.pcr != null ? snapshot.pcr.toFixed(3) : "—"} />
-              <Metric label="Max pain" value={snapshot.maxPain != null ? fmtNum(snapshot.maxPain, 0) : "—"} />
-              <Metric label="Call OI" value={snapshot.totalCallOi?.toLocaleString("en-IN") ?? "—"} />
-              <Metric label="Put OI" value={snapshot.totalPutOi?.toLocaleString("en-IN") ?? "—"} />
+              <Metric metricId="nifty50" label="Spot" value={fmtNum(snapshot.underlyingSpot)} />
+              <Metric metricId="pcr" label="PCR" value={snapshot.pcr != null ? snapshot.pcr.toFixed(3) : "—"} />
+              <Metric metricId="max_pain" label="Max pain" value={snapshot.maxPain != null ? fmtNum(snapshot.maxPain, 0) : "—"} />
+              <Metric metricId="pcr" label="Call OI" value={snapshot.totalCallOi?.toLocaleString("en-IN") ?? "—"} />
+              <Metric metricId="pcr" label="Put OI" value={snapshot.totalPutOi?.toLocaleString("en-IN") ?? "—"} />
               <DataInfo source={snapshot.source} />
             </div>
 
@@ -66,14 +67,18 @@ export default function DerivativesPage() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">IV smile</p>
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
+                  IV smile
+                  <MetricInfo id="vix" name="Implied Volatility Smile" iconSize="xs" />
+                </p>
                 <div className="h-[220px]">
                   <IvSmileChart snapshot={snapshot} />
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
                   Open interest by strike
+                  <MetricInfo id="pcr" name="Open Interest Distribution" iconSize="xs" />
                 </p>
                 <div className="h-[220px]">
                   <OiByStrikeChart snapshot={snapshot} />
@@ -94,11 +99,12 @@ export default function DerivativesPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
   return (
-    <div>
+    <div className="flex items-center gap-1">
       <span className="text-muted-foreground">{label}: </span>
-      <span>{value}</span>
+      <span className="font-bold">{value}</span>
+      {metricId ? <MetricInfo id={metricId} name={label} iconSize="xs" /> : null}
     </div>
   );
 }
@@ -107,12 +113,12 @@ function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
   return (
     <Panel title={title} subtitle="NSE option chain indices API">
       <dl className="grid grid-cols-2 gap-2 font-mono text-sm">
-        <Row k="PCR" v={snap.pcr != null ? snap.pcr.toFixed(3) : "—"} />
-        <Row k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row k="Change in OI" v={snap.changeOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row k="Call OI" v={snap.callOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row k="Put OI" v={snap.putOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row k="Max pain" v={snap.maxPain != null ? fmtNum(snap.maxPain, 0) : "—"} />
+        <Row metricId="pcr" k="PCR" v={snap.pcr != null ? snap.pcr.toFixed(3) : "—"} />
+        <Row metricId="pcr" k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="pcr" k="Change in OI" v={snap.changeOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="pcr" k="Call OI" v={snap.callOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="pcr" k="Put OI" v={snap.putOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="max_pain" k="Max pain" v={snap.maxPain != null ? fmtNum(snap.maxPain, 0) : "—"} />
       </dl>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <StrikeTable label="Call OI concentration" rows={snap.topCallStrikes} />
@@ -126,7 +132,10 @@ function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
 function StrikeTable({ label, rows }: { label: string; rows: { strike: number; oi: number }[] }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
+      <p className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
+        {label}
+        <MetricInfo id="pcr" name={label} iconSize="xs" />
+      </p>
       <table className="mt-2 w-full text-sm">
         <thead>
           <tr className="text-left text-muted-foreground">
@@ -155,10 +164,13 @@ function StrikeTable({ label, rows }: { label: string; rows: { strike: number; o
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
+function Row({ metricId, k, v }: { metricId?: string; k: string; v: string }) {
   return (
-    <div className="flex justify-between border-b border-border/50 py-1">
-      <dt className="text-muted-foreground">{k}</dt>
+    <div className="flex justify-between items-center border-b border-border/50 py-1">
+      <dt className="text-muted-foreground flex items-center gap-1">
+        <span>{k}</span>
+        {metricId ? <MetricInfo id={metricId} name={k} iconSize="xs" /> : null}
+      </dt>
       <dd>{v}</dd>
     </div>
   );

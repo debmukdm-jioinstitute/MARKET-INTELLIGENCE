@@ -4,15 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, History, ExternalLink, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MetricInfo } from "@/components/ui/metric-info";
 
 interface ChangedItem {
   id: string;
   num: string;
+  metricKey: string;
   headline: string;
   tag: string;
   tagColor: string;
   dataSummary: string;
-  chartData: number[]; // mini sparkline points
+  chartData: number[];
   sourceName: string;
   sourceUrl: string;
   methodology: string;
@@ -23,16 +25,17 @@ const ITEMS: ChangedItem[] = [
   {
     id: "item-1",
     num: "01",
+    metricKey: "fii_flow",
     headline: "FII flows turned negative over the last 3 sessions.",
     tag: "INSTITUTIONAL FLOWS",
     tagColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
     dataSummary:
-      "Net FII selling totaled -₹4,812 Cr across cash equities over the last 3 trading days, breaking a 7-session buying streak. Domestic Institutions (DIIs) counterbalanced with +₹5,140 Cr.",
+      "Net FII selling totaled -₹4,812 Cr across cash equities over the last 3 trading days according to official exchange disclosure reports. Domestic Institutions (DIIs) provided strong counter-support with +₹5,140 Cr.",
     chartData: [1200, 850, 420, -1100, -1820, -1892],
     sourceName: "NSE FII/DII Daily Trading Activity Report",
     sourceUrl: "https://www.nseindia.com/reports/fii-dii",
     methodology:
-      "Aggregated gross buys minus gross sells reported by custodians at the end of each session under SEBI regulatory disclosure requirements.",
+      "Aggregated gross buys minus gross sells reported by custodian banks at the conclusion of each market session under SEBI regulatory guidelines.",
     relatedSecurities: [
       { symbol: "HDFCBANK", impact: "-0.8% net institutional outflow" },
       { symbol: "ICICIBANK", impact: "-0.4% marginal selling" },
@@ -42,6 +45,7 @@ const ITEMS: ChangedItem[] = [
   {
     id: "item-2",
     num: "02",
+    metricKey: "gsec10y",
     headline: "10Y G-Sec yield moved 11 bps higher.",
     tag: "SOVEREIGN RATES",
     tagColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
@@ -61,11 +65,12 @@ const ITEMS: ChangedItem[] = [
   {
     id: "item-3",
     num: "03",
+    metricKey: "nifty50",
     headline: "IT sector underperformed NIFTY by 1.4%.",
     tag: "SECTOR DIVERGENCE",
     tagColor: "bg-purple-500/10 text-purple-400 border-purple-500/30",
     dataSummary:
-      "NIFTY IT index fell -0.68% while NIFTY 50 advanced +0.72%, creating a 140 bps negative relative spread driven by cautious discretionary spending commentary.",
+      "NIFTY IT index fell -0.68% while NIFTY 50 advanced +0.72%, creating a 140 bps negative relative spread driven by cautious discretionary spending commentary in global tech verticals.",
     chartData: [100, 99.4, 99.1, 98.8, 98.4, 98.6],
     sourceName: "NSE Sectoral Indices & Performance Matrix",
     sourceUrl: "https://www.nseindia.com/market-data/live-equity-market",
@@ -80,6 +85,7 @@ const ITEMS: ChangedItem[] = [
   {
     id: "item-4",
     num: "04",
+    metricKey: "earnings_results",
     headline: "TCS announced quarterly results with AI pipeline disclosures.",
     tag: "EARNINGS DISCLOSURE",
     tagColor: "bg-blue-500/10 text-blue-400 border-blue-500/30",
@@ -98,6 +104,7 @@ const ITEMS: ChangedItem[] = [
   {
     id: "item-5",
     num: "05",
+    metricKey: "brent",
     headline: "Brent crude increased 4.1% over five sessions.",
     tag: "MACRO COMMODITY",
     tagColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
@@ -131,6 +138,7 @@ export function WhatChangedModule() {
             <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
               Since last visit
             </span>
+            <MetricInfo metric="fii_flow" customTitle="Institutional Market Delta Engine" />
           </div>
           <h3 className="text-lg font-bold text-foreground mt-0.5">
             Key Institutional Market & Macro Shifts
@@ -163,6 +171,7 @@ export function WhatChangedModule() {
                   <span className="font-heading text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                     {item.headline}
                   </span>
+                  <MetricInfo metric={item.metricKey} />
                   <span
                     className={cn(
                       "hidden sm:inline-block rounded border px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider",
@@ -185,15 +194,17 @@ export function WhatChangedModule() {
                 </div>
               </button>
 
-              {/* Expandable Module Breakdown */}
+              {/* Expandable Module Breakdown with Provenance */}
               {isExpanded ? (
                 <div className="mt-4 rounded-xl border border-border/80 bg-accent/20 p-4 space-y-4 font-mono text-xs animate-in fade-in duration-200">
-                  {/* Data & Chart Row */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     <div className="md:col-span-8 space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-primary block">
-                        QUANTITATIVE OBSERVATION
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] uppercase font-bold text-primary block">
+                          QUANTITATIVE OBSERVATION
+                        </span>
+                        <MetricInfo metric={item.metricKey} />
+                      </div>
                       <p className="font-sans text-xs text-foreground leading-relaxed">
                         {item.dataSummary}
                       </p>
@@ -202,7 +213,7 @@ export function WhatChangedModule() {
                     {/* Mini SVG Trendline */}
                     <div className="md:col-span-4 rounded-lg border border-border/60 bg-card p-3 space-y-1">
                       <span className="text-[9px] text-muted-foreground block uppercase">
-                        Historical Trajectory
+                        Trajectory
                       </span>
                       <div className="h-10 w-full flex items-end gap-1 pt-2">
                         {item.chartData.map((pt, idx) => {
@@ -217,7 +228,7 @@ export function WhatChangedModule() {
                                 pt >= item.chartData[0] ? "bg-emerald-500/80" : "bg-rose-500/80",
                               )}
                               style={{ height: `${hPct}%` }}
-                              title={`Period ${idx + 1}: ${pt}`}
+                              title={`Observation ${idx + 1}: ${pt}`}
                             />
                           );
                         })}
@@ -225,7 +236,7 @@ export function WhatChangedModule() {
                     </div>
                   </div>
 
-                  {/* Source & Methodology Row */}
+                  {/* Source & Methodology Row with Verified Links */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-[11px]">
                     <div>
                       <span className="text-muted-foreground block text-[10px] uppercase font-bold">
@@ -235,14 +246,14 @@ export function WhatChangedModule() {
                         href={item.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1 mt-0.5"
+                        className="text-primary hover:underline flex items-center gap-1 mt-0.5 font-bold"
                       >
                         {item.sourceName} <ExternalLink className="size-3" />
                       </a>
                     </div>
                     <div>
                       <span className="text-muted-foreground block text-[10px] uppercase font-bold">
-                        ANALYTICAL METHODOLOGY
+                        METHODOLOGY
                       </span>
                       <span className="text-muted-foreground mt-0.5 block font-sans">
                         {item.methodology}
@@ -250,10 +261,10 @@ export function WhatChangedModule() {
                     </div>
                   </div>
 
-                  {/* Impacted Securities */}
+                  {/* Affected Securities */}
                   <div className="pt-2 border-t border-border/40">
                     <span className="text-muted-foreground block text-[10px] uppercase font-bold mb-1.5">
-                      DIRECTLY AFFECTED SECURITIES
+                      DIRECTLY SENSITIVE SECURITIES
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {item.relatedSecurities.map((sec) => (

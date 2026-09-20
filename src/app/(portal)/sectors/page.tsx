@@ -154,6 +154,8 @@ const SECTOR_DATA: SectorRow[] = [
   },
 ];
 
+import { MetricInfo } from "@/components/ui/metric-info";
+
 export default function SectorsPage() {
   const [activeTab, setActiveTab] = useState<"performance" | "rotation" | "valuation" | "fundamentals">("performance");
 
@@ -219,7 +221,10 @@ export default function SectorsPage() {
             },
           ].map((q) => (
             <div key={q.stage} className={cn("rounded-xl border p-4 space-y-2", q.color)}>
-              <span className="font-bold text-sm tracking-wider uppercase block">{q.stage}</span>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-sm tracking-wider uppercase block">{q.stage}</span>
+                <MetricInfo metric="dma" customTitle={`Relative Rotation Stage: ${q.stage}`} />
+              </div>
               <p className="text-[11px] font-sans text-muted-foreground leading-snug">{q.desc}</p>
               <div className="pt-2 space-y-1.5">
                 {q.items.map((s) => (
@@ -234,22 +239,62 @@ export default function SectorsPage() {
         </div>
       ) : null}
 
-      {/* Main Sector Table */}
+      {/* Main Sector Table with MetricInfo on every column */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Sector Vertical</TableHead>
-              <TableHead className="text-right">NIFTY Wgt</TableHead>
-              <TableHead className="text-right">1D Return</TableHead>
-              <TableHead className="text-right">1W Return</TableHead>
-              <TableHead className="text-right">1M Return</TableHead>
-              <TableHead className="text-right">1Y Return</TableHead>
-              <TableHead className="text-right">P/E</TableHead>
-              <TableHead className="text-right">P/B</TableHead>
-              <TableHead className="text-right">ROE</TableHead>
-              <TableHead className="text-center">Rotation</TableHead>
-              <TableHead className="text-right">Key Anchor</TableHead>
+              <TableHead>
+                <span className="inline-flex items-center">
+                  Sector Vertical <MetricInfo metric="concentration" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  NIFTY Wgt <MetricInfo metric="concentration" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  1D Return <MetricInfo metric="today_pnl" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  1W Return <MetricInfo metric="total_return" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  1M Return <MetricInfo metric="total_return" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  1Y Return <MetricInfo metric="total_return" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  P/E <MetricInfo metric="pe_ratio" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  P/B <MetricInfo metric="pb_ratio" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center justify-end">
+                  ROE <MetricInfo metric="earnings_results" />
+                </span>
+              </TableHead>
+              <TableHead className="text-center">
+                <span className="inline-flex items-center justify-center">
+                  Rotation <MetricInfo metric="dma" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">Anchor</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

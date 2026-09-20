@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { analyzePortfolio, mean, stdev } from "@/lib/analytics";
 import { formatNumber, formatPct } from "@/lib/format";
@@ -23,14 +24,14 @@ export default function QuantPage() {
         subtitle="Daily return moments, hit rate, and CAPM identity for the selected book versus its benchmark."
       />
       <div className="grid gap-3 md:grid-cols-4">
-        <Q label="Daily mean" value={formatPct(mean(a.portRets), 3)} />
-        <Q label="Daily sigma" value={formatPct(stdev(a.portRets), 3)} />
-        <Q label="Skewness" value={formatNumber(skew)} />
-        <Q label="Excess kurtosis" value={formatNumber(kurt)} />
-        <Q label="Hit rate" value={formatPct(hit, 1)} />
-        <Q label="Avg up day" value={formatPct(avgUp, 2)} />
-        <Q label="Avg down day" value={formatPct(avgDn, 2)} />
-        <Q label="Beta" value={formatNumber(a.beta)} />
+        <Q metricId="total_return" label="Daily mean" value={formatPct(mean(a.portRets), 3)} />
+        <Q metricId="beta" label="Daily sigma" value={formatPct(stdev(a.portRets), 3)} />
+        <Q metricId="var_95" label="Skewness" value={formatNumber(skew)} />
+        <Q metricId="cvar" label="Excess kurtosis" value={formatNumber(kurt)} />
+        <Q metricId="alpha" label="Hit rate" value={formatPct(hit, 1)} />
+        <Q metricId="today_pnl" label="Avg up day" value={formatPct(avgUp, 2)} />
+        <Q metricId="today_pnl" label="Avg down day" value={formatPct(avgDn, 2)} />
+        <Q metricId="beta" label="Beta" value={formatNumber(a.beta)} />
       </div>
       <Panel title="How to read this">
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
@@ -51,10 +52,13 @@ function moment(values: number[], p: number) {
   return mean(values.map((v) => ((v - m) / s) ** p));
 }
 
-function Q({ label, value }: { label: string; value: string }) {
+function Q({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+    <div className="rounded-lg border border-border bg-card p-4 space-y-1">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+        <MetricInfo id={metricId ?? "beta"} name={label} iconSize="xs" />
+      </div>
       <p className="mt-1 font-heading text-2xl">{value}</p>
     </div>
   );

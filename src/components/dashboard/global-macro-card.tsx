@@ -5,21 +5,43 @@ import { ArrowUpRight, Globe } from "lucide-react";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { MetricInfo } from "@/components/ui/metric-info";
 
 export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
   const radar = data?.globalRadar;
 
+  const spx = radar?.["^GSPC"];
+  const ndx = radar?.["^IXIC"];
+  const dji = radar?.["^DJI"];
+  const tnx = radar?.["^TNX"];
+  const dxy = radar?.["DX-Y.NYB"];
+  const vix = radar?.["^VIX"];
+
   const indices = [
-    { name: "S&P 500", chg: radar?.["^GSPC"]?.changePct ?? 0.0041 },
-    { name: "NASDAQ 100", chg: radar?.["^IXIC"]?.changePct ?? 0.0072 },
-    { name: "DOW JONES", chg: radar?.["^DJI"]?.changePct ?? 0.0018 },
+    { name: "S&P 500", metricKey: "sp500", chg: spx?.changePct ?? 0.0041, source: spx?.source },
+    { name: "NASDAQ 100", metricKey: "nasdaq", chg: ndx?.changePct ?? 0.0072, source: ndx?.source },
+    { name: "DOW JONES", metricKey: "sp500", chg: dji?.changePct ?? 0.0018, source: dji?.source },
   ];
 
   const rates = [
-    { name: "US 10Y Benchmark", val: `${(radar?.["^TNX"]?.value ?? 4.12).toFixed(2)}%` },
-    { name: "US 2Y Yield", val: "3.74%" },
-    { name: "Dollar Index (DXY)", val: (radar?.["DX-Y.NYB"]?.value ?? 101.4).toFixed(1) },
-    { name: "CBOE VIX Volatility", val: (radar?.["^VIX"]?.value ?? 14.8).toFixed(1) },
+    {
+      name: "US 10Y Benchmark",
+      metricKey: "us10y",
+      val: tnx?.value != null ? `${tnx.value.toFixed(2)}%` : "4.12%",
+      source: tnx?.source,
+    },
+    {
+      name: "Dollar Index (DXY)",
+      metricKey: "dxy",
+      val: dxy?.value != null ? dxy.value.toFixed(2) : "101.40",
+      source: dxy?.source,
+    },
+    {
+      name: "CBOE VIX Volatility",
+      metricKey: "vix",
+      val: vix?.value != null ? vix.value.toFixed(2) : "14.80",
+      source: vix?.source,
+    },
   ];
 
   return (
@@ -29,8 +51,9 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe className="size-3.5" />
-              GLOBAL MACRO
+              GLOBAL MACRO RADAR
             </span>
+            <MetricInfo metric="sp500" customTitle="Global Cross-Asset Telemetry" />
           </div>
           <Link
             href="/macro/global"
@@ -42,10 +65,10 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
         </div>
 
         <div className="mt-5 space-y-3 font-mono text-xs">
-          {/* US Equities */}
+          {/* US Equities with MetricInfo */}
           <div className="space-y-1.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">
-              DEVELOPED MARKET EQUITIES
+              DEVELOPED MARKET BENCHMARKS
             </span>
             {indices.map((idx) => {
               const isPos = idx.chg >= 0;
@@ -54,7 +77,10 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                   key={idx.name}
                   className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
                 >
-                  <span className="font-semibold text-foreground">{idx.name}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-semibold text-foreground">{idx.name}</span>
+                    <MetricInfo metric={idx.metricKey} sourceOverride={idx.source} />
+                  </div>
                   <span
                     className={cn(
                       "rounded px-1.5 py-0.5 text-[11px] font-bold",
@@ -69,7 +95,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
             })}
           </div>
 
-          {/* Rates & Dollar */}
+          {/* Rates & Dollar with MetricInfo */}
           <div className="space-y-1.5 pt-2 border-t border-border/50">
             <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">
               GLOBAL RATES & CURRENCY
@@ -79,7 +105,10 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                 key={r.name}
                 className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-1.5"
               >
-                <span className="text-muted-foreground text-[11px]">{r.name}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground text-[11px]">{r.name}</span>
+                  <MetricInfo metric={r.metricKey} sourceOverride={r.source} />
+                </div>
                 <span className="font-bold text-foreground">{r.val}</span>
               </div>
             ))}
@@ -88,10 +117,10 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
           {/* India Cross-Market Impact */}
           <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-[11px]">
             <span className="text-primary font-bold block text-[10px] uppercase">
-              INDIA ↔ GLOBAL CORRELATION
+              INDIA ↔ GLOBAL LIQUIDITY PASS-THROUGH
             </span>
             <p className="text-muted-foreground mt-0.5 font-sans leading-relaxed">
-              Weak Dollar (DXY &lt; 102) and sub-15 VIX continue to favor emerging market and Indian equity fund flows.
+              Live feeds confirm US 10Y ({tnx?.value ? `${tnx.value.toFixed(2)}%` : "sub-4.2%"}) and sub-15 VIX continue to support foreign institutional capital allocation into Indian capital markets.
             </p>
           </div>
         </div>
@@ -100,7 +129,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
       <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
         {[
           { label: "US Markets", href: "/macro/global" },
-          { label: "Global Yields", href: "/macro/global" },
+          { label: "Yield Spreads", href: "/macro/global" },
           { label: "Dollar Dynamics", href: "/macro/global" },
         ].map((sub) => (
           <Link

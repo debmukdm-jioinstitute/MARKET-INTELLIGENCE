@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { Flame, Activity, TrendingUp } from "lucide-react";
 
 export default function MarketMomentumPage() {
@@ -24,19 +25,31 @@ export default function MarketMomentumPage() {
 
           <div className="space-y-3 divide-y divide-border/50">
             <div className="pt-2 flex justify-between items-center">
-              <span className="text-muted-foreground">NIFTY 50 Short-Term Trend (20 DMA):</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                NIFTY 50 Short-Term Trend (20 DMA):
+                <MetricInfo id="dma20" iconSize="xs" />
+              </span>
               <span className="font-bold text-emerald-400">Bullish Continuation (+2.1%)</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
-              <span className="text-muted-foreground">Medium-Term Trend (50 DMA):</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                Medium-Term Trend (50 DMA):
+                <MetricInfo id="dma50" iconSize="xs" />
+              </span>
               <span className="font-bold text-emerald-400">Expanding Channel (+4.8%)</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
-              <span className="text-muted-foreground">Macro Structural Trend (200 DMA):</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                Macro Structural Trend (200 DMA):
+                <MetricInfo id="dma200" iconSize="xs" />
+              </span>
               <span className="font-bold text-emerald-400">Primary Bull Market (+7.2%)</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
-              <span className="text-muted-foreground">RSI Momentum State:</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                RSI Momentum State:
+                <MetricInfo id="rsi" iconSize="xs" />
+              </span>
               <span className="font-bold text-foreground">62.4 (Upper Bull Zone)</span>
             </div>
           </div>

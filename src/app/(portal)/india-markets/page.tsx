@@ -4,6 +4,7 @@ import { SecuritySheet } from "@/components/india-markets/security-sheet";
 import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaEquities } from "@/hooks/use-india-equities";
 import { INDIA_EQUITIES, type IndiaInstrument } from "@/lib/feeds/india/instruments";
 import { formatPct } from "@/lib/format";
@@ -34,9 +35,24 @@ export default function IndiaMarketsPage() {
               <TableHead>Symbol</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Sector</TableHead>
-              <TableHead className="text-right">Last</TableHead>
-              <TableHead className="text-right">Chg</TableHead>
-              <TableHead className="text-right">Chg %</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Last
+                  <MetricInfo id="nav" name="Last Traded Price" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Chg
+                  <MetricInfo id="today_pnl" name="Point Change" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Chg %
+                  <MetricInfo id="today_pnl" name="Percentage Return" iconSize="xs" />
+                </span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -48,9 +64,17 @@ export default function IndiaMarketsPage() {
                   className="cursor-pointer"
                   onClick={() => setSelected(inst)}
                 >
-                  <TableCell className="font-mono">
-                    {inst.symbol}
+                  <TableCell className="font-mono flex items-center gap-1">
+                    <span>{inst.symbol}</span>
                     {q ? <span className="ml-1 text-[9px] uppercase text-emerald-400">live</span> : null}
+                    <MetricInfo
+                      id={inst.symbol.toLowerCase()}
+                      name={`${inst.name} (${inst.symbol})`}
+                      provider="Upstox / NSE India Official Feed"
+                      sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(inst.symbol)}`}
+                      asOf={q?.asOf}
+                      iconSize="xs"
+                    />
                   </TableCell>
                   <TableCell>{inst.name}</TableCell>
                   <TableCell className="text-muted-foreground">{inst.sector}</TableCell>

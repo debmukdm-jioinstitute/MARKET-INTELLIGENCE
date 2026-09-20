@@ -8,6 +8,7 @@ import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Badge } from "@/components/ui/badge";
+import { MetricInfo } from "@/components/ui/metric-info";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
@@ -79,7 +80,16 @@ export default function ResearchSymbolPage() {
             <Panel title="Quote & depth" className="xl:col-span-2">
               <div className="mb-4 flex items-start justify-between">
                 <div>
-                  <p className="font-mono text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
+                    <MetricInfo
+                      id={symbol.toLowerCase()}
+                      name={`${data.name} (${symbol})`}
+                      provider="Upstox / NSE Official Tick Stream"
+                      sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
+                      asOf={q.asOf}
+                    />
+                  </div>
                   <p
                     className={cn(
                       "font-mono text-sm",
@@ -103,12 +113,12 @@ export default function ResearchSymbolPage() {
             </Panel>
             <Panel title="Session">
               <dl className="grid grid-cols-2 gap-2 font-mono text-xs">
-                <Stat k="Open" v={fmtInr(q.ohlc.open)} />
-                <Stat k="Prev close" v={fmtInr(q.ohlc.close)} />
-                <Stat k="High" v={fmtInr(q.ohlc.high)} />
-                <Stat k="Low" v={fmtInr(q.ohlc.low)} />
-                <Stat k="Volume" v={q.volume.toLocaleString("en-IN")} />
-                <Stat k="Avg" v={fmtInr(q.avgPrice)} />
+                <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
+                <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
+                <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
+                <Stat metricId="low52w" k="Low" v={fmtInr(q.ohlc.low)} />
+                <Stat metricId="turnover" k="Volume" v={q.volume.toLocaleString("en-IN")} />
+                <Stat metricId="vwap" k="Avg" v={fmtInr(q.avgPrice)} />
               </dl>
             </Panel>
           </div>
@@ -189,11 +199,11 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
         </Panel>
         <Panel title="Snapshot">
           <dl className="space-y-3 font-mono text-sm">
-            <Row k="Last" v={fmtNum(us.quote.price)} />
-            <Row k="1D" v={formatPct(us.quote.changePct)} />
-            {us.quote.pe != null ? <Row k="P/E" v={us.quote.pe.toFixed(1)} /> : null}
+            <Row metricId="nav" k="Last" v={fmtNum(us.quote.price)} />
+            <Row metricId="today_pnl" k="1D" v={formatPct(us.quote.changePct)} />
+            {us.quote.pe != null ? <Row metricId="pe_ratio" k="P/E" v={us.quote.pe.toFixed(1)} /> : null}
             {us.quote.marketCap != null ? (
-              <Row k="Mkt cap" v={`${(us.quote.marketCap / 1e9).toFixed(1)}B`} />
+              <Row metricId="nav" k="Mkt cap" v={`${(us.quote.marketCap / 1e9).toFixed(1)}B`} />
             ) : null}
           </dl>
         </Panel>
@@ -209,19 +219,25 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
   );
 }
 
-function Stat({ k, v }: { k: string; v: string }) {
+function Stat({ metricId, k, v }: { metricId?: string; k: string; v: string }) {
   return (
     <div>
-      <dt className="text-muted-foreground">{k}</dt>
+      <dt className="text-muted-foreground flex items-center gap-1">
+        <span>{k}</span>
+        {metricId ? <MetricInfo id={metricId} name={k} iconSize="xs" /> : null}
+      </dt>
       <dd className="font-medium">{v}</dd>
     </div>
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
+function Row({ metricId, k, v }: { metricId?: string; k: string; v: string }) {
   return (
-    <div className="flex justify-between">
-      <dt className="text-muted-foreground">{k}</dt>
+    <div className="flex justify-between items-center">
+      <dt className="text-muted-foreground flex items-center gap-1">
+        <span>{k}</span>
+        {metricId ? <MetricInfo id={metricId} name={k} iconSize="xs" /> : null}
+      </dt>
       <dd>{v}</dd>
     </div>
   );

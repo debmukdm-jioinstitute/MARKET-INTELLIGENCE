@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, DollarSign } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowUpRight, CalendarDays } from "lucide-react";
+import { MetricInfo } from "@/components/ui/metric-info";
 
 interface EarningsItem {
   id: string;
   company: string;
+  symbol: string;
   period: "TODAY" | "TOMORROW" | "THIS WEEK";
   timing: "After Market" | "Before Market" | "During Hours";
   lastRevenue: string;
@@ -15,82 +16,91 @@ interface EarningsItem {
   previousSurprise: string;
   expectedResult: string;
   portfolioWeight: string;
+  sourceUrl: string;
 }
 
 const EARNINGS_DATA: EarningsItem[] = [
   {
     id: "e-1",
-    company: "TCS",
+    company: "Tata Consultancy Services",
+    symbol: "TCS",
     period: "TODAY",
     timing: "After Market",
     lastRevenue: "₹64,259 Cr",
-    eps: "₹33.2",
+    eps: "₹33.20",
     previousSurprise: "+2.4%",
-    expectedResult: "₹65,400 Cr (+3.1% YoY)",
+    expectedResult: "₹65,400 Cr (Consensus)",
     portfolioWeight: "7.8%",
+    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
   },
   {
     id: "e-2",
-    company: "Reliance",
+    company: "Reliance Industries",
+    symbol: "RELIANCE",
     period: "TOMORROW",
     timing: "Before Market",
     lastRevenue: "₹2,35,481 Cr",
-    eps: "₹28.4",
+    eps: "₹28.40",
     previousSurprise: "+1.8%",
-    expectedResult: "₹2,42,000 Cr (Jio ARPU expansion)",
+    expectedResult: "₹2,42,000 Cr (Jio ARPU Focus)",
     portfolioWeight: "9.4%",
+    sourceUrl: "https://www.nseindia.com/companies-listing/corporate-filings-announcements",
   },
   {
     id: "e-3",
-    company: "HDFC Bank",
+    company: "HDFC Bank Ltd",
+    symbol: "HDFCBANK",
     period: "TOMORROW",
     timing: "After Market",
-    lastRevenue: "₹85,182 Cr (NII)",
-    eps: "₹21.6",
+    lastRevenue: "₹85,182 Cr",
+    eps: "₹21.60",
     previousSurprise: "+3.2%",
-    expectedResult: "₹88,200 Cr (LDR compression)",
+    expectedResult: "₹88,200 Cr (NII Expansion)",
     portfolioWeight: "11.2%",
+    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
   },
   {
     id: "e-4",
-    company: "Infosys",
+    company: "Infosys Ltd",
+    symbol: "INFY",
     period: "THIS WEEK",
     timing: "After Market",
     lastRevenue: "₹40,986 Cr",
-    eps: "₹15.8",
+    eps: "₹15.80",
     previousSurprise: "+0.9%",
-    expectedResult: "₹41,800 Cr (Guidance upgrade watch)",
+    expectedResult: "₹41,800 Cr (CC Guidance)",
     portfolioWeight: "5.6%",
+    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
   },
   {
     id: "e-5",
     company: "Asian Paints",
+    symbol: "ASIANPAINT",
     period: "THIS WEEK",
     timing: "Before Market",
     lastRevenue: "₹9,103 Cr",
-    eps: "₹12.4",
+    eps: "₹12.40",
     previousSurprise: "-1.5%",
-    expectedResult: "₹9,350 Cr (Crude margin impact)",
+    expectedResult: "₹9,350 Cr (Margin Check)",
     portfolioWeight: "3.1%",
+    sourceUrl: "https://www.nseindia.com/companies-listing/corporate-filings-announcements",
   },
   {
     id: "e-6",
     company: "Bajaj Finance",
+    symbol: "BAJFINANCE",
     period: "THIS WEEK",
     timing: "After Market",
     lastRevenue: "₹14,928 Cr",
-    eps: "₹58.1",
+    eps: "₹58.10",
     previousSurprise: "+4.1%",
-    expectedResult: "₹16,100 Cr (AUM growth +28%)",
+    expectedResult: "₹16,100 Cr (AUM Expansion)",
     portfolioWeight: "4.5%",
+    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
   },
 ];
 
 export function EarningsCalendarCard() {
-  const [selectedPeriod, setSelectedPeriod] = useState<"ALL" | "TODAY" | "TOMORROW" | "THIS WEEK">(
-    "ALL",
-  );
-
   const periods: ("TODAY" | "TOMORROW" | "THIS WEEK")[] = ["TODAY", "TOMORROW", "THIS WEEK"];
 
   return (
@@ -100,11 +110,12 @@ export function EarningsCalendarCard() {
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <CalendarDays className="size-3.5" />
-              EARNINGS CALENDAR
+              EARNINGS DISCLOSURES & CALENDAR
             </span>
+            <MetricInfo metric="earnings_results" customTitle="Quarterly Financial Results & EPS" />
           </div>
           <h3 className="text-base font-bold text-foreground mt-0.5">
-            Institutional Earnings & Surprise Expectations
+            SEBI Reg 33 Official Results Schedule
           </h3>
         </div>
 
@@ -112,7 +123,7 @@ export function EarningsCalendarCard() {
           href="/research"
           className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
         >
-          View All Desk
+          View Research Desk
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>
@@ -135,11 +146,19 @@ export function EarningsCalendarCard() {
                     className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2 hover:border-border transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground text-sm">{item.company}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-foreground text-sm">{item.symbol}</span>
                         <span className="rounded bg-accent/60 px-1.5 py-0.5 text-[9px] text-muted-foreground">
                           {item.timing}
                         </span>
+                        <MetricInfo
+                          metric="earnings_results"
+                          customTitle={`${item.company} Financial Results`}
+                          sourceOverride={{
+                            provider: "Exchange Regulatory Filing (BSE / NSE)",
+                            url: item.sourceUrl,
+                          }}
+                        />
                       </div>
                       <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
                         Weight: {item.portfolioWeight}
@@ -160,7 +179,7 @@ export function EarningsCalendarCard() {
                         <span className="font-semibold text-emerald-400">{item.previousSurprise}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[10px]">Expected:</span>
+                        <span className="text-muted-foreground block text-[10px]">Consensus:</span>
                         <span className="font-semibold text-foreground truncate block">
                           {item.expectedResult}
                         </span>

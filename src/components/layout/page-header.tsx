@@ -22,7 +22,7 @@ export function Panel({
   children,
   className,
 }: {
-  title: string;
+  title: React.ReactNode;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
   className?: string;

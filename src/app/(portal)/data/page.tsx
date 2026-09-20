@@ -1,11 +1,13 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Database, CheckCircle2, AlertCircle, Clock, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DataSource {
+  metricId?: string;
   name: string;
   provider: string;
   type: "Exchange Licensed" | "Official Regulatory" | "Open Web API";
@@ -19,6 +21,7 @@ interface DataSource {
 
 const SOURCES: DataSource[] = [
   {
+    metricId: "nifty50",
     name: "Upstox WebSocket & REST Feed",
     provider: "Upstox (RKSV Securities)",
     type: "Exchange Licensed",
@@ -30,6 +33,7 @@ const SOURCES: DataSource[] = [
     url: "https://upstox.com/developer/api-documentation",
   },
   {
+    metricId: "corporate_announcement",
     name: "NSE India Corporate Announcements",
     provider: "National Stock Exchange of India",
     type: "Official Regulatory",
@@ -41,6 +45,7 @@ const SOURCES: DataSource[] = [
     url: "https://www.nseindia.com",
   },
   {
+    metricId: "sensex",
     name: "BSE India Corporate Announcements",
     provider: "Bombay Stock Exchange",
     type: "Official Regulatory",
@@ -52,6 +57,7 @@ const SOURCES: DataSource[] = [
     url: "https://www.bseindia.com",
   },
   {
+    metricId: "repo",
     name: "Reserve Bank of India (RBI)",
     provider: "RBI Data Warehouse & RSS",
     type: "Official Regulatory",
@@ -63,6 +69,7 @@ const SOURCES: DataSource[] = [
     url: "https://www.rbi.org.in",
   },
   {
+    metricId: "cpi",
     name: "MOSPI Macro Data Portal",
     provider: "Ministry of Statistics & Programme Implementation",
     type: "Official Regulatory",
@@ -74,6 +81,7 @@ const SOURCES: DataSource[] = [
     url: "https://mospi.gov.in",
   },
   {
+    metricId: "sp500",
     name: "Yahoo Finance Global Market Feeds",
     provider: "Yahoo Finance API / Stooq",
     type: "Open Web API",
@@ -85,6 +93,7 @@ const SOURCES: DataSource[] = [
     url: "https://finance.yahoo.com",
   },
   {
+    metricId: "gsec10y",
     name: "FRED (Federal Reserve Economic Data)",
     provider: "Federal Reserve Bank of St. Louis",
     type: "Official Regulatory",
@@ -109,25 +118,37 @@ export default function DataPage() {
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <span className="text-[10px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
+            <MetricInfo id="data_quality" iconSize="xs" />
+          </div>
           <div className="text-2xl font-bold text-emerald-400">99.4%</div>
           <span className="text-[11px] text-muted-foreground">Across 7 upstream providers</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <span className="text-[10px] text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
+            <MetricInfo id="feed_latency" iconSize="xs" />
+          </div>
           <div className="text-2xl font-bold text-foreground">340 ms</div>
           <span className="text-[11px] text-emerald-400">P95 below 850 ms</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <span className="text-[10px] text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
+            <MetricInfo id="data_quality" name="Active Data Streams Telemetry" iconSize="xs" />
+          </div>
           <div className="text-2xl font-bold text-foreground">42 Feeds</div>
           <span className="text-[11px] text-muted-foreground">0 outages reported today</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <span className="text-[10px] text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
+            <MetricInfo id="data_quality" name="Multi-tier Failover Architecture" iconSize="xs" />
+          </div>
           <div className="text-2xl font-bold text-primary">3-Tier Active</div>
           <span className="text-[11px] text-muted-foreground">Upstox → Yahoo → TrueData</span>
         </div>
@@ -142,9 +163,19 @@ export default function DataPage() {
               <TableHead>Provider</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Coverage</TableHead>
-              <TableHead className="text-right">Latency</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Latency
+                  <MetricInfo id="feed_latency" iconSize="xs" />
+                </span>
+              </TableHead>
               <TableHead className="text-right">Freshness</TableHead>
-              <TableHead className="text-right">Quality Score</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Quality Score
+                  <MetricInfo id="data_quality" iconSize="xs" />
+                </span>
+              </TableHead>
               <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">Source</TableHead>
             </TableRow>
@@ -152,7 +183,16 @@ export default function DataPage() {
           <TableBody>
             {SOURCES.map((s) => (
               <TableRow key={s.name} className="font-mono text-xs hover:bg-accent/40">
-                <TableCell className="font-bold text-foreground">{s.name}</TableCell>
+                <TableCell className="font-bold text-foreground flex items-center gap-1.5">
+                  <span>{s.name}</span>
+                  <MetricInfo
+                    id={s.metricId ?? "data_quality"}
+                    name={s.name}
+                    provider={s.provider}
+                    sourceUrl={s.url}
+                    iconSize="xs"
+                  />
+                </TableCell>
                 <TableCell className="text-muted-foreground">{s.provider}</TableCell>
                 <TableCell>
                   <span className="rounded bg-accent/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">

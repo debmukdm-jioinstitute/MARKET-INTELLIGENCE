@@ -2,9 +2,11 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { Calendar, Clock, Globe } from "lucide-react";
 
 interface CalendarEvent {
+  metricId: string;
   date: string;
   country: string;
   event: string;
@@ -16,6 +18,7 @@ interface CalendarEvent {
 
 const EVENTS: CalendarEvent[] = [
   {
+    metricId: "repo",
     date: "Sep 22, 11:00",
     country: "IND",
     event: "RBI MPC Rate Decision & Stance Resolution",
@@ -25,6 +28,7 @@ const EVENTS: CalendarEvent[] = [
     previous: "5.50%",
   },
   {
+    metricId: "cpi",
     date: "Sep 24, 17:30",
     country: "IND",
     event: "CPI Inflation Rate YoY (Aug)",
@@ -34,6 +38,7 @@ const EVENTS: CalendarEvent[] = [
     previous: "3.6%",
   },
   {
+    metricId: "gdp",
     date: "Sep 26, 18:00",
     country: "USA",
     event: "US GDP Growth Rate Annualized QoQ",
@@ -43,6 +48,7 @@ const EVENTS: CalendarEvent[] = [
     previous: "2.8%",
   },
   {
+    metricId: "liquidity",
     date: "Sep 28, 17:00",
     country: "IND",
     event: "Fiscal Deficit (INR)",
@@ -52,6 +58,7 @@ const EVENTS: CalendarEvent[] = [
     previous: "₹4.60 L Cr",
   },
   {
+    metricId: "cpi",
     date: "Sep 30, 18:30",
     country: "USA",
     event: "Core PCE Price Index MoM",
@@ -79,9 +86,24 @@ export default function EconomicCalendarPage() {
               <TableHead>Region</TableHead>
               <TableHead>Economic Event</TableHead>
               <TableHead className="text-center">Impact</TableHead>
-              <TableHead className="text-right">Actual</TableHead>
-              <TableHead className="text-right">Consensus Forecast</TableHead>
-              <TableHead className="text-right">Previous</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Actual
+                  <MetricInfo id="cpi" name="Actual Reported Print" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Consensus Forecast
+                  <MetricInfo id="cpi" name="Economist Consensus Forecast" iconSize="xs" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Previous
+                  <MetricInfo id="cpi" name="Previous Period Benchmark" iconSize="xs" />
+                </span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,7 +111,10 @@ export default function EconomicCalendarPage() {
               <TableRow key={idx} className="font-mono text-xs hover:bg-accent/40">
                 <TableCell className="font-medium text-foreground">{e.date}</TableCell>
                 <TableCell className="font-bold text-primary">{e.country}</TableCell>
-                <TableCell className="font-semibold text-foreground">{e.event}</TableCell>
+                <TableCell className="font-semibold text-foreground flex items-center gap-1.5">
+                  <span>{e.event}</span>
+                  <MetricInfo id={e.metricId} name={e.event} iconSize="xs" />
+                </TableCell>
                 <TableCell className="text-center">
                   <span
                     className={
