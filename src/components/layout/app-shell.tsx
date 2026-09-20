@@ -3,6 +3,7 @@
 import { CommandPalette } from "@/components/command-palette/command-palette";
 import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
 import { GuestBanner } from "@/components/layout/guest-banner";
+import { MarketTickerRail } from "@/components/layout/market-ticker-rail";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
@@ -17,6 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Sidebar />
             <div className="flex min-w-0 flex-1 flex-col">
               <GuestBanner />
+              <MarketTickerRail />
               <TopBar />
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
