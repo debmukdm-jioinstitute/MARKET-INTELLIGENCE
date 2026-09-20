@@ -1,12 +1,24 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { usePortfolio } from "@/components/providers/portfolio-provider";
+import { SymbolSearch } from "@/components/research/symbol-search";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";
 import { Search } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export function TopBar() {
+  const pathname = usePathname();
+  const { portfolios, active, setActiveId } = usePortfolio();
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const { data } = useFeedHub(60_000);
   const live = quoteMap(data);
@@ -28,20 +40,37 @@ export function TopBar() {
   const asOf = spyQ?.asOf ? new Date(spyQ.asOf) : null;
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur">
-      <div className="flex items-center gap-6">
-        <p className="font-heading text-sm font-semibold tracking-tight">MI TERMINAL</p>
+    <header className="grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_1fr_auto] lg:gap-4 lg:px-6 lg:py-2">
+      <div className="flex items-center gap-4">
+        <Select value={active.id} onValueChange={setActiveId}>
+          <SelectTrigger className="h-9 w-full max-w-[280px] border-border bg-card font-medium">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {portfolios.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="hidden text-xs text-muted-foreground xl:block">{active.mandate}</p>
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
         >
           <Search className="size-3" />
-          Search
-          <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">Space</kbd>
+          Commands
+          <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
         </button>
       </div>
-      <div className="flex items-center gap-5 font-mono text-[11px]">
+      <SymbolSearch
+        variant="bar"
+        className="w-full min-w-0"
+        showShortcut={pathname !== "/research"}
+      />
+      <div className="flex flex-wrap items-center justify-end gap-4 font-mono text-[11px] lg:gap-5">
         <Tape label="SPX" value={spyLast} chg={spyChg} live={Boolean(spyQ)} />
         <Tape label="UST" value={tltLast} chg={tltChg} live={Boolean(tltQ)} />
         <span className="text-muted-foreground">

@@ -65,22 +65,29 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading text-xl">
+      <DialogContent
+        className={cn(
+          "!fixed !inset-0 !top-0 !left-0 z-50 flex h-[100dvh] w-screen !max-w-none flex-col gap-0 !translate-x-0 !translate-y-0 rounded-none border-0 p-0 ring-0",
+          "bg-background text-foreground data-open:zoom-in-100 data-closed:zoom-out-100",
+        )}
+      >
+        <DialogHeader className="shrink-0 border-b border-border px-6 py-5 pr-14">
+          <DialogTitle className="font-heading text-2xl md:text-3xl">
             {symbol}
             {inst ? ` · ${inst.name}` : data?.quote ? "" : ""}
           </DialogTitle>
           {inst ? (
-            <p className="text-sm text-muted-foreground">{inst.description}</p>
+            <p className="max-w-3xl text-sm text-muted-foreground">{inst.description}</p>
           ) : null}
         </DialogHeader>
 
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+          <div className="mx-auto max-w-6xl space-y-6">
         {loading ? <p className="text-sm text-muted-foreground">Loading live security data…</p> : null}
         {error ? <p className="text-sm text-rose-400">{error}</p> : null}
 
         {data && q ? (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{q.provider}</Badge>
               {inst ? (
@@ -111,21 +118,21 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
             </div>
 
             {position ? (
-              <section className="rounded-lg border border-border p-4">
+              <section className="rounded-lg border border-border p-5">
                 <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Your book
                 </h4>
-                <dl className="mt-3 grid grid-cols-2 gap-3 font-mono text-sm sm:grid-cols-3">
-                  <Row k="Shares" v={position.shares.toFixed(1)} />
-                  <Row k="Avg cost" v={position.avgCost.toFixed(2)} />
-                  <Row k="Market value" v={formatUsd(position.marketValue)} />
-                  <Row k="Weight" v={formatPct(position.weight, 1)} />
-                  <Row
+                <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                  <BookStat k="Shares" v={position.shares.toFixed(1)} />
+                  <BookStat k="Avg cost" v={position.avgCost.toFixed(2)} />
+                  <BookStat k="Market value" v={formatUsd(position.marketValue)} />
+                  <BookStat k="Weight" v={formatPct(position.weight, 1)} />
+                  <BookStat
                     k="Unrealized P&L"
                     v={formatUsd(position.pnl)}
                     className={position.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}
                   />
-                  <Row
+                  <BookStat
                     k="Day"
                     v={formatPct(position.dayPct)}
                     className={position.dayPct >= 0 ? "text-emerald-400" : "text-rose-400"}
@@ -157,7 +164,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                 <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Price — 1Y daily (Yahoo Finance)
                 </h4>
-                <div className="h-[200px]">
+                <div className="h-[min(420px,40vh)]">
                   <Lines
                     data={data.history.map((p) => ({ date: p.date, px: p.value }))}
                     keys={[{ key: "px", color: "#ff9f0a", name: data.symbol }]}
@@ -194,7 +201,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                 provider terms; not investment advice.
               </p>
               <Link
-                href={`/research?q=${data.symbol}`}
+                href={`/research/${encodeURIComponent(data.symbol)}`}
                 className="mt-2 inline-block text-xs text-primary hover:underline"
                 onClick={() => onOpenChange(false)}
               >
@@ -203,8 +210,19 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
             </section>
           </div>
         ) : null}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BookStat({ k, v, className }: { k: string; v: string; className?: string }) {
+  return (
+    <div className="min-w-0 rounded-md border border-border/60 bg-card/50 px-3 py-2">
+      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{k}</dt>
+      <dd className={cn("mt-1 truncate font-mono text-sm font-medium tabular-nums", className)}>{v}</dd>
+    </div>
   );
 }
 

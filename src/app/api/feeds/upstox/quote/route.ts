@@ -1,4 +1,5 @@
 import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
+import { resolveSymbol } from "@/lib/feeds/symbol-search";
 import { fetchUpstoxFullQuotes } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
@@ -9,13 +10,26 @@ export async function GET(req: Request) {
   if (!symbol) {
     return NextResponse.json({ error: "symbol query param required" }, { status: 400 });
   }
-  const instrument = findIndiaInstrument(symbol);
-  if (!instrument) {
+  const resolved =
+    (await resolveSymbol(symbol)) ??
+    (() => {
+      const curated = findIndiaInstrument(symbol);
+      return curated
+        ? {
+            symbol: curated.symbol,
+            name: curated.name,
+            market: "IN" as const,
+            instrumentKey: curated.instrumentKey,
+            isin: curated.isin,
+          }
+        : null;
+    })();
+  if (!resolved?.instrumentKey || resolved.market !== "IN") {
     return NextResponse.json({ error: `Unknown India symbol: ${symbol}` }, { status: 404 });
   }
   try {
     const [quote] = await fetchUpstoxFullQuotes([
-      { instrumentKey: instrument.instrumentKey, symbol: instrument.symbol },
+      { instrumentKey: resolved.instrumentKey, symbol: resolved.symbol },
     ]);
     if (!quote) {
       return NextResponse.json({ error: "No quote data" }, { status: 502 });
