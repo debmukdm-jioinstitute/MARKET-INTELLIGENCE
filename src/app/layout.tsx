@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
 import "@fontsource/tiny5";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -32,7 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} dark h-full antialiased`}>
       <body className="min-h-full font-sans bg-background text-foreground selection:bg-amber-400/30 selection:text-amber-200">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <MathInspectorProvider>{children}</MathInspectorProvider>
+        </AuthProvider>
       </body>
     </html>
   );

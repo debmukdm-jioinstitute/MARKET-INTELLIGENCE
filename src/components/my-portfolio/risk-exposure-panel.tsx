@@ -18,7 +18,7 @@ function Row({ categories, id }: { categories: MetricCategory[]; id: string }) {
     <div className="flex items-center justify-between">
       <span className="flex items-center text-muted-foreground">
         {metric.label}
-        <MetricInfo id={metric.id} />
+        <MetricInfo id={metric.id} value={metric.formatted} />
       </span>
       <span className="font-mono">{metric.formatted}</span>
     </div>

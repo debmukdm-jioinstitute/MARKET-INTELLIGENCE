@@ -18,7 +18,7 @@ export function MetricsCatalog({ categories }: { categories: MetricCategory[] })
                 <div key={metric.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-1.5">
                   <span className="flex items-center text-xs text-muted-foreground">
                     {metric.label}
-                    <MetricInfo id={metric.id} />
+                    <MetricInfo id={metric.id} value={metric.formatted} />
                   </span>
                   <span className="flex items-center gap-1.5 text-right">
                     {metric.status !== "ok" ? (

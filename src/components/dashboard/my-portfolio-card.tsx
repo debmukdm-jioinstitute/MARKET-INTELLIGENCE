@@ -138,7 +138,7 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Portfolio Alpha (CAPM)</span>
-                <MetricInfo metric="alpha" />
+                <MetricInfo metric="alpha" value={alphaMetric?.formatted ?? "+0.00%"} />
               </div>
               <span className={cn("font-bold", (alphaMetric?.value ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400")}>
                 {alphaMetric?.formatted ?? "+0.00%"}
@@ -148,7 +148,7 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Systematic Beta vs {data?.settings.benchmark ?? "NIFTY50"}</span>
-                <MetricInfo metric="beta" />
+                <MetricInfo metric="beta" value={betaMetric?.formatted ?? "1.00"} />
               </div>
               <span className="font-bold text-amber-400">{betaMetric?.formatted ?? "1.00"}</span>
             </div>
@@ -156,7 +156,7 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Sharpe Ratio (Ex. G-Sec)</span>
-                <MetricInfo metric="sharpe" />
+                <MetricInfo metric="sharpe" value={sharpeMetric?.formatted ?? "1.45"} />
               </div>
               <span className="font-bold text-foreground">{sharpeMetric?.formatted ?? "1.45"}</span>
             </div>
@@ -164,7 +164,7 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Peak-To-Trough Max DD</span>
-                <MetricInfo metric="max_drawdown" />
+                <MetricInfo metric="max_drawdown" value={mddMetric?.formatted ?? "-6.4%"} />
               </div>
               <span className="font-bold text-rose-400">{mddMetric?.formatted ?? "-6.4%"}</span>
             </div>

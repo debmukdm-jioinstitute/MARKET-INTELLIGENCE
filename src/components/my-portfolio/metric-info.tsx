@@ -1,47 +1,46 @@
 "use client";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useMathInspector } from "@/components/providers/math-inspector-provider";
 import { GLOSSARY } from "@/lib/my-portfolio/glossary";
-import { Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function MetricInfo({ id }: { id: string }) {
+export function MetricInfo({
+  id,
+  value,
+  contextData,
+  className,
+}: {
+  id: string;
+  value?: string | number | null;
+  contextData?: Record<string, any>;
+  className?: string;
+}) {
+  const { openInspector } = useMathInspector();
   const entry = GLOSSARY[id];
-  if (!entry) return null;
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          onClick={(e) => e.stopPropagation()}
-          className="ml-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-          aria-label={`About ${entry.label}`}
-        >
-          <Info className="size-3" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="top" align="start" className="w-80 text-left">
-        <p className="font-heading text-sm font-semibold">{entry.label}</p>
-        <p className="text-xs text-muted-foreground">{entry.definition}</p>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Formula</p>
-          <p className="rounded bg-muted px-2 py-1 font-mono text-[11px]">{entry.formula}</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Example</p>
-          <p className="text-xs">{entry.example}</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Why it matters</p>
-          <p className="text-xs">{entry.why}</p>
-        </div>
-        <p className="text-[10px] text-muted-foreground">
-          Canonical algorithm:{" "}
-          <span className="font-mono text-foreground">
-            {entry.specSection ?? "Metrics Specification"}
-          </span>{" "}
-          in <code className="text-[10px]">docs/market_intelligence_metrics_specification.md</code>
-        </p>
-      </PopoverContent>
-    </Popover>
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        openInspector({
+          metricId: id,
+          title: entry?.label ?? id,
+          currentValue: value,
+          contextData,
+          category: "Portfolio Analytics",
+        });
+      }}
+      className={cn(
+        "ml-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground/80 hover:bg-amber-400/20 hover:text-amber-300 transition-all focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer",
+        className
+      )}
+      aria-label={`View mathematical derivation for ${entry?.label ?? id}`}
+      title="Click for full LaTeX mathematical derivation, inputs, and institutional proof"
+    >
+      <span className="font-serif italic text-[11px] font-bold leading-none select-none hover:scale-125 transition-transform">
+        ⓘ
+      </span>
+    </button>
   );
 }
