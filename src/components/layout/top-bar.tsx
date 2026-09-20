@@ -1,5 +1,6 @@
 "use client";
 
+import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
@@ -11,9 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 export function TopBar() {
   const { portfolios, active, setActiveId } = usePortfolio();
+  const { setOpen: setPaletteOpen } = useCommandPalette();
   const { data } = useFeedHub(60_000);
   const live = quoteMap(data);
 
@@ -49,6 +52,15 @@ export function TopBar() {
           </SelectContent>
         </Select>
         <p className="hidden text-xs text-muted-foreground lg:block">{active.mandate}</p>
+        <button
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Search className="size-3" />
+          Search
+          <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">Space</kbd>
+        </button>
       </div>
       <div className="flex items-center gap-5 font-mono text-[11px]">
         <Tape label="SPX" value={spyLast} chg={spyChg} live={Boolean(spyQ)} />

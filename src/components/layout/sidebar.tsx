@@ -21,6 +21,7 @@ import {
   SlidersHorizontal,
   FileText,
   Rss,
+  Sigma,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ const NAV = [
   { href: "/macro", label: "Macro", icon: Globe2 },
   { href: "/markets", label: "Markets", icon: LineChart },
   { href: "/india-markets", label: "India Markets", icon: IndianRupee },
+  { href: "/derivatives", label: "Derivatives", icon: Sigma },
   { href: "/ipo", label: "IPOs", icon: Rocket },
   { href: "/feeds", label: "Data feeds", icon: Rss },
   { href: "/scenarios", label: "Scenarios", icon: Gauge },

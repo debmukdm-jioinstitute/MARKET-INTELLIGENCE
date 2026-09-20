@@ -31,7 +31,7 @@ export function Panel({
     <section className={`rounded-lg border border-border bg-card ${className ?? ""}`}>
       <div className="border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold">{title}</h3>
-        {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
+        {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
       </div>
       <div className="p-4">{children}</div>
     </section>
