@@ -34,7 +34,7 @@ export type SentimentPortfolioResult =
   | { hasHoldings: false; disclaimer: string }
   | { hasHoldings: true; asOf: string; holdings: SentimentHoldingRow[]; disclaimer: string };
 
-type HoldingRow = {
+export type HoldingRow = {
   symbol: string;
   name: string;
   market: "IN" | "US";
@@ -52,9 +52,15 @@ const DEFAULT_ROWS: HoldingRow[] = REALISTIC_DEFAULT_HOLDINGS.map((h) => ({
   avg_cost: String(h.avgCost),
 }));
 
-export async function runSentimentPortfolio(email: string): Promise<SentimentPortfolioResult> {
+export async function runSentimentPortfolio(
+  email: string,
+  customHoldings?: HoldingRow[],
+): Promise<SentimentPortfolioResult> {
   let rows: HoldingRow[] = [];
-  if (hasDatabase()) {
+
+  if (customHoldings && customHoldings.length > 0) {
+    rows = customHoldings;
+  } else if (hasDatabase()) {
     try {
       await ensureSchema();
       const db = sql();

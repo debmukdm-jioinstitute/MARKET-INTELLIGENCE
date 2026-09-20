@@ -6,7 +6,7 @@ export async function feedFetch(
   url: string,
   init?: RequestInit & { timeoutMs?: number },
 ): Promise<Response> {
-  const timeoutMs = init?.timeoutMs ?? 14_000;
+  const timeoutMs = init?.timeoutMs ?? 8_000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {

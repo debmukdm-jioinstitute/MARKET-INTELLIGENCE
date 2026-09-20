@@ -1,11 +1,15 @@
-import { ensureSchema, sql } from "@/lib/db";
+import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
+import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import type { PortfolioSettings } from "@/lib/my-portfolio/types";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (!hasDatabase()) {
+    return NextResponse.json(DEFAULT_PORTFOLIO_SETTINGS);
+  }
   try {
     await ensureSchema();
     const email = await getSessionEmail();
@@ -13,20 +17,24 @@ export async function GET() {
     const rows = await db`SELECT name, benchmark, base_currency FROM portfolio_settings WHERE user_email = ${email}`;
     const row = rows[0];
     const settings: PortfolioSettings = {
-      name: (row?.name as string) ?? "My Portfolio",
-      benchmark: (row?.benchmark as PortfolioSettings["benchmark"]) ?? "NIFTY50",
+      name: (row?.name as string) ?? DEFAULT_PORTFOLIO_SETTINGS.name,
+      benchmark: (row?.benchmark as PortfolioSettings["benchmark"]) ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
       baseCurrency: "INR",
     };
     return NextResponse.json(settings);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to load settings" }, { status: 502 });
+    console.warn("DB query failed in settings GET, using default:", e);
+    return NextResponse.json(DEFAULT_PORTFOLIO_SETTINGS);
   }
 }
 
 export async function PUT(req: Request) {
   const body = (await req.json()) as Partial<PortfolioSettings>;
-  const name = body.name?.trim() || "My Portfolio";
-  const benchmark = body.benchmark ?? "NIFTY50";
+  const name = body.name?.trim() || DEFAULT_PORTFOLIO_SETTINGS.name;
+  const benchmark = body.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark;
+  if (!hasDatabase()) {
+    return NextResponse.json({ ok: true, note: "Updated in local mode" });
+  }
   try {
     await ensureSchema();
     const email = await getSessionEmail();

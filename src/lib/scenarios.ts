@@ -117,9 +117,9 @@ export function applyScenario(portfolio: VirtualPortfolio, id: ScenarioId) {
       pnl: mv - holding.shares * px,
     };
   });
-  const baseNav = portfolio.holdings.reduce((s, h) => s + h.shares * getPriceSeries(h.symbol).at(-1)!, 0) + portfolio.cash;
+  const baseNav = portfolio.holdings.reduce((s, h) => s + h.shares * (getPriceSeries(h.symbol).at(-1) ?? 0), 0) + portfolio.cash;
   void last;
-  return { scenario, rows, baseNav, stressedNav: nav, pnl: nav - baseNav, pct: nav / baseNav - 1 };
+  return { scenario, rows, baseNav, stressedNav: nav, pnl: nav - baseNav, pct: baseNav > 0 ? nav / baseNav - 1 : 0 };
 }
 
 function sectorProxy(symbol: string) {

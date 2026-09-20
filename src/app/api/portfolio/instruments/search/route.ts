@@ -1,5 +1,6 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { searchYahooSymbols } from "@/lib/feeds/sources/yahoo";
+import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,20 @@ export async function GET(req: Request) {
 
   if (market === "IN") {
     if (!hasDatabase()) {
-      return NextResponse.json({ results: [], error: "India symbol search needs the database to be connected." });
+      const qLower = q.toLowerCase();
+      const matched = INDIA_EQUITIES.filter(
+        (eq) => eq.symbol.toLowerCase().includes(qLower) || eq.name.toLowerCase().includes(qLower),
+      ).slice(0, 20);
+      return NextResponse.json({
+        results: matched.map((r) => ({
+          market: "IN" as const,
+          symbol: r.symbol,
+          name: r.name,
+          instrumentKey: r.instrumentKey,
+          sector: r.sector ?? null,
+          currency: "INR" as const,
+        })),
+      });
     }
     await ensureSchema();
     const db = sql();

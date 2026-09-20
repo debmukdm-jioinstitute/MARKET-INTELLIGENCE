@@ -12,9 +12,9 @@ export default function QuantPage() {
   const a = useMemo(() => analyzePortfolio(active, active.benchmark), [active]);
   const skew = useMemo(() => moment(a.portRets, 3), [a.portRets]);
   const kurt = useMemo(() => moment(a.portRets, 4) - 3, [a.portRets]);
-  const hit = a.portRets.filter((r) => r > 0).length / a.portRets.length;
-  const avgUp = mean(a.portRets.filter((r) => r > 0));
-  const avgDn = mean(a.portRets.filter((r) => r < 0));
+  const hit = a.portRets.length > 0 ? a.portRets.filter((r) => r > 0).length / a.portRets.length : 0;
+  const avgUp = a.portRets.some((r) => r > 0) ? mean(a.portRets.filter((r) => r > 0)) : 0;
+  const avgDn = a.portRets.some((r) => r < 0) ? mean(a.portRets.filter((r) => r < 0)) : 0;
 
   return (
     <div className="space-y-6">

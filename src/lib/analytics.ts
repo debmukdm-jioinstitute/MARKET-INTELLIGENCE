@@ -36,19 +36,25 @@ export function returnsFromPrices(prices: number[]) {
 }
 
 export function maxDrawdown(values: number[]) {
+  if (!values.length) return 0;
   let peak = values[0] ?? 0;
   let maxDd = 0;
   for (const value of values) {
-    peak = Math.max(peak, value);
-    maxDd = Math.min(maxDd, value / peak - 1);
+    if (value > peak) peak = value;
+    if (peak > 0) {
+      maxDd = Math.min(maxDd, value / peak - 1);
+    }
   }
-  return maxDd;
+  return Number.isFinite(maxDd) ? maxDd : 0;
 }
 
 export function cagr(values: number[], periodsPerYear = 252) {
-  if (values.length < 2) return 0;
+  if (values.length < 2 || !values[0] || values[0] <= 0) return 0;
+  const last = values[values.length - 1] ?? 0;
+  if (last <= 0) return -1;
   const years = (values.length - 1) / periodsPerYear;
-  return (values[values.length - 1]! / values[0]!) ** (1 / Math.max(years, 1 / 252)) - 1;
+  const val = (last / values[0]!) ** (1 / Math.max(years, 1 / 252)) - 1;
+  return Number.isFinite(val) ? val : 0;
 }
 
 export function percentile(values: number[], p: number) {
@@ -93,9 +99,9 @@ export function positionRows(portfolio: VirtualPortfolio) {
         dayPnl: (last - prev) * holding.shares,
         dayPct: last / prev - 1,
         marketValue,
-        weight: marketValue / total,
+        weight: total > 0 ? marketValue / total : 0,
         pnl,
-        pnlPct: last / holding.avgCost - 1,
+        pnlPct: holding.avgCost > 0 ? last / holding.avgCost - 1 : 0,
       };
     })
     .sort((a, b) => b.marketValue - a.marketValue);
@@ -149,16 +155,16 @@ export function analyzePortfolio(portfolio: VirtualPortfolio, benchmark = "SPY")
   const te = stdev(excess) * Math.sqrt(252);
   const sharpe = (mean(p) - RF_DAILY) / Math.max(stdev(p), 1e-12) * Math.sqrt(252);
   const sortino = (mean(p) - RF_DAILY) / Math.max(stdev(downside), 1e-12) * Math.sqrt(252);
-  const total = nav[nav.length - 1]!.value;
-  const start = nav[0]!.value;
+  const total = nav[nav.length - 1]?.value ?? 0;
+  const start = nav[0]?.value ?? 0;
   const prev = nav[nav.length - 2]?.value ?? start;
   const todayPnl = total - prev;
   const var95 = percentile(p, 0.05) * total;
-  const cashPct = portfolio.cash / total;
+  const cashPct = total > 0 ? portfolio.cash / total : 0;
   const mdd = maxDrawdown(nav.map((point) => point.value));
   const ir = mean(excess) / Math.max(stdev(excess), 1e-12) * Math.sqrt(252);
   const alpha = alphaDaily * 252;
-  const totalReturn = total / start - 1;
+  const totalReturn = start > 0 ? total / start - 1 : 0;
   const cagrValue = cagr(nav.map((point) => point.value));
   const turnover = annualTurnover(portfolio);
 
@@ -177,7 +183,7 @@ export function analyzePortfolio(portfolio: VirtualPortfolio, benchmark = "SPY")
       label: "Today's P&L",
       value: todayPnl,
       formatted: formatUsd(todayPnl, true),
-      deltaLabel: formatPct(todayPnl / prev),
+      deltaLabel: prev > 0 ? formatPct(todayPnl / prev) : "+0.00%",
       tone: toneFromSigned(todayPnl),
       hint: "One-session change in NAV.",
     },
@@ -314,7 +320,8 @@ export function brinsonAttribution(portfolio: VirtualPortfolio, benchmark = "SPY
       const names = rows.filter((r) => r.sector === sector.name);
       const sectorRet = names.reduce((sum, row) => {
         const r = getReturns(row.symbol).slice(-21).reduce((acc, x) => acc * (1 + x), 1) - 1;
-        return sum + r * (row.weight / sector.weight);
+        const w = sector.weight > 0 ? row.weight / sector.weight : 0;
+        return sum + r * w;
       }, 0);
       const allocation = (sector.weight - benchWeight / sectors.length) * benchPeriod;
       const selection = (sector.weight) * (sectorRet - benchPeriod);

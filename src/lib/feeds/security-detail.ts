@@ -100,7 +100,7 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
   const massiveQ = massiveRows[0];
   const yahoo = await fetchYahooQuoteDetail(sym);
   let history = isUsEquityTicker(sym) ? await fetchMassiveDailyBars(sym, 400) : [];
-  if (!history.length) history = await fetchYahooHistory(sym, "1y");
+  if (!history.length) history = await fetchYahooHistory(sym, "1y").catch(() => []);
 
   if (hasMassiveApiKey() && isUsEquityTicker(sym)) {
     sources.push({

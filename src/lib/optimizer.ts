@@ -1,14 +1,21 @@
 import { covariance, stdev } from "@/lib/analytics";
 import { getReturns } from "@/lib/market";
-import { UNIVERSE } from "@/lib/universe";
+import { UNIVERSE, getInstrument } from "@/lib/universe";
 
 export type OptimizeGoal = "maxSharpe" | "minVol" | "riskParity";
 
 export function optimizeWeights(symbols: string[], goal: OptimizeGoal) {
+  if (symbols.length === 0) {
+    return {
+      weights: [],
+      stats: { vol: 0, ret: 0, sharpe: 0 },
+    };
+  }
+
   const rets = symbols.map((symbol) => getReturns(symbol));
   const n = symbols.length;
   let weights = Array.from({ length: n }, () => 1 / n);
-  const mu = rets.map((r) => r.reduce((a, b) => a + b, 0) / r.length);
+  const mu = rets.map((r) => (r.length > 0 ? r.reduce((a, b) => a + b, 0) / r.length : 0));
   const cov = Array.from({ length: n }, (_, i) =>
     Array.from({ length: n }, (__, j) => covariance(rets[i]!, rets[j]!)),
   );
@@ -28,21 +35,22 @@ export function optimizeWeights(symbols: string[], goal: OptimizeGoal) {
     });
     weights = weights.map((w, i) => Math.max(0.01, w - lr * grad[i]!));
     const sum = weights.reduce((a, b) => a + b, 0);
-    weights = weights.map((w) => w / sum);
+    weights = weights.map((w) => (sum > 0 ? w / sum : 1 / n));
   }
 
   const portR = mixReturns(rets, weights);
   const rf = 0.045 / 252;
+  const sharpeVal = portR.length > 0 ? ((mean(portR) - rf) / Math.max(stdev(portR), 1e-12)) * Math.sqrt(252) : 0;
   return {
     weights: symbols.map((symbol, i) => ({
       symbol,
-      name: UNIVERSE.find((u) => u.symbol === symbol)?.name ?? symbol,
+      name: getInstrument(symbol).name,
       weight: weights[i]!,
     })),
     stats: {
-      vol: stdev(portR) * Math.sqrt(252),
-      ret: (portR.reduce((a, b) => a + b, 0) / portR.length) * 252,
-      sharpe: ((mean(portR) - rf) / Math.max(stdev(portR), 1e-12)) * Math.sqrt(252),
+      vol: portR.length > 0 ? stdev(portR) * Math.sqrt(252) : 0,
+      ret: portR.length > 0 ? (portR.reduce((a, b) => a + b, 0) / portR.length) * 252 : 0,
+      sharpe: Number.isFinite(sharpeVal) ? sharpeVal : 0,
     },
   };
 }
