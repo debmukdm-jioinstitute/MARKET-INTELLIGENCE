@@ -134,3 +134,37 @@ export async function fetchYahooHistory(
 export function yahooFinanceUrl(symbol: string) {
   return `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`;
 }
+
+export type YahooSearchResult = {
+  symbol: string;
+  name: string;
+  exchange: string;
+  sector?: string;
+};
+
+/** Search-by-name/symbol — used for the "add a US stock" autocomplete. */
+export async function searchYahooSymbols(query: string): Promise<YahooSearchResult[]> {
+  const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
+    query,
+  )}&quotesCount=10&newsCount=0`;
+  const res = await feedFetch(url, { headers: CHART_HEADERS });
+  if (!res.ok) return [];
+  const json = (await res.json()) as {
+    quotes?: {
+      symbol?: string;
+      shortname?: string;
+      longname?: string;
+      exchDisp?: string;
+      sector?: string;
+      quoteType?: string;
+    }[];
+  };
+  return (json.quotes ?? [])
+    .filter((q) => q.quoteType === "EQUITY" && q.symbol)
+    .map((q) => ({
+      symbol: q.symbol!,
+      name: q.longname ?? q.shortname ?? q.symbol!,
+      exchange: q.exchDisp ?? "",
+      sector: q.sector,
+    }));
+}
