@@ -15,6 +15,7 @@ const SOURCE_LABEL: Record<NewsItem["source"], string> = {
   mospi: "MOSPI",
   biquote: "India quotes",
   upstox: "Upstox",
+  massive: "Massive",
 };
 
 export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: number }) {

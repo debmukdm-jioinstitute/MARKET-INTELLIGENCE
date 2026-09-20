@@ -13,6 +13,7 @@ import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
+import { fetchMassiveUsQuotes, hasMassiveApiKey } from "@/lib/feeds/sources/massive";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
 import type { FeedHealth, FeedHubPayload, LiveQuote } from "@/lib/feeds/types";
 import { UNIVERSE } from "@/lib/universe";
@@ -40,24 +41,31 @@ function health(
   };
 }
 
-function mergeQuotes(yahoo: LiveQuote[], stooq: LiveQuote[]): LiveQuote[] {
+function mergeQuotes(
+  yahoo: LiveQuote[],
+  stooq: LiveQuote[],
+  massive: LiveQuote[] = [],
+): LiveQuote[] {
   const map = new Map<string, LiveQuote>();
   for (const q of stooq) map.set(q.symbol, q);
   for (const q of yahoo) map.set(q.symbol, q);
+  for (const q of massive) map.set(q.symbol, q);
   return [...map.values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
 }
 
 export async function buildFeedHub(): Promise<FeedHubPayload> {
   const fetchedAt = new Date().toISOString();
 
-  const [nse, bse, rbi, sec, upstoxNews, yahoo, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
+  const tape = [...TAPE_SYMBOLS, "^VIX"];
+  const [nse, bse, rbi, sec, upstoxNews, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
     await Promise.all([
       timed(() => fetchNseNews()),
       timed(() => fetchBseNews()),
       timed(() => fetchRbiNews()),
       timed(() => fetchSecFilings()),
       timed(() => fetchUpstoxNews(INDIA_EQUITIES.map((i) => i.instrumentKey))),
-      timed(() => fetchYahooQuotes([...TAPE_SYMBOLS, "^VIX"])),
+      timed(() => fetchYahooQuotes(tape)),
+      timed(() => fetchMassiveUsQuotes(tape)),
       timed(() => fetchStooqQuotes(TAPE_SYMBOLS.slice(0, 12))),
       timed(() => fetchAlphaVantageQuote("SPY")),
       timed(() => fetchFredMacro()),
@@ -70,10 +78,8 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
 
   const yahooQuotes = yahoo.value ?? [];
   const stooqQuotes = stooq.value ?? [];
-  let quotes = mergeQuotes(yahooQuotes, stooqQuotes);
-  if (av.value) {
-    quotes = mergeQuotes(quotes, [av.value]);
-  }
+  const massiveQuotes = [...(massive.value ?? []), ...(av.value ? [av.value] : [])];
+  const quotes = mergeQuotes(yahooQuotes, stooqQuotes, massiveQuotes);
 
   const news = [
     ...(nse.value ?? []),
@@ -105,6 +111,12 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       (v) => !process.env.UPSTOX_ACCESS_TOKEN || (Array.isArray(v) && v.length > 0),
     ),
     health("yahoo", "Yahoo Finance", yahoo, (v) => Array.isArray(v) && v.length > 0),
+    health(
+      "massive",
+      "Massive (US market data)",
+      massive,
+      (v) => hasMassiveApiKey() && !massive.error,
+    ),
     health("stooq", "Stooq", stooq, (v) => Array.isArray(v) && v.length > 0),
     health(
       "alphavantage",
@@ -129,6 +141,20 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       (v) => Array.isArray(v) && v.length > 0,
     ),
   ];
+
+  const massiveHealth = healthRows.find((h) => h.id === "massive");
+  if (massiveHealth) {
+    if (!hasMassiveApiKey()) {
+      massiveHealth.ok = false;
+      massiveHealth.message =
+        "Set MASSIVE_API_KEY on Vercel (Production) — https://massive.com/dashboard/keys";
+    } else if (!massiveHealth.ok) {
+      massiveHealth.message = massive.error ?? "Massive request failed";
+    } else if (!(massive.value ?? []).length) {
+      massiveHealth.message =
+        "Connected — snapshot not on plan; Yahoo carries US tape (Massive on security detail)";
+    }
+  }
 
   return {
     fetchedAt,

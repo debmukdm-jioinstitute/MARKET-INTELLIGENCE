@@ -10,6 +10,7 @@ import { feedFetch } from "@/lib/feeds/http";
 import type { LiveQuote } from "@/lib/feeds/types";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
+import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
 /** Indices Upstox has a stable instrument_key for — see INDIA_INSTRUMENT_KEYS. */
@@ -45,7 +46,21 @@ const UPSTOX = {
 
 /** Attributes a QuoteField's source to whichever live source actually served the row. */
 function sourceFor(sym: string, provider?: LiveQuote["provider"]) {
-  return provider === "upstox" ? UPSTOX : YAHOO(sym);
+  if (provider === "upstox") return UPSTOX;
+  if (provider === "massive") return { ...MASSIVE_SOURCE, asOf: undefined };
+  return YAHOO(sym);
+}
+
+async function buildLiveQuoteMap(symbols: readonly string[]) {
+  const [yahooQuotes, upstoxQuotes, massiveQuotes] = await Promise.all([
+    fetchYahooQuotes([...symbols]),
+    fetchUpstoxIndiaQuotes(UPSTOX_INDIA_SYMBOLS).catch(() => []),
+    fetchMassiveUsQuotes([...symbols]),
+  ]);
+  const map = new Map(yahooQuotes.map((q) => [q.symbol, q]));
+  for (const q of upstoxQuotes) map.set(q.symbol, q);
+  for (const q of massiveQuotes) map.set(q.symbol, q);
+  return map;
 }
 
 function qFromYahoo(map: Map<string, LiveQuote>, sym: string): QuoteField {
@@ -247,25 +262,14 @@ export async function buildIndiaDashboardQuick(): Promise<
   Pick<IndiaDashboardPayload, "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact">
 > {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [yahooQuotes, upstoxQuotes, breadth] = await Promise.all([
-    fetchYahooQuotes(symbols),
-    fetchUpstoxIndiaQuotes(UPSTOX_INDIA_SYMBOLS).catch(() => []),
-    fetchNseBreadth(),
-  ]);
-  const ymap = new Map(yahooQuotes.map((q) => [q.symbol, q]));
-  for (const q of upstoxQuotes) ymap.set(q.symbol, q);
+  const [ymap, breadth] = await Promise.all([buildLiveQuoteMap(symbols), fetchNseBreadth()]);
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth);
   return { fetchedAt: new Date().toISOString(), pulse, globalRadar, indiaImpact };
 }
 
 export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [yahooQuotes, upstoxQuotes] = await Promise.all([
-    fetchYahooQuotes(symbols),
-    fetchUpstoxIndiaQuotes(UPSTOX_INDIA_SYMBOLS).catch(() => []),
-  ]);
-  const ymap = new Map(yahooQuotes.map((q) => [q.symbol, q]));
-  for (const q of upstoxQuotes) ymap.set(q.symbol, q);
+  const ymap = await buildLiveQuoteMap(symbols);
 
   const [nseIndices, breadth, foNifty, foBank, fiiDii, macroCpi, macroGdp, mospi, gsecHist, fxRes, iip, wpi, dep, credit, repo] =
     await Promise.all([

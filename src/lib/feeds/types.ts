@@ -12,7 +12,8 @@ export type FeedSourceId =
   | "oecd"
   | "mospi"
   | "biquote"
-  | "upstox";
+  | "upstox"
+  | "massive";
 
 export type FeedHealth = {
   id: FeedSourceId;
@@ -39,7 +40,7 @@ export type LiveQuote = {
   changePct: number;
   currency?: string;
   asOf: string;
-  provider: "yahoo" | "stooq" | "alphavantage" | "biquote" | "truedata" | "upstox";
+  provider: "yahoo" | "stooq" | "alphavantage" | "biquote" | "truedata" | "upstox" | "massive";
 };
 
 export type MacroPoint = {

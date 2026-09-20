@@ -1,4 +1,11 @@
 import { fetchAlphaVantageQuote } from "@/lib/feeds/sources/alphavantage";
+import {
+  fetchMassiveDailyBars,
+  fetchMassiveStockSnapshots,
+  hasMassiveApiKey,
+  isUsEquityTicker,
+  massiveTickerOverviewUrl,
+} from "@/lib/feeds/sources/massive";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
 import {
   fetchYahooHistory,
@@ -43,7 +50,7 @@ export type SecurityDetailPayload = {
     bookValue?: number;
     exchange?: string;
     quoteType?: string;
-    provider: "yahoo" | "stooq" | "alphavantage" | "simulated";
+    provider: "yahoo" | "stooq" | "alphavantage" | "simulated" | "massive";
   };
   history: { date: string; value: number }[];
   sources: SourceLink[];
@@ -87,18 +94,41 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
   const sources: SourceLink[] = [];
   const fetchedAt = new Date().toISOString();
 
+  const massiveRows = isUsEquityTicker(sym)
+    ? await fetchMassiveStockSnapshots([sym], { aggFallback: true })
+    : [];
+  const massiveQ = massiveRows[0];
   const yahoo = await fetchYahooQuoteDetail(sym);
-  const history = await fetchYahooHistory(sym, "1y");
+  let history = isUsEquityTicker(sym) ? await fetchMassiveDailyBars(sym, 400) : [];
+  if (!history.length) history = await fetchYahooHistory(sym, "1y");
+
+  if (hasMassiveApiKey() && isUsEquityTicker(sym)) {
+    sources.push({
+      id: "massive",
+      label: "Massive",
+      url: massiveTickerOverviewUrl(sym),
+      usedFor: "US stock snapshot & daily OHLC (when API key set)",
+    });
+  }
   sources.push({
     id: "yahoo",
     label: "Yahoo Finance",
     url: yahooFinanceUrl(sym),
-    usedFor: "Last price, OHLC, volume, fundamentals, 1Y daily history",
+    usedFor: "Fallback quote, fundamentals, history",
   });
 
   let quote: SecurityDetailPayload["quote"];
 
-  if (yahoo?.regularMarketPrice != null) {
+  if (massiveQ) {
+    quote = {
+      price: massiveQ.price,
+      change: massiveQ.change,
+      changePct: massiveQ.changePct,
+      currency: "USD",
+      asOf: massiveQ.asOf,
+      provider: "massive",
+    };
+  } else if (yahoo?.regularMarketPrice != null) {
     quote = {
       price: yahoo.regularMarketPrice,
       change: yahoo.regularMarketChange ?? 0,

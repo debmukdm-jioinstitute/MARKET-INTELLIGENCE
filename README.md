@@ -32,6 +32,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Live **quotes and headlines** are pulled server-side from open feeds (NSE/BSE/RBI RSS, SEC EDGAR, Yahoo Finance, Stooq, World Bank, IMF, OECD, MOSPI/data.gov.in, plus optional FRED and Alpha Vantage when API keys are set).
 
+**US equities & indices** prefer [**Massive**](https://massive.com) when `MASSIVE_API_KEY` is set (stock snapshots, index snapshots, daily bars, market status). Sign up at [massive.com/dashboard/signup](https://massive.com/dashboard/signup), create a key at [massive.com/dashboard/keys](https://massive.com/dashboard/keys), then add to `.env.local` and Vercel. Verify with `GET /api/feeds/massive/status` after `npm run dev`.
+
 India quotes (Nifty, Sensex, Bank Nifty, India VIX, Reliance, HDFC Bank, Infosys — feeding both `/feeds` and the India Dashboard) use a 3-tier waterfall: **Upstox** (exchange-licensed, primary) → **Yahoo Finance** (fallback) → **TrueData** (last resort). Env vars, both optional:
 
 - `UPSTOX_ACCESS_TOKEN` — a free 1-year "Analytics Token", generated once (no daily login) from your [Upstox Developer Apps page](https://account.upstox.com/developer/apps#analytics) → Analytics tab → Generate Token.

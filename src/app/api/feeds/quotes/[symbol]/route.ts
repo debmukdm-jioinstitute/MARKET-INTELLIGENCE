@@ -1,3 +1,4 @@
+import { fetchMassiveDailyBars, isUsEquityTicker } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
 import { NextResponse } from "next/server";
 
@@ -8,7 +9,11 @@ export async function GET(
   const { symbol } = await ctx.params;
   const sym = symbol.toUpperCase();
   try {
-    const points = await fetchYahooHistory(sym, "2y");
+    let points =
+      isUsEquityTicker(sym) ? await fetchMassiveDailyBars(sym, 400).catch(() => []) : [];
+    if (!points.length) {
+      points = await fetchYahooHistory(sym, "2y");
+    }
     return NextResponse.json({ symbol: sym, points });
   } catch (e) {
     return NextResponse.json(
