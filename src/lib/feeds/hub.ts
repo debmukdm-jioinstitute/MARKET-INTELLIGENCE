@@ -11,7 +11,7 @@ import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
 import { fetchSecFilings } from "@/lib/feeds/sources/sec";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
-import { fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
+import { fetchUpstoxNews, fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
 import { fetchMassiveUsQuotes, hasMassiveApiKey } from "@/lib/feeds/sources/massive";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
@@ -45,11 +45,14 @@ function mergeQuotes(
   yahoo: LiveQuote[],
   stooq: LiveQuote[],
   massive: LiveQuote[] = [],
+  upstox: LiveQuote[] = [],
 ): LiveQuote[] {
   const map = new Map<string, LiveQuote>();
   for (const q of stooq) map.set(q.symbol, q);
   for (const q of yahoo) map.set(q.symbol, q);
   for (const q of massive) map.set(q.symbol, q);
+  // Priority 1: Upstox exchange-licensed quotes always override fallbacks
+  for (const q of upstox) map.set(q.symbol, q);
   return [...map.values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
 }
 
@@ -57,13 +60,19 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   const fetchedAt = new Date().toISOString();
 
   const tape = [...TAPE_SYMBOLS, "^VIX"];
-  const [nse, bse, rbi, sec, upstoxNews, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
+  const upstoxInstruments = INDIA_EQUITIES.map((i) => ({
+    instrumentKey: i.instrumentKey,
+    symbol: i.symbol,
+  }));
+
+  const [nse, bse, rbi, sec, upstoxNews, upstoxQuotes, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
     await Promise.all([
       timed(() => fetchNseNews()),
       timed(() => fetchBseNews()),
       timed(() => fetchRbiNews()),
       timed(() => fetchSecFilings()),
       timed(() => fetchUpstoxNews(INDIA_EQUITIES.map((i) => i.instrumentKey))),
+      timed(() => fetchUpstoxQuotes(upstoxInstruments).catch(() => [])),
       timed(() => fetchYahooQuotes(tape)),
       timed(() => fetchMassiveUsQuotes(tape)),
       timed(() => fetchStooqQuotes(TAPE_SYMBOLS.slice(0, 12))),
@@ -79,7 +88,8 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   const yahooQuotes = yahoo.value ?? [];
   const stooqQuotes = stooq.value ?? [];
   const massiveQuotes = [...(massive.value ?? []), ...(av.value ? [av.value] : [])];
-  const quotes = mergeQuotes(yahooQuotes, stooqQuotes, massiveQuotes);
+  const upstoxRows = upstoxQuotes.value ?? [];
+  const quotes = mergeQuotes(yahooQuotes, stooqQuotes, massiveQuotes, upstoxRows);
 
   const news = [
     ...(nse.value ?? []),

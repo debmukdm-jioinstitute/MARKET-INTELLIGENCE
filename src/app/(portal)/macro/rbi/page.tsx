@@ -31,37 +31,46 @@ export default function RbiPolicyPage() {
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 Policy Repo Rate:
-                <MetricInfo id="repo" asOf={data?.fetchedAt} iconSize="xs" />
+                <MetricInfo id="repo" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.repo ?? "5.25%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-foreground">5.50% (Neutral Stance)</span>
+              <span className="font-bold text-foreground">
+                {data?.rbiLiquidity?.corridor?.repo ?? "5.25%"} ({data?.rbiLiquidity?.corridor?.stance ?? "Neutral Stance"})
+              </span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 Standing Deposit Facility (SDF):
-                <MetricInfo id="sdf" asOf={data?.fetchedAt} iconSize="xs" />
+                <MetricInfo id="sdf" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.sdf ?? "5.00%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-foreground">5.25%</span>
+              <span className="font-bold text-foreground">{data?.rbiLiquidity?.corridor?.sdf ?? "5.00%"}</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 Marginal Standing Facility (MSF):
-                <MetricInfo id="msf" asOf={data?.fetchedAt} iconSize="xs" />
+                <MetricInfo id="msf" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.msf ?? "5.50%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-foreground">5.75%</span>
+              <span className="font-bold text-foreground">{data?.rbiLiquidity?.corridor?.msf ?? "5.50%"}</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 Cash Reserve Ratio (CRR):
-                <MetricInfo id="crr" asOf={data?.fetchedAt} iconSize="xs" />
+                <MetricInfo id="crr" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.crr ?? "3.00%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-foreground">4.50%</span>
+              <span className="font-bold text-emerald-400">{data?.rbiLiquidity?.corridor?.crr ?? "3.00%"}</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 Statutory Liquidity Ratio (SLR):
-                <MetricInfo id="slr" asOf={data?.fetchedAt} iconSize="xs" />
+                <MetricInfo id="slr" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.slr ?? "18.00%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-foreground">18.00%</span>
+              <span className="font-bold text-foreground">{data?.rbiLiquidity?.corridor?.slr ?? "18.00%"}</span>
+            </div>
+            <div className="pt-2 flex justify-between items-center">
+              <span className="text-muted-foreground flex items-center gap-1">
+                Fixed Reverse Repo Rate:
+                <MetricInfo id="reverse_repo" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.reverseRepo ?? "3.35%"} iconSize="xs" />
+              </span>
+              <span className="font-bold text-foreground">{data?.rbiLiquidity?.corridor?.reverseRepo ?? "3.35%"}</span>
             </div>
           </div>
         </div>

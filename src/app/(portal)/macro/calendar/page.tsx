@@ -23,9 +23,9 @@ const EVENTS: CalendarEvent[] = [
     country: "IND",
     event: "RBI MPC Rate Decision & Stance Resolution",
     impact: "HIGH",
-    actual: "5.50%",
-    forecast: "5.50%",
-    previous: "5.50%",
+    actual: "5.25%",
+    forecast: "5.25%",
+    previous: "5.25%",
   },
   {
     metricId: "cpi",

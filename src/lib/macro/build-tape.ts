@@ -1,9 +1,11 @@
 import { fetchFiiDii } from "@/lib/feeds/india/nse-market";
 import { fetchIndiaGsec10y } from "@/lib/feeds/india/india-macro";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
+import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import { METRIC_COPY } from "@/lib/macro/metric-copy";
 import type { FieldSource } from "@/lib/feeds/india/types";
+import type { LiveQuote } from "@/lib/feeds/types";
 
 export type YieldPoint = {
   tenor: string;
@@ -91,6 +93,17 @@ function yahooSource(sym: string): FieldSource {
   return { provider: "Yahoo Finance", url: yahooFinanceUrl(sym), asOf: new Date().toISOString() };
 }
 
+function quoteSource(sym: string, q?: LiveQuote): FieldSource {
+  if (q?.provider === "upstox") {
+    return {
+      provider: "Upstox",
+      url: "https://upstox.com/developer/api-documentation/ltp-v3/",
+      asOf: q.asOf,
+    };
+  }
+  return yahooSource(sym);
+}
+
 function copySource(key: string): FieldSource {
   const c = METRIC_COPY[key];
   return c
@@ -113,14 +126,16 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
     "^CNXIT",
   ];
 
-  const [quotes, gsec, fiiRows, ...usYields] = await Promise.all([
+  const [quotes, upstoxQuotes, gsec, fiiRows, ...usYields] = await Promise.all([
     fetchYahooQuotes(symbols),
+    fetchUpstoxIndiaQuotes(["^NSEI"]).catch(() => []),
     fetchIndiaGsec10y(),
     fetchFiiDii().catch(() => []),
     ...US_FRED.map((u) => lastFredYield(u.series)),
   ]);
 
   const qmap = new Map(quotes.map((q) => [q.symbol, q]));
+  for (const u of upstoxQuotes) qmap.set(u.symbol, u);
 
   const indiaFredValues = await Promise.all(INDIA_FRED.map((i) => lastFredYield(i.series)));
   const live10y = gsec.field.value;
@@ -174,7 +189,7 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
       changePct: q?.changePct ?? null,
       copyKey: c.copyKey,
       href: `/macro/commodities#${c.id}`,
-      source: yahooSource(c.sym),
+      source: quoteSource(c.sym, q),
     };
   });
 
@@ -196,7 +211,7 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
       changePct: q?.changePct ?? null,
       copyKey: c.copyKey,
       href: `/macro/currency#${c.id}`,
-      source: yahooSource(c.sym),
+      source: quoteSource(c.sym, q),
     };
   });
 
@@ -234,7 +249,7 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
         { name: "Airlines", direction: (brentUp ? "down" : brentDown ? "up" : "mixed") as TransmissionRow["direction"] },
         { name: "Chemicals", direction: (brentUp ? "down" : "mixed") as TransmissionRow["direction"] },
       ],
-      source: yahooSource("BZ=F"),
+      source: quoteSource("BZ=F", brent),
     },
     usdInr: {
       title: "FX → India transmission",
@@ -251,7 +266,7 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
         { name: "Import-heavy businesses", direction: (inrWeak ? "down" : "mixed") as TransmissionRow["direction"] },
         { name: "Airlines", direction: (inrWeak ? "down" : "mixed") as TransmissionRow["direction"] },
       ],
-      source: yahooSource("INR=X"),
+      source: quoteSource("INR=X", inr),
     },
   };
 

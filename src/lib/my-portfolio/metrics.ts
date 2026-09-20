@@ -1,6 +1,11 @@
 import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
 import { computeSpecMetrics } from "@/lib/my-portfolio/metrics-spec-engine";
-import { candleRangeToDates, fetchUpstoxFullQuotes, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox";
+import {
+  candleRangeToDates,
+  fetchUpstoxFullQuotes,
+  fetchUpstoxHistoricalCandles,
+  INDIA_INSTRUMENT_KEYS,
+} from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
 import { fetchBenchmarkHistory, weightsFor, BENCHMARK_SNAPSHOT_DATE } from "@/lib/my-portfolio/benchmarks";
@@ -95,22 +100,29 @@ async function fetchHoldingSeries(h: Holding): Promise<HoldingSeries> {
   let spread: number | null = null;
   let priceToBook: number | null = null;
   let dividendYield: number | null = null;
+  let hasUpstoxPrice = false;
 
   if (h.market === "IN") {
-    // 1. Try Upstox if instrumentKey is available
-    if (h.instrumentKey) {
+    // 1. Priority 1: Upstox exchange-licensed data
+    const effectiveKey =
+      h.instrumentKey ||
+      INDIA_INSTRUMENT_KEYS[h.symbol] ||
+      INDIA_INSTRUMENT_KEYS[`${h.symbol}.NS`];
+
+    if (effectiveKey) {
       try {
         const { from, to } = candleRangeToDates("1Y");
         const [candles, quotes] = await Promise.all([
-          fetchUpstoxHistoricalCandles(h.instrumentKey, "days", "1", from, to).catch(() => []),
-          fetchUpstoxFullQuotes([{ instrumentKey: h.instrumentKey, symbol: h.symbol }]).catch(() => []),
+          fetchUpstoxHistoricalCandles(effectiveKey, "days", "1", from, to).catch(() => []),
+          fetchUpstoxFullQuotes([{ instrumentKey: effectiveKey, symbol: h.symbol }]).catch(() => []),
         ]);
         if (candles && candles.length > 5) {
           history = candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
         }
         const q = quotes[0];
-        if (q) {
+        if (q && q.ltp > 0) {
           last = q.ltp;
+          hasUpstoxPrice = true;
           const prevClose = q.ohlc.close ?? last;
           change = last - prevClose;
           changePct = prevClose > 0 ? (last - prevClose) / prevClose : 0;
@@ -142,13 +154,13 @@ async function fetchHoldingSeries(h: Holding): Promise<HoldingSeries> {
       }
     }
 
-    // 3. Enrich with Yahoo Quote Detail (live mark, PE, marketCap, volume, book value)
+    // 3. Enrich with Yahoo Quote Detail (live mark fallback if no Upstox, PE, marketCap, volume, book value)
     try {
       const meta = await fetchYahooQuoteDetail(`${h.symbol}.NS`).catch(() =>
         fetchYahooQuoteDetail(h.symbol).catch(() => null),
       );
       if (meta) {
-        if (meta.regularMarketPrice != null && meta.regularMarketPrice > 0) {
+        if (!hasUpstoxPrice && meta.regularMarketPrice != null && meta.regularMarketPrice > 0) {
           last = meta.regularMarketPrice;
           const prev = meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPreviousClose ?? last;
           change = meta.regularMarketChange ?? (last - prev);

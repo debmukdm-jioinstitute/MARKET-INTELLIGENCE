@@ -270,77 +270,111 @@ export async function fetchIndiaGsec10y(): Promise<{
   field: QuoteField;
   history: { date: string; value: number }[];
 }> {
-  const sourceRbi: FieldSource = {
-    provider: "RBI / FBIL (via FRED)",
-    url: "https://fred.stlouisfed.org/series/IRLTLT01INM156N",
-  };
-  const sourceUpstox: FieldSource = {
+  let value: number | null = null;
+  let change: number | null = null;
+  let changePct: number | null = null;
+  let history: { date: string; value: number }[] = [];
+  let source: FieldSource = {
     provider: "Upstox (Nifty GS 10Yr)",
     url: "https://upstox.com/developer/api-documentation/ltp-v3/",
   };
 
-  let history = (await fetchFredSeriesPoints(GSEC10Y_FRED, 400)).map((p) => ({
-    date: p.date,
-    value: p.value,
-  }));
-
-  let value: number | null = history[history.length - 1]?.value ?? null;
-  let change: number | null = null;
-  let changePct: number | null = null;
-  let source: FieldSource = sourceRbi;
-
-  if (value != null && history.length > 1) {
-    const prev = history[history.length - 2]!.value;
-    change = value - prev;
-    changePct = prev ? change / prev : 0;
-  }
-
-  if (value == null) {
-    const nse = await fetchNseGsecBenchmarkYield().catch(() => null);
-    if (nse) {
-      value = nse.yield;
-      change = nse.change ?? null;
-      changePct = nse.changePct ?? null;
-      source = { provider: "NSE India (G-Sec CM)", url: nse.url, asOf: nse.asOf };
-    }
-  }
-
-  if (value == null) {
-    const quotes = await fetchUpstoxQuotes([{ instrumentKey: NIFTY_GS_10Y_KEY, symbol: "^NIFTYGS10Y" }]);
+  // 1. PRIMARY PRIORITY: Upstox API (NSE exchange-licensed real-time quote)
+  try {
+    const quotes = await fetchUpstoxQuotes([{ instrumentKey: NIFTY_GS_10Y_KEY, symbol: "^NIFTYGS10Y" }]).catch(() => []);
     const q = quotes[0];
     if (q && q.price > 0 && q.price < 25) {
       value = q.price;
       change = q.change;
       changePct = q.changePct;
-      source = { ...sourceUpstox, asOf: q.asOf };
+      source = {
+        provider: "Upstox (Nifty GS 10Yr)",
+        url: "https://upstox.com/developer/api-documentation/ltp-v3/",
+        asOf: q.asOf,
+      };
+
+      const to = new Date();
+      const from = new Date();
+      from.setFullYear(from.getFullYear() - 1);
+      const candles = await fetchUpstoxHistoricalCandles(
+        NIFTY_GS_10Y_KEY,
+        "days",
+        "1",
+        from.toISOString().slice(0, 10),
+        to.toISOString().slice(0, 10),
+      ).catch(() => []);
+      if (candles.length) {
+        history = candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+      }
+    }
+  } catch {
+    /* proceed to fallback */
+  }
+
+  // 2. SECONDARY FALLBACK: Yahoo Finance API (IN10YT=RR)
+  if (value == null || !history.length) {
+    try {
+      const yh = await fetchYahooHistory("IN10YT=RR", "1y").catch(() => []);
+      if (yh.length) {
+        if (!history.length) {
+          history = yh;
+        }
+        if (value == null) {
+          value = yh[yh.length - 1]!.value;
+          const prev = yh[yh.length - 2]?.value;
+          if (prev != null) {
+            change = value - prev;
+            changePct = prev ? change / prev : 0;
+          }
+          source = { provider: "Yahoo Finance (IN10YT=RR)", url: yahooFinanceUrl("IN10YT=RR") };
+        }
+      }
+    } catch {
+      /* proceed to fallback */
     }
   }
 
-  if (!history.length && value != null) {
-    const to = new Date();
-    const from = new Date();
-    from.setFullYear(from.getFullYear() - 1);
-    const candles = await fetchUpstoxHistoricalCandles(
-      NIFTY_GS_10Y_KEY,
-      "days",
-      "1",
-      from.toISOString().slice(0, 10),
-      to.toISOString().slice(0, 10),
-    ).catch(() => []);
-    history = candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+  // 3. TERTIARY FALLBACK: NSE India Benchmark Yield
+  if (value == null) {
+    try {
+      const nse = await fetchNseGsecBenchmarkYield().catch(() => null);
+      if (nse) {
+        value = nse.yield;
+        change = nse.change ?? null;
+        changePct = nse.changePct ?? null;
+        source = { provider: "NSE India (G-Sec CM)", url: nse.url, asOf: nse.asOf };
+      }
+    } catch {
+      /* proceed to FRED */
+    }
   }
 
-  if (value == null) {
-    const yh = await fetchYahooHistory("IN10YT=RR", "1y").catch(() => []);
-    history = yh;
-    if (yh.length) {
-      value = yh[yh.length - 1]!.value;
-      const prev = yh[yh.length - 2]?.value;
-      if (prev != null) {
-        change = value - prev;
-        changePct = prev ? change / prev : 0;
+  // 4. HISTORICAL FALLBACK: FRED series (IRLTLT01INM156N)
+  if (value == null || !history.length) {
+    try {
+      const fredPts = (await fetchFredSeriesPoints(GSEC10Y_FRED, 400)).map((p) => ({
+        date: p.date,
+        value: p.value,
+      }));
+      if (fredPts.length) {
+        if (!history.length) {
+          history = fredPts;
+        }
+        if (value == null) {
+          value = fredPts[fredPts.length - 1]!.value;
+          if (fredPts.length > 1) {
+            const prev = fredPts[fredPts.length - 2]!.value;
+            change = value - prev;
+            changePct = prev ? change / prev : 0;
+          }
+          source = {
+            provider: "RBI / FBIL (via FRED)",
+            url: `https://fred.stlouisfed.org/series/${GSEC10Y_FRED}`,
+          };
+        }
       }
-      source = { provider: "Yahoo Finance", url: yahooFinanceUrl("IN10YT=RR") };
+    } catch {
+      /* no-op */
     }
   }
 
@@ -349,7 +383,7 @@ export async function fetchIndiaGsec10y(): Promise<{
       value,
       change,
       changePct,
-      source: { ...source, asOf: new Date().toISOString() },
+      source: { ...source, asOf: source.asOf ?? new Date().toISOString() },
     },
     history,
   };

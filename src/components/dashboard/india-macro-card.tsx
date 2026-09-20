@@ -36,7 +36,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "RBI Policy Repo Rate",
       metricKey: "repo",
-      value: "5.50%",
+      value: data?.rbiLiquidity?.corridor?.repo ?? "5.25%",
       dir: "→",
       dirColor: "text-muted-foreground",
       source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
@@ -96,7 +96,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
             >
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">{ind.label}</span>
-                <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} />
+                <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} value={ind.value} />
               </div>
               <div className="flex items-center gap-2 font-bold">
                 <span className="text-foreground">{ind.value}</span>

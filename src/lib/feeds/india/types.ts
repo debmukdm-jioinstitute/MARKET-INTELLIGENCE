@@ -99,6 +99,16 @@ export type IndiaDashboardPayload = {
   rbiLiquidity: {
     rows: { label: string; value: string | null; source: FieldSource }[];
     systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; source: FieldSource };
+    corridor?: {
+      repo: string;
+      sdf: string;
+      msf: string;
+      crr: string;
+      slr: string;
+      bankRate: string;
+      reverseRepo: string;
+      stance: string;
+    };
   };
   moneyFlow: {
     fii: FlowRow;

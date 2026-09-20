@@ -939,6 +939,213 @@ export const MATH_REGISTRY: Record<string, MetricMathDefinition> = {
       };
     },
   },
+  // ==========================================
+  // 15. CENTRAL BANKING: CASH RESERVE RATIO (CRR)
+  // ==========================================
+  crr: {
+    id: "crr",
+    name: "Cash Reserve Ratio (CRR)",
+    category: "Central Banking & Monetary Policy",
+    latexFormula: "\\text{Cash Reserve Requirement} = \\text{CRR} \\times \\text{NDTL} = 3.00\\% \\times \\text{Net Demand and Time Liabilities}",
+    variables: [
+      { symbol: "\\text{CRR}", name: "Cash Reserve Ratio", description: "Mandatory percentage of bank deposits kept unencumbered as liquid cash with RBI (3.00%)" },
+      { symbol: "\\text{NDTL}", name: "Net Demand and Time Liabilities", description: "Total public deposit base of commercial banks" },
+      { symbol: "m = 1/\\text{CRR}", name: "Theoretical Money Multiplier", description: "Theoretical upper bound on broad money (M3) credit creation capacity" },
+    ],
+    economicInterpretation:
+      "The Cash Reserve Ratio (CRR) is the statutory portion of deposits that commercial banks must maintain with the Reserve Bank of India without earning interest. The RBI eased the CRR to 3.00% to permanently inject over ₹3.3 lakh crore of primary banking liquidity, reducing bank cost of funds and supporting credit flow.",
+    institutionalUtility:
+      "Fixed income portfolio managers and ALM treasury desks closely track CRR to forecast systemic banking liquidity deficits/surpluses, overnight MIBOR rates, and short-end CP/CD yields.",
+    provenance: {
+      provider: "Reserve Bank of India (Monetary Policy Committee Gazette)",
+      frequency: "Statutory fortnightly reporting Friday",
+      url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
+      methodology: "Section 42(1) of the Reserve Bank of India Act, 1934",
+    },
+    generateDerivation: (currentValue) => {
+      const crrVal = currentValue ? String(currentValue) : "3.00%";
+      const ndtlCr = 22000000;
+      const lockupCr = ndtlCr * 0.03;
+      return {
+        activeValueFormatted: crrVal,
+        inputs: [
+          { symbol: "\\text{CRR}", label: "Statutory Cash Reserve Ratio", value: "3.00%", source: "RBI MPC Official Gazette" },
+          { symbol: "\\text{NDTL}", label: "Banking System Aggregate Liabilities", value: "₹220 Lakh Cr", source: "RBI Weekly Statistical Supplement" },
+          { symbol: "m", label: "Theoretical Credit Multiplier", value: "33.3x", source: "1 / CRR" },
+        ],
+        steps: [
+          {
+            stepNumber: 1,
+            title: "Calculate Primary Liquidity Cash Balance",
+            latex: `\\text{Cash Reserve} = \\text{CRR} \\times \\text{NDTL} = 3.00\\% \\times ₹220,00,000\\text{ Cr} = ₹${(lockupCr / 100000).toFixed(1)}\\text{ Lakh Cr}`,
+            explanation: "Total unencumbered cash balances held by commercial banks with the Reserve Bank of India.",
+          },
+          {
+            stepNumber: 2,
+            title: "Theoretical Money Expansion Multiplier",
+            latex: `m = \\frac{1}{\\text{CRR}} = \\frac{1}{0.03} = 33.33\\times`,
+            explanation: "Maximal theoretical credit expansion power unlocked per rupee of sovereign primary reserve money.",
+          },
+        ],
+        verification: `Cash Reserve Ratio confirmed at 3.00% under latest RBI MPC statutory resolution.`,
+      };
+    },
+  },
+
+  // ==========================================
+  // 16. CENTRAL BANKING: POLICY REPO RATE
+  // ==========================================
+  repo: {
+    id: "repo",
+    name: "Policy Repo Rate (RBI)",
+    category: "Central Banking & Monetary Policy",
+    latexFormula: "\\text{Repo Rate} = 5.25\\% \\quad (\\text{Key Monetary Policy Signal Lending Rate})",
+    variables: [
+      { symbol: "R_{\\text{repo}}", name: "Policy Repo Rate", description: "The benchmark interest rate at which RBI lends short-term funds to banks against G-Secs" },
+      { symbol: "\\text{SDF}", name: "Standing Deposit Facility", description: "Corridor floor: Repo − 25 bps = 5.00%" },
+      { symbol: "\\text{MSF}", name: "Marginal Standing Facility", description: "Corridor ceiling: Repo + 25 bps = 5.50%" },
+    ],
+    economicInterpretation:
+      "The Policy Repo Rate is the primary operational anchor of monetary policy in India. At 5.25% with a neutral stance, it directly anchors the overnight call money rate (WACR), commercial paper rates, and corporate loan external benchmark lending rates (EBLR).",
+    institutionalUtility:
+      "Sets the baseline discount hurdle rate across all equity valuation models, Treasury yield curves, and fixed-income portfolios.",
+    provenance: {
+      provider: "Reserve Bank of India (Monetary Policy Committee)",
+      frequency: "Bi-monthly MPC Resolution",
+      url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
+      methodology: "Section 45ZB of the RBI Act, 1934",
+    },
+    generateDerivation: (currentValue) => {
+      const repoVal = currentValue ? String(currentValue) : "5.25%";
+      return {
+        activeValueFormatted: repoVal,
+        inputs: [
+          { symbol: "R_{\\text{repo}}", label: "Benchmark Policy Repo Rate", value: "5.25%", source: "RBI MPC Resolution" },
+          { symbol: "\\text{Stance}", label: "Monetary Policy Stance", value: "Neutral", source: "RBI Governor Statement" },
+          { symbol: "\\text{Spread}", label: "Policy Corridor Width", value: "50 bps", source: "SDF (5.00%) to MSF (5.50%)" },
+        ],
+        steps: [
+          {
+            stepNumber: 1,
+            title: "Policy Rate Formulation",
+            latex: `R_{\\text{repo}} = 5.25\\% \\quad [\\text{Neutral Stance}]`,
+            explanation: "The Monetary Policy Committee set the policy repo rate at 5.25%.",
+          },
+          {
+            stepNumber: 2,
+            title: "Liquidity Adjustment Facility (LAF) Corridor",
+            latex: `\\text{SDF} (5.00\\%) \\le \\text{WACR} \\le \\text{MSF} (5.50\\%)`,
+            explanation: "The operating target of monetary policy (Weighted Average Call Rate) is steered within this 50-bps corridor centered at 5.25%.",
+          },
+        ],
+        verification: `RBI Policy Repo Rate confirmed at 5.25% with Neutral Stance.`,
+      };
+    },
+  },
+
+  sdf: {
+    id: "sdf",
+    name: "Standing Deposit Facility (SDF)",
+    category: "Central Banking & Monetary Policy",
+    latexFormula: "\\text{SDF Rate} = \\text{Repo Rate} - 25\\text{ bps} = 5.25\\% - 0.25\\% = 5.00\\%",
+    variables: [
+      { symbol: "\\text{SDF}", name: "Standing Deposit Facility", description: "Uncollateralized deposit rate at which RBI absorbs surplus liquidity from banks" },
+      { symbol: "R_{\\text{repo}}", name: "Policy Repo Rate", description: "Operating anchor (5.25%)" },
+    ],
+    economicInterpretation: "The floor of the RBI Liquidity Adjustment Facility corridor. Banks park excess liquidity overnight with the RBI without requiring collateral.",
+    institutionalUtility: "Establishes the risk-free floor for ultra-short overnight money market yields.",
+    provenance: {
+      provider: "Reserve Bank of India",
+      frequency: "Daily overnight facility",
+      url: "https://www.rbi.org.in",
+      methodology: "Set 25 bps below the policy repo rate",
+    },
+    generateDerivation: (currentValue) => ({
+      activeValueFormatted: currentValue ? String(currentValue) : "5.00%",
+      inputs: [
+        { symbol: "R_{\\text{repo}}", label: "Policy Repo Rate", value: "5.25%", source: "RBI MPC" },
+        { symbol: "\\Delta", label: "Corridor Offset", value: "-25 bps", source: "LAF Framework" },
+      ],
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Corridor Floor Calculation",
+          latex: `\\text{SDF} = 5.25\\% - 0.25\\% = 5.00\\%`,
+          explanation: "The SDF operates 25 bps below the benchmark repo rate.",
+        },
+      ],
+      verification: "SDF rate confirmed at 5.00%.",
+    }),
+  },
+
+  msf: {
+    id: "msf",
+    name: "Marginal Standing Facility (MSF)",
+    category: "Central Banking & Monetary Policy",
+    latexFormula: "\\text{MSF Rate} = \\text{Repo Rate} + 25\\text{ bps} = 5.25\\% + 0.25\\% = 5.50\\%",
+    variables: [
+      { symbol: "\\text{MSF}", name: "Marginal Standing Facility", description: "Emergency penal borrowing rate for banks dipping into SLR quota" },
+      { symbol: "R_{\\text{repo}}", name: "Policy Repo Rate", description: "Operating anchor (5.25%)" },
+    ],
+    economicInterpretation: "The ceiling of the RBI Liquidity Adjustment Facility corridor. Banks borrow emergency overnight liquidity by dipping into their SLR quota.",
+    institutionalUtility: "Caps overnight spikes in the interbank call money market during liquidity stress.",
+    provenance: {
+      provider: "Reserve Bank of India",
+      frequency: "Daily overnight window",
+      url: "https://www.rbi.org.in",
+      methodology: "Set 25 bps above the policy repo rate",
+    },
+    generateDerivation: (currentValue) => ({
+      activeValueFormatted: currentValue ? String(currentValue) : "5.50%",
+      inputs: [
+        { symbol: "R_{\\text{repo}}", label: "Policy Repo Rate", value: "5.25%", source: "RBI MPC" },
+        { symbol: "\\Delta", label: "Corridor Offset", value: "+25 bps", source: "LAF Framework" },
+      ],
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Corridor Ceiling Calculation",
+          latex: `\\text{MSF} = 5.25\\% + 0.25\\% = 5.50\\%`,
+          explanation: "The MSF operates 25 bps above the benchmark repo rate.",
+        },
+      ],
+      verification: "MSF rate confirmed at 5.50%.",
+    }),
+  },
+
+  slr: {
+    id: "slr",
+    name: "Statutory Liquidity Ratio (SLR)",
+    category: "Central Banking & Monetary Policy",
+    latexFormula: "\\text{SLR Obligation} = \\text{SLR} \\times \\text{NDTL} = 18.00\\% \\times \\text{Net Demand and Time Liabilities}",
+    variables: [
+      { symbol: "\\text{SLR}", name: "Statutory Liquidity Ratio", description: "Mandatory portion of deposits invested in approved liquid assets (predominantly G-Secs)" },
+      { symbol: "\\text{NDTL}", name: "Net Demand and Time Liabilities", description: "Commercial banking deposit base" },
+    ],
+    economicInterpretation: "Mandates that Indian banks hold a minimum of 18.00% of their deposits in safe government securities, guaranteeing banking solvency and underwriting government debt auctions.",
+    institutionalUtility: "Creates massive structural institutional demand for Central and State Government Bonds (G-Secs and SDLs).",
+    provenance: {
+      provider: "Reserve Bank of India",
+      frequency: "Statutory Fortnightly Standard",
+      url: "https://www.rbi.org.in",
+      methodology: "Section 24 of the Banking Regulation Act, 1949",
+    },
+    generateDerivation: (currentValue) => ({
+      activeValueFormatted: currentValue ? String(currentValue) : "18.00%",
+      inputs: [
+        { symbol: "\\text{SLR}", label: "Statutory Ratio", value: "18.00%", source: "Banking Regulation Act" },
+      ],
+      steps: [
+        {
+          stepNumber: 1,
+          title: "SLR G-Sec Allocation",
+          latex: `\\text{G-Sec Holding Requirement} = 18.00\\% \\times \\text{NDTL}`,
+          explanation: "Banks must maintain at least 18.00% of liabilities in sovereign bonds.",
+        },
+      ],
+      verification: "SLR confirmed at 18.00%.",
+    }),
+  },
 };
 
 // Fallback generator for metrics not explicitly registered

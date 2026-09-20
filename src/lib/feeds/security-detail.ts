@@ -7,6 +7,7 @@ import {
   massiveTickerOverviewUrl,
 } from "@/lib/feeds/sources/massive";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
+import { fetchUpstoxQuotes, INDIA_INSTRUMENT_KEYS } from "@/lib/feeds/sources/upstox";
 import {
   fetchYahooHistory,
   fetchYahooQuoteDetail,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/feeds/sources/yahoo";
 import { feedFetch } from "@/lib/feeds/http";
 import type { Instrument } from "@/lib/types";
+import type { LiveQuote } from "@/lib/feeds/types";
 import { UNIVERSE } from "@/lib/universe";
 
 export type SourceLink = {
@@ -50,10 +52,10 @@ export type SecurityDetailPayload = {
     bookValue?: number;
     exchange?: string;
     quoteType?: string;
-    provider: "yahoo" | "stooq" | "alphavantage" | "simulated" | "massive";
+    provider?: string;
   };
-  history: { date: string; value: number }[];
   sources: SourceLink[];
+  history: { date: string; value: number }[];
   secFilingsUrl?: string;
 };
 
@@ -94,6 +96,14 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
   const sources: SourceLink[] = [];
   const fetchedAt = new Date().toISOString();
 
+  // 1st Priority for India names: Upstox API
+  const upstoxKey = INDIA_INSTRUMENT_KEYS[sym] || INDIA_INSTRUMENT_KEYS[`${sym}.NS`];
+  let upstoxQ: LiveQuote | null = null;
+  if (upstoxKey) {
+    const uQuotes = await fetchUpstoxQuotes([{ instrumentKey: upstoxKey, symbol: sym }]).catch(() => []);
+    if (uQuotes[0] && uQuotes[0].price > 0) upstoxQ = uQuotes[0];
+  }
+
   const massiveRows = isUsEquityTicker(sym)
     ? await fetchMassiveStockSnapshots([sym], { aggFallback: true })
     : [];
@@ -102,6 +112,14 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
   let history = isUsEquityTicker(sym) ? await fetchMassiveDailyBars(sym, 400) : [];
   if (!history.length) history = await fetchYahooHistory(sym, "1y").catch(() => []);
 
+  if (upstoxQ) {
+    sources.push({
+      id: "upstox",
+      label: "Upstox (Exchange-Licensed NSE)",
+      url: "https://upstox.com/developer/api-documentation/ltp-v3/",
+      usedFor: "Live real-time quote",
+    });
+  }
   if (hasMassiveApiKey() && isUsEquityTicker(sym)) {
     sources.push({
       id: "massive",
@@ -119,7 +137,33 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
 
   let quote: SecurityDetailPayload["quote"];
 
-  if (massiveQ) {
+  if (upstoxQ) {
+    quote = {
+      price: upstoxQ.price,
+      change: upstoxQ.change,
+      changePct: upstoxQ.changePct,
+      currency: "INR",
+      asOf: upstoxQ.asOf,
+      provider: "upstox",
+      open: yahoo?.regularMarketOpen,
+      dayHigh: yahoo?.regularMarketDayHigh,
+      dayLow: yahoo?.regularMarketDayLow,
+      prevClose: yahoo?.regularMarketPreviousClose,
+      volume: yahoo?.regularMarketVolume,
+      avgVolume: yahoo?.averageDailyVolume3Month,
+      marketCap: yahoo?.marketCap,
+      pe: yahoo?.trailingPE,
+      forwardPe: yahoo?.forwardPE,
+      priceToBook: yahoo?.priceToBook,
+      dividendYield: yahoo?.dividendYield,
+      fiftyTwoWeekHigh: yahoo?.fiftyTwoWeekHigh,
+      fiftyTwoWeekLow: yahoo?.fiftyTwoWeekLow,
+      eps: yahoo?.epsTrailingTwelveMonths,
+      bookValue: yahoo?.bookValue,
+      exchange: "NSE",
+      quoteType: "EQUITY",
+    };
+  } else if (massiveQ) {
     quote = {
       price: massiveQ.price,
       change: massiveQ.change,
