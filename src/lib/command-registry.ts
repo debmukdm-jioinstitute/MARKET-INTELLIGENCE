@@ -23,7 +23,6 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/portfolio/scenarios", label: "Scenarios", description: "Regime shocks on the working book" },
   { href: "/portfolio/optimizer", label: "Optimizer", description: "Mean-variance / risk parity" },
   { href: "/portfolio/backtest", label: "Backtest", description: "Rule-based allocation replay" },
-  { href: "/research/reports", label: "Reports", description: "Investment committee pack" },
   { href: "/research/ai-desk", label: "AI Desk", description: "AI-assisted trading desk" },
   { href: "/intelligence", label: "Intelligence", description: "News & events" },
 ];

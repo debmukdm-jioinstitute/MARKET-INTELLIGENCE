@@ -29,7 +29,7 @@ Institutional-style virtual portfolio desk and investment intelligence for India
 | **Research** | Symbol search (NSE + US), per-symbol intelligence |
 | **Macro hub** | Regime-first India macro with nested section pages |
 | **Portfolio** | Real holdings (DB-backed), benchmark-relative analytics |
-| **Quant desk** | Allocation, risk, attribution, scenarios, optimizer, backtest, reports |
+| **Quant desk** | Allocation, risk, attribution, scenarios, optimizer, backtest |
 | **Feeds** | Source health, RSS/API aggregation transparency |
 
 ---
@@ -165,7 +165,6 @@ Each block uses **ℹ️** tooltips (plain English + linked data source).
 | Scenarios | [/scenarios](https://getmarketintelligence.vercel.app/scenarios) | Macro shocks (soft landing, recession, inflation, AI boom, USD surge) |
 | Optimizer | [/optimizer](https://getmarketintelligence.vercel.app/optimizer) | Mean-variance / risk-parity style weights on virtual universe |
 | Backtest | [/backtest](https://getmarketintelligence.vercel.app/backtest) | Rebalance rules on simulated 2019–2026 factor path |
-| Reports | [/reports](https://getmarketintelligence.vercel.app/reports) | Investment-committee style printable summary |
 
 > Virtual portfolios on `/app` and quant modules use a **deterministic factor simulation** for long history unless tied to your live `/portfolio` book.
 
