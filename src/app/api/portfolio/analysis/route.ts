@@ -3,6 +3,7 @@ import { getSessionEmail } from "@/lib/session";
 import { computePortfolioAnalysis } from "@/lib/my-portfolio/metrics";
 import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding, PortfolioSettings, TradeLogRow } from "@/lib/my-portfolio/types";
+import { portfolioAnalysisSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -76,24 +77,30 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    let body: {
-      holdings?: unknown;
-      settings?: unknown;
-      tradeLog?: unknown;
-    };
+    let rawBody: unknown;
     try {
-      body = await req.json();
+      rawBody = await req.json();
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    if (body.holdings !== undefined && !Array.isArray(body.holdings)) {
-      return NextResponse.json({ error: "holdings must be an array" }, { status: 400 });
+    const parseResult = portfolioAnalysisSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      const errorDetails = parseResult.error.issues.map((i) => i.message).join(", ");
+      return NextResponse.json({ error: errorDetails, issues: parseResult.error.issues }, { status: 400 });
     }
 
-    const settings = (body.settings as PortfolioSettings) ?? DEFAULT_PORTFOLIO_SETTINGS;
-    const holdings = (Array.isArray(body.holdings) ? body.holdings : REALISTIC_DEFAULT_HOLDINGS) as Holding[];
-    const tradeLog = (Array.isArray(body.tradeLog) ? body.tradeLog : []) as TradeLogRow[];
+    const body = parseResult.data;
+    const settings: PortfolioSettings = body.settings
+      ? {
+          name: body.settings.name ?? DEFAULT_PORTFOLIO_SETTINGS.name,
+          benchmark: body.settings.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
+          baseCurrency: "INR",
+        }
+      : DEFAULT_PORTFOLIO_SETTINGS;
+
+    const holdings = (body.holdings ?? REALISTIC_DEFAULT_HOLDINGS) as Holding[];
+    const tradeLog = (body.tradeLog ?? []) as TradeLogRow[];
 
     const analysis = await computePortfolioAnalysis(holdings, settings, tradeLog);
     return NextResponse.json(analysis);

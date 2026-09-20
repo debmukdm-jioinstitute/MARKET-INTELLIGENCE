@@ -2,6 +2,7 @@ import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
 import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import type { PortfolioSettings } from "@/lib/my-portfolio/types";
+import { updateSettingsSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -29,17 +30,27 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  let body: Partial<PortfolioSettings> = {};
+  let rawBody: unknown;
   try {
-    body = (await req.json()) as Partial<PortfolioSettings>;
+    rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const name = body.name?.trim() || DEFAULT_PORTFOLIO_SETTINGS.name;
+
+  const parseResult = updateSettingsSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    const errorDetails = parseResult.error.issues.map((i) => i.message).join(", ");
+    return NextResponse.json({ error: errorDetails, issues: parseResult.error.issues }, { status: 400 });
+  }
+
+  const body = parseResult.data;
+  const name = body.name || DEFAULT_PORTFOLIO_SETTINGS.name;
   const benchmark = body.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark;
+
   if (!hasDatabase()) {
     return NextResponse.json({ ok: true, note: "Updated in local mode" });
   }
+
   try {
     await ensureSchema();
     const email = await getSessionEmail();

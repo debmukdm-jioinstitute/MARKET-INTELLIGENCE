@@ -1,5 +1,6 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
+import { updateHoldingSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,12 +9,21 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
-  let body: { shares?: number; avgCost?: number } = {};
+  let rawBody: unknown;
   try {
-    body = (await req.json()) as { shares?: number; avgCost?: number };
+    rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
+
+  const parseResult = updateHoldingSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    const errorDetails = parseResult.error.issues.map((i) => i.message).join(", ");
+    return NextResponse.json({ error: errorDetails, issues: parseResult.error.issues }, { status: 400 });
+  }
+
+  const body = parseResult.data;
+
   try {
     if (hasDatabase()) {
       await ensureSchema();

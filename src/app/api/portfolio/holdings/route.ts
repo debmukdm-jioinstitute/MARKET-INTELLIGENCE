@@ -2,6 +2,7 @@ import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
 import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding } from "@/lib/my-portfolio/types";
+import { addHoldingSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -58,30 +59,21 @@ export async function GET() {
   }
 }
 
-type AddBody = {
-  market: "IN" | "US";
-  symbol: string;
-  instrumentKey?: string | null;
-  name: string;
-  sector?: string | null;
-  currency: "INR" | "USD";
-  shares: number;
-  avgCost: number;
-  addedAt?: string;
-};
-
 export async function POST(req: Request) {
-  let body: AddBody | null = null;
+  let rawBody: unknown;
   try {
-    body = (await req.json()) as AddBody;
+    rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  if (!body || !body.symbol || !body.name || !body.shares || body.shares <= 0 || !body.avgCost || body.avgCost <= 0) {
-    return NextResponse.json({ error: "symbol, name, shares, and avgCost are required" }, { status: 400 });
+  const parseResult = addHoldingSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    const errorDetails = parseResult.error.issues.map((i) => i.message).join(", ");
+    return NextResponse.json({ error: errorDetails, issues: parseResult.error.issues }, { status: 400 });
   }
 
+  const body = parseResult.data;
   const addedAt = body.addedAt ?? new Date().toISOString().slice(0, 10);
   const fallbackHolding: Holding = {
     id: `h-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
