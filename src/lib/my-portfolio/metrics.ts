@@ -1,4 +1,5 @@
-import { cagr, covariance, maxDrawdown, mean, percentile, returnsFromPrices, stdev } from "@/lib/analytics";
+import { mean, returnsFromPrices, stdev } from "@/lib/analytics";
+import { computeSpecMetrics } from "@/lib/my-portfolio/metrics-spec-engine";
 import { candleRangeToDates, fetchUpstoxFullQuotes, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
@@ -15,8 +16,8 @@ import type {
   TradeLogRow,
 } from "@/lib/my-portfolio/types";
 
+/** §0.1 risk-free input (annual); periodic conversion inside metrics-spec-engine. */
 const RF_ANNUAL = 0.065;
-const RF_DAILY = RF_ANNUAL / 252;
 
 function m(
   id: string,
@@ -375,14 +376,23 @@ export async function computePortfolioAnalysis(
   set(m("nav", navInr, inr(navInr), "ok", "neutral"));
   const sortedByWeight = [...positions].sort((a, b2) => b2.weight - a.weight);
   const top10Weight = sortedByWeight.slice(0, 10).reduce((s, r) => s + r.weight, 0);
-  set(m("concentration", top10Weight, pct(top10Weight, 1), "ok", top10Weight > 0.6 ? "warn" : "neutral"));
   const hhi = positions.reduce((s, r) => s + r.weight ** 2, 0);
-  set(m("hhi", hhi, num(hhi, 4), "ok"));
-  set(m("effectiveHoldings", hhi > 0 ? 1 / hhi : 0, num(hhi > 0 ? 1 / hhi : 0, 1), "ok"));
-  set(m("grossExposure", 1, pct(1, 0), "ok"));
-  set(m("netExposure", 1, pct(1, 0), "ok", "neutral", "No shorting supported — net exposure equals invested weight."));
-  set(m("leverage", 1, "1.00x", "ok", "neutral", "No margin/borrowing supported in this tracker."));
-  set(m("cashPct", 0, pct(0, 1), "ok", "neutral", "Every rupee added becomes a holding — no separate cash balance is modeled."));
+  set(
+    m(
+      "concentration",
+      top10Weight,
+      pct(top10Weight, 1),
+      "ok",
+      top10Weight > 0.6 ? "warn" : "neutral",
+      "§6.1 Top-N concentration (N=10).",
+    ),
+  );
+  set(m("hhi", hhi, num(hhi, 4), "ok", undefined, "§6.2 HHI = Σ w̃ᵢ² on position weights."));
+  set(m("effectiveHoldings", hhi > 0 ? 1 / hhi : 0, num(hhi > 0 ? 1 / hhi : 0, 1), "ok", undefined, "§6.3 N_eff = 1/HHI."));
+  set(m("grossExposure", 1, pct(1, 0), "ok", undefined, "§6.4 Gross = (L+S)/NAV; long-only → 100%."));
+  set(m("netExposure", 1, pct(1, 0), "ok", "neutral", "§6.4 No shorting — net equals invested weight."));
+  set(m("leverage", 1, "1.00x", "ok", "neutral", "§6.4 No margin modeled."));
+  set(m("cashPct", 0, pct(0, 1), "ok", "neutral", "§6.4 Cash % = C/NAV; holdings-only tracker."));
 
   // Currency contribution
   const usdWeight = positions.filter((r) => r.currency === "USD").reduce((s, r) => s + r.weight, 0);
@@ -427,9 +437,11 @@ export async function computePortfolioAnalysis(
         "sectorContribution",
         top[1],
         `${top[0]} ${pct(top[1])}`,
-        "ok",
+        sectorKnownWeight < 0.99 ? "approx" : "ok",
         tone(top[1]),
-        `Top contributing sector (${top[0]}) to portfolio return.`,
+        sectorKnownWeight < 0.99
+          ? `Top sector (${top[0]}). Sector known for ${pct(sectorKnownWeight, 0)} of NAV; the rest is unclassified.`
+          : `Top contributing sector (${top[0]}) to portfolio return.`,
       ),
     );
   } else {
@@ -444,7 +456,7 @@ export async function computePortfolioAnalysis(
       "assetAllocation",
       null,
       `${pct(inWeight, 0)} India / ${pct(usWeight, 0)} US`,
-      "ok",
+      "approx",
       undefined,
       "Portfolio geographic capital allocation split.",
     ),
@@ -503,12 +515,16 @@ export async function computePortfolioAnalysis(
   set(m("factorLowVol", lowVol, num(lowVol), "approx", tone(lowVol), "Inverse realized volatility vs 25% reference."));
 
   const peEntries = seriesList.filter((s) => s.pe && s.pe > 0);
-  const totalPeW = peEntries.reduce((s, e) => s + (positions.find((r) => r.symbol === e.holding.symbol)?.weight ?? 0), 0) || 1;
-  const valueScore = peEntries.reduce(
-    (s, e) => s + ((positions.find((r) => r.symbol === e.holding.symbol)?.weight ?? 0) / totalPeW) * (1 / e.pe!),
-    0,
-  );
-  set(m("factorValue", valueScore, pct(valueScore, 1), "ok", "neutral", "Harmonic earnings yield (1/PE) across book."));
+  if (peEntries.length) {
+    const totalW = peEntries.reduce((s, e) => s + (positions.find((r) => r.symbol === e.holding.symbol)?.weight ?? 0), 0) || 1;
+    const value = peEntries.reduce(
+      (s, e) => s + ((positions.find((r) => r.symbol === e.holding.symbol)?.weight ?? 0) / totalW) * (1 / e.pe!),
+      0,
+    );
+    set(m("factorValue", value, pct(value, 1), "approx", undefined, `P/E available for ${peEntries.length}/${holdings.length} holdings; others excluded.`));
+  } else {
+    set(NA("factorValue", "No P/E data available yet for these holdings."));
+  }
 
   const capEntries = seriesList.filter((s) => s.marketCap && s.marketCap > 0);
   const totalCapW = capEntries.reduce((s, e) => s + (positions.find((r) => r.symbol === e.holding.symbol)?.weight ?? 0), 0) || 1;
@@ -555,28 +571,41 @@ export async function computePortfolioAnalysis(
   }
 
   // Liquidity metrics
-  const advEntries = seriesList.map((s) => {
-    const adv = s.avgVolume ?? s.volume ?? 850_000;
-    const posAdv = adv > 0 ? s.holding.shares / adv : 0.0001;
-    return { s, posAdv, adv };
-  });
-  const worstAdv = advEntries.sort((a, b2) => b2.posAdv - a.posAdv)[0]!;
-  set(m("positionAdv", worstAdv.posAdv, num(worstAdv.posAdv, 3), "ok", undefined, `Largest single-holding ratio (${worstAdv.s.holding.symbol}).`));
-  const daysToLiquidate = worstAdv.posAdv / 0.2;
-  set(m("daysToLiquidate", daysToLiquidate, `${daysToLiquidate.toFixed(2)} days`, "ok", undefined, "Assumes a 20% max-participation rate limit."));
+  const advEntries = seriesList.filter((s) => s.avgVolume || s.volume);
+  if (advEntries.length) {
+    const rows = advEntries.map((s) => {
+      const adv = s.avgVolume ?? s.volume ?? 0;
+      const posAdv = adv > 0 ? s.holding.shares / adv : null;
+      return { s, posAdv };
+    });
+    const worst = rows.filter((r) => r.posAdv != null).sort((a, b2) => (b2.posAdv ?? 0) - (a.posAdv ?? 0))[0];
+    if (worst?.posAdv != null) {
+      set(m("positionAdv", worst.posAdv, num(worst.posAdv, 3), "approx", undefined, `Largest single-holding ratio shown (${worst.s.holding.symbol}); India uses today's volume as an ADV proxy.`));
+      const days = worst.posAdv / 0.2;
+      set(m("daysToLiquidate", days, `${days.toFixed(2)} days`, "approx", undefined, "Assumes a 20% max-participation rate — a standard rule of thumb, not a guarantee."));
+      const vol = volEntries.find((e) => e.weight > 0)?.vol ?? 0.25;
+      const impact = 1 * vol * Math.sqrt(Math.max(worst.posAdv, 0));
+      set(m("marketImpact", impact, pct(impact, 2), "approx", undefined, "Illustrative square-root model estimate — not a measurement of real trading impact."));
+    } else {
+      set(NA("positionAdv", "No volume data available yet."));
+      set(NA("daysToLiquidate", "No volume data available yet."));
+      set(NA("marketImpact", "No volume data available yet."));
+    }
+  } else {
+    set(NA("positionAdv", "No volume data available yet."));
+    set(NA("daysToLiquidate", "No volume data available yet."));
+    set(NA("marketImpact", "No volume data available yet."));
+  }
 
-  const impact = 1 * portVolApprox * Math.sqrt(Math.max(worstAdv.posAdv, 0.0001));
-  set(m("marketImpact", impact, pct(impact, 2), "ok", undefined, "Square-root institutional market impact estimate."));
-
-  const spreadEntries = seriesList.map((s) => s.bidAskSpreadPct || 0.001);
-  const avgSpread = mean(spreadEntries);
-  set(m("bidAskSpread", avgSpread, pct(avgSpread, 2), "ok", undefined, "Effective top-of-book bid-ask spread estimate."));
-
-  const modeledSlippage = (avgSpread / 2) + impact;
-  set(m("slippage", modeledSlippage, pct(modeledSlippage, 2), "ok", undefined, "Modeled institutional trade slippage."));
-
-  const totalShortfall = (avgSpread / 2) + modeledSlippage;
-  set(m("implementationShortfall", totalShortfall, pct(totalShortfall, 2), "ok", undefined, "Total execution drag estimate (Half-Spread + Slippage)."));
+  const spreadEntries = seriesList.filter((s) => s.bidAskSpreadPct != null);
+  if (spreadEntries.length) {
+    const avgSpread = mean(spreadEntries.map((s) => s.bidAskSpreadPct!));
+    set(m("bidAskSpread", avgSpread, pct(avgSpread, 2), "approx", undefined, "Live top-of-book spread, India holdings only — not available from the US feed."));
+  } else {
+    set(NA("bidAskSpread", "Only available for India holdings with live market depth; none currently held or market is closed."));
+  }
+  set(NA("slippage", "Requires a real trade fill price vs decision price — this tracker records holdings, not live order execution."));
+  set(NA("implementationShortfall", "Requires a real order blotter with execution timestamps — not available in a buy-and-track tracker."));
 
   // ---- history-dependent metrics ----
   if (!hasHistory) {
@@ -591,168 +620,193 @@ export async function computePortfolioAnalysis(
       set(NA(id, naNote));
     }
   } else {
-    const navValues = navSeries.map((v) => v.value);
-    const totalReturn = navValues[navValues.length - 1]! / navValues[0]! - 1;
-    const benchReturn = benchValuesAligned[benchValuesAligned.length - 1]! / benchValuesAligned[0]! - 1;
-    const activeReturn = totalReturn - benchReturn;
-    const cagrValue = cagr(navValues);
-    const vol = stdev(p) * Math.sqrt(252);
-    const benchVol = stdev(b) * Math.sqrt(252);
-    const beta = covariance(p, b) / Math.max(stdev(b) ** 2, 1e-12);
-    const alphaDaily = mean(p) - (RF_DAILY + beta * (mean(b) - RF_DAILY));
-    const alpha = alphaDaily * 252;
-    const downside = p.filter((r) => r < 0);
-    const te = stdev(excess) * Math.sqrt(252);
-    const sharpe = ((mean(p) - RF_DAILY) / Math.max(stdev(p), 1e-12)) * Math.sqrt(252);
-    const sortino = ((mean(p) - RF_DAILY) / Math.max(stdev(downside), 1e-12)) * Math.sqrt(252);
-    const treynor = beta !== 0 ? (mean(p) - RF_DAILY) * 252 / beta : (mean(p) - RF_DAILY) * 252;
-    const ir = te > 0 ? (mean(excess) / Math.max(stdev(excess), 1e-12)) * Math.sqrt(252) : 0;
-    const mdd = maxDrawdown(navValues);
-    const calmarValue = mdd !== 0 ? cagrValue / Math.abs(mdd) : cagrValue / 0.01;
-    const var95 = percentile(p, 0.05) * navInr;
-    const tailLosses = p.filter((r) => r <= percentile(p, 0.05));
-    const cvar95 = (tailLosses.length ? mean(tailLosses) : percentile(p, 0.05)) * navInr;
-    const downsideDev = stdev(downside) * Math.sqrt(252);
+    const inception = new Date(navSeries[0]!.date);
+    const tradeFlows = tradeLog.map((t) => ({
+      amount: t.side === "BUY" ? -t.shares * t.price : t.shares * t.price,
+      days: (new Date(t.date).getTime() - inception.getTime()) / (24 * 3600 * 1000),
+    }));
 
-    // Security Selection Attribution
-    const selectionEffect = positions.reduce((sum, r) => {
-      const holdingRet = r.pnlPct;
-      return sum + r.weight * (holdingRet - benchReturn);
-    }, 0);
-    set(m("securitySelection", selectionEffect, pct(selectionEffect), "ok", tone(selectionEffect), "Brinson-Fachler selection effect across positions."));
+    const spec = computeSpecMetrics({
+      nav: navSeries,
+      portfolioReturns: p,
+      benchmarkReturns: b,
+      riskFreeAnnual: RF_ANNUAL,
+      navInr,
+      tradeFlows,
+    });
 
-    // Factor systematic contribution
-    const factorContr = beta * benchReturn;
-    set(m("factorContribution", factorContr, pct(factorContr), "approx", tone(factorContr), "Market factor systematic return contribution (Beta × Benchmark Return)."));
+    const specNote = "Per Market Intelligence Metrics Specification (docs/market_intelligence_metrics_specification.md).";
 
-    // Drawdown series
-    let peak = navValues[0]!;
-    let peakIdx = 0;
-    let maxDd = 0;
-    let maxDdStartIdx = 0;
-    let maxDdTroughIdx = 0;
-    const drawdowns: number[] = [];
-    for (let i = 0; i < navValues.length; i += 1) {
-      if (navValues[i]! > peak) {
-        peak = navValues[i]!;
-        peakIdx = i;
-      }
-      const dd = navValues[i]! / peak - 1;
-      drawdowns.push(dd);
-      if (dd < maxDd) {
-        maxDd = dd;
-        maxDdStartIdx = peakIdx;
-        maxDdTroughIdx = i;
-      }
+    set(m("absoluteReturn", spec.absoluteReturn, pct(spec.absoluteReturn), "ok", tone(spec.absoluteReturn), "§1.1"));
+    if (spec.cagr != null && !Number.isNaN(spec.cagr)) {
+      set(m("cagr", spec.cagr, pct(spec.cagr), "ok", tone(spec.cagr), "§1.2"));
+    } else {
+      set(
+        NA(
+          "cagr",
+          spec.cagrFlagShortPeriod
+            ? "History < 1 month — CAGR annualization suppressed per §1.2."
+            : "CAGR unavailable for this NAV path.",
+        ),
+      );
     }
-    const avgDrawdown = mean(drawdowns.filter((d) => d < 0)) || 0;
-    let recoveryIdx = -1;
-    for (let i = maxDdTroughIdx; i < navValues.length; i += 1) {
-      if (navValues[i]! >= navValues[maxDdStartIdx]!) {
-        recoveryIdx = i;
-        break;
-      }
+    set(m("twr", spec.twr, pct(spec.twr), "ok", tone(spec.twr), "§1.3"));
+    set(
+      spec.mwrIrr != null
+        ? m("mwrIrr", spec.mwrIrr, pct(spec.mwrIrr), "ok", tone(spec.mwrIrr), "§1.4 MWR/IRR (Newton-Raphson).")
+        : NA("mwrIrr", "Add trade log entries to solve §1.4 IRR."),
+    );
+    set(
+      spec.rollingReturnAnn != null
+        ? m(
+            "rollingReturn",
+            spec.rollingReturnAnn,
+            pct(spec.rollingReturnAnn),
+            "ok",
+            tone(spec.rollingReturnAnn),
+            "§1.5 21-day window, annualized.",
+          )
+        : NA("rollingReturn", "Not enough history for §1.5 rolling return."),
+    );
+    set(
+      m(
+        "activeReturn",
+        spec.activeReturnArithmetic,
+        pct(spec.activeReturnArithmetic),
+        "ok",
+        tone(spec.activeReturnArithmetic),
+        "§1.6 arithmetic; geometric excess also tracked internally.",
+      ),
+    );
+    set(m("benchmarkReturn", spec.benchmarkReturn, pct(spec.benchmarkReturn), "ok", tone(spec.benchmarkReturn)));
+
+    set(
+      spec.sharpeAnn != null
+        ? m("sharpe", spec.sharpeAnn, num(spec.sharpeAnn), "ok", spec.sharpeAnn >= 1 ? "up" : "neutral", "§2.1")
+        : NA("sharpe", "σ=0 — §2.1 Sharpe undefined."),
+    );
+    set(
+      spec.treynorAnn != null
+        ? m("treynor", spec.treynorAnn, pct(spec.treynorAnn), "ok", undefined, "§2.2")
+        : NA(
+            "treynor",
+            spec.treynorNegativeBeta ? "β ≤ 0 — §2.2 NegativeBeta flag." : "Treynor unavailable.",
+          ),
+    );
+    set(
+      spec.sortinoAnn != null
+        ? m("sortino", spec.sortinoAnn, num(spec.sortinoAnn), "ok", spec.sortinoAnn >= 1 ? "up" : "neutral", "§2.3")
+        : NA("sortino", "Downside σ=0 — §2.3 Sortino undefined."),
+    );
+    set(m("jensensAlpha", spec.jensensAlphaAnn, pct(spec.jensensAlphaAnn), "ok", tone(spec.jensensAlphaAnn), "§2.4 OLS α"));
+    set(
+      spec.informationRatioAnn != null
+        ? m("informationRatio", spec.informationRatioAnn, num(spec.informationRatioAnn), "ok", spec.informationRatioAnn >= 0 ? "up" : "down", "§2.5")
+        : NA("informationRatio", "Tracking error ≈ 0."),
+    );
+    set(
+      spec.calmar != null
+        ? m("calmar", spec.calmar, num(spec.calmar), "ok", undefined, "§2.6")
+        : NA("calmar", "No drawdown for §2.6 Calmar."),
+    );
+    set(
+      spec.sterling != null
+        ? m("sterling", spec.sterling, num(spec.sterling), "ok", undefined, "§2.7")
+        : NA("sterling", "No drawdown for §2.7 Sterling."),
+    );
+    set(m("burke", spec.burke ?? 0, num(spec.burke ?? 0), "ok", undefined, "§2.8"));
+    set(
+      spec.omega != null
+        ? m("omega", spec.omega, num(spec.omega), "ok", undefined, "§2.9 τ=0")
+        : NA("omega", "No losses below τ — §2.9."),
+    );
+    set(
+      spec.kappa3 != null
+        ? m("kappa", spec.kappa3, num(spec.kappa3), "ok", undefined, "§2.10 κ₃")
+        : NA("kappa", "LPM₃ ≈ 0."),
+    );
+    set(m("m2", spec.m2, pct(spec.m2), "ok", tone(spec.m2 - spec.benchmarkReturn), "§2.11 M²"));
+    set(
+      spec.appraisal != null
+        ? m("appraisal", spec.appraisal, num(spec.appraisal), "ok", undefined, "§2.12")
+        : NA("appraisal", "σ_ε ≈ 0."),
+    );
+
+    set(spec.beta != null ? m("beta", spec.beta, num(spec.beta), "ok", undefined, "§3.1") : NA("beta", "§3.1 Var(R_b)≈0."));
+    set(m("alpha", spec.alphaCapmAnn, pct(spec.alphaCapmAnn), "ok", tone(spec.alphaCapmAnn), "§3.2"));
+    set(m("volatility", spec.volatilityAnn, pct(spec.volatilityAnn, 1), "ok", undefined, "§3.3"));
+    set(m("var", spec.var95Historical, inr(spec.var95Historical), "ok", "warn", "§3.4 historical 95%"));
+    set(m("cvar", spec.cvar95Historical, inr(spec.cvar95Historical), "ok", "warn", "§3.5"));
+    set(m("trackingError", spec.trackingErrorAnn ?? 0, pct(spec.trackingErrorAnn ?? 0, 1), "ok", undefined, "§3.6"));
+    set(m("downsideDeviation", spec.downsideDeviationAnn, pct(spec.downsideDeviationAnn, 1), "ok", undefined, "§3.7"));
+
+    set(m("maxDrawdown", spec.maxDrawdown, pct(spec.maxDrawdown), "ok", "warn", "§4.1"));
+    set(m("avgDrawdown", spec.avgDrawdown, pct(spec.avgDrawdown), "ok", undefined, "§4.2"));
+    set(m("drawdownDuration", spec.drawdownDurationDays, `${spec.drawdownDurationDays} days`, "ok", undefined, "§4.3"));
+    set(
+      spec.recoveryPeriodDays != null
+        ? m("recoveryPeriod", spec.recoveryPeriodDays, `${spec.recoveryPeriodDays} days`, "ok", undefined, "§4.4")
+        : m(
+            "recoveryPeriod",
+            null,
+            "Ongoing",
+            "approx",
+            "warn",
+            "§4.4 Unrecovered — still underwater vs prior peak.",
+          ),
+    );
+    set(
+      spec.recoveryFactor != null
+        ? m("recoveryFactor", spec.recoveryFactor, num(spec.recoveryFactor), "ok", undefined, "§4.5")
+        : NA("recoveryFactor", "No MDD for §4.5."),
+    );
+
+    set(
+      spec.upsideCapture != null
+        ? m("upsideCapture", spec.upsideCapture, pct(spec.upsideCapture, 0), "ok", undefined, "§5.2 geometric")
+        : NA("upsideCapture", "No benchmark up-days."),
+    );
+    set(
+      spec.downsideCapture != null
+        ? m("downsideCapture", spec.downsideCapture, pct(spec.downsideCapture, 0), "ok", undefined, "§5.2 geometric")
+        : NA("downsideCapture", "No benchmark down-days."),
+    );
+    set(
+      spec.battingAverage != null
+        ? m("battingAverage", spec.battingAverage, pct(spec.battingAverage, 0), "ok", undefined, "§5.3")
+        : NA("battingAverage", "Not enough overlapping history."),
+    );
+
+    const selectionEffect = positions.reduce(
+      (sum, r) => sum + r.weight * (r.pnlPct - spec.benchmarkReturn),
+      0,
+    );
+    set(
+      m(
+        "securitySelection",
+        selectionEffect,
+        pct(selectionEffect),
+        "approx",
+        tone(selectionEffect),
+        "Simplified stock-vs-benchmark selection proxy; full Brinson §7.2 needs sector benchmark returns.",
+      ),
+    );
+    if (spec.beta != null) {
+      const factorContr = spec.beta * spec.benchmarkReturn;
+      set(
+        m(
+          "factorContribution",
+          factorContr,
+          pct(factorContr),
+          "approx",
+          tone(factorContr),
+          "Market factor systematic return (β × benchmark return).",
+        ),
+      );
+    } else {
+      set(NA("factorContribution", "β unavailable for factor contribution."));
     }
-    const drawdownDurationDays = recoveryIdx >= 0 ? recoveryIdx - maxDdStartIdx : navValues.length - 1 - maxDdStartIdx;
-    const recoveryPeriodDays = recoveryIdx >= 0 ? recoveryIdx - maxDdTroughIdx : Math.round(drawdownDurationDays * 0.4);
-    const recoveryFactor = mdd !== 0 ? totalReturn / Math.abs(mdd) : totalReturn / 0.01;
-
-    // Sterling / Burke
-    const sortedDrawdowns = [...drawdowns].filter((d) => d < 0).sort((a2, b2) => a2 - b2);
-    const worst3 = sortedDrawdowns.slice(0, 3);
-    const avgWorst3 = worst3.length ? Math.abs(mean(worst3)) : Math.abs(mdd) || 1e-6;
-    const sterling = avgWorst3 > 0 ? cagrValue / avgWorst3 : cagrValue / 0.02;
-    const burkeDenom = Math.sqrt(drawdowns.filter((d) => d < 0).reduce((s, d) => s + d * d, 0)) || 1e-6;
-    const burke = (mean(p) - RF_DAILY) * 252 / burkeDenom;
-
-    // Omega / Kappa
-    const gains = p.filter((r) => r > 0).reduce((s, r) => s + r, 0);
-    const losses = Math.abs(p.filter((r) => r < 0).reduce((s, r) => s + r, 0));
-    const omega = losses > 0 ? gains / losses : (gains > 0 ? 8.5 : 1.0);
-    const downsideCubed = downside.reduce((s, r) => s + Math.abs(r) ** 3, 0) / Math.max(downside.length, 1);
-    const kappaDenom = Math.cbrt(downsideCubed) || 1e-9;
-    const kappa = (mean(p) - RF_DAILY) / kappaDenom;
-
-    // M2, Appraisal
-    const m2 = RF_ANNUAL + sharpe * benchVol;
-    const specificRisk = Math.sqrt(Math.max(vol ** 2 - beta ** 2 * benchVol ** 2, 0));
-    const appraisal = specificRisk > 0 ? alpha / specificRisk : alpha / 0.05;
-
-    // Capture ratios / batting average
-    const upDays = b.map((r, i) => (r > 0 ? p[i]! : null)).filter((x): x is number => x != null);
-    const upBenchDays = b.filter((r) => r > 0);
-    const downDaysP = b.map((r, i) => (r < 0 ? p[i]! : null)).filter((x): x is number => x != null);
-    const downBenchDays = b.filter((r) => r < 0);
-    const upsideCapture = upBenchDays.length ? mean(upDays) / mean(upBenchDays) : 1.05;
-    const downsideCapture = downBenchDays.length ? mean(downDaysP) / mean(downBenchDays) : 0.95;
-    const battingAverage = n > 0 ? p.filter((r, i) => r > b[i]!).length / n : 0.52;
-
-    // TWR & rolling 1M return
-    const twr = p.reduce((acc, r) => acc * (1 + r), 1) - 1;
-    const rollWindow = Math.min(21, navValues.length - 1);
-    const rollingReturn = rollWindow > 0 ? navValues[navValues.length - 1]! / navValues[navValues.length - 1 - rollWindow]! - 1 : (p.slice(-21).reduce((acc, r) => acc * (1 + r), 1) - 1);
-
-    // MWR/IRR
-    let irr: number | null = null;
-    if (tradeLog.length) {
-      const now = new Date();
-      const flows = tradeLog.map((t) => ({
-        t: (now.getTime() - new Date(t.date).getTime()) / (365 * 24 * 3600 * 1000),
-        amount: t.side === "BUY" ? -t.shares * t.price : t.shares * t.price,
-      }));
-      flows.push({ t: 0, amount: navInr });
-      const npv = (rate: number) => flows.reduce((s, f) => s + f.amount / (1 + rate) ** (1 - f.t), 0);
-      let lo = -0.9;
-      let hi = 5;
-      if (npv(lo) * npv(hi) < 0) {
-        for (let i = 0; i < 60; i += 1) {
-          const mid = (lo + hi) / 2;
-          if (npv(lo) * npv(mid) <= 0) hi = mid;
-          else lo = mid;
-        }
-        irr = (lo + hi) / 2;
-      }
-    }
-    const effectiveIrr = irr != null ? irr : cagrValue;
-
-    set(m("absoluteReturn", totalReturn, pct(totalReturn), "ok", tone(totalReturn)));
-    set(m("cagr", cagrValue, pct(cagrValue), "ok", tone(cagrValue)));
-    set(m("twr", twr, pct(twr), "ok", tone(twr)));
-    set(m("mwrIrr", effectiveIrr, pct(effectiveIrr), "ok", tone(effectiveIrr)));
-    set(m("rollingReturn", rollingReturn, pct(rollingReturn), "ok", tone(rollingReturn), "Trailing ~1 month."));
-    set(m("activeReturn", activeReturn, pct(activeReturn), "ok", tone(activeReturn)));
-    set(m("benchmarkReturn", benchReturn, pct(benchReturn), "ok", tone(benchReturn)));
-
-    set(m("sharpe", sharpe, num(sharpe), "ok", sharpe >= 1 ? "up" : sharpe >= 0 ? "neutral" : "down"));
-    set(m("treynor", treynor, pct(treynor), "ok"));
-    set(m("sortino", sortino, num(sortino), "ok", sortino >= 1 ? "up" : "neutral"));
-    set(m("jensensAlpha", alpha, pct(alpha), "ok", tone(alpha)));
-    set(m("informationRatio", ir, num(ir), "ok", ir >= 0 ? "up" : "down"));
-    set(m("calmar", calmarValue, num(calmarValue), "ok"));
-    set(m("sterling", sterling, num(sterling), "ok"));
-    set(m("burke", burke, num(burke), "ok"));
-    set(m("omega", omega, num(omega), "ok"));
-    set(m("kappa", kappa, num(kappa), "ok"));
-    set(m("m2", m2, pct(m2), "ok", tone(m2 - benchReturn)));
-    set(m("appraisal", appraisal, num(appraisal), "ok"));
-
-    set(m("beta", beta, num(beta), "ok"));
-    set(m("alpha", alpha, pct(alpha), "ok", tone(alpha)));
-    set(m("volatility", vol, pct(vol, 1), "ok"));
-    set(m("var", var95, inr(var95), "ok", "warn"));
-    set(m("cvar", cvar95, inr(cvar95), "ok", "warn"));
-    set(m("trackingError", te, pct(te, 1), "ok"));
-    set(m("downsideDeviation", downsideDev, pct(downsideDev, 1), "ok"));
-
-    set(m("maxDrawdown", mdd, pct(mdd), "ok", "warn"));
-    set(m("avgDrawdown", avgDrawdown, pct(avgDrawdown), "ok"));
-    set(m("drawdownDuration", drawdownDurationDays, `${drawdownDurationDays} days`, "ok"));
-    set(m("recoveryPeriod", recoveryPeriodDays, `${recoveryPeriodDays} days`, "ok"));
-    set(m("recoveryFactor", recoveryFactor, num(recoveryFactor), "ok"));
-
-    set(m("upsideCapture", upsideCapture, pct(upsideCapture, 0), "ok"));
-    set(m("downsideCapture", downsideCapture, pct(downsideCapture, 0), "ok"));
-    set(m("battingAverage", battingAverage, pct(battingAverage, 0), "ok"));
+    void specNote;
   }
 
   // ---- assemble ----

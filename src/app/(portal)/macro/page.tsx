@@ -1,91 +1,70 @@
 "use client";
 
-import { Lines } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { MetricInfo } from "@/components/ui/metric-info";
-import { useFeedHub } from "@/hooks/use-feed-hub";
-import { formatSigned } from "@/lib/format";
-import { MACRO } from "@/lib/market";
+import { RegimeBanner } from "@/components/macro/regime-banner";
+import { SectionNavGrid } from "@/components/macro/section-nav-grid";
+import { CommoditiesStrip } from "@/components/macro/commodities-strip";
+import { CurrencyStrip } from "@/components/macro/currency-strip";
+import { TransmissionPanels } from "@/components/macro/transmission-panels";
+import { WhatChangedCard } from "@/components/macro/what-changed-card";
+import { YieldCurveCard } from "@/components/macro/yield-curve-card";
+import { Lines } from "@/components/charts/terminal-charts";
+import { useMacroHub } from "@/hooks/use-macro-hub";
+import { useMacroTape } from "@/hooks/use-macro-tape";
 
 export default function MacroPage() {
-  const { data } = useFeedHub(120_000);
-  const live = data?.macro ?? [];
-  const cards = live.length
-    ? live
-    : MACRO.map((m) => ({
-        id: m.id,
-        name: m.name,
-        unit: m.unit,
-        latest: m.latest,
-        change: m.change,
-        points: m.points.map((p) => ({ date: p.date, value: p.value })),
-        source: "fred" as const,
-      }));
+  const { data, loading, error } = useMacroHub();
+  const tape = useMacroTape();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         kicker="Macroeconomic intelligence"
-        title="Nowcast board"
-        subtitle={
-          live.length
-            ? "Live macro series from FRED, World Bank, IMF, OECD, and MOSPI (where available)."
-            : "Pulling open macro APIs — showing simulated fallback until hub responds."
-        }
+        title="India macro hub"
+        subtitle="Regime-first view with nested growth, inflation, RBI liquidity, fiscal, consumer, corporate, external, jobs, and global tape — open data (MOSPI, RBI, World Bank, FRED, NSE)."
       />
-      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
-        {cards.slice(0, 10).map((m) => (
-          <div key={m.id} className="rounded-lg border border-border bg-card p-4 space-y-1">
-            <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground truncate">
-                {m.name}
-              </p>
-              <MetricInfo
-                id={m.id.toLowerCase().includes("cpi") ? "cpi" : m.id.toLowerCase().includes("gdp") ? "gdp" : m.id.toLowerCase().includes("repo") ? "repo" : m.id.toLowerCase().includes("10y") ? "gsec10y" : m.id}
-                name={m.name}
-                provider="FRED (Federal Reserve Bank of St. Louis) / MOSPI / OECD"
-                sourceUrl="https://fred.stlouisfed.org"
-                asOf={data?.fetchedAt}
-                iconSize="xs"
-              />
-            </div>
-            <p className="mt-1 font-heading text-2xl tabular-nums">
-              {m.latest.toFixed(2)}
-              <span className="ml-1 text-xs text-muted-foreground">{m.unit}</span>
-            </p>
-            <p className={m.change >= 0 ? "text-xs text-emerald-400" : "text-xs text-rose-400"}>
-              {formatSigned(m.change)}
-            </p>
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        {cards.slice(0, 4).map((m) => (
-          <Panel
-            key={m.id}
-            title={
-              <span className="flex items-center gap-2">
-                <span>{m.name}</span>
-                <MetricInfo
-                  id={m.id.toLowerCase().includes("cpi") ? "cpi" : m.id.toLowerCase().includes("gdp") ? "gdp" : m.id.toLowerCase().includes("repo") ? "repo" : m.id.toLowerCase().includes("10y") ? "gsec10y" : m.id}
-                  name={m.name}
-                  provider="FRED / MOSPI Open Macro Feeds"
-                  sourceUrl="https://fred.stlouisfed.org"
-                  asOf={data?.fetchedAt}
-                  iconSize="xs"
-                />
-              </span>
-            }
-          >
-            <div className="h-[220px]">
+
+      {loading && !data ? <p className="text-sm text-muted-foreground">Loading macro intelligence…</p> : null}
+      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+
+      {tape.data ? <WhatChangedCard seed={tape.data.briefingSeed} /> : null}
+
+      {tape.data ? (
+        <div className="grid gap-4 xl:grid-cols-3">
+          <YieldCurveCard india={tape.data.indiaYieldCurve} us={tape.data.usYieldCurve} />
+          <CommoditiesStrip rows={tape.data.commodities} />
+          <CurrencyStrip rows={tape.data.currencies} />
+        </div>
+      ) : null}
+
+      {tape.data ? (
+        <TransmissionPanels brent={tape.data.transmission.brent} usdInr={tape.data.transmission.usdInr} />
+      ) : null}
+
+      {data ? (
+        <>
+          <RegimeBanner regime={data.regime} />
+          <Panel title="Growth vs inflation (regime drivers)">
+            <div className="h-[240px]">
               <Lines
-                data={m.points.slice(-60).map((p) => ({ date: p.date, v: p.value }))}
-                keys={[{ key: "v", color: "#5ec8e8", name: m.name }]}
+                data={data.regime.growthInflationChart}
+                keys={[
+                  { key: "growth", color: "#3dd68c", name: "Growth % y/y" },
+                  { key: "inflation", color: "#f97316", name: "Inflation % y/y" },
+                ]}
               />
             </div>
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              Updated {new Date(data.fetchedAt).toLocaleString()} · Quadrant labels in{" "}
+              <a href="/macro/regime" className="text-primary hover:underline">Macro regime</a>
+            </p>
           </Panel>
-        ))}
-      </div>
+          <div>
+            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Explore sections</h2>
+            <SectionNavGrid />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

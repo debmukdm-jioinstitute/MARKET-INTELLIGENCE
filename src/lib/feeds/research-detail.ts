@@ -10,6 +10,10 @@ import {
 import type { Candle, FullMarketQuote } from "@/lib/feeds/sources/upstox";
 import type { FundamentalsSnapshot } from "@/lib/feeds/fundamentals/types";
 import type { NewsItem } from "@/lib/feeds/types";
+import {
+  buildResearchIntelligence,
+  type ResearchIntelligence,
+} from "@/lib/feeds/research-intelligence";
 import { UNIVERSE } from "@/lib/universe";
 
 export type ResearchDetailPayload = {
@@ -24,6 +28,7 @@ export type ResearchDetailPayload = {
   history: { date: string; value: number }[];
   candles: Candle[];
   usDetail: Awaited<ReturnType<typeof buildSecurityDetail>> | null;
+  intelligence: ResearchIntelligence;
   sources: SourceLink[];
 };
 
@@ -100,6 +105,31 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
   const instrument = UNIVERSE.find((u) => u.symbol === resolved.symbol);
   const name = resolved.name || instrument?.name || resolved.symbol;
 
+  const intelligence = await buildResearchIntelligence({
+    symbol: resolved.symbol,
+    name,
+    market: resolved.market,
+    isin: resolved.isin,
+    upstoxNews: news,
+  });
+
+  if (intelligence.newsFeed.length) {
+    sources.push({
+      id: "google-news-rss",
+      label: "Google News",
+      url: "https://news.google.com/",
+      usedFor: "Symbol-specific headlines (RSS)",
+    });
+  }
+  if (intelligence.corporateActions.some((c) => c.source === "nse")) {
+    sources.push({
+      id: "nse-corporate-actions",
+      label: "NSE India",
+      url: "https://www.nseindia.com/companies-listing/corporate-filings-actions",
+      usedFor: "Corporate actions calendar",
+    });
+  }
+
   return {
     symbol: resolved.symbol,
     name,
@@ -112,6 +142,7 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
     history,
     candles,
     usDetail,
+    intelligence,
     sources,
   };
 }

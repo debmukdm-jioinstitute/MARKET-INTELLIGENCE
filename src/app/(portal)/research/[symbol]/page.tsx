@@ -6,6 +6,7 @@ import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -139,28 +140,13 @@ export default function ResearchSymbolPage() {
         <UsResearchPanels data={data} />
       ) : null}
 
-      {data?.news.length ? (
-        <Panel title="News (Upstox)">
-          <ul className="divide-y divide-border">
-            {data.news.map((n) => (
-              <li key={n.id} className="py-3">
-                <a
-                  href={n.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium hover:text-primary"
-                >
-                  {n.title}
-                </a>
-                {n.publishedAt ? (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(n.publishedAt).toLocaleString()}
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </Panel>
+      {data?.intelligence ? (
+        <ResearchIntelligencePanels
+          corporateActions={data.intelligence.corporateActions}
+          newsFeed={data.intelligence.newsFeed}
+          newsSummary={data.intelligence.newsSummary}
+          brokerResearch={data.intelligence.brokerResearch}
+        />
       ) : null}
 
       {data?.sources.length ? (

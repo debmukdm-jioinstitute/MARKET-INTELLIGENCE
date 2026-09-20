@@ -5,6 +5,7 @@ import { CommandPaletteProvider } from "@/components/command-palette/command-pal
 import { GuestBanner } from "@/components/layout/guest-banner";
 import { MarketTickerRail } from "@/components/layout/market-ticker-rail";
 import { Sidebar } from "@/components/layout/sidebar";
+import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
 import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <GuestBanner />
               <MarketTickerRail />
               <TopBar />
+              <LiveStreamTicker />
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
           </div>

@@ -5,6 +5,8 @@ export type GlossaryEntry = {
   formula: string;
   example: string;
   why: string;
+  /** Section reference in docs/market_intelligence_metrics_specification.md */
+  specSection?: string;
 };
 
 export const GLOSSARY: Record<string, GlossaryEntry> = {
@@ -20,7 +22,8 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     id: "absoluteReturn",
     label: "Absolute Return",
     definition: "Total cumulative return of the portfolio since you first added a holding, before comparing to any benchmark.",
-    formula: "Absolute Return = (NAV_today / NAV_inception) − 1",
+    formula: "R_abs = (P_T − P_0) / P_0 = Π(1 + R_{p,t}) − 1",
+    specSection: "§1.1",
     example: "Portfolio started at ₹10,00,000 and is now ₹11,80,000 → Absolute Return = +18.0%.",
     why: "The simplest \"did I make money\" number — everything else refines this by adjusting for risk or comparing to a yardstick.",
   },
@@ -28,7 +31,8 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     id: "cagr",
     label: "CAGR",
     definition: "Compound Annual Growth Rate — the steady annual growth rate that would take you from inception NAV to today's NAV.",
-    formula: "CAGR = (NAV_today / NAV_inception)^(365/days) − 1",
+    formula: "CAGR = (P_T/P_0)^(1/Y) − 1, Y = calendar years (Δdays/365.25); suppressed if Y < 1/12",
+    specSection: "§1.2",
     example: "₹10,00,000 → ₹12,10,000 over 2 years → CAGR = (1.21)^(1/2) − 1 ≈ 10%.",
     why: "Makes returns of different time periods comparable — an 18% return over 3 years is very different from 18% over 3 months.",
   },

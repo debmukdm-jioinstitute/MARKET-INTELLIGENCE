@@ -19,19 +19,26 @@ export function PageHeader({
 export function Panel({
   title,
   subtitle,
+  action,
   children,
   className,
+  id,
 }: {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
+  action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
-    <section className={`rounded-lg border border-border bg-card ${className ?? ""}`}>
-      <div className="border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
+    <section id={id} className={`rounded-lg border border-border bg-card ${className ?? ""}`}>
+      <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3">
+        <div>
+          <h3 className="text-sm font-semibold">{title}</h3>
+          {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div className="p-4">{children}</div>
     </section>

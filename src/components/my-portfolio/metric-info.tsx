@@ -34,6 +34,13 @@ export function MetricInfo({ id }: { id: string }) {
           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Why it matters</p>
           <p className="text-xs">{entry.why}</p>
         </div>
+        <p className="text-[10px] text-muted-foreground">
+          Canonical algorithm:{" "}
+          <span className="font-mono text-foreground">
+            {entry.specSection ?? "Metrics Specification"}
+          </span>{" "}
+          in <code className="text-[10px]">docs/market_intelligence_metrics_specification.md</code>
+        </p>
       </PopoverContent>
     </Popover>
   );

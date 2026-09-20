@@ -26,7 +26,7 @@ export default function PortfolioPage() {
       <PageHeader
         kicker="PORTFOLIO DESK"
         title={data?.settings.name ?? "Institutional Book"}
-        subtitle="Live mark-to-market positions, cross-asset allocation, and factor risk. Every metric is computed dynamically from real exchange price feeds."
+        subtitle="Live mark-to-market positions, cross-asset allocation, and factor risk from real exchange feeds. Performance, risk, drawdown, and liquidity metrics follow the Market Intelligence Metrics Specification (docs/market_intelligence_metrics_specification.md) — hover ℹ️ on any metric for the formula and section reference."
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
