@@ -166,7 +166,7 @@ export async function runAlphaDiscovery(symbolInputs: string[]): Promise<AlphaDi
       "mom(n) = trailing n-day price momentum; rev(n) = -mom(n), mean reversion; vol(n) = trailing n-day realized volatility; invvol(n) = -vol(n), a low-volatility factor; smaratio(f,s) = fast/slow simple-moving-average ratio minus 1, f<s. " +
       "n must be an integer 5-120. f must be 3-120, s must be 5-200, f<s. Propose exactly 5 diverse ideas across different categories (momentum, mean-reversion, volatility, trend).",
     prompt: `Universe: ${tickerList}\n\nReturn JSON: {"factors":[{"name":"short name","primitive":"mom|rev|vol|invvol|smaratio","params":{"n":INT} or {"f":INT,"s":INT},"rationale":"1-2 sentences","category":"momentum|mean-reversion|volatility|trend"}]}`,
-    maxTokens: 900,
+    maxTokens: 1200,
   });
 
   const perSymbolCloses = resolved.map((r) => r.closes);

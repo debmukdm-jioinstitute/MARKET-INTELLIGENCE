@@ -96,12 +96,12 @@ function pctChange(values: number[], n: number): number | null {
 }
 
 async function analyst(role: AnalystNote["role"], system: string, prompt: string): Promise<AnalystNote> {
-  const note = await callLlmJson<Omit<AnalystNote, "role">>({ system, prompt, maxTokens: 500 });
+  const note = await callLlmJson<Omit<AnalystNote, "role">>({ system, prompt, maxTokens: 700 });
   return { role, ...note };
 }
 
 async function debater(role: DebateNote["role"], system: string, prompt: string): Promise<DebateNote> {
-  const note = await callLlmJson<Omit<DebateNote, "role">>({ system, prompt, maxTokens: 500 });
+  const note = await callLlmJson<Omit<DebateNote, "role">>({ system, prompt, maxTokens: 700 });
   return { role, ...note };
 }
 
@@ -205,14 +205,14 @@ export async function runTradingDesk(symbolInput: string): Promise<TradingDeskRe
     system:
       "You are the trader on the desk. Weigh the bull and bear cases and the analyst notes into one call. This is a research simulation, not a real order — still, be decisive and specific. sizeSuggestionPct is a generic 0-10 illustrative position size as % of a portfolio, not tailored to any individual's actual holdings or risk tolerance.",
     prompt: `${header}\n\nAnalyst notes:\n${analystSummary}\n\nBull case: ${bull.thesis}\nBear case: ${bear.thesis}\n\nReturn JSON: {"action":"BUY|HOLD|SELL","sizeSuggestionPct":0-10,"rationale":"2-3 sentences","confidence":0.0-1.0}`,
-    maxTokens: 400,
+    maxTokens: 600,
   });
 
   const risk = await callLlmJson<RiskVerdict>({
     system:
       "You are the risk manager on the desk, the final check before the research note is published. Consider volatility and drawdown context. You can approve, shrink, or override the trader's call. This is a research simulation, not a real order.",
     prompt: `${header}\n\nAnnualized volatility: ${technicals.volatilityAnnualized != null ? (technicals.volatilityAnnualized * 100).toFixed(1) + "%" : "n/a"}\nTrader's call: ${trader.action}, size ${trader.sizeSuggestionPct}%, confidence ${trader.confidence} — "${trader.rationale}"\n\nReturn JSON: {"approved":true|false,"finalAction":"BUY|HOLD|SELL","maxPositionPct":0-10,"stopLossPct":1-30,"rationale":"2-3 sentences"}`,
-    maxTokens: 400,
+    maxTokens: 600,
   });
 
   return {

@@ -44,6 +44,9 @@ export async function callLlm({ system, prompt, maxTokens = 900, json = false }:
       model: DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature: 0.4,
+      // gpt-oss is a reasoning model — "low" keeps its hidden reasoning tokens short so the
+      // actual JSON answer reliably fits inside max_tokens instead of getting cut off mid-thought.
+      reasoning_effort: "low",
       messages: [
         { role: "system", content: system },
         { role: "user", content: prompt },
