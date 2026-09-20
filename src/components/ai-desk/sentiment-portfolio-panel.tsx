@@ -58,11 +58,11 @@ export function SentimentPortfolioPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          Reads recent headlines for each of your real holdings in{" "}
+          Reads recent headlines for each holding in{" "}
           <a href="/portfolio" className="underline">
             My Portfolio
           </a>{" "}
-          and scores sentiment.
+          — yours if you&apos;ve added any, otherwise the sample book — and scores sentiment.
         </p>
         <Button onClick={run} disabled={loading}>
           {loading ? "Reading news…" : "Score my portfolio"}

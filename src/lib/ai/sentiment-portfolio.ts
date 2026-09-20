@@ -1,7 +1,8 @@
 import { callLlmJson, untrustedBlock } from "@/lib/ai/llm";
-import { ensureSchema, sql } from "@/lib/db";
+import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { fetchUpstoxFullQuotes, fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
 import { fetchYahooNews, fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 
 /**
  * A lighter, native re-implementation of the "read the news, then tilt the
@@ -42,15 +43,33 @@ type HoldingRow = {
   avg_cost: string;
 };
 
-export async function runSentimentPortfolio(email: string): Promise<SentimentPortfolioResult> {
-  await ensureSchema();
-  const db = sql();
-  const rows = (await db`
-    SELECT symbol, name, market, instrument_key, shares, avg_cost
-    FROM portfolio_holdings WHERE user_email = ${email} ORDER BY created_at ASC
-  `) as unknown as HoldingRow[];
+const DEFAULT_ROWS: HoldingRow[] = REALISTIC_DEFAULT_HOLDINGS.map((h) => ({
+  symbol: h.symbol,
+  name: h.name,
+  market: h.market,
+  instrument_key: h.instrumentKey,
+  shares: String(h.shares),
+  avg_cost: String(h.avgCost),
+}));
 
-  if (rows.length === 0) return { hasHoldings: false, disclaimer: DISCLAIMER };
+export async function runSentimentPortfolio(email: string): Promise<SentimentPortfolioResult> {
+  let rows: HoldingRow[] = [];
+  if (hasDatabase()) {
+    try {
+      await ensureSchema();
+      const db = sql();
+      rows = (await db`
+        SELECT symbol, name, market, instrument_key, shares, avg_cost
+        FROM portfolio_holdings WHERE user_email = ${email} ORDER BY created_at ASC
+      `) as unknown as HoldingRow[];
+    } catch {
+      rows = [];
+    }
+  }
+
+  // Same "realistic default book" the Portfolio page falls back to for a guest with no
+  // real holdings yet — keeps this demo consistent with what they're actually looking at.
+  if (rows.length === 0) rows = DEFAULT_ROWS;
 
   const inRows = rows.filter((r) => r.market === "IN" && r.instrument_key);
   const usRows = rows.filter((r) => r.market === "US");
