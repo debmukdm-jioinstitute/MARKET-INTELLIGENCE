@@ -8,7 +8,12 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
-  const body = (await req.json()) as { shares?: number; avgCost?: number };
+  let body: { shares?: number; avgCost?: number } = {};
+  try {
+    body = (await req.json()) as { shares?: number; avgCost?: number };
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   try {
     if (hasDatabase()) {
       await ensureSchema();

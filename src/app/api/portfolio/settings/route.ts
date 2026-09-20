@@ -29,7 +29,12 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const body = (await req.json()) as Partial<PortfolioSettings>;
+  let body: Partial<PortfolioSettings> = {};
+  try {
+    body = (await req.json()) as Partial<PortfolioSettings>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const name = body.name?.trim() || DEFAULT_PORTFOLIO_SETTINGS.name;
   const benchmark = body.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark;
   if (!hasDatabase()) {
