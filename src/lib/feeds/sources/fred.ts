@@ -26,6 +26,32 @@ async function fredObservations(seriesId: string, limit = 60): Promise<MacroPoin
   return rows.reverse();
 }
 
+const CSV_URL = (seriesId: string) => `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`;
+
+/**
+ * FRED's public CSV export — no API key needed. Used for series we want even
+ * when FRED_API_KEY isn't configured (e.g. India 10Y G-Sec, which has no
+ * working Yahoo symbol — "IN10YT=RR" is delisted).
+ */
+export async function fetchFredSeriesCsv(seriesId: string): Promise<MacroPoint[]> {
+  try {
+    const res = await feedFetch(CSV_URL(seriesId), { timeoutMs: 15_000 });
+    if (!res.ok) return [];
+    const text = await res.text();
+    return text
+      .trim()
+      .split("\n")
+      .slice(1)
+      .map((line) => {
+        const [date, raw] = line.split(",");
+        return { date, value: Number(raw) };
+      })
+      .filter((p) => p.date && Number.isFinite(p.value));
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchFredMacro(): Promise<LiveMacroSeries[]> {
   const key = process.env.FRED_API_KEY;
   if (!key) return [];

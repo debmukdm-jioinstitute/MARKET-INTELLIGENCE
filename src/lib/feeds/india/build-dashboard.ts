@@ -13,6 +13,12 @@ import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
+import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
+import type { MacroPoint } from "@/lib/feeds/types";
+
+/** OECD long-term govt bond yield for India, via FRED's no-key CSV export. */
+const INDIA_GSEC10Y_FRED_SERIES = "INDIRLTLT01STM";
+const INDIA_GSEC10Y_FRED_URL = `https://fred.stlouisfed.org/series/${INDIA_GSEC10Y_FRED_SERIES}`;
 
 /** Indices Upstox has a stable instrument_key for — see INDIA_INSTRUMENT_KEYS. */
 const UPSTOX_INDIA_SYMBOLS = ["^NSEI", "^BSESN", "^NSEBANK", "^INDIAVIX"];
@@ -217,17 +223,40 @@ async function fetchWorldBankIndicator(country: string, code: string, name: stri
   }
 }
 
-function buildPulseAndRadar(ymap: Map<string, LiveQuote>, breadth: Awaited<ReturnType<typeof fetchNseBreadth>>) {
+function buildPulseAndRadar(
+  ymap: Map<string, LiveQuote>,
+  breadth: Awaited<ReturnType<typeof fetchNseBreadth>>,
+  fredGsec: MacroPoint[] = [],
+) {
+  const yahooGsec = qFromYahoo(ymap, "IN10YT=RR");
+  const fredLatest = fredGsec[fredGsec.length - 1];
+  const fredPrev = fredGsec[fredGsec.length - 2];
+  // Yahoo's "IN10YT=RR" symbol is delisted (confirmed: always 404s) — FRED's
+  // OECD-sourced series is the reliable fallback so this row isn't stuck blank.
+  const gsec10y =
+    yahooGsec.value != null
+      ? { ...yahooGsec, source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") } }
+      : fredLatest
+        ? {
+            value: fredLatest.value,
+            change: fredPrev ? fredLatest.value - fredPrev.value : null,
+            changePct: fredPrev ? (fredLatest.value - fredPrev.value) / fredPrev.value : null,
+            source: { provider: "FRED (OECD)", url: INDIA_GSEC10Y_FRED_URL, asOf: fredLatest.date },
+          }
+        : {
+            value: null,
+            change: null,
+            changePct: null,
+            source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") },
+          };
+
   const pulse = {
     nifty: qFromYahoo(ymap, "^NSEI"),
     sensex: qFromYahoo(ymap, "^BSESN"),
     bankNifty: qFromYahoo(ymap, "^NSEBANK"),
     indiaVix: qFromYahoo(ymap, "^INDIAVIX"),
     usdInr: qFromYahoo(ymap, "INR=X"),
-    gsec10y: {
-      ...qFromYahoo(ymap, "IN10YT=RR"),
-      source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") },
-    },
+    gsec10y,
     brent: qFromYahoo(ymap, "BZ=F"),
     gold: qFromYahoo(ymap, "GC=F"),
     breadth,
@@ -274,8 +303,12 @@ export async function buildIndiaDashboardQuick(): Promise<
   Pick<IndiaDashboardPayload, "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact">
 > {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [ymap, breadth] = await Promise.all([buildLiveQuoteMap(symbols), fetchNseBreadth()]);
-  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth);
+  const [ymap, breadth, fredGsec] = await Promise.all([
+    buildLiveQuoteMap(symbols),
+    fetchNseBreadth(),
+    fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
+  ]);
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
   return { fetchedAt: new Date().toISOString(), pulse, globalRadar, indiaImpact };
 }
 
@@ -283,26 +316,44 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
   const ymap = await buildLiveQuoteMap(symbols);
 
-  const [nseIndices, breadth, foNifty, foBank, fiiDii, macroCpi, macroGdp, mospi, gsecHist, fxRes, iip, wpi, dep, credit, repo] =
-    await Promise.all([
-      fetchNseAllIndices().catch(() => []),
-      fetchNseBreadth(),
-      fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY"),
-      fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY"),
-      fetchFiiDii(),
-      fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
-      fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),
-      fetchMospiMacro().catch(() => []),
-      fetchYahooHistory("IN10YT=RR", "1y").catch(() => []),
-      fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn"),
-      fetchWorldBankIndicator("IN", "NV.IND.MANF.KD.ZG", "IIP / Mfg growth", "% y/y"),
-      fetchWorldBankIndicator("IN", "FP.WPI.TOTL.ZG", "WPI", "% y/y"),
-      fetchWorldBankIndicator("IN", "FR.INR.DPST.GD.ZS", "Deposit / GDP proxy", "%"),
-      fetchWorldBankIndicator("IN", "FR.INR.TOTL.ZG", "Credit growth", "% y/y"),
-      fetchWorldBankIndicator("IN", "FR.INR.LEND", "Repo / lending (WB)", "%"),
-    ]);
+  const [
+    nseIndices,
+    breadth,
+    foNifty,
+    foBank,
+    fiiDii,
+    macroCpi,
+    macroGdp,
+    mospi,
+    yahooGsecHist,
+    fredGsec,
+    fxRes,
+    iip,
+    wpi,
+    dep,
+    credit,
+    repo,
+  ] = await Promise.all([
+    fetchNseAllIndices().catch(() => []),
+    fetchNseBreadth(),
+    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY"),
+    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY"),
+    fetchFiiDii(),
+    fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
+    fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),
+    fetchMospiMacro().catch(() => []),
+    fetchYahooHistory("IN10YT=RR", "1y").catch(() => []),
+    fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
+    fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn"),
+    fetchWorldBankIndicator("IN", "NV.IND.MANF.KD.ZG", "IIP / Mfg growth", "% y/y"),
+    fetchWorldBankIndicator("IN", "FP.WPI.TOTL.ZG", "WPI", "% y/y"),
+    fetchWorldBankIndicator("IN", "FR.INR.DPST.GD.ZS", "Deposit / GDP proxy", "%"),
+    fetchWorldBankIndicator("IN", "FR.INR.TOTL.ZG", "Credit growth", "% y/y"),
+    fetchWorldBankIndicator("IN", "FR.INR.LEND", "Repo / lending (WB)", "%"),
+  ]);
 
-  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth);
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
+  const gsecHist = yahooGsecHist.length ? yahooGsecHist : fredGsec;
 
   const niftyNse = pickIndex(nseIndices, "NIFTY 50");
   const bankNse = pickIndex(nseIndices, "NIFTY BANK");
@@ -389,7 +440,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
           source: repo.source,
         },
         {
-          label: "10Y G-Sec (Yahoo)",
+          label: "10Y G-Sec",
           value: pulse.gsec10y.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : null,
           source: pulse.gsec10y.source,
         },

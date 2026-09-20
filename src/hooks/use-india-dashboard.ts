@@ -6,6 +6,9 @@ import { useCallback, useEffect, useState } from "react";
 export function useIndiaDashboard(refreshMs = 55_000) {
   const [data, setData] = useState<IndiaDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  // Stays true until the full payload (macro/liquidity/money-flow — slower,
+  // multi-source) lands once. Only tracks the first load, not background refreshes.
+  const [loadingFull, setLoadingFull] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const mergeQuick = useCallback((quick: Partial<IndiaDashboardPayload> & { fetchedAt: string }) => {
@@ -35,6 +38,7 @@ export function useIndiaDashboard(refreshMs = 55_000) {
       setError(e instanceof Error ? e.message : "Failed to load dashboard");
     } finally {
       setLoading(false);
+      setLoadingFull(false);
     }
   }, [mergeQuick]);
 
@@ -44,7 +48,7 @@ export function useIndiaDashboard(refreshMs = 55_000) {
     return () => window.clearInterval(id);
   }, [reload, refreshMs]);
 
-  return { data, loading, error, reload };
+  return { data, loading, loadingFull, error, reload };
 }
 
 function emptyShell(): IndiaDashboardPayload {

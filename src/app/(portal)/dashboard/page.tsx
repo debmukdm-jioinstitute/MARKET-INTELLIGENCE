@@ -1,5 +1,6 @@
 "use client";
 
+import { FetchingBanner } from "@/components/dashboard/fetching-banner";
 import { GlobalRadar } from "@/components/dashboard/global-radar";
 import { IndiaMacro } from "@/components/dashboard/india-macro";
 import { IndiaMoving } from "@/components/dashboard/india-moving";
@@ -10,7 +11,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 
 export default function DashboardPage() {
-  const { data, loading, error, reload } = useIndiaDashboard(55_000);
+  const { data, loading, loadingFull, error, reload } = useIndiaDashboard(55_000);
 
   return (
     <div className="space-y-6">
@@ -26,6 +27,7 @@ export default function DashboardPage() {
       >
         Refresh dashboard
       </button>
+      <FetchingBanner active={loadingFull} />
       {loading && !data?.pulse?.nifty?.value ? (
         <p className="text-sm text-muted-foreground">Loading market pulse…</p>
       ) : null}
