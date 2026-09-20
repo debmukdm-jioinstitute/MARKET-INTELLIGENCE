@@ -1,5 +1,6 @@
 import { feedFetch } from "@/lib/feeds/http";
-import type { LiveQuote, MacroPoint } from "@/lib/feeds/types";
+import { parseRss } from "@/lib/feeds/rss";
+import type { LiveQuote, MacroPoint, NewsItem } from "@/lib/feeds/types";
 
 const CHART_HEADERS = {
   "User-Agent":
@@ -167,4 +168,13 @@ export async function searchYahooSymbols(query: string): Promise<YahooSearchResu
       exchange: q.exchDisp ?? "",
       sector: q.sector,
     }));
+}
+
+/** No-key headline feed for a US ticker — used by the AI Desk's sentiment agents. */
+export async function fetchYahooNews(symbol: string): Promise<NewsItem[]> {
+  const url = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(symbol)}&region=US&lang=en-US`;
+  const res = await feedFetch(url, { headers: CHART_HEADERS });
+  if (!res.ok) return [];
+  const xml = await res.text();
+  return parseRss(xml, "yahoo", 10);
 }

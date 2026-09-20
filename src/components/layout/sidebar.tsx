@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Activity,
   BarChart3,
+  Bot,
   BookOpen,
   Briefcase,
   Database,
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface NavGroup {
   title: string;
@@ -86,6 +86,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: "RESEARCH",
     items: [
       { href: "/research", label: "Company Workbench", icon: BookOpen },
+      { href: "/ai-desk", label: "AI Desk", icon: Bot, badge: "AI" },
       { href: "/ipo", label: "IPO Pipeline", icon: Sparkles },
       { href: "/reports", label: "IC Reports", icon: BookOpen },
     ],
