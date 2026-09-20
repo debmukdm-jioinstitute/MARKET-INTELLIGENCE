@@ -426,7 +426,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Jensen's Alpha (vs NIFTY 50)",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/attribution",
+    defaultUrl: "/portfolio/attribution",
     calculation:
       "Jensen's Alpha = Portfolio Return − [Risk-Free Rate + Beta × (Benchmark Return − Risk-Free Rate)], annualized over 252 trading days.",
     laymanExplanation:
@@ -439,7 +439,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Portfolio Beta",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/risk",
+    defaultUrl: "/portfolio/risk",
     calculation:
       "Beta = Covariance(Daily Portfolio Returns, Daily Benchmark Returns) ÷ Variance(Daily Benchmark Returns). Calculated over trailing 252 trading sessions.",
     laymanExplanation:
@@ -452,7 +452,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Sharpe Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/quant",
+    defaultUrl: "/portfolio/quant",
     calculation:
       "Sharpe Ratio = (Annualized Portfolio Return − Annualized Risk-Free Rate) ÷ Annualized Portfolio Volatility (Standard Deviation × √252).",
     laymanExplanation:
@@ -465,7 +465,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Maximum Drawdown (Peak-to-Trough Loss)",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/risk",
+    defaultUrl: "/portfolio/risk",
     calculation:
       "MDD = Min [(NAV_t − Peak NAV_τ) ÷ Peak NAV_τ] for all τ ≤ t over the historical evaluation window.",
     laymanExplanation:
@@ -478,7 +478,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Sector / Asset Concentration",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/allocation",
+    defaultUrl: "/portfolio/allocation",
     calculation:
       "Sector Weight % = [Σ (Market Value of Holdings in Sector_k) ÷ Total Portfolio NAV] × 100.",
     laymanExplanation:
@@ -811,7 +811,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Value at Risk (95% 1-Day VaR)",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Risk Engine",
-    defaultUrl: "/risk",
+    defaultUrl: "/portfolio/risk",
     calculation:
       "Parametric VaR = NAV × [Z_0.95 × σ_daily − μ_daily], where Z_0.95 = 1.645, based on rolling 252-day covariance matrix.",
     laymanExplanation:
@@ -824,7 +824,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Conditional VaR / Expected Shortfall (CVaR 95%)",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Risk Engine",
-    defaultUrl: "/risk",
+    defaultUrl: "/portfolio/risk",
     calculation:
       "CVaR = Expected value of loss given that the loss exceeds the 95% VaR cutoff: E[Loss | Loss > VaR_0.95].",
     laymanExplanation:
@@ -837,7 +837,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Sortino Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/quant",
+    defaultUrl: "/portfolio/quant",
     calculation:
       "Sortino Ratio = (Portfolio Return − Risk-Free Rate) ÷ Downside Deviation (Semi-standard deviation of negative returns only).",
     laymanExplanation:
@@ -850,7 +850,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Treynor Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/quant",
+    defaultUrl: "/portfolio/quant",
     calculation:
       "Treynor Ratio = (Portfolio Return − Risk-Free Rate) ÷ Portfolio Beta.",
     laymanExplanation:
@@ -863,7 +863,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Tracking Error",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/attribution",
+    defaultUrl: "/portfolio/attribution",
     calculation:
       "Tracking Error = Annualized standard deviation of the difference between portfolio returns and benchmark returns: σ(R_p − R_b) × √252.",
     laymanExplanation:
@@ -876,7 +876,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "Information Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/attribution",
+    defaultUrl: "/portfolio/attribution",
     calculation:
       "Information Ratio = Active Return (Portfolio Return − Benchmark Return) ÷ Tracking Error.",
     laymanExplanation:
@@ -902,7 +902,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "IPO Grey Market Premium (GMP)",
     category: "Corporate Disclosures",
     provider: "Unofficial Inter-dealer OTC Desk / Exchange Surveillance",
-    defaultUrl: "/ipo",
+    defaultUrl: "/research/ipo",
     calculation:
       "GMP = Unofficial OTC forward price quoted before stock listing − Official IPO issue price. Expected listing gain % = (GMP ÷ Issue Price) × 100.",
     laymanExplanation:
@@ -915,7 +915,7 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
     name: "IPO Subscription Bidding Multiple",
     category: "Corporate Disclosures",
     provider: "NSE / BSE Official Bidding Platforms",
-    defaultUrl: "/ipo",
+    defaultUrl: "/research/ipo",
     calculation:
       "Subscription Multiple = Total Number of Shares Applied For ÷ Total Number of Shares Offered in the Tranche (QIB, NII/HNI, Retail).",
     laymanExplanation:

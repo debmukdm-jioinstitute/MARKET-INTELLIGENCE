@@ -227,7 +227,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
           { label: "Breadth Desk", href: "/markets/breadth" },
           { label: "Valuation", href: "/markets/valuation" },
           { label: "Momentum", href: "/markets/momentum" },
-          { label: "F&O Desk", href: "/derivatives" },
+          { label: "F&O Desk", href: "/markets/derivatives" },
         ].map((sub) => (
           <Link
             key={sub.label}

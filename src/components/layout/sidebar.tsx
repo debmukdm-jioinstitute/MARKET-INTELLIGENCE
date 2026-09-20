@@ -3,24 +3,14 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
 import {
-  Activity,
-  BarChart3,
-  Bot,
-  BookOpen,
   Briefcase,
   Database,
-  Flame,
   Globe2,
-  IndianRupee,
-  Layers,
   LayoutDashboard,
   LineChart,
   LogOut,
-  PieChart,
   Radio,
-  Shield,
-  Sigma,
-  Sparkles,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,70 +28,28 @@ interface NavGroup {
 const NAV_GROUPS: NavGroup[] = [
   {
     title: "CORE",
+    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    title: "TOP-DOWN",
     items: [
-      { href: "/dashboard", label: "Dashboard / Home", icon: LayoutDashboard },
+      { href: "/macro", label: "Macro", icon: Globe2 },
+      { href: "/markets", label: "Markets", icon: LineChart },
     ],
   },
   {
-    title: "MARKET",
-    items: [
-      { href: "/markets", label: "Index & Universe", icon: LineChart },
-      { href: "/india-markets", label: "India Equities (NSE)", icon: IndianRupee },
-      { href: "/markets/breadth", label: "Breadth", icon: BarChart3 },
-      { href: "/derivatives", label: "F&O & Derivatives", icon: Sigma },
-      { href: "/markets/momentum", label: "Momentum", icon: Flame },
-      { href: "/markets/valuation", label: "Valuation Snapshot", icon: Activity },
-    ],
+    title: "BOOK",
+    items: [{ href: "/portfolio", label: "Portfolio", icon: Briefcase }],
   },
   {
-    title: "MACRO",
-    items: [
-      { href: "/macro", label: "Macro Board", icon: Globe2 },
-      { href: "/macro/india", label: "India Macro", icon: IndianRupee },
-      { href: "/macro/global", label: "Global Radar", icon: Globe2 },
-      { href: "/macro/rbi", label: "RBI & Liquidity", icon: Activity },
-      { href: "/macro/calendar", label: "Economic Calendar", icon: BarChart3 },
-    ],
+    title: "BOTTOM-UP",
+    items: [{ href: "/research", label: "Research", icon: BookOpen }],
   },
   {
-    title: "SECTORS",
+    title: "FEEDS",
     items: [
-      { href: "/sectors", label: "Sector Intelligence", icon: Layers, badge: "NEW" },
-    ],
-  },
-  {
-    title: "PORTFOLIO",
-    items: [
-      { href: "/portfolio", label: "Command Center", icon: Briefcase },
-      { href: "/allocation", label: "Asset Allocation", icon: PieChart },
-      { href: "/risk", label: "Risk & VaR", icon: Shield },
-      { href: "/attribution", label: "Attribution", icon: Activity },
-      { href: "/quant", label: "Quant & Factors", icon: Sigma },
-      { href: "/scenarios", label: "Stress Testing", icon: Layers },
-      { href: "/optimizer", label: "Optimizer", icon: BarChart3 },
-      { href: "/backtest", label: "Backtest Desk", icon: BarChart3 },
-    ],
-  },
-  {
-    title: "RESEARCH",
-    items: [
-      { href: "/research", label: "Company Workbench", icon: BookOpen },
-      { href: "/ai-desk", label: "AI Desk", icon: Bot, badge: "AI" },
-      { href: "/ipo", label: "IPO Pipeline", icon: Sparkles },
-      { href: "/reports", label: "IC Reports", icon: BookOpen },
-    ],
-  },
-  {
-    title: "INTELLIGENCE",
-    items: [
-      { href: "/intelligence", label: "News & Events", icon: Radio, badge: "AI" },
-    ],
-  },
-  {
-    title: "DATA & HEALTH",
-    items: [
-      { href: "/data", label: "Sources & Status", icon: Database },
-      { href: "/feeds", label: "Raw Feed Hub", icon: Activity },
+      { href: "/intelligence", label: "Intelligence", icon: Radio, badge: "AI" },
+      { href: "/data", label: "System", icon: Database },
     ],
   },
 ];
@@ -134,10 +82,7 @@ export function Sidebar() {
             </p>
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const active =
-                  item.href === "/dashboard"
-                    ? path === "/dashboard" || path === "/app"
-                    : path === item.href || (item.href !== "/portfolio" && item.href !== "/markets" && item.href !== "/macro" && path.startsWith(item.href));
+                const active = path === item.href || path.startsWith(item.href + "/");
                 const Icon = item.icon;
                 return (
                   <Link

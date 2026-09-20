@@ -116,8 +116,8 @@ export function CommandPalette() {
                 <HelpCircle className="size-4" />
                 Help — what can I search?
               </CommandItem>
-              <CommandItem onSelect={() => goto("/ipo")}>IPOs</CommandItem>
-              <CommandItem onSelect={() => goto("/feeds")}>Data feeds</CommandItem>
+              <CommandItem onSelect={() => goto("/research/ipo")}>IPOs</CommandItem>
+              <CommandItem onSelect={() => goto("/data/feeds")}>Data feeds</CommandItem>
             </CommandGroup>
 
             {source !== "global" ? (

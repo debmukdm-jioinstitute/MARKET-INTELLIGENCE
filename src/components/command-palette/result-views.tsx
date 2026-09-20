@@ -39,14 +39,14 @@ export function IndiaQuoteResultView({ instrument }: { instrument: IndiaInstrume
           <ChangeTag value={quote.ohlc.close ? (quote.ltp - quote.ohlc.close) / quote.ohlc.close : 0} />
         </div>
       ) : null}
-      <Link href="/india-markets" className="inline-block text-xs text-primary hover:underline">
+      <Link href="/markets/india" className="inline-block text-xs text-primary hover:underline">
         Open full quote, depth & candles →
       </Link>
     </div>
   );
 }
 
-/** Compact fundamentals snippet — top ratios only, full table lives on /india-markets. */
+/** Compact fundamentals snippet — top ratios only, full table lives on /markets/india. */
 export function IndiaFundamentalsResultView({ instrument }: { instrument: IndiaInstrument }) {
   const { data, loading, error } = useFundamentals(instrument.isin, true);
   return (
@@ -64,7 +64,7 @@ export function IndiaFundamentalsResultView({ instrument }: { instrument: IndiaI
           ))}
         </dl>
       ) : null}
-      <Link href="/india-markets" className="inline-block text-xs text-primary hover:underline">
+      <Link href="/markets/india" className="inline-block text-xs text-primary hover:underline">
         Open full fundamentals & sector radar →
       </Link>
     </div>
@@ -90,7 +90,7 @@ export function OptionChainResultView({ underlyingKey, label }: { underlyingKey:
           <Stat k="Max pain" v={data.maxPain != null ? data.maxPain.toLocaleString("en-IN") : "—"} />
         </div>
       ) : null}
-      <Link href="/derivatives" className="inline-block text-xs text-primary hover:underline">
+      <Link href="/markets/derivatives" className="inline-block text-xs text-primary hover:underline">
         Open full chain with Greeks & IV smile →
       </Link>
     </div>

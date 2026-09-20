@@ -97,7 +97,7 @@ function FoTeaser({
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">F&amp;O positioning (summary)</h3>
-        <Link href="/derivatives" className="text-xs text-primary hover:underline">
+        <Link href="/markets/derivatives" className="text-xs text-primary hover:underline">
           Open full derivatives dashboard →
         </Link>
       </div>

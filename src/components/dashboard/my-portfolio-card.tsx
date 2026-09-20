@@ -175,9 +175,9 @@ export function MyPortfolioCard() {
       <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
         {[
           { label: "Book & Holdings", href: "/portfolio" },
-          { label: "Asset Allocation", href: "/allocation" },
-          { label: "Risk & VaR", href: "/risk" },
-          { label: "Factor Attribution", href: "/attribution" },
+          { label: "Asset Allocation", href: "/portfolio/allocation" },
+          { label: "Risk & VaR", href: "/portfolio/risk" },
+          { label: "Factor Attribution", href: "/portfolio/attribution" },
         ].map((sub) => (
           <Link
             key={sub.label}
