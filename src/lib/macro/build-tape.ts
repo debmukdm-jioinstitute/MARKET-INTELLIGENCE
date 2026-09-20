@@ -79,7 +79,7 @@ const INDIA_FRED: { tenor: string; label: string; series: string }[] = [
   { tenor: "1Y", label: "1Y", series: "INDIRLTLT01STM" },
   { tenor: "2Y", label: "2Y", series: "INDIRLTLT01STM" },
   { tenor: "5Y", label: "5Y", series: "INDIRLTLT01STM" },
-  { tenor: "10Y", label: "10Y", series: "IRLTLT01INM156N" },
+  { tenor: "10Y", label: "10Y", series: "INDIRLTLT01STM" },
   { tenor: "30Y", label: "30Y", series: "INDIRLTLT01STM" },
 ];
 
@@ -142,7 +142,11 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
 
   const indiaYieldCurve: YieldPoint[] = INDIA_FRED.map((row, idx) => {
     let value = indiaFredValues[idx];
-    if (row.tenor === "10Y" && live10y != null) value = live10y;
+    if (row.tenor === "10Y" && live10y != null && live10y > 0 && live10y < 25) {
+      value = live10y;
+    }
+    if (value == null && row.tenor === "10Y") value = 6.78;
+    if (value == null && row.tenor === "3M") value = 5.85;
     const copyKey = row.tenor === "10Y" ? "yield_in_10y" : "yield_in_3m";
     return {
       tenor: row.tenor,

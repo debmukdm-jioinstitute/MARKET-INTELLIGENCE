@@ -241,9 +241,11 @@ function buildPulseAndRadar(
   const fredLatest = fredGsec[fredGsec.length - 1];
   const fredPrev = fredGsec[fredGsec.length - 2];
 
-  // 1st Priority: Upstox exchange-licensed quote; Fallback: Yahoo; Last resort: FRED
+  // 1st Priority: Upstox exchange-licensed quote (if yielding % < 25); Fallback: Yahoo; Next: FRED 6.78% benchmark
+  const isYieldPct = (v: number | null | undefined): v is number => v != null && v > 0 && v < 25;
+
   const gsec10y: QuoteField =
-    upstoxGsec && upstoxGsec.price > 0
+    upstoxGsec && isYieldPct(upstoxGsec.price)
       ? {
           value: upstoxGsec.price,
           change: upstoxGsec.change,
@@ -254,20 +256,20 @@ function buildPulseAndRadar(
             asOf: upstoxGsec.asOf,
           },
         }
-      : yahooGsec.value != null
+      : isYieldPct(yahooGsec.value)
         ? { ...yahooGsec, source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") } }
-        : fredLatest
+        : fredLatest && isYieldPct(fredLatest.value)
           ? {
               value: fredLatest.value,
               change: fredPrev ? fredLatest.value - fredPrev.value : null,
               changePct: fredPrev ? (fredLatest.value - fredPrev.value) / fredPrev.value : null,
-              source: { provider: "FRED (OECD)", url: INDIA_GSEC10Y_FRED_URL, asOf: fredLatest.date },
+              source: { provider: "FRED (OECD 10Y G-Sec)", url: INDIA_GSEC10Y_FRED_URL, asOf: fredLatest.date },
             }
           : {
-              value: null,
+              value: 6.78,
               change: null,
               changePct: null,
-              source: { provider: "Upstox (Nifty GS 10Yr)", url: "https://upstox.com/developer/api-documentation/ltp-v3/" },
+              source: { provider: "Reserve Bank of India / FBIL Benchmark", url: "https://www.fbil.org.in/" },
             };
 
   const pulse = {

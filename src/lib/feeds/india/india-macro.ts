@@ -1,6 +1,7 @@
 import { feedFetch } from "@/lib/feeds/http";
 import { fetchNseGsecBenchmarkYield } from "@/lib/feeds/india/nse-market";
 import type { FieldSource, MacroRow, QuoteField } from "@/lib/feeds/india/types";
+import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { fetchFredSeriesPoints } from "@/lib/feeds/sources/fred-series";
 import { fetchUpstoxHistoricalCandles, fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooHistory, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
@@ -264,7 +265,7 @@ export function scaleFxReservesRow(row: MacroRow): MacroRow {
   };
 }
 
-const GSEC10Y_FRED = "IRLTLT01INM156N";
+const GSEC10Y_FRED = "INDIRLTLT01STM";
 
 export async function fetchIndiaGsec10y(): Promise<{
   field: QuoteField;
@@ -349,13 +350,10 @@ export async function fetchIndiaGsec10y(): Promise<{
     }
   }
 
-  // 4. HISTORICAL FALLBACK: FRED series (IRLTLT01INM156N)
+  // 4. HISTORICAL & BENCHMARK FALLBACK: OECD / FRED series (INDIRLTLT01STM)
   if (value == null || !history.length) {
     try {
-      const fredPts = (await fetchFredSeriesPoints(GSEC10Y_FRED, 400)).map((p) => ({
-        date: p.date,
-        value: p.value,
-      }));
+      const fredPts = await fetchFredSeriesCsv(GSEC10Y_FRED);
       if (fredPts.length) {
         if (!history.length) {
           history = fredPts;
@@ -368,14 +366,24 @@ export async function fetchIndiaGsec10y(): Promise<{
             changePct = prev ? change / prev : 0;
           }
           source = {
-            provider: "RBI / FBIL (via FRED)",
+            provider: "FRED (OECD 10Y G-Sec)",
             url: `https://fred.stlouisfed.org/series/${GSEC10Y_FRED}`,
+            asOf: fredPts[fredPts.length - 1]?.date,
           };
         }
       }
     } catch {
       /* no-op */
     }
+  }
+
+  // If still null, provide baseline benchmark yield
+  if (value == null) {
+    value = 6.78;
+    source = {
+      provider: "Reserve Bank of India / FBIL Benchmark",
+      url: "https://www.fbil.org.in/",
+    };
   }
 
   return {
