@@ -361,7 +361,15 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
 
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
   if (gsecBundle.field.value != null) {
-    pulse.gsec10y = gsecBundle.field;
+    pulse.gsec10y = {
+      value: gsecBundle.field.value,
+      change: gsecBundle.field.change ?? null,
+      changePct: gsecBundle.field.changePct ?? null,
+      source: {
+        ...gsecBundle.field.source,
+        asOf: gsecBundle.field.source.asOf ?? new Date().toISOString(),
+      },
+    };
   }
   const gsecHist =
     gsecBundle.history.length > 0 ? gsecBundle.history : fredGsec;
