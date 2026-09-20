@@ -1,4 +1,4 @@
-import { mean, returnsFromPrices, stdev } from "@/lib/analytics";
+import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
 import { computeSpecMetrics } from "@/lib/my-portfolio/metrics-spec-engine";
 import { candleRangeToDates, fetchUpstoxFullQuotes, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
