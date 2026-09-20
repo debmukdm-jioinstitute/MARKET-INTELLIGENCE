@@ -192,6 +192,48 @@ export function useMyPortfolio(refreshMs = 60_000) {
     await reload();
   }, [reload]);
 
+  const importHoldings = useCallback(
+    async (imported: Holding[], mode: "replace" | "append" = "replace") => {
+      let updated: Holding[];
+      if (mode === "replace") {
+        updated = [...imported];
+      } else {
+        const current = getLocalHoldings() ?? [];
+        const existingSymbols = new Set(imported.map((h) => h.symbol.toUpperCase()));
+        updated = [...current.filter((h) => !existingSymbols.has(h.symbol.toUpperCase())), ...imported];
+      }
+      setLocalHoldings(updated);
+
+      try {
+        await Promise.all(
+          imported.map((h) =>
+            fetch("/api/portfolio/holdings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                market: h.market,
+                symbol: h.symbol,
+                instrumentKey: h.instrumentKey,
+                name: h.name,
+                sector: h.sector,
+                currency: h.currency,
+                shares: h.shares,
+                avgCost: h.avgCost,
+                addedAt: h.addedAt,
+              }),
+            })
+          )
+        );
+      } catch (e) {
+        console.warn("Backend batch holding sync skipped:", e);
+      }
+
+      await reload();
+      return updated;
+    },
+    [reload],
+  );
+
   const updateBenchmark = useCallback(
     async (benchmark: string, name?: string) => {
       const res = await fetch("/api/portfolio/settings", {
@@ -215,6 +257,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
     editHolding,
     resetToDefault,
     clearHoldings,
+    importHoldings,
     updateBenchmark,
   };
 }
