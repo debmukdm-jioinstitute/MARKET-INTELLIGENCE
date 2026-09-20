@@ -668,5 +668,12 @@ export async function computePortfolioAnalysis(
     navSeries: navSeriesOut,
     allocation,
     attribution,
+    debug: {
+      benchHistoryLen: benchmarkHistory.length,
+      fxHistoryLen: fxHistory.length,
+      calendarLen: calendar.length,
+      earliestAdded,
+      perHolding: seriesList.map((s) => ({ symbol: s.holding.symbol, historyLen: s.history.length, addedAt: s.holding.addedAt })),
+    },
   };
 }

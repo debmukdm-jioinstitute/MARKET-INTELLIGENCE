@@ -76,4 +76,5 @@ export type PortfolioAnalysis = {
   navSeries: { date: string; portfolio: number; benchmark: number }[];
   allocation: { name: string; value: number }[];
   attribution: { symbol: string; name: string; contributionPct: number }[];
+  debug?: unknown;
 };
