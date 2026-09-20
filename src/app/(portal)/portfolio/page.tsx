@@ -9,7 +9,7 @@ import { MetricsCatalog } from "@/components/my-portfolio/metrics-catalog";
 import { PerformanceChart } from "@/components/my-portfolio/performance-chart";
 import { PortfolioOverview } from "@/components/my-portfolio/portfolio-overview";
 import { RiskExposurePanel } from "@/components/my-portfolio/risk-exposure-panel";
-import { ZerodhaImportDialog } from "@/components/my-portfolio/zerodha-import-dialog";
+import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 
 const BENCHMARK_LABEL: Record<string, string> = {
@@ -62,7 +62,7 @@ export default function PortfolioPage() {
               Load Default Portfolio
             </button>
           )}
-          <ZerodhaImportDialog onImport={importHoldings} />
+          <BrokerImportDialog onImport={importHoldings} />
           <AddHoldingDialog onAdd={addHolding} />
         </div>
       </div>

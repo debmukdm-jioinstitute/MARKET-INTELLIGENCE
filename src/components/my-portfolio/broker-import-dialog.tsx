@@ -21,25 +21,30 @@ import {
   ExternalLink,
   Layers,
   RefreshCw,
+  Building2,
 } from "lucide-react";
+
+type BrokerType = "zerodha" | "dhan" | "upstox";
 
 type Props = {
   onImport: (holdings: Holding[], mode: "replace" | "append") => Promise<unknown>;
 };
 
-export function ZerodhaImportDialog({ onImport }: Props) {
+export function BrokerImportDialog({ onImport }: Props) {
   const [open, setOpen] = useState(false);
+  const [broker, setBroker] = useState<BrokerType>("zerodha");
   const [tab, setTab] = useState<"api" | "csv">("csv");
 
-  // API Form State
-  const [apiKey, setApiKey] = useState("");
-  const [accessToken, setAccessToken] = useState("");
+  // Form States
+  const [apiKey, setApiKey] = useState(""); // Zerodha Kite
+  const [accessToken, setAccessToken] = useState(""); // Zerodha / Dhan / Upstox
+  const [clientId, setClientId] = useState(""); // Dhan Client ID
 
-  // CSV Form State
+  // CSV States
   const [csvText, setCsvText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
 
-  // Preview & Processing State
+  // Preview & Processing
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewHoldings, setPreviewHoldings] = useState<Holding[] | null>(null);
@@ -53,7 +58,13 @@ export function ZerodhaImportDialog({ onImport }: Props) {
     setCommitting(false);
   }
 
-  // Handle CSV file selection
+  function handleBrokerChange(b: BrokerType) {
+    setBroker(b);
+    resetState();
+    setFileName(null);
+    setCsvText("");
+  }
+
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -71,18 +82,32 @@ export function ZerodhaImportDialog({ onImport }: Props) {
     reader.readAsText(file);
   }
 
-  // Submit to backend parser/fetcher
   async function handleFetchOrParse() {
     setError(null);
     setLoading(true);
 
     try {
-      const payload =
-        tab === "api"
-          ? { mode: "api", apiKey: apiKey.trim(), accessToken: accessToken.trim() }
-          : { mode: "csv", csvText: csvText.trim() };
+      let endpoint = `/api/portfolio/import/${broker}`;
+      let payload: Record<string, unknown> = {};
 
-      const res = await fetch("/api/portfolio/import/zerodha", {
+      if (broker === "zerodha") {
+        payload =
+          tab === "api"
+            ? { mode: "api", apiKey: apiKey.trim(), accessToken: accessToken.trim() }
+            : { mode: "csv", csvText: csvText.trim() };
+      } else if (broker === "dhan") {
+        payload =
+          tab === "api"
+            ? { mode: "api", clientId: clientId.trim(), accessToken: accessToken.trim() }
+            : { mode: "csv", csvText: csvText.trim() };
+      } else if (broker === "upstox") {
+        payload =
+          tab === "api"
+            ? { mode: "api", accessToken: accessToken.trim() }
+            : { mode: "csv", csvText: csvText.trim() };
+      }
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -94,7 +119,7 @@ export function ZerodhaImportDialog({ onImport }: Props) {
       }
 
       if (!data.holdings || !Array.isArray(data.holdings) || data.holdings.length === 0) {
-        throw new Error("No valid equity holdings found.");
+        throw new Error("No valid equity holdings found in broker response.");
       }
 
       setPreviewHoldings(data.holdings);
@@ -105,7 +130,6 @@ export function ZerodhaImportDialog({ onImport }: Props) {
     }
   }
 
-  // Confirm import into portfolio
   async function handleConfirmImport() {
     if (!previewHoldings || previewHoldings.length === 0) return;
     setCommitting(true);
@@ -139,7 +163,7 @@ export function ZerodhaImportDialog({ onImport }: Props) {
           className="flex items-center gap-1.5 rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 font-mono text-xs font-bold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
         >
           <Layers className="h-3.5 w-3.5" />
-          <span>Import Zerodha</span>
+          <span>Import from Broker</span>
         </button>
       </DialogTrigger>
 
@@ -147,14 +171,14 @@ export function ZerodhaImportDialog({ onImport }: Props) {
         <DialogHeader className="border-b border-border/80 pb-3">
           <div className="flex items-center gap-2">
             <span className="rounded bg-amber-400 px-1.5 py-0.5 font-mono text-[10px] font-bold text-black uppercase tracking-wider">
-              Broker Plugin
+              Broker Gateway
             </span>
             <DialogTitle className="font-heading text-lg font-bold tracking-tight text-foreground">
-              Import from Zerodha
+              Import Holdings into Portfolio Desk
             </DialogTitle>
           </div>
           <p className="text-xs text-muted-foreground">
-            Synchronize your holdings directly from Kite Connect or import your Zerodha Console export.
+            Directly connect your broker account or upload export files to run attribution, risk, and macro stress tests.
           </p>
         </DialogHeader>
 
@@ -167,15 +191,63 @@ export function ZerodhaImportDialog({ onImport }: Props) {
 
         {!previewHoldings ? (
           <div className="space-y-4 pt-1">
+            {/* BROKER SELECTOR */}
+            <div>
+              <label className="font-mono text-[11px] font-semibold text-muted-foreground uppercase">
+                1. Select Indian Broker:
+              </label>
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleBrokerChange("zerodha")}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
+                    broker === "zerodha"
+                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      : "border-border bg-card text-muted-foreground hover:border-border/80"
+                  }`}
+                >
+                  <Building2 className="h-4 w-4 mb-1" />
+                  <span>Zerodha Kite</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleBrokerChange("dhan")}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
+                    broker === "dhan"
+                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      : "border-border bg-card text-muted-foreground hover:border-border/80"
+                  }`}
+                >
+                  <Building2 className="h-4 w-4 mb-1" />
+                  <span>Dhan HQ</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleBrokerChange("upstox")}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
+                    broker === "upstox"
+                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      : "border-border bg-card text-muted-foreground hover:border-border/80"
+                  }`}
+                >
+                  <Building2 className="h-4 w-4 mb-1" />
+                  <span>Upstox Pro</span>
+                </button>
+              </div>
+            </div>
+
+            {/* CONNECTION METHOD TABS */}
             <Tabs value={tab} onValueChange={(v) => setTab(v as "api" | "csv")}>
               <TabsList className="grid w-full grid-cols-2 bg-secondary/40 font-mono text-xs">
                 <TabsTrigger value="csv" className="flex items-center gap-1.5 data-[state=active]:bg-amber-400 data-[state=active]:text-black font-semibold">
                   <FileSpreadsheet className="h-3.5 w-3.5" />
-                  Console CSV (Free / No Fees)
+                  CSV File Export (Free / Instant)
                 </TabsTrigger>
                 <TabsTrigger value="api" className="flex items-center gap-1.5 data-[state=active]:bg-amber-400 data-[state=active]:text-black font-semibold">
                   <Key className="h-3.5 w-3.5" />
-                  Kite Connect API
+                  Broker API Sync
                 </TabsTrigger>
               </TabsList>
 
@@ -184,18 +256,38 @@ export function ZerodhaImportDialog({ onImport }: Props) {
                 <div className="rounded border border-dashed border-border/80 bg-secondary/20 p-4 text-center">
                   <FileSpreadsheet className="mx-auto h-8 w-8 text-amber-400/80 mb-2" />
                   <p className="font-mono text-xs text-foreground font-semibold">
-                    Select Zerodha Console Holdings File
+                    Select {broker === "zerodha" ? "Zerodha Console" : broker === "dhan" ? "Dhan Web" : "Upstox"} Holdings CSV
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    Download <code className="text-amber-300 font-mono">holdings.csv</code> from{" "}
-                    <a
-                      href="https://console.zerodha.com/portfolio/holdings"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline text-amber-400 hover:text-amber-300 inline-flex items-center gap-0.5"
-                    >
-                      console.zerodha.com/portfolio/holdings <ExternalLink className="h-2.5 w-2.5" />
-                    </a>
+                    {broker === "zerodha" ? (
+                      <>
+                        Download <code className="text-amber-300 font-mono">holdings.csv</code> from{" "}
+                        <a
+                          href="https://console.zerodha.com/portfolio/holdings"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-amber-400 hover:text-amber-300 inline-flex items-center gap-0.5"
+                        >
+                          console.zerodha.com/portfolio/holdings <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </>
+                    ) : broker === "dhan" ? (
+                      <>
+                        Download portfolio holdings CSV from{" "}
+                        <a
+                          href="https://web.dhan.co"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-amber-400 hover:text-amber-300 inline-flex items-center gap-0.5"
+                        >
+                          web.dhan.co Portfolio <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        Export portfolio holdings CSV from your Upstox Pro web portal.
+                      </>
+                    )}
                   </p>
 
                   <div className="mt-3 flex justify-center">
@@ -219,7 +311,7 @@ export function ZerodhaImportDialog({ onImport }: Props) {
                     rows={4}
                     value={csvText}
                     onChange={(e) => setCsvText(e.target.value)}
-                    placeholder="Instrument,ISIN,Quantity,Average Price,..."
+                    placeholder="Instrument/Symbol,ISIN,Quantity,Average Price,..."
                     className="w-full rounded border border-border bg-card p-2 font-mono text-xs text-foreground focus:border-amber-400 focus:outline-none"
                   />
                 </div>
@@ -232,64 +324,140 @@ export function ZerodhaImportDialog({ onImport }: Props) {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Parsing Zerodha File...
+                      Parsing {broker.toUpperCase()} File...
                     </>
                   ) : (
-                    "Parse & Preview Holdings"
+                    `Parse & Preview ${broker.toUpperCase()} Holdings`
                   )}
                 </Button>
               </TabsContent>
 
               {/* API TAB */}
               <TabsContent value="api" className="space-y-3 pt-3">
-                <div className="rounded border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-300/90">
-                  <p className="font-semibold flex items-center gap-1">
-                    <Key className="h-3.5 w-3.5" /> Zerodha Kite Connect Developers
-                  </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    Enter your active Kite Connect API Key and daily session Access Token. (Kite requires a ₹2,000/mo API subscription from developers).
-                  </p>
-                </div>
+                {broker === "zerodha" && (
+                  <>
+                    <div className="rounded border border-amber-400/20 bg-amber-400/5 p-2.5 text-xs text-amber-300/90">
+                      <p className="font-semibold flex items-center gap-1">
+                        <Key className="h-3.5 w-3.5" /> Zerodha Kite Connect API
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Requires developer Kite Connect app (₹2,000/mo). For free import, use the CSV tab above.
+                      </p>
+                    </div>
 
-                <div className="space-y-2">
-                  <div>
-                    <label className="font-mono text-[11px] text-muted-foreground">
-                      Kite API Key
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="e.g. 8k3j0a9z..."
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      className="font-mono text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-mono text-[11px] text-muted-foreground">
-                      Kite Access Token
-                    </label>
-                    <Input
-                      type="password"
-                      placeholder="e.g. h6j7k8m9..."
-                      value={accessToken}
-                      onChange={(e) => setAccessToken(e.target.value)}
-                      className="font-mono text-xs"
-                    />
-                  </div>
-                </div>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="font-mono text-[11px] text-muted-foreground">Kite API Key</label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. 8k3j0a9z..."
+                          value={apiKey}
+                          onChange={(e) => setApiKey(e.target.value)}
+                          className="font-mono text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-mono text-[11px] text-muted-foreground">Kite Access Token</label>
+                        <Input
+                          type="password"
+                          placeholder="e.g. h6j7k8m9..."
+                          value={accessToken}
+                          onChange={(e) => setAccessToken(e.target.value)}
+                          className="font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {broker === "dhan" && (
+                  <>
+                    <div className="rounded border border-emerald-500/20 bg-emerald-500/5 p-2.5 text-xs text-emerald-300/90">
+                      <p className="font-semibold flex items-center gap-1">
+                        <Key className="h-3.5 w-3.5" /> Dhan HQ API (100% Free)
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Generate your free access token at{" "}
+                        <a
+                          href="https://web.dhan.co"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-emerald-400 hover:text-emerald-300"
+                        >
+                          web.dhan.co
+                        </a>{" "}
+                        &rarr; Profile &rarr; Access Token.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <label className="font-mono text-[11px] text-muted-foreground">Dhan Client ID</label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. 1000000001"
+                          value={clientId}
+                          onChange={(e) => setClientId(e.target.value)}
+                          className="font-mono text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-mono text-[11px] text-muted-foreground">Dhan Access Token (JWT)</label>
+                        <Input
+                          type="password"
+                          placeholder="Paste Dhan Access Token..."
+                          value={accessToken}
+                          onChange={(e) => setAccessToken(e.target.value)}
+                          className="font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {broker === "upstox" && (
+                  <>
+                    <div className="rounded border border-sky-400/20 bg-sky-400/5 p-2.5 text-xs text-sky-300/90">
+                      <p className="font-semibold flex items-center gap-1">
+                        <Key className="h-3.5 w-3.5" /> Upstox API v2
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Enter your active Upstox Bearer Access Token generated via Upstox Developer Console.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <label className="font-mono text-[11px] text-muted-foreground">Upstox Access Token</label>
+                        <Input
+                          type="password"
+                          placeholder="Paste Upstox Bearer Token..."
+                          value={accessToken}
+                          onChange={(e) => setAccessToken(e.target.value)}
+                          className="font-mono text-xs"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <Button
                   onClick={handleFetchOrParse}
-                  disabled={loading || !apiKey.trim() || !accessToken.trim()}
-                  className="w-full bg-amber-400 font-mono text-xs font-bold text-black hover:bg-amber-300"
+                  disabled={
+                    loading ||
+                    (broker === "zerodha" && (!apiKey.trim() || !accessToken.trim())) ||
+                    (broker === "dhan" && (!clientId.trim() || !accessToken.trim())) ||
+                    (broker === "upstox" && !accessToken.trim())
+                  }
+                  className="w-full bg-amber-400 font-mono text-xs font-bold text-black hover:bg-amber-300 mt-2"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Connecting to Kite Trade...
+                      Connecting to {broker.toUpperCase()} API...
                     </>
                   ) : (
-                    "Fetch Live Holdings from Kite"
+                    `Fetch Live Holdings from ${broker.toUpperCase()}`
                   )}
                 </Button>
               </TabsContent>
@@ -302,7 +470,7 @@ export function ZerodhaImportDialog({ onImport }: Props) {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                 <span className="font-bold text-foreground">
-                  {previewHoldings.length} Positions Parsed
+                  {previewHoldings.length} Positions from {broker.toUpperCase()}
                 </span>
               </div>
               <div className="text-muted-foreground">
