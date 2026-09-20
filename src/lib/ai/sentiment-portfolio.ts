@@ -1,4 +1,4 @@
-import { callClaudeJson, untrustedBlock } from "@/lib/ai/anthropic";
+import { callLlmJson, untrustedBlock } from "@/lib/ai/llm";
 import { ensureSchema, sql } from "@/lib/db";
 import { fetchUpstoxFullQuotes, fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
 import { fetchYahooNews, fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
@@ -6,7 +6,7 @@ import { fetchYahooNews, fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
 /**
  * A lighter, native re-implementation of the "read the news, then tilt the
  * portfolio" idea from HARLF (arXiv:2507.18560, github.com/franjgs/llm-rl-finance-trader):
- * headlines for each of your real holdings go to Claude for a sentiment score
+ * headlines for each of your real holdings go to a free, open-source LLM (Llama 3.3 70B via Groq) for a sentiment score
  * (in place of the paper's FinBERT layer), which produces an illustrative
  * over/underweight tilt versus your current live weights. There is no RL
  * allocator here — the tilt is a simple, transparent, capped rule.
@@ -92,7 +92,7 @@ export async function runSentimentPortfolio(email: string): Promise<SentimentPor
       .map((h) => untrustedBlock(`headlines symbol="${h.symbol}"`, h.headlines.map((t) => `- ${t}`).join("\n")))
       .join("\n\n");
 
-    const result = await callClaudeJson<{
+    const result = await callLlmJson<{
       scores: { symbol: string; sentimentScore: number; label: "positive" | "neutral" | "negative"; rationale: string }[];
     }>({
       system:

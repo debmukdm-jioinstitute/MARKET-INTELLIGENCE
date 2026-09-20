@@ -1,5 +1,5 @@
 import { mean, stdev, returnsFromPrices } from "@/lib/analytics";
-import { callClaudeJson, untrustedBlock } from "@/lib/ai/anthropic";
+import { callLlmJson, untrustedBlock } from "@/lib/ai/llm";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { fetchYahooNews } from "@/lib/feeds/sources/yahoo";
 
@@ -8,8 +8,8 @@ import { fetchYahooNews } from "@/lib/feeds/sources/yahoo";
  * architecture (arXiv:2412.20138, github.com/TauricResearch/TradingAgents) — fundamental,
  * sentiment and technical analysts feed a bull/bear researcher debate, which a trader
  * and a risk manager turn into one final call. Runs entirely on this app's real live
- * data (Upstox for India, Yahoo/Massive for US) via Claude instead of the paper's
- * LangGraph + GPT/Gemini/Grok pipeline.
+ * data (Upstox for India, Yahoo/Massive for US) via a free, open-source LLM (Llama 3.3 70B
+ * on Groq) instead of the paper's LangGraph + GPT/Gemini/Grok pipeline.
  */
 
 export type AgentView = "bullish" | "neutral" | "bearish";
@@ -96,12 +96,12 @@ function pctChange(values: number[], n: number): number | null {
 }
 
 async function analyst(role: AnalystNote["role"], system: string, prompt: string): Promise<AnalystNote> {
-  const note = await callClaudeJson<Omit<AnalystNote, "role">>({ system, prompt, maxTokens: 500 });
+  const note = await callLlmJson<Omit<AnalystNote, "role">>({ system, prompt, maxTokens: 500 });
   return { role, ...note };
 }
 
 async function debater(role: DebateNote["role"], system: string, prompt: string): Promise<DebateNote> {
-  const note = await callClaudeJson<Omit<DebateNote, "role">>({ system, prompt, maxTokens: 500 });
+  const note = await callLlmJson<Omit<DebateNote, "role">>({ system, prompt, maxTokens: 500 });
   return { role, ...note };
 }
 
@@ -201,14 +201,14 @@ export async function runTradingDesk(symbolInput: string): Promise<TradingDeskRe
     ),
   ]);
 
-  const trader = await callClaudeJson<TraderDecision>({
+  const trader = await callLlmJson<TraderDecision>({
     system:
       "You are the trader on the desk. Weigh the bull and bear cases and the analyst notes into one call. This is a research simulation, not a real order — still, be decisive and specific. sizeSuggestionPct is a generic 0-10 illustrative position size as % of a portfolio, not tailored to any individual's actual holdings or risk tolerance.",
     prompt: `${header}\n\nAnalyst notes:\n${analystSummary}\n\nBull case: ${bull.thesis}\nBear case: ${bear.thesis}\n\nReturn JSON: {"action":"BUY|HOLD|SELL","sizeSuggestionPct":0-10,"rationale":"2-3 sentences","confidence":0.0-1.0}`,
     maxTokens: 400,
   });
 
-  const risk = await callClaudeJson<RiskVerdict>({
+  const risk = await callLlmJson<RiskVerdict>({
     system:
       "You are the risk manager on the desk, the final check before the research note is published. Consider volatility and drawdown context. You can approve, shrink, or override the trader's call. This is a research simulation, not a real order.",
     prompt: `${header}\n\nAnnualized volatility: ${technicals.volatilityAnnualized != null ? (technicals.volatilityAnnualized * 100).toFixed(1) + "%" : "n/a"}\nTrader's call: ${trader.action}, size ${trader.sizeSuggestionPct}%, confidence ${trader.confidence} — "${trader.rationale}"\n\nReturn JSON: {"approved":true|false,"finalAction":"BUY|HOLD|SELL","maxPositionPct":0-10,"stopLossPct":1-30,"rationale":"2-3 sentences"}`,

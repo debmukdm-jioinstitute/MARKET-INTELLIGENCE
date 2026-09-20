@@ -1,4 +1,4 @@
-import { AiKeyMissingError } from "@/lib/ai/anthropic";
+import { AiKeyMissingError } from "@/lib/ai/llm";
 import { runAlphaDiscovery } from "@/lib/ai/alpha-discovery";
 import { NextResponse } from "next/server";
 

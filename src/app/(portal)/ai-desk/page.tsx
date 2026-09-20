@@ -12,7 +12,7 @@ export default function AiDeskPage() {
       <PageHeader
         kicker="AI Desk"
         title="Multi-agent research lab"
-        subtitle="Three published multi-agent / LLM-in-finance ideas, re-implemented natively on this app's real live market data and news — powered by Claude. Every result is generated live from real data; nothing here is canned or simulated market data."
+        subtitle="Three published multi-agent / LLM-in-finance ideas, re-implemented natively on this app's real live market data and news — powered by a free, open-source LLM (Llama 3.3 70B via Groq). Every result is generated live from real data; nothing here is canned or simulated market data."
       />
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -36,7 +36,7 @@ export default function AiDeskPage() {
         />
         <ResourceCard
           title="3. LLM alpha factor discovery"
-          tagline="Claude proposes formulaic alpha factors from a fixed safe vocabulary; this app backtests each one on real price history."
+          tagline="The LLM proposes formulaic alpha factors from a fixed safe vocabulary; this app backtests each one on real price history."
           paperUrl="https://arxiv.org/abs/2409.06289"
           paperLabel="EMNLP 2025 paper"
           codeUrl="https://github.com/kouzhizhuo/Automate-Strategy-Finding-with-LLM-in-Quant-investment"
@@ -46,7 +46,7 @@ export default function AiDeskPage() {
 
       <Panel
         title="1. Trading desk — run a live multi-agent debate"
-        subtitle="Pick any India (NSE) or US ticker. Real quote, fundamentals, technicals and headlines go to five Claude agents that debate it."
+        subtitle="Pick any India (NSE) or US ticker. Real quote, fundamentals, technicals and headlines go to five LLM agents (Llama 3.3 70B via Groq) that debate it."
       >
         <TradingDeskPanel />
       </Panel>
@@ -60,7 +60,7 @@ export default function AiDeskPage() {
 
       <Panel
         title="3. Alpha factor discovery"
-        subtitle="Pick 1-8 tickers. Claude proposes candidate factors; this app backtests them on real historical prices."
+        subtitle="Pick 1-8 tickers. The LLM proposes candidate factors; this app backtests them on real historical prices."
       >
         <AlphaDiscoveryPanel />
       </Panel>

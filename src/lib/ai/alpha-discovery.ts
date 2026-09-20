@@ -1,5 +1,5 @@
 import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
-import { callClaudeJson } from "@/lib/ai/anthropic";
+import { callLlmJson } from "@/lib/ai/llm";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 
 /**
@@ -7,7 +7,7 @@ import { buildResearchDetail } from "@/lib/feeds/research-detail";
  * idea (Automate Strategy Finding with LLM in Quant Investment, EMNLP 2025,
  * arXiv:2409.06289, github.com/kouzhizhuo/Automate-Strategy-Finding-with-LLM-in-Quant-investment).
  *
- * Claude does not generate arbitrary executable code (that would be a prompt-injection /
+ * The LLM does not generate arbitrary executable code (that would be a prompt-injection /
  * code-injection risk if it ever touched news or other untrusted text). Instead it picks
  * from a small fixed, numeric vocabulary of factor primitives; this module deterministically
  * computes and backtests whatever it picks against real historical prices for the tickers
@@ -160,7 +160,7 @@ export async function runAlphaDiscovery(symbolInputs: string[]): Promise<AlphaDi
 
   const tickerList = resolved.map((r) => `${r.symbol} (${r.name}, ${r.closes.length} daily closes)`).join(", ");
 
-  const proposal = await callClaudeJson<{ factors: RawFactorIdea[] }>({
+  const proposal = await callLlmJson<{ factors: RawFactorIdea[] }>({
     system:
       "You are a quant researcher proposing candidate alpha factors. You may ONLY choose from this fixed vocabulary of primitives — you cannot invent new formulas or write code: " +
       "mom(n) = trailing n-day price momentum; rev(n) = -mom(n), mean reversion; vol(n) = trailing n-day realized volatility; invvol(n) = -vol(n), a low-volatility factor; smaratio(f,s) = fast/slow simple-moving-average ratio minus 1, f<s. " +

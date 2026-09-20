@@ -1,4 +1,4 @@
-import { AiKeyMissingError } from "@/lib/ai/anthropic";
+import { AiKeyMissingError } from "@/lib/ai/llm";
 import { runTradingDesk } from "@/lib/ai/trading-desk";
 import { NextResponse } from "next/server";
 

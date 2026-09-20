@@ -1,4 +1,4 @@
-import { AiKeyMissingError } from "@/lib/ai/anthropic";
+import { AiKeyMissingError } from "@/lib/ai/llm";
 import { runSentimentPortfolio } from "@/lib/ai/sentiment-portfolio";
 import { getSessionEmail } from "@/lib/session";
 import { NextResponse } from "next/server";

@@ -99,7 +99,7 @@ export function AlphaDiscoveryPanel() {
       {error ? <ErrorBanner message={error} /> : null}
       {loading ? (
         <p className="text-xs text-muted-foreground">
-          Claude proposes candidate factors from a fixed, safe vocabulary; this app backtests each one deterministically
+          The LLM proposes candidate factors from a fixed, safe vocabulary; this app backtests each one deterministically
           against real price history — no AI-generated code is ever executed.
         </p>
       ) : null}
