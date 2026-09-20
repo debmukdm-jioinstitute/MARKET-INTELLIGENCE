@@ -673,7 +673,10 @@ export async function computePortfolioAnalysis(
       fxHistoryLen: fxHistory.length,
       calendarLen: calendar.length,
       earliestAdded,
-      perHolding: seriesList.map((s) => ({ symbol: s.holding.symbol, historyLen: s.history.length, addedAt: s.holding.addedAt })),
+      sampleHistoryPoint: seriesList[0]?.history[0],
+      sampleCheck: seriesList[0]?.history[0] ? seriesList[0]!.history[0]!.date >= earliestAdded : null,
+      sampleDateType: typeof seriesList[0]?.history[0]?.date,
+      perHolding: seriesList.map((s) => ({ symbol: s.holding.symbol, historyLen: s.history.length, addedAt: s.holding.addedAt, firstDate: s.history[0]?.date, lastDate: s.history[s.history.length-1]?.date })),
     },
   };
 }
