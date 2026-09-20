@@ -6,7 +6,7 @@ import { fetchYahooNews, fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
 /**
  * A lighter, native re-implementation of the "read the news, then tilt the
  * portfolio" idea from HARLF (arXiv:2507.18560, github.com/franjgs/llm-rl-finance-trader):
- * headlines for each of your real holdings go to a free, open-source LLM (Llama 3.3 70B via Groq) for a sentiment score
+ * headlines for each of your real holdings go to a free, open-source LLM (GPT-OSS 120B via Groq) for a sentiment score
  * (in place of the paper's FinBERT layer), which produces an illustrative
  * over/underweight tilt versus your current live weights. There is no RL
  * allocator here — the tilt is a simple, transparent, capped rule.

@@ -1,8 +1,9 @@
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-// Llama 3.3 70B (Meta, open-weights) via Groq's LPU inference — free tier, no card, and the
-// fastest hosted inference for an open-source model of this accuracy class as of writing.
-// Override with GROQ_MODEL if you want a faster/cheaper (llama-3.1-8b-instant) or different model.
-const DEFAULT_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+// gpt-oss-120b (OpenAI's Apache-2.0 open-weight model) via Groq's LPU inference — free tier,
+// no card, and the strongest-accuracy open model on Groq's current catalog while still
+// running in well under a second per call. Override with GROQ_MODEL for a faster/smaller
+// option (openai/gpt-oss-20b) if you hit rate limits.
+const DEFAULT_MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 
 export class AiKeyMissingError extends Error {
   constructor() {

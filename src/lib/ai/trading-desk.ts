@@ -8,7 +8,7 @@ import { fetchYahooNews } from "@/lib/feeds/sources/yahoo";
  * architecture (arXiv:2412.20138, github.com/TauricResearch/TradingAgents) — fundamental,
  * sentiment and technical analysts feed a bull/bear researcher debate, which a trader
  * and a risk manager turn into one final call. Runs entirely on this app's real live
- * data (Upstox for India, Yahoo/Massive for US) via a free, open-source LLM (Llama 3.3 70B
+ * data (Upstox for India, Yahoo/Massive for US) via a free, open-source LLM (GPT-OSS 120B
  * on Groq) instead of the paper's LangGraph + GPT/Gemini/Grok pipeline.
  */
 
