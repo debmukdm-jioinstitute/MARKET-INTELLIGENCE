@@ -1,15 +1,7 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
-import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { SymbolSearch } from "@/components/research/symbol-search";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";
@@ -18,7 +10,6 @@ import { usePathname } from "next/navigation";
 
 export function TopBar() {
   const pathname = usePathname();
-  const { portfolios, active, setActiveId } = usePortfolio();
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const { data } = useFeedHub(60_000);
   const live = quoteMap(data);
@@ -42,19 +33,7 @@ export function TopBar() {
   return (
     <header className="grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_1fr_auto] lg:gap-4 lg:px-6 lg:py-2">
       <div className="flex items-center gap-4">
-        <Select value={active.id} onValueChange={setActiveId}>
-          <SelectTrigger className="h-9 w-full max-w-[280px] border-border bg-card font-medium">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {portfolios.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="hidden text-xs text-muted-foreground xl:block">{active.mandate}</p>
+        <p className="font-heading text-sm font-semibold tracking-tight">MI TERMINAL</p>
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
