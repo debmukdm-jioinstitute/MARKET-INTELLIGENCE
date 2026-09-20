@@ -20,3 +20,4 @@ export {
   nextMarketHoliday,
 } from "@/lib/feeds/sources/upstox/market-info";
 export type { MarketHoliday } from "@/lib/feeds/sources/upstox/market-info";
+export { fetchUpstoxIpoList, fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox/ipo";
