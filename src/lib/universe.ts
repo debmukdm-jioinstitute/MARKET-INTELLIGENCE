@@ -683,12 +683,65 @@ export const UNIVERSE: Instrument[] = [
   },
 ];
 
+import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
+
+const INDIA_INSTRUMENTS: Instrument[] = INDIA_EQUITIES.map((eq) => ({
+  symbol: eq.symbol,
+  name: eq.name,
+  assetClass: "Equity",
+  sector:
+    eq.sector === "IT"
+      ? "Technology"
+      : eq.sector === "Banking" || eq.sector === "Financial Services"
+      ? "Financials"
+      : eq.sector === "Energy"
+      ? "Energy"
+      : eq.sector === "Telecom"
+      ? "Communication"
+      : eq.sector === "Auto" || eq.sector === "FMCG" || eq.sector === "Consumer"
+      ? "Consumer"
+      : eq.sector === "Pharma"
+      ? "Healthcare"
+      : "Industrials",
+  region: "EM",
+  currency: "USD",
+  betaMkt: 1.0,
+  betaRates: -0.1,
+  betaGrowth: 0.4,
+  betaValue: 0.2,
+  betaCmdty: 0.1,
+  vol: 0.22,
+  drift: 0.12,
+  startPrice: 1000,
+  description: `${eq.name} (${eq.symbol}) listed on National Stock Exchange of India (NSE).`,
+}));
+
+export const ALL_UNIVERSE: Instrument[] = [...UNIVERSE, ...INDIA_INSTRUMENTS];
+
 export const INSTRUMENT_MAP = Object.fromEntries(
-  UNIVERSE.map((instrument) => [instrument.symbol, instrument]),
+  ALL_UNIVERSE.map((instrument) => [instrument.symbol.toUpperCase(), instrument]),
 ) as Record<string, Instrument>;
 
-export function getInstrument(symbol: string) {
-  const instrument = INSTRUMENT_MAP[symbol];
-  if (!instrument) throw new Error(`Unknown instrument ${symbol}`);
-  return instrument;
+export function getInstrument(symbol: string): Instrument {
+  const sym = symbol.toUpperCase().replace(/\.NS$/, "");
+  const instrument = INSTRUMENT_MAP[sym];
+  if (instrument) return instrument;
+
+  return {
+    symbol: sym,
+    name: sym,
+    assetClass: "Equity",
+    sector: "Technology",
+    region: "Global",
+    currency: "USD",
+    betaMkt: 1.0,
+    betaRates: 0,
+    betaGrowth: 0.5,
+    betaValue: 0,
+    betaCmdty: 0,
+    vol: 0.2,
+    drift: 0.1,
+    startPrice: 100,
+    description: `${sym} equity position.`,
+  };
 }

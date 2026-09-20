@@ -84,37 +84,37 @@
 }
 
 .dark {
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.97 0 0);
-  --primary: oklch(0.78 0.14 75);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.18 0 0);
-  --secondary-foreground: oklch(0.92 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.62 0 0);
-  --accent: oklch(0.18 0 0);
-  --accent-foreground: oklch(0.97 0 0);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.78 0.14 75);
-  --chart-1: oklch(0.78 0.14 75);
-  --chart-2: oklch(0.65 0.12 250);
-  --chart-3: oklch(0.72 0.15 155);
-  --chart-4: oklch(0.65 0.18 25);
-  --chart-5: oklch(0.7 0.1 300);
-  --sidebar: oklch(0.06 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.78 0.14 75);
-  --sidebar-primary-foreground: oklch(0.1 0 0);
-  --sidebar-accent: oklch(0.14 0 0);
-  --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.78 0.14 75);
+  --background: #000000;
+  --foreground: #f3f4f6;
+  --card: #0a0b0e;
+  --card-foreground: #f3f4f6;
+  --popover: #0a0b0e;
+  --popover-foreground: #f3f4f6;
+  --primary: #f59e0b;
+  --primary-foreground: #000000;
+  --secondary: #14161e;
+  --secondary-foreground: #f3f4f6;
+  --muted: #12141a;
+  --muted-foreground: #9ca3af;
+  --accent: #1c1a0e;
+  --accent-foreground: #fbbf24;
+  --destructive: #ef4444;
+  --border: #20242e;
+  --input: #1b1e28;
+  --ring: #f59e0b;
+  --chart-1: #f59e0b;
+  --chart-2: #22c55e;
+  --chart-3: #38bdf8;
+  --chart-4: #ef4444;
+  --chart-5: #a855f7;
+  --sidebar: #000000;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #17150a;
+  --sidebar-accent-foreground: #fbbf24;
+  --sidebar-border: #1f232c;
+  --sidebar-ring: #f59e0b;
 }
 
 @layer base {
@@ -145,4 +145,41 @@
   main {
     padding: 0 !important;
   }
+}
+
+/* Bloomberg Terminal Styling & Actionable Term Highlights */
+.actionable-term, .term-action, .term-bold {
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.bloomberg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #17150a;
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+}
+
+.terminal-header {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+.tick-up {
+  color: #22c55e !important;
+}
+
+.tick-down {
+  color: #ef4444 !important;
+}
+
+.tick-amber {
+  color: #fbbf24 !important;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { formatPct } from "@/lib/format";
@@ -261,6 +261,81 @@ export default function TickerDetailPage({ params }: PageProps) {
     dynamicSource = data.pulse.gold.source;
   }
 
+  // Real Historical Chart Series Fetching (Yahoo Finance / Exchange)
+  const [history, setHistory] = useState<{ date: string; value: number }[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadHistory() {
+      setLoadingHistory(true);
+      try {
+        const res = await fetch(`/api/feeds/security/${encodeURIComponent(meta.ticker)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (!cancelled && json.history && Array.isArray(json.history) && json.history.length > 0) {
+            setHistory(json.history);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch historical series:", err);
+      } finally {
+        if (!cancelled) setLoadingHistory(false);
+      }
+    }
+    loadHistory();
+    return () => {
+      cancelled = true;
+    };
+  }, [meta.ticker]);
+
+  const visiblePoints = useMemo(() => {
+    if (!history.length) {
+      return [{ date: "Live", value: livePrice }];
+    }
+    if (activeTf === "1D") {
+      const slice = history.slice(-2);
+      return slice.length ? slice : [{ date: "Live", value: livePrice }];
+    }
+    if (activeTf === "1W") {
+      return history.slice(-5);
+    }
+    if (activeTf === "1M") {
+      return history.slice(-22);
+    }
+    return history.slice(-252);
+  }, [history, activeTf, livePrice]);
+
+  const { pathData, areaData, coords, minVal, maxVal, isUp, periodReturnPct } = useMemo(() => {
+    const pts = visiblePoints;
+    const values = pts.map((p) => p.value);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = maxVal - minVal || 1;
+    const width = 800;
+    const height = 180;
+    const padTop = 20;
+    const padBottom = 25;
+    const chartHeight = height - padTop - padBottom;
+
+    const coords = pts.map((p, i) => {
+      const x = pts.length > 1 ? (i / (pts.length - 1)) * width : width / 2;
+      const y = height - padBottom - ((p.value - minVal) / range) * chartHeight;
+      return { x, y, point: p };
+    });
+
+    const pathData = coords.reduce((acc, c, i) => `${acc} ${i === 0 ? "M" : "L"} ${c.x.toFixed(1)},${c.y.toFixed(1)}`, "");
+    const areaData = `${pathData} L ${width},${height} L 0,${height} Z`;
+
+    const startPrice = pts[0]?.value ?? livePrice;
+    const endPrice = pts[pts.length - 1]?.value ?? livePrice;
+    const isUp = endPrice >= startPrice;
+    const periodReturnPct = startPrice > 0 ? (endPrice - startPrice) / startPrice : 0;
+
+    return { pathData, areaData, coords, minVal, maxVal, isUp, periodReturnPct };
+  }, [visiblePoints, livePrice]);
+
   const isPos = liveChg >= 0;
   const range52 = meta.high52 - meta.low52 || 1;
   const pct52 = Math.min(100, Math.max(0, ((livePrice - meta.low52) / range52) * 100));
@@ -271,13 +346,13 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
-          className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-amber-400 transition-colors font-semibold"
         >
-          <ArrowLeft className="size-3.5" />
+          <ArrowLeft className="size-3.5 text-amber-400" />
           Back to Executive Dashboard
         </Link>
         <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-          <span>{meta.exchange}</span>
+          <span className="font-bold text-amber-400">{meta.exchange}</span>
           <span>·</span>
           <span>{meta.category}</span>
           <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
@@ -289,13 +364,13 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-wrap items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 font-mono text-xs">
-            <span className="font-bold text-primary">{meta.ticker}</span>
-            <span className="rounded bg-accent/60 px-2 py-0.5 text-[10px] text-muted-foreground">
+            <span className="font-bold text-amber-400">{meta.ticker}</span>
+            <span className="rounded border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">
               Official Exchange Feed
             </span>
             <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mt-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mt-1">
             {meta.name}
           </h1>
           <div className="flex items-baseline gap-4 mt-2">
@@ -330,67 +405,160 @@ export default function TickerDetailPage({ params }: PageProps) {
               <MetricInfo metric="high52w" />
             </div>
           </div>
-          <div className="relative h-2 w-full rounded-full bg-accent/50 overflow-hidden">
+          <div className="relative h-2 w-full rounded-full bg-secondary/80 overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
+              className="h-full bg-amber-400 rounded-full transition-all duration-500"
               style={{ width: `${pct52}%` }}
             />
           </div>
           <p className="text-right text-[10px] text-muted-foreground">
-            Current at {pct52.toFixed(1)}% of 52-week trading channel
+            Current at <strong className="text-amber-400">{pct52.toFixed(1)}%</strong> of 52-week channel
           </p>
         </div>
       </div>
 
-      {/* 2. Interactive Chart */}
+      {/* 2. Interactive Authentic Chart */}
       <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-border/50 pb-3">
-          <div className="flex items-center gap-1">
-            <span className="font-mono text-xs font-bold text-muted-foreground uppercase flex items-center gap-1.5">
-              <BarChart2 className="size-3.5 text-primary" />
-              HISTORICAL TRAJECTORY & EXCHANGE TICKS
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
+              <BarChart2 className="size-3.5 text-amber-400" />
+              AUTHENTIC HISTORICAL TRAJECTORY ({meta.ticker})
+            </span>
+            <span className="rounded bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300">
+              REAL DATA
             </span>
             <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
           </div>
-          <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5 font-mono text-xs">
-            {TIMEFRAMES.map((tf) => (
-              <button
-                key={tf}
-                type="button"
-                onClick={() => setActiveTf(tf)}
-                className={cn(
-                  "rounded-md px-3 py-1 font-medium transition-all",
-                  activeTf === tf
-                    ? "bg-card text-foreground shadow-sm font-bold"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tf}
-              </button>
-            ))}
+
+          <div className="flex items-center gap-3">
+            <div className="font-mono text-xs">
+              <span className="text-muted-foreground mr-1.5">{activeTf} Move:</span>
+              <span className={cn("font-bold", isUp ? "text-emerald-400" : "text-rose-400")}>
+                {isUp ? "+" : ""}{formatPct(periodReturnPct)}
+              </span>
+            </div>
+
+            <div className="flex items-center rounded-lg border border-border bg-secondary/50 p-0.5 font-mono text-xs">
+              {TIMEFRAMES.map((tf) => (
+                <button
+                  key={tf}
+                  type="button"
+                  onClick={() => {
+                    setActiveTf(tf);
+                    setHoveredIndex(null);
+                  }}
+                  className={cn(
+                    "rounded-md px-3 py-1 font-medium transition-all",
+                    activeTf === tf
+                      ? "bg-amber-400 text-black shadow-sm font-bold"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {tf}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="h-48 w-full rounded-lg bg-accent/10 p-4 relative overflow-hidden flex items-end">
-          <svg viewBox="0 0 800 160" className="h-full w-full overflow-visible">
+        {/* Real Chart Canvas Area */}
+        <div className="relative h-56 w-full rounded-lg bg-black/50 border border-border/60 p-3 overflow-hidden flex flex-col justify-between">
+          {/* Top Range Legend & Hover Readout */}
+          <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground z-10 pointer-events-none pb-1">
+            <span className="bg-card px-2 py-0.5 rounded border border-border/60">
+              Period High: <strong className="text-foreground">{maxVal < 100 ? maxVal.toFixed(2) : maxVal.toLocaleString("en-US", { maximumFractionDigits: 2 })}</strong>
+            </span>
+            {hoveredIndex !== null && coords[hoveredIndex] ? (
+              <span className="bg-amber-400 text-black font-bold px-2.5 py-0.5 rounded shadow">
+                {coords[hoveredIndex].point.date} · Close: {coords[hoveredIndex].point.value < 100 ? coords[hoveredIndex].point.value.toFixed(2) : coords[hoveredIndex].point.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </span>
+            ) : (
+              <span className="text-amber-300/80 font-semibold italic">Hover across timeline to inspect authentic daily closes</span>
+            )}
+            <span className="bg-card px-2 py-0.5 rounded border border-border/60">
+              Period Low: <strong className="text-foreground">{minVal < 100 ? minVal.toFixed(2) : minVal.toLocaleString("en-US", { maximumFractionDigits: 2 })}</strong>
+            </span>
+          </div>
+
+          <svg
+            viewBox="0 0 800 180"
+            className="h-full w-full overflow-visible"
+            preserveAspectRatio="none"
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
             <defs>
-              <linearGradient id="chartGlowDetail" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+              <linearGradient id={`chartFill-${normalizedKey}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={isUp ? "#22c55e" : "#ef4444"} stopOpacity="0.25" />
+                <stop offset="100%" stopColor={isUp ? "#22c55e" : "#ef4444"} stopOpacity="0.0" />
               </linearGradient>
             </defs>
+
+            {/* Grid line */}
+            <line x1="0" y1="90" x2="800" y2="90" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+
+            {/* Area Fill */}
+            <path d={areaData} fill={`url(#chartFill-${normalizedKey})`} />
+
+            {/* Price Stroke Line */}
             <path
-              d="M 0,140 Q 150,110 300,120 T 600,60 T 800,20 L 800,160 L 0,160 Z"
-              fill="url(#chartGlowDetail)"
-            />
-            <path
-              d="M 0,140 Q 150,110 300,120 T 600,60 T 800,20"
+              d={pathData}
               fill="none"
-              stroke="#10b981"
+              stroke={isUp ? "#22c55e" : "#ef4444"}
               strokeWidth="2.5"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
+
+            {/* Hover Indicator Crosshair */}
+            {hoveredIndex !== null && coords[hoveredIndex] && (
+              <g>
+                <line
+                  x1={coords[hoveredIndex].x}
+                  y1="0"
+                  x2={coords[hoveredIndex].x}
+                  y2="180"
+                  stroke="#fbbf24"
+                  strokeWidth="1.5"
+                  strokeDasharray="2 2"
+                />
+                <circle
+                  cx={coords[hoveredIndex].x}
+                  cy={coords[hoveredIndex].y}
+                  r="5"
+                  fill="#fbbf24"
+                  stroke="#000000"
+                  strokeWidth="2"
+                />
+              </g>
+            )}
+
+            {/* Hover interaction columns */}
+            {coords.map((c, i) => {
+              const colWidth = 800 / Math.max(1, coords.length);
+              return (
+                <rect
+                  key={i}
+                  x={c.x - colWidth / 2}
+                  y="0"
+                  width={colWidth}
+                  height="180"
+                  fill="transparent"
+                  className="cursor-crosshair"
+                  onMouseEnter={() => setHoveredIndex(i)}
+                />
+              );
+            })}
           </svg>
+
+          {/* Bottom Timeline Dates */}
+          <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground pt-1 border-t border-border/40 z-10">
+            <span>{visiblePoints[0]?.date ?? "Start"}</span>
+            <span className="text-[9px] text-amber-400 font-semibold tracking-wider uppercase">
+              {loadingHistory ? "Fetching live market series…" : `Official Exchange Feed · ${visiblePoints.length} Sessions Plotted`}
+            </span>
+            <span>{visiblePoints[visiblePoints.length - 1]?.date ?? "End"}</span>
+          </div>
         </div>
       </div>
 
@@ -399,7 +567,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Valuation */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary uppercase">VALUATION MULTIPLES</span>
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">VALUATION MULTIPLES</span>
             <MetricInfo metric="pe_ratio" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -428,7 +596,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Volatility */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary uppercase">VOLATILITY PROFILE</span>
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">VOLATILITY PROFILE</span>
             <MetricInfo metric="vix" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -457,7 +625,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Technical Indicators */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary uppercase">MOMENTUM OSCILLATORS</span>
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
             <MetricInfo metric="rsi" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -486,7 +654,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Institutional Positioning */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary uppercase">INSTITUTIONAL DERIVATIVES</span>
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
             <MetricInfo metric="pcr" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">

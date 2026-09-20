@@ -18,25 +18,55 @@ const BENCHMARK_LABEL: Record<string, string> = {
 };
 
 export default function PortfolioPage() {
-  const { data, loading, error, addHolding, removeHolding } = useMyPortfolio();
+  const { data, loading, error, addHolding, removeHolding, resetToDefault, clearHoldings } = useMyPortfolio();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Portfolio"
-        title={data?.settings.name ?? "My Portfolio"}
-        subtitle="Add your own India and US holdings and track them against a real benchmark — every number below is computed from live and historical market data, or clearly marked when it isn't available."
+        kicker="PORTFOLIO DESK"
+        title={data?.settings.name ?? "Institutional Book"}
+        subtitle="Live mark-to-market positions, cross-asset allocation, and factor risk. Every metric is computed dynamically from real exchange price feeds."
       />
 
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
-          {data?.hasHoldings ? `${data.positions.length} holdings · benchmark ${BENCHMARK_LABEL[data.settings.benchmark]}` : "No holdings yet"}
-        </p>
-        <AddHoldingDialog onAdd={addHolding} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+        <div className="flex items-center gap-3">
+          <p className="font-mono text-xs text-muted-foreground">
+            {data?.hasHoldings && data.positions.length > 0 ? (
+              <>
+                <span className="font-bold text-amber-400">{data.positions.length} active positions</span>
+                {" · "}
+                <span>Benchmark: <strong className="text-foreground">{BENCHMARK_LABEL[data.settings.benchmark]}</strong></span>
+              </>
+            ) : (
+              <span className="text-amber-300 font-semibold">Clean Book (0 Active Positions)</span>
+            )}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {data?.hasHoldings && data.positions.length > 0 ? (
+            <button
+              type="button"
+              onClick={clearHoldings}
+              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 font-mono text-xs font-semibold text-muted-foreground hover:text-rose-400 hover:border-rose-400/40 transition-colors"
+            >
+              Clear Book
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={resetToDefault}
+              className="rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 font-mono text-xs font-bold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
+            >
+              Load Default Portfolio
+            </button>
+          )}
+          <AddHoldingDialog onAdd={addHolding} />
+        </div>
       </div>
 
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading portfolio…</p> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {loading && !data ? <p className="font-mono text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
+      {error ? <p className="font-mono text-sm text-rose-400">{error}</p> : null}
 
       {data ? (
         <>

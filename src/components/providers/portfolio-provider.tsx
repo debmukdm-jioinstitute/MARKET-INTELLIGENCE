@@ -3,7 +3,7 @@
 import { SEED_PORTFOLIOS } from "@/lib/portfolios";
 import { getPrice } from "@/lib/market";
 import type { VirtualPortfolio } from "@/lib/types";
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 type Store = {
   portfolios: VirtualPortfolio[];
@@ -18,6 +18,41 @@ const Ctx = createContext<Store | null>(null);
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [portfolios, setPortfolios] = useState(SEED_PORTFOLIOS);
   const [activeId, setActiveId] = useState(SEED_PORTFOLIOS[0]!.id);
+
+  // Synchronize active portfolio holdings with unified user storage
+  useEffect(() => {
+    function syncHoldings() {
+      if (typeof window === "undefined") return;
+      try {
+        const raw = window.localStorage.getItem("mi_user_holdings_v2");
+        if (raw) {
+          const list = JSON.parse(raw) as { symbol: string; shares: number; avgCost: number }[];
+          if (Array.isArray(list)) {
+            setPortfolios((prev) =>
+              prev.map((p) => {
+                if (p.id === activeId || p.id === "flagship") {
+                  return {
+                    ...p,
+                    holdings: list.map((h) => ({
+                      symbol: h.symbol,
+                      shares: h.shares,
+                      avgCost: h.avgCost,
+                    })),
+                  };
+                }
+                return p;
+              }),
+            );
+          }
+        }
+      } catch (e) {
+        console.warn("Portfolio provider sync error:", e);
+      }
+    }
+    syncHoldings();
+    window.addEventListener("mi_portfolio_updated", syncHoldings);
+    return () => window.removeEventListener("mi_portfolio_updated", syncHoldings);
+  }, [activeId]);
   const active = useMemo(
     () => portfolios.find((p) => p.id === activeId) ?? portfolios[0]!,
     [portfolios, activeId],

@@ -144,10 +144,10 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors",
+                      "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
                       active
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
-                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
+                        ? "bg-amber-400/15 text-amber-400 font-bold border-l-2 border-amber-400"
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground font-medium",
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
