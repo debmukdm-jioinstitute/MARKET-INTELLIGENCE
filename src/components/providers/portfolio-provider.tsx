@@ -2,7 +2,9 @@
 
 import { SEED_PORTFOLIOS } from "@/lib/portfolios";
 import { getPrice } from "@/lib/market";
+import { registerCustomInstrument } from "@/lib/universe";
 import type { VirtualPortfolio } from "@/lib/types";
+import type { Holding as UserHolding } from "@/lib/my-portfolio/types";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 type Store = {
@@ -26,8 +28,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       try {
         const raw = window.localStorage.getItem("mi_user_holdings_v2");
         if (raw) {
-          const list = JSON.parse(raw) as { symbol: string; shares: number; avgCost: number }[];
-          if (Array.isArray(list)) {
+          const list = JSON.parse(raw) as UserHolding[];
+          if (Array.isArray(list) && list.length > 0) {
+            for (const item of list) {
+              registerCustomInstrument(item);
+            }
             setPortfolios((prev) =>
               prev.map((p) => {
                 if (p.id === activeId || p.id === "flagship") {

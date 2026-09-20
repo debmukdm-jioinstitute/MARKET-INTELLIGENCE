@@ -1,4 +1,4 @@
-import type { Instrument } from "@/lib/types";
+import type { Instrument, Sector } from "@/lib/types";
 
 export const UNIVERSE: Instrument[] = [
   {
@@ -722,6 +722,56 @@ export const INSTRUMENT_MAP = Object.fromEntries(
   ALL_UNIVERSE.map((instrument) => [instrument.symbol.toUpperCase(), instrument]),
 ) as Record<string, Instrument>;
 
+export function registerCustomInstrument(item: {
+  symbol: string;
+  name?: string;
+  sector?: string | null;
+  market?: string;
+  currency?: string;
+}) {
+  const sym = item.symbol.toUpperCase().replace(/\.NS$/, "");
+  const isIndian = item.market === "IN" || item.currency === "INR";
+  const rawSector = (item.sector || "").toLowerCase();
+  const mappedSector: Sector =
+    rawSector.includes("energy") || rawSector.includes("oil")
+      ? "Energy"
+      : rawSector.includes("tech") || rawSector.includes("it") || rawSector.includes("software")
+      ? "Technology"
+      : rawSector.includes("bank") || rawSector.includes("fin")
+      ? "Financials"
+      : rawSector.includes("health") || rawSector.includes("pharma") || rawSector.includes("hospital") || rawSector.includes("bio")
+      ? "Healthcare"
+      : rawSector.includes("fmcg") || rawSector.includes("consumer") || rawSector.includes("retail") || rawSector.includes("food") || rawSector.includes("auto")
+      ? "Consumer"
+      : rawSector.includes("telecom") || rawSector.includes("comm") || rawSector.includes("media")
+      ? "Communication"
+      : rawSector.includes("metal") || rawSector.includes("material") || rawSector.includes("chem")
+      ? "Materials"
+      : rawSector.includes("util") || rawSector.includes("power")
+      ? "Utilities"
+      : rawSector.includes("estate") || rawSector.includes("realty")
+      ? "Real Estate"
+      : "Industrials";
+
+  INSTRUMENT_MAP[sym] = {
+    symbol: sym,
+    name: item.name || sym,
+    assetClass: "Equity",
+    sector: mappedSector,
+    region: isIndian ? "EM" : "US",
+    currency: isIndian ? "USD" : "USD", // analytics engine calculates normalized currency internally
+    betaMkt: 1.0,
+    betaRates: -0.1,
+    betaGrowth: 0.4,
+    betaValue: 0.2,
+    betaCmdty: 0.1,
+    vol: 0.22,
+    drift: 0.12,
+    startPrice: 1000,
+    description: `${item.name || sym} equity holding.`,
+  };
+}
+
 export function getInstrument(symbol: string): Instrument {
   const sym = symbol.toUpperCase().replace(/\.NS$/, "");
   const instrument = INSTRUMENT_MAP[sym];
@@ -745,3 +795,4 @@ export function getInstrument(symbol: string): Instrument {
     description: `${sym} equity position.`,
   };
 }
+

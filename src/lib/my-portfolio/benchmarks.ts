@@ -7,11 +7,18 @@ export type BenchmarkPoint = { date: string; value: number };
 
 export async function fetchBenchmarkHistory(benchmark: PortfolioSettings["benchmark"]): Promise<BenchmarkPoint[]> {
   if (benchmark === "NIFTY50") {
-    const { from, to } = candleRangeToDates("1Y");
-    const candles = await fetchUpstoxHistoricalCandles(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "days", "1", from, to).catch(
-      () => [],
-    );
-    return candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+    try {
+      const { from, to } = candleRangeToDates("1Y");
+      const candles = await fetchUpstoxHistoricalCandles(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "days", "1", from, to).catch(
+        () => [],
+      );
+      if (candles && candles.length > 5) {
+        return candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+      }
+    } catch {
+      // fallback to Yahoo below
+    }
+    return fetchYahooHistory("^NSEI", "1y").catch(() => []);
   }
   const symbol = benchmark === "NDX" ? "^NDX" : "^GSPC";
   const points = await fetchYahooHistory(symbol, "1y").catch(() => []);
