@@ -9,6 +9,13 @@ import {
 import { feedFetch } from "@/lib/feeds/http";
 import type { LiveQuote } from "@/lib/feeds/types";
 import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
+import {
+  fetchIndiaCreditGrowthRow,
+  fetchIndiaDepositRow,
+  fetchIndiaGsec10y,
+  fetchIndiaWpiRow,
+  scaleFxReservesRow,
+} from "@/lib/feeds/india/india-macro";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
@@ -21,7 +28,7 @@ const INDIA_GSEC10Y_FRED_SERIES = "INDIRLTLT01STM";
 const INDIA_GSEC10Y_FRED_URL = `https://fred.stlouisfed.org/series/${INDIA_GSEC10Y_FRED_SERIES}`;
 
 /** Indices Upstox has a stable instrument_key for — see INDIA_INSTRUMENT_KEYS. */
-const UPSTOX_INDIA_SYMBOLS = ["^NSEI", "^BSESN", "^NSEBANK", "^INDIAVIX"];
+const UPSTOX_INDIA_SYMBOLS = ["^NSEI", "^BSESN", "^NSEBANK", "^INDIAVIX", "^NIFTYGS10Y"];
 
 /** Upstox option chain first (exchange-licensed, has Greeks), NSE scrape as last resort. */
 async function fetchFoSnapshot(
@@ -325,7 +332,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     macroCpi,
     macroGdp,
     mospi,
-    yahooGsecHist,
+    gsecBundle,
     fredGsec,
     fxRes,
     iip,
@@ -342,18 +349,22 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     fetchWorldBankIndicator("IN", "FP.CPI.TOTL.ZG", "CPI", "% y/y"),
     fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "GDP Growth", "% y/y"),
     fetchMospiMacro().catch(() => []),
-    fetchYahooHistory("IN10YT=RR", "1y").catch(() => []),
+    fetchIndiaGsec10y(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
-    fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn"),
+    fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn").then(scaleFxReservesRow),
     fetchWorldBankIndicator("IN", "NV.IND.MANF.KD.ZG", "IIP / Mfg growth", "% y/y"),
-    fetchWorldBankIndicator("IN", "FP.WPI.TOTL.ZG", "WPI", "% y/y"),
-    fetchWorldBankIndicator("IN", "FR.INR.DPST.GD.ZS", "Deposit / GDP proxy", "%"),
-    fetchWorldBankIndicator("IN", "FR.INR.TOTL.ZG", "Credit growth", "% y/y"),
+    fetchIndiaWpiRow(),
+    fetchIndiaDepositRow(),
+    fetchIndiaCreditGrowthRow(),
     fetchWorldBankIndicator("IN", "FR.INR.LEND", "Repo / lending (WB)", "%"),
   ]);
 
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
-  const gsecHist = yahooGsecHist.length ? yahooGsecHist : fredGsec;
+  if (gsecBundle.field.value != null) {
+    pulse.gsec10y = gsecBundle.field;
+  }
+  const gsecHist =
+    gsecBundle.history.length > 0 ? gsecBundle.history : fredGsec;
 
   const niftyNse = pickIndex(nseIndices, "NIFTY 50");
   const bankNse = pickIndex(nseIndices, "NIFTY BANK");
@@ -440,7 +451,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
           source: repo.source,
         },
         {
-          label: "10Y G-Sec",
+          label: "10Y G-Sec (live)",
           value: pulse.gsec10y.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : null,
           source: pulse.gsec10y.source,
         },

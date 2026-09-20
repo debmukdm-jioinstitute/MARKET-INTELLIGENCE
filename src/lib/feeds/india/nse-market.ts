@@ -196,3 +196,61 @@ export async function fetchFiiDii(): Promise<FiiDiiRow[]> {
     return [];
   }
 }
+
+function parseNseYield(row: Record<string, unknown>): number | null {
+  for (const key of ["yield", "ytm", "YTM", "semiAnnualYield", "annualYield", "bondYield"]) {
+    const n = Number(row[key]);
+    if (Number.isFinite(n) && n > 0 && n < 25) return n;
+  }
+  return null;
+}
+
+/** Best-effort 10Y benchmark yield from NSE G-Sec capital-market tape. */
+export async function fetchNseGsecBenchmarkYield(): Promise<{
+  yield: number;
+  change?: number;
+  changePct?: number;
+  asOf: string;
+  url: string;
+} | null> {
+  try {
+    const json = await nseJson<{ data?: Record<string, unknown>[] }>(
+      "/api/liveBonds-traded-on-cm?type=gsec",
+    );
+    const rows = json.data ?? [];
+    const now = Date.now();
+    let best: { ytm: number; prev?: number } | null = null;
+    let bestDiff = Infinity;
+
+    for (const row of rows) {
+      const ytm = parseNseYield(row);
+      if (ytm == null) continue;
+      const maturity = String(row.maturityDate ?? row.maturity ?? row.maturityDateStr ?? "");
+      const matMs = Date.parse(maturity);
+      if (!Number.isFinite(matMs)) continue;
+      const years = (matMs - now) / (365.25 * 86_400_000);
+      const diff = Math.abs(years - 10);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        const prev = Number(row.previousClose ?? row.prevClose);
+        best = {
+          ytm,
+          prev: Number.isFinite(prev) && prev > 0 ? prev : undefined,
+        };
+      }
+    }
+
+    if (!best) return null;
+    const change = best.prev != null ? best.ytm - best.prev : undefined;
+    const changePct = best.prev ? change! / best.prev : undefined;
+    return {
+      yield: best.ytm,
+      change,
+      changePct,
+      asOf: new Date().toISOString(),
+      url: "https://www.nseindia.com/market-data/bonds-traded-in-capital-market",
+    };
+  } catch {
+    return null;
+  }
+}
