@@ -13,3 +13,10 @@ export {
   fetchUpstoxOptionExpiries,
 } from "@/lib/feeds/sources/upstox/option-chain";
 export { fetchUpstoxKeyRatios } from "@/lib/feeds/sources/upstox/fundamentals";
+export { fetchUpstoxNews } from "@/lib/feeds/sources/upstox/news";
+export {
+  fetchUpstoxMarketHolidays,
+  isMarketHolidayToday,
+  nextMarketHoliday,
+} from "@/lib/feeds/sources/upstox/market-info";
+export type { MarketHoliday } from "@/lib/feeds/sources/upstox/market-info";

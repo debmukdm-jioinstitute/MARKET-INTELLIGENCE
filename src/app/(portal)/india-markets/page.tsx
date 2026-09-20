@@ -1,6 +1,7 @@
 "use client";
 
 import { SecuritySheet } from "@/components/india-markets/security-sheet";
+import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useIndiaEquities } from "@/hooks/use-india-equities";
@@ -19,8 +20,9 @@ export default function IndiaMarketsPage() {
       <PageHeader
         kicker="India"
         title="India markets"
-        subtitle="NSE equities — live via Upstox (exchange-licensed). Click a row for full quote, depth, and (soon) candles/fundamentals."
+        subtitle="NSE equities — live via Upstox (exchange-licensed). Click a row for full quote, depth, candles, and fundamentals."
       />
+      <MarketStatusBadge />
       {loading && !quotes.length ? (
         <p className="text-sm text-muted-foreground">Connecting to Upstox…</p>
       ) : null}

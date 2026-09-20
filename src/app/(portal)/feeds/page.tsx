@@ -2,6 +2,7 @@
 
 import { NewsStream } from "@/components/feeds/news-stream";
 import { DataInfo } from "@/components/feeds/data-info";
+import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { formatPct } from "@/lib/format";
@@ -18,13 +19,16 @@ export default function FeedsPage() {
         title="Live market feeds"
         subtitle="Aggregated RSS and open APIs — NSE, BSE, RBI, SEC EDGAR, Yahoo Finance, Stooq, Alpha Vantage, FRED, World Bank, IMF, OECD, MOSPI, and India benchmarks (Upstox primary, TrueData fallback). Refreshes automatically."
       />
-      <button
-        type="button"
-        onClick={() => reload()}
-        className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
-      >
-        Refresh now
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => reload()}
+          className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
+        >
+          Refresh now
+        </button>
+        <MarketStatusBadge />
+      </div>
       {loading && !data ? (
         <p className="text-sm text-muted-foreground">Pulling feeds…</p>
       ) : null}

@@ -10,6 +10,8 @@ import { fetchOecdMacro } from "@/lib/feeds/sources/oecd";
 import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
 import { fetchSecFilings } from "@/lib/feeds/sources/sec";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
+import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
+import { fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
 import type { FeedHealth, FeedHubPayload, LiveQuote } from "@/lib/feeds/types";
@@ -48,12 +50,13 @@ function mergeQuotes(yahoo: LiveQuote[], stooq: LiveQuote[]): LiveQuote[] {
 export async function buildFeedHub(): Promise<FeedHubPayload> {
   const fetchedAt = new Date().toISOString();
 
-  const [nse, bse, rbi, sec, yahoo, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
+  const [nse, bse, rbi, sec, upstoxNews, yahoo, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
     await Promise.all([
       timed(() => fetchNseNews()),
       timed(() => fetchBseNews()),
       timed(() => fetchRbiNews()),
       timed(() => fetchSecFilings()),
+      timed(() => fetchUpstoxNews(INDIA_EQUITIES.map((i) => i.instrumentKey))),
       timed(() => fetchYahooQuotes([...TAPE_SYMBOLS, "^VIX"])),
       timed(() => fetchStooqQuotes(TAPE_SYMBOLS.slice(0, 12))),
       timed(() => fetchAlphaVantageQuote("SPY")),
@@ -77,6 +80,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     ...(bse.value ?? []),
     ...(rbi.value ?? []),
     ...(sec.value ?? []),
+    ...(upstoxNews.value ?? []),
   ].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
 
   const macro = [
@@ -94,6 +98,12 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     health("bse", "BSE RSS", bse, (v) => Array.isArray(v) && v.length > 0),
     health("rbi", "RBI RSS", rbi, (v) => Array.isArray(v) && v.length > 0),
     health("sec", "SEC EDGAR", sec, (v) => Array.isArray(v) && v.length > 0),
+    health(
+      "upstox",
+      "Upstox news",
+      upstoxNews,
+      (v) => !process.env.UPSTOX_ACCESS_TOKEN || (Array.isArray(v) && v.length > 0),
+    ),
     health("yahoo", "Yahoo Finance", yahoo, (v) => Array.isArray(v) && v.length > 0),
     health("stooq", "Stooq", stooq, (v) => Array.isArray(v) && v.length > 0),
     health(
