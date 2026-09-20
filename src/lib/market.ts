@@ -1,7 +1,7 @@
 import { LAST_DATE, PREV_DATE, TRADING_DAYS } from "@/lib/calendar";
 import { gaussian, hashString, mulberry32 } from "@/lib/rng";
 import type { MacroSeries } from "@/lib/types";
-import { UNIVERSE } from "@/lib/universe";
+import { UNIVERSE, getInstrument } from "@/lib/universe";
 
 type FactorState = {
   mkt: number;
@@ -43,8 +43,7 @@ const PRICE_CACHE = new Map<string, number[]>();
 export function getPriceSeries(symbol: string) {
   const cached = PRICE_CACHE.get(symbol);
   if (cached) return cached;
-  const instrument = UNIVERSE.find((item) => item.symbol === symbol);
-  if (!instrument) throw new Error(`Unknown symbol ${symbol}`);
+  const instrument = getInstrument(symbol);
   const rand = mulberry32(hashString(symbol));
   const prices: number[] = [];
   let price = instrument.startPrice;

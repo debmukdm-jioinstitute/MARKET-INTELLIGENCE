@@ -41,10 +41,16 @@ type ChartMeta = {
 export type YahooQuoteDetail = ChartMeta & { symbol: string };
 
 async function fetchChartMeta(symbol: string): Promise<ChartMeta | null> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+  let url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
     symbol,
   )}?interval=1d&range=5d`;
-  const res = await feedFetch(url, { headers: CHART_HEADERS, timeoutMs: 12_000 });
+  let res = await feedFetch(url, { headers: CHART_HEADERS, timeoutMs: 10_000 });
+  if (!res.ok && !symbol.includes(".") && !symbol.startsWith("^") && !symbol.includes("=")) {
+    url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+      `${symbol}.NS`,
+    )}?interval=1d&range=5d`;
+    res = await feedFetch(url, { headers: CHART_HEADERS, timeoutMs: 10_000 });
+  }
   if (!res.ok) return null;
   const json = (await res.json()) as { chart?: { result?: { meta?: ChartMeta }[] } };
   return json.chart?.result?.[0]?.meta ?? null;
@@ -87,16 +93,18 @@ export async function fetchYahooChartQuote(symbol: string): Promise<LiveQuote | 
 /** Yahoo v7 quote often returns 401 on serverless; chart v8 is the primary path. */
 export async function fetchYahooQuotes(symbols: string[]): Promise<LiveQuote[]> {
   const unique = [...new Set(symbols)];
-  const batchSize = 8;
-  const out: LiveQuote[] = [];
+  const batchSize = 16;
+  const chunks: string[][] = [];
   for (let i = 0; i < unique.length; i += batchSize) {
-    const chunk = unique.slice(i, i + batchSize);
-    const rows = await Promise.all(chunk.map((s) => fetchYahooChartQuote(s)));
-    for (const row of rows) {
-      if (row) out.push(row);
-    }
+    chunks.push(unique.slice(i, i + batchSize));
   }
-  return out;
+  const chunkResults = await Promise.all(
+    chunks.map(async (chunk) => {
+      const rows = await Promise.all(chunk.map((s) => fetchYahooChartQuote(s)));
+      return rows.filter((r): r is LiveQuote => r !== null);
+    }),
+  );
+  return chunkResults.flat();
 }
 
 export async function fetchYahooQuoteDetail(symbol: string): Promise<YahooQuoteDetail | null> {
@@ -109,10 +117,18 @@ export async function fetchYahooHistory(
   symbol: string,
   range = "2y",
 ): Promise<MacroPoint[]> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
-    symbol,
+  let querySymbol = symbol;
+  let url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+    querySymbol,
   )}?interval=1d&range=${range}`;
-  const res = await feedFetch(url, { headers: CHART_HEADERS });
+  let res = await feedFetch(url, { headers: CHART_HEADERS });
+  if (!res.ok && !symbol.includes(".") && !symbol.startsWith("^") && !symbol.includes("=")) {
+    querySymbol = `${symbol}.NS`;
+    url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+      querySymbol,
+    )}?interval=1d&range=${range}`;
+    res = await feedFetch(url, { headers: CHART_HEADERS });
+  }
   if (!res.ok) throw new Error(`Yahoo chart HTTP ${res.status}`);
   const json = (await res.json()) as {
     chart?: { result?: { timestamp?: number[]; indicators?: { quote?: { close?: (number | null)[] }[] } }[] };

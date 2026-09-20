@@ -76,15 +76,24 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as {
-      holdings?: Holding[];
-      settings?: PortfolioSettings;
-      tradeLog?: TradeLogRow[];
+    let body: {
+      holdings?: unknown;
+      settings?: unknown;
+      tradeLog?: unknown;
     };
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    const settings = body.settings ?? DEFAULT_PORTFOLIO_SETTINGS;
-    const holdings = body.holdings ?? REALISTIC_DEFAULT_HOLDINGS;
-    const tradeLog = body.tradeLog ?? [];
+    if (body.holdings !== undefined && !Array.isArray(body.holdings)) {
+      return NextResponse.json({ error: "holdings must be an array" }, { status: 400 });
+    }
+
+    const settings = (body.settings as PortfolioSettings) ?? DEFAULT_PORTFOLIO_SETTINGS;
+    const holdings = (Array.isArray(body.holdings) ? body.holdings : REALISTIC_DEFAULT_HOLDINGS) as Holding[];
+    const tradeLog = (Array.isArray(body.tradeLog) ? body.tradeLog : []) as TradeLogRow[];
 
     const analysis = await computePortfolioAnalysis(holdings, settings, tradeLog);
     return NextResponse.json(analysis);

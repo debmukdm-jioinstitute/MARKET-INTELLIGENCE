@@ -71,9 +71,14 @@ type AddBody = {
 };
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as AddBody;
+  let body: AddBody | null = null;
+  try {
+    body = (await req.json()) as AddBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-  if (!body.symbol || !body.name || !body.shares || body.shares <= 0 || !body.avgCost || body.avgCost <= 0) {
+  if (!body || !body.symbol || !body.name || !body.shares || body.shares <= 0 || !body.avgCost || body.avgCost <= 0) {
     return NextResponse.json({ error: "symbol, name, shares, and avgCost are required" }, { status: 400 });
   }
 
