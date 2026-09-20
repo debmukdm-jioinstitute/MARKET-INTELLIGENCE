@@ -1,4 +1,4 @@
-import { ensureSchema, sql } from "@/lib/db";
+import { ensureSchema, sql, toDateString } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
 import type { Holding } from "@/lib/my-portfolio/types";
 import { NextResponse } from "next/server";
@@ -29,7 +29,7 @@ function toHolding(r: Row): Holding {
     currency: r.currency,
     shares: Number(r.shares),
     avgCost: Number(r.avg_cost),
-    addedAt: r.added_at,
+    addedAt: toDateString(r.added_at),
   };
 }
 

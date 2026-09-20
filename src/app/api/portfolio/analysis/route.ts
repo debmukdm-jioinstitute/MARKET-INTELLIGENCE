@@ -1,4 +1,4 @@
-import { ensureSchema, sql } from "@/lib/db";
+import { ensureSchema, sql, toDateString } from "@/lib/db";
 import { getSessionEmail } from "@/lib/session";
 import { computePortfolioAnalysis } from "@/lib/my-portfolio/metrics";
 import type { Holding, PortfolioSettings, TradeLogRow } from "@/lib/my-portfolio/types";
@@ -38,7 +38,7 @@ export async function GET() {
       currency: r.currency as Holding["currency"],
       shares: Number(r.shares),
       avgCost: Number(r.avg_cost),
-      addedAt: r.added_at as string,
+      addedAt: toDateString(r.added_at),
     }));
 
     const tradeLog: TradeLogRow[] = tradeRows.map((r) => ({
@@ -46,7 +46,7 @@ export async function GET() {
       side: r.side as TradeLogRow["side"],
       shares: Number(r.shares),
       price: Number(r.price),
-      date: r.trade_date as string,
+      date: toDateString(r.trade_date),
     }));
 
     const analysis = await computePortfolioAnalysis(holdings, settings, tradeLog);

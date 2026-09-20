@@ -25,6 +25,17 @@ export function hasDatabase() {
   return Boolean(connectionString());
 }
 
+/**
+ * Neon's driver returns Postgres `date`/`timestamptz` columns as native JS
+ * `Date` objects, not strings — comparing one directly with a "YYYY-MM-DD"
+ * string silently breaks (Date's default `toString()`, not `toISOString()`,
+ * gets used), so every date column read from the DB must go through this.
+ */
+export function toDateString(value: unknown): string {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value).slice(0, 10);
+}
+
 let schemaReady = false;
 
 /** Idempotent — safe to call at the top of every route handler. */

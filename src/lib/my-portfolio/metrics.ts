@@ -668,25 +668,5 @@ export async function computePortfolioAnalysis(
     navSeries: navSeriesOut,
     allocation,
     attribution,
-    debug: {
-      benchHistoryLen: benchmarkHistory.length,
-      fxHistoryLen: fxHistory.length,
-      calendarLen: calendar.length,
-      earliestAdded,
-      sampleHistoryPoint: seriesList[0]?.history[0],
-      sampleCheck: seriesList[0]?.history[0] ? seriesList[0]!.history[0]!.date >= earliestAdded : null,
-      sampleDateType: typeof seriesList[0]?.history[0]?.date,
-      lastPointCheck: {
-        lastDate: seriesList[0]?.history[seriesList[0].history.length - 1]?.date,
-        vsEarliest: seriesList[0] ? seriesList[0].history[seriesList[0].history.length - 1]!.date >= earliestAdded : null,
-      },
-      passingCount: seriesList[0]?.history.filter((p) => p.date >= earliestAdded).length,
-      dateSetSizeAfterFirstHolding: (() => {
-        const s = new Set<string>();
-        for (const p of seriesList[0]?.history ?? []) if (p.date >= earliestAdded) s.add(p.date);
-        return s.size;
-      })(),
-      perHolding: seriesList.map((s) => ({ symbol: s.holding.symbol, historyLen: s.history.length, addedAt: s.holding.addedAt, firstDate: s.history[0]?.date, lastDate: s.history[s.history.length-1]?.date })),
-    },
   };
 }
