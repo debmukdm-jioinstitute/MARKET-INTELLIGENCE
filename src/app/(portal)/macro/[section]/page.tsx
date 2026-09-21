@@ -2,6 +2,7 @@
 
 import { MacroSectionView } from "@/components/macro/macro-section-view";
 import { PageHeader } from "@/components/layout/page-header";
+import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { useMacroHub } from "@/hooks/use-macro-hub";
 import { sectionMeta } from "@/lib/macro/sections-meta";
 import type { MacroSectionId } from "@/lib/macro/types";
@@ -30,7 +31,7 @@ export default function MacroSectionPage() {
   return (
     <div className="space-y-6">
       <PageHeader kicker="India macro" title={meta.title} subtitle={meta.subtitle} />
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+      {loading && !data ? <MacroTapeSkeleton count={4} /> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data ? <MacroSectionView sectionId={sectionId} data={data} /> : null}
     </div>

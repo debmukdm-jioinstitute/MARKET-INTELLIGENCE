@@ -1,16 +1,18 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export function TopBar() {
   const pathname = usePathname();
   const { setOpen: setPaletteOpen } = useCommandPalette();
+  const { setOpen: setMobileNavOpen } = useMobileNav();
   const { data } = useFeedHub(60_000);
   const live = quoteMap(data);
 
@@ -33,6 +35,14 @@ export function TopBar() {
   return (
     <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_minmax(220px,1fr)_auto] lg:gap-4 lg:px-6 lg:py-2">
       <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen(true)}
+          aria-label="Open navigation"
+          className="-ml-1 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground lg:hidden"
+        >
+          <Menu className="size-4.5" />
+        </button>
         <p className="font-heading text-sm font-semibold tracking-tight">MI TERMINAL</p>
         <button
           type="button"
@@ -44,11 +54,11 @@ export function TopBar() {
           <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
         </button>
       </div>
-      <SymbolSearch
-        variant="bar"
-        className="w-full min-w-0"
-        showShortcut={pathname !== "/research"}
-      />
+      {pathname !== "/research" ? (
+        <SymbolSearch variant="bar" className="w-full min-w-0" />
+      ) : (
+        <div aria-hidden />
+      )}
       <div className="flex flex-wrap items-center justify-end gap-4 font-mono text-[11px] lg:gap-5">
         <Tape label="SPX" value={spyLast} chg={spyChg} live={Boolean(spyQ)} />
         <Tape label="UST" value={tltLast} chg={tltChg} live={Boolean(tltQ)} />

@@ -1,5 +1,5 @@
 import { TRADING_DAYS } from "@/lib/calendar";
-import { formatCompactUsd, formatNumber, formatPct, formatUsd, toneFromSigned } from "@/lib/format";
+import { formatCompactInr, formatInr, formatNumber, formatPct, toneFromSigned } from "@/lib/format";
 import { getPrice, getPriceSeries, getReturns } from "@/lib/market";
 import type { Holding, KpiMetric, SeriesPoint, Trade, VirtualPortfolio } from "@/lib/types";
 import { getInstrument } from "@/lib/universe";
@@ -173,8 +173,8 @@ export function analyzePortfolio(portfolio: VirtualPortfolio, benchmark = "SPY")
       key: "portfolioValue",
       label: "Portfolio Value",
       value: total,
-      formatted: formatUsd(total),
-      deltaLabel: formatCompactUsd(todayPnl),
+      formatted: formatInr(total),
+      deltaLabel: formatCompactInr(todayPnl),
       tone: "neutral",
       hint: "Mark-to-market NAV including cash.",
     },
@@ -182,7 +182,7 @@ export function analyzePortfolio(portfolio: VirtualPortfolio, benchmark = "SPY")
       key: "todayPnl",
       label: "Today's P&L",
       value: todayPnl,
-      formatted: formatUsd(todayPnl, true),
+      formatted: formatInr(todayPnl),
       deltaLabel: prev > 0 ? formatPct(todayPnl / prev) : "+0.00%",
       tone: toneFromSigned(todayPnl),
       hint: "One-session change in NAV.",
@@ -271,7 +271,7 @@ export function analyzePortfolio(portfolio: VirtualPortfolio, benchmark = "SPY")
       key: "var95",
       label: "Value at Risk",
       value: var95,
-      formatted: formatUsd(var95),
+      formatted: formatInr(var95),
       deltaLabel: "95% 1-day",
       tone: "warn",
       hint: "Historical 5th percentile daily P&L.",

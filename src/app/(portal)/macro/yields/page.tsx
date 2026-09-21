@@ -2,6 +2,7 @@
 
 import { YieldCurveCard } from "@/components/macro/yield-curve-card";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { useMacroTape } from "@/hooks/use-macro-tape";
 import Link from "next/link";
@@ -17,7 +18,7 @@ export default function YieldsMacroPage() {
         subtitle="India government bond yields vs US curve — US rates often steer global capital flows into or out of India."
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+      {loading && !data ? <MacroTapeSkeleton count={2} /> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data ? (
         <>

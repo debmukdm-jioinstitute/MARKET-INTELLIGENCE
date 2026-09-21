@@ -138,9 +138,9 @@ export function CorporateEventsCard() {
             No events found for this filter in current live RSS stream.
           </p>
         ) : (
-          filtered.slice(0, 7).map((ev) => (
+          filtered.slice(0, 7).map((ev, idx) => (
             <div
-              key={ev.id}
+              key={`${ev.id}-${idx}`}
               onClick={() => setSelectedEvent(ev)}
               className="flex items-center justify-between gap-3 py-2.5 px-2 rounded-md hover:bg-accent/40 cursor-pointer transition-colors"
             >

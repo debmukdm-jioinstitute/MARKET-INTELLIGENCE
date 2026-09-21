@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { cn } from "@/lib/utils";
 import {
   Briefcase,
@@ -14,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Drawer } from "vaul";
 
 interface NavGroup {
   title: string;
@@ -54,13 +57,13 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export function Sidebar() {
+function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   const { user, isGuest, logout } = useAuth();
   const router = useRouter();
 
   return (
-    <aside className="flex h-screen w-[240px] shrink-0 flex-col border-r border-border bg-sidebar select-none">
+    <div className="flex h-full flex-col bg-sidebar select-none">
       <div className="border-b border-border px-5 py-4">
         <div className="flex items-center justify-between">
           <p className="font-[Tiny5] text-[11px] tracking-[0.2em] text-primary">MI TERMINAL</p>
@@ -88,6 +91,7 @@ export function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     className={cn(
                       "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
                       active
@@ -124,6 +128,7 @@ export function Sidebar() {
           type="button"
           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground transition-colors"
           onClick={async () => {
+            onNavigate?.();
             await logout();
             router.replace("/");
           }}
@@ -132,6 +137,42 @@ export function Sidebar() {
           <span>Sign out terminal</span>
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Persistent desktop rail — hidden below the lg breakpoint in favor of MobileSidebarDrawer. */
+export function Sidebar() {
+  return (
+    <aside className="hidden h-screen w-[240px] shrink-0 border-r border-border lg:flex">
+      <SidebarNavContent />
     </aside>
+  );
+}
+
+/** Slide-in drawer for <lg viewports, opened from the hamburger button in TopBar. */
+export function MobileSidebarDrawer() {
+  const { open, setOpen } = useMobileNav();
+  const path = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [path, setOpen]);
+
+  return (
+    <Drawer.Root open={open} onOpenChange={setOpen} direction="left">
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/60 lg:hidden" />
+        <Drawer.Content
+          className="fixed inset-y-0 left-0 z-50 flex h-full w-[280px] max-w-[80vw] outline-none lg:hidden"
+          aria-describedby={undefined}
+        >
+          <Drawer.Title className="sr-only">Navigation</Drawer.Title>
+          <div className="flex h-full w-full border-r border-border">
+            <SidebarNavContent onNavigate={() => setOpen(false)} />
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

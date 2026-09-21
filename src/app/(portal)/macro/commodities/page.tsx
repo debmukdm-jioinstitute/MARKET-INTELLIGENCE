@@ -2,6 +2,7 @@
 
 import { Lines } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { useMacroTape } from "@/hooks/use-macro-tape";
 import Link from "next/link";
@@ -42,7 +43,7 @@ export default function CommoditiesMacroPage() {
         subtitle="Brent, gold, silver, copper — prices from Yahoo Finance with India transmission context on the macro home."
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+      {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data?.commodities.map((c) => (
         <Panel key={c.id} id={c.id} title={c.label}>

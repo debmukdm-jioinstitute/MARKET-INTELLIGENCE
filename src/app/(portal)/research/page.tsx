@@ -14,7 +14,7 @@ function ResearchHome() {
         <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#d4af37]">
           Investment research
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Find any script</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Find any stock</h1>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
           India (NSE) and US tickers — live quote, depth, news, and fundamentals from Upstox when
           configured.

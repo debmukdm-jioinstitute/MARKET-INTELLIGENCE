@@ -5,7 +5,7 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { allocationBy } from "@/lib/analytics";
-import { formatPct, formatUsd } from "@/lib/format";
+import { formatInr, formatPct } from "@/lib/format";
 import { useMemo } from "react";
 
 export default function AllocationPage() {
@@ -31,7 +31,13 @@ export default function AllocationPage() {
           }
         >
           <div className="h-[280px]">
-            <Donut data={asset.map((a) => ({ name: a.name, value: a.value }))} />
+            {asset.length ? (
+              <Donut data={asset.map((a) => ({ name: a.name, value: a.value }))} />
+            ) : (
+              <p className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                Add a holding to see allocation.
+              </p>
+            )}
           </div>
         </Panel>
         <Panel
@@ -44,7 +50,7 @@ export default function AllocationPage() {
           className="lg:col-span-2"
         >
           <div className="h-[280px]">
-            <Bars data={sector} />
+            <Bars data={sector} y="weight" />
           </div>
         </Panel>
       </div>
@@ -64,7 +70,7 @@ export default function AllocationPage() {
                 <MetricInfo id="concentration" name={`${r.name} Geographic Exposure`} iconSize="xs" />
               </div>
               <p className="mt-1 font-heading text-xl">{formatPct(r.weight, 1)}</p>
-              <p className="font-mono text-xs text-muted-foreground">{formatUsd(r.value)}</p>
+              <p className="font-mono text-xs text-muted-foreground">{formatInr(r.value)}</p>
             </div>
           ))}
         </div>

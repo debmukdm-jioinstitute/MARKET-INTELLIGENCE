@@ -159,10 +159,18 @@ export function WhatChangedModule() {
           const isExpanded = expandedId === item.id;
           return (
             <div key={item.id} className="py-3">
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                className="flex w-full items-center justify-between text-left group"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setExpandedId(isExpanded ? null : item.id);
+                  }
+                }}
+                aria-expanded={isExpanded}
+                className="flex w-full cursor-pointer items-center justify-between text-left group"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-4">
                   <span className="font-mono text-sm font-bold text-muted-foreground/80 w-6 shrink-0">
@@ -192,7 +200,7 @@ export function WhatChangedModule() {
                     <ChevronDown className="size-4 text-muted-foreground" />
                   )}
                 </div>
-              </button>
+              </div>
 
               {/* Expandable Module Breakdown with Provenance */}
               {isExpanded ? (

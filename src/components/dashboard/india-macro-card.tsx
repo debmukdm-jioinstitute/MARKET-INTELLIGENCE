@@ -20,7 +20,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "CPI Inflation (YoY)",
       metricKey: "cpi",
-      value: cpiRow?.current != null ? `${cpiRow.current}%` : "4.2%",
+      value: cpiRow?.current != null ? `${cpiRow.current.toFixed(2)}%` : "4.2%",
       dir: cpiRow?.direction === "up" ? "↑" : cpiRow?.direction === "down" ? "↓" : "↓",
       dirColor: "text-emerald-400",
       source: cpiRow?.source,
@@ -28,7 +28,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "Real GDP Growth",
       metricKey: "gdp",
-      value: gdpRow?.current != null ? `${gdpRow.current}%` : "7.4%",
+      value: gdpRow?.current != null ? `${gdpRow.current.toFixed(2)}%` : "7.4%",
       dir: "↑",
       dirColor: "text-emerald-400",
       source: gdpRow?.source,
@@ -44,7 +44,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "10Y G-Sec Sovereign Yield",
       metricKey: "gsec10y",
-      value: pulse?.gsec10y?.value != null ? `${pulse.gsec10y.value}%` : "6.78%",
+      value: pulse?.gsec10y?.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : "6.78%",
       dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : "↓",
       dirColor: "text-rose-400",
       source: pulse?.gsec10y?.source,

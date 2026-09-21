@@ -20,7 +20,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePortfolio } from "@/components/providers/portfolio-provider";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
-import { formatPct, formatUsd } from "@/lib/format";
+import { formatInr, formatPct } from "@/lib/format";
 import { positionRows } from "@/lib/analytics";
 import { UNIVERSE } from "@/lib/universe";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ export function HoldingsTable() {
                 {formatPct(row.dayPct)}
               </TableCell>
               <TableCell className="text-right font-mono">{row.shares.toFixed(1)}</TableCell>
-              <TableCell className="text-right font-mono">{formatUsd(row.marketValue)}</TableCell>
+              <TableCell className="text-right font-mono">{formatInr(row.marketValue)}</TableCell>
               <TableCell className="text-right font-mono">{formatPct(row.weight, 1)}</TableCell>
               <TableCell
                 className={cn(
@@ -165,7 +165,7 @@ export function HoldingsTable() {
                   row.pnl >= 0 ? "text-emerald-400" : "text-rose-400",
                 )}
               >
-                {formatUsd(row.pnl)}
+                {formatInr(row.pnl)}
               </TableCell>
             </TableRow>
           ))}

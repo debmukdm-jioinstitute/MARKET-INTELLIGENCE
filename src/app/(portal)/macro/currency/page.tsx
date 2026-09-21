@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { useMacroTape } from "@/hooks/use-macro-tape";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ export default function CurrencyMacroPage() {
         subtitle="USD/INR and DXY matter most for Indian equities; other crosses for trade and travel."
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+      {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {data?.currencies.map((c) => (
         <Panel key={c.id} title={c.label}>

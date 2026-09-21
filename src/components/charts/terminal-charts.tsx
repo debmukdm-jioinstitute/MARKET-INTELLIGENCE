@@ -94,10 +94,13 @@ export function Bars({
 const PALETTE = ["#d4af37", "#5ec8e8", "#3dd68c", "#c084fc", "#f07178", "#fbbf24", "#60a5fa", "#94a3b8"];
 
 export function Donut({ data }: { data: { name: string; value: number }[] }) {
+  if (!data.length) return null;
+  // A single-slice pie with a paddingAngle produces a degenerate (invisible) arc in Recharts.
+  const paddingAngle = data.length > 1 ? 2 : 0;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" innerRadius={58} outerRadius={86} paddingAngle={2}>
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={58} outerRadius={86} paddingAngle={paddingAngle}>
           {data.map((entry, i) => (
             <Cell key={entry.name} fill={PALETTE[i % PALETTE.length]} />
           ))}

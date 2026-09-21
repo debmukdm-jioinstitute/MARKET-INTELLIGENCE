@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { RegimeBanner } from "@/components/macro/regime-banner";
 import { SectionNavGrid } from "@/components/macro/section-nav-grid";
 import { CommoditiesStrip } from "@/components/macro/commodities-strip";
@@ -24,7 +25,7 @@ export default function MacroPage() {
         subtitle="Regime-first view with nested growth, inflation, RBI liquidity, fiscal, consumer, corporate, external, jobs, and global tape — open data (MOSPI, RBI, World Bank, FRED, NSE)."
       />
 
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading macro intelligence…</p> : null}
+      {loading && !data ? <MacroTapeSkeleton count={3} /> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
 
       {tape.data ? <WhatChangedCard seed={tape.data.briefingSeed} /> : null}

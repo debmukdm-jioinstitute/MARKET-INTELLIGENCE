@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatPct, formatUsd } from "@/lib/format";
+import { formatInr, formatPct } from "@/lib/format";
 import type { SecurityDetailPayload } from "@/lib/feeds/security-detail";
 import { cn } from "@/lib/utils";
 import { DataInfo } from "@/components/feeds/data-info";
@@ -125,11 +125,11 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                 <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                   <BookStat k="Shares" v={position.shares.toFixed(1)} />
                   <BookStat k="Avg cost" v={position.avgCost.toFixed(2)} />
-                  <BookStat k="Market value" v={formatUsd(position.marketValue)} />
+                  <BookStat k="Market value" v={formatInr(position.marketValue)} />
                   <BookStat k="Weight" v={formatPct(position.weight, 1)} />
                   <BookStat
                     k="Unrealized P&L"
-                    v={formatUsd(position.pnl)}
+                    v={formatInr(position.pnl)}
                     className={position.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}
                   />
                   <BookStat

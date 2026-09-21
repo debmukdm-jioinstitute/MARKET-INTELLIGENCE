@@ -4,6 +4,17 @@ import { MetricInfo } from "@/components/my-portfolio/metric-info";
 import { cn } from "@/lib/utils";
 import type { MetricResult } from "@/lib/my-portfolio/types";
 
+/** Notes carry internal "§1.1"-style spec citations for engineering traceability; strip them for the reader-facing caption. */
+function readerNote(note?: string) {
+  if (!note) return note;
+  const cleaned = note
+    .replace(/§\d+(?:\.\d+)*/g, "")
+    .replace(/\s*[—-]\s*\./g, ".")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return cleaned || undefined;
+}
+
 export function PortfolioOverview({ metrics }: { metrics: MetricResult[] }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
@@ -24,7 +35,9 @@ export function PortfolioOverview({ metrics }: { metrics: MetricResult[] }) {
           >
             {metric.formatted}
           </p>
-          {metric.note ? <p className="mt-1 text-[10px] text-muted-foreground">{metric.note}</p> : null}
+          {readerNote(metric.note) ? (
+            <p className="mt-1 text-[10px] text-muted-foreground">{readerNote(metric.note)}</p>
+          ) : null}
         </article>
       ))}
     </div>

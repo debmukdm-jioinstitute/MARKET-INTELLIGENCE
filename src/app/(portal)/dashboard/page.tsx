@@ -70,13 +70,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 2: India Macro + Portfolio Risk */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <IndiaMacroCard data={data} />
         <PortfolioRiskCard />
       </div>
 
       {/* Row 3: Global Macro + Commodities & FX */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <GlobalMacroCard data={data} />
         <CommoditiesFxCard data={data} />
       </div>
@@ -85,20 +85,20 @@ export default function DashboardPage() {
       <WhatChangedModule />
 
       {/* Row 5: Corporate Events (RSS) + Earnings Calendar */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <CorporateEventsCard />
         <EarningsCalendarCard />
       </div>
 
       {/* Row 6: Market Valuation + Market Momentum */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <MarketValuationCard />
         <MarketMomentumCard />
       </div>
 
       {/* Row 7: Liquidity Telemetry & Institutional Money Flow */}
       {data ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
           <RbiLiquidity data={data} />
           <MoneyFlow data={data} />
         </div>
