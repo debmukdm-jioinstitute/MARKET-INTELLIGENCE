@@ -172,7 +172,7 @@ export function SymbolSearch({
       {open ? (
         <ul
           className={cn(
-            "absolute z-50 mt-2 w-full overflow-auto rounded-xl border-2 border-[#d4af37]/60 bg-popover py-1 shadow-xl",
+            "animate-dropdown-pop absolute z-50 mt-2 w-full overflow-auto rounded-2xl border border-[#d4af37]/50 bg-popover/85 py-1.5 shadow-[0_0_0_1px_rgba(212,175,55,0.12),0_20px_60px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150 [perspective:900px]",
             variant === "hero" ? "max-h-96" : "max-h-72",
           )}
           role="listbox"
@@ -181,14 +181,18 @@ export function SymbolSearch({
             <li className="px-3 py-2 text-sm text-muted-foreground">Searching…</li>
           ) : null}
           {hits.map((h, i) => (
-            <li key={`${h.market}-${h.symbol}`}>
+            <li
+              key={`${h.market}-${h.symbol}`}
+              className="animate-dropdown-item px-1.5"
+              style={{ animationDelay: `${Math.min(i, 8) * 22}ms` }}
+            >
               <button
                 type="button"
                 role="option"
                 aria-selected={i === active}
                 className={cn(
-                  "flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted",
-                  i === active && "bg-muted",
+                  "flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#d4af37]/10 hover:shadow-[0_6px_16px_-4px_rgba(212,175,55,0.25)]",
+                  i === active && "-translate-y-0.5 bg-[#d4af37]/10 shadow-[0_6px_16px_-4px_rgba(212,175,55,0.25)]",
                 )}
                 onMouseEnter={() => setActive(i)}
                 onClick={() => pick(h)}

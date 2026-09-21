@@ -31,7 +31,7 @@ export function TopBar() {
   const asOf = spyQ?.asOf ? new Date(spyQ.asOf) : null;
 
   return (
-    <header className="grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_1fr_auto] lg:gap-4 lg:px-6 lg:py-2">
+    <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_minmax(220px,1fr)_auto] lg:gap-4 lg:px-6 lg:py-2">
       <div className="flex items-center gap-4">
         <p className="font-heading text-sm font-semibold tracking-tight">MI TERMINAL</p>
         <button
