@@ -63,10 +63,20 @@ export default function ResearchSymbolPage() {
         subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
       />
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
-      <p className="text-xs text-muted-foreground">
-        <Link href="/research" className="text-primary hover:underline">← Research home</Link>
-        {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          <Link href="/research" className="text-primary hover:underline">← Research home</Link>
+          {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
+        </p>
+        {symbol ? (
+          <Link
+            href={`/research/model/${encodeURIComponent(symbol)}`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
+          >
+            Build financial model →
+          </Link>
+        ) : null}
+      </div>
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
