@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils";
 import {
   Briefcase,
   Database,
+  ExternalLink,
   Globe2,
   LayoutDashboard,
   LineChart,
   LogOut,
+  Newspaper,
   Radio,
   BookOpen,
 } from "lucide-react";
@@ -25,6 +27,7 @@ interface NavGroup {
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: string;
+    external?: boolean;
   }[];
 }
 
@@ -53,6 +56,12 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/intelligence", label: "Intelligence", icon: Radio, badge: "AI" },
       { href: "/data", label: "System", icon: Database },
+    ],
+  },
+  {
+    title: "BAZAARBRIEF",
+    items: [
+      { href: "https://abhisheksi2o.github.io/Bazaarbrief/", label: "Daily Brief", icon: Newspaper, external: true },
     ],
   },
 ];
@@ -85,20 +94,16 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
             </p>
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const active = path === item.href || path.startsWith(item.href + "/");
+                const active = !item.external && (path === item.href || path.startsWith(item.href + "/"));
                 const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onNavigate}
-                    className={cn(
-                      "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
-                      active
-                        ? "bg-amber-400/15 text-amber-400 font-bold border-l-2 border-amber-400"
-                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground font-medium",
-                    )}
-                  >
+                const itemClassName = cn(
+                  "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
+                  active
+                    ? "bg-amber-400/15 text-amber-400 font-bold border-l-2 border-amber-400"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground font-medium",
+                );
+                const content = (
+                  <>
                     <div className="flex items-center gap-2 min-w-0">
                       <Icon className="size-3.5 shrink-0 opacity-80" />
                       <span className="truncate">{item.label}</span>
@@ -114,7 +119,21 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
                       >
                         {item.badge}
                       </span>
+                    ) : item.external ? (
+                      <ExternalLink className="size-3 shrink-0 opacity-60" />
                     ) : null}
+                  </>
+                );
+                if (item.external) {
+                  return (
+                    <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" onClick={onNavigate} className={itemClassName}>
+                      {content}
+                    </a>
+                  );
+                }
+                return (
+                  <Link key={item.href} href={item.href} onClick={onNavigate} className={itemClassName}>
+                    {content}
                   </Link>
                 );
               })}
