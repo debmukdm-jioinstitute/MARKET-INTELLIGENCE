@@ -91,6 +91,22 @@ export default function FinancialModelPage() {
 
       {model ? (
         <>
+          {model.checks.some((c) => !c.pass) ? (
+            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-rose-200/90 space-y-1.5">
+              <p className="font-semibold text-rose-300">
+                {model.checks.filter((c) => !c.pass).length} model integrity check
+                {model.checks.filter((c) => !c.pass).length > 1 ? "s" : ""} flagged — treat the valuation below with caution.
+              </p>
+              {model.checks
+                .filter((c) => !c.pass)
+                .map((c) => (
+                  <p key={c.label}>
+                    <span className="font-medium text-rose-200">{c.label}</span> ({c.value}): {c.why}
+                  </p>
+                ))}
+            </div>
+          ) : null}
+
           <ModelSummaryCards model={model} />
 
           {dataset!.notes.length ? (

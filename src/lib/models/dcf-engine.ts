@@ -460,6 +460,12 @@ export function buildModel(dataset: FinancialDataset, assumptions: Assumptions):
 
   const balanceCheck = Math.abs(rows[L].total_assets - rows[L].total_liabilities_equity);
   const lastProjBalanceCheck = Math.abs(rows[projIdx[projIdx.length - 1]].total_assets - rows[projIdx[projIdx.length - 1]].total_liabilities_equity);
+
+  const latestPeriodDays =
+    n >= 2 ? (new Date(dataset.periods[L].periodEnd).getTime() - new Date(dataset.periods[L - 1].periodEnd).getTime()) / 86_400_000 : 365;
+  const netDebt = rows[L].total_debt - rows[L].cash_sti;
+  const netDebtToEv = iferror(() => netDebt / dcf.enterpriseValue);
+
   const checks = [
     {
       label: "Balance sheet balances (historical)",
@@ -484,6 +490,18 @@ export function buildModel(dataset: FinancialDataset, assumptions: Assumptions):
       value: `${beta.nObs} months`,
       pass: beta.nObs >= 24,
       why: "Fewer than 24 monthly observations makes the beta regression unreliable (beta falls back to 1.0).",
+    },
+    {
+      label: "Latest fiscal year is a full ~12-month period",
+      value: `${Math.round(latestPeriodDays)} days`,
+      pass: latestPeriodDays >= 300 && latestPeriodDays <= 400,
+      why: "A stub or interim period reported as the latest fiscal year would understate revenue and margins and distort every projection built from it.",
+    },
+    {
+      label: "Net debt vs. DCF enterprise value",
+      value: `${(netDebtToEv * 100).toFixed(0)}% of EV`,
+      pass: netDebtToEv < 0.6,
+      why: "When net debt is a large share of (or exceeds) the modeled enterprise value, small changes in operating assumptions swing equity value — and the implied price — disproportionately. Treat the DCF output as low-confidence here.",
     },
   ];
 
