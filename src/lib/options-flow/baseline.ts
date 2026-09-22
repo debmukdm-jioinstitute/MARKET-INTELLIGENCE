@@ -1,7 +1,14 @@
 import { mean, stdev } from "@/lib/analytics";
 import type { ActiveStrikeOiChange, OptionsFlowRecord, SourcedField, TickerBaseline } from "@/lib/options-flow/types";
 
-const MIN_HISTORY_FOR_BASELINE = 5;
+/**
+ * Upstox has no historical options-volume feed — this baseline only exists once the daily
+ * cron has recorded enough real prior days itself, so these thresholds are a genuine data
+ * floor, not a stylistic choice. 2 is the minimum for a non-zero stdev at all; flagging stays
+ * gated at a higher bar (see candidateFlag below) so a noisy 2-3 day sample can't trigger one.
+ */
+export const MIN_SAMPLES_FOR_NARRATIVE = 2;
+const MIN_SAMPLES_FOR_FLAG = 5;
 
 function fieldValue<T>(field: SourcedField<T>): T | null {
   return field.status === "ok" ? field.value : null;
@@ -33,14 +40,16 @@ export function computeTickerBaseline(today: OptionsFlowRecord, history: Options
     }
   }
 
-  const haveEnoughHistory = historyOptionsVolumes.length >= MIN_HISTORY_FOR_BASELINE;
+  const optionsVolumeSampleSize = historyOptionsVolumes.length;
+  const haveEnoughHistory = optionsVolumeSampleSize >= MIN_SAMPLES_FOR_NARRATIVE;
   const optionsVolumeAvg30 = haveEnoughHistory ? mean(historyOptionsVolumes) : null;
   const optionsVolumeSd = haveEnoughHistory ? stdev(historyOptionsVolumes) : null;
   const optionsVolumeZ =
     optionsVolumeToday != null && optionsVolumeAvg30 != null && optionsVolumeSd != null && optionsVolumeSd > 0
       ? (optionsVolumeToday - optionsVolumeAvg30) / optionsVolumeSd
       : null;
-  const callPutRatioAvg30 = historyCallPutRatios.length >= MIN_HISTORY_FOR_BASELINE ? mean(historyCallPutRatios) : null;
+  const callPutRatioAvg30 =
+    historyCallPutRatios.length >= MIN_SAMPLES_FOR_NARRATIVE ? mean(historyCallPutRatios) : null;
 
   const activeStrikes = fieldValue<ActiveStrikeOiChange[]>(today.activeStrikeOiChanges) ?? [];
   const oiOpenedStrikes = activeStrikes.filter((s) => s.change > 0);
@@ -56,8 +65,11 @@ export function computeTickerBaseline(today: OptionsFlowRecord, history: Options
 
   // Doc's exact flag condition: unusual options volume opened new positions, and price
   // has not moved correspondingly. "Unusual" is relative to the ticker's own history, not
-  // absolute size — hence the z-score gate rather than a raw volume threshold.
+  // absolute size — hence the z-score gate rather than a raw volume threshold. Flagging
+  // requires a deeper sample than the narrative does, so a noisy 2-4 day baseline can
+  // describe itself as such but can't yet trigger a shortlist candidate.
   const candidateFlag =
+    optionsVolumeSampleSize >= MIN_SAMPLES_FOR_FLAG &&
     optionsVolumeZ != null &&
     optionsVolumeZ >= 1.5 &&
     oiOpenedStrikes.length > 0 &&
@@ -68,6 +80,7 @@ export function computeTickerBaseline(today: OptionsFlowRecord, history: Options
     symbol: today.symbol,
     name: today.name,
     historyDays: history.length,
+    optionsVolumeSampleSize,
     volumeRatio,
     optionsVolumeToday,
     optionsVolumeAvg30,

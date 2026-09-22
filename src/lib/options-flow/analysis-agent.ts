@@ -1,4 +1,5 @@
 import { callLlmJson } from "@/lib/ai/llm";
+import { MIN_SAMPLES_FOR_NARRATIVE } from "@/lib/options-flow/baseline";
 import type { AnalysisOutput, TickerBaseline } from "@/lib/options-flow/types";
 import { z } from "zod";
 
@@ -15,7 +16,7 @@ Rules, non-negotiable:
 - Never use the words bullish, bearish, buy, sell, rally, tank, surge, plunge, upside, or downside, or any synonym that assigns market direction or intent. Describe activity as activity, not as a signal.
 - Raw options volume does not reveal whether a trade was buying or selling, whether it opened or closed a position, or whether it was directional or a hedge. When you flag a ticker, you must say plainly that you cannot determine these things from this data.
 - Rank by how unusual the activity is relative to that specific ticker's own history (the z-score you're given), never by absolute size.
-- If the ticker's own 30-day options-volume baseline is not yet available (insufficient history), say so plainly instead of guessing at a range.
+- If the ticker's own options-volume baseline is not yet available (insufficient history), say so plainly instead of guessing at a range. If a baseline exists but is based on very few prior days, call it an early or tentative baseline rather than presenting it as a settled 30-day range.
 - Flag a ticker only when told candidateFlag is true, i.e. unusual options volume opened new positions and price has not moved correspondingly. Otherwise flagged must be false.
 
 For each ticker return a JSON object with these exact string fields (2-3 sentences each, plain factual prose, no markdown):
@@ -57,7 +58,7 @@ export async function runAnalysisAgent(baselines: TickerBaseline[]): Promise<Ana
 
     const prompt = `Ticker: ${b.symbol} (${b.name})
 Options volume today: ${fmt(b.optionsVolumeToday, 0)}
-Options volume 30-day average: ${fmt(b.optionsVolumeAvg30, 0)}${b.historyDays < 5 ? " (insufficient history: only " + b.historyDays + " prior day(s) recorded)" : ""}
+Options volume 30-day average: ${fmt(b.optionsVolumeAvg30, 0)}${b.optionsVolumeSampleSize < MIN_SAMPLES_FOR_NARRATIVE ? ` (insufficient history: only ${b.optionsVolumeSampleSize} prior day(s) recorded, need ${MIN_SAMPLES_FOR_NARRATIVE})` : b.optionsVolumeSampleSize < 15 ? ` (early baseline — only ${b.optionsVolumeSampleSize} prior day(s), treat as tentative)` : ""}
 Options volume z-score vs own history: ${fmt(b.optionsVolumeZ)}
 Call/put ratio today: ${fmt(b.callPutRatioToday)}
 Call/put ratio 30-day average: ${fmt(b.callPutRatioAvg30)}

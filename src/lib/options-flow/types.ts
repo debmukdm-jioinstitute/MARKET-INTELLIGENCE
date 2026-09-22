@@ -44,6 +44,8 @@ export type TickerBaseline = {
   symbol: string;
   name: string;
   historyDays: number;
+  /** Prior days with a usable options-volume figure — the actual sample size behind optionsVolumeAvg30, which can be less than historyDays if some days came back unavailable. */
+  optionsVolumeSampleSize: number;
   volumeRatio: number | null;
   optionsVolumeToday: number | null;
   optionsVolumeAvg30: number | null;
