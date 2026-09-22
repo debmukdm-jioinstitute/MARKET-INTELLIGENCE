@@ -5,11 +5,12 @@ import { DataInfo } from "@/components/feeds/data-info";
 import { UniversePicker } from "@/components/options-flow/universe-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, HelpCircle, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type SourcedField<T> = { status: "ok"; value: T; source: FieldSource } | { status: "unavailable"; reason: string };
 
@@ -75,13 +76,40 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 }
 
 export function OptionsFlowPanel() {
-  const [selected, setSelected] = useState<string[]>(INDIA_EQUITIES.slice(0, 6).map((i) => i.symbol));
+  const [selected, setSelected] = useState<string[]>([]);
+  const [portfolioSymbols, setPortfolioSymbols] = useState<string[] | null>(null);
+  const [query, setQuery] = useState("");
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupMessage, setSetupMessage] = useState<string | null>(null);
+  const touchedRef = useRef(false);
+
+  // Suggest the user's own F&O-eligible holdings as the starting watchlist instead of an arbitrary default —
+  // options data only exists for this app's curated F&O universe, so anything outside it can't be screened.
+  useEffect(() => {
+    fetch("/api/portfolio/holdings")
+      .then((r) => r.json())
+      .then((json) => {
+        const holdings: { market: string; symbol: string }[] = json.holdings ?? [];
+        const inUniverse = new Set(INDIA_EQUITIES.map((i) => i.symbol));
+        const symbols = [...new Set(holdings.filter((h) => h.market === "IN").map((h) => h.symbol.toUpperCase()))]
+          .filter((s) => inUniverse.has(s))
+          .slice(0, DEFAULT_MAX);
+        setPortfolioSymbols(symbols);
+        if (!touchedRef.current) setSelected(symbols);
+      })
+      .catch(() => setPortfolioSymbols([]));
+  }, []);
+
+  const filteredEquities = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return INDIA_EQUITIES;
+    return INDIA_EQUITIES.filter((i) => i.symbol.toLowerCase().includes(q) || i.name.toLowerCase().includes(q));
+  }, [query]);
 
   function toggle(symbol: string) {
+    touchedRef.current = true;
     setSelected((prev) => {
       if (prev.includes(symbol)) return prev.filter((s) => s !== symbol);
       if (prev.length >= DEFAULT_MAX) return prev;
@@ -118,14 +146,47 @@ export function OptionsFlowPanel() {
   return (
     <div className="space-y-5">
       <div className="grid gap-3 md:grid-cols-2">
-        <UniversePicker
-          symbols={INDIA_EQUITIES}
-          selected={selected}
-          onToggle={toggle}
-          onSelectAll={() => setSelected(INDIA_EQUITIES.slice(0, DEFAULT_MAX).map((i) => i.symbol))}
-          onClear={() => setSelected([])}
-          max={DEFAULT_MAX}
-        />
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search F&O scrips to add…"
+              className="pl-8"
+            />
+          </div>
+          {portfolioSymbols && portfolioSymbols.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                touchedRef.current = true;
+                setSelected(portfolioSymbols);
+              }}
+              className="text-[11px] font-medium text-primary hover:underline"
+            >
+              Use my portfolio ({portfolioSymbols.length})
+            </button>
+          ) : portfolioSymbols && portfolioSymbols.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground">
+              No portfolio holdings are in this app&apos;s F&O watchlist — search above to add tickers.
+            </p>
+          ) : null}
+          <UniversePicker
+            symbols={filteredEquities}
+            selected={selected}
+            onToggle={toggle}
+            onSelectAll={() => {
+              touchedRef.current = true;
+              setSelected(filteredEquities.slice(0, DEFAULT_MAX).map((i) => i.symbol));
+            }}
+            onClear={() => {
+              touchedRef.current = true;
+              setSelected([]);
+            }}
+            max={DEFAULT_MAX}
+          />
+        </div>
         <div className="flex flex-col justify-end gap-2">
           <p className="text-xs text-muted-foreground">
             Data agent pulls price/volume and today&apos;s option chain live; the options-volume 30-day baseline builds up
