@@ -1,6 +1,7 @@
 import { mean } from "@/lib/analytics";
 import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import { candleRangeToDates, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox/candles";
+import { fetchUpstoxCorporateActions, upcomingCorporateActions } from "@/lib/feeds/sources/upstox/corporate-actions";
 import { fetchUpstoxOptionChain, fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox/option-chain";
 import type { ActiveStrikeOiChange, OptionsFlowRecord, SourcedField } from "@/lib/options-flow/types";
 
@@ -20,6 +21,7 @@ function unavailable(reason: string): SourcedField<never> {
 }
 
 const UPSTOX_CANDLES_URL = "https://upstox.com/developer/api-documentation/get-historical-candle-data/";
+const UPSTOX_CORP_ACTIONS_URL = "https://upstox.com/developer/api-documentation/get-corporate-actions/";
 
 export async function gatherOptionsFlowRecord(symbol: string, date?: string): Promise<OptionsFlowRecord> {
   const instrument = findIndiaInstrument(symbol);
@@ -114,6 +116,36 @@ export async function gatherOptionsFlowRecord(symbol: string, date?: string): Pr
     }
   }
 
+  // -- Upcoming dividend/bonus/split/rights, next 30 days -------------------
+  // Upstox's fundamentals API has no earnings-date calendar (it only covers corporate
+  // actions), so that half of this field is honestly labeled unavailable rather than guessed.
+  let upcomingEvent: SourcedField<string> = unavailable(
+    "Upstox not configured or the corporate actions endpoint returned no data",
+  );
+  try {
+    const events = await fetchUpstoxCorporateActions(instrument.isin);
+    if (events) {
+      const upcoming = upcomingCorporateActions(events, 30, new Date(snapshotDate));
+      const corporateActionNote =
+        upcoming.length > 0
+          ? upcoming
+              .map((e) => {
+                const amountPart = e.amount != null ? ` (₹${e.amount}/share)` : e.ratio ? ` (${e.ratio})` : "";
+                return `${e.name} ex-date ${e.exDate}${amountPart}`;
+              })
+              .join("; ")
+          : "No dividend/bonus/split/rights ex-date in the next 30 days";
+      upcomingEvent = ok(
+        `${corporateActionNote}. Earnings-date calendar is not available from Upstox's API.`,
+        "Upstox",
+        UPSTOX_CORP_ACTIONS_URL,
+        fetchedAt,
+      );
+    }
+  } catch (e) {
+    upcomingEvent = unavailable(e instanceof Error ? e.message : "Upstox corporate actions fetch failed");
+  }
+
   return {
     date: snapshotDate,
     symbol: instrument.symbol,
@@ -126,8 +158,6 @@ export async function gatherOptionsFlowRecord(symbol: string, date?: string): Pr
     callsVolume,
     putsVolume,
     activeStrikeOiChanges,
-    // No earnings/dividend/corporate-action calendar feed is wired into this app. Per the doc's
-    // own rule, that is a reason to write UNAVAILABLE, never to estimate or guess a date.
-    upcomingEvent: unavailable("No earnings/dividend/corporate-action calendar source is configured for this app"),
+    upcomingEvent,
   };
 }

@@ -50,6 +50,8 @@ export type TickerBaseline = {
   oiOpenedStrikes: ActiveStrikeOiChange[];
   oiClosedStrikes: ActiveStrikeOiChange[];
   priceChangePct: number | null;
+  /** From Upstox's corporate-actions feed: upcoming dividend/bonus/split/rights, or null if that feed was unavailable. Earnings dates aren't covered — Upstox has no such calendar. */
+  upcomingEventNote: string | null;
   /** Doc's exact flag condition: unusual options volume opened new positions and price hasn't moved correspondingly. */
   candidateFlag: boolean;
 };

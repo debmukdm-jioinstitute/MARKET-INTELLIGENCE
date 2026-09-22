@@ -243,8 +243,12 @@ export function OptionsFlowPanel() {
                       <td className="px-3 py-2 text-right font-mono">
                         <Field field={r.putsVolume} fmt={(v) => v.toLocaleString("en-IN")} />
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground/60">
-                        {r.upcomingEvent.status === "ok" ? r.upcomingEvent.value : "UNAVAILABLE"}
+                      <td className="max-w-[220px] px-3 py-2 text-muted-foreground/80" title={r.upcomingEvent.status === "ok" ? r.upcomingEvent.value : r.upcomingEvent.reason}>
+                        {r.upcomingEvent.status === "ok" ? (
+                          <span className="line-clamp-2">{r.upcomingEvent.value.split(". ")[0]}</span>
+                        ) : (
+                          <span className="text-muted-foreground/60">UNAVAILABLE</span>
+                        )}
                       </td>
                     </tr>
                   ))}
