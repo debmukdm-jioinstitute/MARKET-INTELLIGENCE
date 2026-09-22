@@ -100,6 +100,99 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_nse_symbol ON nse_instruments(trading_symbol)`;
       await db`CREATE INDEX IF NOT EXISTS idx_nse_name ON nse_instruments(name)`;
+
+      // -- Admin backend --------------------------------------------------
+      await db`
+        CREATE TABLE IF NOT EXISTS users (
+          email text PRIMARY KEY,
+          name text NOT NULL,
+          password_hash text NOT NULL,
+          role text NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+          created_at timestamptz NOT NULL DEFAULT now(),
+          last_login_at timestamptz
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS nav_tabs (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          label text NOT NULL,
+          href text NOT NULL,
+          icon text NOT NULL DEFAULT 'Sparkles',
+          section text NOT NULL DEFAULT 'FEEDS',
+          external boolean NOT NULL DEFAULT false,
+          badge text,
+          sort_order int NOT NULL DEFAULT 0,
+          enabled boolean NOT NULL DEFAULT true,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS app_updates (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          title text NOT NULL,
+          body text NOT NULL,
+          severity text NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'critical')),
+          published boolean NOT NULL DEFAULT true,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_email text NOT NULL,
+          endpoint text NOT NULL UNIQUE,
+          p256dh text NOT NULL,
+          auth text NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS notifications_sent (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          title text NOT NULL,
+          body text NOT NULL,
+          url text,
+          recipient_count int NOT NULL DEFAULT 0,
+          failure_count int NOT NULL DEFAULT 0,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS newsletters (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          subject text NOT NULL,
+          html text NOT NULL,
+          status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent')),
+          sent_at timestamptz,
+          recipient_count int,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS rag_documents (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          source text NOT NULL DEFAULT 'admin' CHECK (source IN ('admin', 'app')),
+          title text NOT NULL,
+          content text NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
+        ALTER TABLE rag_documents
+        ADD COLUMN IF NOT EXISTS search tsvector GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || content)) STORED
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_rag_documents_search ON rag_documents USING GIN(search)`;
+      await db`
+        CREATE TABLE IF NOT EXISTS analytics_events (
+          id bigserial PRIMARY KEY,
+          user_email text,
+          path text NOT NULL,
+          referrer text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

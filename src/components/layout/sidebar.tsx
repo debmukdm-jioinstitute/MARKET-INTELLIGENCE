@@ -4,6 +4,8 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { cn } from "@/lib/utils";
 import {
+  BarChart3,
+  Bell,
   Briefcase,
   Database,
   ExternalLink,
@@ -13,12 +15,38 @@ import {
   LogOut,
   Newspaper,
   Radio,
+  Sparkles,
+  TrendingUp,
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
+
+/** Icon names an admin can pick when adding a tab in the backend (src/app/admin/(protected)/tabs/page.tsx). */
+const DYNAMIC_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sparkles,
+  Newspaper,
+  TrendingUp,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Globe2,
+  Radio,
+  Database,
+};
+
+type DynamicTab = {
+  id: string;
+  label: string;
+  href: string;
+  icon: string;
+  section: string;
+  external: boolean;
+  badge: string | null;
+  sort_order: number;
+};
 
 interface NavGroup {
   title: string;
@@ -70,6 +98,29 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   const { user, isGuest, logout } = useAuth();
   const router = useRouter();
+  const [dynamicTabs, setDynamicTabs] = useState<DynamicTab[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/tabs")
+      .then((r) => r.json())
+      .then((json) => {
+        if (!cancelled) setDynamicTabs(json.tabs ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const groups = NAV_GROUPS.map((group) => ({ ...group, items: [...group.items] }));
+  for (const tab of dynamicTabs) {
+    const icon = DYNAMIC_ICON_MAP[tab.icon] ?? Sparkles;
+    const item = { href: tab.href, label: tab.label, icon, badge: tab.badge ?? undefined, external: tab.external };
+    const existing = groups.find((g) => g.title === tab.section);
+    if (existing) existing.items.push(item);
+    else groups.push({ title: tab.section, items: [item] });
+  }
 
   return (
     <div className="flex h-full flex-col bg-sidebar select-none">
@@ -87,7 +138,7 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-3 scrollbar-none">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="space-y-1">
             <p className="px-2.5 text-[10px] font-bold tracking-wider text-muted-foreground/70 uppercase">
               {group.title}

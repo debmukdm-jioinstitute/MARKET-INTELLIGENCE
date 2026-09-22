@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  GUEST_SESSION,
-  hashPassword,
-  isGuestUser,
-  persistCookie,
-  readSession,
-  readUsers,
-  writeSession,
-  writeUsers,
-  type SessionUser,
-} from "@/lib/auth";
+import { isGuestUser, type SessionUser } from "@/lib/auth";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 type AuthCtx = {
@@ -25,15 +15,37 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+async function postJson(url: string, body: unknown) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const session = readSession();
-    setUser(session);
-    setReady(true);
-    if (session) void persistCookie(session);
+    let cancelled = false;
+    // The session lives in an httpOnly cookie (real accounts are verified server-side),
+    // so the client has to ask the server who's logged in rather than reading it locally.
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled) setUser(json.user ?? null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const value = useMemo<AuthCtx>(
@@ -42,41 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ready,
       isGuest: isGuestUser(user),
       async enterGuest() {
-        writeSession(GUEST_SESSION);
-        await persistCookie(GUEST_SESSION);
-        setUser(GUEST_SESSION);
+        const json = await postJson("/api/auth/session", { guest: true });
+        setUser(json.user);
       },
       async signup({ name, email, password }) {
-        const users = readUsers();
-        const key = email.trim().toLowerCase();
-        if (users.some((u) => u.email === key)) throw new Error("An account with that email already exists.");
-        if (password.length < 6) throw new Error("Password must be at least 6 characters.");
-        const record = {
-          name: name.trim() || "Investor",
-          email: key,
-          passwordHash: await hashPassword(password),
-          createdAt: new Date().toISOString(),
-        };
-        writeUsers([...users, record]);
-        const session = { name: record.name, email: record.email, guest: false };
-        writeSession(session);
-        await persistCookie(session);
-        setUser(session);
+        const json = await postJson("/api/auth/signup", { name, email, password });
+        setUser(json.user);
       },
       async login({ email, password }) {
-        const key = email.trim().toLowerCase();
-        const match = readUsers().find((u) => u.email === key);
-        if (!match || match.passwordHash !== (await hashPassword(password))) {
-          throw new Error("Invalid email or password.");
-        }
-        const session = { name: match.name, email: match.email, guest: false };
-        writeSession(session);
-        await persistCookie(session);
-        setUser(session);
+        const json = await postJson("/api/auth/login", { email, password });
+        setUser(json.user);
       },
       async logout() {
-        writeSession(null);
-        await persistCookie(null);
+        await fetch("/api/auth/session", { method: "DELETE" });
         setUser(null);
       },
     }),

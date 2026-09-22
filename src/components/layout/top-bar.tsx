@@ -2,6 +2,7 @@
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { useMobileNav } from "@/components/layout/mobile-nav-provider";
+import { PushNotificationsToggle } from "@/components/layout/push-notifications-toggle";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
@@ -68,6 +69,7 @@ export function TopBar() {
         <span className="text-muted-foreground">
           {asOf ? asOf.toLocaleString() : "Live tape"}
         </span>
+        <PushNotificationsToggle />
       </div>
     </header>
   );
