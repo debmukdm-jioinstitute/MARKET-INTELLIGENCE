@@ -19,6 +19,7 @@ import {
   Sparkles,
   TrendingUp,
   BookOpen,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -81,6 +82,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/research", label: "Research", icon: BookOpen },
       { href: "/research-reports", label: "Research Reports", icon: FileSearch },
+      { href: "/research/options-flow", label: "Options Flow", icon: Zap, badge: "AI" },
     ],
   },
   {

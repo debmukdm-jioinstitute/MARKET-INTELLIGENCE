@@ -221,6 +221,33 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_research_scrape_log_ran ON research_scrape_log(ran_at DESC)`;
 
+      // -- Options flow screener (data/analysis/flagging 3-agent pipeline) --
+      await db`
+        CREATE TABLE IF NOT EXISTS options_flow_snapshots (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          snapshot_date date NOT NULL,
+          symbol text NOT NULL,
+          instrument_key text NOT NULL,
+          record jsonb NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE(snapshot_date, symbol)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_options_flow_symbol_date ON options_flow_snapshots(symbol, snapshot_date DESC)`;
+      await db`
+        CREATE TABLE IF NOT EXISTS options_flow_flag_log (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          flagged_date date NOT NULL,
+          symbol text NOT NULL,
+          headline text NOT NULL,
+          confidence text NOT NULL,
+          price_at_flag numeric,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE(flagged_date, symbol)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_options_flow_flag_log_symbol ON options_flow_flag_log(symbol, flagged_date DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
