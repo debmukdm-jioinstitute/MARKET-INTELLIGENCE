@@ -1,21 +1,22 @@
 import { AiKeyMissingError } from "@/lib/ai/llm";
-import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
+import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { runOptionsFlowPipeline } from "@/lib/options-flow/run";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
-const VALID_SYMBOLS = new Set(INDIA_EQUITIES.map((i) => i.symbol));
-const MAX_TICKERS = 12;
+const MAX_TICKERS = 20;
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { symbols?: string[] };
   const requested = Array.isArray(body.symbols) ? body.symbols : [];
-  const symbols = [...new Set(requested.map((s) => s.trim().toUpperCase()))].filter((s) => VALID_SYMBOLS.has(s));
+  const universe = await listFoUniverse();
+  const validSymbols = new Set(universe.map((i) => i.symbol));
+  const symbols = [...new Set(requested.map((s) => s.trim().toUpperCase()))].filter((s) => validSymbols.has(s));
 
-  if (symbols.length === 0) return NextResponse.json({ error: "Select at least one ticker from the watchlist" }, { status: 400 });
-  if (symbols.length > MAX_TICKERS) return NextResponse.json({ error: `Select at most ${MAX_TICKERS} tickers` }, { status: 400 });
+  if (symbols.length === 0) return NextResponse.json({ error: "Select at least one ticker from the F&O watchlist" }, { status: 400 });
+  if (symbols.length > MAX_TICKERS) return NextResponse.json({ error: `Select at most ${MAX_TICKERS} tickers per run` }, { status: 400 });
 
   try {
     const result = await runOptionsFlowPipeline(symbols);

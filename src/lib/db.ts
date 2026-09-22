@@ -100,6 +100,10 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_nse_symbol ON nse_instruments(trading_symbol)`;
       await db`CREATE INDEX IF NOT EXISTS idx_nse_name ON nse_instruments(name)`;
+      // is_fo: this equity has at least one listed NSE_FO options contract — the full options-flow
+      // screener universe (~210 names), derived from the same instrument-master sync, not a static list.
+      await db`ALTER TABLE nse_instruments ADD COLUMN IF NOT EXISTS is_fo boolean NOT NULL DEFAULT false`;
+      await db`CREATE INDEX IF NOT EXISTS idx_nse_is_fo ON nse_instruments(is_fo) WHERE is_fo`;
 
       // -- Admin backend --------------------------------------------------
       await db`

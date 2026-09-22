@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { FieldSource } from "@/lib/feeds/india/types";
-import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, HelpCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -57,7 +56,10 @@ type Result = {
   disclaimer: string;
 };
 
-const DEFAULT_MAX = 12;
+type FoInstrument = { symbol: string; name: string };
+
+const DEFAULT_MAX = 20;
+const DEFAULT_GRID_SIZE = 40;
 const CONFIDENCE_STYLE: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
   medium: "bg-amber-500/15 text-amber-400",
@@ -77,6 +79,8 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 }
 
 export function OptionsFlowPanel() {
+  const [universe, setUniverse] = useState<FoInstrument[]>([]);
+  const [universeLoaded, setUniverseLoaded] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [portfolioSymbols, setPortfolioSymbols] = useState<string[] | null>(null);
   const [query, setQuery] = useState("");
@@ -86,14 +90,25 @@ export function OptionsFlowPanel() {
   const [setupMessage, setSetupMessage] = useState<string | null>(null);
   const touchedRef = useRef(false);
 
-  // Suggest the user's own F&O-eligible holdings as the starting watchlist instead of an arbitrary default —
-  // options data only exists for this app's curated F&O universe, so anything outside it can't be screened.
+  // The full NSE F&O universe (~210 names, synced weekly from Upstox's instrument master) — not a
+  // hardcoded shortlist, so search can find and add any optionable ticker, not just a preset 12.
   useEffect(() => {
+    fetch("/api/options-flow/universe")
+      .then((r) => r.json())
+      .then((json) => setUniverse(json.instruments ?? []))
+      .catch(() => setUniverse([]))
+      .finally(() => setUniverseLoaded(true));
+  }, []);
+
+  // Suggest the user's own F&O-eligible holdings as the starting watchlist instead of an arbitrary default —
+  // only run once the universe has loaded, so "eligible" is checked against the real list, not an empty one.
+  useEffect(() => {
+    if (!universeLoaded) return;
     fetch("/api/portfolio/holdings")
       .then((r) => r.json())
       .then((json) => {
         const holdings: { market: string; symbol: string }[] = json.holdings ?? [];
-        const inUniverse = new Set(INDIA_EQUITIES.map((i) => i.symbol));
+        const inUniverse = new Set(universe.map((i) => i.symbol));
         const symbols = [...new Set(holdings.filter((h) => h.market === "IN").map((h) => h.symbol.toUpperCase()))]
           .filter((s) => inUniverse.has(s))
           .slice(0, DEFAULT_MAX);
@@ -101,13 +116,24 @@ export function OptionsFlowPanel() {
         if (!touchedRef.current) setSelected(symbols);
       })
       .catch(() => setPortfolioSymbols([]));
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [universeLoaded]);
 
   const filteredEquities = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return INDIA_EQUITIES;
-    return INDIA_EQUITIES.filter((i) => i.symbol.toLowerCase().includes(q) || i.name.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return universe;
+    return universe.filter((i) => i.symbol.toLowerCase().includes(q) || i.name.toLowerCase().includes(q));
+  }, [universe, query]);
+
+  // With no search, show selected tickers plus a manageable slice of the ~210-name universe rather
+  // than dumping every row — searching still reaches the full list via `filteredEquities` above.
+  const displayedEquities = useMemo(() => {
+    if (query.trim()) return filteredEquities;
+    const selectedSet = new Set(selected);
+    const selectedFirst = universe.filter((i) => selectedSet.has(i.symbol));
+    const rest = universe.filter((i) => !selectedSet.has(i.symbol)).slice(0, Math.max(0, DEFAULT_GRID_SIZE - selectedFirst.length));
+    return [...selectedFirst, ...rest];
+  }, [universe, selected, query, filteredEquities]);
 
   function toggle(symbol: string) {
     touchedRef.current = true;
@@ -153,10 +179,19 @@ export function OptionsFlowPanel() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search F&O scrips to add…"
+              placeholder={universeLoaded ? `Search all ${universe.length} F&O scrips to add…` : "Loading F&O universe…"}
               className="pl-8"
             />
           </div>
+          {query.trim() ? (
+            <p className="text-[11px] text-muted-foreground">
+              {filteredEquities.length} match{filteredEquities.length === 1 ? "" : "es"}
+            </p>
+          ) : universe.length > DEFAULT_GRID_SIZE ? (
+            <p className="text-[11px] text-muted-foreground">
+              Showing {Math.min(universe.length, DEFAULT_GRID_SIZE)} of {universe.length} — search to find others.
+            </p>
+          ) : null}
           {portfolioSymbols && portfolioSymbols.length > 0 ? (
             <button
               type="button"
@@ -174,7 +209,7 @@ export function OptionsFlowPanel() {
             </p>
           ) : null}
           <UniversePicker
-            symbols={filteredEquities}
+            symbols={displayedEquities}
             selected={selected}
             onToggle={toggle}
             onSelectAll={() => {

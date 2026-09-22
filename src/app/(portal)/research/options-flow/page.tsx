@@ -15,7 +15,7 @@ export default function OptionsFlowPage() {
 
       <Panel
         title="Run the screener"
-        subtitle="Pick tickers from the curated NSE F&O watchlist (options data comes from Upstox's option chain, so it's limited to names with listed options)."
+        subtitle="Search and pick from the full NSE F&O universe (~210 optionable stocks, synced weekly from Upstox's instrument master) — options data comes from Upstox's option chain, so it's limited to names with listed options."
       >
         <OptionsFlowPanel />
       </Panel>

@@ -1,9 +1,9 @@
 import { mean } from "@/lib/analytics";
-import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import { candleRangeToDates, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox/candles";
 import { fetchUpstoxCorporateActions, upcomingCorporateActions } from "@/lib/feeds/sources/upstox/corporate-actions";
 import { fetchUpstoxOptionChain, fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox/option-chain";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
+import { findFoInstrument } from "@/lib/options-flow/fo-universe";
 import type { ActiveStrikeOiChange, OptionsFlowRecord, SourcedField } from "@/lib/options-flow/types";
 
 /**
@@ -34,8 +34,8 @@ function daysUntil(isoDate: string, from: string): number | null {
 }
 
 export async function gatherOptionsFlowRecord(symbol: string, date?: string): Promise<OptionsFlowRecord> {
-  const instrument = findIndiaInstrument(symbol);
-  if (!instrument) throw new Error(`${symbol} is not in the curated F&O watchlist for this screener`);
+  const instrument = await findFoInstrument(symbol);
+  if (!instrument) throw new Error(`${symbol} is not in the NSE F&O universe — no listed options exist for this ticker`);
 
   const snapshotDate = date ?? new Date().toISOString().slice(0, 10);
   const fetchedAt = new Date().toISOString();
