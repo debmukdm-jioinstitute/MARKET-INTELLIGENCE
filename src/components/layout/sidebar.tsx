@@ -9,6 +9,7 @@ import {
   Briefcase,
   Database,
   ExternalLink,
+  FileSearch,
   Globe2,
   LayoutDashboard,
   LineChart,
@@ -77,7 +78,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "BOTTOM-UP",
-    items: [{ href: "/research", label: "Research", icon: BookOpen }],
+    items: [
+      { href: "/research", label: "Research", icon: BookOpen },
+      { href: "/research-reports", label: "Research Reports", icon: FileSearch },
+    ],
   },
   {
     title: "FEEDS",

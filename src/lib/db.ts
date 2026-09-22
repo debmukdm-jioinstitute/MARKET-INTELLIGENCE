@@ -193,6 +193,34 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at)`;
 
+      // -- Research reports (auto-scraped from broker/research-firm feeds) --
+      await db`
+        CREATE TABLE IF NOT EXISTS research_reports (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          source text NOT NULL,
+          broker text,
+          title text NOT NULL,
+          url text NOT NULL UNIQUE,
+          summary text,
+          published_at timestamptz,
+          scraped_at timestamptz NOT NULL DEFAULT now(),
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_research_reports_published ON research_reports(published_at DESC NULLS LAST)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_research_reports_broker ON research_reports(broker)`;
+      await db`
+        CREATE TABLE IF NOT EXISTS research_scrape_log (
+          id bigserial PRIMARY KEY,
+          source text NOT NULL,
+          ok boolean NOT NULL,
+          items_found int NOT NULL DEFAULT 0,
+          error text,
+          ran_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_research_scrape_log_ran ON research_scrape_log(ran_at DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

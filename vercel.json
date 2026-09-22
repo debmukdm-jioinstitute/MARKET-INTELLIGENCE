@@ -3,6 +3,10 @@
     {
       "path": "/api/portfolio/instruments/cron-sync",
       "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/scrape-research",
+      "schedule": "0 4 * * *"
     }
   ]
 }
