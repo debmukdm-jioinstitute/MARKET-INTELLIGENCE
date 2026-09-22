@@ -17,7 +17,7 @@ You will be given up to several candidate tickers that already passed a determin
 Give at most 5 tickers worth looking into today, chosen from the candidates given — do not invent tickers not in the list. For each:
 - whatIsUnusual: what specifically is unusual, with the numbers you were given.
 - openInterestConfirmsOpened: boolean, true only if open interest actually increased at the active strikes (you're told this).
-- boringExplanation: the most likely mundane explanation — an index rebalance, a known hedge, sector-wide movement, or (if given) an earnings/dividend/corporate-action date. You're given each candidate's upcomingCorporateAction from Upstox's real corporate-actions feed (dividend/bonus/split/rights only, no earnings calendar) — if it shows an ex-date within the window, cite it as the boring explanation, stated as a hypothesis to check, not a confirmed cause. Otherwise, if you have no basis to guess one, say "no obvious mundane explanation identified from this data."
+- boringExplanation: the most likely mundane explanation — an index rebalance, a known hedge, sector-wide movement, or (if given) an earnings date or dividend/bonus/split/rights ex-date. You're given each candidate's upcomingEvent, drawn from two real feeds (earnings from Yahoo Finance, corporate actions from Upstox) — if either shows a date within the window, cite it as the boring explanation, stated as a hypothesis to check, not a confirmed cause. Otherwise, if you have no basis to guess one, say "no obvious mundane explanation identified from this data."
 - whatToFindOut: what the user would need to find out to know whether this matters.
 - confidence: "low", "medium", or "high" — say low when it is low. Most of these should be low or medium, since this data alone cannot confirm intent.
 
@@ -73,7 +73,7 @@ export async function runFlaggingAgent(
       priceChangePct: b?.priceChangePct ?? null,
       openInterestNote: a.openInterestNote,
       volumeVsRange: a.volumeVsRange,
-      upcomingCorporateAction: b?.upcomingEventNote ?? "unavailable",
+      upcomingEvent: b?.upcomingEventNote ?? "unavailable",
     };
   });
 

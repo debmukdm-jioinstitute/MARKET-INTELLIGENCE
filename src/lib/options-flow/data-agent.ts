@@ -3,6 +3,7 @@ import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import { candleRangeToDates, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox/candles";
 import { fetchUpstoxCorporateActions, upcomingCorporateActions } from "@/lib/feeds/sources/upstox/corporate-actions";
 import { fetchUpstoxOptionChain, fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox/option-chain";
+import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
 import type { ActiveStrikeOiChange, OptionsFlowRecord, SourcedField } from "@/lib/options-flow/types";
 
 /**
@@ -22,6 +23,15 @@ function unavailable(reason: string): SourcedField<never> {
 
 const UPSTOX_CANDLES_URL = "https://upstox.com/developer/api-documentation/get-historical-candle-data/";
 const UPSTOX_CORP_ACTIONS_URL = "https://upstox.com/developer/api-documentation/get-corporate-actions/";
+const YAHOO_CALENDAR_URL = "https://finance.yahoo.com/";
+
+/** Calendar-day distance from `from` to an ISO "YYYY-MM-DD" date string. */
+function daysUntil(isoDate: string, from: string): number | null {
+  const target = Date.parse(`${isoDate}T00:00:00Z`);
+  const start = Date.parse(`${from}T00:00:00Z`);
+  if (Number.isNaN(target) || Number.isNaN(start)) return null;
+  return Math.round((target - start) / 86_400_000);
+}
 
 export async function gatherOptionsFlowRecord(symbol: string, date?: string): Promise<OptionsFlowRecord> {
   const instrument = findIndiaInstrument(symbol);
@@ -116,17 +126,34 @@ export async function gatherOptionsFlowRecord(symbol: string, date?: string): Pr
     }
   }
 
-  // -- Upcoming dividend/bonus/split/rights, next 30 days -------------------
-  // Upstox's fundamentals API has no earnings-date calendar (it only covers corporate
-  // actions), so that half of this field is honestly labeled unavailable rather than guessed.
-  let upcomingEvent: SourcedField<string> = unavailable(
+  // -- Earnings date, next 30 days (Yahoo Finance — Upstox has no earnings calendar) --
+  let earningsEvent: SourcedField<string> = unavailable("Yahoo Finance earnings-calendar fetch failed");
+  try {
+    const earnings = await fetchYahooEarningsDate(instrument.symbol);
+    if (earnings) {
+      const days = daysUntil(earnings.date, snapshotDate);
+      const label = earnings.isEstimate ? "estimated" : "confirmed";
+      const note =
+        days != null && days >= 0 && days <= 30
+          ? `Earnings ${label} ${earnings.date} (in ${days}d)`
+          : `No earnings date in the next 30 days (next known: ${earnings.date})`;
+      earningsEvent = ok(note, "Yahoo Finance", YAHOO_CALENDAR_URL, fetchedAt);
+    } else {
+      earningsEvent = unavailable("Yahoo Finance returned no earnings-calendar data for this ticker");
+    }
+  } catch (e) {
+    earningsEvent = unavailable(e instanceof Error ? e.message : "Yahoo Finance earnings fetch failed");
+  }
+
+  // -- Upcoming dividend/bonus/split/rights, next 30 days (Upstox corporate actions) --
+  let corporateActionEvent: SourcedField<string> = unavailable(
     "Upstox not configured or the corporate actions endpoint returned no data",
   );
   try {
     const events = await fetchUpstoxCorporateActions(instrument.isin);
     if (events) {
       const upcoming = upcomingCorporateActions(events, 30, new Date(snapshotDate));
-      const corporateActionNote =
+      const note =
         upcoming.length > 0
           ? upcoming
               .map((e) => {
@@ -135,15 +162,10 @@ export async function gatherOptionsFlowRecord(symbol: string, date?: string): Pr
               })
               .join("; ")
           : "No dividend/bonus/split/rights ex-date in the next 30 days";
-      upcomingEvent = ok(
-        `${corporateActionNote}. Earnings-date calendar is not available from Upstox's API.`,
-        "Upstox",
-        UPSTOX_CORP_ACTIONS_URL,
-        fetchedAt,
-      );
+      corporateActionEvent = ok(note, "Upstox", UPSTOX_CORP_ACTIONS_URL, fetchedAt);
     }
   } catch (e) {
-    upcomingEvent = unavailable(e instanceof Error ? e.message : "Upstox corporate actions fetch failed");
+    corporateActionEvent = unavailable(e instanceof Error ? e.message : "Upstox corporate actions fetch failed");
   }
 
   return {
@@ -158,6 +180,7 @@ export async function gatherOptionsFlowRecord(symbol: string, date?: string): Pr
     callsVolume,
     putsVolume,
     activeStrikeOiChanges,
-    upcomingEvent,
+    earningsEvent,
+    corporateActionEvent,
   };
 }

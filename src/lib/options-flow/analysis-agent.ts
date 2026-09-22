@@ -23,7 +23,7 @@ For each ticker return a JSON object with these exact string fields (2-3 sentenc
 - callPutRatioNote: today's call/put ratio versus its own 30-day average, with the numbers, or a note that the baseline isn't established yet.
 - openInterestNote: whether open interest actually increased (new positions opened) or decreased (positions closed) at the active strikes, with the strikes and numbers.
 - priceConfirmationNote: whether price action confirms or contradicts what the options activity suggests, stated as description not interpretation.
-- scheduledEventNote: state what the given upcomingEvent data shows — an upcoming dividend/bonus/split/rights ex-date within 30 days, or that none is scheduled. Always add that no earnings-date calendar is available (Upstox's API doesn't provide one), so an earnings date specifically cannot be checked.
+- scheduledEventNote: state what the given event data shows — an upcoming earnings date and/or dividend/bonus/split/rights ex-date within 30 days (each is separately sourced: earnings from Yahoo Finance, corporate actions from Upstox), or that none is scheduled. If either source came back unavailable, say so plainly for that source specifically rather than implying nothing exists.
 - flagged: boolean, must equal the given candidateFlag.
 - uncertaintyNote: for a flagged ticker, state plainly what cannot be determined (buying vs selling, opening vs closing for the counterparty, directional vs hedge). For a non-flagged ticker, this can be a short "not flagged" note.`;
 
@@ -65,7 +65,7 @@ Price volume vs its own 30-day average (ratio): ${fmt(b.volumeRatio)}
 Price change today: ${fmt(b.priceChangePct)}%
 Strikes with OI increase (new positions opened) today: ${JSON.stringify(b.oiOpenedStrikes)}
 Strikes with OI decrease (positions closed) today: ${JSON.stringify(b.oiClosedStrikes)}
-Upcoming corporate action (Upstox, dividend/bonus/split/rights only, no earnings calendar): ${b.upcomingEventNote ?? "unavailable — Upstox corporate actions feed not configured or failed"}
+Upcoming events (earnings via Yahoo Finance, dividend/bonus/split/rights via Upstox): ${b.upcomingEventNote ?? "unavailable — both event feeds failed or are not configured"}
 candidateFlag: ${b.candidateFlag}
 
 Return the JSON object described in your instructions for this ticker only.`;
@@ -101,7 +101,7 @@ Return the JSON object described in your instructions for this ticker only.`;
               ? `OI decreased at ${b.oiClosedStrikes.length} active strike(s).`
               : "No OI change at active strikes.",
         priceConfirmationNote: `Price change today: ${fmt(b.priceChangePct)}%.`,
-        scheduledEventNote: `${b.upcomingEventNote ?? "Corporate actions data unavailable for this ticker."} (Earnings-date calendar not available from Upstox's API.)`,
+        scheduledEventNote: b.upcomingEventNote ?? "Event data unavailable for this ticker (both earnings and corporate-action feeds failed).",
         flagged: b.candidateFlag,
         uncertaintyNote:
           "Analysis narrative unavailable (model call failed) — numbers above are computed directly, not model output. Cannot determine buying vs selling, opening vs closing for the counterparty, or directional vs hedge from this data.",

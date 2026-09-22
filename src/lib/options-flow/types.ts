@@ -33,7 +33,10 @@ export type OptionsFlowRecord = {
   putsVolume: SourcedField<number>;
   /** Most-active strikes by volume, with the OI change at each — not just the volume. */
   activeStrikeOiChanges: SourcedField<ActiveStrikeOiChange[]>;
-  upcomingEvent: SourcedField<string>;
+  /** Next known earnings date, from Yahoo Finance's calendar (Upstox has no earnings calendar). */
+  earningsEvent: SourcedField<string>;
+  /** Upcoming dividend/bonus/split/rights ex-date, from Upstox's corporate-actions feed. */
+  corporateActionEvent: SourcedField<string>;
 };
 
 /** Deterministic stats computed in code before the Analysis Agent ever sees the ticker — the LLM narrates these numbers, it never computes or invents them. */

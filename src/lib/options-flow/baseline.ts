@@ -47,7 +47,12 @@ export function computeTickerBaseline(today: OptionsFlowRecord, history: Options
   const oiClosedStrikes = activeStrikes.filter((s) => s.change < 0);
 
   const priceChangePct = fieldValue<number>(today.priceChangePct);
-  const upcomingEventNote = fieldValue<string>(today.upcomingEvent);
+  const earningsNote = fieldValue<string>(today.earningsEvent);
+  const corporateActionNote = fieldValue<string>(today.corporateActionEvent);
+  const upcomingEventNote =
+    earningsNote != null || corporateActionNote != null
+      ? [earningsNote, corporateActionNote].filter((n): n is string => n != null).join(" ")
+      : null;
 
   // Doc's exact flag condition: unusual options volume opened new positions, and price
   // has not moved correspondingly. "Unusual" is relative to the ticker's own history, not
