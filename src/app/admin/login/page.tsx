@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
         setError("This account does not have admin access.");
         return;
       }
-      router.replace("/");
+      router.replace("/admin");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
