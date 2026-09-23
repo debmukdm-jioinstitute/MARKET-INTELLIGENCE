@@ -27,17 +27,17 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     
     lenis.on("scroll", ScrollTrigger.update);
     
-    gsap.ticker.add((time) => {
+    const update = (time: number) => {
       lenis.raf(time * 1000);
-    });
+    };
+
+    gsap.ticker.add(update);
     
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
-      gsap.ticker.remove((time) => {
-        lenis.raf(time * 1000);
-      });
+      gsap.ticker.remove(update);
     };
   }, []);
 
