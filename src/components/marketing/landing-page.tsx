@@ -222,18 +222,27 @@ export function LandingPage() {
       }
     });
 
-    // How it works steps
-    gsap.from(".how-step", {
-      y: 40,
+    // AI Desk Timeline
+    const aiTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#ai-desk",
+        start: "top 75%",
+      }
+    });
+
+    aiTl.from(".ai-desk-container", {
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out",
+    })
+    .from(".ai-agent-card", {
+      y: 30,
       opacity: 0,
       stagger: 0.15,
       duration: 0.8,
       ease: "power3.out",
-      scrollTrigger: {
-        trigger: "#how",
-        start: "top 75%",
-      }
-    });
+    }, "-=0.6");
 
     // FAQ items
     gsap.from(".faq-item", {
@@ -608,35 +617,96 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section id="how" className="border-y border-white/60 bg-white/40 px-5 py-24 backdrop-blur-xl md:py-28">
-          <div className="mx-auto max-w-5xl">
-            <div className="mx-auto max-w-xl text-center">
-              <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Get started in minutes</p>
-              <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
-                Three steps. That's it.
+        {/* AI DESK SHOWCASE */}
+        <section id="ai-desk" className="relative border-y border-white/60 bg-white/30 px-5 py-24 backdrop-blur-xl md:py-32 overflow-hidden">
+          {/* Ambient background glows for 3D depth */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[800px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+          
+          <div className="relative z-10 mx-auto max-w-6xl">
+            <div className="mx-auto max-w-2xl text-center mb-16">
+              <p className="text-sm font-bold tracking-[0.2em] text-blue-600 uppercase">AI Desk</p>
+              <h2 className="mt-3 text-[clamp(2rem,5vw,3.25rem)] font-bold tracking-tight text-gray-900 leading-[1.1]">
+                Multi-agent research lab
               </h2>
+              <p className="mt-5 text-lg text-gray-600 leading-relaxed">
+                Run a live multi-agent debate. Pick any ticker and watch five LLM agents analyze fundamentals, sentiment, and technicals in real-time.
+              </p>
             </div>
-            <div className="mt-14 grid gap-6 md:grid-cols-3">
-              {STEPS.map((s) => (
-                <div
-                  key={s.n}
-                  className="how-step rounded-3xl border border-white/70 bg-white/60 p-7 text-center shadow-[var(--shadow-sm)] backdrop-blur-xl"
-                >
-                  <div className="mx-auto grid size-10 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[var(--shadow-sm)]">
-                    {s.n}
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold tracking-tight text-gray-900">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{s.body}</p>
+
+            {/* The 3D Glassmorphism Container */}
+            <div className="ai-desk-container relative mx-auto max-w-5xl rounded-[2.5rem] border border-white/80 bg-white/40 p-6 shadow-[0_30px_80px_-20px_rgba(37,99,235,0.15)] backdrop-blur-2xl sm:p-10 transition-transform duration-700 ease-out">
+              
+              <div className="mb-8 flex items-center justify-between border-b border-gray-200/50 pb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">Trading desk — live debate</h3>
+                  <p className="text-sm font-medium text-gray-500 mt-1">ADANI PORT & SEZ LTD (ADANIPORTS) • price 1807.3</p>
                 </div>
-              ))}
+                <div className="hidden sm:flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 border border-white/70 shadow-sm">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                  </span>
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Agents Active</span>
+                </div>
+              </div>
+
+              {/* Agent Cards Grid */}
+              <div className="grid gap-5 md:grid-cols-3">
+                
+                {/* Card 1 */}
+                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[var(--shadow-md)] group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-gray-900 tracking-tight">Fundamental Analyst</h4>
+                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2.5 py-1 rounded-full border border-red-100">Bearish</span>
+                  </div>
+                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-red-300">
+                    <li><strong className="font-medium text-gray-800">P/E (31.43x)</strong> exceeds sector avg (27.17x)</li>
+                    <li>ROA, ROE lag sector benchmarks</li>
+                    <li><strong className="font-medium text-gray-800">EV/EBITDA (17.82x)</strong> higher than sector</li>
+                  </ul>
+                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">68%</span></p>
+                </div>
+
+                {/* Card 2 */}
+                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_25px_50px_-15px_rgba(0,0,0,0.1)] group md:-translate-y-4">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-gray-900 tracking-tight">Sentiment Analyst</h4>
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">Bullish</span>
+                  </div>
+                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-emerald-300">
+                    <li>Adani Ports <strong className="font-medium text-gray-800">jumped 5%</strong> on Sep 18</li>
+                    <li>Adani Group stocks rallied per Jefferies</li>
+                    <li>Growth drivers flagged for upside</li>
+                  </ul>
+                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">85%</span></p>
+                </div>
+
+                {/* Card 3 */}
+                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[var(--shadow-md)] group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-gray-900 tracking-tight">Technical Analyst</h4>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">Neutral</span>
+                  </div>
+                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-gray-300">
+                    <li><strong className="font-medium text-gray-800">SMA20 (1721)</strong> is slightly below SMA50</li>
+                    <li>RSI14 at 57 suggests moderate momentum</li>
+                    <li>Price is near the high end of 52w range</li>
+                  </ul>
+                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">60%</span></p>
+                </div>
+              </div>
+
             </div>
-            <div className="mt-12 text-center">
+
+            <div className="mt-16 text-center">
               <Link
                 href={hasAccess ? "/Home" : "/signup"}
-                className="inline-flex rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+                className="inline-flex rounded-full bg-blue-600 px-8 py-4 text-[15px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
               >
-                {hasAccess ? "Open terminal →" : "Start free →"}
+                {hasAccess ? "Run the AI Desk →" : "Try AI Desk for free →"}
               </Link>
             </div>
           </div>
