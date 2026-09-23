@@ -39,7 +39,17 @@ export function GuidedTour() {
           element: "#nav-markets",
           popover: {
             title: "Markets",
-            description: "Cross-asset tape: equities, rates, and FX in one board. Access India Cockpit, Sector Comparables, Valuation metrics, Breadth & Momentum, and Derivatives positioning.",
+            description: `
+              <p class="mb-2">Everything you need to track the live market action.</p>
+              <ul class="text-left space-y-1.5 text-[13px]">
+                <li><b>Overview:</b> See stocks, bonds, and currencies all in one place.</li>
+                <li><b>India Cockpit:</b> Live updates and deep dive into the NSE and BSE markets.</li>
+                <li><b>Sector Comparables:</b> See which industries are performing best.</li>
+                <li><b>Valuation:</b> Check if the market is too expensive or cheap right now.</li>
+                <li><b>Breadth & Momentum:</b> See how many stocks are actually going up versus down.</li>
+                <li><b>Derivatives:</b> Track options and futures trading activity.</li>
+              </ul>
+            `,
             side: "bottom",
             align: "start"
           }
@@ -48,7 +58,17 @@ export function GuidedTour() {
           element: "#nav-macro",
           popover: {
             title: "Macro",
-            description: "Regime-first read across growth, inflation, liquidity. Dive into India Macro, RBI & Liquidity, Currency, Commodities, and upcoming Economic Calendar prints.",
+            description: `
+              <p class="mb-2">Understand the big economic picture and policies.</p>
+              <ul class="text-left space-y-1.5 text-[13px]">
+                <li><b>Global Board:</b> Track worldwide growth, inflation, and money supply.</li>
+                <li><b>India Macro:</b> Important Indian economic data (like GDP and inflation) on one page.</li>
+                <li><b>RBI & Liquidity:</b> See what the central bank is doing with interest rates.</li>
+                <li><b>Currency:</b> Track the US Dollar, Rupee, and other major currencies.</li>
+                <li><b>Commodities:</b> Keep an eye on Crude Oil, Gold, and metals.</li>
+                <li><b>Economic Calendar:</b> A schedule of upcoming major economic announcements.</li>
+              </ul>
+            `,
             side: "bottom",
             align: "start"
           }
@@ -57,7 +77,17 @@ export function GuidedTour() {
           element: "#nav-portfolio",
           popover: {
             title: "Portfolio",
-            description: "Mark-to-market NAV, P&L, and live positions in the Command Center. Analyze Allocation, Risk & VaR, Attribution, Quant Factors, and use the Optimizer.",
+            description: `
+              <p class="mb-2">Manage and analyze your investments.</p>
+              <ul class="text-left space-y-1.5 text-[13px]">
+                <li><b>Command Center:</b> Your main dashboard to see your profits, losses, and live positions.</li>
+                <li><b>Allocation:</b> See how your money is divided across different types of investments.</li>
+                <li><b>Risk & VaR:</b> Understand how much risk you are taking and potential losses.</li>
+                <li><b>Attribution:</b> Find out exactly which decisions made or lost you money.</li>
+                <li><b>Quant & Factors:</b> Advanced analysis of the mathematical traits of your portfolio.</li>
+                <li><b>Optimizer:</b> Get suggestions on how to rebalance your portfolio for better returns.</li>
+              </ul>
+            `,
             side: "bottom",
             align: "start"
           }
@@ -66,7 +96,16 @@ export function GuidedTour() {
           element: "#nav-research",
           popover: {
             title: "Research",
-            description: "Deep dive with the Company Workbench, Alpha discovery in the AI Desk, IPO Pipeline tracking, unusual Options Flow, and Model-driven Research Reports.",
+            description: `
+              <p class="mb-2">Deep dive into specific companies and trading ideas.</p>
+              <ul class="text-left space-y-1.5 text-[13px]">
+                <li><b>Company Workbench:</b> Detailed information and history for any specific stock.</li>
+                <li><b>AI Desk:</b> Our AI analyzes data to help you find new trading opportunities.</li>
+                <li><b>IPO Pipeline:</b> Track upcoming new stock market listings.</li>
+                <li><b>Options Flow:</b> Our AI spots unusual and large options trades in the market.</li>
+                <li><b>Research Reports:</b> Read detailed notes and models generated for our coverage list.</li>
+              </ul>
+            `,
             side: "bottom",
             align: "start"
           }
@@ -75,7 +114,15 @@ export function GuidedTour() {
           element: "#nav-intelligence",
           popover: {
             title: "Intelligence",
-            description: "AI-scored Intelligence Feed for news impact. Monitor System & Data health, connected Data Feeds, and read the external Daily Brief.",
+            description: `
+              <p class="mb-2">Stay updated with AI-curated news and data health.</p>
+              <ul class="text-left space-y-1.5 text-[13px]">
+                <li><b>Intelligence Feed:</b> AI reads the news and scores whether it's good or bad.</li>
+                <li><b>System & Data:</b> Check if all our market data sources are working smoothly.</li>
+                <li><b>Data Feeds:</b> View the complete list of providers supplying our data.</li>
+                <li><b>Daily Brief:</b> A quick daily summary of the market's main story.</li>
+              </ul>
+            `,
             side: "bottom",
             align: "start"
           }
