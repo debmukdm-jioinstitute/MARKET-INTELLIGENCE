@@ -12,8 +12,15 @@ function fromAddress(): string {
 
 export type NewsletterSendResult = { sent: number; failed: number; errors: string[] };
 
-/** Sends one HTML email to each recipient via Resend's batch API (100 per call, per Resend's limit). */
-export async function sendNewsletter(subject: string, html: string, recipients: string[]): Promise<NewsletterSendResult> {
+/**
+ * Sends one HTML email to each recipient via Resend's batch API (100 per call, per Resend's limit).
+ * `htmlFor` builds the body per recipient (e.g. to inject a personalized unsubscribe link).
+ */
+export async function sendNewsletter(
+  subject: string,
+  recipients: string[],
+  htmlFor: (email: string) => string,
+): Promise<NewsletterSendResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
   const resend = new Resend(apiKey);
@@ -26,7 +33,7 @@ export async function sendNewsletter(subject: string, html: string, recipients: 
   for (let i = 0; i < recipients.length; i += 100) {
     const chunk = recipients.slice(i, i + 100);
     const { data, error } = await resend.batch.send(
-      chunk.map((to) => ({ from, to, subject, html })),
+      chunk.map((to) => ({ from, to, subject, html: htmlFor(to) })),
     );
     if (error) {
       failed += chunk.length;

@@ -4,10 +4,12 @@ import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { useEffect, useState } from "react";
 
 type Newsletter = { id: string; subject: string; status: "draft" | "sent"; sent_at: string | null; recipient_count: number | null; created_at: string };
+type RecipientBreakdown = { users: number; publicSubscribers: number; total: number };
 
 export default function AdminNewslettersPage() {
   const [newsletters, setNewsletters] = useState<Newsletter[] | null>(null);
   const [recipientCount, setRecipientCount] = useState(0);
+  const [breakdown, setBreakdown] = useState<RecipientBreakdown>({ users: 0, publicSubscribers: 0, total: 0 });
   const [emailConfigured, setEmailConfigured] = useState(true);
   const [form, setForm] = useState({ subject: "", html: "" });
   const [sending, setSending] = useState(false);
@@ -20,6 +22,7 @@ export default function AdminNewslettersPage() {
       .then((json) => {
         setNewsletters(json.newsletters);
         setRecipientCount(json.recipientCount);
+        setBreakdown(json.recipientBreakdown ?? { users: 0, publicSubscribers: 0, total: 0 });
         setEmailConfigured(json.emailConfigured);
       })
       .catch(() => {});
@@ -38,7 +41,7 @@ export default function AdminNewslettersPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to save");
-      setOk(mode === "draft" ? "Draft saved." : `Sent to ${json.sent} customer(s), ${json.failed} failed.`);
+      setOk(mode === "draft" ? "Draft saved." : `Sent to ${json.sent} recipient(s), ${json.failed} failed.`);
       setForm({ subject: "", html: "" });
       load();
     } catch (e) {
@@ -53,7 +56,10 @@ export default function AdminNewslettersPage() {
       <div>
         <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Newsletters</p>
         <h1 className="mt-1 text-xl font-semibold">Compose a newsletter</h1>
-        <p className="mt-1 text-sm text-gray-500">Sends one HTML email to every registered customer via Resend.</p>
+        <p className="mt-1 text-sm text-gray-500">
+          Sends one HTML email via Resend to every registered account (subscribed by default) plus everyone who joined
+          from the public subscribe form.
+        </p>
       </div>
 
       {!emailConfigured ? (
@@ -66,7 +72,11 @@ export default function AdminNewslettersPage() {
         </div>
       ) : null}
 
-      <AdminStat label="Registered recipients" value={recipientCount} />
+      <div className="grid grid-cols-3 gap-3">
+        <AdminStat label="Total recipients" value={recipientCount} />
+        <AdminStat label="Registered accounts" value={breakdown.users} />
+        <AdminStat label="Public subscribers" value={breakdown.publicSubscribers} />
+      </div>
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {ok ? <p className="text-sm text-emerald-600">{ok}</p> : null}
@@ -106,7 +116,7 @@ export default function AdminNewslettersPage() {
               onClick={() => submit("send")}
               className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
             >
-              {sending ? "Sending…" : `Send to ${recipientCount} customer(s)`}
+              {sending ? "Sending…" : `Send to ${recipientCount} recipient(s)`}
             </button>
           </div>
         </div>

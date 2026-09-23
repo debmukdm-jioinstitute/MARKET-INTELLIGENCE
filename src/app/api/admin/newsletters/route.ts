@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
 import { hasEmailConfigured, sendNewsletter } from "@/lib/admin/email";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { getActiveRecipients, getRecipientCount, withUnsubscribeFooter } from "@/lib/newsletter";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,15 +9,26 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const guard = await requireAdmin();
   if ("error" in guard) return guard.error;
-  if (!hasDatabase()) return NextResponse.json({ newsletters: [], recipientCount: 0, emailConfigured: hasEmailConfigured() });
+  if (!hasDatabase())
+    return NextResponse.json({
+      newsletters: [],
+      recipientCount: 0,
+      recipientBreakdown: { users: 0, publicSubscribers: 0, total: 0 },
+      emailConfigured: hasEmailConfigured(),
+    });
 
   await ensureSchema();
   const db = sql();
-  const [newsletters, users] = await Promise.all([
+  const [newsletters, breakdown] = await Promise.all([
     db`SELECT * FROM newsletters ORDER BY created_at DESC LIMIT 50`,
-    db`SELECT count(*)::int AS n FROM users`,
+    getRecipientCount(),
   ]);
-  return NextResponse.json({ newsletters, recipientCount: users[0].n, emailConfigured: hasEmailConfigured() });
+  return NextResponse.json({
+    newsletters,
+    recipientCount: breakdown.total,
+    recipientBreakdown: breakdown,
+    emailConfigured: hasEmailConfigured(),
+  });
 }
 
 export async function POST(req: Request) {
@@ -41,13 +53,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ newsletter: row });
   }
 
-  const users = (await db`SELECT email FROM users`) as { email: string }[];
-  const recipients = users.map((u) => u.email);
+  const recipients = await getActiveRecipients();
   if (recipients.length === 0) {
-    return NextResponse.json({ error: "No registered customers to send to yet." }, { status: 400 });
+    return NextResponse.json({ error: "No subscribers to send to yet." }, { status: 400 });
   }
 
-  const result = await sendNewsletter(subject, html, recipients);
+  const result = await sendNewsletter(subject, recipients, (email) => withUnsubscribeFooter(html, email));
   const [row] = await db`
     INSERT INTO newsletters (subject, html, status, sent_at, recipient_count)
     VALUES (${subject}, ${html}, 'sent', now(), ${result.sent})

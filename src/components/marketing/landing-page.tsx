@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { MegaMenu } from "@/components/marketing/mega-menu";
 import { MobileNav } from "@/components/marketing/mobile-nav";
+import { NewsletterSubscribeForm } from "@/components/marketing/newsletter-subscribe-form";
 import {
   BarChart3,
   LineChart,
@@ -365,6 +366,13 @@ export function LandingPage() {
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>
                 <Link href="/Home" className="hover:text-gray-900">Terminal</Link>
               </div>
+            </div>
+            <div className="w-full max-w-sm text-sm text-muted-foreground">
+              <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">Newsletter</p>
+              <p className="mt-3 text-sm leading-6 text-gray-400">
+                Market wrap-ups and product updates, straight to your inbox. No account required.
+              </p>
+              <NewsletterSubscribeForm className="mt-3" />
             </div>
           </div>
           <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-sm text-gray-400">

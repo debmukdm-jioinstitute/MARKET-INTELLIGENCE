@@ -172,6 +172,19 @@ export async function ensureSchema(): Promise<void> {
           created_at timestamptz NOT NULL DEFAULT now()
         )
       `;
+      // Registered users are subscribed by default — this is an opt-out flag, not opt-in.
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS newsletter_opt_out boolean NOT NULL DEFAULT false`;
+      await db`
+        CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          email text NOT NULL UNIQUE,
+          status text NOT NULL DEFAULT 'subscribed' CHECK (status IN ('subscribed', 'unsubscribed')),
+          source text NOT NULL DEFAULT 'public_form',
+          created_at timestamptz NOT NULL DEFAULT now(),
+          unsubscribed_at timestamptz
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status ON newsletter_subscribers(status)`;
       await db`
         CREATE TABLE IF NOT EXISTS rag_documents (
           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
