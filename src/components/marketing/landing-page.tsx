@@ -19,6 +19,7 @@ import { LenisProvider } from "@/components/marketing/lenis-provider";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { LiveDebate } from "@/components/marketing/live-debate";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -651,53 +652,7 @@ export function LandingPage() {
               </div>
 
               {/* Agent Cards Grid */}
-              <div className="grid gap-5 md:grid-cols-3">
-                
-                {/* Card 1 */}
-                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[var(--shadow-md)] group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900 tracking-tight">Fundamental Analyst</h4>
-                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2.5 py-1 rounded-full border border-red-100">Bearish</span>
-                  </div>
-                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-red-300">
-                    <li><strong className="font-medium text-gray-800">P/E (31.43x)</strong> exceeds sector avg (27.17x)</li>
-                    <li>ROA, ROE lag sector benchmarks</li>
-                    <li><strong className="font-medium text-gray-800">EV/EBITDA (17.82x)</strong> higher than sector</li>
-                  </ul>
-                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">68%</span></p>
-                </div>
-
-                {/* Card 2 */}
-                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_25px_50px_-15px_rgba(0,0,0,0.1)] group md:-translate-y-4">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900 tracking-tight">Sentiment Analyst</h4>
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">Bullish</span>
-                  </div>
-                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-emerald-300">
-                    <li>Adani Ports <strong className="font-medium text-gray-800">jumped 5%</strong> on Sep 18</li>
-                    <li>Adani Group stocks rallied per Jefferies</li>
-                    <li>Growth drivers flagged for upside</li>
-                  </ul>
-                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">85%</span></p>
-                </div>
-
-                {/* Card 3 */}
-                <div className="ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[var(--shadow-md)] group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900 tracking-tight">Technical Analyst</h4>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">Neutral</span>
-                  </div>
-                  <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4 marker:text-gray-300">
-                    <li><strong className="font-medium text-gray-800">SMA20 (1721)</strong> is slightly below SMA50</li>
-                    <li>RSI14 at 57 suggests moderate momentum</li>
-                    <li>Price is near the high end of 52w range</li>
-                  </ul>
-                  <p className="mt-5 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">Confidence: <span className="text-gray-600">60%</span></p>
-                </div>
-              </div>
+              <LiveDebate />
 
             </div>
 
