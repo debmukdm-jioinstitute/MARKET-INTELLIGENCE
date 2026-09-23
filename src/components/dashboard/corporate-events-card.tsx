@@ -89,7 +89,7 @@ export function CorporateEventsCard() {
               CORPORATE DISCLOSURES & EVENTS
             </span>
             <MetricInfo metric="corporate_announcement" customTitle="Material Corporate Events & Filings" />
-            <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+            <span className="text-[10px] font-mono text-emerald-600 flex items-center gap-1">
               <Radio className="size-3 animate-pulse" />
               Live RSS Feed
             </span>
@@ -149,7 +149,7 @@ export function CorporateEventsCard() {
                 <span className="font-bold text-foreground shrink-0 w-24 flex items-center gap-1">
                   {ev.symbol}
                   {ev.inPortfolio ? (
-                    <span className="size-1.5 rounded-full bg-emerald-400" title="Relevant to portfolio" />
+                    <span className="size-1.5 rounded-full bg-emerald-600" title="Relevant to portfolio" />
                   ) : null}
                 </span>
                 <span className="text-muted-foreground truncate text-[11px]">{ev.title}</span>
@@ -223,7 +223,7 @@ export function CorporateEventsCard() {
                 <span className="text-[10px] uppercase font-bold text-muted-foreground">
                   PORTFOLIO EXPOSURE
                 </span>
-                <p className="text-emerald-400 font-semibold text-xs">
+                <p className="text-emerald-600 font-semibold text-xs">
                   {selectedEvent.portfolioExposure}
                 </p>
               </div>

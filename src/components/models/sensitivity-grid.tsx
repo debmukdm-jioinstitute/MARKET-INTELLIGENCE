@@ -33,7 +33,7 @@ export function SensitivityGrid({ table, rowFmt, currency }: { table: Sensitivit
                     key={c}
                     className={cn(
                       "border border-border/60 px-2 py-1.5 text-right tabular-nums",
-                      r === centerRow && c === centerCol ? "bg-amber-400/15 font-semibold text-amber-300" : "text-foreground",
+                      r === centerRow && c === centerCol ? "bg-blue-600/15 font-semibold text-blue-600" : "text-foreground",
                     )}
                   >
                     {cell == null ? "n/a" : formatByFmt(cell, "price", currency)}

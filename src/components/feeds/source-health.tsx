@@ -13,7 +13,7 @@ export function SourceHealthGrid({ rows }: { rows: FeedHealth[] }) {
           <span
             className={cn(
               "font-mono uppercase tracking-wide",
-              row.ok ? "text-emerald-400" : "text-amber-400",
+              row.ok ? "text-emerald-600" : "text-blue-600",
             )}
           >
             {row.ok ? "live" : "degraded"}

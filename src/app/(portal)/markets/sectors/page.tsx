@@ -197,19 +197,19 @@ export default function SectorsPage() {
           {[
             {
               stage: "Leading",
-              color: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
+              color: "text-emerald-600 border-emerald-500/40 bg-emerald-500/10",
               desc: "High relative momentum, outperforming benchmark",
               items: SECTOR_DATA.filter((s) => s.rotationStage === "Leading"),
             },
             {
               stage: "Weakening",
-              color: "text-amber-400 border-amber-500/40 bg-amber-500/10",
+              color: "text-blue-600 border-blue-600/40 bg-blue-600/10",
               desc: "Losing relative strength despite positive returns",
               items: SECTOR_DATA.filter((s) => s.rotationStage === "Weakening"),
             },
             {
               stage: "Lagging",
-              color: "text-rose-400 border-rose-500/40 bg-rose-500/10",
+              color: "text-rose-600 border-rose-500/40 bg-rose-500/10",
               desc: "Underperforming benchmark across short & medium term",
               items: SECTOR_DATA.filter((s) => s.rotationStage === "Lagging"),
             },
@@ -302,32 +302,32 @@ export default function SectorsPage() {
               <TableRow key={s.name} className="font-mono text-xs hover:bg-accent/40">
                 <TableCell className="font-bold text-foreground">{s.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{s.niftyWeight}%</TableCell>
-                <TableCell className={cn("text-right font-bold", s.return1D >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                <TableCell className={cn("text-right font-bold", s.return1D >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {s.return1D >= 0 ? "+" : ""}{formatPct(s.return1D)}
                 </TableCell>
-                <TableCell className={cn("text-right font-bold", s.return1W >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                <TableCell className={cn("text-right font-bold", s.return1W >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {s.return1W >= 0 ? "+" : ""}{formatPct(s.return1W)}
                 </TableCell>
-                <TableCell className={cn("text-right font-bold", s.return1M >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                <TableCell className={cn("text-right font-bold", s.return1M >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {s.return1M >= 0 ? "+" : ""}{formatPct(s.return1M)}
                 </TableCell>
-                <TableCell className={cn("text-right font-bold", s.return1Y >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                <TableCell className={cn("text-right font-bold", s.return1Y >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {s.return1Y >= 0 ? "+" : ""}{formatPct(s.return1Y)}
                 </TableCell>
                 <TableCell className="text-right text-foreground font-semibold">{s.pe}x</TableCell>
                 <TableCell className="text-right text-foreground">{s.pb}x</TableCell>
-                <TableCell className="text-right text-emerald-400 font-semibold">{s.roe}%</TableCell>
+                <TableCell className="text-right text-emerald-600 font-semibold">{s.roe}%</TableCell>
                 <TableCell className="text-center">
                   <span
                     className={cn(
                       "rounded px-2 py-0.5 text-[10px] font-bold uppercase",
                       s.rotationStage === "Leading"
-                        ? "bg-emerald-500/10 text-emerald-400"
+                        ? "bg-emerald-500/10 text-emerald-600"
                         : s.rotationStage === "Improving"
                         ? "bg-blue-500/10 text-blue-400"
                         : s.rotationStage === "Weakening"
-                        ? "bg-amber-500/10 text-amber-400"
-                        : "bg-rose-500/10 text-rose-400",
+                        ? "bg-blue-600/10 text-blue-600"
+                        : "bg-rose-500/10 text-rose-600",
                     )}
                   >
                     {s.rotationStage}

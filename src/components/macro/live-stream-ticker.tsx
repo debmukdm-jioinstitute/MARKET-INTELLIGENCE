@@ -32,7 +32,7 @@ function TickerCell({ item }: { item: LiveTickerItem }) {
         <span
           className={cn(
             "rounded px-1.5 py-0.5 text-[10px] tabular-nums",
-            up ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300",
+            up ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600",
           )}
         >
           {up ? "+" : ""}
@@ -60,13 +60,13 @@ export function LiveStreamTicker() {
 
   return (
     <div
-      className="relative border-b border-border bg-[#050608]/95 text-foreground"
+      className="relative border-b border-border bg-muted/60 text-foreground"
       aria-label="Live market stream"
     >
       <div className="flex h-10 items-stretch">
-        <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-[#050608] px-4">
+        <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-muted px-4">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">

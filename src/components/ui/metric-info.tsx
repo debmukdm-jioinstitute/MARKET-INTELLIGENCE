@@ -71,7 +71,7 @@ export function MetricInfo({
         });
       }}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full text-muted-foreground/80 hover:bg-amber-400/20 hover:text-amber-300 transition-all focus:outline-none focus:ring-1 focus:ring-amber-400 ml-1 cursor-pointer",
+        "inline-flex shrink-0 items-center justify-center rounded-full text-muted-foreground/80 hover:bg-blue-600/20 hover:text-blue-600 transition-all focus:outline-none focus:ring-1 focus:ring-blue-600 ml-1 cursor-pointer",
         className,
       )}
       aria-label={`Quantitative proof and calculation for ${title}`}

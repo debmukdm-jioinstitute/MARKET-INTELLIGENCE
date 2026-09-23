@@ -31,15 +31,15 @@ export function CandlestickChart({ candles, height = 280 }: { candles: Candle[];
       height,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#8b93a1",
+        textColor: "#5f6368",
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "rgba(255,255,255,0.06)" },
-        horzLines: { color: "rgba(255,255,255,0.06)" },
+        vertLines: { color: "#e8eaed" },
+        horzLines: { color: "#e8eaed" },
       },
-      rightPriceScale: { borderColor: "rgba(255,255,255,0.1)" },
-      timeScale: { borderColor: "rgba(255,255,255,0.1)" },
+      rightPriceScale: { borderColor: "#dadce0" },
+      timeScale: { borderColor: "#dadce0" },
       crosshair: { mode: 0 },
     });
     chartRef.current = chart;

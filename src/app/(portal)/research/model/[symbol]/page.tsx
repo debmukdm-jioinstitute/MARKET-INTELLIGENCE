@@ -87,13 +87,13 @@ export default function FinancialModelPage() {
       </p>
 
       {loading ? <p className="text-sm text-muted-foreground">Building model…</p> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {model ? (
         <>
           {model.checks.some((c) => !c.pass) ? (
             <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-rose-200/90 space-y-1.5">
-              <p className="font-semibold text-rose-300">
+              <p className="font-semibold text-rose-600">
                 {model.checks.filter((c) => !c.pass).length} model integrity check
                 {model.checks.filter((c) => !c.pass).length > 1 ? "s" : ""} flagged — treat the valuation below with caution.
               </p>
@@ -110,7 +110,7 @@ export default function FinancialModelPage() {
           <ModelSummaryCards model={model} />
 
           {dataset!.notes.length ? (
-            <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3 text-xs text-amber-200/90 space-y-1">
+            <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600/90 space-y-1">
               {dataset!.notes.map((n, i) => (
                 <p key={i}>{n}</p>
               ))}
@@ -166,7 +166,7 @@ export default function FinancialModelPage() {
                   {model.checks.map((c) => (
                     <li key={c.label} className="flex items-start justify-between gap-3">
                       <span className="text-muted-foreground">{c.label}</span>
-                      <span className={c.pass ? "text-emerald-400" : "text-amber-400"}>
+                      <span className={c.pass ? "text-emerald-600" : "text-blue-600"}>
                         {c.pass ? "PASS" : "FLAG"} · {c.value}
                       </span>
                     </li>

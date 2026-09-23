@@ -51,7 +51,7 @@ export default function DerivativesPage() {
         }
       >
         {loading && !snapshot ? <p className="text-sm text-muted-foreground">Loading chain…</p> : null}
-        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         {snapshot ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">

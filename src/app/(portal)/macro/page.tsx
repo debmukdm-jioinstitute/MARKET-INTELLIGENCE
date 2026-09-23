@@ -26,7 +26,7 @@ export default function MacroPage() {
       />
 
       {loading && !data ? <MacroTapeSkeleton count={3} /> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {tape.data ? <WhatChangedCard seed={tape.data.briefingSeed} /> : null}
 

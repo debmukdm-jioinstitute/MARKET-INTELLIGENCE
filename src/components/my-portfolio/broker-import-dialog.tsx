@@ -160,20 +160,20 @@ export function BrokerImportDialog({ onImport }: Props) {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-1.5 rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 font-mono text-xs font-bold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
+          className="flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 font-mono text-xs font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
         >
           <Layers className="h-3.5 w-3.5" />
           <span>Import from Broker</span>
         </button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl border-border bg-[#0a0b0e] font-sans text-foreground">
-        <DialogHeader className="border-b border-border/80 pb-3">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-amber-400 px-1.5 py-0.5 font-mono text-[10px] font-bold text-black uppercase tracking-wider">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-border bg-card font-sans text-foreground">
+        <DialogHeader className="border-b border-border/80 pr-7 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded bg-blue-600 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white uppercase tracking-wider">
               Broker Gateway
             </span>
-            <DialogTitle className="font-heading text-lg font-bold tracking-tight text-foreground">
+            <DialogTitle className="font-heading text-lg leading-snug font-bold tracking-tight text-foreground">
               Import Holdings into Portfolio Desk
             </DialogTitle>
           </div>
@@ -183,8 +183,8 @@ export function BrokerImportDialog({ onImport }: Props) {
         </DialogHeader>
 
         {error ? (
-          <div className="flex items-center gap-2 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+          <div className="flex items-center gap-2 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-600">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
             <p>{error}</p>
           </div>
         ) : null}
@@ -202,7 +202,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   onClick={() => handleBrokerChange("zerodha")}
                   className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
                     broker === "zerodha"
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      ? "border-blue-600 bg-blue-600/10 text-blue-600 font-bold"
                       : "border-border bg-card text-muted-foreground hover:border-border/80"
                   }`}
                 >
@@ -215,7 +215,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   onClick={() => handleBrokerChange("dhan")}
                   className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
                     broker === "dhan"
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      ? "border-blue-600 bg-blue-600/10 text-blue-600 font-bold"
                       : "border-border bg-card text-muted-foreground hover:border-border/80"
                   }`}
                 >
@@ -228,7 +228,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   onClick={() => handleBrokerChange("upstox")}
                   className={`flex flex-col items-center justify-center p-2.5 rounded border font-mono text-xs transition-colors ${
                     broker === "upstox"
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-bold"
+                      ? "border-blue-600 bg-blue-600/10 text-blue-600 font-bold"
                       : "border-border bg-card text-muted-foreground hover:border-border/80"
                   }`}
                 >
@@ -240,33 +240,39 @@ export function BrokerImportDialog({ onImport }: Props) {
 
             {/* CONNECTION METHOD TABS */}
             <Tabs value={tab} onValueChange={(v) => setTab(v as "api" | "csv")}>
-              <TabsList className="grid w-full grid-cols-2 bg-secondary/40 font-mono text-xs">
-                <TabsTrigger value="csv" className="flex items-center gap-1.5 data-[state=active]:bg-amber-400 data-[state=active]:text-black font-semibold">
-                  <FileSpreadsheet className="h-3.5 w-3.5" />
-                  CSV File Export (Free / Instant)
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-secondary/40 font-mono text-xs">
+                <TabsTrigger
+                  value="csv"
+                  className="flex h-auto min-w-0 items-center justify-center gap-1.5 whitespace-normal py-1.5 text-center leading-tight data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold"
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0">CSV File Export</span>
                 </TabsTrigger>
-                <TabsTrigger value="api" className="flex items-center gap-1.5 data-[state=active]:bg-amber-400 data-[state=active]:text-black font-semibold">
-                  <Key className="h-3.5 w-3.5" />
-                  Broker API Sync
+                <TabsTrigger
+                  value="api"
+                  className="flex h-auto min-w-0 items-center justify-center gap-1.5 whitespace-normal py-1.5 text-center leading-tight data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold"
+                >
+                  <Key className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0">Broker API Sync</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* CSV TAB */}
               <TabsContent value="csv" className="space-y-4 pt-3">
                 <div className="rounded border border-dashed border-border/80 bg-secondary/20 p-4 text-center">
-                  <FileSpreadsheet className="mx-auto h-8 w-8 text-amber-400/80 mb-2" />
+                  <FileSpreadsheet className="mx-auto h-8 w-8 text-blue-600/80 mb-2" />
                   <p className="font-mono text-xs text-foreground font-semibold">
                     Select {broker === "zerodha" ? "Zerodha Console" : broker === "dhan" ? "Dhan Web" : "Upstox"} Holdings CSV
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     {broker === "zerodha" ? (
                       <>
-                        Download <code className="text-amber-300 font-mono">holdings.csv</code> from{" "}
+                        Download <code className="text-blue-600 font-mono">holdings.csv</code> from{" "}
                         <a
                           href="https://console.zerodha.com/portfolio/holdings"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline text-amber-400 hover:text-amber-300 inline-flex items-center gap-0.5"
+                          className="underline text-blue-600 hover:text-blue-600 inline-flex items-center gap-0.5"
                         >
                           console.zerodha.com/portfolio/holdings <ExternalLink className="h-2.5 w-2.5" />
                         </a>
@@ -278,7 +284,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                           href="https://web.dhan.co"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline text-amber-400 hover:text-amber-300 inline-flex items-center gap-0.5"
+                          className="underline text-blue-600 hover:text-blue-600 inline-flex items-center gap-0.5"
                         >
                           web.dhan.co Portfolio <ExternalLink className="h-2.5 w-2.5" />
                         </a>
@@ -291,7 +297,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   </p>
 
                   <div className="mt-3 flex justify-center">
-                    <label className="cursor-pointer rounded border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 font-mono text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors">
+                    <label className="cursor-pointer rounded border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 font-mono text-xs font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">
                       {fileName ? fileName : "Browse CSV File..."}
                       <input
                         type="file"
@@ -312,14 +318,14 @@ export function BrokerImportDialog({ onImport }: Props) {
                     value={csvText}
                     onChange={(e) => setCsvText(e.target.value)}
                     placeholder="Instrument/Symbol,ISIN,Quantity,Average Price,..."
-                    className="w-full rounded border border-border bg-card p-2 font-mono text-xs text-foreground focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded border border-border bg-card p-2 font-mono text-xs text-foreground focus:border-blue-600 focus:outline-none"
                   />
                 </div>
 
                 <Button
                   onClick={handleFetchOrParse}
                   disabled={loading || !csvText.trim()}
-                  className="w-full bg-amber-400 font-mono text-xs font-bold text-black hover:bg-amber-300"
+                  className="w-full bg-blue-600 font-mono text-xs font-bold text-white hover:bg-blue-600"
                 >
                   {loading ? (
                     <>
@@ -336,7 +342,7 @@ export function BrokerImportDialog({ onImport }: Props) {
               <TabsContent value="api" className="space-y-3 pt-3">
                 {broker === "zerodha" && (
                   <>
-                    <div className="rounded border border-amber-400/20 bg-amber-400/5 p-2.5 text-xs text-amber-300/90">
+                    <div className="rounded border border-blue-600/20 bg-blue-600/5 p-2.5 text-xs text-blue-600/90">
                       <p className="font-semibold flex items-center gap-1">
                         <Key className="h-3.5 w-3.5" /> Zerodha Kite Connect API
                       </p>
@@ -372,7 +378,7 @@ export function BrokerImportDialog({ onImport }: Props) {
 
                 {broker === "dhan" && (
                   <>
-                    <div className="rounded border border-emerald-500/20 bg-emerald-500/5 p-2.5 text-xs text-emerald-300/90">
+                    <div className="rounded border border-emerald-500/20 bg-emerald-500/5 p-2.5 text-xs text-emerald-600/90">
                       <p className="font-semibold flex items-center gap-1">
                         <Key className="h-3.5 w-3.5" /> Dhan HQ API (100% Free)
                       </p>
@@ -382,7 +388,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                           href="https://web.dhan.co"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline text-emerald-400 hover:text-emerald-300"
+                          className="underline text-emerald-600 hover:text-emerald-600"
                         >
                           web.dhan.co
                         </a>{" "}
@@ -449,7 +455,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                     (broker === "dhan" && (!clientId.trim() || !accessToken.trim())) ||
                     (broker === "upstox" && !accessToken.trim())
                   }
-                  className="w-full bg-amber-400 font-mono text-xs font-bold text-black hover:bg-amber-300 mt-2"
+                  className="w-full bg-blue-600 font-mono text-xs font-bold text-white hover:bg-blue-600 mt-2"
                 >
                   {loading ? (
                     <>
@@ -468,14 +474,14 @@ export function BrokerImportDialog({ onImport }: Props) {
           <div className="space-y-4 pt-1">
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-secondary/30 p-2.5 font-mono text-xs">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span className="font-bold text-foreground">
                   {previewHoldings.length} Positions from {broker.toUpperCase()}
                 </span>
               </div>
               <div className="text-muted-foreground">
                 Total Invested:{" "}
-                <span className="font-bold text-amber-300">
+                <span className="font-bold text-blue-600">
                   ₹{(totalInvested / 100_000).toFixed(2)} Lakh
                 </span>
               </div>
@@ -496,7 +502,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                 <tbody className="divide-y divide-border/40">
                   {previewHoldings.map((h, i) => (
                     <tr key={h.id || i} className="hover:bg-secondary/20">
-                      <td className="p-2 font-bold text-amber-300">{h.symbol}</td>
+                      <td className="p-2 font-bold text-blue-600">{h.symbol}</td>
                       <td className="p-2 text-muted-foreground truncate max-w-[140px]">
                         {h.name}
                       </td>
@@ -521,7 +527,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   onClick={() => setImportMode("replace")}
                   className={`flex cursor-pointer items-center gap-2 rounded border p-2 font-mono text-xs transition-colors ${
                     importMode === "replace"
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300"
+                      ? "border-blue-600 bg-blue-600/10 text-blue-600"
                       : "border-border text-muted-foreground"
                   }`}
                 >
@@ -543,7 +549,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   onClick={() => setImportMode("append")}
                   className={`flex cursor-pointer items-center gap-2 rounded border p-2 font-mono text-xs transition-colors ${
                     importMode === "append"
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300"
+                      ? "border-blue-600 bg-blue-600/10 text-blue-600"
                       : "border-border text-muted-foreground"
                   }`}
                 >
@@ -574,7 +580,7 @@ export function BrokerImportDialog({ onImport }: Props) {
               <Button
                 onClick={handleConfirmImport}
                 disabled={committing}
-                className="w-2/3 bg-amber-400 font-mono text-xs font-bold text-black hover:bg-amber-300"
+                className="w-2/3 bg-blue-600 font-mono text-xs font-bold text-white hover:bg-blue-600"
               >
                 {committing ? (
                   <>

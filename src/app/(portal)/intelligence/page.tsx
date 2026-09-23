@@ -59,7 +59,7 @@ export default function IntelligencePage() {
             <span className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
               AI COPILOT TERMINAL
             </span>
-            <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-400">
+            <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600">
               DESK ACTIVE
             </span>
             <MetricInfo

@@ -9,8 +9,8 @@ function Card({ label, value, tone, sub }: { label: string; value: string; tone?
       <p
         className={cn(
           "mt-1 font-heading text-2xl font-semibold tabular-nums tracking-tight",
-          tone === "up" && "text-emerald-400",
-          tone === "down" && "text-rose-400",
+          tone === "up" && "text-emerald-600",
+          tone === "down" && "text-rose-600",
         )}
       >
         {value}

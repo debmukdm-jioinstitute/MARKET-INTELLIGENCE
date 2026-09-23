@@ -45,7 +45,7 @@ export function IpoDetailSheet({
         </SheetHeader>
         <div className="space-y-4 px-4 pb-6">
           {loading && !detail ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
-          {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
           {detail ? (
             <>
               <dl className="grid grid-cols-2 gap-2 font-mono text-xs">

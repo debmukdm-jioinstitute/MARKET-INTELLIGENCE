@@ -157,7 +157,7 @@ function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean })
         <span className="ml-1 text-xs text-muted-foreground">{metric.unit}</span>
       </p>
       {metric.change != null ? (
-        <p className={cn("text-xs", metric.change >= 0 ? "text-emerald-400" : "text-rose-400")}>
+        <p className={cn("text-xs", metric.change >= 0 ? "text-emerald-600" : "text-rose-600")}>
           Δ {metric.change >= 0 ? "+" : ""}
           {metric.change.toFixed(2)}
         </p>
@@ -166,7 +166,7 @@ function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean })
         <div className="mt-3 h-[100px]">
           <Lines
             data={metric.history.map((p) => ({ date: p.date, v: p.value }))}
-            keys={[{ key: "v", color: "#d4af37", name: metric.label }]}
+            keys={[{ key: "v", color: "#1a73e8", name: metric.label }]}
           />
         </div>
       ) : null}

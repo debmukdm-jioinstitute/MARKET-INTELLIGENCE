@@ -73,51 +73,51 @@ export default function AdminTabsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-400">App tabs</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">App tabs</p>
         <h1 className="mt-1 text-xl font-semibold">Sidebar tabs</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-gray-500">
           Enabled tabs appear in the main app&apos;s sidebar within a minute (60s cache), no deploy required.
         </p>
       </div>
 
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       <AdminCard title="Add a tab">
         <form onSubmit={createTab} className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-xs text-neutral-400">Label</label>
+            <label className="text-xs text-gray-500">Label</label>
             <input
               required
               value={form.label}
               onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
               placeholder="Daily Brief"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-neutral-400">Link (internal path or full URL)</label>
+            <label className="text-xs text-gray-500">Link (internal path or full URL)</label>
             <input
               required
               value={form.href}
               onChange={(e) => setForm((f) => ({ ...f, href: e.target.value }))}
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
               placeholder="/research or https://example.com"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-neutral-400">Section header</label>
+            <label className="text-xs text-gray-500">Section header</label>
             <input
               value={form.section}
               onChange={(e) => setForm((f) => ({ ...f, section: e.target.value.toUpperCase() }))}
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-neutral-400">Icon</label>
+            <label className="text-xs text-gray-500">Icon</label>
             <select
               value={form.icon}
               onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
             >
               {ICON_OPTIONS.map((i) => (
                 <option key={i} value={i}>
@@ -127,15 +127,15 @@ export default function AdminTabsPage() {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-neutral-400">Badge (optional)</label>
+            <label className="text-xs text-gray-500">Badge (optional)</label>
             <input
               value={form.badge}
               onChange={(e) => setForm((f) => ({ ...f, badge: e.target.value.toUpperCase() }))}
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
               placeholder="NEW"
             />
           </div>
-          <label className="flex items-center gap-2 self-end pb-1.5 text-xs text-neutral-400">
+          <label className="flex items-center gap-2 self-end pb-1.5 text-xs text-gray-500">
             <input
               type="checkbox"
               checked={form.external}
@@ -147,7 +147,7 @@ export default function AdminTabsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-amber-400 px-3 py-1.5 text-sm font-semibold text-black hover:opacity-90 disabled:opacity-50"
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
             >
               {saving ? "Adding…" : "Add tab"}
             </button>
@@ -158,13 +158,13 @@ export default function AdminTabsPage() {
       <AdminCard title="Existing tabs">
         <div className="space-y-1.5">
           {(tabs ?? []).map((tab) => (
-            <div key={tab.id} className="flex items-center justify-between gap-3 rounded-md border border-neutral-800 px-3 py-2 text-sm">
+            <div key={tab.id} className="flex items-center justify-between gap-3 rounded-md border border-gray-200 px-3 py-2 text-sm">
               <div className="min-w-0">
-                <p className="truncate font-medium text-neutral-100">
-                  {tab.label} <span className="text-neutral-500">· {tab.section}</span>
-                  {tab.badge ? <span className="ml-1.5 rounded bg-amber-400/20 px-1 text-[10px] text-amber-400">{tab.badge}</span> : null}
+                <p className="truncate font-medium text-gray-900">
+                  {tab.label} <span className="text-gray-500">· {tab.section}</span>
+                  {tab.badge ? <span className="ml-1.5 rounded bg-blue-600/20 px-1 text-[10px] text-blue-600">{tab.badge}</span> : null}
                 </p>
-                <p className="truncate font-mono text-[11px] text-neutral-500">
+                <p className="truncate font-mono text-[11px] text-gray-500">
                   {tab.href} {tab.external ? "↗" : ""}
                 </p>
               </div>
@@ -172,21 +172,21 @@ export default function AdminTabsPage() {
                 <button
                   type="button"
                   onClick={() => toggleEnabled(tab)}
-                  className={`rounded px-2 py-1 text-[11px] font-semibold ${tab.enabled ? "bg-emerald-500/20 text-emerald-300" : "bg-neutral-800 text-neutral-400"}`}
+                  className={`rounded px-2 py-1 text-[11px] font-semibold ${tab.enabled ? "bg-emerald-500/20 text-emerald-600" : "bg-gray-200 text-gray-500"}`}
                 >
                   {tab.enabled ? "Enabled" : "Disabled"}
                 </button>
                 <button
                   type="button"
                   onClick={() => removeTab(tab.id)}
-                  className="rounded px-2 py-1 text-[11px] text-rose-400 hover:bg-rose-500/10"
+                  className="rounded px-2 py-1 text-[11px] text-rose-600 hover:bg-rose-500/10"
                 >
                   Delete
                 </button>
               </div>
             </div>
           ))}
-          {tabs && tabs.length === 0 ? <p className="text-sm text-neutral-500">No custom tabs yet.</p> : null}
+          {tabs && tabs.length === 0 ? <p className="text-sm text-gray-500">No custom tabs yet.</p> : null}
         </div>
       </AdminCard>
     </div>

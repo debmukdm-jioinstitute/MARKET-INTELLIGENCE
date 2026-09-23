@@ -92,7 +92,7 @@ function Tile({ metricId, label, value }: { metricId?: string; label: string; va
 
 function Cell({ v }: { v: number }) {
   return (
-    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-400" : "text-rose-400")}>
+    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
       {formatPct(v)}
     </TableCell>
   );

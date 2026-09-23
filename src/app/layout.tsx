@@ -1,19 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Google_Sans, Google_Sans_Code } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
-import "@fontsource/tiny5";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
-const ibmPlexSans = IBM_Plex_Sans({
+const googleSans = Google_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const googleSansCode = Google_Sans_Code({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -27,13 +26,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} dark h-full antialiased`}>
-      <body className="min-h-full font-sans bg-background text-foreground selection:bg-amber-400/30 selection:text-amber-200">
+    <html lang="en" className={`${googleSans.variable} ${googleSansCode.variable} h-full antialiased`}>
+      <body className="min-h-full font-sans bg-background text-foreground selection:bg-blue-600/20 selection:text-blue-700">
         <AuthProvider>
           <MathInspectorProvider>{children}</MathInspectorProvider>
         </AuthProvider>

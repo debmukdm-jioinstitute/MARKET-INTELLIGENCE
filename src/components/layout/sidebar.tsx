@@ -132,8 +132,8 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col bg-sidebar select-none">
       <div className="border-b border-border px-5 py-4">
         <div className="flex items-center justify-between">
-          <p className="font-[Tiny5] text-[11px] tracking-[0.2em] text-primary">MI TERMINAL</p>
-          <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-emerald-400">
+          <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">MI TERMINAL</p>
+          <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-emerald-700">
             PRO
           </span>
         </div>
@@ -154,10 +154,10 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
                 const active = !item.external && (path === item.href || path.startsWith(item.href + "/"));
                 const Icon = item.icon;
                 const itemClassName = cn(
-                  "flex items-center justify-between rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
+                  "flex items-center justify-between rounded-full px-3 py-1.5 text-[12px] transition-colors",
                   active
-                    ? "bg-amber-400/15 text-amber-400 font-bold border-l-2 border-amber-400"
-                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground font-medium",
+                    ? "bg-accent text-primary font-semibold"
+                    : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground font-medium",
                 );
                 const content = (
                   <>
@@ -171,7 +171,7 @@ function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
                           "rounded px-1 text-[9px] font-bold uppercase",
                           item.badge === "NEW"
                             ? "bg-primary/20 text-primary"
-                            : "bg-amber-500/20 text-amber-400",
+                            : "bg-blue-600/20 text-blue-600",
                         )}
                       >
                         {item.badge}

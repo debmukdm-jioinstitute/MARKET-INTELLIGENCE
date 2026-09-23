@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { MegaMenu } from "@/components/marketing/mega-menu";
+import { MobileNav } from "@/components/marketing/mobile-nav";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -98,47 +100,46 @@ export function LandingPage() {
   const hasAccess = ready && Boolean(user);
 
   return (
-    <div className="marketing relative min-h-screen overflow-x-hidden bg-[#000000] text-[#f5f5f7] selection:bg-[#ff9f0a]/30">
+    <div className="marketing relative min-h-screen overflow-x-hidden bg-white text-gray-900 selection:bg-blue-600/20">
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,159,10,0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(41,151,255,0.08),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_30%_at_0%_80%,rgba(255,255,255,0.04),transparent)]" />
-        <div className="absolute inset-0 opacity-[0.35] mix-blend-overlay bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.04%22/%3E%3C/svg%3E')]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(26,115,232,0.08),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(52,168,83,0.05),transparent)]" />
       </div>
 
       <div className="relative z-10">
-        <div className="border-b border-white/[0.06] bg-black/60 py-2.5 text-center backdrop-blur-xl">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-[#86868b]">
-            <span className="text-[#ff9f0a]">LIVE DESK</span>
-            <span className="mx-2 text-white/20">·</span>
+        <div className="border-b border-border bg-muted/70 py-2.5 text-center backdrop-blur-xl">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground">
+            <span className="font-semibold text-blue-600">LIVE DESK</span>
+            <span className="mx-2 text-gray-300">·</span>
             Virtual books with institutional KPIs
-            <Link href="/signup" className="ml-2 text-[#f5f5f7] underline decoration-white/20 underline-offset-4 hover:decoration-[#ff9f0a]">
+            <Link href="/signup" className="ml-2 text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-blue-600">
               Sign up today →
             </Link>
           </p>
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-black/70 backdrop-blur-2xl backdrop-saturate-150">
-          <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between px-5">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="grid size-7 place-items-center rounded-lg bg-gradient-to-b from-[#3a3a3c] to-[#1c1c1e] text-[9px] font-medium text-white shadow-inner ring-1 ring-white/10">
+        <header className="sticky top-0 z-30 border-b border-border bg-white/80 backdrop-blur-2xl backdrop-saturate-150">
+          <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
+            <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
+              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white shadow-[var(--shadow-sm)]">
                 mi
               </span>
-              <span className="font-[Tiny5] text-[17px] tracking-wide text-white">market intelligence</span>
+              <span className="hidden whitespace-nowrap text-[17px] font-semibold tracking-tight text-gray-900 sm:inline">market intelligence</span>
             </Link>
-            <nav className="hidden items-center gap-8 text-[13px] font-medium text-[#a1a1a6] md:flex">
-              <a href="#story" className="transition hover:text-white">Story</a>
-              <a href="#paths" className="transition hover:text-white">Desk</a>
-              <a href="#box" className="transition hover:text-white">Product</a>
-              <a href="#plans" className="transition hover:text-white">Pricing</a>
+            <nav className="hidden items-center gap-8 text-[13px] font-medium text-muted-foreground md:flex">
+              <MegaMenu />
+              <a href="#story" className="transition hover:text-gray-900">Story</a>
+              <a href="#paths" className="transition hover:text-gray-900">Desk</a>
+              <a href="#plans" className="transition hover:text-gray-900">Pricing</a>
             </nav>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
                 <Link
                   href="/dashboard"
-                  className="rounded-full bg-[#f5f5f7] px-4 py-1.5 text-[13px] font-medium text-black transition hover:bg-white"
+                  className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-[13px] font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                 >
-                  {isGuest ? "Continue exploring" : "Open terminal"}
+                  <span className="sm:hidden">{isGuest ? "Explore" : "Terminal"}</span>
+                  <span className="hidden sm:inline">{isGuest ? "Continue exploring" : "Open terminal"}</span>
                 </Link>
               ) : (
                 <>
@@ -147,89 +148,90 @@ export function LandingPage() {
                     onClick={() => void enterGuest().then(() => {
                       window.location.href = "/dashboard";
                     })}
-                    className="rounded-full px-4 py-1.5 text-[13px] font-medium text-[#f5f5f7] transition hover:text-white"
+                    className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
                     Guest
                   </button>
                   <Link
                     href="/login"
-                    className="rounded-full px-4 py-1.5 text-[13px] font-medium text-[#f5f5f7] transition hover:text-white"
+                    className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
                     Sign in
                   </Link>
                   <Link
                     href="/signup"
-                    className="hidden rounded-full bg-[#f5f5f7] px-4 py-1.5 text-[13px] font-medium text-black transition hover:bg-white sm:inline-flex"
+                    className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-[13px] font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                   >
                     Start free
                   </Link>
                 </>
               )}
+              <MobileNav />
             </div>
           </div>
         </header>
 
         <section className="relative px-5 pb-4 pt-20 text-center md:pt-28">
-          <Float className="left-[3%] top-6 hidden w-48 rotate-[-10deg] lg:block">
-            <p className="font-mono text-[9px] tracking-widest text-[#ff9f0a]">BOOK · FLAGSHIP</p>
-            <p className="mt-2 text-sm font-semibold text-white">MI Flagship Global</p>
-            <p className="mt-1 font-mono text-2xl tabular-nums tracking-tight text-white">$90.7M</p>
-            <p className="mt-1 font-mono text-xs text-[#30d158]">+128.07% ITD</p>
+          <Float className="left-[3%] top-6 hidden w-48 rotate-[-4deg] lg:block">
+            <p className="font-mono text-[9px] tracking-widest text-blue-600">BOOK · FLAGSHIP</p>
+            <p className="mt-2 text-sm font-semibold text-gray-900">MI Flagship Global</p>
+            <p className="mt-1 font-mono text-2xl tabular-nums tracking-tight text-gray-900">$90.7M</p>
+            <p className="mt-1 font-mono text-xs text-emerald-700">+128.07% ITD</p>
           </Float>
-          <Float className="right-[4%] top-8 hidden w-56 rotate-[5deg] lg:block">
-            <p className="font-mono text-[9px] tracking-widest text-[#86868b]">NOTE · 047</p>
-            <p className="mt-2 text-left text-sm font-medium text-white">Alpha is the residual story.</p>
-            <p className="mt-2 text-left text-xs leading-5 text-[#a1a1a6]">
+          <Float className="right-[4%] top-8 hidden w-56 rotate-[2deg] lg:block">
+            <p className="font-mono text-[9px] tracking-widest text-muted-foreground">NOTE · 047</p>
+            <p className="mt-2 text-left text-sm font-medium text-gray-900">Alpha is the residual story.</p>
+            <p className="mt-2 text-left text-xs leading-5 text-muted-foreground">
               Sharpe prices volatility. Brinson explains the sleeve. Read all three before you size the trade.
             </p>
           </Float>
-          <Float className="bottom-4 left-[6%] hidden w-52 rotate-[-6deg] lg:block">
-            <p className="font-mono text-[9px] text-[#ff453a]">ATTRIBUTION</p>
-            <p className="mt-2 text-left text-sm text-white">Performance a PM can defend in committee.</p>
+          <Float className="bottom-4 left-[6%] hidden w-52 rotate-[-3deg] lg:block">
+            <p className="font-mono text-[9px] text-rose-700">ATTRIBUTION</p>
+            <p className="mt-2 text-left text-sm text-gray-900">Performance a PM can defend in committee.</p>
           </Float>
-          <Float className="bottom-8 right-[5%] hidden w-48 rotate-[7deg] lg:block">
-            <p className="font-mono text-[9px] text-[#86868b]">RISK BUDGET</p>
-            <p className="mt-1 text-sm font-medium text-white">TE 6% · VaR 95%</p>
-            <p className="mt-2 text-[11px] text-[#a1a1a6]">Cash is dry powder, not an afterthought.</p>
+          <Float className="bottom-8 right-[5%] hidden w-48 rotate-[3deg] lg:block">
+            <p className="font-mono text-[9px] text-muted-foreground">RISK BUDGET</p>
+            <p className="mt-1 text-sm font-medium text-gray-900">TE 6% · VaR 95%</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">Cash is dry powder, not an afterthought.</p>
           </Float>
 
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs text-[#a1a1a6] backdrop-blur-md transition hover:border-white/20 hover:bg-white/[0.08]"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1.5 text-xs text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:border-blue-600/30 hover:bg-accent"
           >
-            <span className="font-mono text-[10px] text-[#2997ff]">NEW</span>
+            <span className="font-mono text-[10px] font-semibold text-blue-600">NEW</span>
             Institutional KPIs on a virtual book
-            <span className="text-white/40">Free →</span>
+            <span className="text-gray-400">Free →</span>
           </Link>
 
-          <p className="mx-auto mt-10 max-w-lg font-mono text-[11px] uppercase tracking-[0.35em] text-[#86868b]">
+          <p className="mx-auto mt-10 max-w-lg font-mono text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
             The story of your book
           </p>
-          <h1 className="mx-auto mt-4 max-w-5xl font-[Tiny5] text-[clamp(2.4rem,7.5vw,5.8rem)] leading-[0.95] tracking-wide text-white [font-smooth:never] [-webkit-font-smoothing:none]">
+          <h1 className="mx-auto mt-4 max-w-5xl text-[clamp(2.4rem,7.5vw,5.8rem)] font-semibold leading-[0.98] tracking-tight text-gray-900">
             Everything a fund manager knows.
-            <span className="mt-2 block bg-gradient-to-r from-[#ff9f0a] via-[#ffd60a] to-[#ff9f0a] bg-clip-text text-transparent">
+            <span className="mt-2 block bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent">
               Mapped.
             </span>
           </h1>
-          <p className="mx-auto mt-8 max-w-2xl text-[17px] font-light leading-[1.65] tracking-tight text-[#a1a1a6] md:text-[19px]">
-            A black-room terminal for investors who want Bloomberg-grade judgment without the Bloomberg invoice —
+          <p className="mx-auto mt-8 max-w-2xl text-[17px] font-normal leading-[1.65] tracking-tight text-muted-foreground md:text-[19px]">
+            A clear-room terminal for investors who want Bloomberg-grade judgment without the Bloomberg invoice —
             virtual portfolios, research, risk, and backtesting in one continuous narrative.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href={hasAccess ? "/dashboard" : "/signup"}
-              className="rounded-full bg-[#f5f5f7] px-7 py-3 text-[15px] font-medium text-black shadow-[0_0_40px_-8px_rgba(255,255,255,0.5)] transition hover:scale-[1.02] hover:bg-white"
+              className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-md)] transition hover:scale-[1.02] hover:bg-blue-600/90"
             >
               {hasAccess ? "Open terminal →" : "Start managing free →"}
             </Link>
             <a
               href="#story"
-              className="rounded-full border border-white/15 px-6 py-3 text-[15px] text-[#f5f5f7] transition hover:border-white/30 hover:bg-white/[0.05]"
+              className="rounded-full border border-border px-6 py-3 text-[15px] text-gray-900 transition hover:border-gray-300 hover:bg-muted"
             >
               See the story
             </a>
           </div>
-          <div className="mx-auto mt-14 flex max-w-3xl flex-wrap justify-center gap-6 font-mono text-[11px] text-[#86868b]">
+          <div className="mx-auto mt-14 flex max-w-3xl flex-wrap justify-center gap-6 font-mono text-[11px] text-muted-foreground">
             <Tape label="SPX" val="279.31" chg="-0.35%" down />
             <Tape label="UST" val="119.91" chg="-0.68%" down />
             <Tape label="VIX" val="12.3" chg="—" />
@@ -237,40 +239,40 @@ export function LandingPage() {
           </div>
         </section>
 
-        <div className="mt-8 border-y border-white/[0.06] bg-black/40 py-5 backdrop-blur-sm">
-          <p className="text-center font-mono text-[10px] tracking-[0.4em] text-[#48484a]">TRUSTED TAPE · FACTOR-CONSISTENT</p>
+        <div className="mt-8 border-y border-border bg-muted/50 py-5">
+          <p className="text-center font-mono text-[10px] tracking-[0.4em] text-gray-400">TRUSTED TAPE · FACTOR-CONSISTENT</p>
           <div className="mt-4 overflow-hidden">
-            <div className="animate-[marquee_40s_linear_infinite] flex gap-16 whitespace-nowrap px-8 font-mono text-sm text-[#636366]">
+            <div className="animate-[marquee_40s_linear_infinite] flex gap-16 whitespace-nowrap px-8 font-mono text-sm text-gray-400">
               {[...LOGOS, ...LOGOS].map((logo, i) => (
-                <span key={`${logo}-${i}`} className="transition hover:text-[#ff9f0a]">{logo}</span>
+                <span key={`${logo}-${i}`} className="transition hover:text-blue-600">{logo}</span>
               ))}
             </div>
           </div>
         </div>
 
         <section id="story" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-          <p className="text-center font-mono text-[10px] tracking-[0.35em] text-[#ff9f0a]">THREE ACTS</p>
-          <h2 className="mt-4 text-center text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-tight text-white">
+          <p className="text-center font-mono text-[10px] tracking-[0.35em] text-blue-600">THREE ACTS</p>
+          <h2 className="mt-4 text-center text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-tight text-gray-900">
             From chart watcher to book runner.
           </h2>
           <div className="mt-16 grid gap-6 md:grid-cols-3">
             {STORY.map((s) => (
               <article
                 key={s.act}
-                className="group relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-transparent p-8 transition duration-500 hover:border-[#ff9f0a]/30 hover:shadow-[0_0_60px_-20px_rgba(255,159,10,0.25)]"
+                className="group relative overflow-hidden rounded-3xl border border-border bg-white p-8 shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-blue-600/30 hover:shadow-[var(--shadow-lg)]"
               >
-                <p className="font-[Tiny5] text-3xl text-[#48484a] transition group-hover:text-[#ff9f0a]">{s.act}</p>
-                <h3 className="mt-6 text-xl font-semibold leading-snug tracking-tight text-white">{s.title}</h3>
-                <p className="mt-4 text-[15px] leading-7 text-[#a1a1a6]">{s.body}</p>
+                <p className="text-3xl font-semibold text-gray-200 transition group-hover:text-blue-600">{s.act}</p>
+                <h3 className="mt-6 text-xl font-semibold leading-snug tracking-tight text-gray-900">{s.title}</h3>
+                <p className="mt-4 text-[15px] leading-7 text-muted-foreground">{s.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section id="paths" className="border-t border-white/[0.06] bg-[#0a0a0a] px-5 py-24">
+        <section id="paths" className="border-t border-border bg-muted/40 px-5 py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="text-center font-[Tiny5] text-4xl text-white sm:text-5xl md:text-6xl">Choose where to start</h2>
-            <p className="mx-auto mt-4 max-w-xl text-center text-[15px] text-[#a1a1a6]">
+            <h2 className="text-center text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">Choose where to start</h2>
+            <p className="mx-auto mt-4 max-w-xl text-center text-[15px] text-muted-foreground">
               Same structure as the live terminal — pick a module, open a free account, land on your desk.
             </p>
             <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -278,18 +280,18 @@ export function LandingPage() {
                 <Link
                   key={path.title}
                   href={path.href}
-                  className="group rounded-2xl border border-white/[0.08] bg-[#141414] p-6 transition duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#1c1c1e] hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]"
+                  className="group rounded-2xl border border-border bg-white p-6 shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-blue-600/30 hover:shadow-[var(--shadow-lg)]"
                 >
-                  <p className="font-[Tiny5] text-2xl text-white">{path.title}</p>
-                  <ul className="mt-5 space-y-2 text-sm text-[#a1a1a6]">
+                  <p className="text-2xl font-semibold text-gray-900">{path.title}</p>
+                  <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
                     {path.points.map((p) => (
                       <li key={p} className="flex gap-2">
-                        <span className="text-[#ff9f0a]">·</span>
+                        <span className="text-blue-600">·</span>
                         {p}
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-6 font-mono text-[10px] tracking-wider text-[#636366]">{path.meta}</p>
+                  <p className="mt-6 font-mono text-[10px] tracking-wider text-gray-400">{path.meta}</p>
                 </Link>
               ))}
             </div>
@@ -297,30 +299,30 @@ export function LandingPage() {
         </section>
 
         <section id="box" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-          <h2 className="font-[Tiny5] text-4xl text-white sm:text-5xl">Inside the box</h2>
+          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">Inside the box</h2>
           <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
-            <div className="space-y-5 text-[17px] font-light leading-[1.7] text-[#a1a1a6]">
-              <p className="text-white">Not a watchlist. Not paper trading. A desk.</p>
+            <div className="space-y-5 text-[17px] font-normal leading-[1.7] text-muted-foreground">
+              <p className="text-gray-900">Not a watchlist. Not paper trading. A desk.</p>
               <p>
                 NAV, alpha, Sharpe, Sortino, VaR, tracking error, Brinson — the vocabulary professionals use when capital
                 is real. Here it runs on virtual books so you learn the mechanics before the mandate.
               </p>
               <p>Judgment is the product: what the number means, and what you do next.</p>
             </div>
-            <ol className="space-y-4 border-l border-[#ff9f0a]/40 pl-6 font-mono text-sm text-[#f5f5f7]">
-              <li><span className="text-[#ff9f0a]">01</span> Notes · annotated research</li>
-              <li><span className="text-[#ff9f0a]">02</span> Daily tape · macro nowcast</li>
-              <li><span className="text-[#ff9f0a]">03</span> Books · three model portfolios</li>
-              <li><span className="text-[#ff9f0a]">04</span> Tools · optimizer & scenarios</li>
-              <li><span className="text-[#ff9f0a]">05</span> Drills · backtests on the tape</li>
+            <ol className="space-y-4 border-l-2 border-blue-600/30 pl-6 font-mono text-sm text-gray-900">
+              <li><span className="text-blue-600">01</span> Notes · annotated research</li>
+              <li><span className="text-blue-600">02</span> Daily tape · macro nowcast</li>
+              <li><span className="text-blue-600">03</span> Books · three model portfolios</li>
+              <li><span className="text-blue-600">04</span> Tools · optimizer & scenarios</li>
+              <li><span className="text-blue-600">05</span> Drills · backtests on the tape</li>
             </ol>
           </div>
         </section>
 
-        <section id="plans" className="border-t border-white/[0.06] bg-[#050505] px-5 py-24">
+        <section id="plans" className="border-t border-border bg-muted/40 px-5 py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="font-[Tiny5] text-4xl text-white">Plans</h2>
-            <p className="mt-2 text-[#a1a1a6]">Full terminal access. No card. Your book persists in this browser.</p>
+            <h2 className="text-4xl font-semibold tracking-tight text-gray-900">Plans</h2>
+            <p className="mt-2 text-muted-foreground">Full terminal access. No card. Your book persists in this browser.</p>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               <Plan title="Free desk" price="$0" copy="Every current module. Virtual books. No card." cta="Create account" href="/signup" featured />
               <Plan title="Analyst" price="$0" copy="Same full access while the platform is in public preview." cta="Start free" href="/signup" />
@@ -330,45 +332,45 @@ export function LandingPage() {
         </section>
 
         <section className="mx-auto max-w-3xl px-5 pb-28">
-          <h2 className="font-[Tiny5] text-3xl text-white sm:text-4xl">Questions before you join.</h2>
-          <div className="mt-8 divide-y divide-white/[0.08] border-y border-white/[0.08]">
+          <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Questions before you join.</h2>
+          <div className="mt-8 divide-y divide-border border-y border-border">
             {FAQS.map((item) => (
               <Faq key={item.q} {...item} />
             ))}
           </div>
         </section>
 
-        <section className="border-t border-white/[0.06] px-5 py-24 text-center">
-          <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-white">
+        <section className="border-t border-border px-5 py-24 text-center">
+          <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
             Ready to run the book?
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-[#a1a1a6]">One account. One terminal. The whole story of modern portfolio management.</p>
+          <p className="mx-auto mt-4 max-w-md text-muted-foreground">One account. One terminal. The whole story of modern portfolio management.</p>
           <Link
             href={hasAccess ? "/dashboard" : "/signup"}
-            className="mt-8 inline-flex rounded-full bg-gradient-to-r from-[#ff9f0a] to-[#ffd60a] px-8 py-3.5 text-[15px] font-semibold text-black transition hover:brightness-110"
+            className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3.5 text-[15px] font-semibold text-white shadow-[var(--shadow-md)] transition hover:bg-blue-600/90"
           >
             {hasAccess ? "Enter MI Terminal" : "Create your free desk"}
           </Link>
         </section>
 
-        <footer className="border-t border-white/[0.06] bg-black px-5 py-14">
+        <footer className="border-t border-border bg-muted/40 px-5 py-14">
           <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:justify-between">
             <div>
-              <p className="font-[Tiny5] text-xl text-white">market intelligence</p>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-[#636366]">
+              <p className="text-xl font-semibold text-gray-900">market intelligence</p>
+              <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
                 Technical portfolio management through a virtual desk, research tape, and sequenced analytics.
               </p>
             </div>
-            <div className="text-sm text-[#a1a1a6]">
-              <p className="font-mono text-xs tracking-widest text-[#86868b]">ACCOUNT</p>
+            <div className="text-sm text-muted-foreground">
+              <p className="font-mono text-xs tracking-widest text-gray-400">ACCOUNT</p>
               <div className="mt-3 flex flex-col gap-2">
-                <Link href="/login" className="hover:text-white">Sign in</Link>
-                <Link href="/signup" className="hover:text-white">Create account</Link>
-                <Link href="/dashboard" className="hover:text-white">Terminal</Link>
+                <Link href="/login" className="hover:text-gray-900">Sign in</Link>
+                <Link href="/signup" className="hover:text-gray-900">Create account</Link>
+                <Link href="/dashboard" className="hover:text-gray-900">Terminal</Link>
               </div>
             </div>
           </div>
-          <p className="mx-auto mt-12 max-w-6xl border-t border-white/[0.06] pt-8 text-center font-mono text-[10px] text-[#48484a]">
+          <p className="mx-auto mt-12 max-w-6xl border-t border-border pt-8 text-center font-mono text-[10px] text-gray-400">
             © MARKET INTELLIGENCE · SIMULATED TAPE · NOT INVESTMENT ADVICE
           </p>
         </footer>
@@ -380,7 +382,7 @@ export function LandingPage() {
 function Float({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <aside
-      className={`absolute rounded-2xl border border-white/10 bg-[#1c1c1e]/90 p-4 text-left shadow-[0_24px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl ${className ?? ""}`}
+      className={`absolute rounded-2xl border border-border bg-white p-4 text-left shadow-[var(--shadow-lg)] backdrop-blur-xl ${className ?? ""}`}
     >
       {children}
     </aside>
@@ -390,9 +392,9 @@ function Float({ children, className }: { children: React.ReactNode; className?:
 function Tape({ label, val, chg, down }: { label: string; val: string; chg: string; down?: boolean }) {
   return (
     <span>
-      <span className="text-[#636366]">{label}</span>{" "}
-      <span className="text-[#f5f5f7]">{val}</span>{" "}
-      <span className={down ? "text-[#ff453a]" : "text-[#30d158]"}>{chg}</span>
+      <span className="text-gray-400">{label}</span>{" "}
+      <span className="text-gray-900">{val}</span>{" "}
+      <span className={down ? "text-rose-700" : "text-emerald-700"}>{chg}</span>
     </span>
   );
 }
@@ -416,17 +418,17 @@ function Plan({
     <div
       className={`rounded-2xl border p-7 transition ${
         featured
-          ? "border-[#ff9f0a]/40 bg-gradient-to-b from-[#1c1c1e] to-[#0a0a0a] shadow-[0_0_50px_-15px_rgba(255,159,10,0.2)]"
-          : "border-white/[0.08] bg-[#141414] hover:border-white/15"
+          ? "border-blue-600/30 bg-white shadow-[var(--shadow-lg)]"
+          : "border-border bg-white shadow-[var(--shadow-sm)] hover:border-gray-300"
       }`}
     >
-      <p className="font-[Tiny5] text-2xl text-white">{title}</p>
-      <p className="mt-4 font-[Tiny5] text-5xl text-white">{price}</p>
-      <p className={`mt-4 text-sm leading-6 ${featured ? "text-[#a1a1a6]" : "text-[#86868b]"}`}>{copy}</p>
+      <p className="text-2xl font-semibold text-gray-900">{title}</p>
+      <p className="mt-4 text-5xl font-semibold text-gray-900">{price}</p>
+      <p className={`mt-4 text-sm leading-6 ${featured ? "text-muted-foreground" : "text-gray-400"}`}>{copy}</p>
       <Link
         href={href}
         className={`mt-8 inline-flex rounded-full px-5 py-2.5 text-sm font-medium transition ${
-          featured ? "bg-[#ff9f0a] text-black hover:brightness-110" : "bg-white/10 text-white hover:bg-white/15"
+          featured ? "bg-blue-600 text-white hover:bg-blue-600/90" : "bg-muted text-gray-900 hover:bg-gray-200"
         }`}
       >
         {cta}
@@ -444,10 +446,10 @@ function Faq({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between py-5 text-left"
       >
-        <span className="pr-4 font-[Tiny5] text-lg text-white sm:text-xl">{q}</span>
-        <span className="font-mono text-[#636366]">{open ? "−" : "+"}</span>
+        <span className="pr-4 text-lg font-medium text-gray-900 sm:text-xl">{q}</span>
+        <span className="font-mono text-gray-400">{open ? "−" : "+"}</span>
       </button>
-      {open ? <p className="pb-5 text-[15px] leading-7 text-[#a1a1a6]">{a}</p> : null}
+      {open ? <p className="pb-5 text-[15px] leading-7 text-muted-foreground">{a}</p> : null}
     </div>
   );
 }

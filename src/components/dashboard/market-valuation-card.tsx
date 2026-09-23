@@ -66,7 +66,7 @@ export function MarketValuationCard() {
               </div>
               <div className="h-1.5 w-full rounded-full bg-accent overflow-hidden relative">
                 <div
-                  className="absolute top-0 bottom-0 bg-amber-400 rounded-full"
+                  className="absolute top-0 bottom-0 bg-blue-600 rounded-full"
                   style={{ left: "62%", width: "12px" }}
                 />
               </div>
@@ -99,7 +99,7 @@ export function MarketValuationCard() {
                 <span className="text-muted-foreground">Bond-Equity Yield Spread</span>
                 <MetricInfo metric="yield_spread" />
               </div>
-              <span className="font-bold text-amber-400">224 bps (Mild Premium)</span>
+              <span className="font-bold text-blue-600">224 bps (Mild Premium)</span>
             </div>
           </div>
         </div>

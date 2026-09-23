@@ -45,7 +45,7 @@ export function MarketMomentumCard() {
                 <span className="text-muted-foreground">NIFTY vs 20 DMA</span>
                 <MetricInfo metric="dma" customTitle="20-Day Moving Average" sourceOverride={techSource} />
               </div>
-              <span className="font-bold text-emerald-400">+2.10% (Short-term expansion)</span>
+              <span className="font-bold text-emerald-600">+2.10% (Short-term expansion)</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -53,7 +53,7 @@ export function MarketMomentumCard() {
                 <span className="text-muted-foreground">NIFTY vs 50 DMA</span>
                 <MetricInfo metric="dma" customTitle="50-Day Moving Average" sourceOverride={techSource} />
               </div>
-              <span className="font-bold text-emerald-400">+4.80% (Intermediate bull)</span>
+              <span className="font-bold text-emerald-600">+4.80% (Intermediate bull)</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -61,7 +61,7 @@ export function MarketMomentumCard() {
                 <span className="text-muted-foreground">NIFTY vs 200 DMA</span>
                 <MetricInfo metric="dma" customTitle="200-Day Structural Trend" sourceOverride={techSource} />
               </div>
-              <span className="font-bold text-emerald-400">+7.20% (Structural regime)</span>
+              <span className="font-bold text-emerald-600">+7.20% (Structural regime)</span>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export function MarketMomentumCard() {
                 <MetricInfo metric="rsi" sourceOverride={techSource} />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">62.40</span>
-              <span className="text-[10px] text-emerald-400">Bullish Momentum</span>
+              <span className="text-[10px] text-emerald-600">Bullish Momentum</span>
             </div>
 
             <div className="rounded-lg border border-border/70 bg-card/40 p-3">
@@ -81,7 +81,7 @@ export function MarketMomentumCard() {
                 <span className="text-muted-foreground text-[10px] uppercase">MACD Signal</span>
                 <MetricInfo metric="macd" sourceOverride={techSource} />
               </div>
-              <span className="font-bold text-emerald-400 text-sm mt-0.5 block">Positive</span>
+              <span className="font-bold text-emerald-600 text-sm mt-0.5 block">Positive</span>
               <span className="text-[10px] text-muted-foreground">Histogram Expansion</span>
             </div>
           </div>
@@ -93,7 +93,7 @@ export function MarketMomentumCard() {
                 <span className="text-muted-foreground">Breadth Thrust Ratio</span>
                 <MetricInfo metric="breadth" />
               </div>
-              <span className="font-bold text-emerald-400">1.74x Net Advances</span>
+              <span className="font-bold text-emerald-600">1.74x Net Advances</span>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export function MarketMomentumCard() {
 
       <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
         <span className="text-[10px] text-muted-foreground">STATUS:</span>
-        <span className="text-[10px] text-emerald-400 font-semibold">
+        <span className="text-[10px] text-emerald-600 font-semibold">
           High-conviction trend continuation regime
         </span>
       </div>

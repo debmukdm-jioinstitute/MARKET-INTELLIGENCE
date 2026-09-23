@@ -160,7 +160,7 @@ export function EarningsCalendarCard() {
                           }}
                         />
                       </div>
-                      <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                      <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
                         Weight: {item.portfolioWeight}
                       </span>
                     </div>
@@ -176,7 +176,7 @@ export function EarningsCalendarCard() {
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-[10px]">Surprise:</span>
-                        <span className="font-semibold text-emerald-400">{item.previousSurprise}</span>
+                        <span className="font-semibold text-emerald-600">{item.previousSurprise}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-[10px]">Consensus:</span>

@@ -75,7 +75,7 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-amber-400 text-black hover:bg-amber-300 font-bold font-mono tracking-tight shadow-sm transition-all">
+        <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-600 font-bold font-mono tracking-tight shadow-sm transition-all">
           + Add Position
         </Button>
       </DialogTrigger>
@@ -146,8 +146,8 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
                 onChange={(e) => setAvgCost(e.target.value)}
               />
               <Input type="date" value={addedAt} onChange={(e) => setAddedAt(e.target.value)} />
-              {error ? <p className="text-xs text-rose-400">{error}</p> : null}
-              <Button onClick={submit} disabled={submitting} className="w-full bg-amber-400 text-black hover:bg-amber-300 font-bold font-mono">
+              {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+              <Button onClick={submit} disabled={submitting} className="w-full bg-blue-600 text-white hover:bg-blue-600 font-bold font-mono">
                 {submitting ? "Adding to portfolio…" : "Confirm & Add to Portfolio"}
               </Button>
             </div>

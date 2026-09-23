@@ -33,8 +33,8 @@ export function UpdatesBanner() {
     <div
       className={cn(
         "flex items-center justify-between gap-3 border-b px-4 py-2 text-xs",
-        update.severity === "critical" && "border-rose-500/40 bg-rose-500/10 text-rose-200",
-        update.severity === "warning" && "border-amber-500/40 bg-amber-500/10 text-amber-200",
+        update.severity === "critical" && "border-rose-500/40 bg-rose-500/10 text-rose-700",
+        update.severity === "warning" && "border-blue-600/40 bg-blue-600/10 text-blue-600",
         update.severity === "info" && "border-border bg-secondary/40 text-foreground",
       )}
     >
@@ -52,7 +52,7 @@ export function UpdatesBanner() {
             /* ignore */
           }
         }}
-        className="shrink-0 rounded p-0.5 hover:bg-white/10"
+        className="shrink-0 rounded p-0.5 hover:bg-black/5"
       >
         <X className="size-3.5" />
       </button>

@@ -28,7 +28,7 @@ const ITEMS: ChangedItem[] = [
     metricKey: "fii_flow",
     headline: "FII flows turned negative over the last 3 sessions.",
     tag: "INSTITUTIONAL FLOWS",
-    tagColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    tagColor: "bg-rose-500/10 text-rose-600 border-rose-500/30",
     dataSummary:
       "Net FII selling totaled -₹4,812 Cr across cash equities over the last 3 trading days according to official exchange disclosure reports. Domestic Institutions (DIIs) provided strong counter-support with +₹5,140 Cr.",
     chartData: [1200, 850, 420, -1100, -1820, -1892],
@@ -48,7 +48,7 @@ const ITEMS: ChangedItem[] = [
     metricKey: "gsec10y",
     headline: "10Y G-Sec yield moved 11 bps higher.",
     tag: "SOVEREIGN RATES",
-    tagColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    tagColor: "bg-blue-600/10 text-blue-600 border-blue-600/30",
     dataSummary:
       "India 10Y Benchmark Government Bond yield rose from 6.71% to 6.82% following hawkish commentary in RBI MPC minutes and higher US Treasury yield pass-through.",
     chartData: [6.71, 6.72, 6.74, 6.78, 6.8, 6.82],
@@ -107,7 +107,7 @@ const ITEMS: ChangedItem[] = [
     metricKey: "brent",
     headline: "Brent crude increased 4.1% over five sessions.",
     tag: "MACRO COMMODITY",
-    tagColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    tagColor: "bg-rose-500/10 text-rose-600 border-rose-500/30",
     dataSummary:
       "Brent crude futures climbed from $69.55 to $72.40/barrel amid tighter Red Sea maritime logistics and temporary production outages in the North Sea.",
     chartData: [69.55, 70.1, 70.8, 71.4, 71.9, 72.4],
@@ -135,7 +135,7 @@ export function WhatChangedModule() {
               <History className="size-3.5" />
               WHAT CHANGED?
             </span>
-            <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
+            <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-600">
               Since last visit
             </span>
             <MetricInfo metric="fii_flow" customTitle="Institutional Market Delta Engine" />

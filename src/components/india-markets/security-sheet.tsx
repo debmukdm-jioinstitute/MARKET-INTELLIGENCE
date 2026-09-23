@@ -69,7 +69,7 @@ export function SecuritySheet({
           {loading && !quote ? (
             <p className="text-sm text-muted-foreground">Loading quote…</p>
           ) : null}
-          {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
           {quote ? (
             <>
               <div className="flex items-start justify-between">
@@ -78,7 +78,7 @@ export function SecuritySheet({
                   <p
                     className={cn(
                       "font-mono text-sm",
-                      quote.netChange >= 0 ? "text-emerald-400" : "text-rose-400",
+                      quote.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
                     {quote.netChange >= 0 ? "+" : ""}

@@ -210,8 +210,8 @@ function ImpactBadge({ impact, large }: { impact: AnalyzedNewsItem["impact"]; la
     <Badge
       className={cn(
         large ? "text-xs" : "text-[10px]",
-        impact === "positive" && "bg-emerald-500/20 text-emerald-300",
-        impact === "negative" && "bg-rose-500/20 text-rose-300",
+        impact === "positive" && "bg-emerald-500/20 text-emerald-600",
+        impact === "negative" && "bg-rose-500/20 text-rose-600",
         impact === "neutral" && "bg-muted text-muted-foreground",
       )}
     >
@@ -222,10 +222,10 @@ function ImpactBadge({ impact, large }: { impact: AnalyzedNewsItem["impact"]; la
 
 function ImpactIcon({ impact }: { impact: AnalyzedNewsItem["impact"] }) {
   if (impact === "positive") {
-    return <TrendingUp className="mt-1 h-4 w-4 shrink-0 text-emerald-400" />;
+    return <TrendingUp className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />;
   }
   if (impact === "negative") {
-    return <TrendingDown className="mt-1 h-4 w-4 shrink-0 text-rose-400" />;
+    return <TrendingDown className="mt-1 h-4 w-4 shrink-0 text-rose-600" />;
   }
   return <span className="mt-1 h-4 w-4 shrink-0 text-center text-xs text-muted-foreground">○</span>;
 }

@@ -28,9 +28,9 @@ export function PortfolioOverview({ metrics }: { metrics: MetricResult[] }) {
             className={cn(
               "mt-1 font-heading text-2xl font-semibold tabular-nums tracking-tight",
               metric.status === "na" && "text-muted-foreground/50",
-              metric.tone === "up" && "text-emerald-400",
-              metric.tone === "down" && "text-rose-400",
-              metric.tone === "warn" && "text-amber-300",
+              metric.tone === "up" && "text-emerald-600",
+              metric.tone === "down" && "text-rose-600",
+              metric.tone === "warn" && "text-blue-600",
             )}
           >
             {metric.formatted}

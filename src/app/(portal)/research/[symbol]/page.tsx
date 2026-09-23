@@ -71,7 +71,7 @@ export default function ResearchSymbolPage() {
         {symbol ? (
           <Link
             href={`/research/model/${encodeURIComponent(symbol)}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
           >
             Build financial model →
           </Link>
@@ -79,13 +79,13 @@ export default function ResearchSymbolPage() {
       </div>
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {data && q ? (
         <>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">India · NSE</Badge>
-            <Badge className="bg-emerald-500/20 text-emerald-300">Upstox live</Badge>
+            <Badge className="bg-emerald-500/20 text-emerald-600">Upstox live</Badge>
           </div>
           <div className="grid gap-4 xl:grid-cols-3">
             <Panel title="Quote & depth" className="xl:col-span-2">
@@ -104,7 +104,7 @@ export default function ResearchSymbolPage() {
                   <p
                     className={cn(
                       "font-mono text-sm",
-                      q.netChange >= 0 ? "text-emerald-400" : "text-rose-400",
+                      q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
                     {q.netChange >= 0 ? "+" : ""}
@@ -190,7 +190,7 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
       <div className="grid gap-4 xl:grid-cols-3">
         <Panel title="Price" className="xl:col-span-2">
           <div className="h-[280px]">
-            <Lines data={chart} keys={[{ key: "px", color: "#d4af37", name: data.symbol }]} />
+            <Lines data={chart} keys={[{ key: "px", color: "#1a73e8", name: data.symbol }]} />
           </div>
         </Panel>
         <Panel title="Snapshot">

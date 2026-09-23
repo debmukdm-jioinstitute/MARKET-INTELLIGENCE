@@ -79,11 +79,11 @@ export function OptionChainTable({ snapshot }: { snapshot: OptionChainSnapshot }
       <Table>
         <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow>
-            <TableHead colSpan={4} className="text-center text-emerald-400">
+            <TableHead colSpan={4} className="text-center text-emerald-600">
               CALLS
             </TableHead>
             <TableHead />
-            <TableHead colSpan={4} className="text-center text-rose-400">
+            <TableHead colSpan={4} className="text-center text-rose-600">
               PUTS
             </TableHead>
           </TableRow>

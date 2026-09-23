@@ -43,7 +43,7 @@ export default function MarketValuationPage() {
                 Yield Spread (G-Sec - Earnings Yield):
                 <MetricInfo id="yield_spread" iconSize="xs" />
               </span>
-              <span className="font-bold text-amber-400">224 bps (Slightly Stretched)</span>
+              <span className="font-bold text-blue-600">224 bps (Slightly Stretched)</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">

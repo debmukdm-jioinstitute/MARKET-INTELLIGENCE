@@ -38,10 +38,10 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
   }
 
   return (
-    <div className="flex min-h-screen bg-black text-neutral-100">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-800">
-        <div className="border-b border-neutral-800 px-5 py-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-400">Market Intelligence</p>
+    <div className="flex min-h-screen bg-white text-gray-900">
+      <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200">
+        <div className="border-b border-gray-200 px-5 py-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
           <h1 className="mt-0.5 text-sm font-semibold">Admin backend</h1>
         </div>
         <nav className="flex-1 space-y-0.5 px-2 py-3">
@@ -55,8 +55,8 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] transition-colors",
                   active
-                    ? "bg-amber-400/15 font-bold text-amber-400"
-                    : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100",
+                    ? "bg-blue-600/15 font-bold text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
                 )}
               >
                 <Icon className="size-3.5 shrink-0 opacity-80" />
@@ -65,12 +65,12 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
             );
           })}
         </nav>
-        <div className="border-t border-neutral-800 p-3">
-          <p className="truncate text-[11px] text-neutral-500">{user.email}</p>
+        <div className="border-t border-gray-200 p-3">
+          <p className="truncate text-[11px] text-gray-500">{user.email}</p>
           <button
             type="button"
             onClick={logout}
-            className="mt-2 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[11px] text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100"
+            className="mt-2 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[11px] text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           >
             <LogOut className="size-3.5" />
             Sign out

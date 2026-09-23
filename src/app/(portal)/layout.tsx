@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/app-shell";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="dark min-h-full bg-background text-foreground">
+    <div className="min-h-full bg-background text-foreground">
       <AuthGate>
         <AppShell>{children}</AppShell>
       </AuthGate>

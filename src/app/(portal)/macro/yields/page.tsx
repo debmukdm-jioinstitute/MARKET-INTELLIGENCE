@@ -19,7 +19,7 @@ export default function YieldsMacroPage() {
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={2} /> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? (
         <>
           <YieldCurveCard india={data.indiaYieldCurve} us={data.usYieldCurve} />

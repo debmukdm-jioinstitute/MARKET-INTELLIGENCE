@@ -49,72 +49,75 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #ffffff;
+  --foreground: #1f1f1f;
+  --card: #ffffff;
+  --card-foreground: #1f1f1f;
+  --popover: #ffffff;
+  --popover-foreground: #1f1f1f;
+  --primary: #1a73e8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f4;
+  --secondary-foreground: #1f1f1f;
+  --muted: #f8f9fa;
+  --muted-foreground: #5f6368;
+  --accent: #e8f0fe;
+  --accent-foreground: #1a73e8;
+  --destructive: #d93025;
+  --border: #e8eaed;
+  --input: #dadce0;
+  --ring: #1a73e8;
+  --chart-1: #1a73e8;
+  --chart-2: #34a853;
+  --chart-3: #fbbc04;
+  --chart-4: #ea4335;
+  --chart-5: #a142f4;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f1f1f;
+  --sidebar-primary: #1a73e8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f0fe;
+  --sidebar-accent-foreground: #1a73e8;
+  --sidebar-border: #e8eaed;
+  --sidebar-ring: #1a73e8;
+  --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.08), 0 1px 3px 1px rgba(60, 64, 67, 0.08);
+  --shadow-md: 0 1px 2px 0 rgba(60, 64, 67, 0.1), 0 2px 6px 2px rgba(60, 64, 67, 0.08);
+  --shadow-lg: 0 2px 6px 2px rgba(60, 64, 67, 0.12), 0 4px 12px 4px rgba(60, 64, 67, 0.1);
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #f3f4f6;
-  --card: #0a0b0e;
-  --card-foreground: #f3f4f6;
-  --popover: #0a0b0e;
-  --popover-foreground: #f3f4f6;
-  --primary: #f59e0b;
-  --primary-foreground: #000000;
-  --secondary: #14161e;
-  --secondary-foreground: #f3f4f6;
-  --muted: #12141a;
-  --muted-foreground: #9ca3af;
-  --accent: #1c1a0e;
-  --accent-foreground: #fbbf24;
-  --destructive: #ef4444;
-  --border: #20242e;
-  --input: #1b1e28;
-  --ring: #f59e0b;
-  --chart-1: #f59e0b;
-  --chart-2: #22c55e;
-  --chart-3: #38bdf8;
-  --chart-4: #ef4444;
-  --chart-5: #a855f7;
-  --sidebar: #000000;
-  --sidebar-foreground: #f3f4f6;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #17150a;
-  --sidebar-accent-foreground: #fbbf24;
-  --sidebar-border: #1f232c;
-  --sidebar-ring: #f59e0b;
+  --background: #202124;
+  --foreground: #e8eaed;
+  --card: #292a2d;
+  --card-foreground: #e8eaed;
+  --popover: #292a2d;
+  --popover-foreground: #e8eaed;
+  --primary: #8ab4f8;
+  --primary-foreground: #202124;
+  --secondary: #35363a;
+  --secondary-foreground: #e8eaed;
+  --muted: #303134;
+  --muted-foreground: #9aa0a6;
+  --accent: #303a52;
+  --accent-foreground: #8ab4f8;
+  --destructive: #f28b82;
+  --border: #3c4043;
+  --input: #3c4043;
+  --ring: #8ab4f8;
+  --chart-1: #8ab4f8;
+  --chart-2: #81c995;
+  --chart-3: #fdd663;
+  --chart-4: #f28b82;
+  --chart-5: #d7aefb;
+  --sidebar: #202124;
+  --sidebar-foreground: #e8eaed;
+  --sidebar-primary: #8ab4f8;
+  --sidebar-primary-foreground: #202124;
+  --sidebar-accent: #303a52;
+  --sidebar-accent-foreground: #8ab4f8;
+  --sidebar-border: #3c4043;
+  --sidebar-ring: #8ab4f8;
 }
 
 @layer base {
@@ -195,19 +198,19 @@
   }
 }
 
-/* Bloomberg Terminal Styling & Actionable Term Highlights */
+/* Actionable Term Highlights */
 .actionable-term, .term-action, .term-bold {
   font-weight: 700;
-  color: #fbbf24;
+  color: #1a73e8;
 }
 
 .bloomberg-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background-color: #17150a;
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: 1px solid rgba(26, 115, 232, 0.25);
   font-weight: 600;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
@@ -221,13 +224,13 @@
 }
 
 .tick-up {
-  color: #22c55e !important;
+  color: #188038 !important;
 }
 
 .tick-down {
-  color: #ef4444 !important;
+  color: #d93025 !important;
 }
 
 .tick-amber {
-  color: #fbbf24 !important;
+  color: #1a73e8 !important;
 }

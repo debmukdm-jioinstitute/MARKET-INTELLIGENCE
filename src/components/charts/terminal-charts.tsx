@@ -23,8 +23,8 @@ import {
   YAxis,
 } from "recharts";
 
-const axis = { fontSize: 11, fill: "#8b93a1", tickLine: false };
-const grid = { stroke: "rgba(255,255,255,0.06)" };
+const axis = { fontSize: 11, fill: "#5f6368", tickLine: false };
+const grid = { stroke: "#e8eaed" };
 
 export function NavChart({
   data,
@@ -44,17 +44,17 @@ export function NavChart({
       <AreaChart data={data}>
         <defs>
           <linearGradient id="navFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#d4af37" stopOpacity={0.28} />
-            <stop offset="100%" stopColor="#d4af37" stopOpacity={0} />
+            <stop offset="0%" stopColor="#1a73e8" stopOpacity={0.28} />
+            <stop offset="100%" stopColor="#1a73e8" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid {...grid} vertical={false} />
         <XAxis dataKey="date" {...axis} minTickGap={48} />
         <YAxis {...axis} width={64} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toLocaleString()} />
         <Tooltip
-          contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
         />
-        <Area type="monotone" dataKey={aKey} name={aName} stroke="#d4af37" fill="url(#navFill)" strokeWidth={1.6} />
+        <Area type="monotone" dataKey={aKey} name={aName} stroke="#1a73e8" fill="url(#navFill)" strokeWidth={1.6} />
         {bKey ? (
           <Line type="monotone" dataKey={bKey} name={bName} stroke="#5ec8e8" dot={false} strokeWidth={1.2} />
         ) : null}
@@ -82,16 +82,16 @@ export function Bars({
         <XAxis type="number" {...axis} tickFormatter={(v) => fmt(Number(v))} />
         <YAxis type="category" dataKey={x} {...axis} width={92} />
         <Tooltip
-          contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
           formatter={(v) => fmt(Number(v))}
         />
-        <Bar dataKey={y} fill="#d4af37" radius={3} />
+        <Bar dataKey={y} fill="#1a73e8" radius={3} />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-const PALETTE = ["#d4af37", "#5ec8e8", "#3dd68c", "#c084fc", "#f07178", "#fbbf24", "#60a5fa", "#94a3b8"];
+const PALETTE = ["#1a73e8", "#5ec8e8", "#3dd68c", "#c084fc", "#f07178", "#fbbf24", "#60a5fa", "#94a3b8"];
 
 export function Donut({ data }: { data: { name: string; value: number }[] }) {
   if (!data.length) return null;
@@ -106,7 +106,7 @@ export function Donut({ data }: { data: { name: string; value: number }[] }) {
           ))}
         </Pie>
         <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -127,7 +127,7 @@ export function Lines({
         <CartesianGrid {...grid} vertical={false} />
         <XAxis dataKey={xKey} {...axis} minTickGap={40} />
         <YAxis {...axis} width={48} domain={["auto", "auto"]} />
-        <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {keys.map((k) => (
           <Line key={k.key} type="monotone" dataKey={k.key} name={k.name} stroke={k.color} dot={false} strokeWidth={1.4} />
@@ -152,7 +152,7 @@ export function OiBars({
         <XAxis dataKey={xKey} {...axis} minTickGap={24} />
         <YAxis {...axis} width={56} tickFormatter={(v) => Number(v).toLocaleString()} />
         <Tooltip
-          contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
           formatter={(v) => Number(v).toLocaleString()}
         />
         <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -168,13 +168,13 @@ export function RatioRadar({ data }: { data: { metric: string; company: number; 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={data}>
-        <PolarGrid stroke="rgba(255,255,255,0.1)" />
+        <PolarGrid stroke="#e8eaed" />
         <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: "#8b93a1" }} />
         <PolarRadiusAxis tick={{ fontSize: 9, fill: "#8b93a1" }} />
-        <Tooltip contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 12 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         <Radar name="Sector (baseline)" dataKey="sector" stroke="#8b93a1" fill="#8b93a1" fillOpacity={0.1} />
-        <Radar name="Company" dataKey="company" stroke="#d4af37" fill="#d4af37" fillOpacity={0.35} />
+        <Radar name="Company" dataKey="company" stroke="#1a73e8" fill="#1a73e8" fillOpacity={0.35} />
       </RadarChart>
     </ResponsiveContainer>
   );

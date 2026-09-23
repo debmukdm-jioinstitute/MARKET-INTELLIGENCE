@@ -63,7 +63,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold">
               INDIA MARKET
             </span>
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
             <MetricInfo metric="nifty50" sourceOverride={nifty?.source} />
           </div>
           <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -104,8 +104,8 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                     className={cn(
                       "font-mono text-sm font-semibold rounded px-2 py-0.5",
                       niftyChg >= 0
-                        ? "text-emerald-400 bg-emerald-500/10"
-                        : "text-rose-400 bg-rose-500/10",
+                        ? "text-emerald-600 bg-emerald-500/10"
+                        : "text-rose-600 bg-rose-500/10",
                     )}
                   >
                     {niftyChg >= 0 ? "+" : ""}
@@ -173,9 +173,9 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             <span className="font-semibold text-foreground">
               {adv != null && dec != null ? (
                 <>
-                  <span className="text-emerald-400 font-bold">{adv.toLocaleString()}</span>
+                  <span className="text-emerald-600 font-bold">{adv.toLocaleString()}</span>
                   {" / "}
-                  <span className="text-rose-400 font-bold">{dec.toLocaleString()}</span>
+                  <span className="text-rose-600 font-bold">{dec.toLocaleString()}</span>
                 </>
               ) : (
                 <span className="text-muted-foreground">Streaming NSE…</span>
@@ -188,7 +188,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
               <span className="text-muted-foreground">52W High Count</span>
               <MetricInfo metric="high52w" sourceOverride={breadth?.source} />
             </div>
-            <span className="font-semibold text-emerald-400 font-bold">
+            <span className="font-semibold text-emerald-600 font-bold">
               {h52 != null ? h52 : "—"}
             </span>
           </div>
@@ -198,7 +198,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
               <span className="text-muted-foreground">52W Low Count</span>
               <MetricInfo metric="low52w" sourceOverride={breadth?.source} />
             </div>
-            <span className="font-semibold text-rose-400 font-bold">
+            <span className="font-semibold text-rose-600 font-bold">
               {l52 != null ? l52 : "—"}
             </span>
           </div>

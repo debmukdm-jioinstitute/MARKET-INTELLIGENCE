@@ -1,11 +1,11 @@
 export function SetupBanner({ message }: { message: string }) {
   return (
-    <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+    <div className="rounded-md border border-blue-600/30 bg-blue-600/10 px-3 py-2 text-xs text-blue-600">
       {message}
     </div>
   );
 }
 
 export function ErrorBanner({ message }: { message: string }) {
-  return <p className="text-xs text-rose-400">{message}</p>;
+  return <p className="text-xs text-rose-600">{message}</p>;
 }

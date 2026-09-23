@@ -59,7 +59,7 @@ function CurrencyRow({ row, emphasized }: { row: TapeQuote; emphasized?: boolean
       <span className="flex items-center gap-2 font-mono text-sm tabular-nums">
         {display}
         {row.changePct != null ? (
-          <span className={cn("text-xs", row.changePct >= 0 ? "text-rose-400" : "text-emerald-400")}>
+          <span className={cn("text-xs", row.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
             {row.changePct >= 0 ? "+" : ""}
             {(row.changePct * 100).toFixed(2)}%
           </span>

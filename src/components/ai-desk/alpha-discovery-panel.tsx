@@ -126,7 +126,7 @@ export function AlphaDiscoveryPanel() {
                     <td className="px-3 py-2">
                       <p className="font-medium">{f.name}</p>
                       <p className="text-[10px] leading-4 text-muted-foreground">{f.rationale}</p>
-                      {f.note ? <p className="text-[10px] text-amber-300">{f.note}</p> : null}
+                      {f.note ? <p className="text-[10px] text-blue-600">{f.note}</p> : null}
                     </td>
                     <td className="px-3 py-2 font-mono">{f.formula}</td>
                     <td className="px-3 py-2">
@@ -140,8 +140,8 @@ export function AlphaDiscoveryPanel() {
                         f.informationCoefficient == null
                           ? "text-muted-foreground/50"
                           : f.informationCoefficient > 0
-                            ? "text-emerald-400"
-                            : "text-rose-400",
+                            ? "text-emerald-600"
+                            : "text-rose-600",
                       )}
                     >
                       {f.informationCoefficient != null ? f.informationCoefficient.toFixed(3) : "N/A"}

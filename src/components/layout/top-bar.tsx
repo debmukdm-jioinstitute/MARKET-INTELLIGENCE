@@ -89,9 +89,9 @@ function Tape({
   return (
     <span className="text-muted-foreground">
       {label}
-      {live ? <span className="text-emerald-400">*</span> : null}{" "}
+      {live ? <span className="text-emerald-600">*</span> : null}{" "}
       <span className="text-foreground">{value.toFixed(2)}</span>{" "}
-      <span className={chg >= 0 ? "text-emerald-400" : "text-rose-400"}>{formatPct(chg)}</span>
+      <span className={chg >= 0 ? "text-emerald-600" : "text-rose-600"}>{formatPct(chg)}</span>
     </span>
   );
 }

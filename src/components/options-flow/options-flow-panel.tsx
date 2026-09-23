@@ -62,8 +62,8 @@ const DEFAULT_MAX = 20;
 const DEFAULT_GRID_SIZE = 40;
 const CONFIDENCE_STYLE: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
-  medium: "bg-amber-500/15 text-amber-400",
-  high: "bg-rose-500/15 text-rose-400",
+  medium: "bg-blue-600/15 text-blue-600",
+  high: "bg-rose-500/15 text-rose-600",
 };
 
 function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) => string }) {
@@ -317,20 +317,20 @@ export function OptionsFlowPanel() {
                   key={a.symbol}
                   className={cn(
                     "space-y-1.5 rounded-lg border p-3 text-xs",
-                    a.flagged ? "border-amber-500/40 bg-amber-500/5" : "border-border",
+                    a.flagged ? "border-blue-600/40 bg-blue-600/5" : "border-border",
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-bold">{a.symbol}</span>
                     {a.flagged ? (
-                      <Badge className="h-4 bg-amber-500/20 px-1.5 text-[9px] text-amber-400">FLAGGED</Badge>
+                      <Badge className="h-4 bg-blue-600/20 px-1.5 text-[9px] text-blue-600">FLAGGED</Badge>
                     ) : null}
                   </div>
                   <p className="text-muted-foreground">{a.volumeVsRange}</p>
                   <p className="text-muted-foreground">{a.callPutRatioNote}</p>
                   <p className="text-muted-foreground">{a.openInterestNote}</p>
                   <p className="text-muted-foreground">{a.priceConfirmationNote}</p>
-                  {a.flagged ? <p className="text-amber-300/90">{a.uncertaintyNote}</p> : null}
+                  {a.flagged ? <p className="text-blue-600/90">{a.uncertaintyNote}</p> : null}
                 </div>
               ))}
             </div>

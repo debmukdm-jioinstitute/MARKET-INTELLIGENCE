@@ -22,7 +22,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       metricKey: "cpi",
       value: cpiRow?.current != null ? `${cpiRow.current.toFixed(2)}%` : "4.2%",
       dir: cpiRow?.direction === "up" ? "↑" : cpiRow?.direction === "down" ? "↓" : "↓",
-      dirColor: "text-emerald-400",
+      dirColor: "text-emerald-600",
       source: cpiRow?.source,
     },
     {
@@ -30,7 +30,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       metricKey: "gdp",
       value: gdpRow?.current != null ? `${gdpRow.current.toFixed(2)}%` : "7.4%",
       dir: "↑",
-      dirColor: "text-emerald-400",
+      dirColor: "text-emerald-600",
       source: gdpRow?.source,
     },
     {
@@ -46,7 +46,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       metricKey: "gsec10y",
       value: pulse?.gsec10y?.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : "6.78%",
       dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : "↓",
-      dirColor: "text-rose-400",
+      dirColor: "text-rose-600",
       source: pulse?.gsec10y?.source,
     },
     {
@@ -54,7 +54,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       metricKey: "pmi_mfg",
       value: "56.8",
       dir: "↑",
-      dirColor: "text-emerald-400",
+      dirColor: "text-emerald-600",
       source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com" },
     },
     {
@@ -117,7 +117,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
               <span className="font-bold text-foreground text-sm mt-0.5 block">
                 {rbiLiquidity?.systemLiquidity?.value ?? "₹1.42 L Cr"}
               </span>
-              <span className="text-[10px] text-emerald-400 font-semibold">
+              <span className="text-[10px] text-emerald-600 font-semibold">
                 {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI Net Absorption"}
               </span>
             </div>
@@ -130,7 +130,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                 <MetricInfo metric="fx_reserves" />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">$704.8 B</span>
-              <span className="text-[10px] text-emerald-400 font-semibold">Weekly WSS Report</span>
+              <span className="text-[10px] text-emerald-600 font-semibold">Weekly WSS Report</span>
             </div>
           </div>
         </div>

@@ -34,12 +34,12 @@ export default function PortfolioPage() {
           <p className="font-mono text-xs text-muted-foreground">
             {data?.hasHoldings && data.positions.length > 0 ? (
               <>
-                <span className="font-bold text-amber-400">{data.positions.length} active positions</span>
+                <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
                 {" · "}
                 <span>Benchmark: <strong className="text-foreground">{BENCHMARK_LABEL[data.settings.benchmark]}</strong></span>
               </>
             ) : (
-              <span className="text-amber-300 font-semibold">Clean Book (0 Active Positions)</span>
+              <span className="text-blue-600 font-semibold">Clean Book (0 Active Positions)</span>
             )}
           </p>
         </div>
@@ -49,7 +49,7 @@ export default function PortfolioPage() {
             <button
               type="button"
               onClick={clearHoldings}
-              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 font-mono text-xs font-semibold text-muted-foreground hover:text-rose-400 hover:border-rose-400/40 transition-colors"
+              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 font-mono text-xs font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
             >
               Clear Book
             </button>
@@ -57,7 +57,7 @@ export default function PortfolioPage() {
             <button
               type="button"
               onClick={resetToDefault}
-              className="rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 font-mono text-xs font-bold text-amber-300 hover:bg-amber-400 hover:text-black transition-colors"
+              className="rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 font-mono text-xs font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
             >
               Load Default Portfolio
             </button>
@@ -68,7 +68,7 @@ export default function PortfolioPage() {
       </div>
 
       {loading && !data ? <p className="font-mono text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
-      {error ? <p className="font-mono text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="font-mono text-sm text-rose-600">{error}</p> : null}
 
       {data ? (
         <>

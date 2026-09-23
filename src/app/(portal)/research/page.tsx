@@ -11,7 +11,7 @@ function ResearchHome() {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center px-2 py-10">
       <div className="mb-10 w-full max-w-5xl text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#d4af37]">
+        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#1a73e8]">
           Investment research
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Find any stock</h1>
@@ -22,7 +22,7 @@ function ResearchHome() {
       </div>
       <SymbolSearch initialQuery={q} autoFocus variant="hero" className="w-full px-2" />
       <p className="mt-6 max-w-xl text-center text-xs text-muted-foreground">
-        Pick from the dropdown or press Enter. Press <span className="text-[#d4af37]">Space</span>{" "}
+        Pick from the dropdown or press Enter. Press <span className="text-[#1a73e8]">Space</span>{" "}
         anywhere to focus search.
       </p>
     </div>

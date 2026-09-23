@@ -44,7 +44,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
           </p>
           <p className="font-mono text-2xl tabular-nums">{priceStr}</p>
           {chg != null ? (
-            <p className={cn("text-sm font-mono", chg >= 0 ? "text-rose-400" : "text-emerald-400")}>
+            <p className={cn("text-sm font-mono", chg >= 0 ? "text-rose-600" : "text-emerald-600")}>
               {chg >= 0 ? "+" : ""}
               {(chg * 100).toFixed(1)}%
             </p>
@@ -61,7 +61,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="mb-2 text-xs font-medium text-emerald-400/90">Potential beneficiaries</p>
+          <p className="mb-2 text-xs font-medium text-emerald-600/90">Potential beneficiaries</p>
           <ul className="space-y-1 text-sm">
             {block.beneficiaries.map((r) => (
               <li key={r.name}>
@@ -71,7 +71,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
           </ul>
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-rose-400/90">Potential pressure</p>
+          <p className="mb-2 text-xs font-medium text-rose-600/90">Potential pressure</p>
           <ul className="space-y-1 text-sm">
             {block.pressured.map((r) => (
               <li key={r.name}>

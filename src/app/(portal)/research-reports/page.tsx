@@ -74,7 +74,7 @@ export default function ResearchReportsPage() {
       />
 
       {!dbConfigured ? (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-300">
+        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600">
           No database configured — the research feed needs DATABASE_URL / POSTGRES_URL set to store scraped reports.
         </div>
       ) : null}
@@ -89,7 +89,7 @@ export default function ResearchReportsPage() {
               Auto-updating feed
             </p>
             <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Radio className="size-3 text-emerald-400 animate-pulse" />
+              <Radio className="size-3 text-emerald-600 animate-pulse" />
               Last refreshed {timeAgo(lastScrapedAt)}
             </p>
           </div>

@@ -56,7 +56,7 @@ export default function RbiPolicyPage() {
                 Cash Reserve Ratio (CRR):
                 <MetricInfo id="crr" asOf={data?.fetchedAt} value={data?.rbiLiquidity?.corridor?.crr ?? "3.00%"} iconSize="xs" />
               </span>
-              <span className="font-bold text-emerald-400">{data?.rbiLiquidity?.corridor?.crr ?? "3.00%"}</span>
+              <span className="font-bold text-emerald-600">{data?.rbiLiquidity?.corridor?.crr ?? "3.00%"}</span>
             </div>
             <div className="pt-2 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">

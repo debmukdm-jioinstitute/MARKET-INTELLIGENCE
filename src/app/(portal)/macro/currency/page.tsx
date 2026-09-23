@@ -19,7 +19,7 @@ export default function CurrencyMacroPage() {
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data?.currencies.map((c) => (
         <Panel key={c.id} title={c.label}>
           <div id={c.id} className="flex flex-wrap items-center gap-3">
@@ -28,7 +28,7 @@ export default function CurrencyMacroPage() {
             </p>
             <MetricExplainer copyKey={c.copyKey} />
             {c.changePct != null ? (
-              <span className={cn("font-mono text-sm", c.changePct >= 0 ? "text-rose-400" : "text-emerald-400")}>
+              <span className={cn("font-mono text-sm", c.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
                 {c.changePct >= 0 ? "+" : ""}
                 {(c.changePct * 100).toFixed(2)}%
               </span>

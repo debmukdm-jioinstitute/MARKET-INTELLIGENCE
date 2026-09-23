@@ -21,7 +21,7 @@ export function Latex({ math, block = false, className }: LatexProps) {
       });
     } catch (err) {
       console.warn("KaTeX render error:", err);
-      return `<span class="font-mono text-xs text-amber-400">${math}</span>`;
+      return `<span class="font-mono text-xs text-blue-600">${math}</span>`;
     }
   }, [math, block]);
 
@@ -29,7 +29,7 @@ export function Latex({ math, block = false, className }: LatexProps) {
     return (
       <div
         className={cn(
-          "my-2 overflow-x-auto py-2 px-3 rounded-lg bg-black/40 border border-border/60 text-amber-200/95 font-mono text-sm leading-relaxed",
+          "my-2 overflow-x-auto py-2 px-3 rounded-lg bg-muted border border-border/60 text-blue-700 font-mono text-sm leading-relaxed",
           className
         )}
         dangerouslySetInnerHTML={{ __html: html }}
@@ -39,7 +39,7 @@ export function Latex({ math, block = false, className }: LatexProps) {
 
   return (
     <span
-      className={cn("inline-block align-middle font-mono text-amber-200/90", className)}
+      className={cn("inline-block align-middle font-mono text-blue-600/90", className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

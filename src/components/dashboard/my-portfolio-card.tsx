@@ -32,15 +32,15 @@ export function MyPortfolioCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
-              <Briefcase className="size-3.5 text-amber-400" />
+            <span className="font-mono text-xs uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
+              <Briefcase className="size-3.5 text-blue-600" />
               PORTFOLIO DESK · <span className="text-foreground">{data?.settings.name ?? "Working Book"}</span>
             </span>
             <MetricInfo metric="nav" customTitle="Portfolio Mark-to-Market NAV" />
           </div>
           <Link
             href="/portfolio"
-            className="group flex items-center gap-1.5 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-300 transition-all hover:bg-amber-400 hover:text-black"
+            className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-xs font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
             Open Desk
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -54,7 +54,7 @@ export function MyPortfolioCard() {
                 <span className="font-mono text-xs text-muted-foreground uppercase">Mark-To-Market NAV</span>
                 <MetricInfo metric="nav" />
               </div>
-              <span className="font-mono text-xs text-amber-400 font-semibold">
+              <span className="font-mono text-xs text-blue-600 font-semibold">
                 {loading ? "Refreshing…" : hasHoldings ? `${positions.length} Active Positions` : "Clean Book"}
               </span>
             </div>
@@ -72,11 +72,11 @@ export function MyPortfolioCard() {
           </div>
 
           {!hasHoldings && !loading ? (
-            <div className="rounded-xl border border-dashed border-amber-400/40 bg-amber-400/5 p-4 text-center font-mono text-xs space-y-2">
+            <div className="rounded-xl border border-dashed border-blue-600/40 bg-blue-600/5 p-4 text-center font-mono text-xs space-y-2">
               <p className="text-muted-foreground">Portfolio is clean with zero active positions.</p>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center gap-1.5 rounded-md bg-amber-400 px-3 py-1.5 font-bold text-black hover:bg-amber-300 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 font-bold text-white hover:bg-blue-600 transition-colors"
               >
                 <PlusCircle className="size-3.5" />
                 Add Your Holdings
@@ -92,7 +92,7 @@ export function MyPortfolioCard() {
                 <span
                   className={cn(
                     "font-bold text-sm mt-0.5 block",
-                    todayPnl >= 0 ? "text-emerald-400" : "text-rose-400",
+                    todayPnl >= 0 ? "text-emerald-600" : "text-rose-600",
                   )}
                 >
                   {todayPnl >= 0 ? "+₹" : "-₹"}
@@ -101,7 +101,7 @@ export function MyPortfolioCard() {
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
-                    todayReturnPct >= 0 ? "text-emerald-400/90" : "text-rose-400/90",
+                    todayReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
                   {todayReturnMetric?.formatted ?? "+0.00%"} TODAY
@@ -116,7 +116,7 @@ export function MyPortfolioCard() {
                 <span
                   className={cn(
                     "font-bold text-sm mt-0.5 block",
-                    totalPnl >= 0 ? "text-emerald-400" : "text-rose-400",
+                    totalPnl >= 0 ? "text-emerald-600" : "text-rose-600",
                   )}
                 >
                   {totalPnl >= 0 ? "+₹" : "-₹"}
@@ -125,7 +125,7 @@ export function MyPortfolioCard() {
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
-                    totalReturnPct >= 0 ? "text-emerald-400/90" : "text-rose-400/90",
+                    totalReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
                   {totalReturnMetric?.formatted ?? "+0.00%"} CUMULATIVE
@@ -140,7 +140,7 @@ export function MyPortfolioCard() {
                 <span className="text-muted-foreground">Portfolio Alpha (CAPM)</span>
                 <MetricInfo metric="alpha" value={alphaMetric?.formatted ?? "+0.00%"} />
               </div>
-              <span className={cn("font-bold", (alphaMetric?.value ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400")}>
+              <span className={cn("font-bold", (alphaMetric?.value ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
                 {alphaMetric?.formatted ?? "+0.00%"}
               </span>
             </div>
@@ -150,7 +150,7 @@ export function MyPortfolioCard() {
                 <span className="text-muted-foreground">Systematic Beta vs {data?.settings.benchmark ?? "NIFTY50"}</span>
                 <MetricInfo metric="beta" value={betaMetric?.formatted ?? "1.00"} />
               </div>
-              <span className="font-bold text-amber-400">{betaMetric?.formatted ?? "1.00"}</span>
+              <span className="font-bold text-blue-600">{betaMetric?.formatted ?? "1.00"}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -166,7 +166,7 @@ export function MyPortfolioCard() {
                 <span className="text-muted-foreground">Peak-To-Trough Max DD</span>
                 <MetricInfo metric="max_drawdown" value={mddMetric?.formatted ?? "-6.4%"} />
               </div>
-              <span className="font-bold text-rose-400">{mddMetric?.formatted ?? "-6.4%"}</span>
+              <span className="font-bold text-rose-600">{mddMetric?.formatted ?? "-6.4%"}</span>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function MyPortfolioCard() {
           <Link
             key={sub.label}
             href={sub.href}
-            className="rounded border border-border/70 bg-secondary/50 px-2 py-0.5 text-muted-foreground hover:bg-amber-400/20 hover:text-amber-300 hover:border-amber-400/40 transition-colors font-medium"
+            className="rounded border border-border/70 bg-secondary/50 px-2 py-0.5 text-muted-foreground hover:bg-blue-600/20 hover:text-blue-600 hover:border-blue-600/40 transition-colors font-medium"
           >
             {sub.label}
           </Link>

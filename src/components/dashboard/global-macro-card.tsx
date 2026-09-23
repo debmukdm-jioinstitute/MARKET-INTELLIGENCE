@@ -84,7 +84,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                   <span
                     className={cn(
                       "rounded px-1.5 py-0.5 text-[11px] font-bold",
-                      isPos ? "text-emerald-400 bg-emerald-500/10" : "text-rose-400 bg-rose-500/10",
+                      isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                     )}
                   >
                     {isPos ? "+" : ""}

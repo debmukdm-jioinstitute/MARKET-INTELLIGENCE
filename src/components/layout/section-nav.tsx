@@ -25,7 +25,7 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
             className={cn(
               "relative flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium transition-colors",
               active
-                ? "text-amber-400"
+                ? "text-blue-600"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -34,14 +34,14 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
               <span
                 className={cn(
                   "rounded px-1 text-[9px] font-bold uppercase",
-                  item.badge === "NEW" ? "bg-primary/20 text-primary" : "bg-amber-500/20 text-amber-400",
+                  item.badge === "NEW" ? "bg-primary/20 text-primary" : "bg-blue-600/20 text-blue-600",
                 )}
               >
                 {item.badge}
               </span>
             ) : null}
             {active ? (
-              <span className="absolute inset-x-0 -bottom-px h-0.5 bg-amber-400" />
+              <span className="absolute inset-x-0 -bottom-px h-0.5 bg-blue-600" />
             ) : null}
           </Link>
         );

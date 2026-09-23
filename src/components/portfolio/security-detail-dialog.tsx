@@ -84,7 +84,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           <div className="mx-auto max-w-6xl space-y-6">
         {loading ? <p className="text-sm text-muted-foreground">Loading live security data…</p> : null}
-        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
         {data && q ? (
           <div className="space-y-6">
@@ -130,12 +130,12 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                   <BookStat
                     k="Unrealized P&L"
                     v={formatInr(position.pnl)}
-                    className={position.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}
+                    className={position.pnl >= 0 ? "text-emerald-600" : "text-rose-600"}
                   />
                   <BookStat
                     k="Day"
                     v={formatPct(position.dayPct)}
-                    className={position.dayPct >= 0 ? "text-emerald-400" : "text-rose-400"}
+                    className={position.dayPct >= 0 ? "text-emerald-600" : "text-rose-600"}
                   />
                 </dl>
               </section>
@@ -167,7 +167,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                 <div className="h-[min(420px,40vh)]">
                   <Lines
                     data={data.history.map((p) => ({ date: p.date, px: p.value }))}
-                    keys={[{ key: "px", color: "#ff9f0a", name: data.symbol }]}
+                    keys={[{ key: "px", color: "#1a73e8", name: data.symbol }]}
                   />
                 </div>
               </section>
@@ -242,7 +242,7 @@ function Metric({
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="font-mono text-lg">{value}</p>
       {sub ? (
-        <p className={cn("font-mono text-xs", positive ? "text-emerald-400" : "text-rose-400")}>{sub}</p>
+        <p className={cn("font-mono text-xs", positive ? "text-emerald-600" : "text-rose-600")}>{sub}</p>
       ) : null}
     </div>
   );

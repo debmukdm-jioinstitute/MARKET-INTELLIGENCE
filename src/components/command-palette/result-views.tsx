@@ -13,7 +13,7 @@ import Link from "next/link";
 
 function ChangeTag({ value }: { value: number }) {
   return (
-    <span className={cn("font-mono", value >= 0 ? "text-emerald-400" : "text-rose-400")}>
+    <span className={cn("font-mono", value >= 0 ? "text-emerald-600" : "text-rose-600")}>
       {value >= 0 ? "+" : ""}
       {fmtChgPct(value)}
     </span>
@@ -32,7 +32,7 @@ export function IndiaQuoteResultView({ instrument }: { instrument: IndiaInstrume
         </p>
       </div>
       {loading && !quote ? <p className="text-xs text-muted-foreground">Loading…</p> : null}
-      {error ? <p className="text-xs text-rose-400">{error}</p> : null}
+      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
       {quote ? (
         <div className="flex items-baseline gap-3">
           <span className="text-2xl tabular-nums">{fmtInr(quote.ltp)}</span>
@@ -53,7 +53,7 @@ export function IndiaFundamentalsResultView({ instrument }: { instrument: IndiaI
     <div className="space-y-3 p-4 font-mono text-sm">
       <p className="text-base font-semibold">{instrument.name} — key ratios</p>
       {loading && !data ? <p className="text-xs text-muted-foreground">Loading…</p> : null}
-      {error ? <p className="text-xs text-rose-400">{error}</p> : null}
+      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
       {data ? (
         <dl className="grid grid-cols-2 gap-1 text-xs">
           {data.ratios.slice(0, 6).map((r) => (
@@ -81,7 +81,7 @@ export function OptionChainResultView({ underlyingKey, label }: { underlyingKey:
       {(expiriesLoading || loading) && !data ? (
         <p className="text-xs text-muted-foreground">Loading chain…</p>
       ) : null}
-      {error ? <p className="text-xs text-rose-400">{error}</p> : null}
+      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
       {data ? (
         <div className="grid grid-cols-2 gap-2 text-xs">
           <Stat k="Expiry" v={data.expiry} />
@@ -113,7 +113,7 @@ export function GlobalQuoteResultView({ instrument }: { instrument: Instrument }
       {q ? (
         <div className="flex items-baseline gap-3">
           <span className="text-2xl tabular-nums">${q.price.toFixed(2)}</span>
-          <span className={cn("font-mono", q.changePct >= 0 ? "text-emerald-400" : "text-rose-400")}>
+          <span className={cn("font-mono", q.changePct >= 0 ? "text-emerald-600" : "text-rose-600")}>
             {formatPct(q.changePct)}
           </span>
         </div>

@@ -346,17 +346,17 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
-          className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-amber-400 transition-colors font-semibold"
+          className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-blue-600 transition-colors font-semibold"
         >
-          <ArrowLeft className="size-3.5 text-amber-400" />
+          <ArrowLeft className="size-3.5 text-blue-600" />
           Back to Executive Dashboard
         </Link>
         <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-          <span className="font-bold text-amber-400">{meta.exchange}</span>
+          <span className="font-bold text-blue-600">{meta.exchange}</span>
           <span>·</span>
           <span>{meta.category}</span>
           <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
-          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse ml-1" />
+          <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse ml-1" />
         </div>
       </div>
 
@@ -364,8 +364,8 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-wrap items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 font-mono text-xs">
-            <span className="font-bold text-amber-400">{meta.ticker}</span>
-            <span className="rounded border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+            <span className="font-bold text-blue-600">{meta.ticker}</span>
+            <span className="rounded border border-blue-600/30 bg-blue-600/10 px-2 py-0.5 text-[10px] font-bold text-blue-600">
               Official Exchange Feed
             </span>
             <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
@@ -383,8 +383,8 @@ export default function TickerDetailPage({ params }: PageProps) {
               className={cn(
                 "rounded-md px-2.5 py-1 font-mono text-base font-bold",
                 isPos
-                  ? "bg-emerald-500/15 text-emerald-400"
-                  : "bg-rose-500/15 text-rose-400",
+                  ? "bg-emerald-500/15 text-emerald-600"
+                  : "bg-rose-500/15 text-rose-600",
               )}
             >
               {isPos ? "+" : ""}
@@ -407,12 +407,12 @@ export default function TickerDetailPage({ params }: PageProps) {
           </div>
           <div className="relative h-2 w-full rounded-full bg-secondary/80 overflow-hidden">
             <div
-              className="h-full bg-amber-400 rounded-full transition-all duration-500"
+              className="h-full bg-blue-600 rounded-full transition-all duration-500"
               style={{ width: `${pct52}%` }}
             />
           </div>
           <p className="text-right text-[10px] text-muted-foreground">
-            Current at <strong className="text-amber-400">{pct52.toFixed(1)}%</strong> of 52-week channel
+            Current at <strong className="text-blue-600">{pct52.toFixed(1)}%</strong> of 52-week channel
           </p>
         </div>
       </div>
@@ -421,11 +421,11 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-3">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
-              <BarChart2 className="size-3.5 text-amber-400" />
+            <span className="font-mono text-xs font-bold text-blue-600 uppercase flex items-center gap-1.5">
+              <BarChart2 className="size-3.5 text-blue-600" />
               AUTHENTIC HISTORICAL TRAJECTORY ({meta.ticker})
             </span>
-            <span className="rounded bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300">
+            <span className="rounded bg-blue-600/10 border border-blue-600/30 px-2 py-0.5 text-[10px] font-mono font-bold text-blue-600">
               REAL DATA
             </span>
             <MetricInfo metric={meta.metricKey} sourceOverride={dynamicSource} />
@@ -434,7 +434,7 @@ export default function TickerDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-3">
             <div className="font-mono text-xs">
               <span className="text-muted-foreground mr-1.5">{activeTf} Move:</span>
-              <span className={cn("font-bold", isUp ? "text-emerald-400" : "text-rose-400")}>
+              <span className={cn("font-bold", isUp ? "text-emerald-600" : "text-rose-600")}>
                 {isUp ? "+" : ""}{formatPct(periodReturnPct)}
               </span>
             </div>
@@ -451,7 +451,7 @@ export default function TickerDetailPage({ params }: PageProps) {
                   className={cn(
                     "rounded-md px-3 py-1 font-medium transition-all",
                     activeTf === tf
-                      ? "bg-amber-400 text-black shadow-sm font-bold"
+                      ? "bg-blue-600 text-white shadow-sm font-bold"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -463,18 +463,18 @@ export default function TickerDetailPage({ params }: PageProps) {
         </div>
 
         {/* Real Chart Canvas Area */}
-        <div className="relative h-56 w-full rounded-lg bg-black/50 border border-border/60 p-3 overflow-hidden flex flex-col justify-between">
+        <div className="relative h-56 w-full rounded-lg bg-muted border border-border/60 p-3 overflow-hidden flex flex-col justify-between">
           {/* Top Range Legend & Hover Readout */}
           <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground z-10 pointer-events-none pb-1">
             <span className="bg-card px-2 py-0.5 rounded border border-border/60">
               Period High: <strong className="text-foreground">{maxVal < 100 ? maxVal.toFixed(2) : maxVal.toLocaleString("en-US", { maximumFractionDigits: 2 })}</strong>
             </span>
             {hoveredIndex !== null && coords[hoveredIndex] ? (
-              <span className="bg-amber-400 text-black font-bold px-2.5 py-0.5 rounded shadow">
+              <span className="bg-blue-600 text-white font-bold px-2.5 py-0.5 rounded shadow">
                 {coords[hoveredIndex].point.date} · Close: {coords[hoveredIndex].point.value < 100 ? coords[hoveredIndex].point.value.toFixed(2) : coords[hoveredIndex].point.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}
               </span>
             ) : (
-              <span className="text-amber-300/80 font-semibold italic">Hover across timeline to inspect authentic daily closes</span>
+              <span className="text-blue-600/80 font-semibold italic">Hover across timeline to inspect authentic daily closes</span>
             )}
             <span className="bg-card px-2 py-0.5 rounded border border-border/60">
               Period Low: <strong className="text-foreground">{minVal < 100 ? minVal.toFixed(2) : minVal.toLocaleString("en-US", { maximumFractionDigits: 2 })}</strong>
@@ -495,7 +495,7 @@ export default function TickerDetailPage({ params }: PageProps) {
             </defs>
 
             {/* Grid line */}
-            <line x1="0" y1="90" x2="800" y2="90" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+            <line x1="0" y1="90" x2="800" y2="90" stroke="rgba(0,0,0,0.08)" strokeDasharray="3 3" />
 
             {/* Area Fill */}
             <path d={areaData} fill={`url(#chartFill-${normalizedKey})`} />
@@ -518,7 +518,7 @@ export default function TickerDetailPage({ params }: PageProps) {
                   y1="0"
                   x2={coords[hoveredIndex].x}
                   y2="180"
-                  stroke="#fbbf24"
+                  stroke="#1a73e8"
                   strokeWidth="1.5"
                   strokeDasharray="2 2"
                 />
@@ -526,8 +526,8 @@ export default function TickerDetailPage({ params }: PageProps) {
                   cx={coords[hoveredIndex].x}
                   cy={coords[hoveredIndex].y}
                   r="5"
-                  fill="#fbbf24"
-                  stroke="#000000"
+                  fill="#1a73e8"
+                  stroke="#ffffff"
                   strokeWidth="2"
                 />
               </g>
@@ -554,7 +554,7 @@ export default function TickerDetailPage({ params }: PageProps) {
           {/* Bottom Timeline Dates */}
           <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground pt-1 border-t border-border/40 z-10">
             <span>{visiblePoints[0]?.date ?? "Start"}</span>
-            <span className="text-[9px] text-amber-400 font-semibold tracking-wider uppercase">
+            <span className="text-[9px] text-blue-600 font-semibold tracking-wider uppercase">
               {loadingHistory ? "Fetching live market series…" : `Official Exchange Feed · ${visiblePoints.length} Sessions Plotted`}
             </span>
             <span>{visiblePoints[visiblePoints.length - 1]?.date ?? "End"}</span>
@@ -567,7 +567,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Valuation */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">VALUATION MULTIPLES</span>
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">VALUATION MULTIPLES</span>
             <MetricInfo metric="pe_ratio" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -589,14 +589,14 @@ export default function TickerDetailPage({ params }: PageProps) {
               <span className="text-muted-foreground">Dividend Yield:</span>
               <MetricInfo metric="div_yield" />
             </div>
-            <span className="font-bold text-emerald-400">1.22%</span>
+            <span className="font-bold text-emerald-600">1.22%</span>
           </div>
         </div>
 
         {/* Volatility */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">VOLATILITY PROFILE</span>
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">VOLATILITY PROFILE</span>
             <MetricInfo metric="vix" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -618,14 +618,14 @@ export default function TickerDetailPage({ params }: PageProps) {
               <span className="text-muted-foreground">Implied Vol (IV):</span>
               <MetricInfo metric="vix" customTitle="Implied 30D Option Volatility" />
             </div>
-            <span className="font-bold text-emerald-400">11.38%</span>
+            <span className="font-bold text-emerald-600">11.38%</span>
           </div>
         </div>
 
         {/* Technical Indicators */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
             <MetricInfo metric="rsi" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -640,21 +640,21 @@ export default function TickerDetailPage({ params }: PageProps) {
               <span className="text-muted-foreground">MACD Status:</span>
               <MetricInfo metric="macd" />
             </div>
-            <span className="font-bold text-emerald-400">{meta.macd}</span>
+            <span className="font-bold text-emerald-600">{meta.macd}</span>
           </div>
           <div className="flex justify-between py-1">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">200 DMA Spread:</span>
               <MetricInfo metric="dma" customTitle="200-Day Moving Average" />
             </div>
-            <span className="font-bold text-emerald-400">+7.2% Bullish</span>
+            <span className="font-bold text-emerald-600">+7.2% Bullish</span>
           </div>
         </div>
 
         {/* Institutional Positioning */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
             <MetricInfo metric="pcr" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -717,7 +717,7 @@ export default function TickerDetailPage({ params }: PageProps) {
                       <td
                         className={cn(
                           "py-2.5 text-right font-bold",
-                          c.chg >= 0 ? "text-emerald-400" : "text-rose-400",
+                          c.chg >= 0 ? "text-emerald-600" : "text-rose-600",
                         )}
                       >
                         {c.chg >= 0 ? "+" : ""}

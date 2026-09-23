@@ -106,7 +106,7 @@ export function SymbolSearch({
         className={cn(
           "relative flex items-center gap-3 rounded-full bg-card/95 transition-shadow",
           prominent
-            ? "border-2 border-[#d4af37] shadow-[0_0_0_1px_rgba(212,175,55,0.35),0_8px_40px_rgba(212,175,55,0.12)] focus-within:shadow-[0_0_0_2px_rgba(212,175,55,0.55),0_12px_48px_rgba(212,175,55,0.18)]"
+            ? "border-2 border-[#1a73e8] shadow-[0_0_0_1px_rgba(26, 115, 232,0.35),0_8px_40px_rgba(26, 115, 232,0.12)] focus-within:shadow-[0_0_0_2px_rgba(26, 115, 232,0.55),0_12px_48px_rgba(26, 115, 232,0.18)]"
             : "border border-border",
           variant === "hero" && "h-16 px-6",
           variant === "bar" && "h-11 px-4",
@@ -115,7 +115,7 @@ export function SymbolSearch({
       >
         <Search
           className={cn(
-            "shrink-0 text-[#d4af37]",
+            "shrink-0 text-[#1a73e8]",
             variant === "hero" ? "size-6" : "size-4",
           )}
           aria-hidden
@@ -161,7 +161,7 @@ export function SymbolSearch({
         {showShortcut ? (
           <kbd
             className={cn(
-              "hidden shrink-0 rounded-md border border-[#d4af37]/50 bg-background/80 px-2 py-0.5 font-mono text-[10px] text-[#d4af37] sm:inline",
+              "hidden shrink-0 rounded-md border border-[#1a73e8]/50 bg-background/80 px-2 py-0.5 font-mono text-[10px] text-[#1a73e8] sm:inline",
               variant === "hero" && "text-xs px-2.5 py-1",
             )}
           >
@@ -172,7 +172,7 @@ export function SymbolSearch({
       {open ? (
         <ul
           className={cn(
-            "animate-dropdown-pop absolute z-50 mt-2 w-full overflow-auto rounded-2xl border border-[#d4af37]/50 bg-popover/85 py-1.5 shadow-[0_0_0_1px_rgba(212,175,55,0.12),0_20px_60px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150 [perspective:900px]",
+            "animate-dropdown-pop absolute z-50 mt-2 w-full overflow-auto rounded-2xl border border-[#1a73e8]/50 bg-popover/85 py-1.5 shadow-[0_0_0_1px_rgba(26, 115, 232,0.12),0_20px_60px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150 [perspective:900px]",
             variant === "hero" ? "max-h-96" : "max-h-72",
           )}
           role="listbox"
@@ -191,8 +191,8 @@ export function SymbolSearch({
                 role="option"
                 aria-selected={i === active}
                 className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#d4af37]/10 hover:shadow-[0_6px_16px_-4px_rgba(212,175,55,0.25)]",
-                  i === active && "-translate-y-0.5 bg-[#d4af37]/10 shadow-[0_6px_16px_-4px_rgba(212,175,55,0.25)]",
+                  "flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#1a73e8]/10 hover:shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
+                  i === active && "-translate-y-0.5 bg-[#1a73e8]/10 shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
                 )}
                 onMouseEnter={() => setActive(i)}
                 onClick={() => pick(h)}

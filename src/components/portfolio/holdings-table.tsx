@@ -135,7 +135,7 @@ export function HoldingsTable() {
                   className="w-full px-4 py-2 text-left font-mono font-medium text-primary hover:underline"
                 >
                   {row.symbol}
-                  {row.live ? <span className="ml-1 text-[9px] text-emerald-400">●</span> : null}
+                  {row.live ? <span className="ml-1 text-[9px] text-emerald-600">●</span> : null}
                 </button>
               </TableCell>
               <TableCell className="p-0">
@@ -151,7 +151,7 @@ export function HoldingsTable() {
               <TableCell
                 className={cn(
                   "text-right font-mono",
-                  row.dayPct >= 0 ? "text-emerald-400" : "text-rose-400",
+                  row.dayPct >= 0 ? "text-emerald-600" : "text-rose-600",
                 )}
               >
                 {formatPct(row.dayPct)}
@@ -162,7 +162,7 @@ export function HoldingsTable() {
               <TableCell
                 className={cn(
                   "text-right font-mono",
-                  row.pnl >= 0 ? "text-emerald-400" : "text-rose-400",
+                  row.pnl >= 0 ? "text-emerald-600" : "text-rose-600",
                 )}
               >
                 {formatInr(row.pnl)}

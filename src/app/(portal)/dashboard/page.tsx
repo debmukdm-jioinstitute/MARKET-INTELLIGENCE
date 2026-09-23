@@ -30,7 +30,7 @@ export default function DashboardPage() {
               <Terminal className="size-3.5" />
               INSTITUTIONAL COCKPIT
             </span>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground mt-0.5">
             Executive Market & Portfolio Intelligence
@@ -54,7 +54,7 @@ export default function DashboardPage() {
 
       <FetchingBanner active={loadingFull} />
       {error ? (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 font-mono text-xs text-rose-400">
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 font-mono text-xs text-rose-600">
           Feed Error: {error}
         </div>
       ) : null}

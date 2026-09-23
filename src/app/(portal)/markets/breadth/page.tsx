@@ -32,24 +32,24 @@ export default function MarketBreadthPage() {
         <div className="rounded-xl border border-emerald-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-              <TrendingUp className="size-3 text-emerald-400" />
+              <TrendingUp className="size-3 text-emerald-600" />
               ADVANCING EQUITIES
             </span>
             <MetricInfo id="advances" asOf={asOf} provider="NSE India Live Market Pulse" sourceUrl="https://www.nseindia.com/market-data/live-equity-market" />
           </div>
-          <div className="text-3xl font-bold text-emerald-400">{adv.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-emerald-600">{adv.toLocaleString()}</div>
           <span className="text-[11px] text-muted-foreground">{advPct}% of traded universe</span>
         </div>
 
         <div className="rounded-xl border border-rose-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-              <TrendingDown className="size-3 text-rose-400" />
+              <TrendingDown className="size-3 text-rose-600" />
               DECLINING EQUITIES
             </span>
             <MetricInfo id="declines" asOf={asOf} provider="NSE India Live Market Pulse" sourceUrl="https://www.nseindia.com/market-data/live-equity-market" />
           </div>
-          <div className="text-3xl font-bold text-rose-400">{dec.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-rose-600">{dec.toLocaleString()}</div>
           <span className="text-[11px] text-muted-foreground">{decPct}% of traded universe</span>
         </div>
 
@@ -58,7 +58,7 @@ export default function MarketBreadthPage() {
             <span className="text-[10px] text-muted-foreground uppercase">52-WEEK HIGHS</span>
             <MetricInfo id="high52w" asOf={asOf} provider="NSE India 52W High API" sourceUrl="https://www.nseindia.com/market-data/52-week-high-equity-market" />
           </div>
-          <div className="text-3xl font-bold text-emerald-400">{h52}</div>
+          <div className="text-3xl font-bold text-emerald-600">{h52}</div>
           <span className="text-[11px] text-muted-foreground">Expansion threshold active</span>
         </div>
 
@@ -67,7 +67,7 @@ export default function MarketBreadthPage() {
             <span className="text-[10px] text-muted-foreground uppercase">52-WEEK LOWS</span>
             <MetricInfo id="low52w" asOf={asOf} provider="NSE India 52W Low API" sourceUrl="https://www.nseindia.com/market-data/52-week-low-equity-market" />
           </div>
-          <div className="text-3xl font-bold text-rose-400">{l52}</div>
+          <div className="text-3xl font-bold text-rose-600">{l52}</div>
           <span className="text-[11px] text-muted-foreground">Minimal broad capitulation</span>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function MarketBreadthPage() {
       {/* Visual Breadth Bar */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-3 font-mono text-xs shadow-sm">
         <div className="flex justify-between items-center text-sm font-semibold">
-          <span className="text-emerald-400 flex items-center gap-1">
+          <span className="text-emerald-600 flex items-center gap-1">
             Advances: {adv.toLocaleString()} ({advPct}%)
             <MetricInfo id="advances" asOf={asOf} iconSize="xs" />
           </span>
@@ -83,7 +83,7 @@ export default function MarketBreadthPage() {
             Unchanged: {unch.toLocaleString()}
             <MetricInfo id="unchanged" asOf={asOf} iconSize="xs" />
           </span>
-          <span className="text-rose-400 flex items-center gap-1">
+          <span className="text-rose-600 flex items-center gap-1">
             Declines: {dec.toLocaleString()} ({decPct}%)
             <MetricInfo id="declines" asOf={asOf} iconSize="xs" />
           </span>
@@ -98,7 +98,7 @@ export default function MarketBreadthPage() {
             Advance/Decline Ratio: {(adv / (dec || 1)).toFixed(2)}x
             <MetricInfo id="ad_ratio" asOf={asOf} iconSize="xs" />
           </span>
-          <span className="text-emerald-400 font-bold flex items-center gap-1">
+          <span className="text-emerald-600 font-bold flex items-center gap-1">
             REGIME: BROAD PARTICIPATION BULL
             <MetricInfo id="breadth" asOf={asOf} iconSize="xs" />
           </span>

@@ -75,7 +75,7 @@ export default function MarketsPage() {
                 <TableCell className="font-mono flex items-center gap-1">
                   <span>{row.symbol}</span>
                   {row.live ? (
-                    <span className="ml-1 text-[9px] uppercase text-emerald-400">live</span>
+                    <span className="ml-1 text-[9px] uppercase text-emerald-600">live</span>
                   ) : null}
                   <MetricInfo
                     id={row.symbol.toLowerCase()}
@@ -106,7 +106,7 @@ export default function MarketsPage() {
 
 function Chg({ v }: { v: number }) {
   return (
-    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-400" : "text-rose-400")}>
+    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
       {formatPct(v)}
     </TableCell>
   );

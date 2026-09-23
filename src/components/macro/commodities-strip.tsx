@@ -39,7 +39,7 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
                 <span
                   className={cn(
                     "text-xs",
-                    (r.changePct ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400",
+                    (r.changePct ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                   )}
                 >
                   {r.changePct != null

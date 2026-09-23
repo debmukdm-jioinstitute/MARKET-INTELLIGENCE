@@ -32,7 +32,7 @@ export default function MacroSectionPage() {
     <div className="space-y-6">
       <PageHeader kicker="India macro" title={meta.title} subtitle={meta.subtitle} />
       {loading && !data ? <MacroTapeSkeleton count={4} /> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? <MacroSectionView sectionId={sectionId} data={data} /> : null}
     </div>
   );

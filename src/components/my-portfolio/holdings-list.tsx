@@ -89,20 +89,20 @@ export function HoldingsList({
               {row.currency === "USD" ? "$" : "₹"}
               {row.last.toFixed(2)}
             </TableCell>
-            <TableCell className={cn("text-right font-mono", row.dayPct >= 0 ? "text-emerald-400" : "text-rose-400")}>
+            <TableCell className={cn("text-right font-mono", row.dayPct >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {formatPct(row.dayPct)}
             </TableCell>
             <TableCell className="text-right font-mono">{row.shares}</TableCell>
             <TableCell className="text-right font-mono">{inr(row.marketValueInr)}</TableCell>
             <TableCell className="text-right font-mono">{formatPct(row.weight, 1, false)}</TableCell>
-            <TableCell className={cn("text-right font-mono", row.pnlInr >= 0 ? "text-emerald-400" : "text-rose-400")}>
+            <TableCell className={cn("text-right font-mono", row.pnlInr >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {inr(row.pnlInr)}
             </TableCell>
             <TableCell className="p-0">
               <button
                 type="button"
                 onClick={() => onRemove(row.id)}
-                className="px-3 py-2 text-xs text-muted-foreground hover:text-rose-400"
+                className="px-3 py-2 text-xs text-muted-foreground hover:text-rose-600"
               >
                 Remove
               </button>

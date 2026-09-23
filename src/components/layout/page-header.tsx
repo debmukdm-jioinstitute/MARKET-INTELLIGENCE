@@ -9,7 +9,7 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-amber-400 font-bold">{kicker}</p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
       <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">{title}</h2>
       <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
     </div>
@@ -32,7 +32,7 @@ export function Panel({
   id?: string;
 }) {
   return (
-    <section id={id} className={`rounded-lg border border-border bg-card ${className ?? ""}`}>
+    <section id={id} className={`rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] ${className ?? ""}`}>
       <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3">
         <div>
           <h3 className="text-sm font-semibold">{title}</h3>

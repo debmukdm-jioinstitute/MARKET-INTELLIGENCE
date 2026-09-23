@@ -27,7 +27,7 @@ export default function IndiaMarketsPage() {
       {loading && !quotes.length ? (
         <p className="text-sm text-muted-foreground">Connecting to Upstox…</p>
       ) : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
@@ -66,7 +66,7 @@ export default function IndiaMarketsPage() {
                 >
                   <TableCell className="font-mono flex items-center gap-1">
                     <span>{inst.symbol}</span>
-                    {q ? <span className="ml-1 text-[9px] uppercase text-emerald-400">live</span> : null}
+                    {q ? <span className="ml-1 text-[9px] uppercase text-emerald-600">live</span> : null}
                     <MetricInfo
                       id={inst.symbol.toLowerCase()}
                       name={`${inst.name} (${inst.symbol})`}
@@ -84,7 +84,7 @@ export default function IndiaMarketsPage() {
                   <TableCell
                     className={cn(
                       "text-right font-mono",
-                      (q?.change ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400",
+                      (q?.change ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
                     {q ? q.change.toFixed(2) : "—"}
@@ -92,7 +92,7 @@ export default function IndiaMarketsPage() {
                   <TableCell
                     className={cn(
                       "text-right font-mono",
-                      (q?.changePct ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400",
+                      (q?.changePct ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
                     {q ? formatPct(q.changePct) : "—"}

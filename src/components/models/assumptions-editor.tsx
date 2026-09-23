@@ -56,7 +56,7 @@ export function AssumptionsEditor({
                 <div key={spec.key} className="space-y-1">
                   <label className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{spec.label}</span>
-                    {overridden ? <span className="text-[10px] font-semibold text-amber-400">edited</span> : null}
+                    {overridden ? <span className="text-[10px] font-semibold text-blue-600">edited</span> : null}
                   </label>
                   <div className="flex items-center gap-1.5">
                     <input

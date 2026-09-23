@@ -56,7 +56,7 @@ function PulseCell({
         {fmtNum(q.value, digits)}
         {suffix}
       </p>
-      <p className={cn("font-mono text-xs", up ? "text-emerald-400" : "text-rose-400")}>
+      <p className={cn("font-mono text-xs", up ? "text-emerald-600" : "text-rose-600")}>
         {fmtChgPct(q.changePct ?? null)}
       </p>
       <DataInfo source={q.source} hubSyncedAt={hubSyncedAt} />

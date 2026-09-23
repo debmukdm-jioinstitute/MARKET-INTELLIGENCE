@@ -44,7 +44,7 @@ export default function CommoditiesMacroPage() {
       />
       <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data?.commodities.map((c) => (
         <Panel key={c.id} id={c.id} title={c.label}>
           <div className="flex flex-wrap items-baseline gap-3">
@@ -56,7 +56,7 @@ export default function CommoditiesMacroPage() {
           </div>
           {hist[c.id]?.length ? (
             <div className="mt-4 h-[220px]">
-              <Lines data={hist[c.id]!} keys={[{ key: "v", color: "#d4af37", name: c.label }]} />
+              <Lines data={hist[c.id]!} keys={[{ key: "v", color: "#1a73e8", name: c.label }]} />
             </div>
           ) : null}
         </Panel>

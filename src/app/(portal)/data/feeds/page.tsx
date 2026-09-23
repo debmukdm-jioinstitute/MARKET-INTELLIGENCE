@@ -32,7 +32,7 @@ export default function FeedsPage() {
       {loading && !data ? (
         <p className="text-sm text-muted-foreground">Pulling feeds…</p>
       ) : null}
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? (
         <>
           <Panel
@@ -70,7 +70,7 @@ export default function FeedsPage() {
                       <td
                         className={cn(
                           "py-2 text-right font-mono",
-                          row.changePct >= 0 ? "text-emerald-400" : "text-rose-400",
+                          row.changePct >= 0 ? "text-emerald-600" : "text-rose-600",
                         )}
                       >
                         {formatPct(row.changePct)}

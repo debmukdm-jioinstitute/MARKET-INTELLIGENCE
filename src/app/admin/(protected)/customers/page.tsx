@@ -48,21 +48,21 @@ export default function AdminCustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-400">Customers</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Customers</p>
         <h1 className="mt-1 text-xl font-semibold">Registered customers</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-gray-500">
           {customers ? `${customers.length} account${customers.length === 1 ? "" : "s"}` : "Loading…"}
         </p>
       </div>
 
-      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-      {resetMessage ? <p className="text-sm text-emerald-400">{resetMessage}</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {resetMessage ? <p className="text-sm text-emerald-600">{resetMessage}</p> : null}
 
       <AdminCard title="All accounts">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] border-collapse text-xs">
             <thead>
-              <tr className="border-b border-neutral-800 text-left text-neutral-500">
+              <tr className="border-b border-gray-200 text-left text-gray-500">
                 <th className="py-2 pr-3 font-medium">Email</th>
                 <th className="py-2 pr-3 font-medium">Name</th>
                 <th className="py-2 pr-3 font-medium">Role</th>
@@ -73,14 +73,14 @@ export default function AdminCustomersPage() {
             </thead>
             <tbody>
               {(customers ?? []).map((c) => (
-                <tr key={c.email} className="border-b border-neutral-900">
-                  <td className="py-1.5 pr-3 font-mono text-neutral-200">{c.email}</td>
-                  <td className="py-1.5 pr-3 text-neutral-300">{c.name}</td>
+                <tr key={c.email} className="border-b border-gray-100">
+                  <td className="py-1.5 pr-3 font-mono text-gray-800">{c.email}</td>
+                  <td className="py-1.5 pr-3 text-gray-700">{c.name}</td>
                   <td className="py-1.5 pr-3">
-                    <span className={c.role === "admin" ? "text-amber-400" : "text-neutral-400"}>{c.role}</span>
+                    <span className={c.role === "admin" ? "text-blue-600" : "text-gray-500"}>{c.role}</span>
                   </td>
-                  <td className="py-1.5 pr-3 text-neutral-400">{new Date(c.created_at).toLocaleDateString()}</td>
-                  <td className="py-1.5 pr-3 text-neutral-400">
+                  <td className="py-1.5 pr-3 text-gray-500">{new Date(c.created_at).toLocaleDateString()}</td>
+                  <td className="py-1.5 pr-3 text-gray-500">
                     {c.last_login_at ? new Date(c.last_login_at).toLocaleString() : "—"}
                   </td>
                   <td className="py-1.5 pr-3">
@@ -92,13 +92,13 @@ export default function AdminCustomersPage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="New password"
-                          className="w-32 rounded border border-neutral-700 bg-neutral-900 px-1.5 py-1 text-[11px] outline-none focus:border-amber-400"
+                          className="w-32 rounded border border-gray-300 bg-gray-100 px-1.5 py-1 text-[11px] outline-none focus:border-blue-600"
                         />
                         <button
                           type="button"
                           disabled={resetting || newPassword.length < 6}
                           onClick={() => submitReset(c.email)}
-                          className="rounded bg-amber-400 px-2 py-1 text-[11px] font-semibold text-black disabled:opacity-50"
+                          className="rounded bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
                         >
                           Set
                         </button>
@@ -108,7 +108,7 @@ export default function AdminCustomersPage() {
                             setResetTarget(null);
                             setNewPassword("");
                           }}
-                          className="rounded px-1.5 py-1 text-[11px] text-neutral-500 hover:text-neutral-300"
+                          className="rounded px-1.5 py-1 text-[11px] text-gray-500 hover:text-gray-700"
                         >
                           Cancel
                         </button>
@@ -120,7 +120,7 @@ export default function AdminCustomersPage() {
                           setResetTarget(c.email);
                           setResetMessage("");
                         }}
-                        className="rounded px-2 py-1 text-[11px] text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                        className="rounded px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-200 hover:text-gray-800"
                       >
                         Reset password
                       </button>
@@ -130,7 +130,7 @@ export default function AdminCustomersPage() {
               ))}
               {customers && customers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-neutral-500">
+                  <td colSpan={6} className="py-6 text-center text-gray-500">
                     No registered customers yet.
                   </td>
                 </tr>

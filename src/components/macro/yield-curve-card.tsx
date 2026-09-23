@@ -14,8 +14,8 @@ import {
   YAxis,
 } from "recharts";
 
-const axis = { fontSize: 10, fill: "#8b93a1", tickLine: false };
-const grid = { stroke: "rgba(255,255,255,0.06)" };
+const axis = { fontSize: 10, fill: "#5f6368", tickLine: false };
+const grid = { stroke: "#e8eaed" };
 
 export function YieldCurveCard({
   india,
@@ -64,10 +64,10 @@ export function YieldCurveCard({
             <XAxis dataKey="tenor" {...axis} />
             <YAxis {...axis} width={36} domain={["auto", "auto"]} tickFormatter={(v) => `${v}%`} />
             <Tooltip
-              contentStyle={{ background: "#10151c", border: "1px solid #243040", fontSize: 11 }}
+              contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 11 }}
               formatter={(v) => (v != null ? `${Number(v).toFixed(2)}%` : "—")}
             />
-            <Line type="monotone" dataKey="india" name="India" stroke="#d4af37" dot strokeWidth={2} />
+            <Line type="monotone" dataKey="india" name="India" stroke="#1a73e8" dot strokeWidth={2} />
             <Line type="monotone" dataKey="us" name="US" stroke="#5ec8e8" dot={false} strokeWidth={1.2} strokeDasharray="4 3" />
           </LineChart>
         </ResponsiveContainer>

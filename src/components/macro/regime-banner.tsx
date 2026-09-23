@@ -6,9 +6,9 @@ import Link from "next/link";
 
 const QUADRANT_COPY: Record<string, { desc: string; color: string }> = {
   goldilocks: { desc: "Growth ↑ · Inflation ↓", color: "from-emerald-500/20 to-emerald-900/10" },
-  reflation: { desc: "Growth ↑ · Inflation ↑", color: "from-amber-500/20 to-orange-900/10" },
+  reflation: { desc: "Growth ↑ · Inflation ↑", color: "from-blue-600/20 to-orange-900/10" },
   stagflation: { desc: "Growth ↓ · Inflation ↑", color: "from-rose-500/20 to-red-900/10" },
-  deflation: { desc: "Growth ↓ · Inflation ↓", color: "from-slate-500/20 to-slate-900/10" },
+  deflation: { desc: "Growth ↓ · Inflation ↓", color: "from-blue-500/20 to-blue-900/10" },
 };
 
 export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
@@ -17,7 +17,7 @@ export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br p-6 shadow-[0_0_40px_rgba(212,175,55,0.08)]",
+        "relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br p-6 shadow-[0_0_40px_rgba(26, 115, 232,0.08)]",
         q.color,
       )}
     >

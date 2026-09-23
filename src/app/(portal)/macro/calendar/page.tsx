@@ -119,8 +119,8 @@ export default function EconomicCalendarPage() {
                   <span
                     className={
                       e.impact === "HIGH"
-                        ? "rounded bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold text-rose-400"
-                        : "rounded bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-400"
+                        ? "rounded bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold text-rose-600"
+                        : "rounded bg-blue-600/10 px-2 py-0.5 text-[9px] font-bold text-blue-600"
                     }
                   >
                     {e.impact}

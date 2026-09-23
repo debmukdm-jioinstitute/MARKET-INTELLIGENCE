@@ -122,7 +122,7 @@ export default function DataPage() {
             <span className="text-[10px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
             <MetricInfo id="data_quality" iconSize="xs" />
           </div>
-          <div className="text-2xl font-bold text-emerald-400">99.4%</div>
+          <div className="text-2xl font-bold text-emerald-600">99.4%</div>
           <span className="text-[11px] text-muted-foreground">Across 7 upstream providers</span>
         </div>
 
@@ -132,7 +132,7 @@ export default function DataPage() {
             <MetricInfo id="feed_latency" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-foreground">340 ms</div>
-          <span className="text-[11px] text-emerald-400">P95 below 850 ms</span>
+          <span className="text-[11px] text-emerald-600">P95 below 850 ms</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
@@ -202,12 +202,12 @@ export default function DataPage() {
                 <TableCell className="text-muted-foreground max-w-[220px] truncate">{s.coverage}</TableCell>
                 <TableCell className="text-right font-medium text-foreground">{s.latency}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{s.freshness}</TableCell>
-                <TableCell className="text-right font-bold text-emerald-400">{s.qualityScore}%</TableCell>
+                <TableCell className="text-right font-bold text-emerald-600">{s.qualityScore}%</TableCell>
                 <TableCell className="text-center">
                   <span
                     className={cn(
                       "rounded px-2 py-0.5 text-[9px] font-bold uppercase",
-                      s.status === "ONLINE" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400",
+                      s.status === "ONLINE" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-600/10 text-blue-600",
                     )}
                   >
                     {s.status}

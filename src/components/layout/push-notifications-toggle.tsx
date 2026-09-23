@@ -83,7 +83,7 @@ export function PushNotificationsToggle() {
       aria-label={subscribed ? "Disable push notifications" : "Enable push notifications"}
       className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50"
     >
-      {subscribed ? <Bell className="size-3.5 text-amber-400" /> : <BellOff className="size-3.5" />}
+      {subscribed ? <Bell className="size-3.5 text-blue-600" /> : <BellOff className="size-3.5" />}
     </button>
   );
 }

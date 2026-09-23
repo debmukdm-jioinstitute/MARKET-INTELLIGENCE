@@ -11,7 +11,7 @@ export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
   const impact = data.indiaImpact;
   const impactIcon = impact.label === "positive" ? "↑" : impact.label === "negative" ? "↓" : "→";
   const impactColor =
-    impact.label === "positive" ? "text-emerald-400" : impact.label === "negative" ? "text-rose-400" : "text-amber-300";
+    impact.label === "positive" ? "text-emerald-600" : impact.label === "negative" ? "text-rose-600" : "text-blue-600";
 
   return (
     <section className="rounded-lg border border-border bg-card p-4">
@@ -96,7 +96,7 @@ function Cell({
         </div>
       </div>
       <p className="font-mono text-sm">{display}</p>
-      <p className={cn("font-mono text-[10px]", up ? "text-emerald-400" : "text-rose-400")}>
+      <p className={cn("font-mono text-[10px]", up ? "text-emerald-600" : "text-rose-600")}>
         {raw && q.changePct == null ? "" : fmtChgPct(q.changePct ?? null)}
       </p>
     </div>

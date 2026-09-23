@@ -23,8 +23,8 @@ type Result =
   | { hasHoldings: true; asOf: string; holdings: SentimentHoldingRow[]; disclaimer: string };
 
 function labelColor(label: SentimentHoldingRow["label"]) {
-  if (label === "positive") return "text-emerald-400";
-  if (label === "negative") return "text-rose-400";
+  if (label === "positive") return "text-emerald-600";
+  if (label === "negative") return "text-rose-600";
   return "text-muted-foreground";
 }
 
@@ -101,7 +101,7 @@ export function SentimentPortfolioPanel() {
                 <span>→</span>
                 <span
                   className={cn(
-                    h.illustrativeWeight > h.weight ? "text-emerald-400" : h.illustrativeWeight < h.weight ? "text-rose-400" : "",
+                    h.illustrativeWeight > h.weight ? "text-emerald-600" : h.illustrativeWeight < h.weight ? "text-rose-600" : "",
                   )}
                 >
                   illustrative tilt {(h.illustrativeWeight * 100).toFixed(1)}%

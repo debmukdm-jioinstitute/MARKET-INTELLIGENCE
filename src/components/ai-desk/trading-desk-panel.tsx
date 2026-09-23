@@ -38,10 +38,10 @@ type TradingDeskResult = {
 };
 
 function viewColor(view: "bullish" | "neutral" | "bearish") {
-  return view === "bullish" ? "text-emerald-400" : view === "bearish" ? "text-rose-400" : "text-muted-foreground";
+  return view === "bullish" ? "text-emerald-600" : view === "bearish" ? "text-rose-600" : "text-muted-foreground";
 }
 function actionColor(action: "BUY" | "HOLD" | "SELL") {
-  return action === "BUY" ? "text-emerald-400" : action === "SELL" ? "text-rose-400" : "text-amber-300";
+  return action === "BUY" ? "text-emerald-600" : action === "SELL" ? "text-rose-600" : "text-blue-600";
 }
 
 export function TradingDeskPanel() {

@@ -34,7 +34,7 @@ function IndexPanel({ snap, hubSyncedAt }: { snap: IndexSnapshot; hubSyncedAt: s
         <DataInfo source={snap.current.source} hubSyncedAt={hubSyncedAt} />
       </div>
       <p className="mt-1 font-mono text-2xl tabular-nums">{fmtNum(snap.current.value)}</p>
-      <p className={cn("font-mono text-sm", (snap.change1d ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400")}>
+      <p className={cn("font-mono text-sm", (snap.change1d ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
         {fmtChgPct(snap.change1d ?? null)} 1D
       </p>
       <dl className="mt-3 grid grid-cols-2 gap-1 font-mono text-[11px]">
@@ -46,7 +46,7 @@ function IndexPanel({ snap, hubSyncedAt }: { snap: IndexSnapshot; hubSyncedAt: s
       </dl>
       {chart.length > 1 ? (
         <div className="mt-3 h-[100px]">
-          <Lines data={chart} keys={[{ key: "px", color: "#ff9f0a", name: snap.symbol }]} />
+          <Lines data={chart} keys={[{ key: "px", color: "#1a73e8", name: snap.symbol }]} />
         </div>
       ) : null}
     </div>
