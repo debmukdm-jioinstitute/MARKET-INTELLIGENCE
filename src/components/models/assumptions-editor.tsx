@@ -45,7 +45,7 @@ export function AssumptionsEditor({
     <div className="space-y-5">
       {SCALAR_SECTIONS_ORDER.filter((s) => bySection.has(s)).map((section) => (
         <div key={section}>
-          <p className="mb-2 text-[11px] uppercase tracking-wider text-primary">{section}</p>
+          <p className="mb-2 text-sm uppercase tracking-wider text-primary">{section}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {bySection.get(section)!.map((spec) => {
               const value = assumptions.values[spec.key] as number;

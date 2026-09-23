@@ -58,7 +58,7 @@ export function MegaMenu() {
           <div className="animate-dropdown-item mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-5 py-8 sm:grid-cols-3 lg:grid-cols-5">
             {COLUMNS.map((col, i) => (
               <div key={col.title} className={i > 0 ? "border-border sm:border-l sm:pl-8" : ""}>
-                <p className="mb-3 text-[11px] font-bold tracking-wider text-blue-600 uppercase">{col.title}</p>
+                <p className="mb-3 text-sm font-bold tracking-wider text-blue-600 uppercase">{col.title}</p>
                 <ul className="space-y-0.5">
                   {col.items.map((item) => (
                     <li key={item.label}>

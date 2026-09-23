@@ -23,7 +23,7 @@ export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-primary">{regime.title}</p>
+          <p className="text-sm uppercase tracking-[0.28em] text-primary">{regime.title}</p>
           <h2 className="mt-2 font-heading text-2xl md:text-3xl">Current macro regime</h2>
           <p className="mt-1 text-sm text-muted-foreground">{q.desc}</p>
           <p className="mt-3 inline-flex rounded-full border border-primary/40 bg-background/40 px-3 py-1 text-sm text-primary">

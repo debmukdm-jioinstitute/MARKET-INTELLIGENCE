@@ -421,7 +421,7 @@ export default function TickerDetailPage({ params }: PageProps) {
       <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1.5">
+            <span className="text-sm font-bold text-blue-600 uppercase flex items-center gap-1.5">
               <BarChart2 className="size-3.5 text-blue-600" />
               AUTHENTIC HISTORICAL TRAJECTORY ({meta.ticker})
             </span>
@@ -554,7 +554,7 @@ export default function TickerDetailPage({ params }: PageProps) {
           {/* Bottom Timeline Dates */}
           <div className="flex justify-between items-center text-sm text-muted-foreground pt-1 border-t border-border/40 z-10">
             <span>{visiblePoints[0]?.date ?? "Start"}</span>
-            <span className="text-[11px] text-blue-600 font-semibold tracking-wider uppercase">
+            <span className="text-sm text-blue-600 font-semibold tracking-wider uppercase">
               {loadingHistory ? "Fetching live market series…" : `Official Exchange Feed · ${visiblePoints.length} Sessions Plotted`}
             </span>
             <span>{visiblePoints[visiblePoints.length - 1]?.date ?? "End"}</span>
@@ -567,7 +567,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Valuation */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">VALUATION MULTIPLES</span>
+            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">VALUATION MULTIPLES</span>
             <MetricInfo metric="pe_ratio" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -596,7 +596,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Volatility */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">VOLATILITY PROFILE</span>
+            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">VOLATILITY PROFILE</span>
             <MetricInfo metric="vix" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -625,7 +625,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Technical Indicators */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
+            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
             <MetricInfo metric="rsi" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -654,7 +654,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Institutional Positioning */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
+            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
             <MetricInfo metric="pcr" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -686,14 +686,14 @@ export default function TickerDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+              <h3 className="text-sm uppercase font-bold tracking-wider text-muted-foreground">
                 INDEX CONSTITUENTS & INTRADAY PERFORMANCE
               </h3>
               <MetricInfo metric="nifty50" customTitle="Index Weighting & Selection Methodology" />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="text-[11px] uppercase text-muted-foreground border-b border-border">
+                <thead className="text-sm uppercase text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-2">Symbol</th>
                     <th className="py-2">Company Name</th>
@@ -732,7 +732,7 @@ export default function TickerDetailPage({ params }: PageProps) {
 
           <div className="lg:col-span-4 rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+              <h3 className="text-sm uppercase font-bold tracking-wider text-muted-foreground">
                 SECTOR WEIGHTS
               </h3>
               <MetricInfo metric="concentration" customTitle="Sectoral Weights Breakdown" />

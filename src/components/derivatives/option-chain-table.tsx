@@ -92,7 +92,7 @@ export function OptionChainTable({ snapshot }: { snapshot: OptionChainSnapshot }
               {hg.headers.map((h) => (
                 <TableHead
                   key={h.id}
-                  className="cursor-pointer select-none text-right text-[11px] uppercase"
+                  className="cursor-pointer select-none text-right text-sm uppercase"
                   onClick={h.column.getToggleSortingHandler()}
                 >
                   <span className="inline-flex items-center gap-1">

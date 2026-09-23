@@ -32,7 +32,7 @@ export function MyPortfolioCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
               <Briefcase className="size-3.5 text-blue-600" />
               PORTFOLIO DESK · <span className="text-foreground">{data?.settings.name ?? "Working Book"}</span>
             </span>
@@ -51,7 +51,7 @@ export function MyPortfolioCard() {
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground uppercase">Mark-To-Market NAV</span>
+                <span className="text-sm text-muted-foreground uppercase">Mark-To-Market NAV</span>
                 <MetricInfo metric="nav" />
               </div>
               <span className="text-sm text-blue-600 font-semibold">
@@ -86,7 +86,7 @@ export function MyPortfolioCard() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[11px] uppercase font-semibold">Today's P&L</span>
+                  <span className="text-muted-foreground text-sm uppercase font-semibold">Today's P&L</span>
                   <MetricInfo metric="today_pnl" />
                 </div>
                 <span
@@ -110,7 +110,7 @@ export function MyPortfolioCard() {
 
               <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[11px] uppercase font-semibold">Total Gain / Loss</span>
+                  <span className="text-muted-foreground text-sm uppercase font-semibold">Total Gain / Loss</span>
                   <MetricInfo metric="total_return" />
                 </div>
                 <span

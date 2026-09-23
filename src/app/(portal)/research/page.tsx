@@ -11,7 +11,7 @@ function ResearchHome() {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center px-2 py-10">
       <div className="mb-10 w-full max-w-5xl text-center">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-[#1a73e8]">
+        <p className="text-sm uppercase tracking-[0.28em] text-[#1a73e8]">
           Investment research
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Find any stock</h1>

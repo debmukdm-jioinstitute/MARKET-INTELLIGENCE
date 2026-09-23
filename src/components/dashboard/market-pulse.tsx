@@ -10,7 +10,7 @@ export function MarketPulse({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card/80 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">Market pulse</h2>
+        <h2 className="text-sm uppercase tracking-[0.22em] text-primary">Market pulse</h2>
         <span className="text-sm text-muted-foreground">
           {new Date(data.fetchedAt).toLocaleTimeString()}
         </span>
@@ -50,7 +50,7 @@ function PulseCell({
   const up = (q.changePct ?? 0) >= 0;
   return (
     <div className="rounded-md border border-border/80 px-3 py-2">
-      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-sm uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="text-lg tabular-nums">
         {prefix}
         {fmtNum(q.value, digits)}
@@ -74,7 +74,7 @@ function BreadthBlock({
   const max = Math.max(breadth.advances ?? 0, breadth.declines ?? 0, 1);
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Market breadth</p>
+      <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Market breadth</p>
       <div className="grid grid-cols-2 gap-2 text-sm">
         <span>Advances {breadth.advances ?? "—"}</span>
         <span>Declines {breadth.declines ?? "—"}</span>

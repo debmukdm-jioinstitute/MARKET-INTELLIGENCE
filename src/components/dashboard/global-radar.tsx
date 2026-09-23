@@ -16,7 +16,7 @@ export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">Global macro radar</h2>
+        <h2 className="text-sm uppercase tracking-[0.22em] text-primary">Global macro radar</h2>
         <MetricInfo id="sp500" asOf={data.fetchedAt} iconSize="xs" />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">Variables that transmit into Indian markets (live quotes).</p>
@@ -34,7 +34,7 @@ export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
       </div>
       <div className="mt-4 rounded-md border border-border bg-muted/20 p-3">
         <div className="flex justify-between items-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">India impact</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">India impact</p>
           <MetricInfo id="yield_spread" name="Global Macro Transmission Impact Score" asOf={data.fetchedAt} iconSize="xs" />
         </div>
         <p className={cn("mt-1 text-lg", impactColor)}>

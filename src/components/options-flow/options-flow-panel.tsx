@@ -242,12 +242,12 @@ export function OptionsFlowPanel() {
       {result ? (
         <div className="space-y-6">
           <section className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Data agent — gathered, not analyzed
             </p>
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
-                <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
+                <thead className="bg-muted/40 text-sm uppercase text-muted-foreground">
                   <tr>
                     <th className="px-3 py-2 text-left">Ticker</th>
                     <th className="px-3 py-2 text-right">Price</th>
@@ -314,7 +314,7 @@ export function OptionsFlowPanel() {
           </section>
 
           <section className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Analysis agent — describes the gap, never bullish/bearish
             </p>
             <div className="grid gap-2 md:grid-cols-2">
@@ -343,7 +343,7 @@ export function OptionsFlowPanel() {
           </section>
 
           <section className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Flagging agent — research shortlist, at most 5
             </p>
             {result.flagging.candidates.length === 0 ? (
@@ -359,7 +359,7 @@ export function OptionsFlowPanel() {
                       <span className="font-bold">
                         #{i + 1} {c.symbol}
                       </span>
-                      <Badge className={cn("h-4 px-1.5 text-[11px] uppercase", CONFIDENCE_STYLE[c.confidence])}>
+                      <Badge className={cn("h-4 px-1.5 text-sm uppercase", CONFIDENCE_STYLE[c.confidence])}>
                         {c.confidence} confidence
                       </Badge>
                     </div>

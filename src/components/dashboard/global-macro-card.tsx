@@ -49,7 +49,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe className="size-3.5" />
               GLOBAL MACRO RADAR
             </span>
@@ -67,7 +67,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
         <div className="mt-5 space-y-3 text-sm">
           {/* US Equities with MetricInfo */}
           <div className="space-y-1.5">
-            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">
+            <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
               DEVELOPED MARKET BENCHMARKS
             </span>
             {indices.map((idx) => {
@@ -97,7 +97,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
 
           {/* Rates & Dollar with MetricInfo */}
           <div className="space-y-1.5 pt-2 border-t border-border/50">
-            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">
+            <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
               GLOBAL RATES & CURRENCY
             </span>
             {rates.map((r) => (
@@ -116,7 +116,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
 
           {/* India Cross-Market Impact */}
           <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
-            <span className="text-primary font-bold block text-[11px] uppercase">
+            <span className="text-primary font-bold block text-sm uppercase">
               INDIA ↔ GLOBAL LIQUIDITY PASS-THROUGH
             </span>
             <p className="text-muted-foreground mt-0.5 font-sans leading-relaxed">

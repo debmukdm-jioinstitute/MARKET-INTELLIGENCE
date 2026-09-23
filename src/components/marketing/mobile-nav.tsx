@@ -79,7 +79,7 @@ export function MobileNav() {
             </nav>
 
             <div className="border-t border-border px-3 py-4">
-              <p className="px-3 pb-2 text-[11px] font-bold tracking-wider text-blue-600 uppercase">Explore the terminal</p>
+              <p className="px-3 pb-2 text-sm font-bold tracking-wider text-blue-600 uppercase">Explore the terminal</p>
               <div className="flex flex-col gap-1">
                 {EXPLORE_LINKS.map((item) => (
                   <Link

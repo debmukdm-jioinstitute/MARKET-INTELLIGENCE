@@ -73,7 +73,7 @@ export default function AdminTabsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">App tabs</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">App tabs</p>
         <h1 className="mt-1 text-xl font-semibold">Sidebar tabs</h1>
         <p className="mt-1 text-sm text-gray-500">
           Enabled tabs appear in the main app&apos;s sidebar within a minute (60s cache), no deploy required.

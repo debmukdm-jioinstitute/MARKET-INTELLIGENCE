@@ -44,7 +44,7 @@ export function FlagHistory() {
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full text-sm">
-        <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
+        <thead className="bg-muted/40 text-sm uppercase text-muted-foreground">
           <tr>
             <th className="px-3 py-2 text-left">Date</th>
             <th className="px-3 py-2 text-left">Ticker</th>

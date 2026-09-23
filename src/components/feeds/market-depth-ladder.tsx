@@ -11,7 +11,7 @@ export function MarketDepthLadder({ buy, sell }: { buy: DepthLevel[]; sell: Dept
 
   return (
     <div className="space-y-1 text-sm">
-      <div className="grid grid-cols-2 gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+      <div className="grid grid-cols-2 gap-2 text-sm uppercase tracking-wide text-muted-foreground">
         <span>Bid</span>
         <span className="text-right">Ask</span>
       </div>

@@ -119,7 +119,7 @@ export default function DataPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
+            <span className="text-sm text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
             <MetricInfo id="data_quality" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-emerald-600">99.4%</div>
@@ -128,7 +128,7 @@ export default function DataPage() {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
+            <span className="text-sm text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
             <MetricInfo id="feed_latency" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-foreground">340 ms</div>
@@ -137,7 +137,7 @@ export default function DataPage() {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
+            <span className="text-sm text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
             <MetricInfo id="data_quality" name="Active Data Streams Telemetry" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-foreground">42 Feeds</div>
@@ -146,7 +146,7 @@ export default function DataPage() {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
+            <span className="text-sm text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
             <MetricInfo id="data_quality" name="Multi-tier Failover Architecture" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-primary">3-Tier Active</div>
@@ -206,7 +206,7 @@ export default function DataPage() {
                 <TableCell className="text-center">
                   <span
                     className={cn(
-                      "rounded px-2 py-0.5 text-[11px] font-bold uppercase",
+                      "rounded px-2 py-0.5 text-sm font-bold uppercase",
                       s.status === "ONLINE" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-600/10 text-blue-600",
                     )}
                   >

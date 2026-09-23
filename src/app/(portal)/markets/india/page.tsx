@@ -66,7 +66,7 @@ export default function IndiaMarketsPage() {
                 >
                   <TableCell className="flex items-center gap-1">
                     <span>{inst.symbol}</span>
-                    {q ? <span className="ml-1 text-[11px] uppercase text-emerald-600">live</span> : null}
+                    {q ? <span className="ml-1 text-sm uppercase text-emerald-600">live</span> : null}
                     <MetricInfo
                       id={inst.symbol.toLowerCase()}
                       name={`${inst.name} (${inst.symbol})`}

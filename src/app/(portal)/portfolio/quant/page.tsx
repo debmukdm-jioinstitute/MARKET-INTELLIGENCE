@@ -56,7 +56,7 @@ function Q({ metricId, label, value }: { metricId?: string; label: string; value
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+        <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
         <MetricInfo id={metricId ?? "beta"} name={label} iconSize="xs" />
       </div>
       <p className="mt-1 font-heading text-2xl">{value}</p>

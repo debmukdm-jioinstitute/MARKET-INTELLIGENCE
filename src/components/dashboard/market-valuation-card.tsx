@@ -15,7 +15,7 @@ export function MarketValuationCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Scale className="size-3.5" />
               MARKET VALUATION MULTIPLES
             </span>
@@ -59,7 +59,7 @@ export function MarketValuationCard() {
 
             {/* Visual Valuation Meter */}
             <div className="pt-2">
-              <div className="flex justify-between text-[11px] text-muted-foreground mb-1 uppercase">
+              <div className="flex justify-between text-sm text-muted-foreground mb-1 uppercase">
                 <span>Undervalued (17x)</span>
                 <span>Fair (20x)</span>
                 <span>Rich (24x)</span>
@@ -77,7 +77,7 @@ export function MarketValuationCard() {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border/70 bg-card/40 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-[11px] uppercase">NIFTY P/B</span>
+                <span className="text-muted-foreground text-sm uppercase">NIFTY P/B</span>
                 <MetricInfo metric="pb_ratio" sourceOverride={nseSource} />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">3.12x</span>
@@ -85,7 +85,7 @@ export function MarketValuationCard() {
 
             <div className="rounded-lg border border-border/70 bg-card/40 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-[11px] uppercase">Dividend Yield</span>
+                <span className="text-muted-foreground text-sm uppercase">Dividend Yield</span>
                 <MetricInfo metric="div_yield" sourceOverride={nseSource} />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">1.22%</span>

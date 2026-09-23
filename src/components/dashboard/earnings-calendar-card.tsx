@@ -108,7 +108,7 @@ export function EarningsCalendarCard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <CalendarDays className="size-3.5" />
               EARNINGS DISCLOSURES & CALENDAR
             </span>
@@ -134,7 +134,7 @@ export function EarningsCalendarCard() {
           if (items.length === 0) return null;
           return (
             <div key={p} className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-[11px] font-bold tracking-wider text-muted-foreground uppercase border-b border-border/40 pb-1">
+              <div className="flex items-center gap-2 text-sm font-bold tracking-wider text-muted-foreground uppercase border-b border-border/40 pb-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <span>{p}</span>
               </div>

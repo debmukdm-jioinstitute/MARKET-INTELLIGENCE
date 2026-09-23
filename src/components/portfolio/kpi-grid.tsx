@@ -11,7 +11,7 @@ export function KpiGrid({ metrics }: { metrics: KpiMetric[] }) {
         <Tooltip key={metric.key}>
           <TooltipTrigger asChild>
             <article className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">
                 {metric.label}
               </p>
               <p

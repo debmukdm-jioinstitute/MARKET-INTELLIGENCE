@@ -129,7 +129,7 @@ export function TradingDeskPanel() {
               <div key={a.role} className="rounded-lg border border-border bg-card p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold">{a.role}</p>
-                  <Badge variant="outline" className={cn("h-4 px-1.5 text-[11px] uppercase", viewColor(a.view))}>
+                  <Badge variant="outline" className={cn("h-4 px-1.5 text-sm uppercase", viewColor(a.view))}>
                     {a.view}
                   </Badge>
                 </div>
@@ -172,7 +172,7 @@ export function TradingDeskPanel() {
           <div className="rounded-lg border-2 border-primary/40 bg-card p-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">Risk manager — final call</p>
-              <Badge variant={result.risk.approved ? "default" : "destructive"} className="h-5 text-[11px] uppercase">
+              <Badge variant={result.risk.approved ? "default" : "destructive"} className="h-5 text-sm uppercase">
                 {result.risk.approved ? "approved" : "overridden"}
               </Badge>
             </div>

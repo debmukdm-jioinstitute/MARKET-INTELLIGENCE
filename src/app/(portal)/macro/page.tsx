@@ -61,7 +61,7 @@ export default function MacroPage() {
             </p>
           </Panel>
           <div>
-            <h2 className="mb-3 text-[11px] uppercase tracking-[0.22em] text-primary">Explore sections</h2>
+            <h2 className="mb-3 text-sm uppercase tracking-[0.22em] text-primary">Explore sections</h2>
             <SectionNavGrid />
           </div>
         </>

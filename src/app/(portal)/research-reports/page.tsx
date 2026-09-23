@@ -85,7 +85,7 @@ export default function ResearchReportsPage() {
             <FileSearch className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">
+            <p className="text-sm font-bold uppercase tracking-wider text-foreground">
               Auto-updating feed
             </p>
             <p className="flex items-center gap-1 text-sm text-muted-foreground">

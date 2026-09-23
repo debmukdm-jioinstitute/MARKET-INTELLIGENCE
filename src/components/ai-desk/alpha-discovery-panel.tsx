@@ -111,7 +111,7 @@ export function AlphaDiscoveryPanel() {
           </p>
           <div className="overflow-hidden rounded-lg border border-border">
             <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
+              <thead className="bg-muted/40 text-sm uppercase text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2 text-left">Factor</th>
                   <th className="px-3 py-2 text-left">Formula</th>
@@ -130,7 +130,7 @@ export function AlphaDiscoveryPanel() {
                     </td>
                     <td className="px-3 py-2">{f.formula}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="h-4 px-1.5 text-[11px] uppercase">
+                      <Badge variant="outline" className="h-4 px-1.5 text-sm uppercase">
                         {f.category}
                       </Badge>
                     </td>

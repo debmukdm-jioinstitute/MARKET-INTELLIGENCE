@@ -235,7 +235,7 @@ export function LandingPage() {
         {/* FEATURES */}
         <section id="features" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
           <div className="mx-auto max-w-xl text-center">
-            <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Everything in one place</p>
+            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Everything in one place</p>
             <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
               The tools professionals use. Made simple.
             </h2>
@@ -260,7 +260,7 @@ export function LandingPage() {
         <section id="how" className="border-y border-white/60 bg-white/40 px-5 py-24 backdrop-blur-xl md:py-28">
           <div className="mx-auto max-w-5xl">
             <div className="mx-auto max-w-xl text-center">
-              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Get started in minutes</p>
+              <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Get started in minutes</p>
               <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
                 Three steps. That's it.
               </h2>
@@ -293,7 +293,7 @@ export function LandingPage() {
         {/* PRICING */}
         <section id="pricing" className="mx-auto max-w-3xl px-5 py-24 md:py-28">
           <div className="rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[var(--shadow-lg)] backdrop-blur-2xl sm:p-12">
-            <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Simple pricing</p>
+            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Simple pricing</p>
             <p className="mt-4 text-5xl font-semibold tracking-tight text-gray-900">Free</p>
             <p className="mt-2 text-muted-foreground">Every feature. No credit card. No time limit.</p>
             <ul className="mx-auto mt-8 flex max-w-sm flex-col gap-3 text-left text-sm text-gray-700">
@@ -359,7 +359,7 @@ export function LandingPage() {
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase">Account</p>
+              <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">Account</p>
               <div className="mt-3 flex flex-col gap-2">
                 <Link href="/login" className="hover:text-gray-900">Sign in</Link>
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>

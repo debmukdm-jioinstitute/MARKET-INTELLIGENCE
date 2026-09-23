@@ -131,7 +131,7 @@ export function WhatChangedModule() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <History className="size-3.5" />
               WHAT CHANGED?
             </span>
@@ -208,7 +208,7 @@ export function WhatChangedModule() {
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     <div className="md:col-span-8 space-y-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-[11px] uppercase font-bold text-primary block">
+                        <span className="text-sm uppercase font-bold text-primary block">
                           QUANTITATIVE OBSERVATION
                         </span>
                         <MetricInfo metric={item.metricKey} />
@@ -220,7 +220,7 @@ export function WhatChangedModule() {
 
                     {/* Mini SVG Trendline */}
                     <div className="md:col-span-4 rounded-lg border border-border/60 bg-card p-3 space-y-1">
-                      <span className="text-[11px] text-muted-foreground block uppercase">
+                      <span className="text-sm text-muted-foreground block uppercase">
                         Trajectory
                       </span>
                       <div className="h-10 w-full flex items-end gap-1 pt-2">
@@ -247,7 +247,7 @@ export function WhatChangedModule() {
                   {/* Source & Methodology Row with Verified Links */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-sm">
                     <div>
-                      <span className="text-muted-foreground block text-[11px] uppercase font-bold">
+                      <span className="text-muted-foreground block text-sm uppercase font-bold">
                         REGULATORY SOURCE
                       </span>
                       <a
@@ -260,7 +260,7 @@ export function WhatChangedModule() {
                       </a>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[11px] uppercase font-bold">
+                      <span className="text-muted-foreground block text-sm uppercase font-bold">
                         METHODOLOGY
                       </span>
                       <span className="text-muted-foreground mt-0.5 block font-sans">
@@ -271,7 +271,7 @@ export function WhatChangedModule() {
 
                   {/* Affected Securities */}
                   <div className="pt-2 border-t border-border/40">
-                    <span className="text-muted-foreground block text-[11px] uppercase font-bold mb-1.5">
+                    <span className="text-muted-foreground block text-sm uppercase font-bold mb-1.5">
                       DIRECTLY SENSITIVE SECURITIES
                     </span>
                     <div className="flex flex-wrap gap-2">

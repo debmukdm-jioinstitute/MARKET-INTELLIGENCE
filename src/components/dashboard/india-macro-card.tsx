@@ -72,7 +72,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe2 className="size-3.5" />
               INDIA MACROECONOMIC TELEMETRY
             </span>
@@ -109,7 +109,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           <div className="mt-3 grid grid-cols-2 gap-3 pt-2">
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] uppercase font-bold text-muted-foreground">
+                <span className="text-sm uppercase font-bold text-muted-foreground">
                   NET LIQUIDITY
                 </span>
                 <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
@@ -124,7 +124,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
 
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] uppercase font-bold text-muted-foreground">
+                <span className="text-sm uppercase font-bold text-muted-foreground">
                   FX RESERVES
                 </span>
                 <MetricInfo metric="fx_reserves" />

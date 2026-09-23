@@ -84,7 +84,7 @@ export function CorporateEventsCard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Calendar className="size-3.5" />
               CORPORATE DISCLOSURES & EVENTS
             </span>
@@ -192,7 +192,7 @@ export function CorporateEventsCard() {
 
             <div className="space-y-3 text-sm">
               <div className="rounded-lg border border-border/70 bg-accent/20 p-3 space-y-1">
-                <span className="text-[11px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                <span className="text-sm uppercase font-bold text-muted-foreground flex items-center gap-1">
                   <FileText className="size-3 text-primary" />
                   OFFICIAL FILING ENDPOINT
                 </span>
@@ -210,7 +210,7 @@ export function CorporateEventsCard() {
               </div>
 
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 space-y-1.5">
-                <span className="text-[11px] uppercase font-bold text-primary flex items-center gap-1">
+                <span className="text-sm uppercase font-bold text-primary flex items-center gap-1">
                   <Sparkles className="size-3" />
                   SYNTHESIS
                 </span>
@@ -220,7 +220,7 @@ export function CorporateEventsCard() {
               </div>
 
               <div className="rounded-lg border border-border/70 bg-card p-3 space-y-1">
-                <span className="text-[11px] uppercase font-bold text-muted-foreground">
+                <span className="text-sm uppercase font-bold text-muted-foreground">
                   PORTFOLIO EXPOSURE
                 </span>
                 <p className="text-emerald-600 font-semibold text-sm">

@@ -55,7 +55,7 @@ export function PortfolioRiskCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
               <ShieldAlert className="size-3.5 text-blue-600" />
               RISK ARCHITECTURE & EXPOSURE
             </span>

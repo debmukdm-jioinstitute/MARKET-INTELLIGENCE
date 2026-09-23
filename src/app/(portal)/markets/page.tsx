@@ -83,7 +83,7 @@ export default function MarketsPage() {
                 <TableCell className="flex items-center gap-1">
                   <span className="group-hover:text-primary group-hover:underline underline-offset-2">{row.symbol}</span>
                   {row.live ? (
-                    <span className="ml-1 text-[11px] uppercase text-emerald-600">live</span>
+                    <span className="ml-1 text-sm uppercase text-emerald-600">live</span>
                   ) : null}
                   <span onClick={(e) => e.stopPropagation()}>
                     <MetricInfo

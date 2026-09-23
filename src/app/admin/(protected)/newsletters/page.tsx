@@ -51,7 +51,7 @@ export default function AdminNewslettersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Newsletters</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Newsletters</p>
         <h1 className="mt-1 text-xl font-semibold">Compose a newsletter</h1>
         <p className="mt-1 text-sm text-gray-500">Sends one HTML email to every registered customer via Resend.</p>
       </div>

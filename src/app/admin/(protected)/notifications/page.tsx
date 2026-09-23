@@ -52,7 +52,7 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Push notifications</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Push notifications</p>
         <h1 className="mt-1 text-xl font-semibold">Send a push notification</h1>
         <p className="mt-1 text-sm text-gray-500">Delivered to everyone who enabled notifications (bell icon in the main app&apos;s top bar).</p>
       </div>

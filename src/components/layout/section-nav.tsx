@@ -33,7 +33,7 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
             {item.badge ? (
               <span
                 className={cn(
-                  "rounded px-1 text-[11px] font-bold uppercase",
+                  "rounded px-1 text-sm font-bold uppercase",
                   item.badge === "NEW" ? "bg-primary/20 text-primary" : "bg-blue-600/20 text-blue-600",
                 )}
               >

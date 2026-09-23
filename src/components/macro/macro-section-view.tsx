@@ -125,7 +125,7 @@ function InflationHero({ metrics }: { metrics: MacroMetric[] }) {
   const children = momentum?.children ?? [];
   return (
     <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-background p-6">
-      <p className="text-[11px] uppercase tracking-[0.22em] text-orange-300">INFLATION</p>
+      <p className="text-sm uppercase tracking-[0.22em] text-orange-300">INFLATION</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <HeroStat label="Headline CPI" value={headline?.value} unit="% y/y" />
         {children.map((c) => (
@@ -151,7 +151,7 @@ function HeroStat({ label, value, unit }: { label: string; value: number | null 
 function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+      <p className="text-sm uppercase tracking-wider text-muted-foreground">{metric.label}</p>
       <p className={cn("mt-1 tabular-nums text-foreground", large ? "text-3xl" : "text-2xl")}>
         {metric.value != null ? metric.value.toFixed(2) : metric.hint ? "↗" : "—"}
         <span className="ml-1 text-sm text-muted-foreground">{metric.unit}</span>

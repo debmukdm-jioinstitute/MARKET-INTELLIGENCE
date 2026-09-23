@@ -39,7 +39,7 @@ export function YieldCurveCard({
         </Link>
       }
     >
-      <p className="mb-3 flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+      <p className="mb-3 flex items-center gap-1 text-sm uppercase tracking-wider text-muted-foreground">
         India government bonds
         <MetricExplainer copyKey="yield_in_10y" />
       </p>

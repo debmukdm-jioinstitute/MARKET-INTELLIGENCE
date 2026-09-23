@@ -320,7 +320,7 @@ export default function SectorsPage() {
                 <TableCell className="text-center">
                   <span
                     className={cn(
-                      "rounded px-2 py-0.5 text-[11px] font-bold uppercase",
+                      "rounded px-2 py-0.5 text-sm font-bold uppercase",
                       s.rotationStage === "Leading"
                         ? "bg-emerald-500/10 text-emerald-600"
                         : s.rotationStage === "Improving"

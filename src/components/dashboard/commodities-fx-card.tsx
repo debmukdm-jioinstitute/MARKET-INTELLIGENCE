@@ -91,7 +91,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Coins className="size-3.5" />
               COMMODITIES & FX TELEMETRY
             </span>
@@ -109,7 +109,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
         <div className="mt-4 space-y-4">
           {/* Commodities List with MetricInfo */}
           <div className="space-y-1.5 text-sm">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground block">
               GLOBAL COMMODITIES (REAL-TIME NYMEX / ICE)
             </span>
             {commodities.map((c) => {
@@ -148,7 +148,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
 
           {/* FX Currencies List with MetricInfo */}
           <div className="space-y-1.5 text-sm pt-1 border-t border-border/50">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mt-2">
+            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground block mt-2">
               FOREIGN EXCHANGE & DOLLAR
             </span>
             {currencies.map((fx) => {

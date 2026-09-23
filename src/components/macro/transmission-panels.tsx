@@ -38,7 +38,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
     <Panel title={block.title}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <p className="flex items-center gap-1 text-sm uppercase tracking-wider text-muted-foreground">
             {block.driverLabel}
             <MetricExplainer copyKey={block.copyKey} />
           </p>

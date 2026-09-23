@@ -60,7 +60,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-primary font-bold">
+            <span className="text-sm uppercase tracking-wider text-primary font-bold">
               INDIA MARKET
             </span>
             <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
@@ -88,7 +88,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div>
               <div className="flex items-center gap-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase">
+                <p className="text-sm font-medium text-muted-foreground uppercase">
                   NIFTY 50 Index
                 </p>
                 <MetricInfo metric="nifty50" sourceOverride={nifty?.source} />
@@ -217,7 +217,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
 
       {/* Subpage shortcuts */}
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 text-sm">
-        <span className="text-muted-foreground text-[11px] uppercase font-bold tracking-wider">
+        <span className="text-muted-foreground text-sm uppercase font-bold tracking-wider">
           Direct Indices:
         </span>
         {[

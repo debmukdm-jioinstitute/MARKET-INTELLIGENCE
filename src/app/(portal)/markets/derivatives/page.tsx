@@ -67,7 +67,7 @@ export default function DerivativesPage() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
+                <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground flex items-center gap-1">
                   IV smile
                   <MetricInfo id="vix" name="Implied Volatility Smile" iconSize="xs" />
                 </p>
@@ -76,7 +76,7 @@ export default function DerivativesPage() {
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
+                <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground flex items-center gap-1">
                   Open interest by strike
                   <MetricInfo id="pcr" name="Open Interest Distribution" iconSize="xs" />
                 </p>
@@ -132,7 +132,7 @@ function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
 function StrikeTable({ label, rows }: { label: string; rows: { strike: number; oi: number }[] }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
+      <p className="text-sm font-semibold uppercase text-muted-foreground flex items-center gap-1">
         {label}
         <MetricInfo id="pcr" name={label} iconSize="xs" />
       </p>

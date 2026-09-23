@@ -31,7 +31,7 @@ export default function MarketBreadthPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div className="rounded-xl border border-emerald-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase flex items-center gap-1">
+            <span className="text-sm text-muted-foreground uppercase flex items-center gap-1">
               <TrendingUp className="size-3 text-emerald-600" />
               ADVANCING EQUITIES
             </span>
@@ -43,7 +43,7 @@ export default function MarketBreadthPage() {
 
         <div className="rounded-xl border border-rose-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase flex items-center gap-1">
+            <span className="text-sm text-muted-foreground uppercase flex items-center gap-1">
               <TrendingDown className="size-3 text-rose-600" />
               DECLINING EQUITIES
             </span>
@@ -55,7 +55,7 @@ export default function MarketBreadthPage() {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">52-WEEK HIGHS</span>
+            <span className="text-sm text-muted-foreground uppercase">52-WEEK HIGHS</span>
             <MetricInfo id="high52w" asOf={asOf} provider="NSE India 52W High API" sourceUrl="https://www.nseindia.com/market-data/52-week-high-equity-market" />
           </div>
           <div className="text-3xl font-bold text-emerald-600">{h52}</div>
@@ -64,7 +64,7 @@ export default function MarketBreadthPage() {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground uppercase">52-WEEK LOWS</span>
+            <span className="text-sm text-muted-foreground uppercase">52-WEEK LOWS</span>
             <MetricInfo id="low52w" asOf={asOf} provider="NSE India 52W Low API" sourceUrl="https://www.nseindia.com/market-data/52-week-low-equity-market" />
           </div>
           <div className="text-3xl font-bold text-rose-600">{l52}</div>

@@ -103,7 +103,7 @@ export function SecuritySheet({
               </dl>
 
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
                   Market depth (5 level)
                 </p>
                 <MarketDepthLadder buy={quote.depth.buy} sell={quote.depth.sell} />
@@ -111,7 +111,7 @@ export function SecuritySheet({
 
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                  <p className="text-sm font-semibold uppercase text-muted-foreground">
                     Price history
                   </p>
                   <Select value={range} onValueChange={(v) => setRange(v as CandleRange)}>
@@ -137,7 +137,7 @@ export function SecuritySheet({
               </div>
 
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
                   Fundamentals — key ratios
                 </p>
                 {fundamentalsLoading && !fundamentals ? (

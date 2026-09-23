@@ -75,7 +75,7 @@ function VixPanel({
           1M range {fmtNum(range1m.min, 2)} – {fmtNum(range1m.max, 2)}
         </p>
       ) : null}
-      <p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Market breadth</p>
+      <p className="mt-3 text-sm font-semibold uppercase text-muted-foreground">Market breadth</p>
       <p className="text-sm">
         Adv {breadth.advances ?? "—"} · Dec {breadth.declines ?? "—"}
       </p>

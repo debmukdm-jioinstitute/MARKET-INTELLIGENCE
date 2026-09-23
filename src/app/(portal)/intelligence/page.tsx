@@ -56,7 +56,7 @@ export default function IntelligencePage() {
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/20 text-primary">
               <Sparkles className="size-3.5" />
             </span>
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+            <span className="text-sm font-bold text-foreground uppercase tracking-wider">
               AI COPILOT TERMINAL
             </span>
             <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-sm font-bold text-emerald-600">
@@ -86,7 +86,7 @@ export default function IntelligencePage() {
                   : "border border-primary/40 bg-primary/10 text-primary-foreground font-semibold ml-auto max-w-xl",
               )}
             >
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground uppercase font-bold mb-1">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground uppercase font-bold mb-1">
                 {m.role === "assistant" ? <Bot className="size-3 text-primary" /> : null}
                 <span>{m.role === "assistant" ? "MI Copilot" : "Portfolio Manager"}</span>
               </div>

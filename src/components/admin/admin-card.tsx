@@ -28,7 +28,7 @@ export function AdminCard({
 export function AdminStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p>
+      <p className="text-sm uppercase tracking-wider text-gray-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">{value}</p>
     </div>
   );

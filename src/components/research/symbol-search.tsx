@@ -201,7 +201,7 @@ export function SymbolSearch({
                   <span className="font-medium">{h.symbol}</span>
                   <span className="ml-2 text-muted-foreground">{h.name}</span>
                 </span>
-                <span className="shrink-0 text-[11px] uppercase text-primary">
+                <span className="shrink-0 text-sm uppercase text-primary">
                   {h.market === "IN" ? "India" : "US"}
                 </span>
               </button>

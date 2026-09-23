@@ -57,7 +57,7 @@ export default function AdminUpdatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">App updates</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">App updates</p>
         <h1 className="mt-1 text-xl font-semibold">Update banners</h1>
         <p className="mt-1 text-sm text-gray-500">The most recent published update shows as a dismissible banner in the main app.</p>
       </div>
@@ -113,7 +113,7 @@ export default function AdminUpdatesPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    {u.title} <span className="ml-1 text-[11px] uppercase text-gray-500">{u.severity}</span>
+                    {u.title} <span className="ml-1 text-sm uppercase text-gray-500">{u.severity}</span>
                   </p>
                   <p className="mt-0.5 text-sm text-gray-500">{u.body}</p>
                   <p className="mt-1 text-sm text-gray-500">{new Date(u.created_at).toLocaleString()}</p>

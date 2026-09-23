@@ -170,7 +170,7 @@ export function BrokerImportDialog({ onImport }: Props) {
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-2xl border-border bg-card font-sans text-foreground">
         <DialogHeader className="border-b border-border/80 pr-7 pb-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white uppercase tracking-wide">
+            <span className="rounded-full bg-blue-600 px-2 py-0.5 text-sm font-bold text-white uppercase tracking-wide">
               Broker Gateway
             </span>
             <DialogTitle className="font-heading text-lg leading-snug font-bold tracking-tight text-foreground">
@@ -193,7 +193,7 @@ export function BrokerImportDialog({ onImport }: Props) {
           <div className="space-y-4 pt-1">
             {/* BROKER SELECTOR */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 1. Select Indian Broker
               </label>
               <div className="grid grid-cols-3 gap-2 mt-1.5">
@@ -490,7 +490,7 @@ export function BrokerImportDialog({ onImport }: Props) {
             {/* PREVIEW TABLE */}
             <div className="max-h-60 overflow-y-auto rounded-xl border border-border/80 bg-card">
               <table className="w-full text-left text-sm">
-                <thead className="sticky top-0 border-b border-border bg-secondary/80 text-xs uppercase text-muted-foreground">
+                <thead className="sticky top-0 border-b border-border bg-secondary/80 text-sm uppercase text-muted-foreground">
                   <tr>
                     <th className="p-2.5">Symbol</th>
                     <th className="p-2.5">Name</th>
@@ -519,7 +519,7 @@ export function BrokerImportDialog({ onImport }: Props) {
 
             {/* IMPORT MODE CONTROLS */}
             <div className="rounded-xl border border-border/60 bg-secondary/20 p-3.5 text-sm space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Select Import Mode
               </span>
               <div className="grid grid-cols-2 gap-2">

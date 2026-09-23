@@ -119,7 +119,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 
             {position ? (
               <section className="rounded-lg border border-border p-5">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Your book
                 </h4>
                 <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -142,7 +142,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
             ) : null}
 
             <section>
-              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Fundamentals (live)
               </h4>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
@@ -161,7 +161,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 
             {data.history.length > 0 ? (
               <section>
-                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Price — 1Y daily (Yahoo Finance)
                 </h4>
                 <div className="h-[min(420px,40vh)]">
@@ -174,7 +174,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
             ) : null}
 
             <section className="rounded-lg border border-border bg-muted/30 p-4">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Data sources
               </h4>
               <ul className="mt-3 space-y-2 text-sm">
@@ -220,7 +220,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 function BookStat({ k, v, className }: { k: string; v: string; className?: string }) {
   return (
     <div className="min-w-0 rounded-md border border-border/60 bg-card/50 px-3 py-2">
-      <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">{k}</dt>
+      <dt className="text-sm uppercase tracking-wide text-muted-foreground">{k}</dt>
       <dd className={cn("mt-1 truncate text-sm font-medium tabular-nums", className)}>{v}</dd>
     </div>
   );
@@ -239,7 +239,7 @@ function Metric({
 }) {
   return (
     <div className="rounded-md border border-border px-3 py-2">
-      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-sm uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="text-lg">{value}</p>
       {sub ? (
         <p className={cn("text-sm", positive ? "text-emerald-600" : "text-rose-600")}>{sub}</p>

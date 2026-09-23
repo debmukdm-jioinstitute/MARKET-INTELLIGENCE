@@ -20,7 +20,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Analytics</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Analytics</p>
         <h1 className="mt-1 text-xl font-semibold">Traffic</h1>
         <p className="mt-1 text-sm text-gray-500">Pageview beacons fired by every page in the main app (logged-in and guest).</p>
       </div>

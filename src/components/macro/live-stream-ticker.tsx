@@ -69,7 +69,7 @@ export function LiveStreamTicker() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
-          <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Live stream
           </span>
           <MetricExplainer copyKey="ticker_stream" />

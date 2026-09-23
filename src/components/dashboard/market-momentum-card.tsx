@@ -34,7 +34,7 @@ export function MarketMomentumCard() {
           {/* DMA Dispersions with MetricInfo */}
           <div className="rounded-xl border border-border/70 bg-card/50 p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+              <span className="text-sm font-bold tracking-wide text-muted-foreground uppercase">
                 Moving Average Regimes
               </span>
               <MetricInfo metric="dma" sourceOverride={techSource} />
@@ -69,7 +69,7 @@ export function MarketMomentumCard() {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-border/70 bg-card/40 p-3.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-xs uppercase">RSI (14D)</span>
+                <span className="text-muted-foreground text-sm uppercase">RSI (14D)</span>
                 <MetricInfo metric="rsi" sourceOverride={techSource} />
               </div>
               <span className="font-bold text-foreground text-base mt-0.5 block">62.40</span>
@@ -78,7 +78,7 @@ export function MarketMomentumCard() {
 
             <div className="rounded-xl border border-border/70 bg-card/40 p-3.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-xs uppercase">MACD Signal</span>
+                <span className="text-muted-foreground text-sm uppercase">MACD Signal</span>
                 <MetricInfo metric="macd" sourceOverride={techSource} />
               </div>
               <span className="font-bold text-emerald-600 text-base mt-0.5 block">Positive</span>

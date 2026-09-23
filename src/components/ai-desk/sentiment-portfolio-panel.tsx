@@ -90,7 +90,7 @@ export function SentimentPortfolioPanel() {
                   <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{h.rationale}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <Badge variant="outline" className={cn("h-5 px-2 text-[11px] uppercase", labelColor(h.label))}>
+                  <Badge variant="outline" className={cn("h-5 px-2 text-sm uppercase", labelColor(h.label))}>
                     {h.label === "na" ? "no headlines" : h.label}
                   </Badge>
                   <p className="mt-1 text-sm text-muted-foreground/80">{h.headlineCount} headlines</p>

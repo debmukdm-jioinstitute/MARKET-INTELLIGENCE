@@ -35,7 +35,7 @@ export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: n
           >
             {item.title}
           </a>
-          <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <p className="mt-1 text-sm uppercase tracking-wide text-muted-foreground">
             {SOURCE_LABEL[item.source]}
             {item.publishedAt ? ` · ${item.publishedAt}` : ""}
           </p>

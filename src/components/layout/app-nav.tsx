@@ -283,7 +283,7 @@ export function AppNav() {
                 const accent = ACCENTS[col.title] ?? DEFAULT_ACCENT;
                 return (
                   <div key={col.title} className="col-span-2 sm:col-span-1">
-                    <p className={cn("mb-3 flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase", accent.text)}>
+                    <p className={cn("mb-3 flex items-center gap-1.5 text-sm font-bold tracking-wider uppercase", accent.text)}>
                       <span className={cn("size-1.5 rounded-full", accent.dot)} />
                       {col.title}
                     </p>

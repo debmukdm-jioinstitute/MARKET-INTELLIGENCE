@@ -27,7 +27,7 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div>
-          <p className="text-xs font-semibold uppercase text-muted-foreground">FII vs DII (today |net|)</p>
+          <p className="text-sm font-semibold uppercase text-muted-foreground">FII vs DII (today |net|)</p>
           {fii != null && dii != null ? (
             <div className="mt-2 space-y-2 text-sm">
               <FlowBar label="FII" value={Math.abs(fii)} max={Math.max(Math.abs(fii), Math.abs(dii), 1)} />

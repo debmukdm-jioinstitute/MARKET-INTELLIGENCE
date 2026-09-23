@@ -22,7 +22,7 @@ export function MetricsCatalog({ categories }: { categories: MetricCategory[] })
                   </span>
                   <span className="flex items-center gap-1.5 text-right">
                     {metric.status !== "ok" ? (
-                      <Badge variant="outline" className="h-4 px-1 text-[11px] uppercase text-muted-foreground">
+                      <Badge variant="outline" className="h-4 px-1 text-sm uppercase text-muted-foreground">
                         {metric.status === "na" ? "N/A" : "approx"}
                       </Badge>
                     ) : null}

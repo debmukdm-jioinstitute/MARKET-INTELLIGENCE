@@ -106,7 +106,7 @@ export function ResearchIntelligencePanels({
                     </td>
                     <td className="py-2 pr-4 text-sm">{row.exDate ?? "—"}</td>
                     <td className="py-2 pr-4 text-sm">{row.recordDate ?? "—"}</td>
-                    <td className="py-2 text-xs uppercase text-muted-foreground">{row.source}</td>
+                    <td className="py-2 text-sm uppercase text-muted-foreground">{row.source}</td>
                   </tr>
                 ))}
               </tbody>

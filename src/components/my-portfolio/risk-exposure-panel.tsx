@@ -29,7 +29,7 @@ export function RiskExposurePanel({ categories }: { categories: MetricCategory[]
   return (
     <div className="grid grid-cols-2 gap-6 text-sm">
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Risk</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Risk</p>
         <Row categories={categories} id="volatility" />
         <Row categories={categories} id="beta" />
         <Row categories={categories} id="sharpe" />
@@ -37,7 +37,7 @@ export function RiskExposurePanel({ categories }: { categories: MetricCategory[]
         <Row categories={categories} id="var" />
       </div>
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Exposure</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Exposure</p>
         <Row categories={categories} id="netExposure" />
         <Row categories={categories} id="cashPct" />
         <Row categories={categories} id="concentration" />

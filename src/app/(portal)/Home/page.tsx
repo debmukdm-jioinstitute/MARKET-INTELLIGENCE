@@ -26,7 +26,7 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
+            <span className="text-sm uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
               <Terminal className="size-3.5" />
               INSTITUTIONAL COCKPIT
             </span>

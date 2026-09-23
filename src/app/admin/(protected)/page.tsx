@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Overview</p>
+        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Overview</p>
         <h1 className="mt-1 text-xl font-semibold">Admin dashboard</h1>
       </div>
 

@@ -10,7 +10,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">RBI / liquidity watch</h2>
+        <h2 className="text-sm uppercase tracking-[0.22em] text-primary">RBI / liquidity watch</h2>
         <MetricInfo id="liquidity" asOf={data.fetchedAt} iconSize="xs" />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
@@ -35,7 +35,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
       </dl>
       <div className="mt-4 rounded-md border border-dashed border-border p-3">
         <div className="flex justify-between items-center">
-          <p className="text-xs font-semibold uppercase text-muted-foreground">System liquidity</p>
+          <p className="text-sm font-semibold uppercase text-muted-foreground">System liquidity</p>
           <MetricInfo id="liquidity" asOf={liq.source.asOf ?? data.fetchedAt} iconSize="xs" />
         </div>
         <p className="mt-1 text-lg">{liq.value ?? "—"}</p>

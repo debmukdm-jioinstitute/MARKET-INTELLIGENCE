@@ -9,11 +9,11 @@ import { fmtNum } from "@/lib/format-india";
 export function IndiaMacro({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
-      <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">India macro</h2>
+      <h2 className="text-sm uppercase tracking-[0.22em] text-primary">India macro</h2>
       <p className="mt-1 text-sm text-muted-foreground">Current · previous · 12M trend (official / open data only).</p>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="text-[11px] uppercase text-muted-foreground">
+          <thead className="text-sm uppercase text-muted-foreground">
             <tr className="border-b border-border">
               <th className="py-2 pr-4">Indicator</th>
               <th className="py-2 pr-4 text-right">Current</th>
