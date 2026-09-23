@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader } from "@/components/layout/page-header";
+import { PageHeader, Panel } from "@/components/layout/page-header";
 import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { Flame, Activity, TrendingUp } from "lucide-react";
@@ -17,14 +17,16 @@ export default function MarketMomentumPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MarketMomentumCard />
 
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4 font-mono text-xs shadow-sm">
-          <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Activity className="size-4 text-primary" />
-            BENCHMARK TREND STRENGTH SUMMARY
-          </h3>
-
-          <div className="space-y-3 divide-y divide-border/50">
-            <div className="pt-2 flex justify-between items-center">
+        <Panel
+          title={
+            <span className="flex items-center gap-1.5">
+              <Activity className="size-4 text-primary" />
+              Benchmark Trend Strength Summary
+            </span>
+          }
+        >
+          <div className="space-y-3 divide-y divide-border/50 text-sm">
+            <div className="pt-2 first:pt-0 flex justify-between items-center">
               <span className="text-muted-foreground flex items-center gap-1">
                 NIFTY 50 Short-Term Trend (20 DMA):
                 <MetricInfo id="dma20" iconSize="xs" />
@@ -53,7 +55,7 @@ export default function MarketMomentumPage() {
               <span className="font-bold text-foreground">62.4 (Upper Bull Zone)</span>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
     </div>
   );
