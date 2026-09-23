@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { AnimatedHeadline } from "@/components/marketing/animated-headline";
 
 const FEATURES = [
   {
@@ -159,19 +160,27 @@ export function LandingPage() {
         </header>
 
         {/* HERO */}
-        <section className="relative px-5 pt-16 md:pt-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              Live market data, free to start
-            </span>
+        <div className="relative overflow-hidden">
+          {/* Mesh Background */}
+          <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+             <div className="hero-mesh-blob hero-mesh-blob-1" />
+             <div className="hero-mesh-blob hero-mesh-blob-2" />
+             <div className="hero-mesh-blob hero-mesh-blob-3" />
+          </div>
 
-            <h1 className="mx-auto mt-6 max-w-2xl text-[clamp(2.2rem,6vw,3.8rem)] font-semibold leading-[1.08] tracking-tight text-gray-900">
-              Manage money like a pro.
-              <span className="block bg-gradient-to-r from-blue-600 via-sky-500 to-violet-500 bg-clip-text text-transparent">
-                Without the Bloomberg bill.
+          <section className="relative px-5 pt-16 md:pt-24">
+            <div className="mx-auto max-w-4xl text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
+                Live market data, free to start
               </span>
-            </h1>
+
+              <h1 className="mx-auto mt-6 text-[clamp(2.2rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-tight text-gray-900">
+                Manage money like a pro.
+                <div className="mt-2 text-[clamp(1.5rem,3.5vw,2.5rem)]">
+                  <AnimatedHeadline />
+                </div>
+              </h1>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
               Track your portfolio, research stocks, and understand your risk — all in one simple dashboard.
               Free to start. No credit card.
@@ -302,6 +311,7 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+      </div>
 
         {/* STATS STRIP */}
         <section className="mx-auto mt-20 max-w-6xl px-5">

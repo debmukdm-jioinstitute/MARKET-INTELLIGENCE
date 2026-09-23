@@ -234,3 +234,68 @@
 .tick-amber {
   color: #1a73e8 !important;
 }
+
+/* Animated Gradient Text */
+.animate-text-gradient {
+  background-size: 200% auto;
+  animation: textGradient 6s linear infinite;
+}
+@keyframes textGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Mesh Background */
+.hero-mesh-blob {
+  position: absolute;
+  filter: blur(80px);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: blob-float 20s infinite ease-in-out alternate;
+  will-change: transform;
+}
+.hero-mesh-blob-1 {
+  top: -10%;
+  left: 20%;
+  width: 50vw;
+  height: 50vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(circle, rgba(147,197,253,0.5) 0%, rgba(255,255,255,0) 70%);
+  animation-delay: 0s;
+}
+.hero-mesh-blob-2 {
+  top: 40%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, rgba(196,181,253,0.5) 0%, rgba(255,255,255,0) 70%);
+  animation-delay: -5s;
+}
+.hero-mesh-blob-3 {
+  bottom: -20%;
+  left: 30%;
+  width: 70vw;
+  height: 70vw;
+  max-width: 700px;
+  max-height: 700px;
+  background: radial-gradient(circle, rgba(103,232,249,0.4) 0%, rgba(255,255,255,0) 70%);
+  animation-delay: -10s;
+}
+
+@keyframes blob-float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3vw, -3vw) scale(1.05); }
+  66% { transform: translate(-3vw, 2vw) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-text-gradient,
+  .hero-mesh-blob {
+    animation: none !important;
+  }
+}
