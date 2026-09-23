@@ -33,37 +33,41 @@ export function GuidedTour() {
 
     const TOUR_DESCRIPTIONS: Record<string, string> = {
       // Markets
-      "Overview": "Get a bird's-eye view of the global markets. Instantly see how stocks, bonds, and currencies are performing right now.",
-      "India Cockpit": "Dive deep into the Indian stock market. Track top movers, sector performance, and major indices in real-time.",
-      "Sector Comparables": "Compare different industries to spot trends. Find out which sectors are gaining momentum and which are lagging.",
-      "Valuation": "Check if the market is currently overvalued or undervalued based on historical data and key financial ratios.",
-      "Breadth & Momentum": "Measure the true strength of the market. See how many individual stocks are participating in a rally or sell-off.",
-      "Derivatives": "Track options and futures activity. See where the 'smart money' is placing their bets.",
+      "Overview": "Get a comprehensive bird's-eye view of the global markets. This page aggregates live data across equities, bonds, and currencies so you can instantly gauge the overall market sentiment before diving into specifics.",
+      "India Cockpit": "Your command center for the Indian stock market. Track top movers, monitor sector performance, and analyze major indices like the Nifty and Sensex in real-time to spot domestic trading opportunities.",
+      "Sector Comparables": "Compare different industries side-by-side to spot emerging trends. Find out which sectors are gaining momentum, which are lagging, and discover where the capital is rotating today.",
+      "Valuation": "Evaluate if the market is currently overvalued or undervalued. We provide historical context and key financial ratios (like P/E and P/B bands) so you can make informed decisions about market pricing.",
+      "Breadth & Momentum": "Measure the true underlying strength of the market. Instead of just looking at the index price, see exactly how many individual stocks are actually participating in a rally or driving a sell-off.",
+      "Derivatives": "Track options and futures activity to anticipate market movements. See where the 'smart money' is placing their bets, monitor open interest, and understand institutional positioning.",
+      
       // Macro
-      "Global Board": "Understand the big picture. Track major global economic shifts, inflation trends, and growth metrics.",
-      "India Macro": "Focus on India's economy. Access key data like GDP growth, inflation rates, and government fiscal health.",
-      "RBI & Liquidity": "Monitor the central bank's moves. See how interest rate changes and liquidity affect the markets.",
-      "Currency": "Track the strength of the Rupee against the Dollar and other major global currencies.",
-      "Commodities": "Keep an eye on raw materials. Track live prices for Crude Oil, Gold, and industrial metals.",
-      "Economic Calendar": "Never miss an important event. See a schedule of upcoming economic announcements that could move the markets.",
+      "Global Board": "Understand the big picture driving the markets. Track major global economic shifts, monitor inflation trends across countries, and analyze growth metrics that dictate central bank policies.",
+      "India Macro": "Focus specifically on the health of India's economy. Access key localized data such as GDP growth prints, inflation rates, and the government's fiscal health all on one unified dashboard.",
+      "RBI & Liquidity": "Monitor the Reserve Bank of India's policy moves. Understand how changes in interest rates, repo paths, and systemic banking liquidity will ultimately impact stock prices and borrowing costs.",
+      "Currency": "Track the strength of the Indian Rupee against the US Dollar and other major global currencies. Crucial for understanding export/import dynamics and foreign institutional flows.",
+      "Commodities": "Keep an eye on the raw materials that drive the global economy. Track live prices and trends for Crude Oil, Gold, and industrial metals to anticipate inflation and sector-specific impacts.",
+      "Economic Calendar": "Never get caught off-guard by a sudden market move. Use this schedule of upcoming major economic announcements (like jobs reports or rate decisions) to prepare your portfolio in advance.",
+      
       // Portfolio
-      "Command Center": "Your personal dashboard. View your total portfolio value, track daily profits or losses, and see all your live investments in one place.",
-      "Allocation": "See exactly where your money is. Visualize how your investments are spread across different assets and sectors.",
-      "Risk & VaR": "Understand your exposure. We calculate the maximum potential loss your portfolio might face in extreme conditions.",
-      "Attribution": "Find out what's working. See exactly which specific stock picks or sector bets are driving your returns.",
-      "Quant & Factors": "Advanced analysis. See how much of your performance is driven by market factors like 'Growth', 'Value', or 'Momentum'.",
-      "Optimizer": "Let math improve your returns. Get smart suggestions on how to rebalance your investments for the best risk-to-reward ratio.",
+      "Command Center": "Your personal investment dashboard. View your total portfolio value, track your daily profit and loss, and manage all your live positions across different brokers in one unified view.",
+      "Allocation": "See exactly where your money is deployed. Visualize how your investments are spread across different asset classes, sectors, and geographies to ensure you remain properly diversified.",
+      "Risk & VaR": "Understand your true exposure and prepare for the worst. We calculate the maximum potential loss (Value-at-Risk) your portfolio might face during extreme market conditions so you can size positions safely.",
+      "Attribution": "Find out exactly what's working and what isn't. Our attribution models break down your performance so you know which specific stock picks or sector bets are actually driving your returns.",
+      "Quant & Factors": "Advanced systematic analysis of your holdings. Discover how much of your portfolio's performance is driven by underlying market factors like 'Growth', 'Value', or 'Momentum' rather than individual stock picking.",
+      "Optimizer": "Let mathematics improve your returns. Input your constraints and get smart, algorithmic suggestions on how to rebalance your investments for the absolute best risk-to-reward ratio.",
+      
       // Research
-      "Company Workbench": "Research any specific stock. Get instant access to financial snapshots, historical performance, and competitor analysis.",
-      "AI Desk": "Your personal AI analyst. Have a conversation with AI agents to discover new trading ideas and debate stock fundamentals.",
-      "IPO Pipeline": "Stay ahead of new listings. Track upcoming Initial Public Offerings and see their subscription status.",
-      "Options Flow": "Spot unusual activity. Our AI highlights large, out-of-the-ordinary options trades that might signal a big move.",
-      "Research Reports": "Read in-depth analysis. Access detailed, model-driven reports on companies covered by our research team.",
+      "Company Workbench": "The ultimate tool for researching any specific stock. Get instant access to comprehensive financial snapshots, historical performance charts, and direct competitor analysis to build your investment thesis.",
+      "AI Desk": "Your personal, intelligent AI analyst. Have a natural conversation with specialized AI agents to discover new trading ideas, debate stock fundamentals, and get unbiased second opinions on your trades.",
+      "IPO Pipeline": "Stay ahead of the curve on new market listings. Track upcoming Initial Public Offerings, read their prospectuses, and monitor live subscription statuses to find early opportunities.",
+      "Options Flow": "Spot unusual activity before the crowd does. Our AI monitors the entire options tape to highlight large, out-of-the-ordinary trades that might signal an upcoming big move in a stock.",
+      "Research Reports": "Read in-depth, professional analysis. Access detailed, model-driven reports and notes on companies covered by our research team to save hours of manual fundamental analysis.",
+      
       // Intelligence
-      "Intelligence Feed": "Cut through the noise. Our AI reads the latest news and scores it, instantly telling you if a headline is positive or negative for the market.",
-      "System & Data": "Transparency is key. Check the live health and freshness of all the data feeds powering our platform.",
-      "Data Feeds": "See exactly where we get our numbers. View the complete list of trusted market data providers we connect with.",
-      "Daily Brief": "A quick, 5-minute read summarizing the day's main market story, curated by our experts."
+      "Intelligence Feed": "Cut through the noise of traditional news. Our AI reads thousands of articles and scores them in real-time, instantly telling you if a breaking headline is positive or negative for your portfolio.",
+      "System & Data": "Transparency is critical for trust. Check the live health, latency, and freshness of all the underlying data feeds that power the Market Intelligence platform.",
+      "Data Feeds": "See exactly where we get our numbers. View the complete list of trusted, institutional-grade market data providers we connect with to ensure you are trading on the best information.",
+      "Daily Brief": "A quick, expertly curated 5-minute read summarizing the day's main market story. Perfect for catching up on the broader narrative without getting bogged down in the data."
     };
 
     NAV_COLUMNS.forEach((col, index) => {
