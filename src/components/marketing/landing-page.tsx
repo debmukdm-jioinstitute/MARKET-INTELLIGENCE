@@ -208,7 +208,68 @@ export function LandingPage() {
                 <MockStat label="Sharpe ratio" value="1.24" trend="steady" />
                 <MockStat label="Value at risk" value="₹41,574" trend="-0.87%" />
               </div>
-              <div className="mt-4 h-28 rounded-2xl border border-white/60 bg-gradient-to-b from-blue-50/80 to-white/40 sm:h-36" />
+              <div className="mt-4 relative h-36 sm:h-48 overflow-hidden rounded-2xl border border-white/60 bg-white/40">
+                {/* A mock chart */}
+                <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 400 100">
+                  <defs>
+                    <linearGradient id="chart-grad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="rgb(37 99 235)" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="rgb(37 99 235)" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Grid lines */}
+                  <path d="M0 25h400M0 50h400M0 75h400" stroke="rgba(0,0,0,0.04)" strokeWidth="1" strokeDasharray="4 4" />
+                  
+                  {/* Area */}
+                  <path
+                    d="M 0 85 C 30 80, 50 90, 80 75 C 110 60, 130 65, 160 50 C 190 35, 210 50, 240 40 C 270 30, 290 20, 320 25 C 350 30, 370 15, 400 10 L 400 100 L 0 100 Z"
+                    fill="url(#chart-grad)"
+                  />
+                  
+                  {/* Line */}
+                  <path
+                    d="M 0 85 C 30 80, 50 90, 80 75 C 110 60, 130 65, 160 50 C 190 35, 210 50, 240 40 C 270 30, 290 20, 320 25 C 350 30, 370 15, 400 10"
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,0.5)] pointer-events-none" />
+                
+                {/* Advanced Overlay Data */}
+                <div className="absolute left-4 top-4 flex gap-6 sm:left-6 sm:top-5">
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Alpha vs Nifty 50</p>
+                    <p className="text-sm font-bold text-emerald-600">+4.2%</p>
+                  </div>
+                  <div className="hidden sm:block space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Portfolio Beta</p>
+                    <p className="text-sm font-bold text-gray-900">0.85</p>
+                  </div>
+                  <div className="hidden sm:block space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Max Drawdown</p>
+                    <p className="text-sm font-bold text-rose-500">-12.4%</p>
+                  </div>
+                  <div className="hidden md:block space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Win Rate</p>
+                    <p className="text-sm font-bold text-gray-900">68%</p>
+                  </div>
+                </div>
+
+                {/* Active Point Indicator (Mocked hover state) */}
+                <div className="absolute top-[21%] left-[78.5%] -translate-x-1/2 -translate-y-1/2 hidden sm:block">
+                  <div className="relative flex flex-col items-center">
+                    <div className="bg-gray-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap mb-1 font-medium">
+                      Nov 24 • ₹28.5L
+                    </div>
+                    <div className="w-[1px] h-[85px] bg-gray-900/20" />
+                    <div className="absolute bottom-0 size-3 rounded-full bg-white border-2 border-blue-600 shadow-[0_0_0_2px_rgba(37,99,235,0.2)]" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* floating glass chips for depth */}
