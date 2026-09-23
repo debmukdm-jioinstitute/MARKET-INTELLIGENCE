@@ -11,6 +11,7 @@ import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
 import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { GuidedTour } from "@/components/guided-tour";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -27,6 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
             <CommandPalette />
+            <GuidedTour />
             <PageviewTracker />
           </MobileNavProvider>
         </CommandPaletteProvider>

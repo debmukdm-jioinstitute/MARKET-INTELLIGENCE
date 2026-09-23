@@ -98,6 +98,7 @@ export function MegaNavBar() {
         return (
           <div key={col.title} className="relative" onMouseEnter={() => openCol(i)}>
             <Link
+              id={`nav-${col.title.toLowerCase()}`}
               href={col.items[0]?.href ?? "#"}
               className={cn(
                 "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
