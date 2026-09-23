@@ -12,7 +12,7 @@ export default function GlobalMacroPage() {
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <PageHeader
         kicker="Global Macro"
-        title="Global Macroeconomic Radar & Cross-Market Spreads"
+        title="Global Macroeconomic Data & Cross-Market Spreads"
         subtitle="Tracking US benchmarks, global sovereign yield curves, currency strength (DXY), and inter-market correlation coefficients."
       />
 

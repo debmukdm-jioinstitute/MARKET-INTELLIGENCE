@@ -51,7 +51,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe className="size-3.5" />
-              GLOBAL MACRO RADAR
+              GLOBAL MACRO DATA
             </span>
             <MetricInfo metric="sp500" customTitle="Global Cross-Asset Telemetry" />
           </div>

@@ -57,7 +57,7 @@ export function PortfolioRiskCard() {
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
               <ShieldAlert className="size-3.5 text-blue-600" />
-              RISK ARCHITECTURE & EXPOSURE
+              RISK & EXPOSURE
             </span>
             <MetricInfo metric="concentration" customTitle="Sector & Asset Concentration Risk" />
           </div>

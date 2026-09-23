@@ -93,7 +93,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Coins className="size-3.5" />
-              COMMODITIES & FX TELEMETRY
+              COMMODITIES & FX DATA
             </span>
             <MetricInfo metric="brent" customTitle="Global Commodity & FX Feeds" />
           </div>
