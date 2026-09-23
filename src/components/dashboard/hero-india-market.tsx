@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { useCandles } from "@/hooks/use-candles";
 
 interface HeroIndiaMarketProps {
   data?: IndiaDashboardPayload | null;
@@ -29,14 +30,22 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
   const h52 = breadth?.high52w;
   const l52 = breadth?.low52w;
 
+  const { candles, loading } = useCandles("NIFTY 50", selectedTf as any, selectedTf !== "1D");
+
   // Real historical points from live moving index if present
   const liveHistory = data?.indiaMoving?.nifty?.history1m?.map((h) => h.value) ?? [];
-  const points =
-    liveHistory.length > 5
-      ? liveHistory
-      : niftyVal
-      ? [niftyVal * 0.992, niftyVal * 0.995, niftyVal * 0.994, niftyVal * 0.998, niftyVal * 0.997, niftyVal]
-      : [];
+  let points: number[] = [];
+  
+  if (selectedTf === "1D") {
+    points =
+      liveHistory.length > 5
+        ? liveHistory
+        : niftyVal
+        ? [niftyVal * 0.992, niftyVal * 0.995, niftyVal * 0.994, niftyVal * 0.998, niftyVal * 0.997, niftyVal]
+        : [];
+  } else {
+    points = candles.map((c) => c.close);
+  }
 
   const min = points.length ? Math.min(...points) : 0;
   const max = points.length ? Math.max(...points) : 1;
@@ -156,8 +165,8 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                 />
               </svg>
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                Streaming exchange tick history…
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
+                {loading ? "Loading historical data…" : "Streaming exchange tick history…"}
               </div>
             )}
           </div>

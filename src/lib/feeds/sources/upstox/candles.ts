@@ -44,14 +44,18 @@ export async function fetchUpstoxHistoricalCandles(
     .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
 }
 
-export type CandleRange = "1M" | "3M" | "6M" | "1Y";
+export type CandleRange = "1W" | "1M" | "3M" | "6M" | "1Y";
 
 /** Maps a simple UI range to daily-candle from/to dates (YYYY-MM-DD). */
 export function candleRangeToDates(range: CandleRange): { from: string; to: string } {
   const to = new Date();
   const from = new Date(to);
-  const months = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 }[range];
-  from.setMonth(from.getMonth() - months);
+  if (range === "1W") {
+    from.setDate(from.getDate() - 7);
+  } else {
+    const months = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 }[range];
+    if (months) from.setMonth(from.getMonth() - months);
+  }
   const iso = (d: Date) => d.toISOString().slice(0, 10);
   return { from: iso(from), to: iso(to) };
 }

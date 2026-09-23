@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const VALID_RANGES: CandleRange[] = ["1M", "3M", "6M", "1Y"];
+const VALID_RANGES: CandleRange[] = ["1W", "1M", "3M", "6M", "1Y"];
 
 export async function GET(req: Request) {
   const params = new URL(req.url).searchParams;
