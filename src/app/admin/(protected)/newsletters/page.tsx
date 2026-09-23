@@ -13,6 +13,7 @@ export default function AdminNewslettersPage() {
   const [emailConfigured, setEmailConfigured] = useState(true);
   const [sandboxMode, setSandboxMode] = useState(false);
   const [form, setForm] = useState({ subject: "", html: "" });
+  const [onlyTo, setOnlyTo] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
@@ -41,7 +42,11 @@ export default function AdminNewslettersPage() {
       const res = await fetch("/api/admin/newsletters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, mode }),
+        body: JSON.stringify({
+          ...form,
+          mode,
+          recipients: onlyTo.split(/[\s,;]+/).filter(Boolean),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to save");
@@ -124,6 +129,15 @@ export default function AdminNewslettersPage() {
               className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
             />
           </div>
+          <div className="space-y-1">
+            <label className="text-sm text-gray-500">Send only to (optional)</label>
+            <input
+              value={onlyTo}
+              onChange={(e) => setOnlyTo(e.target.value)}
+              placeholder="Leave empty to send to everyone, or enter comma-separated emails"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               type="button"
@@ -139,7 +153,7 @@ export default function AdminNewslettersPage() {
               onClick={() => submit("send")}
               className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
             >
-              {sending ? "Sending…" : `Send to ${recipientCount} recipient(s)`}
+              {sending ? "Sending…" : onlyTo.trim() ? "Send to listed address(es)" : `Send to ${recipientCount} recipient(s)`}
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
 import { hasEmailConfigured, isSandboxSender, sendNewsletter } from "@/lib/admin/email";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { getActiveRecipients, getRecipientCount, withUnsubscribeFooter } from "@/lib/newsletter";
+import { getActiveRecipients, getRecipientCount, isValidEmail, withUnsubscribeFooter } from "@/lib/newsletter";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +55,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ newsletter: row });
   }
 
-  const recipients = await getActiveRecipients();
+  // Optional targeted send (e.g. a test or a single person) instead of the full list.
+  const only: string[] = Array.isArray(body.recipients)
+    ? [...new Set<string>(body.recipients.map((e: unknown) => String(e).trim().toLowerCase()).filter(isValidEmail))]
+    : [];
+  const recipients = only.length > 0 ? only : await getActiveRecipients();
   if (recipients.length === 0) {
     return NextResponse.json({ error: "No subscribers to send to yet." }, { status: 400 });
   }
