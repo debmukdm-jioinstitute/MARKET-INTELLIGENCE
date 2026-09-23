@@ -86,8 +86,16 @@ export function MegaNavBar() {
   function scheduleClose() {
     closeTimer.current = setTimeout(() => setActiveIdx(null), 150);
   }
-  useEffect(() => () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
+  useEffect(() => {
+    const handleOpen = (e: Event) => setActiveIdx((e as CustomEvent).detail);
+    const handleClose = () => setActiveIdx(null);
+    window.addEventListener("open-nav", handleOpen);
+    window.addEventListener("close-nav", handleClose);
+    return () => {
+      window.removeEventListener("open-nav", handleOpen);
+      window.removeEventListener("close-nav", handleClose);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
   }, []);
 
   return (
@@ -108,53 +116,49 @@ export function MegaNavBar() {
               {col.title}
               <ChevronDown className={cn("size-3 transition-transform", active && "rotate-180")} />
             </Link>
-            <AnimatePresence>
-              {active ? (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.14, ease: "easeOut" }}
-                  className="absolute left-0 top-full z-50 mt-2 w-96 rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)]"
-                  onMouseEnter={() => openCol(i)}
-                >
-                  <ul className="space-y-0.5">
-                    {col.items.map((item) => {
-                      const isActive = !item.external && (path === item.href || path.startsWith(item.href + "/"));
-                      return (
-                        <li key={item.label}>
-                          <Link
-                            href={item.href}
-                            target={item.external ? "_blank" : undefined}
-                            rel={item.external ? "noopener noreferrer" : undefined}
-                            onClick={() => setActiveIdx(null)}
-                            className={cn(
-                              "group flex flex-col gap-0.5 rounded-lg px-3 py-2 transition-colors",
-                              isActive ? "bg-accent" : accent.hoverBg,
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "flex items-center gap-1.5 text-sm font-medium",
-                                isActive ? "text-primary" : "text-gray-900",
-                              )}
-                            >
-                              {item.label}
-                              {item.badge ? (
-                                <span className="rounded bg-blue-600/15 px-1.5 py-0.5 text-sm font-bold text-blue-600">{item.badge}</span>
-                              ) : item.external ? (
-                                <ExternalLink className="size-3 opacity-50" />
-                              ) : null}
-                            </span>
-                            {item.desc ? <span className="text-sm leading-snug text-muted-foreground">{item.desc}</span> : null}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
+            <div
+              className={cn(
+                "absolute left-0 top-full z-50 mt-2 w-96 rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)] transition-all duration-150",
+                active ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"
+              )}
+              onMouseEnter={() => openCol(i)}
+            >
+              <ul className="space-y-0.5">
+                {col.items.map((item) => {
+                  const isActive = !item.external && (path === item.href || path.startsWith(item.href + "/"));
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        id={`nav-item-${col.title.toLowerCase()}-${item.label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
+                        href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
+                        onClick={() => setActiveIdx(null)}
+                        className={cn(
+                          "group flex flex-col gap-0.5 rounded-lg px-3 py-2 transition-colors",
+                          isActive ? "bg-accent" : accent.hoverBg,
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex items-center gap-1.5 text-sm font-medium",
+                            isActive ? "text-primary" : "text-gray-900",
+                          )}
+                        >
+                          {item.label}
+                          {item.badge ? (
+                            <span className="rounded bg-blue-600/15 px-1.5 py-0.5 text-sm font-bold text-blue-600">{item.badge}</span>
+                          ) : item.external ? (
+                            <ExternalLink className="size-3 opacity-50" />
+                          ) : null}
+                        </span>
+                        {item.desc ? <span className="text-sm leading-snug text-muted-foreground">{item.desc}</span> : null}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
         );
       })}
