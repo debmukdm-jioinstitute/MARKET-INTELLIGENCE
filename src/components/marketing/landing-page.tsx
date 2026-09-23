@@ -302,27 +302,36 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* FEATURES */}
-        <section id="features" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-          <div className="mx-auto max-w-xl text-center">
-            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Everything in one place</p>
-            <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
-              The tools professionals use. Made simple.
+        {/* FOUNDER LETTER (Replaces Features) */}
+        <section id="features" className="mx-auto max-w-4xl px-5 py-24 md:py-32">
+          <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
+            <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
+              👋
+            </div>
+            <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
+              A note to our users
             </h2>
-          </div>
-          <div className="mt-14 grid gap-5 sm:grid-cols-2">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-3xl border border-white/70 bg-white/50 p-7 shadow-[var(--shadow-sm)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/70 hover:shadow-[var(--shadow-lg)]"
-              >
-                <div className="grid size-11 place-items-center rounded-2xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
-                  <f.icon className="size-5" />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold tracking-tight text-gray-900">{f.title}</h3>
-                <p className="mt-2 text-[15px] leading-7 text-muted-foreground">{f.body}</p>
+            <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700">
+              <p>
+                Hey there,
+              </p>
+              <p>
+                I built Market Intelligence because I was tired of cluttered, expensive, and overwhelming financial tools. I wanted a space where anyone — whether you're a student, a new investor, or a seasoned trader — could see their money clearly, without the noise. 🎯
+              </p>
+              <p>
+                This platform is designed to give you the exact tools the professionals use, but wrapped in an interface that actually feels good to use. No hidden fees, no credit card required to start, and no confusing jargon. Just clean data, beautiful charts, and insights you can trust. 🚀
+              </p>
+              <p>
+                I'm incredibly grateful you're here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let's build a smarter financial future, together. 🌟
+              </p>
+              <div className="pt-6">
+                <p className="font-medium text-gray-900">Warmly,</p>
+                <p className="mt-1 text-blue-600 font-medium">Debabrata Mukherjee</p>
+                <p className="mt-6 text-sm text-muted-foreground italic border-t border-gray-200 pt-6">
+                  Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507
+                </p>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
