@@ -13,8 +13,14 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AnimatedHeadline } from "@/components/marketing/animated-headline";
+import { LenisProvider } from "@/components/marketing/lenis-provider";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import ScrollTrigger from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const FEATURES = [
   {
@@ -100,9 +106,62 @@ const COMPARISON_FEATURES = [
 export function LandingPage() {
   const { user, ready, enterGuest, isGuest } = useAuth();
   const hasAccess = ready && Boolean(user);
+  const container = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // Hero blobs parallax
+    gsap.to(".hero-mesh-blob", {
+      y: -150,
+      stagger: 0.1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".marketing",
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      }
+    });
+
+    // Dashboard entrance
+    gsap.from(".mock-dashboard", {
+      y: 60,
+      opacity: 0,
+      duration: 1.2,
+      ease: "power4.out",
+      delay: 0.2
+    });
+
+    // Stats counter trigger (simple fade up for now to ensure stability)
+    gsap.utils.toArray(".stat-card").forEach((card: any, i) => {
+      gsap.from(card, {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: card,
+          start: "top 85%",
+        }
+      });
+    });
+
+    // Pricing rows
+    gsap.from(".pricing-row", {
+      y: 20,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: ".pricing-table",
+        start: "top 80%",
+      }
+    });
+  }, { scope: container });
 
   return (
-    <div className="marketing relative min-h-screen overflow-x-hidden bg-[#f6f8fc] text-gray-900 selection:bg-blue-600/20">
+    <LenisProvider>
+      <div ref={container} className="marketing relative min-h-screen overflow-x-hidden bg-[#f6f8fc] text-gray-900 selection:bg-blue-600/20">
       {/* Ambient background blobs for the glass effect */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -top-32 left-[8%] h-[420px] w-[420px] rounded-full bg-blue-400/25 blur-[110px]" />
@@ -222,7 +281,7 @@ export function LandingPage() {
           </div>
 
           {/* Glass dashboard mockup */}
-          <div className="relative mx-auto mt-16 max-w-4xl [perspective:1600px]">
+          <div className="mock-dashboard relative mx-auto mt-16 max-w-4xl [perspective:1600px]">
             <div
               className="relative mx-auto rounded-3xl border border-white/70 bg-white/50 p-4 shadow-[0_30px_80px_-20px_rgba(30,58,138,0.35)] backdrop-blur-2xl sm:p-6"
               style={{ transform: "rotateX(8deg) rotateZ(-1deg)" }}
@@ -476,7 +535,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-xl">
+          <div className="pricing-table overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-xl">
             <div className="grid grid-cols-[1fr_auto_auto] items-center border-b border-white/70 bg-white/40 p-4 sm:grid-cols-[1fr_200px_200px] sm:p-6">
               <div className="font-medium text-gray-500">Feature</div>
               <div className="text-center font-semibold text-gray-900">
@@ -487,7 +546,7 @@ export function LandingPage() {
             
             <div className="divide-y divide-white/70">
               {COMPARISON_FEATURES.map((feature, idx) => (
-                <div key={idx} className="grid grid-cols-[1fr_auto_auto] items-center p-4 transition-colors hover:bg-white/60 sm:grid-cols-[1fr_200px_200px] sm:p-6">
+                <div key={idx} className="pricing-row grid grid-cols-[1fr_auto_auto] items-center p-4 transition-colors hover:bg-white/60 sm:grid-cols-[1fr_200px_200px] sm:p-6">
                   <div className="text-sm font-medium text-gray-900 sm:text-[15px]">{feature.name}</div>
                   <div className="flex justify-center w-[120px] sm:w-[200px]">
                     {feature.mi === true ? (
@@ -582,13 +641,14 @@ export function LandingPage() {
           </p>
         </footer>
       </div>
-    </div>
+      </div>
+    </LenisProvider>
   );
 }
 
 function MockStat({ label, value, trend, up }: { label: string; value: string; trend: string; up?: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/60 bg-white/60 p-3">
+    <div className="stat-card rounded-2xl border border-white/60 bg-white/60 p-3">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-semibold text-gray-900 sm:text-base">{value}</p>
       <p className={`mt-0.5 text-[11px] ${up ? "text-emerald-600" : "text-muted-foreground"}`}>{trend}</p>
