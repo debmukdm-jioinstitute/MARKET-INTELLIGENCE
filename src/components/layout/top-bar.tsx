@@ -5,6 +5,7 @@ import { AppNavTrigger } from "@/components/layout/app-nav";
 import { PushNotificationsToggle } from "@/components/layout/push-notifications-toggle";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function TopBar() {
