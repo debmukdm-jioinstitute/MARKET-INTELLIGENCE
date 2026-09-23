@@ -248,17 +248,34 @@ export function LandingPage() {
       }
     });
 
-    // Bottom CTA
-    gsap.from(".bottom-cta", {
-      scale: 0.95,
-      opacity: 0,
-      duration: 0.8,
-      ease: "back.out(1.2)",
+    // Bottom CTA Timeline
+    const ctaTl = gsap.timeline({
       scrollTrigger: {
         trigger: ".bottom-cta",
         start: "top 85%",
       }
     });
+
+    ctaTl.from(".bottom-cta", {
+      scale: 0.95,
+      opacity: 0,
+      duration: 0.8,
+      ease: "back.out(1.2)",
+    })
+    .from(".trust-avatar", {
+      x: 30,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: "power2.out"
+    }, "-=0.4")
+    .from(".trust-logo", {
+      y: 20,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: "power2.out"
+    }, "-=0.4");
   }, { scope: container });
 
   return (
@@ -698,19 +715,56 @@ export function LandingPage() {
 
         {/* FINAL CTA */}
         <section className="px-5 pb-28">
-          <div className="bottom-cta mx-auto max-w-4xl rounded-3xl border border-white/70 bg-gradient-to-br from-blue-600 to-violet-600 px-8 py-16 text-center shadow-[0_30px_80px_-20px_rgba(37,99,235,0.45)] sm:px-16">
-            <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-white">
-              Your money deserves better tools.
-            </h2>
-            <p className="mx-auto mt-4 max-w-md text-blue-100">
-              Join for free and see your portfolio the way professionals do.
-            </p>
-            <Link
-              href={hasAccess ? "/Home" : "/signup"}
-              className="mt-8 inline-flex rounded-full bg-white px-8 py-3.5 text-[15px] font-semibold text-blue-700 shadow-[var(--shadow-md)] transition hover:scale-[1.03] hover:bg-blue-50"
-            >
-              {hasAccess ? "Open terminal →" : "Sign up for free, takes 2 minutes →"}
-            </Link>
+          <div className="bottom-cta relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] border border-blue-500/20 bg-[#0c1438] p-8 shadow-[0_40px_100px_-20px_rgba(12,20,56,0.6)] sm:p-12 md:p-16 flex flex-col md:flex-row items-center gap-12 justify-between">
+            {/* Ambient gradients inside CTA */}
+            <div className="absolute -top-32 -left-32 h-[400px] w-[400px] rounded-full bg-blue-600/20 blur-[100px] pointer-events-none" />
+            <div className="absolute -bottom-32 -right-32 h-[400px] w-[400px] rounded-full bg-violet-600/20 blur-[100px] pointer-events-none" />
+            
+            <div className="relative z-10 w-full max-w-md text-left">
+              <h2 className="text-[clamp(2.2rem,4.5vw,3.8rem)] font-bold tracking-tight text-white leading-[1.05]">
+                Your money deserves better tools.
+              </h2>
+              <p className="mt-5 text-[15px] sm:text-[17px] text-blue-200/80 leading-relaxed max-w-[320px]">
+                Join for free and see your portfolio the way professionals do.
+              </p>
+              <Link
+                href={hasAccess ? "/Home" : "/signup"}
+                className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-[15px] font-semibold text-blue-900 shadow-[var(--shadow-md)] transition-transform hover:scale-[1.03] hover:bg-blue-50"
+              >
+                Open terminal <span aria-hidden="true" className="ml-1 transition-transform group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
+
+            <div className="relative z-10 flex w-full flex-col items-center md:w-auto md:items-end">
+              {/* Overlapping Avatars */}
+              <div className="mb-10 flex -space-x-3 sm:-space-x-4 justify-center md:justify-end">
+                {[12, 44, 33, 11, 5].map((imgId, i) => (
+                  <div key={i} className="trust-avatar relative size-20 sm:size-24 rounded-full border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.15)] bg-blue-950 overflow-hidden ring-4 ring-[#0c1438]">
+                    {/* Using pravatar as placeholders until real assets are provided */}
+                    <img src={`https://i.pravatar.cc/150?img=${imgId}`} alt="User" className="h-full w-full object-cover" />
+                  </div>
+                ))}
+              </div>
+              
+              <p className="mb-4 w-full text-center text-[11px] font-bold tracking-[0.2em] text-blue-300/70 uppercase md:text-right">
+                Trusted by leading firms
+              </p>
+              
+              {/* Firm Logos Grid */}
+              <div className="flex flex-wrap justify-center gap-3 md:justify-end max-w-[350px]">
+                {[
+                  { name: "JPMorganChase", icon: "JPM" },
+                  { name: "NOMURA", icon: "NMR" },
+                  { name: "IBM", icon: "IBM" },
+                  { name: "ditto Insurance", icon: "ditto" }
+                ].map((firm) => (
+                  <div key={firm.name} className="trust-logo flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md min-w-[100px] flex-1">
+                    <span className="font-serif font-bold text-white/90 text-[15px]">{firm.icon}</span>
+                    <span className="mt-1 text-[9px] font-medium uppercase tracking-wider text-blue-200/50">Employees</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
