@@ -149,8 +149,7 @@ export function AppNav() {
               <div className="flex items-center gap-2.5">
                 <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white">mi</span>
                 <div>
-                  <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">MI TERMINAL</p>
-                  <p className="text-[10px] text-muted-foreground -mt-0.5">{isGuest ? "Institutional Demo" : user?.name ?? "Investment Desk"}</p>
+                  <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
                 </div>
               </div>
               <button
