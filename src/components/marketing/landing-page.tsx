@@ -44,10 +44,26 @@ const STEPS = [
 ];
 
 const STATS = [
-  { value: "15+", label: "portfolio metrics" },
-  { value: "200+", label: "NSE & US stocks covered" },
-  { value: "Live", label: "market data" },
-  { value: "$0", label: "to get started" },
+  { 
+    value: "15+", 
+    label: "Advanced Metrics", 
+    desc: "From basic P&L to Sharpe, Beta, and Max Drawdown. We break down the math so you can just focus on what it means for your money." 
+  },
+  { 
+    value: "200+", 
+    label: "Global Stocks", 
+    desc: "Track the biggest movers across both the NSE and US markets. Build your dream cross-border portfolio effortlessly." 
+  },
+  { 
+    value: "Live", 
+    label: "Market Data", 
+    desc: "No more hitting refresh. Watch your portfolio update in real-time as the market moves, giving you the pulse of your investments." 
+  },
+  { 
+    value: "$0", 
+    label: "To Get Started", 
+    desc: "Your financial clarity shouldn't come with a subscription fee. Create an account, build a book, and explore — completely on us." 
+  },
 ];
 
 const FAQS = [
@@ -288,12 +304,21 @@ export function LandingPage() {
         </section>
 
         {/* STATS STRIP */}
-        <section className="mx-auto mt-20 max-w-5xl px-5">
-          <div className="grid grid-cols-2 gap-4 rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl sm:grid-cols-4 sm:p-8">
+        <section className="mx-auto mt-20 max-w-6xl px-5">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-2xl font-semibold text-gray-900 sm:text-3xl">{s.value}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
+              <div 
+                key={s.label} 
+                className="group relative overflow-hidden rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/80 hover:shadow-[var(--shadow-lg)]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-violet-600/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10 flex h-full flex-col">
+                  <p className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{s.value}</p>
+                  <p className="mt-2 text-[15px] font-semibold tracking-tight text-blue-600">{s.label}</p>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-gray-900">
+                    {s.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
