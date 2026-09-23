@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { hasEmailConfigured, sendNewsletter } from "@/lib/admin/email";
+import { hasEmailConfigured, isSandboxSender, sendNewsletter } from "@/lib/admin/email";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getActiveRecipients, getRecipientCount, withUnsubscribeFooter } from "@/lib/newsletter";
 import { NextResponse } from "next/server";
@@ -15,6 +15,7 @@ export async function GET() {
       recipientCount: 0,
       recipientBreakdown: { users: 0, publicSubscribers: 0, total: 0 },
       emailConfigured: hasEmailConfigured(),
+      sandboxMode: isSandboxSender(),
     });
 
   await ensureSchema();
@@ -28,6 +29,7 @@ export async function GET() {
     recipientCount: breakdown.total,
     recipientBreakdown: breakdown,
     emailConfigured: hasEmailConfigured(),
+    sandboxMode: isSandboxSender(),
   });
 }
 

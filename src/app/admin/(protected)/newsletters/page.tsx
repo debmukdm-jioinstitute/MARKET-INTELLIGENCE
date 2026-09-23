@@ -11,10 +11,12 @@ export default function AdminNewslettersPage() {
   const [recipientCount, setRecipientCount] = useState(0);
   const [breakdown, setBreakdown] = useState<RecipientBreakdown>({ users: 0, publicSubscribers: 0, total: 0 });
   const [emailConfigured, setEmailConfigured] = useState(true);
+  const [sandboxMode, setSandboxMode] = useState(false);
   const [form, setForm] = useState({ subject: "", html: "" });
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
+  const [sendErrors, setSendErrors] = useState<string[]>([]);
 
   function load() {
     fetch("/api/admin/newsletters")
@@ -24,6 +26,7 @@ export default function AdminNewslettersPage() {
         setRecipientCount(json.recipientCount);
         setBreakdown(json.recipientBreakdown ?? { users: 0, publicSubscribers: 0, total: 0 });
         setEmailConfigured(json.emailConfigured);
+        setSandboxMode(Boolean(json.sandboxMode));
       })
       .catch(() => {});
   }
@@ -33,6 +36,7 @@ export default function AdminNewslettersPage() {
     setSending(true);
     setError("");
     setOk("");
+    setSendErrors([]);
     try {
       const res = await fetch("/api/admin/newsletters", {
         method: "POST",
@@ -42,6 +46,7 @@ export default function AdminNewslettersPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to save");
       setOk(mode === "draft" ? "Draft saved." : `Sent to ${json.sent} recipient(s), ${json.failed} failed.`);
+      if (json.errors?.length) setSendErrors(json.errors);
       setForm({ subject: "", html: "" });
       load();
     } catch (e) {
@@ -72,6 +77,17 @@ export default function AdminNewslettersPage() {
         </div>
       ) : null}
 
+      {emailConfigured && sandboxMode ? (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700">
+          Sending from Resend&apos;s shared sandbox address — it can only deliver to your own Resend account email, so
+          sends to other recipients will fail. Verify a domain at{" "}
+          <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" className="underline">
+            resend.com/domains
+          </a>{" "}
+          and set <code>RESEND_FROM_EMAIL</code> to lift this.
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-3 gap-3">
         <AdminStat label="Total recipients" value={recipientCount} />
         <AdminStat label="Registered accounts" value={breakdown.users} />
@@ -80,6 +96,13 @@ export default function AdminNewslettersPage() {
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {ok ? <p className="text-sm text-emerald-600">{ok}</p> : null}
+      {sendErrors.length ? (
+        <div className="space-y-1 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-600">
+          {sendErrors.map((e, i) => (
+            <p key={i}>{e}</p>
+          ))}
+        </div>
+      ) : null}
 
       <AdminCard title="Compose" subtitle="HTML body — write raw HTML or simple paragraphs">
         <div className="space-y-3">
