@@ -303,15 +303,15 @@ export function LandingPage() {
         </section>
 
         {/* FOUNDER LETTER (Replaces Features) */}
-        <section id="features" className="mx-auto max-w-4xl px-5 py-24 md:py-32">
-          <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
+        <section id="features" className="mx-auto w-full px-5 py-24 md:py-32">
+          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
             <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
               👋
             </div>
             <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
               A note to our users
             </h2>
-            <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700">
+            <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700 max-w-4xl mx-auto">
               <p>
                 Hey there,
               </p>
@@ -322,12 +322,12 @@ export function LandingPage() {
                 This platform is designed to give you the exact tools the professionals use, but wrapped in an interface that actually feels good to use. No hidden fees, no credit card required to start, and no confusing jargon. Just clean data, beautiful charts, and insights you can trust. 🚀
               </p>
               <p>
-                I'm incredibly grateful you're here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let's build a smarter financial future, together. 🌟
+                I'm incredibly grateful you're here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let's build a smarter financial future, together. 🌟 I know that there will be a lot of bugs, so in case you find any, please do mail me at <a href="mailto:Deb@getmarketintelligence.in" className="font-semibold text-blue-600 hover:underline">Deb@getmarketintelligence.in</a>.
               </p>
               <div className="pt-6">
                 <p className="font-medium text-gray-900">Warmly,</p>
-                <p className="mt-1 text-blue-600 font-medium">Debabrata Mukherjee</p>
-                <p className="mt-6 text-sm text-muted-foreground italic border-t border-gray-200 pt-6">
+                <img src="/founder.png" alt="Debabrata Mukherjee" className="mt-5 h-20 w-auto object-contain sm:h-24" />
+                <p className="mt-8 text-sm text-muted-foreground italic border-t border-gray-200/60 pt-6">
                   Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507
                 </p>
               </div>
