@@ -5,10 +5,10 @@ import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { NAV_COLUMNS, type NavColumn } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { ExternalLink, LayoutDashboard, LogOut, Menu, Newspaper, X } from "lucide-react";
+import { ChevronDown, ExternalLink, LayoutDashboard, LogOut, Menu, Newspaper, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type DynamicTab = {
   id: string;
@@ -45,6 +45,122 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.16 } },
 };
 
+/** Merges the static nav columns with dynamic tabs fetched from /api/tabs. Shared by the mega-hover bar and the mobile full panel. */
+function useNavColumns(): NavColumn[] {
+  const [dynamicTabs, setDynamicTabs] = useState<DynamicTab[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/tabs")
+      .then((r) => r.json())
+      .then((json) => {
+        if (!cancelled) setDynamicTabs(json.tabs ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const columns: NavColumn[] = NAV_COLUMNS.map((c) => ({ ...c, items: [...c.items] }));
+  for (const tab of dynamicTabs) {
+    const item = { label: tab.label, href: tab.href, desc: "", badge: tab.badge as "AI" | "NEW" | undefined, external: tab.external };
+    const existing = columns.find((c) => c.title.toLowerCase() === tab.section.toLowerCase());
+    if (existing) existing.items.push(item);
+    else columns.push({ title: tab.section, items: [item] });
+  }
+  return columns;
+}
+
+/** Desktop-only hover mega menu — lives in the TopBar. Hovering a section shows its full page list (logical flow) instantly, no click needed. */
+export function MegaNavBar() {
+  const columns = useNavColumns();
+  const path = usePathname();
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function openCol(i: number) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setActiveIdx(i);
+  }
+  function scheduleClose() {
+    closeTimer.current = setTimeout(() => setActiveIdx(null), 150);
+  }
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  return (
+    <nav className="relative hidden items-center gap-0.5 lg:flex" onMouseLeave={scheduleClose}>
+      {columns.map((col, i) => {
+        const accent = ACCENTS[col.title] ?? DEFAULT_ACCENT;
+        const active = activeIdx === i;
+        return (
+          <div key={col.title} className="relative" onMouseEnter={() => openCol(i)}>
+            <Link
+              href={col.items[0]?.href ?? "#"}
+              className={cn(
+                "flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+                active ? cn("bg-accent", accent.text) : "text-foreground hover:bg-accent",
+              )}
+            >
+              {col.title}
+              <ChevronDown className={cn("size-3 transition-transform", active && "rotate-180")} />
+            </Link>
+            <AnimatePresence>
+              {active ? (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  className="absolute left-0 top-full z-50 mt-2 w-80 rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)]"
+                  onMouseEnter={() => openCol(i)}
+                >
+                  <ul className="space-y-0.5">
+                    {col.items.map((item) => {
+                      const isActive = !item.external && (path === item.href || path.startsWith(item.href + "/"));
+                      return (
+                        <li key={item.label}>
+                          <Link
+                            href={item.href}
+                            target={item.external ? "_blank" : undefined}
+                            rel={item.external ? "noopener noreferrer" : undefined}
+                            onClick={() => setActiveIdx(null)}
+                            className={cn(
+                              "group flex flex-col gap-0.5 rounded-lg px-3 py-2 transition-colors",
+                              isActive ? "bg-accent" : accent.hoverBg,
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "flex items-center gap-1.5 text-[13px] font-medium",
+                                isActive ? "text-primary" : "text-gray-900",
+                              )}
+                            >
+                              {item.label}
+                              {item.badge ? (
+                                <span className="rounded bg-blue-600/15 px-1 text-[9px] font-bold text-blue-600">{item.badge}</span>
+                              ) : item.external ? (
+                                <ExternalLink className="size-3 opacity-50" />
+                              ) : null}
+                            </span>
+                            {item.desc ? <span className="text-[11.5px] leading-snug text-muted-foreground">{item.desc}</span> : null}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
 /** Trigger button — lives in the TopBar, opens the full-width nav panel. */
 export function AppNavTrigger() {
   const { open, setOpen } = useMobileNav();
@@ -73,20 +189,7 @@ export function AppNav() {
   const path = usePathname();
   const router = useRouter();
   const { user, isGuest, logout } = useAuth();
-  const [dynamicTabs, setDynamicTabs] = useState<DynamicTab[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/tabs")
-      .then((r) => r.json())
-      .then((json) => {
-        if (!cancelled) setDynamicTabs(json.tabs ?? []);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const columns = useNavColumns();
 
   useEffect(() => {
     setOpen(false);
@@ -105,14 +208,6 @@ export function AppNav() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [open, setOpen]);
-
-  const columns: NavColumn[] = NAV_COLUMNS.map((c) => ({ ...c, items: [...c.items] }));
-  for (const tab of dynamicTabs) {
-    const item = { label: tab.label, href: tab.href, desc: "", badge: tab.badge as "AI" | "NEW" | undefined, external: tab.external };
-    const existing = columns.find((c) => c.title.toLowerCase() === tab.section.toLowerCase());
-    if (existing) existing.items.push(item);
-    else columns.push({ title: tab.section, items: [item] });
-  }
 
   // Only the single longest matching href is "active" — otherwise a parent route
   // like /markets would light up alongside a child like /markets/india.

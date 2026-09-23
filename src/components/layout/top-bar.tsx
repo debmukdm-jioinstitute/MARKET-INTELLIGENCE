@@ -1,7 +1,7 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
-import { AppNavTrigger } from "@/components/layout/app-nav";
+import { AppNavTrigger, MegaNavBar } from "@/components/layout/app-nav";
 import { PushNotificationsToggle } from "@/components/layout/push-notifications-toggle";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Search } from "lucide-react";
@@ -28,6 +28,7 @@ export function TopBar() {
           Commands
           <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
         </button>
+        <MegaNavBar />
       </div>
       {pathname !== "/research" ? (
         <SymbolSearch variant="bar" className="w-full min-w-0" />
