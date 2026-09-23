@@ -276,15 +276,16 @@ export function WhatChangedModule() {
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {item.relatedSecurities.map((sec) => (
-                        <div
+                        <Link
+                          href={`/markets/india/${sec.symbol}`}
                           key={sec.symbol}
-                          className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-sm"
+                          className="group flex items-center gap-2 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-sm hover:bg-accent hover:border-accent-foreground/30 transition-colors cursor-pointer"
                         >
-                          <span className="font-bold text-foreground">{sec.symbol}</span>
+                          <span className="font-bold text-foreground group-hover:text-blue-600 transition-colors">{sec.symbol}</span>
                           <span className="text-muted-foreground font-sans text-sm">
                             {sec.impact}
                           </span>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
