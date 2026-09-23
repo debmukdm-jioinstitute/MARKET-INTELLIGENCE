@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatedHeadline } from "@/components/marketing/animated-headline";
 import { LenisProvider } from "@/components/marketing/lenis-provider";
 import gsap from "gsap";
@@ -108,6 +108,58 @@ export function LandingPage() {
   const hasAccess = ready && Boolean(user);
   const container = useRef<HTMLDivElement>(null);
 
+  // Live metrics simulation
+  const [metrics, setMetrics] = useState({
+    totalValue: 29.15,
+    pnl: 12825,
+    pnlPercent: 0.61,
+    sharpe: 1.24,
+    varValue: 41574,
+    varPercent: -0.87,
+    
+    // Grid metrics
+    treynor: 316.52,
+    sortino: 1.78,
+    jensens: 30.11,
+    infoRatio: 1.58,
+    calmar: 3.11,
+    sterling: 3.22,
+    burke: 5.47,
+    omega: 1.30,
+    kappa: 0.07,
+    m2: 21.72,
+    appraisal: 0.89
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(prev => {
+        const jitter = (val: number, range: number) => val + (Math.random() * range * 2 - range);
+        return {
+          totalValue: jitter(prev.totalValue, 0.02),
+          pnl: Math.round(jitter(prev.pnl, 50)),
+          pnlPercent: jitter(prev.pnlPercent, 0.02),
+          sharpe: jitter(prev.sharpe, 0.01),
+          varValue: Math.round(jitter(prev.varValue, 20)),
+          varPercent: jitter(prev.varPercent, 0.01),
+          
+          treynor: jitter(prev.treynor, 0.5),
+          sortino: jitter(prev.sortino, 0.01),
+          jensens: jitter(prev.jensens, 0.1),
+          infoRatio: jitter(prev.infoRatio, 0.01),
+          calmar: jitter(prev.calmar, 0.01),
+          sterling: jitter(prev.sterling, 0.01),
+          burke: jitter(prev.burke, 0.02),
+          omega: jitter(prev.omega, 0.01),
+          kappa: jitter(prev.kappa, 0.001),
+          m2: jitter(prev.m2, 0.05),
+          appraisal: jitter(prev.appraisal, 0.01)
+        };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useGSAP(() => {
     // Hero blobs parallax
     gsap.to(".hero-mesh-blob", {
@@ -155,6 +207,56 @@ export function LandingPage() {
       scrollTrigger: {
         trigger: ".pricing-table",
         start: "top 80%",
+      }
+    });
+
+    // Founder note
+    gsap.from(".founder-note", {
+      y: 40,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: ".founder-note",
+        start: "top 80%",
+      }
+    });
+
+    // How it works steps
+    gsap.from(".how-step", {
+      y: 40,
+      opacity: 0,
+      stagger: 0.15,
+      duration: 0.8,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: "#how",
+        start: "top 75%",
+      }
+    });
+
+    // FAQ items
+    gsap.from(".faq-item", {
+      y: 20,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: "#faq",
+        start: "top 85%",
+      }
+    });
+
+    // Bottom CTA
+    gsap.from(".bottom-cta", {
+      scale: 0.95,
+      opacity: 0,
+      duration: 0.8,
+      ease: "back.out(1.2)",
+      scrollTrigger: {
+        trigger: ".bottom-cta",
+        start: "top 85%",
       }
     });
   }, { scope: container });
@@ -295,10 +397,10 @@ export function LandingPage() {
                 <p className="text-sm text-muted-foreground">Your portfolio</p>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <MockStat label="Total value" value="₹29.15 L" trend="+4.13%" up />
-                <MockStat label="Today's P&L" value="+₹12,825" trend="+0.61%" up />
-                <MockStat label="Sharpe ratio" value="1.24" trend="steady" />
-                <MockStat label="Value at risk" value="₹41,574" trend="-0.87%" />
+                <MockStat label="Total value" value={`₹${metrics.totalValue.toFixed(2)} L`} trend="+4.13%" up />
+                <MockStat label="Today's P&L" value={`+₹${metrics.pnl.toLocaleString()}`} trend={`+${metrics.pnlPercent.toFixed(2)}%`} up />
+                <MockStat label="Sharpe ratio" value={metrics.sharpe.toFixed(2)} trend="steady" />
+                <MockStat label="Value at risk" value={`₹${metrics.varValue.toLocaleString()}`} trend={`${metrics.varPercent.toFixed(2)}%`} />
               </div>
               <div className="mt-4 relative h-36 sm:h-48 overflow-hidden rounded-2xl border border-white/60 bg-white/40">
                 {/* A mock chart */}
@@ -367,51 +469,51 @@ export function LandingPage() {
               <div className="mt-4 grid grid-cols-3 gap-x-4 gap-y-3 rounded-2xl border border-white/60 bg-white/40 p-4 backdrop-blur-md sm:grid-cols-4 md:grid-cols-6">
                 <div className="space-y-0.5">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sharpe Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">1.22</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.sharpe.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Treynor Ratio</p>
-                  <p className="text-[13px] font-bold text-emerald-600">+316.52%</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+{metrics.treynor.toFixed(2)}%</p>
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sortino Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">1.78</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.sortino.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Jensen's Alpha</p>
-                  <p className="text-[13px] font-bold text-emerald-600">+30.11%</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+{metrics.jensens.toFixed(2)}%</p>
                 </div>
                 <div className="space-y-0.5 hidden sm:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Info Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">1.58</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.infoRatio.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden sm:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Calmar Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">3.11</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.calmar.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden sm:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sterling Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">3.22</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.sterling.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden sm:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Burke Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">5.47</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.burke.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden md:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Omega Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">1.30</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.omega.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden md:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Kappa Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">0.07</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.kappa.toFixed(2)}</p>
                 </div>
                 <div className="space-y-0.5 hidden md:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">M² (Modigliani)</p>
-                  <p className="text-[13px] font-bold text-emerald-600">+21.72%</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+{metrics.m2.toFixed(2)}%</p>
                 </div>
                 <div className="space-y-0.5 hidden md:block">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Appraisal Ratio</p>
-                  <p className="text-[13px] font-bold text-gray-900">0.89</p>
+                  <p className="text-[13px] font-bold text-gray-900">{metrics.appraisal.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -458,7 +560,7 @@ export function LandingPage() {
 
         {/* FOUNDER LETTER (Replaces Features) */}
         <section id="features" className="mx-auto w-full px-5 py-24 md:py-32">
-          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
+          <div className="founder-note mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
             <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
               👋
             </div>
@@ -502,7 +604,7 @@ export function LandingPage() {
               {STEPS.map((s) => (
                 <div
                   key={s.n}
-                  className="rounded-3xl border border-white/70 bg-white/60 p-7 text-center shadow-[var(--shadow-sm)] backdrop-blur-xl"
+                  className="how-step rounded-3xl border border-white/70 bg-white/60 p-7 text-center shadow-[var(--shadow-sm)] backdrop-blur-xl"
                 >
                   <div className="mx-auto grid size-10 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[var(--shadow-sm)]">
                     {s.n}
@@ -596,7 +698,7 @@ export function LandingPage() {
 
         {/* FINAL CTA */}
         <section className="px-5 pb-28">
-          <div className="mx-auto max-w-4xl rounded-3xl border border-white/70 bg-gradient-to-br from-blue-600 to-violet-600 px-8 py-16 text-center shadow-[0_30px_80px_-20px_rgba(37,99,235,0.45)] sm:px-16">
+          <div className="bottom-cta mx-auto max-w-4xl rounded-3xl border border-white/70 bg-gradient-to-br from-blue-600 to-violet-600 px-8 py-16 text-center shadow-[0_30px_80px_-20px_rgba(37,99,235,0.45)] sm:px-16">
             <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-white">
               Your money deserves better tools.
             </h2>
@@ -659,7 +761,7 @@ function MockStat({ label, value, trend, up }: { label: string; value: string; t
 function Faq({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-white/70 bg-white/50 px-5 backdrop-blur-xl transition hover:bg-white/70">
+    <div className="faq-item rounded-2xl border border-white/70 bg-white/50 px-5 backdrop-blur-xl transition hover:bg-white/70">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
