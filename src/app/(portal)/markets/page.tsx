@@ -9,8 +9,11 @@ import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";
 import { UNIVERSE } from "@/lib/universe";
 import { cn } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function MarketsPage() {
+  const router = useRouter();
   const { data, loading, hubSyncedAt } = useFeedHub(60_000);
   const live = quoteMap(data);
 
@@ -35,7 +38,7 @@ export default function MarketsPage() {
       <PageHeader
         kicker="Market data"
         title="Investable universe"
-        subtitle="Live last prices from Yahoo Finance chart API / Stooq. Click ⓘ on a row for source and fetch time."
+        subtitle="Live last prices from Yahoo Finance chart API / Stooq. Click a row to open full research, or ⓘ for source and fetch time."
       />
       {hubSyncedAt ? (
         <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -67,24 +70,31 @@ export default function MarketsPage() {
               </TableHead>
               <TableHead className="text-right">1M*</TableHead>
               <TableHead className="text-right">1Y*</TableHead>
+              <TableHead className="w-8" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.symbol}>
+              <TableRow
+                key={row.symbol}
+                className="group cursor-pointer"
+                onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
+              >
                 <TableCell className="font-mono flex items-center gap-1">
-                  <span>{row.symbol}</span>
+                  <span className="group-hover:text-primary group-hover:underline underline-offset-2">{row.symbol}</span>
                   {row.live ? (
                     <span className="ml-1 text-[9px] uppercase text-emerald-600">live</span>
                   ) : null}
-                  <MetricInfo
-                    id={row.symbol.toLowerCase()}
-                    name={`${row.name} (${row.symbol})`}
-                    provider="Yahoo Finance / Global Market Feeds"
-                    sourceUrl={`https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`}
-                    asOf={row.asOf}
-                    iconSize="xs"
-                  />
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <MetricInfo
+                      id={row.symbol.toLowerCase()}
+                      name={`${row.name} (${row.symbol})`}
+                      provider="Yahoo Finance / Global Market Feeds"
+                      sourceUrl={`https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`}
+                      asOf={row.asOf}
+                      iconSize="xs"
+                    />
+                  </span>
                 </TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell className="text-muted-foreground">{row.assetClass}</TableCell>
@@ -92,6 +102,9 @@ export default function MarketsPage() {
                 <Chg v={row.d1} />
                 <Chg v={row.m1} />
                 <Chg v={row.y1} />
+                <TableCell className="pr-3">
+                  <ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
