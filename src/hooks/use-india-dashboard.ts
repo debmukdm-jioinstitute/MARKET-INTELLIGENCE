@@ -2,53 +2,51 @@
 
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { useCallback, useEffect, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
 export function useIndiaDashboard(refreshMs = 55_000) {
-  const [data, setData] = useState<IndiaDashboardPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  // Stays true until the full payload (macro/liquidity/money-flow — slower,
-  // multi-source) lands once. Only tracks the first load, not background refreshes.
+  const { mutate } = useSWRConfig();
   const [loadingFull, setLoadingFull] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const mergeQuick = useCallback((quick: Partial<IndiaDashboardPayload> & { fetchedAt: string }) => {
-    setData((prev) => ({
-      ...(prev ?? emptyShell()),
-      ...quick,
-      fetchedAt: quick.fetchedAt,
-      pulse: quick.pulse ?? prev?.pulse ?? emptyShell().pulse,
-      globalRadar: quick.globalRadar ?? prev?.globalRadar ?? emptyShell().globalRadar,
-      indiaImpact: quick.indiaImpact ?? prev?.indiaImpact ?? emptyShell().indiaImpact,
-    }));
-  }, []);
-
-  const reload = useCallback(async () => {
-    try {
-      const quickRes = await fetch("/api/feeds/india-dashboard?quick=1", { cache: "no-store" });
-      if (quickRes.ok) {
-        const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
-        mergeQuick(quick);
-        setLoading(false);
-      }
-      const res = await fetch("/api/feeds/india-dashboard", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setData((await res.json()) as IndiaDashboardPayload);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load dashboard");
-    } finally {
-      setLoading(false);
-      setLoadingFull(false);
+  const fetcher = async (url: string) => {
+    // 1. Fetch quick payload
+    const quickRes = await fetch(url + "?quick=1", { cache: "no-store" });
+    if (quickRes.ok) {
+      const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
+      
+      // Optimistically update SWR cache with merged quick data
+      mutate(url, (prev: IndiaDashboardPayload | undefined) => ({
+        ...(prev ?? emptyShell()),
+        ...quick,
+        fetchedAt: quick.fetchedAt,
+        pulse: quick.pulse ?? prev?.pulse ?? emptyShell().pulse,
+        globalRadar: quick.globalRadar ?? prev?.globalRadar ?? emptyShell().globalRadar,
+        indiaImpact: quick.indiaImpact ?? prev?.indiaImpact ?? emptyShell().indiaImpact,
+      }), { revalidate: false }); // Do not trigger a revalidation from this mutation
     }
-  }, [mergeQuick]);
 
-  useEffect(() => {
-    reload();
-    const id = window.setInterval(reload, refreshMs);
-    return () => window.clearInterval(id);
-  }, [reload, refreshMs]);
+    // 2. Fetch full payload
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const full = await res.json() as IndiaDashboardPayload;
+    
+    setLoadingFull(false);
+    return full;
+  };
 
-  return { data, loading, loadingFull, error, reload };
+  const { data, error, isLoading, mutate: reloadMutate } = useSWR<IndiaDashboardPayload>(
+    "/api/feeds/india-dashboard",
+    fetcher,
+    { refreshInterval: refreshMs }
+  );
+
+  return { 
+    data: data ?? null, 
+    loading: isLoading && !data, 
+    loadingFull: loadingFull && !data, 
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    reload: () => reloadMutate() 
+  };
 }
 
 function emptyShell(): IndiaDashboardPayload {

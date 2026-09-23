@@ -2,7 +2,8 @@
 
 import type { Holding, PortfolioAnalysis } from "@/lib/my-portfolio/types";
 import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
+import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mi_user_holdings_v2";
 
@@ -33,73 +34,63 @@ function setLocalHoldings(holdings: Holding[]) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
-    window.dispatchEvent(new CustomEvent("mi_portfolio_updated", { detail: holdings }));
+    window.dispatchEvent(new Event("mi_portfolio_updated"));
   } catch (e) {
     console.warn("Failed to write holdings to localStorage:", e);
   }
 }
 
+function subscribeHoldings(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("mi_portfolio_updated", callback);
+  return () => window.removeEventListener("mi_portfolio_updated", callback);
+}
+
+const fetcher = async ([url, holdings]: [string, Holding[] | null]) => {
+  let res: Response;
+  if (holdings && Array.isArray(holdings)) {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ holdings }),
+    });
+  } else {
+    res = await fetch(url);
+  }
+
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+  
+  // Auto-seed if empty
+  if (!holdings && json.positions) {
+    const seeded: Holding[] = json.positions.map((p: any) => ({
+      id: p.id,
+      market: p.market,
+      symbol: p.symbol,
+      instrumentKey: null,
+      name: p.name,
+      sector: p.sector,
+      currency: p.currency,
+      shares: p.shares,
+      avgCost: p.avgCost,
+      addedAt: new Date().toISOString().slice(0, 10),
+    }));
+    setLocalHoldings(seeded);
+  }
+  
+  return json as PortfolioAnalysis;
+};
+
 export function useMyPortfolio(refreshMs = 60_000) {
-  const [data, setData] = useState<PortfolioAnalysis | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const localHoldings = useSyncExternalStore(subscribeHoldings, getLocalHoldings, () => null);
 
-  const reload = useCallback(async () => {
-    try {
-      const local = getLocalHoldings();
-      let res: Response;
-      if (local && Array.isArray(local)) {
-        res = await fetch("/api/portfolio/analysis", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ holdings: local }),
-          cache: "no-store",
-        });
-      } else {
-        res = await fetch("/api/portfolio/analysis", { cache: "no-store" });
-      }
+  const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
+    ["/api/portfolio/analysis", localHoldings],
+    fetcher,
+    { refreshInterval: refreshMs }
+  );
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      const analysis = json as PortfolioAnalysis;
-      setData(analysis);
-      setError(null);
-
-      // If localStorage had nothing, seed with the returned holdings so user can mutate
-      if (!local && analysis.positions) {
-        const seeded: Holding[] = analysis.positions.map((p) => ({
-          id: p.id,
-          market: p.market,
-          symbol: p.symbol,
-          instrumentKey: null,
-          name: p.name,
-          sector: p.sector,
-          currency: p.currency,
-          shares: p.shares,
-          avgCost: p.avgCost,
-          addedAt: new Date().toISOString().slice(0, 10),
-        }));
-        setLocalHoldings(seeded);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load portfolio");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-    const handleUpdate = () => {
-      reload();
-    };
-    window.addEventListener("mi_portfolio_updated", handleUpdate);
-    const id = window.setInterval(reload, refreshMs);
-    return () => {
-      window.removeEventListener("mi_portfolio_updated", handleUpdate);
-      window.clearInterval(id);
-    };
-  }, [reload, refreshMs]);
+  const reload = useCallback(() => mutate(), [mutate]);
 
   const addHolding = useCallback(
     async (input: AddHoldingInput) => {
@@ -248,9 +239,9 @@ export function useMyPortfolio(refreshMs = 60_000) {
   );
 
   return {
-    data,
-    loading,
-    error,
+    data: data ?? null,
+    loading: isLoading && !data,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
     reload,
     addHolding,
     removeHolding,

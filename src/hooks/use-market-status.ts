@@ -1,7 +1,7 @@
 "use client";
 
 import type { MarketHoliday } from "@/lib/feeds/sources/upstox";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 type MarketInfoResponse = {
   holidays: MarketHoliday[];
@@ -17,26 +17,17 @@ function nowIst() {
   return new Date(utcMs + IST_OFFSET_MIN * 60_000);
 }
 
-export function useMarketStatus(refreshMs = 60_000) {
-  const [info, setInfo] = useState<MarketInfoResponse | null>(null);
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+  return json;
+};
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => {
-      fetch("/api/feeds/upstox/market-info", { cache: "no-store" })
-        .then((res) => res.json())
-        .then((json) => {
-          if (!cancelled && !json.error) setInfo(json);
-        })
-        .catch(() => {});
-    };
-    load();
-    const id = window.setInterval(load, refreshMs);
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, [refreshMs]);
+export function useMarketStatus(refreshMs = 60_000) {
+  const { data: info } = useSWR<MarketInfoResponse>("/api/feeds/upstox/market-info", fetcher, {
+    refreshInterval: refreshMs,
+  });
 
   const ist = nowIst();
   const day = ist.getDay();

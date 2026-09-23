@@ -1,32 +1,24 @@
 "use client";
 
 import type { IndiaMacroHubPayload } from "@/lib/macro/types";
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+  return json;
+};
 
 export function useMacroHub(refreshMs = 120_000) {
-  const [data, setData] = useState<IndiaMacroHubPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading, mutate } = useSWR<IndiaMacroHubPayload>("/api/macro/india", fetcher, {
+    refreshInterval: refreshMs,
+  });
 
-  const reload = useCallback(async () => {
-    try {
-      const res = await fetch("/api/macro/india", { cache: "no-store" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      setData(json as IndiaMacroHubPayload);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load macro hub");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-    const id = window.setInterval(reload, refreshMs);
-    return () => window.clearInterval(id);
-  }, [reload, refreshMs]);
-
-  return { data, loading, error, reload };
+  return { 
+    data: data ?? null, 
+    loading: isLoading && !data, 
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    reload: () => mutate() 
+  };
 }

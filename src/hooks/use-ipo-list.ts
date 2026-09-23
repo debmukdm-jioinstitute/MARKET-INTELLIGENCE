@@ -1,65 +1,36 @@
 "use client";
 
 import type { IpoDetail, IpoListing, IpoStatus } from "@/lib/feeds/ipo/types";
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+  return json;
+};
 
 export function useIpoList(status: IpoStatus, refreshMs = 300_000) {
-  const [ipos, setIpos] = useState<IpoListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading } = useSWR<{ ipos: IpoListing[] }>(
+    `/api/feeds/ipo?status=${status}`,
+    fetcher,
+    { refreshInterval: refreshMs }
+  );
 
-  const reload = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/feeds/ipo?status=${status}`, { cache: "no-store" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      setIpos(json.ipos ?? []);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load IPOs");
-    } finally {
-      setLoading(false);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    setLoading(true);
-    reload();
-    const id = window.setInterval(reload, refreshMs);
-    return () => window.clearInterval(id);
-  }, [reload, refreshMs]);
-
-  return { ipos, loading, error };
+  return { 
+    ipos: data?.ipos ?? [], 
+    loading: isLoading && !data, 
+    error: error instanceof Error ? error.message : error ? String(error) : null 
+  };
 }
 
 export function useIpoDetail(id: string | null, enabled: boolean) {
-  const [detail, setDetail] = useState<IpoDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const url = enabled && id ? `/api/feeds/ipo/${encodeURIComponent(id)}` : null;
+  const { data, error, isLoading } = useSWR<IpoDetail>(url, fetcher);
 
-  useEffect(() => {
-    if (!enabled || !id) return;
-    let cancelled = false;
-    setLoading(true);
-    fetch(`/api/feeds/ipo/${encodeURIComponent(id)}`, { cache: "no-store" })
-      .then(async (res) => {
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-        if (!cancelled) {
-          setDetail(json);
-          setError(null);
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load IPO detail");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, enabled]);
-
-  return { detail, loading, error };
+  return { 
+    detail: data ?? null, 
+    loading: isLoading && !data && enabled, 
+    error: error instanceof Error ? error.message : error ? String(error) : null 
+  };
 }
