@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Google_Sans, Google_Sans_Code } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
 import "katex/dist/katex.min.css";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <MathInspectorProvider>{children}</MathInspectorProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
