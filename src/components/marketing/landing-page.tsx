@@ -20,6 +20,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
+import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -77,20 +78,20 @@ const STATS = [
 
 const FAQS = [
   {
-    q: "Is this real trading?",
-    a: "No. Market Intelligence is a virtual portfolio tool. Nothing here touches real money, so you can learn and experiment freely.",
+    q: "Is Market Intelligence a real trading platform?",
+    a: "No. Market Intelligence is a research, portfolio-tracking, and analytics platform. It is designed to help users track holdings, research stocks, understand portfolio risk, and analyse performance. It does not execute real trades through the platform.",
   },
   {
-    q: "Do I need a credit card?",
-    a: "No. Create an account with just an email and password. It's free to start, no card required.",
+    q: "Do I need a credit card to use Market Intelligence?",
+    a: "No. platform is free to start and does not require a credit card. The listed plan includes the platform's available features without a time limit.",
   },
   {
-    q: "What can I actually do here?",
-    a: "Track a portfolio, research stocks, check your risk, view live market data, and run backtests — all in one simple dashboard.",
+    q: "Does Market Intelligence have AI-powered research?",
+    a: "Yes. The website features an AI Desk, described as a multi-agent research environment. It can run a live debate involving different AI analyst roles covering areas such as fundamentals, sentiment and technical analysis for a selected ticker.",
   },
   {
-    q: "Who is this for?",
-    a: "Anyone who wants to understand their money better — students, new investors, and experienced traders who want cleaner tools.",
+    q: "Is the AI Desk giving investment recommendations?",
+    a: "The AI Desk presents analytical perspectives from different analyst agents, including fundamental, sentiment and technical perspectives. These outputs should be treated as research information rather than personalised investment advice or instructions to buy or sell securities.",
   },
 ];
 
@@ -728,9 +729,7 @@ export function LandingPage() {
 
         {/* FAQ */}
         <section id="faq" className="mx-auto max-w-2xl px-5 pb-28">
-          <h2 className="text-center text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Questions? Answered.
-          </h2>
+          <FlippingFaqHeadline />
           <div className="mt-10 flex flex-col gap-3">
             {FAQS.map((item) => (
               <Faq key={item.q} {...item} />
