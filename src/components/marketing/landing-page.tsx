@@ -757,22 +757,22 @@ export function LandingPage() {
               </p>
               
               {/* Firm Logos Grid - Moving Animation */}
-              <div className="relative flex max-w-[350px] overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
+              <div className="relative flex max-w-[400px] overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
                 <div className="flex w-max items-center gap-3 animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused]">
                   {[
-                    { name: "JPMorganChase", logoUrl: "https://www.google.com/s2/favicons?domain=jpmorgan.com&sz=128" },
-                    { name: "NOMURA", logoUrl: "https://www.google.com/s2/favicons?domain=nomura.com&sz=128" },
-                    { name: "IBM", logoUrl: "https://www.google.com/s2/favicons?domain=ibm.com&sz=128" },
-                    { name: "ditto Insurance", logoUrl: "https://www.google.com/s2/favicons?domain=joinditto.in&sz=128" },
+                    { name: "JPMorganChase", logoUrl: "/images/logos/logo1.png" },
+                    { name: "Reliance Foundation", logoUrl: "/images/logos/logo2.png" },
+                    { name: "Reliance", logoUrl: "/images/logos/logo3.png" },
+                    { name: "IBM", logoUrl: "/images/logos/logo4.png" },
                     // Repeat for infinite effect
-                    { name: "JPMorganChase2", logoUrl: "https://www.google.com/s2/favicons?domain=jpmorgan.com&sz=128" },
-                    { name: "NOMURA2", logoUrl: "https://www.google.com/s2/favicons?domain=nomura.com&sz=128" },
-                    { name: "IBM2", logoUrl: "https://www.google.com/s2/favicons?domain=ibm.com&sz=128" },
-                    { name: "ditto Insurance2", logoUrl: "https://www.google.com/s2/favicons?domain=joinditto.in&sz=128" }
+                    { name: "JPMorganChase2", logoUrl: "/images/logos/logo1.png" },
+                    { name: "Reliance Foundation2", logoUrl: "/images/logos/logo2.png" },
+                    { name: "Reliance2", logoUrl: "/images/logos/logo3.png" },
+                    { name: "IBM2", logoUrl: "/images/logos/logo4.png" }
                   ].map((firm) => (
-                    <div key={firm.name} className="flex flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md min-w-[110px]">
-                      <img src={firm.logoUrl} alt={firm.name} className="h-6 w-auto mix-blend-multiply opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
-                      <span className="mt-1 text-[9px] font-semibold uppercase tracking-wider text-gray-500">Employees</span>
+                    <div key={firm.name} className="flex flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md min-w-[120px] h-[76px]">
+                      <img src={firm.logoUrl} alt={firm.name} className="h-7 w-auto max-w-[90px] object-contain mix-blend-multiply opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
+                      <span className="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-gray-500">Employees</span>
                     </div>
                   ))}
                 </div>
