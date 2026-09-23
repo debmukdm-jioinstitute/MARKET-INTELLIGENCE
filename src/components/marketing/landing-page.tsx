@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
   Check,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -84,6 +85,16 @@ const FAQS = [
     q: "Who is this for?",
     a: "Anyone who wants to understand their money better — students, new investors, and experienced traders who want cleaner tools.",
   },
+];
+
+const COMPARISON_FEATURES = [
+  { name: "Live Market Data & Research", mi: true, traditional: false },
+  { name: "Advanced Portfolio Analytics (Sharpe, Beta, VaR)", mi: true, traditional: false },
+  { name: "Global Stocks Coverage (NSE & US)", mi: true, traditional: "Extra Add-on" },
+  { name: "Institutional Grade Flow & Sweeps", mi: true, traditional: "Expensive Tier" },
+  { name: "Automated Daily Macro Tape", mi: true, traditional: false },
+  { name: "Clean, Ad-free Terminal Experience", mi: true, traditional: false },
+  { name: "Cost", mi: "$0 / Forever", traditional: "$50-$2,000 / month" },
 ];
 
 export function LandingPage() {
@@ -401,33 +412,62 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* PRICING */}
-        <section id="pricing" className="mx-auto max-w-3xl px-5 py-24 md:py-28">
-          <div className="rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[var(--shadow-lg)] backdrop-blur-2xl sm:p-12">
-            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Simple pricing</p>
-            <p className="mt-4 text-5xl font-semibold tracking-tight text-gray-900">Free</p>
-            <p className="mt-2 text-muted-foreground">Every feature. No credit card. No time limit.</p>
-            <ul className="mx-auto mt-8 flex max-w-sm flex-col gap-3 text-left text-sm text-gray-700">
-              {[
-                "Unlimited virtual portfolios",
-                "Live market data & research",
-                "Risk and performance analytics",
-                "Backtesting and scenarios",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700">
-                    <Check className="size-3.5" />
-                  </span>
-                  {item}
-                </li>
+        {/* PRICING / COMPARISON */}
+        <section id="pricing" className="mx-auto max-w-5xl px-5 py-24 md:py-32">
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Unmatched Value</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+              Professional data. Without the professional price.
+            </h2>
+            <p className="mt-4 text-[17px] text-muted-foreground">
+              See why Market Intelligence is the last financial terminal you'll ever need to open.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-xl">
+            <div className="grid grid-cols-[1fr_auto_auto] items-center border-b border-white/70 bg-white/40 p-4 sm:grid-cols-[1fr_200px_200px] sm:p-6">
+              <div className="font-medium text-gray-500">Feature</div>
+              <div className="text-center font-semibold text-gray-900">
+                <img src="/logo.png" alt="Market Intelligence" className="mx-auto h-5 w-auto dark:invert sm:h-6" />
+              </div>
+              <div className="text-center font-medium text-gray-500">Traditional Terminals</div>
+            </div>
+            
+            <div className="divide-y divide-white/70">
+              {COMPARISON_FEATURES.map((feature, idx) => (
+                <div key={idx} className="grid grid-cols-[1fr_auto_auto] items-center p-4 transition-colors hover:bg-white/60 sm:grid-cols-[1fr_200px_200px] sm:p-6">
+                  <div className="text-sm font-medium text-gray-900 sm:text-[15px]">{feature.name}</div>
+                  <div className="flex justify-center w-[120px] sm:w-[200px]">
+                    {feature.mi === true ? (
+                      <span className="grid size-6 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+                        <Check className="size-4" />
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-emerald-700">{feature.mi}</span>
+                    )}
+                  </div>
+                  <div className="flex justify-center w-[120px] text-sm text-gray-500 sm:w-[200px]">
+                    {feature.traditional === false ? (
+                      <span className="grid size-6 place-items-center rounded-full bg-gray-100 text-gray-400">
+                        <X className="size-4" />
+                      </span>
+                    ) : (
+                      <span className="text-center text-gray-500">{feature.traditional}</span>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ul>
-            <Link
-              href={hasAccess ? "/Home" : "/signup"}
-              className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
-            >
-              {hasAccess ? "Open terminal →" : "Sign up for free →"}
-            </Link>
+            </div>
+            
+            <div className="bg-gradient-to-r from-blue-600/5 via-violet-600/5 to-cyan-600/5 p-8 text-center sm:p-10">
+              <p className="text-lg font-medium text-gray-900">Ready to upgrade your workflow?</p>
+              <Link
+                href={hasAccess ? "/Home" : "/signup"}
+                className="mt-6 inline-flex rounded-full bg-blue-600 px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+              >
+                {hasAccess ? "Open terminal →" : "Get started for free →"}
+              </Link>
+            </div>
           </div>
         </section>
 
