@@ -3,95 +3,68 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { MegaMenu } from "@/components/marketing/mega-menu";
 import { MobileNav } from "@/components/marketing/mobile-nav";
+import {
+  BarChart3,
+  LineChart,
+  ShieldCheck,
+  Sparkles,
+  Check,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-const PATHS = [
+const FEATURES = [
   {
-    title: "Portfolio desk",
-    href: "/signup",
-    meta: "15 KPIs · live books · tickets",
-    points: ["Mark-to-market NAV and P&L", "Holdings ledger with virtual tickets", "Mandate, cash, and factor betas"],
+    icon: BarChart3,
+    title: "Track your portfolio",
+    body: "See your real profit, real risk, and real numbers in one place. Import your holdings or build a virtual portfolio in seconds.",
   },
   {
-    title: "Research workbench",
-    href: "/signup",
-    meta: "Universe · comparables · tape",
-    points: ["Security snapshots and factor loadings", "Sector comparables on one tape", "Simulated history from 2019"],
+    icon: LineChart,
+    title: "Research any stock",
+    body: "Company snapshots, sector comparisons, and clean charts for India and US markets — no clutter, just the numbers that matter.",
   },
   {
-    title: "Risk & attribution",
-    href: "/signup",
-    meta: "VaR · TE · Brinson",
-    points: ["Vol, drawdown, and 95% VaR", "Name-level risk contribution", "Brinson-Fachler sector effects"],
+    icon: ShieldCheck,
+    title: "Know your risk",
+    body: "Understand your risk and volatility before the market teaches you the hard way. Plain numbers, plainly explained.",
   },
   {
-    title: "Quant overlay",
-    href: "/signup",
-    meta: "Soon · optimizer live",
-    points: ["Mean-variance and risk parity", "Regime shocks on the book", "View optimizer"],
-    soon: true,
-  },
-  {
-    title: "Backtesting",
-    href: "/signup",
-    meta: "Rules · rebalance · CAGR",
-    points: ["60/40, quality growth, risk-parity lite", "Monthly or quarterly replay", "Growth of $1 vs equal weight"],
+    icon: Sparkles,
+    title: "Practice with zero risk",
+    body: "Test ideas, run backtests, and learn portfolio management on a virtual book. No real money, no downside.",
   },
 ];
 
-const LOGOS = [
-  "SPY",
-  "NASDAQ",
-  "UST 10Y",
-  "DXY",
-  "VIX",
-  "BRENT",
-  "GOLD",
-  "MSCI",
-  "IG CREDIT",
-  "HY",
-  "EAFE",
-  "EM",
+const STEPS = [
+  { n: "1", title: "Create a free account", body: "No card, no waiting. Sign up with just an email." },
+  { n: "2", title: "Build your book", body: "Add your holdings, or start from a ready-made virtual portfolio." },
+  { n: "3", title: "See what matters", body: "Get instant insights on performance, risk, and where to look next." },
 ];
 
-const STORY = [
-  {
-    act: "01",
-    title: "The watchlist was never enough.",
-    body:
-      "Retail apps show prices. Institutions run books — NAV paths, factor exposures, attribution, and risk budgets that must reconcile before anyone trades.",
-  },
-  {
-    act: "02",
-    title: "One terminal. Every language of the desk.",
-    body:
-      "From Sharpe and Sortino to Brinson and VaR, Market Intelligence maps professional portfolio management onto a virtual book you can actually operate.",
-  },
-  {
-    act: "03",
-    title: "Your story starts with a free account.",
-    body:
-      "Spin up model portfolios, stress regimes, replay backtests, and print committee packs — without wiring a brokerage or begging for a Bloomberg seat.",
-  },
+const STATS = [
+  { value: "15+", label: "portfolio metrics" },
+  { value: "200+", label: "NSE & US stocks covered" },
+  { value: "Live", label: "market data" },
+  { value: "$0", label: "to get started" },
 ];
 
 const FAQS = [
   {
-    q: "Where should I start?",
-    a: "Create a free account, then open Command. Flagship Global is the equity book; Balanced Income is multi-asset; Quant Macro is the overlay. Switch books from the top bar.",
+    q: "Is this real trading?",
+    a: "No. Market Intelligence is a virtual portfolio tool. Nothing here touches real money, so you can learn and experiment freely.",
   },
   {
-    q: "Is this live brokerage?",
-    a: "No. Market Intelligence is a virtual portfolio-management terminal. Marks are a deterministic, factor-consistent simulation so every book, backtest, and scenario stays internally coherent.",
+    q: "Do I need a credit card?",
+    a: "No. Create an account with just an email and password. It's free to start, no card required.",
   },
   {
-    q: "What is actually inside the terminal?",
-    a: "Portfolio KPIs (value, P&L, CAGR, alpha, beta, Sharpe, Sortino, drawdown, vol, TE, IR, VaR, cash, turnover), research, allocation, risk, attribution, quant, macro, markets, scenarios, optimizer, backtest, and committee reports.",
+    q: "What can I actually do here?",
+    a: "Track a portfolio, research stocks, check your risk, view live market data, and run backtests — all in one simple dashboard.",
   },
   {
-    q: "Is the account free?",
-    a: "Yes. Sign up with email and a password. Your free account lives in this browser so you can return to the same desk without a card.",
+    q: "Who is this for?",
+    a: "Anyone who wants to understand their money better — students, new investors, and experienced traders who want cleaner tools.",
   },
 ];
 
@@ -100,25 +73,25 @@ export function LandingPage() {
   const hasAccess = ready && Boolean(user);
 
   return (
-    <div className="marketing relative min-h-screen overflow-x-hidden bg-white text-gray-900 selection:bg-blue-600/20">
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(26,115,232,0.08),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(52,168,83,0.05),transparent)]" />
+    <div className="marketing relative min-h-screen overflow-x-hidden bg-[#f6f8fc] text-gray-900 selection:bg-blue-600/20">
+      {/* Ambient background blobs for the glass effect */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-32 left-[8%] h-[420px] w-[420px] rounded-full bg-blue-400/25 blur-[110px]" />
+        <div className="absolute top-40 right-[5%] h-[380px] w-[380px] rounded-full bg-sky-300/25 blur-[110px]" />
+        <div className="absolute bottom-0 left-[30%] h-[360px] w-[360px] rounded-full bg-violet-300/20 blur-[110px]" />
       </div>
 
       <div className="relative z-10">
-        <div className="border-b border-border bg-muted/70 py-2.5 text-center backdrop-blur-xl">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground">
-            <span className="font-semibold text-blue-600">LIVE DESK</span>
-            <span className="mx-2 text-gray-300">·</span>
-            Virtual books with institutional KPIs
-            <Link href="/signup" className="ml-2 text-gray-900 underline decoration-gray-300 underline-offset-4 hover:decoration-blue-600">
-              Sign up today →
+        <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
+          <p className="text-[13px] text-muted-foreground">
+            Free during preview — no credit card needed.{" "}
+            <Link href="/signup" className="font-medium text-blue-600 hover:underline underline-offset-4">
+              Start free →
             </Link>
           </p>
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-border bg-white/80 backdrop-blur-2xl backdrop-saturate-150">
+        <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
               <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white shadow-[var(--shadow-sm)]">
@@ -128,9 +101,9 @@ export function LandingPage() {
             </Link>
             <nav className="hidden items-center gap-8 text-[13px] font-medium text-muted-foreground md:flex">
               <MegaMenu />
-              <a href="#story" className="transition hover:text-gray-900">Story</a>
-              <a href="#paths" className="transition hover:text-gray-900">Desk</a>
-              <a href="#plans" className="transition hover:text-gray-900">Pricing</a>
+              <a href="#features" className="transition hover:text-gray-900">Features</a>
+              <a href="#how" className="transition hover:text-gray-900">How it works</a>
+              <a href="#faq" className="transition hover:text-gray-900">FAQ</a>
             </nav>
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
@@ -150,7 +123,7 @@ export function LandingPage() {
                     })}
                     className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
-                    Guest
+                    Try as guest
                   </button>
                   <Link
                     href="/login"
@@ -171,198 +144,222 @@ export function LandingPage() {
           </div>
         </header>
 
-        <section className="relative px-5 pb-4 pt-20 text-center md:pt-28">
-          <Float className="left-[3%] top-6 hidden w-48 rotate-[-4deg] lg:block">
-            <p className="font-mono text-[9px] tracking-widest text-blue-600">BOOK · FLAGSHIP</p>
-            <p className="mt-2 text-sm font-semibold text-gray-900">MI Flagship Global</p>
-            <p className="mt-1 font-mono text-2xl tabular-nums tracking-tight text-gray-900">$90.7M</p>
-            <p className="mt-1 font-mono text-xs text-emerald-700">+128.07% ITD</p>
-          </Float>
-          <Float className="right-[4%] top-8 hidden w-56 rotate-[2deg] lg:block">
-            <p className="font-mono text-[9px] tracking-widest text-muted-foreground">NOTE · 047</p>
-            <p className="mt-2 text-left text-sm font-medium text-gray-900">Alpha is the residual story.</p>
-            <p className="mt-2 text-left text-xs leading-5 text-muted-foreground">
-              Sharpe prices volatility. Brinson explains the sleeve. Read all three before you size the trade.
-            </p>
-          </Float>
-          <Float className="bottom-4 left-[6%] hidden w-52 rotate-[-3deg] lg:block">
-            <p className="font-mono text-[9px] text-rose-700">ATTRIBUTION</p>
-            <p className="mt-2 text-left text-sm text-gray-900">Performance a PM can defend in committee.</p>
-          </Float>
-          <Float className="bottom-8 right-[5%] hidden w-48 rotate-[3deg] lg:block">
-            <p className="font-mono text-[9px] text-muted-foreground">RISK BUDGET</p>
-            <p className="mt-1 text-sm font-medium text-gray-900">TE 6% · VaR 95%</p>
-            <p className="mt-2 text-[11px] text-muted-foreground">Cash is dry powder, not an afterthought.</p>
-          </Float>
-
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1.5 text-xs text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:border-blue-600/30 hover:bg-accent"
-          >
-            <span className="font-mono text-[10px] font-semibold text-blue-600">NEW</span>
-            Institutional KPIs on a virtual book
-            <span className="text-gray-400">Free →</span>
-          </Link>
-
-          <p className="mx-auto mt-10 max-w-lg font-mono text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
-            The story of your book
-          </p>
-          <h1 className="mx-auto mt-4 max-w-5xl text-[clamp(2.4rem,7.5vw,5.8rem)] font-semibold leading-[0.98] tracking-tight text-gray-900">
-            Everything a fund manager knows.
-            <span className="mt-2 block bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent">
-              Mapped.
+        {/* HERO */}
+        <section className="relative px-5 pt-16 md:pt-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-xs text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Live market data, free to start
             </span>
-          </h1>
-          <p className="mx-auto mt-8 max-w-2xl text-[17px] font-normal leading-[1.65] tracking-tight text-muted-foreground md:text-[19px]">
-            A clear-room terminal for investors who want Bloomberg-grade judgment without the Bloomberg invoice —
-            virtual portfolios, research, risk, and backtesting in one continuous narrative.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href={hasAccess ? "/dashboard" : "/signup"}
-              className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-md)] transition hover:scale-[1.02] hover:bg-blue-600/90"
-            >
-              {hasAccess ? "Open terminal →" : "Start managing free →"}
-            </Link>
-            <a
-              href="#story"
-              className="rounded-full border border-border px-6 py-3 text-[15px] text-gray-900 transition hover:border-gray-300 hover:bg-muted"
-            >
-              See the story
-            </a>
+
+            <h1 className="mx-auto mt-6 max-w-2xl text-[clamp(2.2rem,6vw,3.8rem)] font-semibold leading-[1.08] tracking-tight text-gray-900">
+              Manage money like a pro.
+              <span className="block bg-gradient-to-r from-blue-600 via-sky-500 to-violet-500 bg-clip-text text-transparent">
+                Without the Bloomberg bill.
+              </span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
+              Track your portfolio, research stocks, and understand your risk — all in one simple dashboard.
+              Free to start. No credit card.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={hasAccess ? "/dashboard" : "/signup"}
+                className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+              >
+                {hasAccess ? "Open terminal →" : "Start free →"}
+              </Link>
+              <a
+                href="#how"
+                className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] text-gray-900 backdrop-blur-md transition hover:bg-white/80"
+              >
+                See how it works
+              </a>
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">No credit card · Free forever plan · 2-minute setup</p>
           </div>
-          <div className="mx-auto mt-14 flex max-w-3xl flex-wrap justify-center gap-6 font-mono text-[11px] text-muted-foreground">
-            <Tape label="SPX" val="279.31" chg="-0.35%" down />
-            <Tape label="UST" val="119.91" chg="-0.68%" down />
-            <Tape label="VIX" val="12.3" chg="—" />
-            <Tape label="GOLD" val="221.92" chg="-0.90%" down />
+
+          {/* Glass dashboard mockup */}
+          <div className="relative mx-auto mt-16 max-w-4xl [perspective:1600px]">
+            <div
+              className="relative mx-auto rounded-3xl border border-white/70 bg-white/50 p-4 shadow-[0_30px_80px_-20px_rgba(30,58,138,0.35)] backdrop-blur-2xl sm:p-6"
+              style={{ transform: "rotateX(8deg) rotateZ(-1deg)" }}
+            >
+              <div className="flex items-center justify-between border-b border-white/70 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-rose-400/70" />
+                  <span className="size-2.5 rounded-full bg-amber-400/70" />
+                  <span className="size-2.5 rounded-full bg-emerald-400/70" />
+                </div>
+                <p className="text-[11px] text-muted-foreground">Your portfolio</p>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <MockStat label="Total value" value="₹29.15 L" trend="+4.13%" up />
+                <MockStat label="Today's P&L" value="+₹12,825" trend="+0.61%" up />
+                <MockStat label="Sharpe ratio" value="1.24" trend="steady" />
+                <MockStat label="Value at risk" value="₹41,574" trend="-0.87%" />
+              </div>
+              <div className="mt-4 h-28 rounded-2xl border border-white/60 bg-gradient-to-b from-blue-50/80 to-white/40 sm:h-36" />
+            </div>
+
+            {/* floating glass chips for depth */}
+            <div
+              className="absolute -top-8 -left-6 hidden w-44 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:block"
+              style={{ transform: "rotateZ(-6deg)" }}
+            >
+              <p className="text-[10px] text-muted-foreground">Risk check</p>
+              <p className="mt-1 text-sm font-medium text-gray-900">Well diversified</p>
+            </div>
+            <div
+              className="absolute -right-6 bottom-6 hidden w-48 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:block"
+              style={{ transform: "rotateZ(5deg)" }}
+            >
+              <p className="text-[10px] text-muted-foreground">Research</p>
+              <p className="mt-1 text-sm font-medium text-gray-900">RELIANCE · +0.61%</p>
+            </div>
           </div>
         </section>
 
-        <div className="mt-8 border-y border-border bg-muted/50 py-5">
-          <p className="text-center font-mono text-[10px] tracking-[0.4em] text-gray-400">TRUSTED TAPE · FACTOR-CONSISTENT</p>
-          <div className="mt-4 overflow-hidden">
-            <div className="animate-[marquee_40s_linear_infinite] flex gap-16 whitespace-nowrap px-8 font-mono text-sm text-gray-400">
-              {[...LOGOS, ...LOGOS].map((logo, i) => (
-                <span key={`${logo}-${i}`} className="transition hover:text-blue-600">{logo}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <section id="story" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-          <p className="text-center font-mono text-[10px] tracking-[0.35em] text-blue-600">THREE ACTS</p>
-          <h2 className="mt-4 text-center text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-tight text-gray-900">
-            From chart watcher to book runner.
-          </h2>
-          <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {STORY.map((s) => (
-              <article
-                key={s.act}
-                className="group relative overflow-hidden rounded-3xl border border-border bg-white p-8 shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-blue-600/30 hover:shadow-[var(--shadow-lg)]"
-              >
-                <p className="text-3xl font-semibold text-gray-200 transition group-hover:text-blue-600">{s.act}</p>
-                <h3 className="mt-6 text-xl font-semibold leading-snug tracking-tight text-gray-900">{s.title}</h3>
-                <p className="mt-4 text-[15px] leading-7 text-muted-foreground">{s.body}</p>
-              </article>
+        {/* STATS STRIP */}
+        <section className="mx-auto mt-20 max-w-5xl px-5">
+          <div className="grid grid-cols-2 gap-4 rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl sm:grid-cols-4 sm:p-8">
+            {STATS.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-2xl font-semibold text-gray-900 sm:text-3xl">{s.value}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        <section id="paths" className="border-t border-border bg-muted/40 px-5 py-24">
-          <div className="mx-auto max-w-6xl">
-            <h2 className="text-center text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">Choose where to start</h2>
-            <p className="mx-auto mt-4 max-w-xl text-center text-[15px] text-muted-foreground">
-              Same structure as the live terminal — pick a module, open a free account, land on your desk.
-            </p>
-            <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {PATHS.map((path) => (
-                <Link
-                  key={path.title}
-                  href={path.href}
-                  className="group rounded-2xl border border-border bg-white p-6 shadow-[var(--shadow-sm)] transition duration-300 hover:-translate-y-1 hover:border-blue-600/30 hover:shadow-[var(--shadow-lg)]"
+        {/* FEATURES */}
+        <section id="features" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+          <div className="mx-auto max-w-xl text-center">
+            <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Everything in one place</p>
+            <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
+              The tools professionals use. Made simple.
+            </h2>
+          </div>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="group rounded-3xl border border-white/70 bg-white/50 p-7 shadow-[var(--shadow-sm)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/70 hover:shadow-[var(--shadow-lg)]"
+              >
+                <div className="grid size-11 place-items-center rounded-2xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
+                  <f.icon className="size-5" />
+                </div>
+                <h3 className="mt-5 text-lg font-semibold tracking-tight text-gray-900">{f.title}</h3>
+                <p className="mt-2 text-[15px] leading-7 text-muted-foreground">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section id="how" className="border-y border-white/60 bg-white/40 px-5 py-24 backdrop-blur-xl md:py-28">
+          <div className="mx-auto max-w-5xl">
+            <div className="mx-auto max-w-xl text-center">
+              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Get started in minutes</p>
+              <h2 className="mt-3 text-[clamp(1.8rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
+                Three steps. That's it.
+              </h2>
+            </div>
+            <div className="mt-14 grid gap-6 md:grid-cols-3">
+              {STEPS.map((s) => (
+                <div
+                  key={s.n}
+                  className="rounded-3xl border border-white/70 bg-white/60 p-7 text-center shadow-[var(--shadow-sm)] backdrop-blur-xl"
                 >
-                  <p className="text-2xl font-semibold text-gray-900">{path.title}</p>
-                  <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
-                    {path.points.map((p) => (
-                      <li key={p} className="flex gap-2">
-                        <span className="text-blue-600">·</span>
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-6 font-mono text-[10px] tracking-wider text-gray-400">{path.meta}</p>
-                </Link>
+                  <div className="mx-auto grid size-10 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[var(--shadow-sm)]">
+                    {s.n}
+                  </div>
+                  <h3 className="mt-5 text-lg font-semibold tracking-tight text-gray-900">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{s.body}</p>
+                </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section id="box" className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-          <h2 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">Inside the box</h2>
-          <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
-            <div className="space-y-5 text-[17px] font-normal leading-[1.7] text-muted-foreground">
-              <p className="text-gray-900">Not a watchlist. Not paper trading. A desk.</p>
-              <p>
-                NAV, alpha, Sharpe, Sortino, VaR, tracking error, Brinson — the vocabulary professionals use when capital
-                is real. Here it runs on virtual books so you learn the mechanics before the mandate.
-              </p>
-              <p>Judgment is the product: what the number means, and what you do next.</p>
-            </div>
-            <ol className="space-y-4 border-l-2 border-blue-600/30 pl-6 font-mono text-sm text-gray-900">
-              <li><span className="text-blue-600">01</span> Notes · annotated research</li>
-              <li><span className="text-blue-600">02</span> Daily tape · macro nowcast</li>
-              <li><span className="text-blue-600">03</span> Books · three model portfolios</li>
-              <li><span className="text-blue-600">04</span> Tools · optimizer & scenarios</li>
-              <li><span className="text-blue-600">05</span> Drills · backtests on the tape</li>
-            </ol>
-          </div>
-        </section>
-
-        <section id="plans" className="border-t border-border bg-muted/40 px-5 py-24">
-          <div className="mx-auto max-w-6xl">
-            <h2 className="text-4xl font-semibold tracking-tight text-gray-900">Plans</h2>
-            <p className="mt-2 text-muted-foreground">Full terminal access. No card. Your book persists in this browser.</p>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              <Plan title="Free desk" price="$0" copy="Every current module. Virtual books. No card." cta="Create account" href="/signup" featured />
-              <Plan title="Analyst" price="$0" copy="Same full access while the platform is in public preview." cta="Start free" href="/signup" />
-              <Plan title="Lifetime preview" price="$0" copy="All current tracks and every update in this release." cta="Start free" href="/signup" />
+            <div className="mt-12 text-center">
+              <Link
+                href={hasAccess ? "/dashboard" : "/signup"}
+                className="inline-flex rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+              >
+                {hasAccess ? "Open terminal →" : "Start free →"}
+              </Link>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-3xl px-5 pb-28">
-          <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Questions before you join.</h2>
-          <div className="mt-8 divide-y divide-border border-y border-border">
+        {/* PRICING */}
+        <section id="pricing" className="mx-auto max-w-3xl px-5 py-24 md:py-28">
+          <div className="rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[var(--shadow-lg)] backdrop-blur-2xl sm:p-12">
+            <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">Simple pricing</p>
+            <p className="mt-4 text-5xl font-semibold tracking-tight text-gray-900">Free</p>
+            <p className="mt-2 text-muted-foreground">Every feature. No credit card. No time limit.</p>
+            <ul className="mx-auto mt-8 flex max-w-sm flex-col gap-3 text-left text-sm text-gray-700">
+              {[
+                "Unlimited virtual portfolios",
+                "Live market data & research",
+                "Risk and performance analytics",
+                "Backtesting and scenarios",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2.5">
+                  <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+                    <Check className="size-3.5" />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href={hasAccess ? "/dashboard" : "/signup"}
+              className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+            >
+              {hasAccess ? "Open terminal →" : "Create your free account →"}
+            </Link>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section id="faq" className="mx-auto max-w-2xl px-5 pb-28">
+          <h2 className="text-center text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Questions? Answered.
+          </h2>
+          <div className="mt-10 flex flex-col gap-3">
             {FAQS.map((item) => (
               <Faq key={item.q} {...item} />
             ))}
           </div>
         </section>
 
-        <section className="border-t border-border px-5 py-24 text-center">
-          <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-gray-900">
-            Ready to run the book?
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-muted-foreground">One account. One terminal. The whole story of modern portfolio management.</p>
-          <Link
-            href={hasAccess ? "/dashboard" : "/signup"}
-            className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3.5 text-[15px] font-semibold text-white shadow-[var(--shadow-md)] transition hover:bg-blue-600/90"
-          >
-            {hasAccess ? "Enter MI Terminal" : "Create your free desk"}
-          </Link>
+        {/* FINAL CTA */}
+        <section className="px-5 pb-28">
+          <div className="mx-auto max-w-4xl rounded-3xl border border-white/70 bg-gradient-to-br from-blue-600 to-violet-600 px-8 py-16 text-center shadow-[0_30px_80px_-20px_rgba(37,99,235,0.45)] sm:px-16">
+            <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-semibold tracking-tight text-white">
+              Your money deserves better tools.
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-blue-100">
+              Join for free and see your portfolio the way professionals do.
+            </p>
+            <Link
+              href={hasAccess ? "/dashboard" : "/signup"}
+              className="mt-8 inline-flex rounded-full bg-white px-8 py-3.5 text-[15px] font-semibold text-blue-700 shadow-[var(--shadow-md)] transition hover:scale-[1.03] hover:bg-blue-50"
+            >
+              {hasAccess ? "Open terminal →" : "Start free, takes 2 minutes →"}
+            </Link>
+          </div>
         </section>
 
-        <footer className="border-t border-border bg-muted/40 px-5 py-14">
+        <footer className="border-t border-white/60 bg-white/40 px-5 py-14 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:justify-between">
             <div>
               <p className="text-xl font-semibold text-gray-900">market intelligence</p>
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
-                Technical portfolio management through a virtual desk, research tape, and sequenced analytics.
+                A simple way to track, research, and understand your money — for everyone, not just professionals.
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
-              <p className="font-mono text-xs tracking-widest text-gray-400">ACCOUNT</p>
+              <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase">Account</p>
               <div className="mt-3 flex flex-col gap-2">
                 <Link href="/login" className="hover:text-gray-900">Sign in</Link>
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>
@@ -370,8 +367,8 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-          <p className="mx-auto mt-12 max-w-6xl border-t border-border pt-8 text-center font-mono text-[10px] text-gray-400">
-            © MARKET INTELLIGENCE · SIMULATED TAPE · NOT INVESTMENT ADVICE
+          <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-xs text-gray-400">
+            © Market Intelligence · Simulated data · Not investment advice
           </p>
         </footer>
       </div>
@@ -379,60 +376,12 @@ export function LandingPage() {
   );
 }
 
-function Float({ children, className }: { children: React.ReactNode; className?: string }) {
+function MockStat({ label, value, trend, up }: { label: string; value: string; trend: string; up?: boolean }) {
   return (
-    <aside
-      className={`absolute rounded-2xl border border-border bg-white p-4 text-left shadow-[var(--shadow-lg)] backdrop-blur-xl ${className ?? ""}`}
-    >
-      {children}
-    </aside>
-  );
-}
-
-function Tape({ label, val, chg, down }: { label: string; val: string; chg: string; down?: boolean }) {
-  return (
-    <span>
-      <span className="text-gray-400">{label}</span>{" "}
-      <span className="text-gray-900">{val}</span>{" "}
-      <span className={down ? "text-rose-700" : "text-emerald-700"}>{chg}</span>
-    </span>
-  );
-}
-
-function Plan({
-  title,
-  price,
-  copy,
-  cta,
-  href,
-  featured,
-}: {
-  title: string;
-  price: string;
-  copy: string;
-  cta: string;
-  href: string;
-  featured?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-2xl border p-7 transition ${
-        featured
-          ? "border-blue-600/30 bg-white shadow-[var(--shadow-lg)]"
-          : "border-border bg-white shadow-[var(--shadow-sm)] hover:border-gray-300"
-      }`}
-    >
-      <p className="text-2xl font-semibold text-gray-900">{title}</p>
-      <p className="mt-4 text-5xl font-semibold text-gray-900">{price}</p>
-      <p className={`mt-4 text-sm leading-6 ${featured ? "text-muted-foreground" : "text-gray-400"}`}>{copy}</p>
-      <Link
-        href={href}
-        className={`mt-8 inline-flex rounded-full px-5 py-2.5 text-sm font-medium transition ${
-          featured ? "bg-blue-600 text-white hover:bg-blue-600/90" : "bg-muted text-gray-900 hover:bg-gray-200"
-        }`}
-      >
-        {cta}
-      </Link>
+    <div className="rounded-2xl border border-white/60 bg-white/60 p-3">
+      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-gray-900 sm:text-base">{value}</p>
+      <p className={`mt-0.5 text-[11px] ${up ? "text-emerald-600" : "text-muted-foreground"}`}>{trend}</p>
     </div>
   );
 }
@@ -440,16 +389,16 @@ function Plan({
 function Faq({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div>
+    <div className="rounded-2xl border border-white/70 bg-white/50 px-5 backdrop-blur-xl transition hover:bg-white/70">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between py-5 text-left"
+        className="flex w-full items-center justify-between py-4 text-left"
       >
-        <span className="pr-4 text-lg font-medium text-gray-900 sm:text-xl">{q}</span>
-        <span className="font-mono text-gray-400">{open ? "−" : "+"}</span>
+        <span className="pr-4 text-[15px] font-medium text-gray-900">{q}</span>
+        <span className="text-lg text-blue-600">{open ? "−" : "+"}</span>
       </button>
-      {open ? <p className="pb-5 text-[15px] leading-7 text-muted-foreground">{a}</p> : null}
+      {open ? <p className="pb-4 text-sm leading-7 text-muted-foreground">{a}</p> : null}
     </div>
   );
 }
