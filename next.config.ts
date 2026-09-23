@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   /* config options here */
   async redirects() {
     return [
+      { 
+        source: "/:path*", 
+        has: [{ type: "host", value: "getmarketintelligence.vercel.app" }], 
+        destination: "https://getmarketintelligence.in/:path*", 
+        permanent: true 
+      },
       { source: "/app", destination: "/dashboard", permanent: true },
       { source: "/allocation", destination: "/portfolio/allocation", permanent: true },
       { source: "/risk", destination: "/portfolio/risk", permanent: true },
