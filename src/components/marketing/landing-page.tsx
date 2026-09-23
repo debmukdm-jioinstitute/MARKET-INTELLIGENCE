@@ -760,18 +760,18 @@ export function LandingPage() {
               <div className="relative flex max-w-[350px] overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
                 <div className="flex w-max items-center gap-3 animate-[marquee_20s_linear_infinite] hover:[animation-play-state:paused]">
                   {[
-                    { name: "JPMorganChase", icon: "JP Morgan" },
-                    { name: "NOMURA", icon: "Nomura" },
-                    { name: "IBM", icon: "IBM" },
-                    { name: "ditto Insurance", icon: "Ditto" },
+                    { name: "JPMorganChase", logoUrl: "https://www.google.com/s2/favicons?domain=jpmorgan.com&sz=128" },
+                    { name: "NOMURA", logoUrl: "https://www.google.com/s2/favicons?domain=nomura.com&sz=128" },
+                    { name: "IBM", logoUrl: "https://www.google.com/s2/favicons?domain=ibm.com&sz=128" },
+                    { name: "ditto Insurance", logoUrl: "https://www.google.com/s2/favicons?domain=joinditto.in&sz=128" },
                     // Repeat for infinite effect
-                    { name: "JPMorganChase2", icon: "JP Morgan" },
-                    { name: "NOMURA2", icon: "Nomura" },
-                    { name: "IBM2", icon: "IBM" },
-                    { name: "ditto Insurance2", icon: "Ditto" }
+                    { name: "JPMorganChase2", logoUrl: "https://www.google.com/s2/favicons?domain=jpmorgan.com&sz=128" },
+                    { name: "NOMURA2", logoUrl: "https://www.google.com/s2/favicons?domain=nomura.com&sz=128" },
+                    { name: "IBM2", logoUrl: "https://www.google.com/s2/favicons?domain=ibm.com&sz=128" },
+                    { name: "ditto Insurance2", logoUrl: "https://www.google.com/s2/favicons?domain=joinditto.in&sz=128" }
                   ].map((firm) => (
                     <div key={firm.name} className="flex flex-col items-center justify-center rounded-2xl border border-white/80 bg-white/60 px-5 py-3 shadow-sm backdrop-blur-md min-w-[110px]">
-                      <span className="font-serif font-bold text-gray-900 text-[15px]">{firm.icon}</span>
+                      <img src={firm.logoUrl} alt={firm.name} className="h-6 w-auto mix-blend-multiply opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
                       <span className="mt-1 text-[9px] font-semibold uppercase tracking-wider text-gray-500">Employees</span>
                     </div>
                   ))}
