@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type FlagLogRow = {
@@ -12,6 +13,7 @@ type FlagLogRow = {
 
 /** Doc: "Track your flags... After three months you will know your real hit rate rather than remembering the flags that worked." This is the log every screener run writes to automatically. */
 export function FlagHistory() {
+  const router = useRouter();
   const [flags, setFlags] = useState<FlagLogRow[]>([]);
   const [dbConfigured, setDbConfigured] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -53,9 +55,13 @@ export function FlagHistory() {
         </thead>
         <tbody>
           {flags.map((f) => (
-            <tr key={`${f.flagged_date}-${f.symbol}`} className="border-t border-border/60">
+            <tr
+              key={`${f.flagged_date}-${f.symbol}`}
+              className="cursor-pointer border-t border-border/60 hover:bg-muted/50"
+              onClick={() => router.push(`/research/${encodeURIComponent(f.symbol)}`)}
+            >
               <td className="px-3 py-2 font-mono">{f.flagged_date}</td>
-              <td className="px-3 py-2 font-mono font-medium">{f.symbol}</td>
+              <td className="px-3 py-2 font-mono font-medium text-primary hover:underline">{f.symbol}</td>
               <td className="max-w-[420px] px-3 py-2 text-muted-foreground">{f.headline}</td>
               <td className="px-3 py-2 uppercase text-muted-foreground">{f.confidence}</td>
               <td className="px-3 py-2 text-right font-mono">{f.price_at_flag != null ? f.price_at_flag.toFixed(2) : "—"}</td>

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, HelpCircle, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type SourcedField<T> = { status: "ok"; value: T; source: FieldSource } | { status: "unavailable"; reason: string };
@@ -79,6 +80,7 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 }
 
 export function OptionsFlowPanel() {
+  const router = useRouter();
   const [universe, setUniverse] = useState<FoInstrument[]>([]);
   const [universeLoaded, setUniverseLoaded] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -260,8 +262,12 @@ export function OptionsFlowPanel() {
                 </thead>
                 <tbody>
                   {result.records.map((r) => (
-                    <tr key={r.symbol} className="border-t border-border/60">
-                      <td className="px-3 py-2 font-mono font-medium">{r.symbol}</td>
+                    <tr
+                      key={r.symbol}
+                      className="cursor-pointer border-t border-border/60 hover:bg-muted/50"
+                      onClick={() => router.push(`/research/${encodeURIComponent(r.symbol)}`)}
+                    >
+                      <td className="px-3 py-2 font-mono font-medium text-primary hover:underline">{r.symbol}</td>
                       <td className="px-3 py-2 text-right font-mono">
                         <Field field={r.price} fmt={(v) => v.toFixed(2)} />
                       </td>

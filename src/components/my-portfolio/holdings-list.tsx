@@ -5,6 +5,8 @@ import { MetricInfo } from "@/components/ui/metric-info";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PositionRow } from "@/lib/my-portfolio/types";
+import { ArrowUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 function inr(v: number) {
   if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(2)} Cr`;
@@ -19,6 +21,7 @@ export function HoldingsList({
   positions: PositionRow[];
   onRemove: (id: string) => void;
 }) {
+  const router = useRouter();
   if (!positions.length) {
     return (
       <p className="p-4 text-sm text-muted-foreground">
@@ -68,21 +71,28 @@ export function HoldingsList({
       </TableHeader>
       <TableBody>
         {positions.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow
+            key={row.id}
+            className="group cursor-pointer"
+            onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
+          >
             <TableCell className="font-mono font-medium text-primary flex items-center gap-1">
-              <span>{row.symbol}</span>
+              <span className="group-hover:underline underline-offset-2">{row.symbol}</span>
               <span className="text-[9px] text-muted-foreground">{row.market}</span>
-              <MetricInfo
-                id={row.symbol.toLowerCase()}
-                name={`${row.name} (${row.symbol})`}
-                provider={row.market === "IN" ? "NSE / BSE India Live" : "NASDAQ / NYSE via Yahoo"}
-                sourceUrl={
-                  row.market === "IN"
-                    ? `https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(row.symbol)}`
-                    : `https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`
-                }
-                iconSize="xs"
-              />
+              <span onClick={(e) => e.stopPropagation()}>
+                <MetricInfo
+                  id={row.symbol.toLowerCase()}
+                  name={`${row.name} (${row.symbol})`}
+                  provider={row.market === "IN" ? "NSE / BSE India Live" : "NASDAQ / NYSE via Yahoo"}
+                  sourceUrl={
+                    row.market === "IN"
+                      ? `https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(row.symbol)}`
+                      : `https://finance.yahoo.com/quote/${encodeURIComponent(row.symbol)}`
+                  }
+                  iconSize="xs"
+                />
+              </span>
+              <ArrowUpRight className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
             </TableCell>
             <TableCell className="text-muted-foreground">{row.name}</TableCell>
             <TableCell className="text-right font-mono">
@@ -101,7 +111,10 @@ export function HoldingsList({
             <TableCell className="p-0">
               <button
                 type="button"
-                onClick={() => onRemove(row.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(row.id);
+                }}
                 className="px-3 py-2 text-xs text-muted-foreground hover:text-rose-600"
               >
                 Remove
