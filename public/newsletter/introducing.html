@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Introducing Market Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Code:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#0f172a;--muted:#5f6368;--blue:#1a5cff;--sky:#0ea5e9;--line:rgba(255,255,255,.7)}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:'Google Sans','Product Sans',Roboto,Arial,sans-serif;color:var(--ink);background:#f6f8fe;overflow-x:hidden}
+  /* mesh background */
+  .mesh{position:fixed;inset:0;z-index:-1;background:
+    radial-gradient(60% 50% at 15% 10%,#d6e4ff 0%,transparent 60%),
+    radial-gradient(50% 45% at 90% 25%,#d9f1ff 0%,transparent 60%),
+    radial-gradient(60% 50% at 50% 100%,#e8e4ff 0%,transparent 60%),#f6f8fe}
+  .blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.55;z-index:-1;animation:drift 18s ease-in-out infinite alternate}
+  .b1{width:420px;height:420px;background:#bcd3ff;left:-120px;top:120px}
+  .b2{width:360px;height:360px;background:#c7ecff;right:-100px;top:480px;animation-delay:-6s}
+  @keyframes drift{to{transform:translate3d(60px,-80px,0) scale(1.15)}}
+
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:1px solid var(--line);box-shadow:0 6px 24px rgba(30,64,175,.08);border-radius:999px;padding:9px 18px;font-size:14px;color:#3c4043}
+  .dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:pulse 1.8s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+
+  header.top{text-align:center;padding:16px 0 0;font-size:14px;color:var(--muted)}
+  header.top a{color:var(--blue);font-weight:700;text-decoration:none}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  nav img{height:34px;border-radius:8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:15px 30px;font-size:16px;font-weight:500;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease}
+  .btn:hover{transform:translateY(-3px) scale(1.03)}
+  .btn.primary{background:var(--blue);color:#fff;box-shadow:0 14px 30px rgba(26,92,255,.35)}
+  .btn.ghost{background:rgba(255,255,255,.9);color:var(--ink);box-shadow:0 8px 24px rgba(30,64,175,.1)}
+  .btn.small{padding:10px 22px;font-size:15px}
+
+  /* hero */
+  .hero{text-align:center;padding:52px 0 8px}
+  h1{margin:26px 0 0;font-size:clamp(40px,7vw,74px);line-height:1.05;letter-spacing:-.03em;font-weight:700}
+  .grad{display:block;margin-top:6px;font-size:clamp(28px,5vw,52px);letter-spacing:-.02em;background:linear-gradient(90deg,#0ea5e9,#1a5cff 55%,#4f8dff);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+  @keyframes shine{to{background-position:200% 0}}
+  .sub{max-width:560px;margin:34px auto 30px;font-size:19px;line-height:1.65;color:var(--muted)}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .fine{margin-top:16px;font-size:14px;color:#80868b}
+
+  /* 3D stage */
+  .stage{perspective:1600px;margin:70px auto 0;position:relative;max-width:900px}
+  .dash{transform-style:preserve-3d;transform:rotateX(14deg) rotateY(-10deg) rotateZ(1deg);transition:transform .25s ease-out;border-radius:34px;background:rgba(255,255,255,.75);border:1px solid var(--line);box-shadow:0 60px 90px -30px rgba(30,64,175,.35),0 0 0 8px rgba(255,255,255,.4);padding:16px;backdrop-filter:blur(8px)}
+  .dash .bar{display:flex;gap:7px;padding:2px 8px 12px}
+  .dash .bar i{width:11px;height:11px;border-radius:50%;display:block}
+  .dash img{display:block;width:100%;border-radius:22px;border:1px solid #e8eaed}
+  .chip{position:absolute;z-index:5;background:#fff;border-radius:22px;padding:16px 22px;box-shadow:0 26px 50px rgba(15,23,42,.16);font-size:14px;color:var(--muted);transform-style:preserve-3d}
+  .chip b{display:block;font-size:18px;color:var(--ink);margin-top:2px}
+  .chip.c1{left:-34px;top:-38px;transform:rotate(-7deg) translateZ(80px);animation:float1 6s ease-in-out infinite}
+  .chip.c2{right:-46px;top:30%;transform:rotate(6deg) translateZ(90px);animation:float2 7s ease-in-out infinite}
+  .chip.c3{left:4%;bottom:-40px;transform:rotate(-3deg) translateZ(70px);animation:float1 8s ease-in-out infinite reverse}
+  @keyframes float1{50%{translate:0 -14px}}
+  @keyframes float2{50%{translate:0 16px}}
+
+  /* sections */
+  section{padding:96px 0 0}
+  .eyebrow{font-family:'Google Sans Code',ui-monospace,monospace;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--blue);font-weight:500}
+  h2{margin:12px 0 0;font-size:clamp(30px,4.6vw,46px);line-height:1.12;letter-spacing:-.02em}
+  .glass{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:36px;box-shadow:0 30px 70px -30px rgba(30,64,175,.25);backdrop-filter:blur(10px)}
+  .note{padding:clamp(28px,5vw,56px);max-width:860px;margin:0 auto}
+  .note h2{text-align:center}
+  .note p{font-size:18px;line-height:1.85;color:#3c4043;margin:20px 0 0}
+  .note a{color:var(--blue);font-weight:700;text-decoration:none}
+  .wave{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e4eeff;font-size:30px;animation:wave 2.4s ease-in-out infinite;transform-origin:70% 70%}
+  @keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(14deg)}20%,40%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+  .sig{display:block;margin-top:22px;width:300px;max-width:100%;border-radius:14px}
+  .made{margin-top:30px;padding-top:20px;border-top:1px solid #e6e9f2;font-size:15px;font-style:italic;color:var(--muted)}
+
+  /* bento */
+  .center{text-align:center}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:44px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}.chip{display:none}.dash{transform:none!important}}
+  .card{overflow:hidden;transform-style:preserve-3d;transition:transform .25s ease-out,box-shadow .25s ease}
+  .card:hover{box-shadow:0 50px 80px -30px rgba(30,64,175,.4)}
+  .card img{display:block;width:100%;border-bottom:1px solid #eef0f6}
+  .card .txt{text-align:left;padding:24px 26px 28px;transform:translateZ(30px)}
+  .card p.k{margin:0;font-family:'Google Sans Code',ui-monospace,monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
+  .card h3{margin:8px 0 8px;font-size:23px;letter-spacing:-.01em}
+  .card p.d{margin:0;font-size:16px;line-height:1.7;color:var(--muted)}
+  .wide{grid-column:1/-1;padding:34px 34px 30px}
+  .tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .tags span{background:#fff;border:1px solid #e3e8f5;border-radius:999px;padding:10px 18px;font-size:15px;box-shadow:0 6px 16px rgba(30,64,175,.06);transition:transform .2s}
+  .tags span:hover{transform:translateY(-4px) rotate(-1.5deg)}
+
+  /* final cta */
+  .final{padding:clamp(30px,5vw,60px);display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center;max-width:940px;margin:0 auto}
+  @media(max-width:760px){.final{grid-template-columns:1fr;text-align:center}}
+  .final h2{font-size:clamp(34px,5.4vw,58px);line-height:1.05}
+  .final p{font-size:18px;line-height:1.6;color:var(--muted);margin:18px 0 26px}
+  .faces{display:flex;justify-content:center}
+  .faces img{width:92px;height:92px;border-radius:50%;object-fit:cover;border:4px solid #fff;margin-left:-22px;box-shadow:0 16px 30px rgba(15,23,42,.18);transition:transform .25s}
+  .faces img:first-child{margin-left:0}
+  .faces img:hover{transform:translateY(-10px) scale(1.08);z-index:2}
+  .trusted{margin-top:22px;text-align:center;font-family:'Google Sans Code',monospace;font-size:12px;letter-spacing:.22em;color:#5f6368;text-transform:uppercase}
+
+  footer{padding:60px 0 70px;text-align:center;font-size:14px;line-height:1.7;color:#80868b;max-width:640px;margin:0 auto}
+
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div class="mesh"></div><div class="blob b1"></div><div class="blob b2"></div>
+
+<header class="top">Free while we're in beta. No card, no catch. <a href="https://getmarketintelligence.in">Start free →</a></header>
+<div class="wrap">
+  <nav>
+    <img src="../logo.png" alt="Market Intelligence" />
+    <a class="btn primary small" href="https://getmarketintelligence.in">Sign up</a>
+  </nav>
+
+  <div class="hero">
+    <span class="pill"><span class="dot"></span>Live market data, free to start</span>
+    <h1>Manage money like a pro.<span class="grad">Institutional-grade insights. now Simplified.</span></h1>
+    <p class="sub">Track your portfolio, research stocks, and understand your risk — all in one simple dashboard. Free to start. No credit card.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://getmarketintelligence.in">Sign up for free →</a>
+      <a class="btn ghost" href="#features">See how it works</a>
+    </div>
+    <p class="fine">No credit card · Free forever plan · 2-minute setup</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="chip c1">Risk check<b>Well diversified</b></div>
+    <div class="chip c2">AI Desk<b>5 agents debating</b></div>
+    <div class="chip c3">Your portfolio<b>Risk &amp; VaR, live</b></div>
+    <div class="dash" data-tilt="dash">
+      <div class="bar"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#34d399"></i></div>
+      <img src="risk.jpg" alt="Risk dashboard" />
+    </div>
+  </div>
+
+  <section class="reveal">
+    <div class="glass note">
+      <div class="wave">👋</div>
+      <h2>A note to our beta users</h2>
+      <p>Hey there,</p>
+      <p>I built Market Intelligence because I was tired of cluttered, expensive, and overwhelming financial tools. I wanted a space where anyone — whether you're a student, a new investor, or a seasoned trader — could see their money clearly, without the noise. 🎯</p>
+      <p>This platform is designed to give you the exact tools the professionals use, but wrapped in an interface that actually feels good to use. No hidden fees, no credit card required to start, and no confusing jargon. Just clean data, beautiful charts, and insights you can trust. 🚀</p>
+      <p>I'm incredibly grateful you're here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let's build a smarter financial future, together. 🌟 I know that there will be a lot of bugs, so in case you find any, please do mail me at <a href="mailto:Deb@getmarketintelligence.in">Deb@getmarketintelligence.in</a>.</p>
+      <p style="margin-top:26px;font-weight:700;color:#0f172a">Warmly,</p>
+      <img class="sig" src="signature.png" alt="Building Market Intelligence" />
+      <div class="made">Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507</div>
+    </div>
+  </section>
+
+  <section id="features" class="center">
+    <div class="reveal"><div class="eyebrow">Everything in one place</div><h2>The tools professionals use.<br/>Made simple.</h2></div>
+    <div class="grid">
+      <div class="glass card reveal" data-tilt="card"><img src="risk.jpg" alt="" /><div class="txt"><p class="k">Portfolio</p><h3>Understand your risk, not just your returns</h3><p class="d">Volatility, drawdown, 95% Value-at-Risk, attribution, factors and an optimizer — in plain language. Import holdings from Zerodha, Dhan or Upstox.</p></div></div>
+      <div class="glass card reveal" data-tilt="card"><img src="aidesk.jpg" alt="" /><div class="txt"><p class="k">Research · AI</p><h3>A research desk that thinks out loud</h3><p class="d">Pick any NSE or US stock and watch AI agents debate it using real quotes, fundamentals and headlines.</p></div></div>
+      <div class="glass card reveal" data-tilt="card"><img src="markets.jpg" alt="" /><div class="txt"><p class="k">Markets</p><h3>Every market, one live board</h3><p class="d">Equities, sectors, valuation, breadth and derivatives. Click any ticker to open its full research page.</p></div></div>
+      <div class="glass card reveal" data-tilt="card"><img src="momentum.jpg" alt="" /><div class="txt"><p class="k">Markets · Momentum</p><h3>See the trend before the headline</h3><p class="d">Moving-average regimes, RSI, MACD and breadth — summarised at a glance.</p></div></div>
+      <div class="glass card wide reveal" style="text-align:left"><p class="k" style="margin:0;font-family:'Google Sans Code',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)">And a lot more</p><h3 style="margin:8px 0 0;font-size:26px">Same calm design, everywhere</h3>
+        <div class="tags"><span>🌍 Macro &amp; RBI liquidity</span><span>💱 Currency &amp; commodities</span><span>📅 Economic calendar</span><span>🚀 IPO pipeline</span><span>📈 Options flow</span><span>📰 Sentiment news feed</span><span>🧭 Hover menus that show the way</span><span>🔎 Click any ticker → research</span></div></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="glass final">
+      <div><h2>Your money deserves better tools.</h2><p>Join for free and see your portfolio the way professionals do.</p><a class="btn primary" href="https://getmarketintelligence.in">Open terminal →</a></div>
+      <div><div class="faces"><img src="../faces/face1.png" alt="" /><img src="../faces/face2.png" alt="" /><img src="../faces/face3.png" alt="" /><img src="../faces/face4.png" alt="" /></div></div>
+    </div>
+  </section>
+
+  <footer>Market Intelligence is an educational tool. Nothing here is investment advice, and some data is simulated — please do your own research before making financial decisions.</footer>
+</div>
+
+<script>
+  // scroll reveal
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  // 3D tilt on hover
+  document.querySelectorAll('[data-tilt]').forEach(el=>{
+    const isDash=el.dataset.tilt==='dash', max=isDash?14:7;
+    const base=isDash?'rotateX(14deg) rotateY(-10deg) rotateZ(1deg)':'';
+    const host=isDash?document.getElementById('stage'):el;
+    host.addEventListener('mousemove',e=>{
+      const r=host.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      el.style.transform=`perspective(1200px) ${isDash?'rotateX('+(14-y*max)+'deg) rotateY('+(-10+x*max*1.6)+'deg) rotateZ(1deg)':'rotateX('+(-y*max)+'deg) rotateY('+(x*max)+'deg) translateY(-6px)'}`;
+    });
+    host.addEventListener('mouseleave',()=>{el.style.transform=base});
+  });
+  // blob parallax
+  window.addEventListener('scroll',()=>{document.querySelector('.b1').style.marginTop=(scrollY*-.15)+'px';document.querySelector('.b2').style.marginTop=(scrollY*-.28)+'px'},{passive:true});
+</script>
+</body>
+</html>
