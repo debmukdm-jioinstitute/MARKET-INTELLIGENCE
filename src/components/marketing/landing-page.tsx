@@ -591,7 +591,7 @@ export function LandingPage() {
               👋
             </div>
             <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
-              A note to our users
+              A note to our beta users
             </h2>
             <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700 max-w-4xl mx-auto">
               <p>
