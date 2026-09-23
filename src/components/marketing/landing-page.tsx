@@ -130,13 +130,13 @@ export function LandingPage() {
                     href="/login"
                     className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
-                    Sign in
+                    Log in
                   </Link>
                   <Link
                     href="/signup"
                     className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                   >
-                    Start free
+                    Sign up
                   </Link>
                 </>
               )}
@@ -168,8 +168,16 @@ export function LandingPage() {
                 href={hasAccess ? "/Home" : "/signup"}
                 className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
               >
-                {hasAccess ? "Open terminal →" : "Start free →"}
+                {hasAccess ? "Open terminal →" : "Sign up for free →"}
               </Link>
+              {!hasAccess ? (
+                <Link
+                  href="/login"
+                  className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                >
+                  Log in
+                </Link>
+              ) : null}
               <a
                 href="#how"
                 className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] text-gray-900 backdrop-blur-md transition hover:bg-white/80"
@@ -316,7 +324,7 @@ export function LandingPage() {
               href={hasAccess ? "/Home" : "/signup"}
               className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
             >
-              {hasAccess ? "Open terminal →" : "Create your free account →"}
+              {hasAccess ? "Open terminal →" : "Sign up for free →"}
             </Link>
           </div>
         </section>
@@ -346,7 +354,7 @@ export function LandingPage() {
               href={hasAccess ? "/Home" : "/signup"}
               className="mt-8 inline-flex rounded-full bg-white px-8 py-3.5 text-[15px] font-semibold text-blue-700 shadow-[var(--shadow-md)] transition hover:scale-[1.03] hover:bg-blue-50"
             >
-              {hasAccess ? "Open terminal →" : "Start free, takes 2 minutes →"}
+              {hasAccess ? "Open terminal →" : "Sign up for free, takes 2 minutes →"}
             </Link>
           </div>
         </section>
