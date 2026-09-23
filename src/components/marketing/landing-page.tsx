@@ -445,7 +445,7 @@ export function LandingPage() {
             </div>
           </div>
           <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-sm text-gray-400">
-            © Market Intelligence · Simulated data · Not investment advice
+            © Market Intelligence
           </p>
         </footer>
       </div>
