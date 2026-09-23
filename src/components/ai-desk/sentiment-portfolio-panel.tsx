@@ -57,7 +57,7 @@ export function SentimentPortfolioPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Reads recent headlines for each holding in{" "}
           <a href="/portfolio" className="underline">
             My Portfolio
@@ -81,22 +81,22 @@ export function SentimentPortfolioPanel() {
       {result && result.hasHoldings ? (
         <div className="space-y-2">
           {result.holdings.map((h) => (
-            <div key={h.symbol} className="rounded-lg border border-border bg-card p-3">
+            <div key={h.symbol} className="rounded-lg border border-border bg-card p-3.5">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="font-mono text-sm font-medium">
-                    {h.symbol} <span className="font-sans text-xs text-muted-foreground">{h.name}</span>
+                  <p className="font-mono text-[15px] font-semibold text-foreground">
+                    {h.symbol} <span className="font-sans text-sm font-normal text-muted-foreground">{h.name}</span>
                   </p>
-                  <p className="text-[11px] leading-4 text-muted-foreground">{h.rationale}</p>
+                  <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">{h.rationale}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <Badge variant="outline" className={cn("h-4 px-1.5 text-[10px] uppercase", labelColor(h.label))}>
+                  <Badge variant="outline" className={cn("h-5 px-2 text-[11px] uppercase", labelColor(h.label))}>
                     {h.label === "na" ? "no headlines" : h.label}
                   </Badge>
-                  <p className="mt-1 text-[10px] text-muted-foreground/70">{h.headlineCount} headlines</p>
+                  <p className="mt-1 text-xs text-muted-foreground/80">{h.headlineCount} headlines</p>
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground">
+              <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
                 <span>current weight {(h.weight * 100).toFixed(1)}%</span>
                 <span>→</span>
                 <span
@@ -109,7 +109,7 @@ export function SentimentPortfolioPanel() {
               </div>
             </div>
           ))}
-          <p className="text-[10px] text-muted-foreground/70">{result.disclaimer}</p>
+          <p className="text-xs text-muted-foreground/80">{result.disclaimer}</p>
         </div>
       ) : null}
     </div>

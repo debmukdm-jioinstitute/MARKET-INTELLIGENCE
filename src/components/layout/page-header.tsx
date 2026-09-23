@@ -33,10 +33,10 @@ export function Panel({
 }) {
   return (
     <section id={id} className={`rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] ${className ?? ""}`}>
-      <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3">
+      <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3.5">
         <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
+          <h3 className="font-heading text-base font-bold tracking-tight text-foreground">{title}</h3>
+          {subtitle ? <div className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{subtitle}</div> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
