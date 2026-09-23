@@ -237,14 +237,7 @@ export function LandingPage() {
       opacity: 0,
       duration: 1,
       ease: "power3.out",
-    })
-    .from(".ai-agent-card", {
-      y: 30,
-      opacity: 0,
-      stagger: 0.15,
-      duration: 0.8,
-      ease: "power3.out",
-    }, "-=0.6");
+    });
 
     // FAQ items
     gsap.from(".faq-item", {

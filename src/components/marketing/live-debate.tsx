@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 // ----------------------------------------------------------------------
@@ -138,7 +138,9 @@ function useTypingEffect(
       typeChar();
     };
 
-    timeoutId = setTimeout(startTyping, startDelay);
+    if (startDelay < 9999999) {
+      timeoutId = setTimeout(startTyping, startDelay);
+    }
 
     return () => clearTimeout(timeoutId);
   }, [textLines, startDelay, typingSpeed]);
@@ -172,11 +174,14 @@ function AgentCard({
   className?: string;
 }) {
   // Combine paragraph and points for the typing effect
-  const allLines = [];
-  if (agent.paragraph) allLines.push(agent.paragraph);
-  if (agent.points && agent.points.length > 0) {
-    agent.points.forEach((p) => allLines.push(p));
-  }
+  const allLines = React.useMemo(() => {
+    const lines = [];
+    if (agent.paragraph) lines.push(agent.paragraph);
+    if (agent.points && agent.points.length > 0) {
+      agent.points.forEach((p) => lines.push(p));
+    }
+    return lines;
+  }, [agent]);
 
   const { displayedLines, hasStarted, isTyping } = useTypingEffect(allLines, delay, 15);
 
