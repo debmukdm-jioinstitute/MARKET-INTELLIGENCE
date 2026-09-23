@@ -146,12 +146,12 @@ export function AppNav() {
             className="fixed inset-x-0 top-0 z-[61] max-h-screen overflow-y-auto border-b border-border bg-white shadow-[var(--shadow-lg)]"
           >
             <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-              <div className="flex items-center gap-2.5">
+              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
                 <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white">mi</span>
                 <div>
                   <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
                 </div>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

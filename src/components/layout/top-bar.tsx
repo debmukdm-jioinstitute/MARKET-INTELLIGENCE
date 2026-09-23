@@ -12,14 +12,16 @@ export function TopBar() {
   const { setOpen: setPaletteOpen } = useCommandPalette();
 
   return (
-    <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[minmax(200px,280px)_minmax(220px,1fr)_auto] lg:gap-4 lg:px-6 lg:py-2">
-      <div className="flex items-center gap-3">
+    <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[auto_minmax(240px,420px)_1fr] lg:gap-4 lg:px-6 lg:py-2">
+      <div className="flex shrink-0 items-center gap-3">
         <AppNavTrigger />
-        <p className="hidden font-heading text-sm font-semibold tracking-tight sm:inline">Market Intelligence</p>
+        <Link href="/" className="hidden whitespace-nowrap font-heading text-sm font-semibold tracking-tight transition-colors hover:text-primary sm:inline">
+          Market Intelligence
+        </Link>
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
+          className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
         >
           <Search className="size-3" />
           Commands
