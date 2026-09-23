@@ -242,10 +242,7 @@ export function AppNav() {
           >
             <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
               <Link href="/Home" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
-                <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-sm font-medium text-white">mi</span>
-                <div>
-                  <p className="text-sm font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
-                </div>
+                <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
               </Link>
               <button
                 type="button"

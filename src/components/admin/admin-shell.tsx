@@ -41,8 +41,8 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
     <div className="flex min-h-screen bg-white text-gray-900">
       <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200">
         <div className="border-b border-gray-200 px-5 py-4">
-          <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
-          <h1 className="mt-0.5 text-sm font-semibold">Admin backend</h1>
+          <img src="/logo.png" alt="Market Intelligence" className="h-6 w-auto dark:invert" />
+          <h1 className="mt-2 text-sm font-semibold text-muted-foreground">Admin backend</h1>
         </div>
         <nav className="flex-1 space-y-0.5 px-2 py-3">
           {NAV.map((item) => {

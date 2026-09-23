@@ -95,10 +95,7 @@ export function LandingPage() {
         <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-blue-600 text-sm font-medium text-white shadow-[var(--shadow-sm)]">
-                mi
-              </span>
-              <span className="hidden whitespace-nowrap text-[17px] font-semibold tracking-tight text-gray-900 sm:inline">market intelligence</span>
+              <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
             </Link>
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <MegaMenu />
@@ -432,7 +429,7 @@ export function LandingPage() {
         <footer className="border-t border-white/60 bg-white/40 px-5 py-14 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:justify-between">
             <div>
-              <p className="text-xl font-semibold text-gray-900">market intelligence</p>
+              <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
                 A simple way to track, research, and understand your money — for everyone, not just professionals.
               </p>

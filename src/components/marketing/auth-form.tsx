@@ -43,8 +43,8 @@ export function AuthForm({ mode, next = "/Home" }: { mode: "login" | "signup"; n
 
   return (
     <div className="relative mx-auto w-full max-w-[420px] rounded-2xl border border-border bg-white p-8 shadow-[var(--shadow-lg)]">
-      <Link href="/" className="text-lg font-semibold tracking-tight text-foreground">
-        Market Intelligence
+      <Link href="/" className="inline-block">
+        <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
       </Link>
       <h1 className="mt-8 text-[28px] leading-tight font-semibold text-foreground">
         {mode === "signup" ? "Create a free account" : "Sign in"}

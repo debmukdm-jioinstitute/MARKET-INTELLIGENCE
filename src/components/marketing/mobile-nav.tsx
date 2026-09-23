@@ -52,7 +52,7 @@ export function MobileNav() {
           />
           <div className="animate-dropdown-item absolute inset-x-0 top-0 max-h-[85vh] overflow-y-auto rounded-b-2xl border-b border-border bg-white shadow-[var(--shadow-lg)]">
             <div className="flex h-[52px] items-center justify-between border-b border-border px-5">
-              <span className="text-[17px] font-semibold tracking-tight text-gray-900">market intelligence</span>
+              <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
