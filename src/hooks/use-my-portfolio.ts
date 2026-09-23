@@ -19,12 +19,18 @@ export type AddHoldingInput = {
   addedAt?: string;
 };
 
+let cachedRaw: string | null = null;
+let cachedHoldings: Holding[] | null = null;
+
 function getLocalHoldings(): Holding[] | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as Holding[];
+    if (raw === cachedRaw) return cachedHoldings;
+    cachedRaw = raw;
+    cachedHoldings = JSON.parse(raw) as Holding[];
+    return cachedHoldings;
   } catch {
     return null;
   }
