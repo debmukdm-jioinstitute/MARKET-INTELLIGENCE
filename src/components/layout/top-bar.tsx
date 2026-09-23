@@ -54,7 +54,7 @@ export function TopBar() {
         <div aria-hidden />
       )}
       <div className="flex flex-wrap items-center justify-end gap-4 font-mono text-[11px] lg:gap-5">
-        <Tape label="SPX" value={spyLast} chg={spyChg} live={Boolean(spyQ)} href="/markets/global" />
+        <Tape label="SPX" value={spyLast} chg={spyChg} live={Boolean(spyQ)} href="/markets" />
         <Tape label="UST" value={tltLast} chg={tltChg} live={Boolean(tltQ)} href="/macro/global" />
         <span className="text-muted-foreground">
           VIX <span className="text-foreground">{vix.toFixed(1)}</span>
