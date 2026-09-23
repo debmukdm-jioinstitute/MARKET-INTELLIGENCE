@@ -113,7 +113,7 @@ export function LandingPage() {
       <div className="relative z-10">
         <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
           <p className="text-sm text-muted-foreground">
-            Free during preview — no credit card needed.{" "}
+            Free while we're in beta. No card, no catch.{" "}
             <Link href="/signup" className="font-medium text-blue-600 hover:underline underline-offset-4">
               Start free →
             </Link>
