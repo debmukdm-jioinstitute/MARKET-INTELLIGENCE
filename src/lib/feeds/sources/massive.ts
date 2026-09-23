@@ -41,7 +41,7 @@ async function massiveGet<T>(path: string, params: Record<string, string> = {}):
   }
   const res = await feedFetch(url.toString(), { timeoutMs: 20_000 });
   if (res.status === 401) {
-    throw new Error("Massive API unauthorized — check MASSIVE_API_KEY at https://massive.com/dashboard/keys");
+    throw new Error("Massive API unauthorized — check MASSIVE_API_KEY at https://massive.com/Home/keys");
   }
   if (res.status === 403 || res.status === 404 || res.status === 429) return null;
   if (!res.ok) throw new Error(`Massive HTTP ${res.status} ${path}`);

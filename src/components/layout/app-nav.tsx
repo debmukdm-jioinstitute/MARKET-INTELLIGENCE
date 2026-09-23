@@ -241,7 +241,7 @@ export function AppNav() {
             className="fixed inset-x-0 top-0 z-[61] max-h-screen overflow-y-auto border-b border-border bg-white shadow-[var(--shadow-lg)]"
           >
             <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
+              <Link href="/Home" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
                 <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white">mi</span>
                 <div>
                   <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
@@ -259,17 +259,17 @@ export function AppNav() {
 
             <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
               <Link
-                href="/dashboard"
+                href="/Home"
                 onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors",
-                  path === "/dashboard"
+                  path === "/Home"
                     ? "border-primary/30 bg-accent text-primary"
                     : "border-border text-foreground hover:bg-muted",
                 )}
               >
                 <LayoutDashboard className="size-4" />
-                Dashboard
+                {path === "/Home" ? "Home" : "Back to Home"}
               </Link>
             </div>
 

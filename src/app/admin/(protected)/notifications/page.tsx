@@ -94,7 +94,7 @@ export default function AdminNotificationsPage() {
             <input
               value={form.url}
               onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-              placeholder="/dashboard"
+              placeholder="/Home"
               className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
             />
           </div>

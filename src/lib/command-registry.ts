@@ -6,7 +6,7 @@ export type PageCommand = {
 };
 
 export const PAGE_COMMANDS: PageCommand[] = [
-  { href: "/dashboard", label: "Dashboard", description: "India desk overview" },
+  { href: "/Home", label: "Dashboard", description: "India desk overview" },
   { href: "/portfolio", label: "Portfolios", description: "Portfolio management" },
   { href: "/research", label: "Research", description: "Security workbench" },
   { href: "/portfolio/allocation", label: "Allocation", description: "Policy vs actual" },

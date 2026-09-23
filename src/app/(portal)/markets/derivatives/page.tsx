@@ -30,7 +30,7 @@ export default function DerivativesPage() {
         title="Derivatives dashboard"
         subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
       />
-      <Link href="/dashboard" className="text-xs text-primary hover:underline">
+      <Link href="/Home" className="text-xs text-primary hover:underline">
         ← Back to dashboard
       </Link>
 

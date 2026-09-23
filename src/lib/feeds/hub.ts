@@ -157,7 +157,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     if (!hasMassiveApiKey()) {
       massiveHealth.ok = false;
       massiveHealth.message =
-        "Set MASSIVE_API_KEY on Vercel (Production) — https://massive.com/dashboard/keys";
+        "Set MASSIVE_API_KEY on Vercel (Production) — https://massive.com/Home/keys";
     } else if (!massiveHealth.ok) {
       massiveHealth.message = massive.error ?? "Massive request failed";
     } else if (!(massive.value ?? []).length) {

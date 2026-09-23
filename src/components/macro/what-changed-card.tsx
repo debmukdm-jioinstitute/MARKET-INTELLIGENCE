@@ -25,12 +25,12 @@ function buildItems(seed: BriefingSeed, prev: Stored | null): BriefingItem[] {
           ? "FII selling increased — net outflow today."
           : "FII net selling in the latest NSE session."
         : "FII net buying in the latest NSE session.";
-    items.push({ n: "01", text: label, href: "/dashboard" });
+    items.push({ n: "01", text: label, href: "/Home" });
   } else {
     items.push({
       n: "01",
       text: "Check FII/DII flows on the India dashboard.",
-      href: "/dashboard",
+      href: "/Home",
     });
   }
 

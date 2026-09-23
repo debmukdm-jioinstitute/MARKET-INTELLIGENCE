@@ -16,7 +16,7 @@ export function TopBar() {
     <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[auto_minmax(240px,420px)_1fr] lg:gap-4 lg:px-6 lg:py-2">
       <div className="flex shrink-0 items-center gap-3">
         <AppNavTrigger />
-        <Link href="/" className="hidden whitespace-nowrap font-heading text-sm font-semibold tracking-tight transition-colors hover:text-primary sm:inline">
+        <Link href="/Home" className="hidden whitespace-nowrap font-heading text-sm font-semibold tracking-tight transition-colors hover:text-primary sm:inline">
           Market Intelligence
         </Link>
         <button

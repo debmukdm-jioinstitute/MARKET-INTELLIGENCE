@@ -345,7 +345,7 @@ export default function TickerDetailPage({ params }: PageProps) {
       {/* Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
-          href="/dashboard"
+          href="/Home"
           className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-blue-600 transition-colors font-semibold"
         >
           <ArrowLeft className="size-3.5 text-blue-600" />

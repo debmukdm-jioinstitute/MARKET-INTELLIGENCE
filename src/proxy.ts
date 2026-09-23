@@ -69,7 +69,7 @@ export function proxy(request: NextRequest) {
     const isGuest = session?.guest === true;
     if (!isGuest) {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/Home";
       return NextResponse.redirect(url);
     }
   }

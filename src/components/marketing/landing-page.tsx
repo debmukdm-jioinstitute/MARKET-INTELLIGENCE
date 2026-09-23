@@ -108,7 +108,7 @@ export function LandingPage() {
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
                 <Link
-                  href="/dashboard"
+                  href="/Home"
                   className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-[13px] font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                 >
                   <span className="sm:hidden">{isGuest ? "Explore" : "Terminal"}</span>
@@ -119,7 +119,7 @@ export function LandingPage() {
                   <button
                     type="button"
                     onClick={() => void enterGuest().then(() => {
-                      window.location.href = "/dashboard";
+                      window.location.href = "/Home";
                     })}
                     className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
@@ -164,7 +164,7 @@ export function LandingPage() {
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href={hasAccess ? "/dashboard" : "/signup"}
+                href={hasAccess ? "/Home" : "/signup"}
                 className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
               >
                 {hasAccess ? "Open terminal →" : "Start free →"}
@@ -281,7 +281,7 @@ export function LandingPage() {
             </div>
             <div className="mt-12 text-center">
               <Link
-                href={hasAccess ? "/dashboard" : "/signup"}
+                href={hasAccess ? "/Home" : "/signup"}
                 className="inline-flex rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
               >
                 {hasAccess ? "Open terminal →" : "Start free →"}
@@ -312,7 +312,7 @@ export function LandingPage() {
               ))}
             </ul>
             <Link
-              href={hasAccess ? "/dashboard" : "/signup"}
+              href={hasAccess ? "/Home" : "/signup"}
               className="mt-8 inline-flex rounded-full bg-blue-600 px-8 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
             >
               {hasAccess ? "Open terminal →" : "Create your free account →"}
@@ -342,7 +342,7 @@ export function LandingPage() {
               Join for free and see your portfolio the way professionals do.
             </p>
             <Link
-              href={hasAccess ? "/dashboard" : "/signup"}
+              href={hasAccess ? "/Home" : "/signup"}
               className="mt-8 inline-flex rounded-full bg-white px-8 py-3.5 text-[15px] font-semibold text-blue-700 shadow-[var(--shadow-md)] transition hover:scale-[1.03] hover:bg-blue-50"
             >
               {hasAccess ? "Open terminal →" : "Start free, takes 2 minutes →"}
@@ -363,7 +363,7 @@ export function LandingPage() {
               <div className="mt-3 flex flex-col gap-2">
                 <Link href="/login" className="hover:text-gray-900">Sign in</Link>
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>
-                <Link href="/dashboard" className="hover:text-gray-900">Terminal</Link>
+                <Link href="/Home" className="hover:text-gray-900">Terminal</Link>
               </div>
             </div>
           </div>

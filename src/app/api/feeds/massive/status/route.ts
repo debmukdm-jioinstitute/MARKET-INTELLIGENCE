@@ -9,8 +9,8 @@ export async function GET() {
       {
         configured: false,
         message:
-          "Set MASSIVE_API_KEY (or POLYGON_API_KEY) on Vercel Production, then redeploy — https://massive.com/dashboard/keys",
-        signup: "https://massive.com/dashboard/signup",
+          "Set MASSIVE_API_KEY (or POLYGON_API_KEY) on Vercel Production, then redeploy — https://massive.com/Home/keys",
+        signup: "https://massive.com/Home/signup",
         docs: MASSIVE_SOURCE.url,
       },
       { status: 200 },

@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 const inputClass =
   "h-12 w-full rounded-lg border border-border bg-white px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-export function AuthForm({ mode, next = "/dashboard" }: { mode: "login" | "signup"; next?: string }) {
+export function AuthForm({ mode, next = "/Home" }: { mode: "login" | "signup"; next?: string }) {
   const { login, signup, enterGuest } = useAuth();
   const router = useRouter();
-  const dest = next.startsWith("/") ? next : "/dashboard";
+  const dest = next.startsWith("/") ? next : "/Home";
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
