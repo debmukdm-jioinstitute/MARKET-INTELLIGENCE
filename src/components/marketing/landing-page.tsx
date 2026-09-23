@@ -239,18 +239,7 @@ export function LandingPage() {
       ease: "power3.out",
     });
 
-    // FAQ items
-    gsap.from(".faq-item", {
-      y: 20,
-      opacity: 0,
-      stagger: 0.1,
-      duration: 0.6,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: "#faq",
-        start: "top 85%",
-      }
-    });
+    // FAQ items animation removed to prevent opacity bug
 
     // Bottom CTA Timeline
     const ctaTl = gsap.timeline({
