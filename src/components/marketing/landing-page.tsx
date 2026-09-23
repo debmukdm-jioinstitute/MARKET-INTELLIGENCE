@@ -62,7 +62,7 @@ const STATS = [
     desc: "No more hitting refresh. Watch your portfolio update in real-time as the market moves, giving you the pulse of your investments." 
   },
   { 
-    value: "$0", 
+    value: "₹0", 
     label: "To Get Started", 
     desc: "Your financial clarity shouldn't come with a subscription fee. Create an account, build a book, and explore — completely on us." 
   },
@@ -94,7 +94,7 @@ const COMPARISON_FEATURES = [
   { name: "Institutional Grade Flow & Sweeps", mi: true, traditional: "Expensive Tier" },
   { name: "Automated Daily Macro Tape", mi: true, traditional: false },
   { name: "Clean, Ad-free Terminal Experience", mi: true, traditional: false },
-  { name: "Cost", mi: "$0 / Forever", traditional: "$50-$2,000 / month" },
+  { name: "Cost", mi: "₹0 / Forever", traditional: "₹4,000-₹1,60,000 / month" },
 ];
 
 export function LandingPage() {
