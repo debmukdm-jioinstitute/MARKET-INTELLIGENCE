@@ -10,10 +10,10 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex justify-between items-center">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">RBI / liquidity watch</h2>
+        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">RBI / liquidity watch</h2>
         <MetricInfo id="liquidity" asOf={data.fetchedAt} iconSize="xs" />
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground">
         Published rates &amp; yields where available from open APIs. System liquidity requires RBI DBIE — shown only when
         sourced.
       </p>
@@ -29,7 +29,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
                 iconSize="xs"
               />
             </dt>
-            <dd className="font-mono">{row.value ?? "—"}</dd>
+            <dd className="">{row.value ?? "—"}</dd>
           </div>
         ))}
       </dl>
@@ -38,8 +38,8 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
           <p className="text-xs font-semibold uppercase text-muted-foreground">System liquidity</p>
           <MetricInfo id="liquidity" asOf={liq.source.asOf ?? data.fetchedAt} iconSize="xs" />
         </div>
-        <p className="mt-1 font-mono text-lg">{liq.value ?? "—"}</p>
-        <p className="text-xs text-muted-foreground">7D change: {liq.change7d ?? "—"}</p>
+        <p className="mt-1 text-lg">{liq.value ?? "—"}</p>
+        <p className="text-sm text-muted-foreground">7D change: {liq.change7d ?? "—"}</p>
         {liq.trend30d.length > 0 ? (
           <div className="mt-2 flex h-2 gap-0.5">
             {liq.trend30d.map((v, i) => (
@@ -47,7 +47,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
             ))}
           </div>
         ) : null}
-        <span className="mt-2 inline-flex items-center gap-1 text-[10px]">
+        <span className="mt-2 inline-flex items-center gap-1 text-sm">
           Source:
           <MetricInfo
             id="liquidity"

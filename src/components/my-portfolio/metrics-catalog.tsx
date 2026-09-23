@@ -16,19 +16,19 @@ export function MetricsCatalog({ categories }: { categories: MetricCategory[] })
             <div className="grid gap-x-6 gap-y-2 pb-3 sm:grid-cols-2 xl:grid-cols-3">
               {cat.metrics.map((metric) => (
                 <div key={metric.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-1.5">
-                  <span className="flex items-center text-xs text-muted-foreground">
+                  <span className="flex items-center text-sm text-muted-foreground">
                     {metric.label}
                     <MetricInfo id={metric.id} value={metric.formatted} />
                   </span>
                   <span className="flex items-center gap-1.5 text-right">
                     {metric.status !== "ok" ? (
-                      <Badge variant="outline" className="h-4 px-1 text-[9px] uppercase text-muted-foreground">
+                      <Badge variant="outline" className="h-4 px-1 text-[11px] uppercase text-muted-foreground">
                         {metric.status === "na" ? "N/A" : "approx"}
                       </Badge>
                     ) : null}
                     <span
                       className={cn(
-                        "font-mono text-xs font-medium tabular-nums",
+                        "text-sm font-medium tabular-nums",
                         metric.status === "na" && "text-muted-foreground/50",
                         metric.tone === "up" && "text-emerald-600",
                         metric.tone === "down" && "text-rose-600",

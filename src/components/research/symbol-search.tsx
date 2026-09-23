@@ -151,7 +151,7 @@ export function SymbolSearch({
               : "Search India (NSE) or US ticker"
           }
           className={cn(
-            "border-0 bg-transparent font-mono uppercase shadow-none focus-visible:ring-0",
+            "border-0 bg-transparent uppercase shadow-none focus-visible:ring-0",
             variant === "hero" ? "h-14 text-lg md:text-xl" : "h-9 text-sm",
           )}
           aria-autocomplete="list"
@@ -161,8 +161,8 @@ export function SymbolSearch({
         {showShortcut ? (
           <kbd
             className={cn(
-              "hidden shrink-0 rounded-md border border-[#1a73e8]/50 bg-background/80 px-2 py-0.5 font-mono text-[10px] text-[#1a73e8] sm:inline",
-              variant === "hero" && "text-xs px-2.5 py-1",
+              "hidden shrink-0 rounded-md border border-[#1a73e8]/50 bg-background/80 px-2 py-0.5 text-sm text-[#1a73e8] sm:inline",
+              variant === "hero" && "text-sm px-2.5 py-1",
             )}
           >
             Space
@@ -198,10 +198,10 @@ export function SymbolSearch({
                 onClick={() => pick(h)}
               >
                 <span>
-                  <span className="font-mono font-medium">{h.symbol}</span>
+                  <span className="font-medium">{h.symbol}</span>
                   <span className="ml-2 text-muted-foreground">{h.name}</span>
                 </span>
-                <span className="shrink-0 font-mono text-[10px] uppercase text-primary">
+                <span className="shrink-0 text-[11px] uppercase text-primary">
                   {h.market === "IN" ? "India" : "US"}
                 </span>
               </button>

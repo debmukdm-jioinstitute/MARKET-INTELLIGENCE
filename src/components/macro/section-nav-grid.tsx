@@ -16,9 +16,9 @@ export function SectionNavGrid() {
             className="absolute inset-y-0 left-0 w-1 opacity-80"
             style={{ background: s.accent }}
           />
-          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Section</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Section</p>
           <h3 className="mt-1 font-heading text-lg group-hover:text-primary">{s.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{s.subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{s.subtitle}</p>
         </Link>
       ))}
     </div>

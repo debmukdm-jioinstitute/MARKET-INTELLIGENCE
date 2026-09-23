@@ -40,11 +40,11 @@ export function ResearchIntelligencePanels({
                   <div className="flex flex-wrap items-center gap-2">
                     <ImpactBadge impact={n.impact} />
                     {n.tags.map((t) => (
-                      <Badge key={t} variant="outline" className="text-[10px]">
+                      <Badge key={t} variant="outline" className="text-sm">
                         {t}
                       </Badge>
                     ))}
-                    <span className="text-[10px] text-muted-foreground">{n.sourceLabel}</span>
+                    <span className="text-sm text-muted-foreground">{n.sourceLabel}</span>
                   </div>
                   <a
                     href={n.link}
@@ -54,9 +54,9 @@ export function ResearchIntelligencePanels({
                   >
                     {n.title}
                   </a>
-                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{n.rationale}</p>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{n.rationale}</p>
                   {n.publishedAt ? (
-                    <p className="mt-1 text-[10px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {new Date(n.publishedAt).toLocaleString()}
                     </p>
                   ) : null}
@@ -67,7 +67,7 @@ export function ResearchIntelligencePanels({
         ) : (
           <p className="mt-2 text-sm text-muted-foreground">No symbol-specific news returned from open feeds.</p>
         )}
-        <p className="mt-3 text-[10px] text-muted-foreground">
+        <p className="mt-3 text-sm text-muted-foreground">
           Sources: Upstox (India), Google News RSS. Impact labels are keyword heuristics only—not financial advice.
         </p>
       </Panel>
@@ -77,7 +77,7 @@ export function ResearchIntelligencePanels({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-xs text-muted-foreground">
+                <tr className="border-b border-border text-sm text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Subject</th>
                   <th className="py-2 pr-4 font-medium">Ex / filing</th>
                   <th className="py-2 pr-4 font-medium">Record</th>
@@ -101,11 +101,11 @@ export function ResearchIntelligencePanels({
                         row.subject
                       )}
                       {row.company ? (
-                        <p className="text-[10px] text-muted-foreground">{row.company}</p>
+                        <p className="text-sm text-muted-foreground">{row.company}</p>
                       ) : null}
                     </td>
-                    <td className="py-2 pr-4 font-mono text-xs">{row.exDate ?? "—"}</td>
-                    <td className="py-2 pr-4 font-mono text-xs">{row.recordDate ?? "—"}</td>
+                    <td className="py-2 pr-4 text-sm">{row.exDate ?? "—"}</td>
+                    <td className="py-2 pr-4 text-sm">{row.recordDate ?? "—"}</td>
                     <td className="py-2 text-xs uppercase text-muted-foreground">{row.source}</td>
                   </tr>
                 ))}
@@ -120,7 +120,7 @@ export function ResearchIntelligencePanels({
       </Panel>
 
       <Panel title="Brokerage & research (free / open links)">
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-sm text-muted-foreground">
           Curated portals and headline search—open in a new tab or use on-screen view. We do not scrape paid
           research PDFs.
         </p>
@@ -138,8 +138,8 @@ export function ResearchIntelligencePanels({
                 )}
                 <div>
                   <p className="text-sm font-medium">{b.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{b.source}</p>
-                  {b.note ? <p className="text-[10px] text-muted-foreground">{b.note}</p> : null}
+                  <p className="text-sm text-muted-foreground">{b.source}</p>
+                  {b.note ? <p className="text-sm text-muted-foreground">{b.note}</p> : null}
                 </div>
               </div>
               <div className="flex gap-2">
@@ -147,7 +147,7 @@ export function ResearchIntelligencePanels({
                   href={b.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline"
+                  className="text-sm text-primary hover:underline"
                 >
                   Open
                 </a>
@@ -157,7 +157,7 @@ export function ResearchIntelligencePanels({
         </ul>
         {headlines.length ? (
           <>
-            <h4 className="mb-2 mt-4 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <h4 className="mb-2 mt-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Newspaper className="h-3.5 w-3.5" /> Analyst & brokerage headlines (RSS)
             </h4>
             <ul className="divide-y divide-border">
@@ -171,7 +171,7 @@ export function ResearchIntelligencePanels({
                   >
                     {b.title}
                   </a>
-                  {b.note ? <p className="text-[10px] text-muted-foreground">{b.note}</p> : null}
+                  {b.note ? <p className="text-sm text-muted-foreground">{b.note}</p> : null}
                 </li>
               ))}
             </ul>
@@ -195,11 +195,11 @@ function ImpactSummaryBanner({ summary }: { summary: NewsImpactSummary }) {
       <div className="flex flex-wrap items-center gap-2">
         <ImpactBadge impact={summary.overall} large />
         <span className="text-sm font-medium">Sentiment scan</span>
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           +{summary.positiveCount} / −{summary.negativeCount} / ○{summary.neutralCount}
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">{summary.headline}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{summary.headline}</p>
     </div>
   );
 }
@@ -209,7 +209,7 @@ function ImpactBadge({ impact, large }: { impact: AnalyzedNewsItem["impact"]; la
   return (
     <Badge
       className={cn(
-        large ? "text-xs" : "text-[10px]",
+        large ? "text-sm" : "text-sm",
         impact === "positive" && "bg-emerald-500/20 text-emerald-600",
         impact === "negative" && "bg-rose-500/20 text-rose-600",
         impact === "neutral" && "bg-muted text-muted-foreground",
@@ -227,5 +227,5 @@ function ImpactIcon({ impact }: { impact: AnalyzedNewsItem["impact"] }) {
   if (impact === "negative") {
     return <TrendingDown className="mt-1 h-4 w-4 shrink-0 text-rose-600" />;
   }
-  return <span className="mt-1 h-4 w-4 shrink-0 text-center text-xs text-muted-foreground">○</span>;
+  return <span className="mt-1 h-4 w-4 shrink-0 text-center text-sm text-muted-foreground">○</span>;
 }

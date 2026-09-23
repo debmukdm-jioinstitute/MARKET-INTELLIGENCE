@@ -64,8 +64,8 @@ export default function AttributionPage() {
             {rows.map((row) => (
               <TableRow key={row.sector}>
                 <TableCell>{row.sector}</TableCell>
-                <TableCell className="text-right font-mono">{formatPct(row.weight, 1)}</TableCell>
-                <TableCell className="text-right font-mono">{formatPct(row.sectorRet)}</TableCell>
+                <TableCell className="text-right">{formatPct(row.weight, 1)}</TableCell>
+                <TableCell className="text-right">{formatPct(row.sectorRet)}</TableCell>
                 <Cell v={row.allocation} />
                 <Cell v={row.selection} />
                 <Cell v={row.total} />
@@ -82,7 +82,7 @@ function Tile({ metricId, label, value }: { metricId?: string; label: string; va
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
         <MetricInfo id={metricId ?? "alpha"} name={label} iconSize="xs" />
       </div>
       <p className="mt-1 font-heading text-2xl">{value}</p>
@@ -92,7 +92,7 @@ function Tile({ metricId, label, value }: { metricId?: string; label: string; va
 
 function Cell({ v }: { v: number }) {
   return (
-    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
+    <TableCell className={cn("text-right", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
       {formatPct(v)}
     </TableCell>
   );

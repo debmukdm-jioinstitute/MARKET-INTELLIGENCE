@@ -35,7 +35,7 @@ export function TickerPicker({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {loading ? <p className="text-xs text-muted-foreground">Searching…</p> : null}
+      {loading ? <p className="text-sm text-muted-foreground">Searching…</p> : null}
       {results.length > 0 ? (
         <div className="max-h-48 overflow-y-auto rounded-md border border-border">
           {results.map((r) => (
@@ -48,8 +48,8 @@ export function TickerPicker({
               }}
               className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
             >
-              <span className="font-mono font-medium">{r.symbol}</span>
-              <span className="truncate pl-2 text-xs text-muted-foreground">{r.name}</span>
+              <span className="font-medium">{r.symbol}</span>
+              <span className="truncate pl-2 text-sm text-muted-foreground">{r.name}</span>
             </button>
           ))}
         </div>

@@ -28,52 +28,52 @@ export default function MarketBreadthPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div className="rounded-xl border border-emerald-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+            <span className="text-[11px] text-muted-foreground uppercase flex items-center gap-1">
               <TrendingUp className="size-3 text-emerald-600" />
               ADVANCING EQUITIES
             </span>
             <MetricInfo id="advances" asOf={asOf} provider="NSE India Live Market Pulse" sourceUrl="https://www.nseindia.com/market-data/live-equity-market" />
           </div>
           <div className="text-3xl font-bold text-emerald-600">{adv.toLocaleString()}</div>
-          <span className="text-[11px] text-muted-foreground">{advPct}% of traded universe</span>
+          <span className="text-sm text-muted-foreground">{advPct}% of traded universe</span>
         </div>
 
         <div className="rounded-xl border border-rose-500/30 bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+            <span className="text-[11px] text-muted-foreground uppercase flex items-center gap-1">
               <TrendingDown className="size-3 text-rose-600" />
               DECLINING EQUITIES
             </span>
             <MetricInfo id="declines" asOf={asOf} provider="NSE India Live Market Pulse" sourceUrl="https://www.nseindia.com/market-data/live-equity-market" />
           </div>
           <div className="text-3xl font-bold text-rose-600">{dec.toLocaleString()}</div>
-          <span className="text-[11px] text-muted-foreground">{decPct}% of traded universe</span>
+          <span className="text-sm text-muted-foreground">{decPct}% of traded universe</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">52-WEEK HIGHS</span>
+            <span className="text-[11px] text-muted-foreground uppercase">52-WEEK HIGHS</span>
             <MetricInfo id="high52w" asOf={asOf} provider="NSE India 52W High API" sourceUrl="https://www.nseindia.com/market-data/52-week-high-equity-market" />
           </div>
           <div className="text-3xl font-bold text-emerald-600">{h52}</div>
-          <span className="text-[11px] text-muted-foreground">Expansion threshold active</span>
+          <span className="text-sm text-muted-foreground">Expansion threshold active</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">52-WEEK LOWS</span>
+            <span className="text-[11px] text-muted-foreground uppercase">52-WEEK LOWS</span>
             <MetricInfo id="low52w" asOf={asOf} provider="NSE India 52W Low API" sourceUrl="https://www.nseindia.com/market-data/52-week-low-equity-market" />
           </div>
           <div className="text-3xl font-bold text-rose-600">{l52}</div>
-          <span className="text-[11px] text-muted-foreground">Minimal broad capitulation</span>
+          <span className="text-sm text-muted-foreground">Minimal broad capitulation</span>
         </div>
       </div>
 
       {/* Visual Breadth Bar */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-3 font-mono text-xs shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-3 text-sm shadow-sm">
         <div className="flex justify-between items-center text-sm font-semibold">
           <span className="text-emerald-600 flex items-center gap-1">
             Advances: {adv.toLocaleString()} ({advPct}%)
@@ -93,7 +93,7 @@ export default function MarketBreadthPage() {
           <div className="h-full bg-muted-foreground/30" style={{ width: `${100 - advPct - decPct}%` }} />
           <div className="h-full bg-rose-500" style={{ width: `${decPct}%` }} />
         </div>
-        <div className="flex justify-between text-[11px] text-muted-foreground pt-1 items-center">
+        <div className="flex justify-between text-sm text-muted-foreground pt-1 items-center">
           <span className="flex items-center gap-1">
             Advance/Decline Ratio: {(adv / (dec || 1)).toFixed(2)}x
             <MetricInfo id="ad_ratio" asOf={asOf} iconSize="xs" />

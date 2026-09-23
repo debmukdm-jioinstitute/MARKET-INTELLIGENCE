@@ -45,7 +45,7 @@ export function AssumptionsEditor({
     <div className="space-y-5">
       {SCALAR_SECTIONS_ORDER.filter((s) => bySection.has(s)).map((section) => (
         <div key={section}>
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-primary">{section}</p>
+          <p className="mb-2 text-[11px] uppercase tracking-wider text-primary">{section}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {bySection.get(section)!.map((spec) => {
               const value = assumptions.values[spec.key] as number;
@@ -54,9 +54,9 @@ export function AssumptionsEditor({
               const overridden = assumptions.overridden.includes(spec.key);
               return (
                 <div key={spec.key} className="space-y-1">
-                  <label className="flex items-center justify-between text-xs text-muted-foreground">
+                  <label className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>{spec.label}</span>
-                    {overridden ? <span className="text-[10px] font-semibold text-blue-600">edited</span> : null}
+                    {overridden ? <span className="text-sm font-semibold text-blue-600">edited</span> : null}
                   </label>
                   <div className="flex items-center gap-1.5">
                     <input
@@ -76,22 +76,22 @@ export function AssumptionsEditor({
                           });
                         }
                       }}
-                      className="w-full rounded-md border border-input bg-input/30 px-2.5 py-1.5 font-mono text-sm tabular-nums outline-none focus-visible:border-ring"
+                      className="w-full rounded-md border border-input bg-input/30 px-2.5 py-1.5 text-sm tabular-nums outline-none focus-visible:border-ring"
                     />
                     {spec.fmt === "pct" || spec.fmt === "pct2" ? (
-                      <span className="text-xs text-muted-foreground">%</span>
+                      <span className="text-sm text-muted-foreground">%</span>
                     ) : spec.fmt === "mult" ? (
-                      <span className="text-xs text-muted-foreground">x</span>
+                      <span className="text-sm text-muted-foreground">x</span>
                     ) : null}
                   </div>
-                  <p className="text-[10px] leading-snug text-muted-foreground/70">{assumptions.basis[spec.key]}</p>
+                  <p className="text-sm leading-snug text-muted-foreground/70">{assumptions.basis[spec.key]}</p>
                 </div>
               );
             })}
           </div>
         </div>
       ))}
-      <p className="text-[10px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Current share price is {formatByFmt(assumptions.values.price as number, "price", currency)}; shares outstanding{" "}
         {formatByFmt(assumptions.values.shares_outstanding as number, "num1")}M.
       </p>

@@ -41,7 +41,7 @@ export default function MarketsPage() {
         subtitle="Live last prices from Yahoo Finance chart API / Stooq. Click a row to open full research, or ⓘ for source and fetch time."
       />
       {hubSyncedAt ? (
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
+        <p className="text-sm text-muted-foreground flex items-center gap-1">
           Hub sync {new Date(hubSyncedAt).toLocaleString()}
           <MetricInfo id="data_quality" asOf={hubSyncedAt} iconSize="xs" />
         </p>
@@ -80,10 +80,10 @@ export default function MarketsPage() {
                 className="group cursor-pointer"
                 onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
               >
-                <TableCell className="font-mono flex items-center gap-1">
+                <TableCell className="flex items-center gap-1">
                   <span className="group-hover:text-primary group-hover:underline underline-offset-2">{row.symbol}</span>
                   {row.live ? (
-                    <span className="ml-1 text-[9px] uppercase text-emerald-600">live</span>
+                    <span className="ml-1 text-[11px] uppercase text-emerald-600">live</span>
                   ) : null}
                   <span onClick={(e) => e.stopPropagation()}>
                     <MetricInfo
@@ -98,7 +98,7 @@ export default function MarketsPage() {
                 </TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell className="text-muted-foreground">{row.assetClass}</TableCell>
-                <TableCell className="text-right font-mono">{row.last.toFixed(2)}</TableCell>
+                <TableCell className="text-right">{row.last.toFixed(2)}</TableCell>
                 <Chg v={row.d1} />
                 <Chg v={row.m1} />
                 <Chg v={row.y1} />
@@ -109,7 +109,7 @@ export default function MarketsPage() {
             ))}
           </TableBody>
         </Table>
-        <p className="border-t border-border px-4 py-2 text-[10px] text-muted-foreground">
+        <p className="border-t border-border px-4 py-2 text-sm text-muted-foreground">
           *1M / 1Y from simulated tape until full historical API merge.
         </p>
       </div>
@@ -119,7 +119,7 @@ export default function MarketsPage() {
 
 function Chg({ v }: { v: number }) {
   return (
-    <TableCell className={cn("text-right font-mono", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
+    <TableCell className={cn("text-right", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
       {formatPct(v)}
     </TableCell>
   );

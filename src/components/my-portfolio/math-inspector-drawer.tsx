@@ -82,9 +82,9 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
         style={{ minWidth: "320px" }}
       >
         {/* Bloomberg Terminal Top Status Bar */}
-        <div className="flex items-center justify-between border-b border-border/70 bg-muted px-4 py-2.5 font-mono text-xs">
+        <div className="flex items-center justify-between border-b border-border/70 bg-muted px-4 py-2.5 text-sm">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded bg-blue-600/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 uppercase tracking-widest border border-blue-600/20">
+            <span className="inline-flex items-center gap-1.5 rounded bg-blue-600/10 px-2 py-0.5 text-[11px] font-bold text-blue-600 uppercase tracking-widest border border-blue-600/20">
               <Calculator className="size-3 text-blue-600" />
               QUANT INSPECTOR
             </span>
@@ -120,10 +120,10 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-semibold text-blue-600 tracking-wide uppercase">
+                <span className="text-xs font-semibold text-blue-600 tracking-wide uppercase">
                   {request.metricId}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-600">
+                <span className="flex items-center gap-1 text-sm text-emerald-600">
                   <ShieldCheck className="size-3.5" />
                   Verified Mathematical Formula
                 </span>
@@ -134,8 +134,8 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
             </div>
 
             {/* Active Displayed Metric Pill */}
-            <div className="rounded-xl border border-blue-600/30 bg-blue-600/5 px-4 py-2 text-right font-mono shadow-inner">
-              <span className="text-[10px] uppercase font-bold text-blue-600/80 block">
+            <div className="rounded-xl border border-blue-600/30 bg-blue-600/5 px-4 py-2 text-right shadow-inner">
+              <span className="text-[11px] uppercase font-bold text-blue-600/80 block">
                 Active Value
               </span>
               <span className="text-2xl font-bold text-blue-600 tabular-nums">
@@ -145,7 +145,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-2 mt-4 pt-2 border-t border-border/40 font-mono text-xs">
+          <div className="flex items-center gap-2 mt-4 pt-2 border-t border-border/40 text-sm">
             <button
               type="button"
               onClick={() => setActiveTab("derivation")}
@@ -192,14 +192,14 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
               {/* 1. Formal LaTeX Mathematical Formula */}
               <section className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Calculator className="size-3.5 text-blue-600" />
                     Formal Mathematical Equation (LaTeX)
                   </span>
                   <button
                     type="button"
                     onClick={handleCopyLatex}
-                    className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-blue-600 transition-colors"
+                    className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     {copied ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                     {copied ? "Copied" : "Copy LaTeX"}
@@ -210,8 +210,8 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
 
                 {/* Variable Breakdown */}
                 {mathDef.variables.length > 0 && (
-                  <div className="mt-2 rounded-lg border border-border/60 bg-card/40 p-3 space-y-1.5 text-xs">
-                    <p className="font-mono text-[10px] uppercase font-bold text-muted-foreground">
+                  <div className="mt-2 rounded-lg border border-border/60 bg-card/40 p-3 space-y-1.5 text-sm">
+                    <p className="text-[11px] uppercase font-bold text-muted-foreground">
                       Variable Legend & Definitions:
                     </p>
                     <div className="grid gap-1.5 sm:grid-cols-2">
@@ -220,7 +220,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                           <Latex math={v.symbol} className="text-blue-600 font-bold" />
                           <div>
                             <span className="font-semibold text-foreground">{v.name}</span>:{" "}
-                            <span className="text-muted-foreground text-[11px]">{v.description}</span>
+                            <span className="text-muted-foreground text-sm">{v.description}</span>
                           </div>
                         </div>
                       ))}
@@ -231,13 +231,13 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
 
               {/* 2. Live Parameter Inputs Table */}
               <section className="space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono block">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                   Active Parameter Inputs (Live Portfolio Data)
                 </span>
                 <div className="overflow-hidden rounded-lg border border-border/80 bg-card/50">
-                  <table className="w-full text-left font-mono text-xs">
+                  <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-border/60 bg-muted/30 text-[10px] uppercase text-muted-foreground">
+                      <tr className="border-b border-border/60 bg-muted/30 text-[11px] uppercase text-muted-foreground">
                         <th className="py-2 px-3">Symbol</th>
                         <th className="py-2 px-3">Parameter Name</th>
                         <th className="py-2 px-3 text-right">Value</th>
@@ -252,7 +252,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                           </td>
                           <td className="py-2 px-3 font-sans text-foreground">{inp.label}</td>
                           <td className="py-2 px-3 text-right font-bold text-blue-600">{inp.value}</td>
-                          <td className="py-2 px-3 text-muted-foreground text-[11px]">{inp.source}</td>
+                          <td className="py-2 px-3 text-muted-foreground text-sm">{inp.source}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -262,7 +262,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
 
               {/* 3. Step-by-Step Arithmetic Substitution Proof */}
               <section className="space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ChevronRight className="size-4 text-emerald-600" />
                   Step-by-Step Arithmetic Proof & Derivation
                 </span>
@@ -271,18 +271,18 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                   {derivation.steps.map((step) => (
                     <div
                       key={step.stepNumber}
-                      className="rounded-xl border border-border/80 bg-card/60 p-3.5 space-y-2 font-mono transition-colors hover:border-blue-600/40"
+                      className="rounded-xl border border-border/80 bg-card/60 p-3.5 space-y-2 transition-colors hover:border-blue-600/40"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-blue-600/20 text-[10px] font-bold text-blue-600 border border-blue-600/30">
+                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-blue-600/20 text-sm font-bold text-blue-600 border border-blue-600/30">
                           {step.stepNumber}
                         </span>
-                        <span className="font-semibold text-xs text-foreground font-sans">{step.title}</span>
+                        <span className="font-semibold text-sm text-foreground font-sans">{step.title}</span>
                       </div>
 
                       <Latex block math={step.latex} />
 
-                      <p className="text-xs text-muted-foreground font-sans leading-relaxed pt-1">
+                      <p className="text-sm text-muted-foreground font-sans leading-relaxed pt-1">
                         {step.explanation}
                       </p>
                     </div>
@@ -290,7 +290,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                 </div>
 
                 {/* Final Verification Box */}
-                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-mono text-emerald-600 flex items-center gap-2">
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-600 flex items-center gap-2">
                   <Check className="size-4 text-emerald-600 shrink-0" />
                   <span>{derivation.verification}</span>
                 </div>
@@ -302,18 +302,18 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
             <div className="space-y-5">
               {/* Economic Interpretation */}
               <section className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
-                <span className="text-xs font-bold uppercase text-primary font-mono flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase text-primary flex items-center gap-1.5">
                   <BookOpen className="size-4" />
                   Financial Theory & Quantitative Intuition
                 </span>
-                <p className="text-foreground text-xs leading-relaxed">
+                <p className="text-foreground text-sm leading-relaxed">
                   {mathDef.economicInterpretation}
                 </p>
               </section>
 
               {/* Institutional Utility */}
-              <section className="rounded-xl border border-border/80 bg-card p-4 space-y-2 font-mono text-xs">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+              <section className="rounded-xl border border-border/80 bg-card p-4 space-y-2 text-sm">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground block">
                   How Hedge Funds & Portfolio Managers Use This Metric
                 </span>
                 <p className="text-muted-foreground font-sans leading-relaxed">
@@ -325,8 +325,8 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
 
           {activeTab === "provenance" && (
             <div className="space-y-4">
-              <section className="rounded-xl border border-border/80 bg-card p-4 space-y-3 font-mono text-xs">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
+              <section className="rounded-xl border border-border/80 bg-card p-4 space-y-3 text-sm">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
                   <Clock className="size-3.5 text-primary" />
                   Verified Data Provenance & Methodology
                 </span>
@@ -342,7 +342,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                   </div>
                   <div className="border-b border-border/50 pb-2">
                     <span className="text-muted-foreground block mb-1">Methodology Standards:</span>
-                    <span className="text-foreground font-sans text-xs">{mathDef.provenance.methodology}</span>
+                    <span className="text-foreground font-sans text-sm">{mathDef.provenance.methodology}</span>
                   </div>
                 </div>
 
@@ -352,7 +352,7 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
                       href={mathDef.provenance.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-primary hover:underline text-xs font-bold"
+                      className="inline-flex items-center gap-1.5 text-primary hover:underline text-sm font-bold"
                     >
                       Official Methodology & Exchange Documentation <ExternalLink className="size-3" />
                     </a>
@@ -364,14 +364,14 @@ export function MathInspectorDrawer({ isOpen, onClose, request }: MathInspectorD
         </div>
 
         {/* Bloomberg Terminal Footer */}
-        <div className="flex items-center justify-between border-t border-border/70 bg-muted px-5 py-3 font-mono text-xs">
-          <span className="text-muted-foreground text-[11px]">
+        <div className="flex items-center justify-between border-t border-border/70 bg-muted px-5 py-3 text-sm">
+          <span className="text-muted-foreground text-sm">
             Esc to close · Press Maximize for full desk
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded bg-secondary px-4 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary/80 transition-colors"
+            className="rounded bg-secondary px-4 py-1.5 text-sm font-semibold text-foreground hover:bg-secondary/80 transition-colors"
           >
             Done
           </button>

@@ -168,7 +168,7 @@ export default function SectorsPage() {
       />
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-3 font-mono text-xs">
+      <div className="flex items-center gap-2 border-b border-border pb-3 text-sm">
         {[
           { id: "performance", label: "Performance Matrix" },
           { id: "rotation", label: "Rotation Quadrant" },
@@ -193,7 +193,7 @@ export default function SectorsPage() {
 
       {/* Rotation Quadrant Summary */}
       {activeTab === "rotation" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
           {[
             {
               stage: "Leading",
@@ -225,7 +225,7 @@ export default function SectorsPage() {
                 <span className="font-bold text-sm tracking-wider uppercase block">{q.stage}</span>
                 <MetricInfo metric="dma" customTitle={`Relative Rotation Stage: ${q.stage}`} />
               </div>
-              <p className="text-[11px] font-sans text-muted-foreground leading-snug">{q.desc}</p>
+              <p className="text-sm font-sans text-muted-foreground leading-snug">{q.desc}</p>
               <div className="pt-2 space-y-1.5">
                 {q.items.map((s) => (
                   <div key={s.name} className="flex justify-between items-center text-foreground font-semibold">
@@ -299,7 +299,7 @@ export default function SectorsPage() {
           </TableHeader>
           <TableBody>
             {SECTOR_DATA.map((s) => (
-              <TableRow key={s.name} className="font-mono text-xs hover:bg-accent/40">
+              <TableRow key={s.name} className="text-sm hover:bg-accent/40">
                 <TableCell className="font-bold text-foreground">{s.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{s.niftyWeight}%</TableCell>
                 <TableCell className={cn("text-right font-bold", s.return1D >= 0 ? "text-emerald-600" : "text-rose-600")}>
@@ -320,7 +320,7 @@ export default function SectorsPage() {
                 <TableCell className="text-center">
                   <span
                     className={cn(
-                      "rounded px-2 py-0.5 text-[10px] font-bold uppercase",
+                      "rounded px-2 py-0.5 text-[11px] font-bold uppercase",
                       s.rotationStage === "Leading"
                         ? "bg-emerald-500/10 text-emerald-600"
                         : s.rotationStage === "Improving"

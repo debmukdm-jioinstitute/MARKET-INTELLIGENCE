@@ -9,11 +9,11 @@ import { fmtNum } from "@/lib/format-india";
 export function IndiaMacro({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">India macro</h2>
-      <p className="mt-1 text-xs text-muted-foreground">Current · previous · 12M trend (official / open data only).</p>
+      <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">India macro</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Current · previous · 12M trend (official / open data only).</p>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="font-mono text-[10px] uppercase text-muted-foreground">
+          <thead className="text-[11px] uppercase text-muted-foreground">
             <tr className="border-b border-border">
               <th className="py-2 pr-4">Indicator</th>
               <th className="py-2 pr-4 text-right">Current</th>
@@ -51,20 +51,20 @@ function MacroTableRow({ row, hubSyncedAt }: { row: MacroRow; hubSyncedAt: strin
           iconSize="xs"
         />
       </td>
-      <td className="py-3 pr-4 text-right font-mono">
+      <td className="py-3 pr-4 text-right">
         {row.current != null ? `${fmtNum(row.current)} ${row.unit}` : "—"}
       </td>
-      <td className="py-3 pr-4 text-right font-mono text-muted-foreground">
+      <td className="py-3 pr-4 text-right text-muted-foreground">
         {row.previous != null ? `${fmtNum(row.previous)} ${row.unit}` : "—"}
       </td>
-      <td className="py-3 pr-4 font-mono">{dir}</td>
+      <td className="py-3 pr-4">{dir}</td>
       <td className="py-3">
         {chart.length > 1 ? (
           <div className="h-[48px] w-[140px]">
             <Lines data={chart} keys={[{ key: "v", color: "#5ec8e8", name: row.indicator }]} />
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-sm text-muted-foreground">—</span>
         )}
       </td>
       <td className="py-3">

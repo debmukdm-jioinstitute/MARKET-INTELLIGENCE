@@ -34,7 +34,7 @@ export function MacroSectionView({
         </Panel>
         <Panel title="Regime quadrants (historical)">
           <div className="mb-4 overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
                   <th className="py-2 pr-4">Period</th>
@@ -46,10 +46,10 @@ export function MacroSectionView({
               <tbody>
                 {data.regime.history.slice().reverse().slice(0, 12).map((h) => (
                   <tr key={h.date} className="border-b border-border/50">
-                    <td className="py-2 pr-4 font-mono">{h.date}</td>
+                    <td className="py-2 pr-4">{h.date}</td>
                     <td className="py-2 pr-4">{h.label}</td>
-                    <td className="py-2 pr-4 font-mono">{h.growthScore.toFixed(1)}%</td>
-                    <td className="py-2 font-mono">{h.inflationScore.toFixed(1)}%</td>
+                    <td className="py-2 pr-4">{h.growthScore.toFixed(1)}%</td>
+                    <td className="py-2">{h.inflationScore.toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -77,11 +77,11 @@ export function MacroSectionView({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
+        <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
         <h2 className="mt-2 font-heading text-2xl">{meta.title}</h2>
         <p className="text-sm text-muted-foreground">{section.subtitle}</p>
         {section.highlights.length ? (
-          <ul className="mt-2 list-disc pl-5 text-xs text-muted-foreground">
+          <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
             {section.highlights.map((h) => (
               <li key={h}>{h}</li>
             ))}
@@ -125,7 +125,7 @@ function InflationHero({ metrics }: { metrics: MacroMetric[] }) {
   const children = momentum?.children ?? [];
   return (
     <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-background p-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-orange-300">INFLATION</p>
+      <p className="text-[11px] uppercase tracking-[0.22em] text-orange-300">INFLATION</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <HeroStat label="Headline CPI" value={headline?.value} unit="% y/y" />
         {children.map((c) => (
@@ -139,8 +139,8 @@ function InflationHero({ metrics }: { metrics: MacroMetric[] }) {
 function HeroStat({ label, value, unit }: { label: string; value: number | null | undefined; unit: string }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="font-mono text-3xl tabular-nums text-orange-200">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-3xl tabular-nums text-orange-200">
         {value != null ? value.toFixed(2) : "—"}
         <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
       </p>
@@ -151,13 +151,13 @@ function HeroStat({ label, value, unit }: { label: string; value: number | null 
 function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{metric.label}</p>
-      <p className={cn("mt-1 font-mono tabular-nums text-foreground", large ? "text-3xl" : "text-2xl")}>
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+      <p className={cn("mt-1 tabular-nums text-foreground", large ? "text-3xl" : "text-2xl")}>
         {metric.value != null ? metric.value.toFixed(2) : metric.hint ? "↗" : "—"}
-        <span className="ml-1 text-xs text-muted-foreground">{metric.unit}</span>
+        <span className="ml-1 text-sm text-muted-foreground">{metric.unit}</span>
       </p>
       {metric.change != null ? (
-        <p className={cn("text-xs", metric.change >= 0 ? "text-emerald-600" : "text-rose-600")}>
+        <p className={cn("text-sm", metric.change >= 0 ? "text-emerald-600" : "text-rose-600")}>
           Δ {metric.change >= 0 ? "+" : ""}
           {metric.change.toFixed(2)}
         </p>
@@ -213,14 +213,14 @@ function MetricBody({ metric, compact }: { metric: MacroMetric; compact?: boolea
         className="flex flex-wrap items-center justify-between gap-2 text-sm hover:text-primary"
       >
         <span>{metric.label}</span>
-        <span className="text-xs text-muted-foreground">{metric.hint}</span>
+        <span className="text-sm text-muted-foreground">{metric.hint}</span>
       </a>
     );
   }
   return (
     <div className={cn("flex flex-wrap items-baseline justify-between gap-2", compact && "text-sm")}>
       <span className={compact ? "text-muted-foreground" : "font-medium"}>{metric.label}</span>
-      <span className="font-mono tabular-nums">
+      <span className="tabular-nums">
         {metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : "—"}
       </span>
     </div>
@@ -235,7 +235,7 @@ function RegimeLegend() {
     { name: "Deflation", g: "↓", i: "↓" },
   ];
   return (
-    <table className="w-full max-w-md text-xs">
+    <table className="w-full max-w-md text-sm">
       <thead>
         <tr className="text-muted-foreground">
           <th className="py-1 text-left">Regime</th>
@@ -247,8 +247,8 @@ function RegimeLegend() {
         {rows.map((r) => (
           <tr key={r.name}>
             <td className="py-1">{r.name}</td>
-            <td className="py-1 text-center font-mono">{r.g}</td>
-            <td className="py-1 text-center font-mono">{r.i}</td>
+            <td className="py-1 text-center">{r.g}</td>
+            <td className="py-1 text-center">{r.i}</td>
           </tr>
         ))}
       </tbody>

@@ -38,7 +38,7 @@ export function MetricInfo({
       aria-label={`View mathematical derivation for ${entry?.label ?? id}`}
       title="Click for full LaTeX mathematical derivation, inputs, and institutional proof"
     >
-      <span className="font-serif italic text-[11px] font-bold leading-none select-none hover:scale-125 transition-transform">
+      <span className="font-serif italic text-sm font-bold leading-none select-none hover:scale-125 transition-transform">
         ⓘ
       </span>
     </button>

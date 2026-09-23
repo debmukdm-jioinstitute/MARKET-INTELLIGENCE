@@ -14,12 +14,12 @@ export function CurrencyStrip({ rows }: { rows: TapeQuote[] }) {
     <Panel
       title="Currency"
       action={
-        <Link href="/macro/currency" className="text-xs text-primary hover:underline">
+        <Link href="/macro/currency" className="text-sm text-primary hover:underline">
           All pairs →
         </Link>
       }
     >
-      <p className="mb-2 text-[10px] text-muted-foreground">Prioritized for Indian markets</p>
+      <p className="mb-2 text-sm text-muted-foreground">Prioritized for Indian markets</p>
       <div className="space-y-2 rounded-lg border border-primary/25 bg-primary/5 p-3">
         {priority.map((r) => (
           <CurrencyRow key={r.id} row={r} emphasized />
@@ -56,10 +56,10 @@ function CurrencyRow({ row, emphasized }: { row: TapeQuote; emphasized?: boolean
         {row.label}
         <MetricExplainer copyKey={row.copyKey} />
       </span>
-      <span className="flex items-center gap-2 font-mono text-sm tabular-nums">
+      <span className="flex items-center gap-2 text-sm tabular-nums">
         {display}
         {row.changePct != null ? (
-          <span className={cn("text-xs", row.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
+          <span className={cn("text-sm", row.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
             {row.changePct >= 0 ? "+" : ""}
             {(row.changePct * 100).toFixed(2)}%
           </span>

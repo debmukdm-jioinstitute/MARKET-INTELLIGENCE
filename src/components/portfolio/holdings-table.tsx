@@ -59,7 +59,7 @@ export function HoldingsTable() {
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div>
           <h3 className="font-heading text-sm font-semibold">Holdings ledger</h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Live marks · virtual book · {active.baseCurrency}
             <span className="ml-1 text-muted-foreground/80">· Click symbol or name for details</span>
           </p>
@@ -132,10 +132,10 @@ export function HoldingsTable() {
                 <button
                   type="button"
                   onClick={() => openDetail(row.symbol)}
-                  className="w-full px-4 py-2 text-left font-mono font-medium text-primary hover:underline"
+                  className="w-full px-4 py-2 text-left font-medium text-primary hover:underline"
                 >
                   {row.symbol}
-                  {row.live ? <span className="ml-1 text-[9px] text-emerald-600">●</span> : null}
+                  {row.live ? <span className="ml-1 text-sm text-emerald-600">●</span> : null}
                 </button>
               </TableCell>
               <TableCell className="p-0">
@@ -147,21 +147,21 @@ export function HoldingsTable() {
                   {row.name}
                 </button>
               </TableCell>
-              <TableCell className="text-right font-mono">{row.last.toFixed(2)}</TableCell>
+              <TableCell className="text-right">{row.last.toFixed(2)}</TableCell>
               <TableCell
                 className={cn(
-                  "text-right font-mono",
+                  "text-right",
                   row.dayPct >= 0 ? "text-emerald-600" : "text-rose-600",
                 )}
               >
                 {formatPct(row.dayPct)}
               </TableCell>
-              <TableCell className="text-right font-mono">{row.shares.toFixed(1)}</TableCell>
-              <TableCell className="text-right font-mono">{formatInr(row.marketValue)}</TableCell>
-              <TableCell className="text-right font-mono">{formatPct(row.weight, 1)}</TableCell>
+              <TableCell className="text-right">{row.shares.toFixed(1)}</TableCell>
+              <TableCell className="text-right">{formatInr(row.marketValue)}</TableCell>
+              <TableCell className="text-right">{formatPct(row.weight, 1)}</TableCell>
               <TableCell
                 className={cn(
-                  "text-right font-mono",
+                  "text-right",
                   row.pnl >= 0 ? "text-emerald-600" : "text-rose-600",
                 )}
               >

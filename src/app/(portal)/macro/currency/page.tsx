@@ -17,23 +17,23 @@ export default function CurrencyMacroPage() {
         title="Currency"
         subtitle="USD/INR and DXY matter most for Indian equities; other crosses for trade and travel."
       />
-      <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
+      <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data?.currencies.map((c) => (
         <Panel key={c.id} title={c.label}>
           <div id={c.id} className="flex flex-wrap items-center gap-3">
-            <p className="font-mono text-3xl tabular-nums">
+            <p className="text-3xl tabular-nums">
               {c.id === "dxy" ? c.price?.toFixed(2) : `₹${c.price?.toFixed(2) ?? "—"}`}
             </p>
             <MetricExplainer copyKey={c.copyKey} />
             {c.changePct != null ? (
-              <span className={cn("font-mono text-sm", c.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
+              <span className={cn("text-sm", c.changePct >= 0 ? "text-rose-600" : "text-emerald-600")}>
                 {c.changePct >= 0 ? "+" : ""}
                 {(c.changePct * 100).toFixed(2)}%
               </span>
             ) : null}
-            <a href={c.source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary">
+            <a href={c.source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">
               {c.source.provider} ↗
             </a>
           </div>

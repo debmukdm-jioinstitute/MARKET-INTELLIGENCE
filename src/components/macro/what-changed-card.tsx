@@ -127,7 +127,7 @@ export function WhatChangedCard({ seed }: { seed: BriefingSeed }) {
 
   return (
     <section className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-6 shadow-lg">
-      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">Morning briefing</p>
+      <p className="text-[11px] uppercase tracking-[0.28em] text-primary">Morning briefing</p>
       <h2 className="mt-1 font-heading text-2xl md:text-3xl">What changed since you last visited?</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         {firstVisit
@@ -141,7 +141,7 @@ export function WhatChangedCard({ seed }: { seed: BriefingSeed }) {
               href={item.href}
               className="group flex gap-3 rounded-lg border border-border/60 bg-background/60 px-4 py-3 transition hover:border-primary/50 hover:bg-background"
             >
-              <span className="font-mono text-lg text-primary">{item.n}</span>
+              <span className="text-lg text-primary">{item.n}</span>
               <span className="text-sm leading-snug group-hover:text-primary">{item.text}</span>
             </Link>
           </li>

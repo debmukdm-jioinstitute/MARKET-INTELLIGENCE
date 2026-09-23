@@ -72,7 +72,7 @@ export function CommandPalette() {
             <button
               type="button"
               onClick={() => setView(null)}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <ArrowLeft className="size-3.5" /> Back to search
             </button>
@@ -98,7 +98,7 @@ export function CommandPalette() {
               <CommandInput placeholder="Search symbols, pages, or type “help”…" />
             </div>
             <Select value={source} onValueChange={(v) => setSource(v as DataSource)}>
-              <SelectTrigger className="mr-1 h-7 w-[120px] text-xs">
+              <SelectTrigger className="mr-1 h-7 w-[120px] text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -127,7 +127,7 @@ export function CommandPalette() {
                   {PAGE_COMMANDS.map((p) => (
                     <CommandItem key={p.href} value={`${p.label} ${p.description}`} onSelect={() => goto(p.href)}>
                       <span className="font-medium">{p.label}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{p.description}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{p.description}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -144,8 +144,8 @@ export function CommandPalette() {
                       value={`${i.symbol} ${i.name}`}
                       onSelect={() => setView({ type: "india-quote", symbol: i.symbol })}
                     >
-                      <span className="font-mono font-medium">{i.symbol}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{i.name} — quote</span>
+                      <span className="font-medium">{i.symbol}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{i.name} — quote</span>
                     </CommandItem>
                   ))}
                   {INDIA_EQUITIES.map((i) => (
@@ -154,8 +154,8 @@ export function CommandPalette() {
                       value={`${i.symbol} ${i.name} fundamentals ratios`}
                       onSelect={() => setView({ type: "india-fundamentals", symbol: i.symbol })}
                     >
-                      <span className="font-mono font-medium">{i.symbol}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">fundamentals</span>
+                      <span className="font-medium">{i.symbol}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">fundamentals</span>
                     </CommandItem>
                   ))}
                   {OPTION_UNDERLYINGS.filter((u) => u.kind === "index").map((u) => (
@@ -164,8 +164,8 @@ export function CommandPalette() {
                       value={`${u.label} option chain greeks`}
                       onSelect={() => setView({ type: "option-chain", key: u.key, label: u.label })}
                     >
-                      <span className="font-mono font-medium">{u.label}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">option chain</span>
+                      <span className="font-medium">{u.label}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">option chain</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -182,8 +182,8 @@ export function CommandPalette() {
                       value={`${i.symbol} ${i.name}`}
                       onSelect={() => setView({ type: "global-quote", symbol: i.symbol })}
                     >
-                      <span className="font-mono font-medium">{i.symbol}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{i.name}</span>
+                      <span className="font-medium">{i.symbol}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{i.name}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -201,24 +201,24 @@ function HelpView() {
     <div className="space-y-4 p-4 text-sm">
       <div>
         <p className="font-semibold">Command palette</p>
-        <p className="text-xs text-muted-foreground">
-          Press <kbd className="rounded border border-border px-1 font-mono">Space</kbd> anywhere (with
+        <p className="text-sm text-muted-foreground">
+          Press <kbd className="rounded border border-border px-1">Space</kbd> anywhere (with
           nothing focused) to open this, or click the search pill in the top bar.
         </p>
       </div>
-      <dl className="space-y-2 text-xs">
+      <dl className="space-y-2 text-sm">
         <Item k="Commands" v="Help, jump to IPOs / Data feeds." />
         <Item k="Pages" v="Jump straight to any page in the app." />
         <Item k="India symbols — Upstox" v="Type a symbol for a live quote or fundamentals; index names (NIFTY, BANKNIFTY, FINNIFTY) for their option chain." />
         <Item k="Global symbols" v="US/global tape names, live quote when available." />
         <Item k="Data source dropdown" v="Filters which of the above groups are searched — All / India (Upstox) / Global (Yahoo)." />
       </dl>
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="space-y-1 text-sm text-muted-foreground">
         <p>
-          <kbd className="rounded border border-border px-1 font-mono">↑</kbd>{" "}
-          <kbd className="rounded border border-border px-1 font-mono">↓</kbd> move ·{" "}
-          <kbd className="rounded border border-border px-1 font-mono">Enter</kbd> select ·{" "}
-          <kbd className="rounded border border-border px-1 font-mono">Esc</kbd> close
+          <kbd className="rounded border border-border px-1">↑</kbd>{" "}
+          <kbd className="rounded border border-border px-1">↓</kbd> move ·{" "}
+          <kbd className="rounded border border-border px-1">Enter</kbd> select ·{" "}
+          <kbd className="rounded border border-border px-1">Esc</kbd> close
         </p>
       </div>
     </div>

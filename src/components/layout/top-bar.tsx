@@ -22,11 +22,11 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
+          className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
         >
           <Search className="size-3" />
           Commands
-          <kbd className="ml-1 rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
+          <kbd className="ml-1 rounded border border-border px-1 text-sm">⌘K</kbd>
         </button>
         <MegaNavBar />
       </div>
@@ -35,7 +35,7 @@ export function TopBar() {
       ) : (
         <div aria-hidden />
       )}
-      <div className="flex flex-wrap items-center justify-end gap-4 font-mono text-[11px] lg:gap-5">
+      <div className="flex flex-wrap items-center justify-end gap-4 text-sm lg:gap-5">
         <PushNotificationsToggle />
       </div>
     </header>

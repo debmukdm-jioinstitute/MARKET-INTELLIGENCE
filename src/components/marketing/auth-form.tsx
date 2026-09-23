@@ -87,7 +87,7 @@ export function AuthForm({ mode, next = "/Home" }: { mode: "login" | "signup"; n
       >
         Explore as guest
       </button>
-      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+      <p className="mt-2 text-center text-sm text-muted-foreground">
         No account required. Demo books only; create an account to save your desk.
       </p>
       <p className="mt-6 text-sm text-muted-foreground">

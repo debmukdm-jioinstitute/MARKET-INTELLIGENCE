@@ -20,7 +20,7 @@ export function PortfolioOverview({ metrics }: { metrics: MetricResult[] }) {
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {metrics.map((metric) => (
         <article key={metric.id} className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
-          <div className="flex items-center font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="flex items-center text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             {metric.label}
             <MetricInfo id={metric.id} value={metric.formatted} />
           </div>
@@ -36,7 +36,7 @@ export function PortfolioOverview({ metrics }: { metrics: MetricResult[] }) {
             {metric.formatted}
           </p>
           {readerNote(metric.note) ? (
-            <p className="mt-1 text-[10px] text-muted-foreground">{readerNote(metric.note)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{readerNote(metric.note)}</p>
           ) : null}
         </article>
       ))}

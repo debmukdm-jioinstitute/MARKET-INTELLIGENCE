@@ -20,7 +20,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Analytics</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Analytics</p>
         <h1 className="mt-1 text-xl font-semibold">Traffic</h1>
         <p className="mt-1 text-sm text-gray-500">Pageview beacons fired by every page in the main app (logged-in and guest).</p>
       </div>
@@ -40,7 +40,7 @@ export default function AdminAnalyticsPage() {
                 style={{ height: `${Math.max(4, (d.n / maxDaily) * 140)}px` }}
                 title={`${d.day}: ${d.n}`}
               />
-              <span className="text-[9px] text-gray-500">{d.day.slice(5)}</span>
+              <span className="text-sm text-gray-500">{d.day.slice(5)}</span>
             </div>
           ))}
           {data && data.daily.length === 0 ? <p className="text-sm text-gray-500">No traffic recorded yet.</p> : null}
@@ -51,7 +51,7 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-1">
           {(data?.topPaths ?? []).map((p) => (
             <div key={p.path} className="flex items-center justify-between border-b border-gray-100 py-1.5 text-sm">
-              <span className="truncate font-mono text-xs text-gray-700">{p.path}</span>
+              <span className="truncate text-sm text-gray-700">{p.path}</span>
               <span className="tabular-nums text-gray-500">{p.n}</span>
             </div>
           ))}

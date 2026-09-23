@@ -48,7 +48,7 @@ export function IpoDetailSheet({
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
           {detail ? (
             <>
-              <dl className="grid grid-cols-2 gap-2 font-mono text-xs">
+              <dl className="grid grid-cols-2 gap-2 text-sm">
                 <Stat k="Price band" v={`${fmtInr(detail.minPrice)}–${fmtInr(detail.maxPrice)}`} />
                 <Stat k="Cut-off price" v={detail.cutOffPrice != null ? fmtInr(detail.cutOffPrice) : "—"} />
                 <Stat k="Lot size" v={detail.lotSize?.toLocaleString("en-IN") ?? "—"} />
@@ -63,7 +63,7 @@ export function IpoDetailSheet({
                 <AccordionItem value="timeline">
                   <AccordionTrigger>Timeline</AccordionTrigger>
                   <AccordionContent>
-                    <dl className="space-y-1 font-mono text-xs">
+                    <dl className="space-y-1 text-sm">
                       {TIMELINE_LABELS.map(({ key, label }) => {
                         const value = detail.timeline[key as keyof typeof detail.timeline];
                         return value ? <Stat key={key} k={label} v={value} /> : null;
@@ -75,7 +75,7 @@ export function IpoDetailSheet({
                   <AccordionItem value="registrar">
                     <AccordionTrigger>Registrar</AccordionTrigger>
                     <AccordionContent>
-                      <dl className="space-y-1 font-mono text-xs">
+                      <dl className="space-y-1 text-sm">
                         <Stat k="Name" v={detail.registrar.name} />
                         {detail.registrar.contactName ? (
                           <Stat k="Contact" v={detail.registrar.contactName} />
@@ -91,7 +91,7 @@ export function IpoDetailSheet({
                 {detail.drhpUrl || detail.rhpUrl ? (
                   <AccordionItem value="docs">
                     <AccordionTrigger>Prospectus</AccordionTrigger>
-                    <AccordionContent className="space-y-1 text-xs">
+                    <AccordionContent className="space-y-1 text-sm">
                       {detail.drhpUrl ? (
                         <a href={detail.drhpUrl} target="_blank" rel="noopener noreferrer" className="block text-primary hover:underline">
                           DRHP

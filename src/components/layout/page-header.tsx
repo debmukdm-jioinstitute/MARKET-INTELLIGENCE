@@ -9,7 +9,7 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
+      <p className="text-[11px] uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
       <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">{title}</h2>
       {subtitle ? <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p> : null}
     </div>
@@ -36,7 +36,7 @@ export function Panel({
       <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3.5">
         <div>
           <h3 className="font-heading text-base font-bold tracking-tight text-foreground">{title}</h3>
-          {subtitle ? <div className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{subtitle}</div> : null}
+          {subtitle ? <div className="mt-0.5 text-sm leading-snug text-muted-foreground">{subtitle}</div> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>

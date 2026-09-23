@@ -20,7 +20,7 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <h2 className="font-heading text-lg font-semibold">India money flow</h2>
-      <p className="text-xs text-muted-foreground">FII / DII from NSE when the feed responds. Longer windows need historical API.</p>
+      <p className="text-sm text-muted-foreground">FII / DII from NSE when the feed responds. Longer windows need historical API.</p>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <FlowCard row={moneyFlow.fii} hubSyncedAt={data.fetchedAt} />
         <FlowCard row={moneyFlow.dii} hubSyncedAt={data.fetchedAt} />
@@ -29,14 +29,14 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
         <div>
           <p className="text-xs font-semibold uppercase text-muted-foreground">FII vs DII (today |net|)</p>
           {fii != null && dii != null ? (
-            <div className="mt-2 space-y-2 font-mono text-[11px]">
+            <div className="mt-2 space-y-2 text-sm">
               <FlowBar label="FII" value={Math.abs(fii)} max={Math.max(Math.abs(fii), Math.abs(dii), 1)} />
               <FlowBar label="DII" value={Math.abs(dii)} max={Math.max(Math.abs(fii), Math.abs(dii), 1)} />
             </div>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">—</p>
           )}
-          <span className="mt-2 inline-flex items-center text-[10px]">
+          <span className="mt-2 inline-flex items-center text-sm">
             Source <DataInfo source={moneyFlow.fiiVsDii.source} hubSyncedAt={data.fetchedAt} />
           </span>
         </div>
@@ -46,7 +46,7 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
           </div>
         ) : null}
       </div>
-      <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+      <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
         {moneyFlow.extras.map((e) => (
           <li key={e.label}>
             {e.label}: {e.value ?? "—"}
@@ -67,14 +67,14 @@ function FlowCard({
 }) {
   return (
     <div className="rounded-md border border-border p-3">
-      <p className="font-mono text-sm font-semibold">{row.label}</p>
-      <dl className="mt-2 grid grid-cols-2 gap-1 font-mono text-[11px]">
+      <p className="text-sm font-semibold">{row.label}</p>
+      <dl className="mt-2 grid grid-cols-2 gap-1 text-sm">
         <div className="flex justify-between"><dt>Today</dt><dd>{fmtCr(row.today)}</dd></div>
         <div className="flex justify-between"><dt>5D</dt><dd>{row.d5 != null ? fmtCr(row.d5) : "—"}</dd></div>
         <div className="flex justify-between"><dt>1M</dt><dd>{row.m1 != null ? fmtCr(row.m1) : "—"}</dd></div>
         <div className="flex justify-between"><dt>YTD</dt><dd>{row.ytd != null ? fmtCr(row.ytd) : "—"}</dd></div>
       </dl>
-      <span className="mt-2 inline-flex items-center text-[10px]">
+      <span className="mt-2 inline-flex items-center text-sm">
         Source <DataInfo source={row.source} hubSyncedAt={hubSyncedAt} />
       </span>
     </div>

@@ -7,9 +7,9 @@ export function SensitivityGrid({ table, rowFmt, currency }: { table: Sensitivit
   const centerCol = Math.floor(table.waccSteps.length / 2);
   return (
     <div>
-      <p className="mb-2 text-xs font-medium text-foreground">{table.title}</p>
+      <p className="mb-2 text-sm font-medium text-foreground">{table.title}</p>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[420px] border-collapse font-mono text-[11px]">
+        <table className="w-full min-w-[420px] border-collapse text-sm">
           <thead>
             <tr>
               <th className="border border-border/60 bg-secondary/40 px-2 py-1.5 text-left text-muted-foreground">

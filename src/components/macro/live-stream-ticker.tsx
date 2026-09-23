@@ -21,7 +21,7 @@ function TickerCell({ item }: { item: LiveTickerItem }) {
   const up = (chg ?? 0) >= 0;
 
   const body = (
-    <span className="inline-flex items-center gap-2 px-4 font-mono text-[11px]">
+    <span className="inline-flex items-center gap-2 px-4 text-sm">
       <span className="text-muted-foreground">{item.label}</span>
       {price ? (
         <span className="text-foreground tabular-nums">{price}</span>
@@ -31,7 +31,7 @@ function TickerCell({ item }: { item: LiveTickerItem }) {
       {chg != null ? (
         <span
           className={cn(
-            "rounded px-1.5 py-0.5 text-[10px] tabular-nums",
+            "rounded px-1.5 py-0.5 text-sm tabular-nums",
             up ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600",
           )}
         >
@@ -69,14 +69,14 @@ export function LiveStreamTicker() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             Live stream
           </span>
           <MetricExplainer copyKey="ticker_stream" />
         </div>
         <div className="relative min-w-0 flex-1 overflow-hidden">
           {loading && !items.length ? (
-            <p className="flex h-full items-center px-4 text-xs text-muted-foreground">Connecting to market data…</p>
+            <p className="flex h-full items-center px-4 text-sm text-muted-foreground">Connecting to market data…</p>
           ) : (
             <div
               className="flex h-full w-max items-center animate-[marquee_120s_linear_infinite] hover:[animation-play-state:paused]"

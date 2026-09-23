@@ -32,7 +32,7 @@ export function MyPortfolioCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
               <Briefcase className="size-3.5 text-blue-600" />
               PORTFOLIO DESK · <span className="text-foreground">{data?.settings.name ?? "Working Book"}</span>
             </span>
@@ -40,7 +40,7 @@ export function MyPortfolioCard() {
           </div>
           <Link
             href="/portfolio"
-            className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-xs font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
+            className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-sm font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
             Open Desk
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -51,14 +51,14 @@ export function MyPortfolioCard() {
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <span className="font-mono text-xs text-muted-foreground uppercase">Mark-To-Market NAV</span>
+                <span className="text-xs text-muted-foreground uppercase">Mark-To-Market NAV</span>
                 <MetricInfo metric="nav" />
               </div>
-              <span className="font-mono text-xs text-blue-600 font-semibold">
+              <span className="text-sm text-blue-600 font-semibold">
                 {loading ? "Refreshing…" : hasHoldings ? `${positions.length} Active Positions` : "Clean Book"}
               </span>
             </div>
-            <div className="font-mono text-3xl font-extrabold tracking-tight text-foreground mt-0.5">
+            <div className="text-3xl font-extrabold tracking-tight text-foreground mt-0.5">
               {totalValue > 0 ? (
                 totalValue >= 1e7 ? (
                   `₹${(totalValue / 1e7).toFixed(2)} Cr`
@@ -72,7 +72,7 @@ export function MyPortfolioCard() {
           </div>
 
           {!hasHoldings && !loading ? (
-            <div className="rounded-xl border border-dashed border-blue-600/40 bg-blue-600/5 p-4 text-center font-mono text-xs space-y-2">
+            <div className="rounded-xl border border-dashed border-blue-600/40 bg-blue-600/5 p-4 text-center text-sm space-y-2">
               <p className="text-muted-foreground">Portfolio is clean with zero active positions.</p>
               <Link
                 href="/portfolio"
@@ -83,10 +83,10 @@ export function MyPortfolioCard() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Today's P&L</span>
+                  <span className="text-muted-foreground text-[11px] uppercase font-semibold">Today's P&L</span>
                   <MetricInfo metric="today_pnl" />
                 </div>
                 <span
@@ -100,7 +100,7 @@ export function MyPortfolioCard() {
                 </span>
                 <span
                   className={cn(
-                    "text-[11px] font-semibold",
+                    "text-sm font-semibold",
                     todayReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
@@ -110,7 +110,7 @@ export function MyPortfolioCard() {
 
               <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-[10px] uppercase font-semibold">Total Gain / Loss</span>
+                  <span className="text-muted-foreground text-[11px] uppercase font-semibold">Total Gain / Loss</span>
                   <MetricInfo metric="total_return" />
                 </div>
                 <span
@@ -124,7 +124,7 @@ export function MyPortfolioCard() {
                 </span>
                 <span
                   className={cn(
-                    "text-[11px] font-semibold",
+                    "text-sm font-semibold",
                     totalReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
@@ -134,7 +134,7 @@ export function MyPortfolioCard() {
             </div>
           )}
 
-          <div className="rounded-xl border border-border/70 bg-secondary/30 p-3.5 font-mono text-xs space-y-2">
+          <div className="rounded-xl border border-border/70 bg-secondary/30 p-3.5 text-sm space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Portfolio Alpha (CAPM)</span>
@@ -172,7 +172,7 @@ export function MyPortfolioCard() {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
+      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
         {[
           { label: "Book & Holdings", href: "/portfolio" },
           { label: "Asset Allocation", href: "/portfolio/allocation" },

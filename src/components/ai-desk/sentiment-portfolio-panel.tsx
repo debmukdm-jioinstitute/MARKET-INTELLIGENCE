@@ -84,19 +84,19 @@ export function SentimentPortfolioPanel() {
             <div key={h.symbol} className="rounded-lg border border-border bg-card p-3.5">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="font-mono text-[15px] font-semibold text-foreground">
+                  <p className="text-[15px] font-semibold text-foreground">
                     {h.symbol} <span className="font-sans text-sm font-normal text-muted-foreground">{h.name}</span>
                   </p>
-                  <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">{h.rationale}</p>
+                  <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{h.rationale}</p>
                 </div>
                 <div className="shrink-0 text-right">
                   <Badge variant="outline" className={cn("h-5 px-2 text-[11px] uppercase", labelColor(h.label))}>
                     {h.label === "na" ? "no headlines" : h.label}
                   </Badge>
-                  <p className="mt-1 text-xs text-muted-foreground/80">{h.headlineCount} headlines</p>
+                  <p className="mt-1 text-sm text-muted-foreground/80">{h.headlineCount} headlines</p>
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
                 <span>current weight {(h.weight * 100).toFixed(1)}%</span>
                 <span>→</span>
                 <span
@@ -109,7 +109,7 @@ export function SentimentPortfolioPanel() {
               </div>
             </div>
           ))}
-          <p className="text-xs text-muted-foreground/80">{result.disclaimer}</p>
+          <p className="text-sm text-muted-foreground/80">{result.disclaimer}</p>
         </div>
       ) : null}
     </div>

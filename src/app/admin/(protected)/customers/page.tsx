@@ -48,7 +48,7 @@ export default function AdminCustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Customers</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Customers</p>
         <h1 className="mt-1 text-xl font-semibold">Registered customers</h1>
         <p className="mt-1 text-sm text-gray-500">
           {customers ? `${customers.length} account${customers.length === 1 ? "" : "s"}` : "Loading…"}
@@ -60,7 +60,7 @@ export default function AdminCustomersPage() {
 
       <AdminCard title="All accounts">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] border-collapse text-xs">
+          <table className="w-full min-w-[700px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-left text-gray-500">
                 <th className="py-2 pr-3 font-medium">Email</th>
@@ -74,7 +74,7 @@ export default function AdminCustomersPage() {
             <tbody>
               {(customers ?? []).map((c) => (
                 <tr key={c.email} className="border-b border-gray-100">
-                  <td className="py-1.5 pr-3 font-mono text-gray-800">{c.email}</td>
+                  <td className="py-1.5 pr-3 text-gray-800">{c.email}</td>
                   <td className="py-1.5 pr-3 text-gray-700">{c.name}</td>
                   <td className="py-1.5 pr-3">
                     <span className={c.role === "admin" ? "text-blue-600" : "text-gray-500"}>{c.role}</span>
@@ -92,13 +92,13 @@ export default function AdminCustomersPage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="New password"
-                          className="w-32 rounded border border-gray-300 bg-gray-100 px-1.5 py-1 text-[11px] outline-none focus:border-blue-600"
+                          className="w-32 rounded border border-gray-300 bg-gray-100 px-1.5 py-1 text-sm outline-none focus:border-blue-600"
                         />
                         <button
                           type="button"
                           disabled={resetting || newPassword.length < 6}
                           onClick={() => submitReset(c.email)}
-                          className="rounded bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
+                          className="rounded bg-blue-600 px-2 py-1 text-sm font-semibold text-white disabled:opacity-50"
                         >
                           Set
                         </button>
@@ -108,7 +108,7 @@ export default function AdminCustomersPage() {
                             setResetTarget(null);
                             setNewPassword("");
                           }}
-                          className="rounded px-1.5 py-1 text-[11px] text-gray-500 hover:text-gray-700"
+                          className="rounded px-1.5 py-1 text-sm text-gray-500 hover:text-gray-700"
                         >
                           Cancel
                         </button>
@@ -120,7 +120,7 @@ export default function AdminCustomersPage() {
                           setResetTarget(c.email);
                           setResetMessage("");
                         }}
-                        className="rounded px-2 py-1 text-[11px] text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                        className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800"
                       >
                         Reset password
                       </button>

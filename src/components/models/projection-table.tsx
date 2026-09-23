@@ -14,7 +14,7 @@ const ROWS: { key: keyof ProjectionYear; label: string; kind: "money" | "eps" }[
 export function ProjectionTable({ years, currency }: { years: ProjectionYear[]; currency: string }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[480px] border-collapse font-mono text-xs">
+      <table className="w-full min-w-[480px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-border">
             <th className="py-2 pr-3 text-left font-medium text-muted-foreground">Line item</th>

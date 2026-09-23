@@ -62,7 +62,7 @@ function Tile({ metricId, label, value }: { metricId?: string; label: string; va
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
         <MetricInfo id={metricId ?? "sharpe"} name={label} iconSize="xs" />
       </div>
       <p className="mt-1 text-2xl font-semibold">{value}</p>

@@ -32,7 +32,7 @@ export function UpdatesBanner() {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 border-b px-4 py-2 text-xs",
+        "flex items-center justify-between gap-3 border-b px-4 py-2 text-sm",
         update.severity === "critical" && "border-rose-500/40 bg-rose-500/10 text-rose-700",
         update.severity === "warning" && "border-blue-600/40 bg-blue-600/10 text-blue-600",
         update.severity === "info" && "border-border bg-secondary/40 text-foreground",

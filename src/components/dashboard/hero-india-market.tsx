@@ -60,7 +60,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold">
               INDIA MARKET
             </span>
             <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
@@ -74,7 +74,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
         <div className="flex items-center gap-2">
           <Link
             href="/markets/india/nifty50"
-            className="group flex items-center gap-1.5 rounded-lg border border-border bg-accent/30 px-3 py-1.5 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+            className="group flex items-center gap-1.5 rounded-lg border border-border bg-accent/30 px-3 py-1.5 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             Explore NIFTY 50 Cockpit
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -88,13 +88,13 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div>
               <div className="flex items-center gap-1">
-                <p className="font-mono text-xs font-medium text-muted-foreground uppercase">
+                <p className="text-xs font-medium text-muted-foreground uppercase">
                   NIFTY 50 Index
                 </p>
                 <MetricInfo metric="nifty50" sourceOverride={nifty?.source} />
               </div>
               <div className="flex items-baseline gap-3 mt-1">
-                <span className="font-mono text-3xl font-bold tracking-tight text-foreground">
+                <span className="text-3xl font-bold tracking-tight text-foreground">
                   {niftyVal != null
                     ? niftyVal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     : "Connecting to live feed…"}
@@ -102,7 +102,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                 {niftyChg != null ? (
                   <span
                     className={cn(
-                      "font-mono text-sm font-semibold rounded px-2 py-0.5",
+                      "text-sm font-semibold rounded px-2 py-0.5",
                       niftyChg >= 0
                         ? "text-emerald-600 bg-emerald-500/10"
                         : "text-rose-600 bg-rose-500/10",
@@ -116,7 +116,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             </div>
 
             {/* Timeframe selector */}
-            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5 font-mono text-xs">
+            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5 text-sm">
               {TIMEFRAMES.map((tf) => (
                 <button
                   key={tf}
@@ -156,7 +156,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                 />
               </svg>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Streaming exchange tick history…
               </div>
             )}
@@ -164,7 +164,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
         </div>
 
         {/* Stats Column with MetricInfo */}
-        <div className="lg:col-span-4 rounded-xl border border-border/70 bg-card/70 p-4 space-y-3 font-mono text-xs">
+        <div className="lg:col-span-4 rounded-xl border border-border/70 bg-card/70 p-4 space-y-3 text-sm">
           <div className="flex items-center justify-between border-b border-border/50 pb-2">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Market Breadth</span>
@@ -216,8 +216,8 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
       </div>
 
       {/* Subpage shortcuts */}
-      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 text-[11px] font-mono">
-        <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">
+      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 text-sm">
+        <span className="text-muted-foreground text-[11px] uppercase font-bold tracking-wider">
           Direct Indices:
         </span>
         {[

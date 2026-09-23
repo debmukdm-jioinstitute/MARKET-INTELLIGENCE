@@ -108,7 +108,7 @@ export function EarningsCalendarCard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <CalendarDays className="size-3.5" />
               EARNINGS DISCLOSURES & CALENDAR
             </span>
@@ -121,7 +121,7 @@ export function EarningsCalendarCard() {
 
         <Link
           href="/research"
-          className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+          className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
         >
           View Research Desk
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -133,8 +133,8 @@ export function EarningsCalendarCard() {
           const items = EARNINGS_DATA.filter((e) => e.period === p);
           if (items.length === 0) return null;
           return (
-            <div key={p} className="space-y-2 font-mono text-xs">
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase border-b border-border/40 pb-1">
+            <div key={p} className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-wider text-muted-foreground uppercase border-b border-border/40 pb-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <span>{p}</span>
               </div>
@@ -148,7 +148,7 @@ export function EarningsCalendarCard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-foreground text-sm">{item.symbol}</span>
-                        <span className="rounded bg-accent/60 px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                        <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground">
                           {item.timing}
                         </span>
                         <MetricInfo
@@ -160,26 +160,26 @@ export function EarningsCalendarCard() {
                           }}
                         />
                       </div>
-                      <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
+                      <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-sm font-bold text-emerald-600">
                         Weight: {item.portfolioWeight}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-border/40">
+                    <div className="grid grid-cols-2 gap-2 text-sm pt-1 border-t border-border/40">
                       <div>
-                        <span className="text-muted-foreground block text-[10px]">Last Rev:</span>
+                        <span className="text-muted-foreground block text-sm">Last Rev:</span>
                         <span className="font-semibold text-foreground">{item.lastRevenue}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[10px]">Last EPS:</span>
+                        <span className="text-muted-foreground block text-sm">Last EPS:</span>
                         <span className="font-semibold text-foreground">{item.eps}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[10px]">Surprise:</span>
+                        <span className="text-muted-foreground block text-sm">Surprise:</span>
                         <span className="font-semibold text-emerald-600">{item.previousSurprise}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[10px]">Consensus:</span>
+                        <span className="text-muted-foreground block text-sm">Consensus:</span>
                         <span className="font-semibold text-foreground truncate block">
                           {item.expectedResult}
                         </span>

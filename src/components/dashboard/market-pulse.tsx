@@ -10,8 +10,8 @@ export function MarketPulse({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card/80 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Market pulse</h2>
-        <span className="text-[10px] text-muted-foreground">
+        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">Market pulse</h2>
+        <span className="text-sm text-muted-foreground">
           {new Date(data.fetchedAt).toLocaleTimeString()}
         </span>
       </div>
@@ -50,13 +50,13 @@ function PulseCell({
   const up = (q.changePct ?? 0) >= 0;
   return (
     <div className="rounded-md border border-border/80 px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="font-mono text-lg tabular-nums">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-lg tabular-nums">
         {prefix}
         {fmtNum(q.value, digits)}
         {suffix}
       </p>
-      <p className={cn("font-mono text-xs", up ? "text-emerald-600" : "text-rose-600")}>
+      <p className={cn("text-sm", up ? "text-emerald-600" : "text-rose-600")}>
         {fmtChgPct(q.changePct ?? null)}
       </p>
       <DataInfo source={q.source} hubSyncedAt={hubSyncedAt} />
@@ -75,7 +75,7 @@ function BreadthBlock({
   return (
     <div>
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Market breadth</p>
-      <div className="grid grid-cols-2 gap-2 text-sm font-mono">
+      <div className="grid grid-cols-2 gap-2 text-sm">
         <span>Advances {breadth.advances ?? "—"}</span>
         <span>Declines {breadth.declines ?? "—"}</span>
         <span>Unchanged {breadth.unchanged ?? "—"}</span>
@@ -88,7 +88,7 @@ function BreadthBlock({
           <Bar label="DECLINES" value={breadth.declines} max={max} color="#f07178" />
         </div>
       ) : null}
-      <span className="mt-2 inline-flex items-center text-[10px] text-muted-foreground">
+      <span className="mt-2 inline-flex items-center text-sm text-muted-foreground">
         NSE breadth <DataInfo source={breadth.source} hubSyncedAt={hubSyncedAt} />
       </span>
     </div>
@@ -98,7 +98,7 @@ function BreadthBlock({
 function Bar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const w = Math.round((value / max) * 100);
   return (
-    <div className="flex items-center gap-2 text-[10px] font-mono">
+    <div className="flex items-center gap-2 text-sm">
       <span className="w-20 text-muted-foreground">{label}</span>
       <div className="h-2 flex-1 overflow-hidden rounded bg-muted">
         <div className="h-full rounded" style={{ width: `${w}%`, background: color }} />

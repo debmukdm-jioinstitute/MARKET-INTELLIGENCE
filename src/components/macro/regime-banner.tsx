@@ -23,14 +23,14 @@ export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">{regime.title}</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-primary">{regime.title}</p>
           <h2 className="mt-2 font-heading text-2xl md:text-3xl">Current macro regime</h2>
           <p className="mt-1 text-sm text-muted-foreground">{q.desc}</p>
-          <p className="mt-3 inline-flex rounded-full border border-primary/40 bg-background/40 px-3 py-1 font-mono text-sm text-primary">
+          <p className="mt-3 inline-flex rounded-full border border-primary/40 bg-background/40 px-3 py-1 text-sm text-primary">
             {regime.overallLabel}
           </p>
         </div>
-        <Link href="/macro/regime" className="text-xs text-primary hover:underline">
+        <Link href="/macro/regime" className="text-sm text-primary hover:underline">
           Regime history →
         </Link>
       </div>
@@ -45,7 +45,7 @@ export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
               <p className="text-sm font-medium">
                 {s.label}: <span className="text-foreground/90">{s.status}</span>
               </p>
-              <p className="truncate text-[10px] text-muted-foreground">{s.detail}</p>
+              <p className="truncate text-sm text-muted-foreground">{s.detail}</p>
             </div>
           </li>
         ))}

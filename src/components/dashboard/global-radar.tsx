@@ -16,10 +16,10 @@ export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex justify-between items-center">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Global macro radar</h2>
+        <h2 className="text-[11px] uppercase tracking-[0.22em] text-primary">Global macro radar</h2>
         <MetricInfo id="sp500" asOf={data.fetchedAt} iconSize="xs" />
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Variables that transmit into Indian markets (live quotes).</p>
+      <p className="mt-1 text-sm text-muted-foreground">Variables that transmit into Indian markets (live quotes).</p>
       <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
         <Cell metricId="sp500" label="S&P 500" q={g.sp500} hubSyncedAt={data.fetchedAt} />
         <Cell metricId="nasdaq" label="NASDAQ" q={g.nasdaq} hubSyncedAt={data.fetchedAt} />
@@ -37,12 +37,12 @@ export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">India impact</p>
           <MetricInfo id="yield_spread" name="Global Macro Transmission Impact Score" asOf={data.fetchedAt} iconSize="xs" />
         </div>
-        <p className={cn("mt-1 font-mono text-lg", impactColor)}>
+        <p className={cn("mt-1 text-lg", impactColor)}>
           {impactIcon} {impact.label.charAt(0).toUpperCase() + impact.label.slice(1)}
-          <span className="ml-2 text-xs text-muted-foreground">score {impact.score.toFixed(4)}</span>
+          <span className="ml-2 text-sm text-muted-foreground">score {impact.score.toFixed(4)}</span>
         </p>
-        <p className="mt-1 text-[11px] text-muted-foreground">{impact.methodology}</p>
-        <ul className="mt-2 space-y-1 font-mono text-[10px] text-muted-foreground">
+        <p className="mt-1 text-sm text-muted-foreground">{impact.methodology}</p>
+        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
           {impact.drivers.map((d) => (
             <li key={d.factor}>
               {d.factor}: {d.value} (contrib {d.contribution.toFixed(4)})
@@ -82,7 +82,7 @@ function Cell({
   }
   return (
     <div className="rounded-md border border-border/70 px-2 py-2">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{label}</span>
         <div className="flex items-center gap-0.5">
           <MetricInfo
@@ -95,8 +95,8 @@ function Cell({
           />
         </div>
       </div>
-      <p className="font-mono text-sm">{display}</p>
-      <p className={cn("font-mono text-[10px]", up ? "text-emerald-600" : "text-rose-600")}>
+      <p className="text-sm">{display}</p>
+      <p className={cn("text-sm", up ? "text-emerald-600" : "text-rose-600")}>
         {raw && q.changePct == null ? "" : fmtChgPct(q.changePct ?? null)}
       </p>
     </div>

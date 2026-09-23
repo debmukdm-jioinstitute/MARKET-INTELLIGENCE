@@ -56,10 +56,10 @@ export default function IntelligencePage() {
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/20 text-primary">
               <Sparkles className="size-3.5" />
             </span>
-            <span className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
               AI COPILOT TERMINAL
             </span>
-            <span className="rounded bg-emerald-500/15 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600">
+            <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-sm font-bold text-emerald-600">
               DESK ACTIVE
             </span>
             <MetricInfo
@@ -69,13 +69,13 @@ export default function IntelligencePage() {
               iconSize="xs"
             />
           </div>
-          <span className="text-[11px] font-mono text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             Model: Deep Institutional Quant Engine
           </span>
         </div>
 
         {/* Messages feed */}
-        <div className="space-y-3 font-mono text-xs max-h-80 overflow-y-auto pr-2">
+        <div className="space-y-3 text-sm max-h-80 overflow-y-auto pr-2">
           {messages.map((m, idx) => (
             <div
               key={idx}
@@ -86,15 +86,15 @@ export default function IntelligencePage() {
                   : "border border-primary/40 bg-primary/10 text-primary-foreground font-semibold ml-auto max-w-xl",
               )}
             >
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase font-bold mb-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground uppercase font-bold mb-1">
                 {m.role === "assistant" ? <Bot className="size-3 text-primary" /> : null}
                 <span>{m.role === "assistant" ? "MI Copilot" : "Portfolio Manager"}</span>
               </div>
-              <p className="font-sans text-xs">{m.text}</p>
+              <p className="font-sans text-sm">{m.text}</p>
             </div>
           ))}
           {thinking ? (
-            <div className="rounded-xl border border-border bg-card p-3 text-muted-foreground text-xs flex items-center gap-2">
+            <div className="rounded-xl border border-border bg-card p-3 text-muted-foreground text-sm flex items-center gap-2">
               <span className="size-2 rounded-full bg-primary animate-ping" />
               <span>Analyzing order books, factor covariances, and exchange news...</span>
             </div>
@@ -109,12 +109,12 @@ export default function IntelligencePage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask AI Copilot: 'Evaluate risk if Brent breaches $80' or 'Analyze HDFC Bank LDR'..."
-            className="flex-1 rounded-lg border border-border bg-card px-4 py-2 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="flex-1 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
           />
           <button
             type="button"
             onClick={handleSend}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Send className="size-3" />
             Query

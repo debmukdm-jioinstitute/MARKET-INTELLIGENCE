@@ -14,7 +14,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!ready || !user) {
     return (
-      <div className="grid min-h-screen place-items-center bg-background font-mono text-sm tracking-widest text-muted-foreground">
+      <div className="grid min-h-screen place-items-center bg-background text-sm tracking-widest text-muted-foreground">
         OPENING TERMINAL…
       </div>
     );

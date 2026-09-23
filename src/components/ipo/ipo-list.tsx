@@ -38,8 +38,8 @@ export function IpoList({
               {ipo.issueType}
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground">{ipo.industry}</p>
-          <div className="flex items-center justify-between font-mono text-xs">
+          <p className="text-sm text-muted-foreground">{ipo.industry}</p>
+          <div className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-1">
               {fmtInr(ipo.minPrice)}–{fmtInr(ipo.maxPrice)}
               <MetricInfo id="ipo_gmp" name="Price Band" iconSize="xs" />
@@ -49,7 +49,7 @@ export function IpoList({
             </span>
           </div>
           {ipo.totalSubscription ? (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
               <span>Subscribed {ipo.totalSubscription}x</span>
               <MetricInfo id="ipo_subscription" name="Subscription Multiple" iconSize="xs" />
             </p>

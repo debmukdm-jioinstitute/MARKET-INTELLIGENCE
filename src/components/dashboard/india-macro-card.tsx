@@ -72,7 +72,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Globe2 className="size-3.5" />
               INDIA MACROECONOMIC TELEMETRY
             </span>
@@ -80,7 +80,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           </div>
           <Link
             href="/macro/india"
-            className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+            className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             Explore Macro
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -88,7 +88,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
         </div>
 
         {/* Indicators List with MetricInfo */}
-        <div className="mt-5 space-y-2.5 font-mono text-xs">
+        <div className="mt-5 space-y-2.5 text-sm">
           {indicators.map((ind) => (
             <div
               key={ind.label}
@@ -109,7 +109,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           <div className="mt-3 grid grid-cols-2 gap-3 pt-2">
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground">
                   NET LIQUIDITY
                 </span>
                 <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
@@ -117,26 +117,26 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
               <span className="font-bold text-foreground text-sm mt-0.5 block">
                 {rbiLiquidity?.systemLiquidity?.value ?? "₹1.42 L Cr"}
               </span>
-              <span className="text-[10px] text-emerald-600 font-semibold">
+              <span className="text-sm text-emerald-600 font-semibold">
                 {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI Net Absorption"}
               </span>
             </div>
 
             <div className="rounded-lg border border-border/70 bg-card/50 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground">
                   FX RESERVES
                 </span>
                 <MetricInfo metric="fx_reserves" />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block">$704.8 B</span>
-              <span className="text-[10px] text-emerald-600 font-semibold">Weekly WSS Report</span>
+              <span className="text-sm text-emerald-600 font-semibold">Weekly WSS Report</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
+      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
         {[
           { label: "GDP", href: "/macro/india" },
           { label: "Inflation", href: "/macro/india" },

@@ -38,13 +38,13 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
     <Panel title={block.title}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          <p className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
             {block.driverLabel}
             <MetricExplainer copyKey={block.copyKey} />
           </p>
-          <p className="font-mono text-2xl tabular-nums">{priceStr}</p>
+          <p className="text-2xl tabular-nums">{priceStr}</p>
           {chg != null ? (
-            <p className={cn("text-sm font-mono", chg >= 0 ? "text-rose-600" : "text-emerald-600")}>
+            <p className={cn("text-sm", chg >= 0 ? "text-rose-600" : "text-emerald-600")}>
               {chg >= 0 ? "+" : ""}
               {(chg * 100).toFixed(1)}%
             </p>
@@ -54,14 +54,14 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
           href={block.source.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] text-primary hover:underline"
+          className="text-sm text-primary hover:underline"
         >
           {block.source.provider}
         </a>
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="mb-2 text-xs font-medium text-emerald-600/90">Potential beneficiaries</p>
+          <p className="mb-2 text-sm font-medium text-emerald-600/90">Potential beneficiaries</p>
           <ul className="space-y-1 text-sm">
             {block.beneficiaries.map((r) => (
               <li key={r.name}>
@@ -71,7 +71,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
           </ul>
         </div>
         <div>
-          <p className="mb-2 text-xs font-medium text-rose-600/90">Potential pressure</p>
+          <p className="mb-2 text-sm font-medium text-rose-600/90">Potential pressure</p>
           <ul className="space-y-1 text-sm">
             {block.pressured.map((r) => (
               <li key={r.name}>
@@ -81,7 +81,7 @@ function TransmissionCard({ block }: { block: TransmissionBlock }) {
           </ul>
         </div>
       </div>
-      <p className="mt-3 text-[10px] text-muted-foreground">
+      <p className="mt-3 text-sm text-muted-foreground">
         Rule-based sector map for learning — not a trading recommendation. Click names with links for research.
       </p>
     </Panel>
@@ -92,7 +92,7 @@ function ExposureRow({ row }: { row: TransmissionBlock["beneficiaries"][0] }) {
   const inner = (
     <span className="flex items-center justify-between gap-2">
       <span>{row.name}</span>
-      <span className="font-mono text-muted-foreground">{dirSymbol(row.direction)}</span>
+      <span className="text-muted-foreground">{dirSymbol(row.direction)}</span>
     </span>
   );
   if (row.href) {

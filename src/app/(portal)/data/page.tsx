@@ -116,41 +116,41 @@ export default function DataPage() {
       />
 
       {/* KPI Overview Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
+            <span className="text-[11px] text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
             <MetricInfo id="data_quality" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-emerald-600">99.4%</div>
-          <span className="text-[11px] text-muted-foreground">Across 7 upstream providers</span>
+          <span className="text-sm text-muted-foreground">Across 7 upstream providers</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
+            <span className="text-[11px] text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
             <MetricInfo id="feed_latency" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-foreground">340 ms</div>
-          <span className="text-[11px] text-emerald-600">P95 below 850 ms</span>
+          <span className="text-sm text-emerald-600">P95 below 850 ms</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
+            <span className="text-[11px] text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
             <MetricInfo id="data_quality" name="Active Data Streams Telemetry" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-foreground">42 Feeds</div>
-          <span className="text-[11px] text-muted-foreground">0 outages reported today</span>
+          <span className="text-sm text-muted-foreground">0 outages reported today</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
+            <span className="text-[11px] text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
             <MetricInfo id="data_quality" name="Multi-tier Failover Architecture" iconSize="xs" />
           </div>
           <div className="text-2xl font-bold text-primary">3-Tier Active</div>
-          <span className="text-[11px] text-muted-foreground">Upstox → Yahoo → TrueData</span>
+          <span className="text-sm text-muted-foreground">Upstox → Yahoo → TrueData</span>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ export default function DataPage() {
           </TableHeader>
           <TableBody>
             {SOURCES.map((s) => (
-              <TableRow key={s.name} className="font-mono text-xs hover:bg-accent/40">
+              <TableRow key={s.name} className="text-sm hover:bg-accent/40">
                 <TableCell className="font-bold text-foreground flex items-center gap-1.5">
                   <span>{s.name}</span>
                   <MetricInfo
@@ -195,7 +195,7 @@ export default function DataPage() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">{s.provider}</TableCell>
                 <TableCell>
-                  <span className="rounded bg-accent/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                  <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground">
                     {s.type}
                   </span>
                 </TableCell>
@@ -206,7 +206,7 @@ export default function DataPage() {
                 <TableCell className="text-center">
                   <span
                     className={cn(
-                      "rounded px-2 py-0.5 text-[9px] font-bold uppercase",
+                      "rounded px-2 py-0.5 text-[11px] font-bold uppercase",
                       s.status === "ONLINE" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-600/10 text-blue-600",
                     )}
                   >

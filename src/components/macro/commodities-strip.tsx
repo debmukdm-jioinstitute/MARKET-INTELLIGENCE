@@ -18,7 +18,7 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
     <Panel
       title="Commodities"
       action={
-        <Link href="/macro/commodities" className="text-xs text-primary hover:underline">
+        <Link href="/macro/commodities" className="text-sm text-primary hover:underline">
           Dashboard →
         </Link>
       }
@@ -30,15 +30,15 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
               href={r.href}
               className="flex items-center justify-between gap-2 rounded-md px-1 py-1 transition hover:bg-muted/50"
             >
-              <span className="flex items-center gap-1 font-mono text-xs tracking-wide text-muted-foreground">
+              <span className="flex items-center gap-1 text-sm tracking-wide text-muted-foreground">
                 {r.label}
                 <MetricExplainer copyKey={r.copyKey} />
               </span>
-              <span className="flex items-center gap-3 font-mono text-sm tabular-nums">
+              <span className="flex items-center gap-3 text-sm tabular-nums">
                 <span>{fmtPrice(r.id, r.price)}</span>
                 <span
                   className={cn(
-                    "text-xs",
+                    "text-sm",
                     (r.changePct ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                   )}
                 >

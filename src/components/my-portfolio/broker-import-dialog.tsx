@@ -541,7 +541,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   <RefreshCw className="h-3.5 w-3.5 shrink-0" />
                   <div>
                     <p className="font-bold">Replace Book</p>
-                    <p className="text-xs opacity-80">Wipes current demo holdings</p>
+                    <p className="text-sm opacity-80">Wipes current demo holdings</p>
                   </div>
                 </label>
 
@@ -563,7 +563,7 @@ export function BrokerImportDialog({ onImport }: Props) {
                   <Layers className="h-3.5 w-3.5 shrink-0" />
                   <div>
                     <p className="font-bold">Merge / Append</p>
-                    <p className="text-xs opacity-80">Combines with current book</p>
+                    <p className="text-sm opacity-80">Combines with current book</p>
                   </div>
                 </label>
               </div>

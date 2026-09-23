@@ -186,11 +186,11 @@ export function OptionsFlowPanel() {
             />
           </div>
           {query.trim() ? (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {filteredEquities.length} match{filteredEquities.length === 1 ? "" : "es"}
             </p>
           ) : universe.length > DEFAULT_GRID_SIZE ? (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Showing {Math.min(universe.length, DEFAULT_GRID_SIZE)} of {universe.length} — search to find others.
             </p>
           ) : null}
@@ -201,12 +201,12 @@ export function OptionsFlowPanel() {
                 touchedRef.current = true;
                 setSelected(portfolioSymbols);
               }}
-              className="text-[11px] font-medium text-primary hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               Use my portfolio ({portfolioSymbols.length})
             </button>
           ) : portfolioSymbols && portfolioSymbols.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               No portfolio holdings are in this app&apos;s F&O watchlist — search above to add tickers.
             </p>
           ) : null}
@@ -226,7 +226,7 @@ export function OptionsFlowPanel() {
           />
         </div>
         <div className="flex flex-col justify-end gap-2">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Data agent pulls price/volume and today&apos;s option chain live; the options-volume 30-day baseline builds up
             day by day via the daily cron, so early runs may show &quot;insufficient history&quot;.
           </p>
@@ -246,8 +246,8 @@ export function OptionsFlowPanel() {
               Data agent — gathered, not analyzed
             </p>
             <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-xs">
-                <thead className="bg-muted/40 text-[10px] uppercase text-muted-foreground">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
                   <tr>
                     <th className="px-3 py-2 text-left">Ticker</th>
                     <th className="px-3 py-2 text-right">Price</th>
@@ -267,23 +267,23 @@ export function OptionsFlowPanel() {
                       className="cursor-pointer border-t border-border/60 hover:bg-muted/50"
                       onClick={() => router.push(`/research/${encodeURIComponent(r.symbol)}`)}
                     >
-                      <td className="px-3 py-2 font-mono font-medium text-primary hover:underline">{r.symbol}</td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 font-medium text-primary hover:underline">{r.symbol}</td>
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.price} fmt={(v) => v.toFixed(2)} />
                       </td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.priceChangePct} fmt={(v) => `${v.toFixed(2)}%`} />
                       </td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.volume} fmt={(v) => v.toLocaleString("en-IN")} />
                       </td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.volumeAvg30} fmt={(v) => v.toLocaleString("en-IN", { maximumFractionDigits: 0 })} />
                       </td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.callsVolume} fmt={(v) => v.toLocaleString("en-IN")} />
                       </td>
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-3 py-2 text-right">
                         <Field field={r.putsVolume} fmt={(v) => v.toLocaleString("en-IN")} />
                       </td>
                       <td
@@ -322,14 +322,14 @@ export function OptionsFlowPanel() {
                 <div
                   key={a.symbol}
                   className={cn(
-                    "space-y-1.5 rounded-lg border p-3 text-xs",
+                    "space-y-1.5 rounded-lg border p-3 text-sm",
                     a.flagged ? "border-blue-600/40 bg-blue-600/5" : "border-border",
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold">{a.symbol}</span>
+                    <span className="font-bold">{a.symbol}</span>
                     {a.flagged ? (
-                      <Badge className="h-4 bg-blue-600/20 px-1.5 text-[9px] text-blue-600">FLAGGED</Badge>
+                      <Badge className="h-4 bg-blue-600/20 px-1.5 text-sm text-blue-600">FLAGGED</Badge>
                     ) : null}
                   </div>
                   <p className="text-muted-foreground">{a.volumeVsRange}</p>
@@ -347,19 +347,19 @@ export function OptionsFlowPanel() {
               Flagging agent — research shortlist, at most 5
             </p>
             {result.flagging.candidates.length === 0 ? (
-              <p className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              <p className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                 <AlertTriangle className="size-3.5" />
                 {result.flagging.nothingUnusualNote}
               </p>
             ) : (
               <div className="space-y-2">
                 {result.flagging.candidates.map((c, i) => (
-                  <div key={c.symbol} className="space-y-1.5 rounded-lg border border-border p-3 text-xs">
+                  <div key={c.symbol} className="space-y-1.5 rounded-lg border border-border p-3 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold">
+                      <span className="font-bold">
                         #{i + 1} {c.symbol}
                       </span>
-                      <Badge className={cn("h-4 px-1.5 text-[9px] uppercase", CONFIDENCE_STYLE[c.confidence])}>
+                      <Badge className={cn("h-4 px-1.5 text-[11px] uppercase", CONFIDENCE_STYLE[c.confidence])}>
                         {c.confidence} confidence
                       </Badge>
                     </div>
@@ -372,7 +372,7 @@ export function OptionsFlowPanel() {
                   </div>
                 ))}
                 {result.flagging.researchQuestion ? (
-                  <p className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-primary">
+                  <p className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-primary">
                     <HelpCircle className="mt-0.5 size-3.5 shrink-0" />
                     {result.flagging.researchQuestion}
                   </p>
@@ -381,7 +381,7 @@ export function OptionsFlowPanel() {
             )}
           </section>
 
-          <p className="text-[10px] leading-4 text-muted-foreground/70">{result.disclaimer}</p>
+          <p className="text-sm leading-4 text-muted-foreground/70">{result.disclaimer}</p>
         </div>
       ) : null}
     </div>

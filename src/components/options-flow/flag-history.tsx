@@ -31,20 +31,20 @@ export function FlagHistory() {
 
   if (!dbConfigured) {
     return (
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         No database configured — flag history needs DATABASE_URL / POSTGRES_URL set to log runs over time.
       </p>
     );
   }
-  if (loading) return <p className="text-xs text-muted-foreground">Loading flag log…</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">Loading flag log…</p>;
   if (flags.length === 0) {
-    return <p className="text-xs text-muted-foreground">No flags logged yet — run the screener to start building a track record.</p>;
+    return <p className="text-sm text-muted-foreground">No flags logged yet — run the screener to start building a track record.</p>;
   }
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full text-xs">
-        <thead className="bg-muted/40 text-[10px] uppercase text-muted-foreground">
+      <table className="w-full text-sm">
+        <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
           <tr>
             <th className="px-3 py-2 text-left">Date</th>
             <th className="px-3 py-2 text-left">Ticker</th>
@@ -60,11 +60,11 @@ export function FlagHistory() {
               className="cursor-pointer border-t border-border/60 hover:bg-muted/50"
               onClick={() => router.push(`/research/${encodeURIComponent(f.symbol)}`)}
             >
-              <td className="px-3 py-2 font-mono">{f.flagged_date}</td>
-              <td className="px-3 py-2 font-mono font-medium text-primary hover:underline">{f.symbol}</td>
+              <td className="px-3 py-2">{f.flagged_date}</td>
+              <td className="px-3 py-2 font-medium text-primary hover:underline">{f.symbol}</td>
               <td className="max-w-[420px] px-3 py-2 text-muted-foreground">{f.headline}</td>
               <td className="px-3 py-2 uppercase text-muted-foreground">{f.confidence}</td>
-              <td className="px-3 py-2 text-right font-mono">{f.price_at_flag != null ? f.price_at_flag.toFixed(2) : "—"}</td>
+              <td className="px-3 py-2 text-right">{f.price_at_flag != null ? f.price_at_flag.toFixed(2) : "—"}</td>
             </tr>
           ))}
         </tbody>

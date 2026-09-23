@@ -14,7 +14,7 @@ export function KeyRatiosPanel({ snapshot }: { snapshot: FundamentalsSnapshot })
 
   return (
     <div className="space-y-3">
-      <table className="w-full text-xs font-mono">
+      <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-muted-foreground">
             <th className="py-1">Ratio</th>

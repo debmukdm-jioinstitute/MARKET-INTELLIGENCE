@@ -46,7 +46,7 @@ export function OptionChainTable({ snapshot }: { snapshot: OptionChainSnapshot }
           <Badge
             variant="outline"
             className={cn(
-              "px-1 py-0 text-[9px]",
+              "px-1 py-0 text-sm",
               moneyness(c.getValue(), snapshot.underlyingSpot) === "ATM" && "border-primary text-primary",
             )}
           >
@@ -92,7 +92,7 @@ export function OptionChainTable({ snapshot }: { snapshot: OptionChainSnapshot }
               {hg.headers.map((h) => (
                 <TableHead
                   key={h.id}
-                  className="cursor-pointer select-none text-right font-mono text-[10px] uppercase"
+                  className="cursor-pointer select-none text-right text-[11px] uppercase"
                   onClick={h.column.getToggleSortingHandler()}
                 >
                   <span className="inline-flex items-center gap-1">
@@ -113,7 +113,7 @@ export function OptionChainTable({ snapshot }: { snapshot: OptionChainSnapshot }
               )}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="text-right font-mono text-xs tabular-nums">
+                <TableCell key={cell.id} className="text-right text-sm tabular-nums">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

@@ -55,13 +55,13 @@ export default function MacroPage() {
                 ]}
               />
             </div>
-            <p className="mt-2 text-[10px] text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               Updated {new Date(data.fetchedAt).toLocaleString()} · Quadrant labels in{" "}
               <a href="/macro/regime" className="text-primary hover:underline">Macro regime</a>
             </p>
           </Panel>
           <div>
-            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Explore sections</h2>
+            <h2 className="mb-3 text-[11px] uppercase tracking-[0.22em] text-primary">Explore sections</h2>
             <SectionNavGrid />
           </div>
         </>

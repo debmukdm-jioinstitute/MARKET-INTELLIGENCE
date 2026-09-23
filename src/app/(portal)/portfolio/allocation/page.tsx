@@ -66,11 +66,11 @@ export default function AllocationPage() {
           {region.map((r) => (
             <div key={r.name} className="rounded-md border border-border p-3 space-y-1">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">{r.name}</p>
+                <p className="text-sm text-muted-foreground">{r.name}</p>
                 <MetricInfo id="concentration" name={`${r.name} Geographic Exposure`} iconSize="xs" />
               </div>
               <p className="mt-1 font-heading text-xl">{formatPct(r.weight, 1)}</p>
-              <p className="font-mono text-xs text-muted-foreground">{formatInr(r.value)}</p>
+              <p className="text-sm text-muted-foreground">{formatInr(r.value)}</p>
             </div>
           ))}
         </div>

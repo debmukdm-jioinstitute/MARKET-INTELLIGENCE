@@ -26,12 +26,12 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Overview</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Overview</p>
         <h1 className="mt-1 text-xl font-semibold">Admin dashboard</h1>
       </div>
 
       {stats && !stats.dbConfigured ? (
-        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600">
+        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-sm text-blue-600">
           No database configured (DATABASE_URL / POSTGRES_URL unset) — customer accounts, tabs, updates, notifications, and the
           knowledge base all need it. Add a Neon Postgres connection string in Vercel → Project → Settings → Environment
           Variables.
@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
           </ul>
         </AdminCard>
         <AdminCard title="Environment checklist" subtitle="Set these in Vercel → Project → Settings → Environment Variables">
-          <ul className="space-y-1.5 font-mono text-xs text-gray-500">
+          <ul className="space-y-1.5 text-sm text-gray-500">
             <li>DATABASE_URL — Neon Postgres (customers, tabs, updates, RAG, analytics)</li>
             <li>ADMIN_EMAILS — comma-separated emails granted admin role</li>
             <li>RESEND_API_KEY — required to send newsletters</li>

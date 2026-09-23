@@ -74,7 +74,7 @@ export default function ResearchReportsPage() {
       />
 
       {!dbConfigured ? (
-        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600">
+        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-sm text-blue-600">
           No database configured — the research feed needs DATABASE_URL / POSTGRES_URL set to store scraped reports.
         </div>
       ) : null}
@@ -85,10 +85,10 @@ export default function ResearchReportsPage() {
             <FileSearch className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">
               Auto-updating feed
             </p>
-            <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <p className="flex items-center gap-1 text-sm text-muted-foreground">
               <Radio className="size-3 text-emerald-600 animate-pulse" />
               Last refreshed {timeAgo(lastScrapedAt)}
             </p>
@@ -101,7 +101,7 @@ export default function ResearchReportsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title or broker..."
-            className="w-64 rounded-lg border border-border bg-accent/20 py-1.5 pl-8 pr-3 text-xs outline-none focus:border-primary"
+            className="w-64 rounded-lg border border-border bg-accent/20 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-primary"
           />
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function ResearchReportsPage() {
             type="button"
             onClick={() => setActiveBroker(null)}
             className={cn(
-              "rounded-md px-2.5 py-1 text-[11px] font-mono font-medium transition-colors",
+              "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
               activeBroker === null
                 ? "bg-primary text-primary-foreground font-bold"
                 : "bg-accent/30 text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -126,7 +126,7 @@ export default function ResearchReportsPage() {
               type="button"
               onClick={() => setActiveBroker(b.broker)}
               className={cn(
-                "rounded-md px-2.5 py-1 text-[11px] font-mono font-medium transition-colors",
+                "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
                 activeBroker === b.broker
                   ? "bg-primary text-primary-foreground font-bold"
                   : "bg-accent/30 text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -159,15 +159,15 @@ export default function ResearchReportsPage() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-1.5">
                   {r.broker ? (
-                    <span className="rounded bg-primary/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-primary">
+                    <span className="rounded bg-primary/15 px-1.5 py-0.5 text-sm font-bold text-primary">
                       {r.broker}
                     </span>
                   ) : null}
-                  <span className="rounded bg-accent/50 px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">
+                  <span className="rounded bg-accent/50 px-1.5 py-0.5 text-sm text-muted-foreground">
                     {SOURCE_LABELS[r.source] ?? r.source}
                   </span>
                 </div>
-                <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                <span className="shrink-0 text-sm text-muted-foreground">
                   {timeAgo(r.published_at ?? r.scraped_at)}
                 </span>
               </div>
@@ -175,9 +175,9 @@ export default function ResearchReportsPage() {
                 {r.title}
               </h3>
               {r.summary ? (
-                <p className="line-clamp-2 text-xs text-muted-foreground">{r.summary}</p>
+                <p className="line-clamp-2 text-sm text-muted-foreground">{r.summary}</p>
               ) : null}
-              <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
                 Read full report <ExternalLink className="size-3" />
               </span>
             </a>

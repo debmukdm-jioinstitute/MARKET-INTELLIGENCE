@@ -31,7 +31,7 @@ export default function PortfolioPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-3">
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {data?.hasHoldings && data.positions.length > 0 ? (
               <>
                 <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
@@ -49,7 +49,7 @@ export default function PortfolioPage() {
             <button
               type="button"
               onClick={clearHoldings}
-              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 font-mono text-xs font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
+              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
             >
               Clear Book
             </button>
@@ -57,7 +57,7 @@ export default function PortfolioPage() {
             <button
               type="button"
               onClick={resetToDefault}
-              className="rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 font-mono text-xs font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+              className="rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
             >
               Load Default Portfolio
             </button>
@@ -67,8 +67,8 @@ export default function PortfolioPage() {
         </div>
       </div>
 
-      {loading && !data ? <p className="font-mono text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
-      {error ? <p className="font-mono text-sm text-rose-600">{error}</p> : null}
+      {loading && !data ? <p className="text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {data ? (
         <>
@@ -101,7 +101,7 @@ export default function PortfolioPage() {
           <div className="overflow-hidden rounded-lg border border-border bg-card">
             <div className="border-b border-border px-4 py-3">
               <h3 className="font-heading text-sm font-semibold">Holdings</h3>
-              <p className="text-xs text-muted-foreground">Live marks · your book · INR</p>
+              <p className="text-sm text-muted-foreground">Live marks · your book · INR</p>
             </div>
             <HoldingsList positions={data.positions} onRemove={removeHolding} />
           </div>

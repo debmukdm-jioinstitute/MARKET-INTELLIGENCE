@@ -83,7 +83,7 @@ export function LandingPage() {
 
       <div className="relative z-10">
         <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Free during preview — no credit card needed.{" "}
             <Link href="/signup" className="font-medium text-blue-600 hover:underline underline-offset-4">
               Start free →
@@ -94,12 +94,12 @@ export function LandingPage() {
         <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white shadow-[var(--shadow-sm)]">
+              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-blue-600 text-sm font-medium text-white shadow-[var(--shadow-sm)]">
                 mi
               </span>
               <span className="hidden whitespace-nowrap text-[17px] font-semibold tracking-tight text-gray-900 sm:inline">market intelligence</span>
             </Link>
-            <nav className="hidden items-center gap-8 text-[13px] font-medium text-muted-foreground md:flex">
+            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <MegaMenu />
               <a href="#features" className="transition hover:text-gray-900">Features</a>
               <a href="#how" className="transition hover:text-gray-900">How it works</a>
@@ -109,7 +109,7 @@ export function LandingPage() {
               {hasAccess ? (
                 <Link
                   href="/Home"
-                  className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-[13px] font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                  className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                 >
                   <span className="sm:hidden">{isGuest ? "Explore" : "Terminal"}</span>
                   <span className="hidden sm:inline">{isGuest ? "Continue exploring" : "Open terminal"}</span>
@@ -121,19 +121,19 @@ export function LandingPage() {
                     onClick={() => void enterGuest().then(() => {
                       window.location.href = "/Home";
                     })}
-                    className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
+                    className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
                     Try as guest
                   </button>
                   <Link
                     href="/login"
-                    className="hidden rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
+                    className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
                     Sign in
                   </Link>
                   <Link
                     href="/signup"
-                    className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-[13px] font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                    className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                   >
                     Start free
                   </Link>
@@ -147,7 +147,7 @@ export function LandingPage() {
         {/* HERO */}
         <section className="relative px-5 pt-16 md:pt-24">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-xs text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
               <span className="size-1.5 rounded-full bg-emerald-500" />
               Live market data, free to start
             </span>
@@ -176,7 +176,7 @@ export function LandingPage() {
                 See how it works
               </a>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">No credit card · Free forever plan · 2-minute setup</p>
+            <p className="mt-4 text-sm text-muted-foreground">No credit card · Free forever plan · 2-minute setup</p>
           </div>
 
           {/* Glass dashboard mockup */}
@@ -191,7 +191,7 @@ export function LandingPage() {
                   <span className="size-2.5 rounded-full bg-amber-400/70" />
                   <span className="size-2.5 rounded-full bg-emerald-400/70" />
                 </div>
-                <p className="text-[11px] text-muted-foreground">Your portfolio</p>
+                <p className="text-sm text-muted-foreground">Your portfolio</p>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <MockStat label="Total value" value="₹29.15 L" trend="+4.13%" up />
@@ -207,14 +207,14 @@ export function LandingPage() {
               className="absolute -top-8 -left-6 hidden w-44 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:block"
               style={{ transform: "rotateZ(-6deg)" }}
             >
-              <p className="text-[10px] text-muted-foreground">Risk check</p>
+              <p className="text-sm text-muted-foreground">Risk check</p>
               <p className="mt-1 text-sm font-medium text-gray-900">Well diversified</p>
             </div>
             <div
               className="absolute -right-6 bottom-6 hidden w-48 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:block"
               style={{ transform: "rotateZ(5deg)" }}
             >
-              <p className="text-[10px] text-muted-foreground">Research</p>
+              <p className="text-sm text-muted-foreground">Research</p>
               <p className="mt-1 text-sm font-medium text-gray-900">RELIANCE · +0.61%</p>
             </div>
           </div>
@@ -226,7 +226,7 @@ export function LandingPage() {
             {STATS.map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl font-semibold text-gray-900 sm:text-3xl">{s.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
               </div>
             ))}
           </div>
@@ -367,7 +367,7 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-          <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-xs text-gray-400">
+          <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-sm text-gray-400">
             © Market Intelligence · Simulated data · Not investment advice
           </p>
         </footer>
@@ -379,7 +379,7 @@ export function LandingPage() {
 function MockStat({ label, value, trend, up }: { label: string; value: string; trend: string; up?: boolean }) {
   return (
     <div className="rounded-2xl border border-white/60 bg-white/60 p-3">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-semibold text-gray-900 sm:text-base">{value}</p>
       <p className={`mt-0.5 text-[11px] ${up ? "text-emerald-600" : "text-muted-foreground"}`}>{trend}</p>
     </div>

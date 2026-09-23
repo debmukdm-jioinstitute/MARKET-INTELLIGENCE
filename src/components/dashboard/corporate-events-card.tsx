@@ -84,12 +84,12 @@ export function CorporateEventsCard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Calendar className="size-3.5" />
               CORPORATE DISCLOSURES & EVENTS
             </span>
             <MetricInfo metric="corporate_announcement" customTitle="Material Corporate Events & Filings" />
-            <span className="text-[10px] font-mono text-emerald-600 flex items-center gap-1">
+            <span className="text-sm text-emerald-600 flex items-center gap-1">
               <Radio className="size-3 animate-pulse" />
               Live RSS Feed
             </span>
@@ -101,7 +101,7 @@ export function CorporateEventsCard() {
 
         <Link
           href="/intelligence"
-          className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+          className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
         >
           View All Desk
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -116,7 +116,7 @@ export function CorporateEventsCard() {
             type="button"
             onClick={() => setActiveFilter(f)}
             className={cn(
-              "rounded-md px-2.5 py-1 text-[11px] font-mono font-medium transition-colors shrink-0",
+              "rounded-md px-2.5 py-1 text-sm font-medium transition-colors shrink-0",
               activeFilter === f
                 ? "bg-primary text-primary-foreground font-bold"
                 : "bg-accent/30 text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -128,7 +128,7 @@ export function CorporateEventsCard() {
       </div>
 
       {/* Events List */}
-      <div className="mt-3 divide-y divide-border/50 font-mono text-xs">
+      <div className="mt-3 divide-y divide-border/50 text-sm">
         {loading && displayEvents.length === 0 ? (
           <p className="py-6 text-center text-muted-foreground">
             Ingesting live announcements from RBI and exchange RSS streams…
@@ -145,20 +145,20 @@ export function CorporateEventsCard() {
               className="flex items-center justify-between gap-3 py-2.5 px-2 rounded-md hover:bg-accent/40 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-muted-foreground text-[11px] w-12 shrink-0">{ev.time}</span>
+                <span className="text-muted-foreground text-sm w-12 shrink-0">{ev.time}</span>
                 <span className="font-bold text-foreground shrink-0 w-24 flex items-center gap-1">
                   {ev.symbol}
                   {ev.inPortfolio ? (
                     <span className="size-1.5 rounded-full bg-emerald-600" title="Relevant to portfolio" />
                   ) : null}
                 </span>
-                <span className="text-muted-foreground truncate text-[11px]">{ev.title}</span>
+                <span className="text-muted-foreground truncate text-sm">{ev.title}</span>
               </div>
               <div className="shrink-0 flex items-center gap-2">
-                <span className="rounded bg-accent/50 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                <span className="rounded bg-accent/50 px-1.5 py-0.5 text-sm font-semibold text-muted-foreground">
                   {ev.category}
                 </span>
-                <span className="text-primary text-[10px] hover:underline">Inspect →</span>
+                <span className="text-primary text-sm hover:underline">Inspect →</span>
               </div>
             </div>
           ))
@@ -172,11 +172,11 @@ export function CorporateEventsCard() {
             <div className="flex items-start justify-between border-b border-border pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-primary">{selectedEvent.symbol}</span>
-                  <span className="rounded bg-accent px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  <span className="text-sm font-bold text-primary">{selectedEvent.symbol}</span>
+                  <span className="rounded bg-accent px-1.5 py-0.5 text-sm text-muted-foreground">
                     {selectedEvent.category}
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">{selectedEvent.time}</span>
+                  <span className="text-sm text-muted-foreground">{selectedEvent.time}</span>
                   <MetricInfo metric="corporate_announcement" />
                 </div>
                 <h4 className="text-base font-bold text-foreground mt-1">{selectedEvent.title}</h4>
@@ -190,9 +190,9 @@ export function CorporateEventsCard() {
               </button>
             </div>
 
-            <div className="space-y-3 font-mono text-xs">
+            <div className="space-y-3 text-sm">
               <div className="rounded-lg border border-border/70 bg-accent/20 p-3 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground flex items-center gap-1">
                   <FileText className="size-3 text-primary" />
                   OFFICIAL FILING ENDPOINT
                 </span>
@@ -202,7 +202,7 @@ export function CorporateEventsCard() {
                     href={selectedEvent.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-primary text-[11px] font-bold hover:underline"
+                    className="flex items-center gap-1 text-primary text-sm font-bold hover:underline"
                   >
                     Open Regulatory Document <ExternalLink className="size-3" />
                   </a>
@@ -210,20 +210,20 @@ export function CorporateEventsCard() {
               </div>
 
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-primary flex items-center gap-1">
+                <span className="text-[11px] uppercase font-bold text-primary flex items-center gap-1">
                   <Sparkles className="size-3" />
                   SYNTHESIS
                 </span>
-                <p className="text-foreground font-sans text-xs leading-relaxed">
+                <p className="text-foreground font-sans text-sm leading-relaxed">
                   {selectedEvent.aiSummary}
                 </p>
               </div>
 
               <div className="rounded-lg border border-border/70 bg-card p-3 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground">
                   PORTFOLIO EXPOSURE
                 </span>
-                <p className="text-emerald-600 font-semibold text-xs">
+                <p className="text-emerald-600 font-semibold text-sm">
                   {selectedEvent.portfolioExposure}
                 </p>
               </div>
@@ -233,7 +233,7 @@ export function CorporateEventsCard() {
               <button
                 type="button"
                 onClick={() => setSelectedEvent(null)}
-                className="rounded-md bg-accent px-4 py-1.5 text-xs font-semibold text-foreground hover:bg-accent/80"
+                className="rounded-md bg-accent px-4 py-1.5 text-sm font-semibold text-foreground hover:bg-accent/80"
               >
                 Close View
               </button>

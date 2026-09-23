@@ -73,7 +73,7 @@ export default function AdminTabsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">App tabs</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">App tabs</p>
         <h1 className="mt-1 text-xl font-semibold">Sidebar tabs</h1>
         <p className="mt-1 text-sm text-gray-500">
           Enabled tabs appear in the main app&apos;s sidebar within a minute (60s cache), no deploy required.
@@ -85,7 +85,7 @@ export default function AdminTabsPage() {
       <AdminCard title="Add a tab">
         <form onSubmit={createTab} className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Label</label>
+            <label className="text-sm text-gray-500">Label</label>
             <input
               required
               value={form.label}
@@ -95,7 +95,7 @@ export default function AdminTabsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Link (internal path or full URL)</label>
+            <label className="text-sm text-gray-500">Link (internal path or full URL)</label>
             <input
               required
               value={form.href}
@@ -105,7 +105,7 @@ export default function AdminTabsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Section header</label>
+            <label className="text-sm text-gray-500">Section header</label>
             <input
               value={form.section}
               onChange={(e) => setForm((f) => ({ ...f, section: e.target.value.toUpperCase() }))}
@@ -113,7 +113,7 @@ export default function AdminTabsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Icon</label>
+            <label className="text-sm text-gray-500">Icon</label>
             <select
               value={form.icon}
               onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
@@ -127,7 +127,7 @@ export default function AdminTabsPage() {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Badge (optional)</label>
+            <label className="text-sm text-gray-500">Badge (optional)</label>
             <input
               value={form.badge}
               onChange={(e) => setForm((f) => ({ ...f, badge: e.target.value.toUpperCase() }))}
@@ -135,7 +135,7 @@ export default function AdminTabsPage() {
               placeholder="NEW"
             />
           </div>
-          <label className="flex items-center gap-2 self-end pb-1.5 text-xs text-gray-500">
+          <label className="flex items-center gap-2 self-end pb-1.5 text-sm text-gray-500">
             <input
               type="checkbox"
               checked={form.external}
@@ -162,9 +162,9 @@ export default function AdminTabsPage() {
               <div className="min-w-0">
                 <p className="truncate font-medium text-gray-900">
                   {tab.label} <span className="text-gray-500">· {tab.section}</span>
-                  {tab.badge ? <span className="ml-1.5 rounded bg-blue-600/20 px-1 text-[10px] text-blue-600">{tab.badge}</span> : null}
+                  {tab.badge ? <span className="ml-1.5 rounded bg-blue-600/20 px-1 text-sm text-blue-600">{tab.badge}</span> : null}
                 </p>
-                <p className="truncate font-mono text-[11px] text-gray-500">
+                <p className="truncate text-sm text-gray-500">
                   {tab.href} {tab.external ? "↗" : ""}
                 </p>
               </div>
@@ -179,7 +179,7 @@ export default function AdminTabsPage() {
                 <button
                   type="button"
                   onClick={() => removeTab(tab.id)}
-                  className="rounded px-2 py-1 text-[11px] text-rose-600 hover:bg-rose-500/10"
+                  className="rounded px-2 py-1 text-sm text-rose-600 hover:bg-rose-500/10"
                 >
                   Delete
                 </button>

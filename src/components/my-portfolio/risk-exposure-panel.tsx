@@ -20,7 +20,7 @@ function Row({ categories, id }: { categories: MetricCategory[]; id: string }) {
         {metric.label}
         <MetricInfo id={metric.id} value={metric.formatted} />
       </span>
-      <span className="font-mono">{metric.formatted}</span>
+      <span className="">{metric.formatted}</span>
     </div>
   );
 }

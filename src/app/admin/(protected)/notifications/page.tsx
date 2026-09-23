@@ -52,13 +52,13 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Push notifications</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Push notifications</p>
         <h1 className="mt-1 text-xl font-semibold">Send a push notification</h1>
         <p className="mt-1 text-sm text-gray-500">Delivered to everyone who enabled notifications (bell icon in the main app&apos;s top bar).</p>
       </div>
 
       {!pushConfigured ? (
-        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600">
+        <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-sm text-blue-600">
           VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY are not set — sending is disabled until they&apos;re added as environment variables.
         </div>
       ) : null}
@@ -71,7 +71,7 @@ export default function AdminNotificationsPage() {
       <AdminCard title="Compose">
         <form onSubmit={send} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Title</label>
+            <label className="text-sm text-gray-500">Title</label>
             <input
               required
               value={form.title}
@@ -80,7 +80,7 @@ export default function AdminNotificationsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Body</label>
+            <label className="text-sm text-gray-500">Body</label>
             <textarea
               required
               rows={2}
@@ -90,7 +90,7 @@ export default function AdminNotificationsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Link when clicked (optional, internal path)</label>
+            <label className="text-sm text-gray-500">Link when clicked (optional, internal path)</label>
             <input
               value={form.url}
               onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
@@ -113,8 +113,8 @@ export default function AdminNotificationsPage() {
           {(notifications ?? []).map((n) => (
             <div key={n.id} className="rounded-md border border-gray-200 p-3 text-sm">
               <p className="font-medium text-gray-900">{n.title}</p>
-              <p className="text-xs text-gray-500">{n.body}</p>
-              <p className="mt-1 text-[10px] text-gray-500">
+              <p className="text-sm text-gray-500">{n.body}</p>
+              <p className="mt-1 text-sm text-gray-500">
                 {new Date(n.created_at).toLocaleString()} · {n.recipient_count} sent, {n.failure_count} failed
               </p>
             </div>

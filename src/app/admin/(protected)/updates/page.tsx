@@ -57,7 +57,7 @@ export default function AdminUpdatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">App updates</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">App updates</p>
         <h1 className="mt-1 text-xl font-semibold">Update banners</h1>
         <p className="mt-1 text-sm text-gray-500">The most recent published update shows as a dismissible banner in the main app.</p>
       </div>
@@ -67,7 +67,7 @@ export default function AdminUpdatesPage() {
       <AdminCard title="Publish an update">
         <form onSubmit={publish} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Title</label>
+            <label className="text-sm text-gray-500">Title</label>
             <input
               required
               value={form.title}
@@ -76,7 +76,7 @@ export default function AdminUpdatesPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Body</label>
+            <label className="text-sm text-gray-500">Body</label>
             <textarea
               required
               rows={3}
@@ -113,10 +113,10 @@ export default function AdminUpdatesPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    {u.title} <span className="ml-1 text-[10px] uppercase text-gray-500">{u.severity}</span>
+                    {u.title} <span className="ml-1 text-[11px] uppercase text-gray-500">{u.severity}</span>
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-500">{u.body}</p>
-                  <p className="mt-1 text-[10px] text-gray-500">{new Date(u.created_at).toLocaleString()}</p>
+                  <p className="mt-0.5 text-sm text-gray-500">{u.body}</p>
+                  <p className="mt-1 text-sm text-gray-500">{new Date(u.created_at).toLocaleString()}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <button
@@ -126,7 +126,7 @@ export default function AdminUpdatesPage() {
                   >
                     {u.published ? "Published" : "Hidden"}
                   </button>
-                  <button type="button" onClick={() => remove(u.id)} className="rounded px-2 py-1 text-[11px] text-rose-600 hover:bg-rose-500/10">
+                  <button type="button" onClick={() => remove(u.id)} className="rounded px-2 py-1 text-sm text-rose-600 hover:bg-rose-500/10">
                     Delete
                   </button>
                 </div>

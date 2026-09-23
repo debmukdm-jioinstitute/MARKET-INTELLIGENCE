@@ -7,12 +7,12 @@ export function SourceHealthGrid({ rows }: { rows: FeedHealth[] }) {
       {rows.map((row) => (
         <div
           key={row.id}
-          className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-xs"
+          className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm"
         >
           <span className="font-medium">{row.label}</span>
           <span
             className={cn(
-              "font-mono uppercase tracking-wide",
+              "uppercase tracking-wide",
               row.ok ? "text-emerald-600" : "text-blue-600",
             )}
           >

@@ -140,7 +140,7 @@ export function MegaNavBar() {
                             >
                               {item.label}
                               {item.badge ? (
-                                <span className="rounded bg-blue-600/15 px-1.5 py-0.5 text-xs font-bold text-blue-600">{item.badge}</span>
+                                <span className="rounded bg-blue-600/15 px-1.5 py-0.5 text-sm font-bold text-blue-600">{item.badge}</span>
                               ) : item.external ? (
                                 <ExternalLink className="size-3 opacity-50" />
                               ) : null}
@@ -171,7 +171,7 @@ export function AppNavTrigger() {
       aria-expanded={open}
       aria-label="Open navigation"
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-colors",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
         open
           ? "border-primary/40 bg-accent text-primary"
           : "border-border text-foreground hover:bg-accent hover:text-primary",
@@ -242,9 +242,9 @@ export function AppNav() {
           >
             <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
               <Link href="/Home" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
-                <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-[9px] font-medium text-white">mi</span>
+                <span className="grid size-7 place-items-center rounded-lg bg-blue-600 text-sm font-medium text-white">mi</span>
                 <div>
-                  <p className="text-[11px] font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
+                  <p className="text-sm font-semibold tracking-[0.15em] text-primary">Market Intelligence</p>
                 </div>
               </Link>
               <button
@@ -303,18 +303,18 @@ export function AppNav() {
                               )}
                             >
                               <span className={cn(
-                                "flex items-center gap-1.5 text-[13px] font-medium",
+                                "flex items-center gap-1.5 text-sm font-medium",
                                 active ? "text-primary" : "text-gray-900",
                               )}>
                                 {item.label}
                                 {item.badge ? (
-                                  <span className="rounded bg-blue-600/15 px-1 text-[9px] font-bold text-blue-600">{item.badge}</span>
+                                  <span className="rounded bg-blue-600/15 px-1 text-sm font-bold text-blue-600">{item.badge}</span>
                                 ) : item.external ? (
                                   <ExternalLink className="size-3 opacity-50" />
                                 ) : null}
                               </span>
                               {item.desc ? (
-                                <span className="text-[11.5px] leading-snug text-muted-foreground">{item.desc}</span>
+                                <span className="text-sm leading-snug text-muted-foreground">{item.desc}</span>
                               ) : null}
                             </Link>
                           </motion.li>
@@ -331,7 +331,7 @@ export function AppNav() {
                 href="https://abhisheksi2o.github.io/Bazaarbrief/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
               >
                 <Newspaper className="size-3.5" />
                 Daily Brief
@@ -344,7 +344,7 @@ export function AppNav() {
                   await logout();
                   router.replace("/");
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
               >
                 <LogOut className="size-3.5" />
                 Sign out

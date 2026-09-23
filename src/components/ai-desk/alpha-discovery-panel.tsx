@@ -79,7 +79,7 @@ export function AlphaDiscoveryPanel() {
             {picked.map((p) => (
               <span
                 key={p.symbol}
-                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-mono"
+                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-sm"
               >
                 {p.symbol}
                 <button type="button" onClick={() => remove(p.symbol)} aria-label={`Remove ${p.symbol}`}>
@@ -87,7 +87,7 @@ export function AlphaDiscoveryPanel() {
                 </button>
               </span>
             ))}
-            {picked.length === 0 ? <p className="text-xs text-muted-foreground">No tickers selected yet.</p> : null}
+            {picked.length === 0 ? <p className="text-sm text-muted-foreground">No tickers selected yet.</p> : null}
           </div>
           <Button onClick={run} disabled={picked.length === 0 || loading} className="w-full">
             {loading ? "Proposing & backtesting…" : "Discover factors"}
@@ -98,7 +98,7 @@ export function AlphaDiscoveryPanel() {
       {setupMessage ? <SetupBanner message={setupMessage} /> : null}
       {error ? <ErrorBanner message={error} /> : null}
       {loading ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           The LLM proposes candidate factors from a fixed, safe vocabulary; this app backtests each one deterministically
           against real price history — no AI-generated code is ever executed.
         </p>
@@ -106,12 +106,12 @@ export function AlphaDiscoveryPanel() {
 
       {result ? (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Universe: {result.symbols.map((s) => `${s.symbol} (${s.points}d)`).join(", ")}
           </p>
           <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-xs">
-              <thead className="bg-muted/40 text-[10px] uppercase text-muted-foreground">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-[11px] uppercase text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2 text-left">Factor</th>
                   <th className="px-3 py-2 text-left">Formula</th>
@@ -125,18 +125,18 @@ export function AlphaDiscoveryPanel() {
                   <tr key={i} className="border-t border-border/60 align-top">
                     <td className="px-3 py-2">
                       <p className="font-medium">{f.name}</p>
-                      <p className="text-[10px] leading-4 text-muted-foreground">{f.rationale}</p>
-                      {f.note ? <p className="text-[10px] text-blue-600">{f.note}</p> : null}
+                      <p className="text-sm leading-4 text-muted-foreground">{f.rationale}</p>
+                      {f.note ? <p className="text-sm text-blue-600">{f.note}</p> : null}
                     </td>
-                    <td className="px-3 py-2 font-mono">{f.formula}</td>
+                    <td className="px-3 py-2">{f.formula}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="h-4 px-1.5 text-[10px] uppercase">
+                      <Badge variant="outline" className="h-4 px-1.5 text-[11px] uppercase">
                         {f.category}
                       </Badge>
                     </td>
                     <td
                       className={cn(
-                        "px-3 py-2 text-right font-mono tabular-nums",
+                        "px-3 py-2 text-right tabular-nums",
                         f.informationCoefficient == null
                           ? "text-muted-foreground/50"
                           : f.informationCoefficient > 0
@@ -146,7 +146,7 @@ export function AlphaDiscoveryPanel() {
                     >
                       {f.informationCoefficient != null ? f.informationCoefficient.toFixed(3) : "N/A"}
                     </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums">
+                    <td className="px-3 py-2 text-right tabular-nums">
                       {f.backtestSharpe != null ? f.backtestSharpe.toFixed(2) : "N/A"}
                     </td>
                   </tr>
@@ -154,7 +154,7 @@ export function AlphaDiscoveryPanel() {
               </tbody>
             </table>
           </div>
-          <p className="text-[10px] text-muted-foreground/70">{result.disclaimer}</p>
+          <p className="text-sm text-muted-foreground/70">{result.disclaimer}</p>
         </div>
       ) : null}
     </div>

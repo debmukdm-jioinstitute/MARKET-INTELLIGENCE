@@ -34,16 +34,16 @@ export function YieldCurveCard({
     <Panel
       title="Yield curve"
       action={
-        <Link href="/macro/yields" className="text-xs text-primary hover:underline">
+        <Link href="/macro/yields" className="text-sm text-primary hover:underline">
           Full curve →
         </Link>
       }
     >
-      <p className="mb-3 flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+      <p className="mb-3 flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
         India government bonds
         <MetricExplainer copyKey="yield_in_10y" />
       </p>
-      <ul className="space-y-1 font-mono text-sm">
+      <ul className="space-y-1 text-sm">
         {india.map((p) => (
           <li key={p.tenor} className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1 text-muted-foreground">
@@ -72,11 +72,11 @@ export function YieldCurveCard({
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-3 flex items-center gap-1 text-[10px] text-muted-foreground">
+      <p className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
         US 2Y / 10Y (global capital flows)
         <MetricExplainer copyKey="yield_us_10y" />
       </p>
-      <div className="mt-1 flex gap-4 font-mono text-sm">
+      <div className="mt-1 flex gap-4 text-sm">
         <span>
           2Y{" "}
           <strong>{us.find((u) => u.tenor === "2Y")?.value?.toFixed(2) ?? "—"}%</strong>

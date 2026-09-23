@@ -75,7 +75,7 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-600 font-bold font-mono tracking-tight shadow-sm transition-all">
+        <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-600 font-bold tracking-tight shadow-sm transition-all">
           + Add Position
         </Button>
       </DialogTrigger>
@@ -105,7 +105,7 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              {loading ? <p className="text-xs text-muted-foreground">Searching…</p> : null}
+              {loading ? <p className="text-sm text-muted-foreground">Searching…</p> : null}
               {results.length > 0 ? (
                 <div className="max-h-52 overflow-y-auto rounded-md border border-border">
                   {results.map((r) => (
@@ -115,8 +115,8 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
                       onClick={() => setSelected(r)}
                       className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
                     >
-                      <span className="font-mono font-medium">{r.symbol}</span>
-                      <span className="truncate pl-2 text-xs text-muted-foreground">{r.name}</span>
+                      <span className="font-medium">{r.symbol}</span>
+                      <span className="truncate pl-2 text-sm text-muted-foreground">{r.name}</span>
                     </button>
                   ))}
                 </div>
@@ -126,10 +126,10 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
                 <div>
-                  <p className="font-mono text-sm font-medium">{selected.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{selected.name}</p>
+                  <p className="text-sm font-medium">{selected.symbol}</p>
+                  <p className="text-sm text-muted-foreground">{selected.name}</p>
                 </div>
-                <button type="button" onClick={() => setSelected(null)} className="text-xs text-muted-foreground underline">
+                <button type="button" onClick={() => setSelected(null)} className="text-sm text-muted-foreground underline">
                   Change
                 </button>
               </div>
@@ -146,8 +146,8 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
                 onChange={(e) => setAvgCost(e.target.value)}
               />
               <Input type="date" value={addedAt} onChange={(e) => setAddedAt(e.target.value)} />
-              {error ? <p className="text-xs text-rose-600">{error}</p> : null}
-              <Button onClick={submit} disabled={submitting} className="w-full bg-blue-600 text-white hover:bg-blue-600 font-bold font-mono">
+              {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+              <Button onClick={submit} disabled={submitting} className="w-full bg-blue-600 text-white hover:bg-blue-600 font-bold">
                 {submitting ? "Adding to portfolio…" : "Confirm & Add to Portfolio"}
               </Button>
             </div>

@@ -131,11 +131,11 @@ export function WhatChangedModule() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <History className="size-3.5" />
               WHAT CHANGED?
             </span>
-            <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-600">
+            <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-sm font-semibold text-emerald-600">
               Since last visit
             </span>
             <MetricInfo metric="fii_flow" customTitle="Institutional Market Delta Engine" />
@@ -147,7 +147,7 @@ export function WhatChangedModule() {
 
         <Link
           href="/intelligence"
-          className="group flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          className="group flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
         >
           View Full Intelligence Journal
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -173,7 +173,7 @@ export function WhatChangedModule() {
                 className="flex w-full cursor-pointer items-center justify-between text-left group"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-4">
-                  <span className="font-mono text-sm font-bold text-muted-foreground/80 w-6 shrink-0">
+                  <span className="text-sm font-bold text-muted-foreground/80 w-6 shrink-0">
                     {item.num}
                   </span>
                   <span className="font-heading text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
@@ -182,7 +182,7 @@ export function WhatChangedModule() {
                   <MetricInfo metric={item.metricKey} />
                   <span
                     className={cn(
-                      "hidden sm:inline-block rounded border px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider",
+                      "hidden sm:inline-block rounded border px-2 py-0.5 text-sm font-bold tracking-wider",
                       item.tagColor,
                     )}
                   >
@@ -191,7 +191,7 @@ export function WhatChangedModule() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[11px] font-mono text-muted-foreground hidden md:inline">
+                  <span className="text-sm text-muted-foreground hidden md:inline">
                     {isExpanded ? "Collapse" : "Inspect Data & Chart"}
                   </span>
                   {isExpanded ? (
@@ -204,23 +204,23 @@ export function WhatChangedModule() {
 
               {/* Expandable Module Breakdown with Provenance */}
               {isExpanded ? (
-                <div className="mt-4 rounded-xl border border-border/80 bg-accent/20 p-4 space-y-4 font-mono text-xs animate-in fade-in duration-200">
+                <div className="mt-4 rounded-xl border border-border/80 bg-accent/20 p-4 space-y-4 text-sm animate-in fade-in duration-200">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     <div className="md:col-span-8 space-y-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] uppercase font-bold text-primary block">
+                        <span className="text-[11px] uppercase font-bold text-primary block">
                           QUANTITATIVE OBSERVATION
                         </span>
                         <MetricInfo metric={item.metricKey} />
                       </div>
-                      <p className="font-sans text-xs text-foreground leading-relaxed">
+                      <p className="font-sans text-sm text-foreground leading-relaxed">
                         {item.dataSummary}
                       </p>
                     </div>
 
                     {/* Mini SVG Trendline */}
                     <div className="md:col-span-4 rounded-lg border border-border/60 bg-card p-3 space-y-1">
-                      <span className="text-[9px] text-muted-foreground block uppercase">
+                      <span className="text-[11px] text-muted-foreground block uppercase">
                         Trajectory
                       </span>
                       <div className="h-10 w-full flex items-end gap-1 pt-2">
@@ -245,9 +245,9 @@ export function WhatChangedModule() {
                   </div>
 
                   {/* Source & Methodology Row with Verified Links */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-[11px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-border/40 text-sm">
                     <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                      <span className="text-muted-foreground block text-[11px] uppercase font-bold">
                         REGULATORY SOURCE
                       </span>
                       <a
@@ -260,7 +260,7 @@ export function WhatChangedModule() {
                       </a>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                      <span className="text-muted-foreground block text-[11px] uppercase font-bold">
                         METHODOLOGY
                       </span>
                       <span className="text-muted-foreground mt-0.5 block font-sans">
@@ -271,17 +271,17 @@ export function WhatChangedModule() {
 
                   {/* Affected Securities */}
                   <div className="pt-2 border-t border-border/40">
-                    <span className="text-muted-foreground block text-[10px] uppercase font-bold mb-1.5">
+                    <span className="text-muted-foreground block text-[11px] uppercase font-bold mb-1.5">
                       DIRECTLY SENSITIVE SECURITIES
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {item.relatedSecurities.map((sec) => (
                         <div
                           key={sec.symbol}
-                          className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-[11px]"
+                          className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-sm"
                         >
                           <span className="font-bold text-foreground">{sec.symbol}</span>
-                          <span className="text-muted-foreground font-sans text-[10px]">
+                          <span className="text-muted-foreground font-sans text-sm">
                             {sec.impact}
                           </span>
                         </div>

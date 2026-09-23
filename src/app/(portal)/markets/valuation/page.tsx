@@ -17,7 +17,7 @@ export default function MarketValuationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MarketValuationCard />
 
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4 font-mono text-xs shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">
           <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Scale className="size-4 text-primary" />
             EQUITY RISK PREMIUM & YIELD SPREAD

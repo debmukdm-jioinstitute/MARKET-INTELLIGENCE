@@ -76,9 +76,9 @@ export function HoldingsList({
             className="group cursor-pointer"
             onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
           >
-            <TableCell className="font-mono font-medium text-primary flex items-center gap-1">
+            <TableCell className="font-medium text-primary flex items-center gap-1">
               <span className="group-hover:underline underline-offset-2">{row.symbol}</span>
-              <span className="text-[9px] text-muted-foreground">{row.market}</span>
+              <span className="text-sm text-muted-foreground">{row.market}</span>
               <span onClick={(e) => e.stopPropagation()}>
                 <MetricInfo
                   id={row.symbol.toLowerCase()}
@@ -95,17 +95,17 @@ export function HoldingsList({
               <ArrowUpRight className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
             </TableCell>
             <TableCell className="text-muted-foreground">{row.name}</TableCell>
-            <TableCell className="text-right font-mono">
+            <TableCell className="text-right">
               {row.currency === "USD" ? "$" : "₹"}
               {row.last.toFixed(2)}
             </TableCell>
-            <TableCell className={cn("text-right font-mono", row.dayPct >= 0 ? "text-emerald-600" : "text-rose-600")}>
+            <TableCell className={cn("text-right", row.dayPct >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {formatPct(row.dayPct)}
             </TableCell>
-            <TableCell className="text-right font-mono">{row.shares}</TableCell>
-            <TableCell className="text-right font-mono">{inr(row.marketValueInr)}</TableCell>
-            <TableCell className="text-right font-mono">{formatPct(row.weight, 1, false)}</TableCell>
-            <TableCell className={cn("text-right font-mono", row.pnlInr >= 0 ? "text-emerald-600" : "text-rose-600")}>
+            <TableCell className="text-right">{row.shares}</TableCell>
+            <TableCell className="text-right">{inr(row.marketValueInr)}</TableCell>
+            <TableCell className="text-right">{formatPct(row.weight, 1, false)}</TableCell>
+            <TableCell className={cn("text-right", row.pnlInr >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {inr(row.pnlInr)}
             </TableCell>
             <TableCell className="p-0">
@@ -115,7 +115,7 @@ export function HoldingsList({
                   e.stopPropagation();
                   onRemove(row.id);
                 }}
-                className="px-3 py-2 text-xs text-muted-foreground hover:text-rose-600"
+                className="px-3 py-2 text-sm text-muted-foreground hover:text-rose-600"
               >
                 Remove
               </button>

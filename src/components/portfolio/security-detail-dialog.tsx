@@ -97,7 +97,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                   <Badge variant="secondary">{inst.region}</Badge>
                 </>
               ) : null}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 As of {new Date(q.asOf).toLocaleString()}
               </span>
             </div>
@@ -145,7 +145,7 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
               <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Fundamentals (live)
               </h4>
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-sm sm:grid-cols-3">
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
                 {q.marketCap != null ? <Row k="Market cap" v={formatCompact(q.marketCap)} /> : null}
                 {q.pe != null ? <Row k="Trailing P/E" v={q.pe.toFixed(2)} /> : null}
                 {q.forwardPe != null ? <Row k="Forward P/E" v={q.forwardPe.toFixed(2)} /> : null}
@@ -196,13 +196,13 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[11px] text-muted-foreground">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Hub sync {new Date(data.fetchedAt).toLocaleString()}. Quotes are delayed/near-real-time per
                 provider terms; not investment advice.
               </p>
               <Link
                 href={`/research/${encodeURIComponent(data.symbol)}`}
-                className="mt-2 inline-block text-xs text-primary hover:underline"
+                className="mt-2 inline-block text-sm text-primary hover:underline"
                 onClick={() => onOpenChange(false)}
               >
                 Open in research workbench →
@@ -220,8 +220,8 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 function BookStat({ k, v, className }: { k: string; v: string; className?: string }) {
   return (
     <div className="min-w-0 rounded-md border border-border/60 bg-card/50 px-3 py-2">
-      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{k}</dt>
-      <dd className={cn("mt-1 truncate font-mono text-sm font-medium tabular-nums", className)}>{v}</dd>
+      <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">{k}</dt>
+      <dd className={cn("mt-1 truncate text-sm font-medium tabular-nums", className)}>{v}</dd>
     </div>
   );
 }
@@ -239,10 +239,10 @@ function Metric({
 }) {
   return (
     <div className="rounded-md border border-border px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="font-mono text-lg">{value}</p>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-lg">{value}</p>
       {sub ? (
-        <p className={cn("font-mono text-xs", positive ? "text-emerald-600" : "text-rose-600")}>{sub}</p>
+        <p className={cn("text-sm", positive ? "text-emerald-600" : "text-rose-600")}>{sub}</p>
       ) : null}
     </div>
   );

@@ -30,7 +30,7 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
           <Info className="size-3" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[280px] flex-col items-start gap-2 p-3 text-left text-xs font-normal">
+      <TooltipContent side="top" className="max-w-[280px] flex-col items-start gap-2 p-3 text-left text-sm font-normal">
         <p className="font-semibold text-foreground">In plain English</p>
         <p className="text-muted-foreground leading-relaxed">{copy.novice}</p>
         <p>

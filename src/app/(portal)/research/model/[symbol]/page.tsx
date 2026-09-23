@@ -79,7 +79,7 @@ export default function FinancialModelPage() {
         title={dataset ? `${dataset.profile.name} · ${dataset.profile.symbol}` : symbol}
         subtitle="Free-cash-flow DCF valuation built from Yahoo Finance annual statements — CAPM cost of equity, unlevered FCF, dual terminal-value cross-check."
       />
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         <Link href={`/research/${encodeURIComponent(symbol)}`} className="text-primary hover:underline">
           ← Back to {symbol} research
         </Link>
@@ -92,7 +92,7 @@ export default function FinancialModelPage() {
       {model ? (
         <>
           {model.checks.some((c) => !c.pass) ? (
-            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-xs text-rose-200/90 space-y-1.5">
+            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-sm text-rose-200/90 space-y-1.5">
               <p className="font-semibold text-rose-600">
                 {model.checks.filter((c) => !c.pass).length} model integrity check
                 {model.checks.filter((c) => !c.pass).length > 1 ? "s" : ""} flagged — treat the valuation below with caution.
@@ -110,7 +110,7 @@ export default function FinancialModelPage() {
           <ModelSummaryCards model={model} />
 
           {dataset!.notes.length ? (
-            <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-xs text-blue-600/90 space-y-1">
+            <div className="rounded-lg border border-blue-600/30 bg-blue-600/5 p-3 text-sm text-blue-600/90 space-y-1">
               {dataset!.notes.map((n, i) => (
                 <p key={i}>{n}</p>
               ))}
@@ -123,7 +123,7 @@ export default function FinancialModelPage() {
                 <button
                   type="button"
                   onClick={resetAssumptions}
-                  className="rounded-md border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="rounded-md border border-border px-2.5 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   Reset to defaults
                 </button>
@@ -137,7 +137,7 @@ export default function FinancialModelPage() {
               </Panel>
 
               <Panel title="DCF valuation bridge" subtitle="Enterprise value → equity value → implied price per share">
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-xs sm:grid-cols-3">
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
                   {[
                     ["Sum of PV of FCFF", model.dcf.sumPv],
                     ["PV of terminal value", model.dcf.pvTv],
@@ -162,7 +162,7 @@ export default function FinancialModelPage() {
               </Panel>
 
               <Panel title="Model integrity checks">
-                <ul className="space-y-1.5 text-xs">
+                <ul className="space-y-1.5 text-sm">
                   {model.checks.map((c) => (
                     <li key={c.label} className="flex items-start justify-between gap-3">
                       <span className="text-muted-foreground">{c.label}</span>

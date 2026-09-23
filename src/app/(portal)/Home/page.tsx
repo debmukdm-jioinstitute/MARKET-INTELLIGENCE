@@ -26,7 +26,7 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
               <Terminal className="size-3.5" />
               INSTITUTIONAL COCKPIT
             </span>
@@ -35,7 +35,7 @@ export default function DashboardPage() {
           <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground mt-0.5">
             Executive Market & Portfolio Intelligence
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Real-time multi-asset feeds, risk decomposition, macroeconomic telemetry, and live order books.
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => reload()}
-            className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors shadow-sm"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent transition-colors shadow-sm"
           >
             <RefreshCw className="size-3 text-muted-foreground" />
             Refresh Feeds
@@ -54,7 +54,7 @@ export default function DashboardPage() {
 
       <FetchingBanner active={loadingFull} />
       {error ? (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 font-mono text-xs text-rose-600">
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-600">
           Feed Error: {error}
         </div>
       ) : null}

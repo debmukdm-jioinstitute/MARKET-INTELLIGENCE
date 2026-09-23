@@ -64,14 +64,14 @@ export default function ResearchSymbolPage() {
       />
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <Link href="/research" className="text-primary hover:underline">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
         {symbol ? (
           <Link
             href={`/research/model/${encodeURIComponent(symbol)}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
           >
             Build financial model →
           </Link>
@@ -92,7 +92,7 @@ export default function ResearchSymbolPage() {
               <div className="mb-4 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-mono text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
+                    <p className="text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
                     <MetricInfo
                       id={symbol.toLowerCase()}
                       name={`${data.name} (${symbol})`}
@@ -103,7 +103,7 @@ export default function ResearchSymbolPage() {
                   </div>
                   <p
                     className={cn(
-                      "font-mono text-sm",
+                      "text-sm",
                       q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
@@ -123,7 +123,7 @@ export default function ResearchSymbolPage() {
               <MarketDepthLadder buy={q.depth.buy} sell={q.depth.sell} />
             </Panel>
             <Panel title="Session">
-              <dl className="grid grid-cols-2 gap-2 font-mono text-xs">
+              <dl className="grid grid-cols-2 gap-2 text-sm">
                 <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
                 <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
                 <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
@@ -166,7 +166,7 @@ export default function ResearchSymbolPage() {
               <li key={s.id} className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{s.label}</span>
                 <span className="text-muted-foreground">— {s.usedFor}</span>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary text-xs">
+                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm">
                   Open
                 </a>
               </li>
@@ -194,7 +194,7 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
           </div>
         </Panel>
         <Panel title="Snapshot">
-          <dl className="space-y-3 font-mono text-sm">
+          <dl className="space-y-3 text-sm">
             <Row metricId="nav" k="Last" v={fmtNum(us.quote.price)} />
             <Row metricId="today_pnl" k="1D" v={formatPct(us.quote.changePct)} />
             {us.quote.pe != null ? <Row metricId="pe_ratio" k="P/E" v={us.quote.pe.toFixed(1)} /> : null}

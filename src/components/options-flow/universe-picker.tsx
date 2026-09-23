@@ -20,10 +20,10 @@ export function UniversePicker({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Watchlist ({selected.length}/{max} selected)
         </p>
-        <div className="flex gap-2 text-[11px] font-medium text-primary">
+        <div className="flex gap-2 text-sm font-medium text-primary">
           <button type="button" onClick={onSelectAll} className="hover:underline">
             Select first {max}
           </button>
@@ -43,7 +43,7 @@ export function UniversePicker({
               onClick={() => onToggle(s.symbol)}
               title={s.name}
               className={cn(
-                "flex items-center justify-between rounded-md border px-2 py-1.5 text-left text-[11px] font-mono transition-colors",
+                "flex items-center justify-between rounded-md border px-2 py-1.5 text-left text-sm transition-colors",
                 isOn
                   ? "border-primary bg-primary/10 text-primary font-bold"
                   : "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",

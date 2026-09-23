@@ -91,7 +91,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
               <Coins className="size-3.5" />
               COMMODITIES & FX TELEMETRY
             </span>
@@ -99,7 +99,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
           </div>
           <Link
             href="/markets"
-            className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+            className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             Explore Markets
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -108,8 +108,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
 
         <div className="mt-4 space-y-4">
           {/* Commodities List with MetricInfo */}
-          <div className="space-y-1.5 font-mono text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+          <div className="space-y-1.5 text-sm">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
               GLOBAL COMMODITIES (REAL-TIME NYMEX / ICE)
             </span>
             {commodities.map((c) => {
@@ -123,7 +123,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                     <Link href={c.route} className="font-semibold text-foreground hover:underline">
                       {c.name}
                     </Link>
-                    <span className="text-[10px] text-muted-foreground">{c.category}</span>
+                    <span className="text-sm text-muted-foreground">{c.category}</span>
                     <MetricInfo metric={c.metricKey} sourceOverride={c.source} />
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -133,7 +133,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                     </span>
                     <span
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-bold",
+                        "rounded px-1.5 py-0.5 text-sm font-bold",
                         isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
@@ -147,8 +147,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
           </div>
 
           {/* FX Currencies List with MetricInfo */}
-          <div className="space-y-1.5 font-mono text-xs pt-1 border-t border-border/50">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mt-2">
+          <div className="space-y-1.5 text-sm pt-1 border-t border-border/50">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mt-2">
               FOREIGN EXCHANGE & DOLLAR
             </span>
             {currencies.map((fx) => {
@@ -171,7 +171,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                     </span>
                     <span
                       className={cn(
-                        "rounded px-1.5 py-0.5 text-[10px] font-bold",
+                        "rounded px-1.5 py-0.5 text-sm font-bold",
                         isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
@@ -186,9 +186,9 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[11px] font-mono">
-        <span className="text-[10px] text-muted-foreground">PROVENANCE:</span>
-        <span className="text-[10px] text-muted-foreground">Official ICE Europe & Yahoo Finance Chart API</span>
+      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
+        <span className="text-sm text-muted-foreground">PROVENANCE:</span>
+        <span className="text-sm text-muted-foreground">Official ICE Europe & Yahoo Finance Chart API</span>
       </div>
     </div>
   );

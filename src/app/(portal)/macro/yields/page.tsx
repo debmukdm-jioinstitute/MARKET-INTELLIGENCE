@@ -17,7 +17,7 @@ export default function YieldsMacroPage() {
         title="Yield curve"
         subtitle="India government bond yields vs US curve — US rates often steer global capital flows into or out of India."
       />
-      <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
+      <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={2} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? (

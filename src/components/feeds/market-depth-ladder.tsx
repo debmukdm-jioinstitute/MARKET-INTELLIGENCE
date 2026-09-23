@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 /** 5-level bid/ask depth ladder — proportional bars, not a chart, so hand-styled bars fit better than Recharts. */
 export function MarketDepthLadder({ buy, sell }: { buy: DepthLevel[]; sell: DepthLevel[] }) {
   if (!buy.length && !sell.length) {
-    return <p className="text-xs text-muted-foreground">No depth data.</p>;
+    return <p className="text-sm text-muted-foreground">No depth data.</p>;
   }
   const maxQty = Math.max(1, ...buy.map((b) => b.quantity), ...sell.map((s) => s.quantity));
   const rows = Math.max(buy.length, sell.length);
 
   return (
-    <div className="space-y-1 font-mono text-[11px]">
-      <div className="grid grid-cols-2 gap-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+    <div className="space-y-1 text-sm">
+      <div className="grid grid-cols-2 gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
         <span>Bid</span>
         <span className="text-right">Ask</span>
       </div>

@@ -23,7 +23,7 @@ export default function FeedsPage() {
         <button
           type="button"
           onClick={() => reload()}
-          className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
+          className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
         >
           Refresh now
         </button>
@@ -65,11 +65,11 @@ export default function FeedsPage() {
                 <tbody>
                   {data.indices.map((row) => (
                     <tr key={row.symbol} className="border-t border-border">
-                      <td className="py-2 font-mono">{row.symbol}</td>
-                      <td className="py-2 text-right font-mono">{row.price.toFixed(2)}</td>
+                      <td className="py-2">{row.symbol}</td>
+                      <td className="py-2 text-right">{row.price.toFixed(2)}</td>
                       <td
                         className={cn(
-                          "py-2 text-right font-mono",
+                          "py-2 text-right",
                           row.changePct >= 0 ? "text-emerald-600" : "text-rose-600",
                         )}
                       >

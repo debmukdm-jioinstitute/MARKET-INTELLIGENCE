@@ -68,10 +68,10 @@ export function MegaMenu() {
                         rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                         className="group -mx-2 flex flex-col gap-0.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent"
                       >
-                        <span className="text-[13px] font-medium text-gray-900 group-hover:text-blue-600">
+                        <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600">
                           {item.label}
                         </span>
-                        <span className="text-[11.5px] leading-snug text-muted-foreground">{item.desc}</span>
+                        <span className="text-sm leading-snug text-muted-foreground">{item.desc}</span>
                       </Link>
                     </li>
                   ))}
@@ -80,7 +80,7 @@ export function MegaMenu() {
             ))}
           </div>
           <div className="border-t border-border bg-muted/40 px-5 py-3">
-            <p className="mx-auto max-w-6xl text-[12px] text-muted-foreground">
+            <p className="mx-auto max-w-6xl text-sm text-muted-foreground">
               New to the terminal?{" "}
               <Link href="/signup" className="font-medium text-blue-600 hover:underline underline-offset-4">
                 Create a free account →

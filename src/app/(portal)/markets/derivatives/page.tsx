@@ -30,7 +30,7 @@ export default function DerivativesPage() {
         title="Derivatives dashboard"
         subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
       />
-      <Link href="/Home" className="text-xs text-primary hover:underline">
+      <Link href="/Home" className="text-sm text-primary hover:underline">
         ← Back to dashboard
       </Link>
 
@@ -54,7 +54,7 @@ export default function DerivativesPage() {
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         {snapshot ? (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <Metric metricId="nifty50" label="Spot" value={fmtNum(snapshot.underlyingSpot)} />
               <Metric metricId="pcr" label="PCR" value={snapshot.pcr != null ? snapshot.pcr.toFixed(3) : "—"} />
               <Metric metricId="max_pain" label="Max pain" value={snapshot.maxPain != null ? fmtNum(snapshot.maxPain, 0) : "—"} />
@@ -112,7 +112,7 @@ function Metric({ metricId, label, value }: { metricId?: string; label: string; 
 function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
   return (
     <Panel title={title} subtitle="NSE option chain indices API">
-      <dl className="grid grid-cols-2 gap-2 font-mono text-sm">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
         <Row metricId="pcr" k="PCR" v={snap.pcr != null ? snap.pcr.toFixed(3) : "—"} />
         <Row metricId="pcr" k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
         <Row metricId="pcr" k="Change in OI" v={snap.changeOi?.toLocaleString("en-IN") ?? "—"} />
@@ -143,7 +143,7 @@ function StrikeTable({ label, rows }: { label: string; rows: { strike: number; o
             <th className="py-1 text-right">OI</th>
           </tr>
         </thead>
-        <tbody className="font-mono">
+        <tbody className="">
           {rows.length ? (
             rows.map((r) => (
               <tr key={r.strike} className="border-t border-border">

@@ -108,7 +108,7 @@ export default function EconomicCalendarPage() {
           </TableHeader>
           <TableBody>
             {EVENTS.map((e, idx) => (
-              <TableRow key={idx} className="font-mono text-xs hover:bg-accent/40">
+              <TableRow key={idx} className="text-sm hover:bg-accent/40">
                 <TableCell className="font-medium text-foreground">{e.date}</TableCell>
                 <TableCell className="font-bold text-primary">{e.country}</TableCell>
                 <TableCell className="font-semibold text-foreground flex items-center gap-1.5">

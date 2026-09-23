@@ -11,7 +11,7 @@ export function KpiGrid({ metrics }: { metrics: KpiMetric[] }) {
         <Tooltip key={metric.key}>
           <TooltipTrigger asChild>
             <article className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 {metric.label}
               </p>
               <p
@@ -25,11 +25,11 @@ export function KpiGrid({ metrics }: { metrics: KpiMetric[] }) {
                 {metric.formatted}
               </p>
               {metric.deltaLabel ? (
-                <p className="mt-1 font-mono text-[11px] text-muted-foreground">{metric.deltaLabel}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{metric.deltaLabel}</p>
               ) : null}
             </article>
           </TooltipTrigger>
-          <TooltipContent className="max-w-xs text-xs">{metric.hint}</TooltipContent>
+          <TooltipContent className="max-w-xs text-sm">{metric.hint}</TooltipContent>
         </Tooltip>
       ))}
     </div>

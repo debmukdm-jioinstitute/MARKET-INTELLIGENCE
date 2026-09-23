@@ -73,7 +73,7 @@ export function MarketMomentumCard() {
                 <MetricInfo metric="rsi" sourceOverride={techSource} />
               </div>
               <span className="font-bold text-foreground text-base mt-0.5 block">62.40</span>
-              <span className="text-xs text-emerald-600">Bullish Momentum</span>
+              <span className="text-sm text-emerald-600">Bullish Momentum</span>
             </div>
 
             <div className="rounded-xl border border-border/70 bg-card/40 p-3.5">
@@ -82,7 +82,7 @@ export function MarketMomentumCard() {
                 <MetricInfo metric="macd" sourceOverride={techSource} />
               </div>
               <span className="font-bold text-emerald-600 text-base mt-0.5 block">Positive</span>
-              <span className="text-xs text-muted-foreground">Histogram Expansion</span>
+              <span className="text-sm text-muted-foreground">Histogram Expansion</span>
             </div>
           </div>
 

@@ -64,9 +64,9 @@ export default function IndiaMarketsPage() {
                   className="cursor-pointer"
                   onClick={() => setSelected(inst)}
                 >
-                  <TableCell className="font-mono flex items-center gap-1">
+                  <TableCell className="flex items-center gap-1">
                     <span>{inst.symbol}</span>
-                    {q ? <span className="ml-1 text-[9px] uppercase text-emerald-600">live</span> : null}
+                    {q ? <span className="ml-1 text-[11px] uppercase text-emerald-600">live</span> : null}
                     <MetricInfo
                       id={inst.symbol.toLowerCase()}
                       name={`${inst.name} (${inst.symbol})`}
@@ -78,12 +78,12 @@ export default function IndiaMarketsPage() {
                   </TableCell>
                   <TableCell>{inst.name}</TableCell>
                   <TableCell className="text-muted-foreground">{inst.sector}</TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right">
                     {q ? q.price.toFixed(2) : "—"}
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "text-right font-mono",
+                      "text-right",
                       (q?.change ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
@@ -91,7 +91,7 @@ export default function IndiaMarketsPage() {
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "text-right font-mono",
+                      "text-right",
                       (q?.changePct ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >

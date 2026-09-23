@@ -42,15 +42,15 @@ export default function CommoditiesMacroPage() {
         title="Commodity dashboard"
         subtitle="Brent, gold, silver, copper — prices from Yahoo Finance with India transmission context on the macro home."
       />
-      <Link href="/macro" className="text-xs text-primary hover:underline">← Macro home</Link>
+      <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={5} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data?.commodities.map((c) => (
         <Panel key={c.id} id={c.id} title={c.label}>
           <div className="flex flex-wrap items-baseline gap-3">
-            <p className="font-mono text-3xl tabular-nums">${c.price?.toFixed(2) ?? "—"}</p>
+            <p className="text-3xl tabular-nums">${c.price?.toFixed(2) ?? "—"}</p>
             <MetricExplainer copyKey={c.copyKey} />
-            <a href={c.source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary">
+            <a href={c.source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">
               {c.source.provider}
             </a>
           </div>

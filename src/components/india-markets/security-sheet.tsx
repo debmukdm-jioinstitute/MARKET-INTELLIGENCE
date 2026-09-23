@@ -60,7 +60,7 @@ export function SecuritySheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-mono">{instrument?.symbol}</SheetTitle>
+          <SheetTitle className="">{instrument?.symbol}</SheetTitle>
           <SheetDescription>
             {instrument?.name} · {instrument?.sector}
           </SheetDescription>
@@ -74,10 +74,10 @@ export function SecuritySheet({
             <>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-mono text-2xl tabular-nums">{fmtInr(quote.ltp)}</p>
+                  <p className="text-2xl tabular-nums">{fmtInr(quote.ltp)}</p>
                   <p
                     className={cn(
-                      "font-mono text-sm",
+                      "text-sm",
                       quote.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
                     )}
                   >
@@ -88,7 +88,7 @@ export function SecuritySheet({
                 <DataInfo source={{ ...UPSTOX_QUOTE_SOURCE, asOf: quote.asOf }} />
               </div>
 
-              <dl className="grid grid-cols-2 gap-2 font-mono text-xs">
+              <dl className="grid grid-cols-2 gap-2 text-sm">
                 <Stat k="Open" v={fmtInr(quote.ohlc.open)} />
                 <Stat k="Prev close" v={fmtInr(quote.ohlc.close)} />
                 <Stat k="High" v={fmtInr(quote.ohlc.high)} />
@@ -115,7 +115,7 @@ export function SecuritySheet({
                     Price history
                   </p>
                   <Select value={range} onValueChange={(v) => setRange(v as CandleRange)}>
-                    <SelectTrigger className="h-7 w-[120px] text-xs">
+                    <SelectTrigger className="h-7 w-[120px] text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -128,11 +128,11 @@ export function SecuritySheet({
                   </Select>
                 </div>
                 {candlesLoading && !candles.length ? (
-                  <p className="text-xs text-muted-foreground">Loading candles…</p>
+                  <p className="text-sm text-muted-foreground">Loading candles…</p>
                 ) : candles.length ? (
                   <CandlestickChart candles={candles} />
                 ) : (
-                  <p className="text-xs text-muted-foreground">No candle data.</p>
+                  <p className="text-sm text-muted-foreground">No candle data.</p>
                 )}
               </div>
 
@@ -141,11 +141,11 @@ export function SecuritySheet({
                   Fundamentals — key ratios
                 </p>
                 {fundamentalsLoading && !fundamentals ? (
-                  <p className="text-xs text-muted-foreground">Loading fundamentals…</p>
+                  <p className="text-sm text-muted-foreground">Loading fundamentals…</p>
                 ) : fundamentals ? (
                   <KeyRatiosPanel snapshot={fundamentals} />
                 ) : (
-                  <p className="text-xs text-muted-foreground">No fundamentals data.</p>
+                  <p className="text-sm text-muted-foreground">No fundamentals data.</p>
                 )}
               </div>
             </>

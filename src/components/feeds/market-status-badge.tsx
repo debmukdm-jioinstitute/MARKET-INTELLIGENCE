@@ -7,7 +7,7 @@ export function MarketStatusBadge() {
   const { isOpen, todayHoliday, nextHoliday } = useMarketStatus();
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs">
+    <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-sm">
       <span className={cn("size-1.5 rounded-full", isOpen ? "bg-emerald-600" : "bg-muted-foreground")} />
       <span className="font-medium">
         NSE {isOpen ? "open" : "closed"}

@@ -39,11 +39,11 @@ export default function AdminLoginPage() {
     <main className="grid min-h-screen place-items-center bg-muted px-5">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-border bg-white p-6 shadow-[var(--shadow-lg)]">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-600">Market Intelligence · Admin</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-blue-600">Market Intelligence · Admin</p>
           <h1 className="mt-1 text-xl font-semibold text-foreground">Backend sign-in</h1>
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-gray-500">Email</label>
+          <label className="text-sm text-gray-500">Email</label>
           <input
             type="email"
             required
@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-gray-500">Password</label>
+          <label className="text-sm text-gray-500">Password</label>
           <input
             type="password"
             required
@@ -70,7 +70,7 @@ export default function AdminLoginPage() {
         >
           {pending ? "Signing in…" : "Sign in"}
         </button>
-        <p className="text-[11px] text-gray-500">
+        <p className="text-sm text-gray-500">
           Admin access is granted by email allowlist. Sign up for a regular account on the main site first, then have your email
           added to <code className="text-gray-500">ADMIN_EMAILS</code>.
         </p>
