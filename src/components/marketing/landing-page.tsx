@@ -301,7 +301,7 @@ export function LandingPage() {
         <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-              <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
+              <img src="/logo.png" alt="Market Intelligence" className="h-10 sm:h-12 w-auto mix-blend-multiply dark:invert" />
             </Link>
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <MegaMenu />
@@ -658,7 +658,7 @@ export function LandingPage() {
             <div className="grid grid-cols-[1fr_auto_auto] items-center border-b border-white/70 bg-white/40 p-4 sm:grid-cols-[1fr_200px_200px] sm:p-6">
               <div className="font-medium text-gray-500">Feature</div>
               <div className="text-center font-semibold text-gray-900">
-                <img src="/logo.png" alt="Market Intelligence" className="mx-auto h-5 w-auto dark:invert sm:h-6" />
+                <img src="/logo.png" alt="Market Intelligence" className="mx-auto h-6 w-auto sm:h-7 mix-blend-multiply dark:invert" />
               </div>
               <div className="text-center font-medium text-gray-500">Traditional Terminals</div>
             </div>
@@ -771,7 +771,7 @@ export function LandingPage() {
         <footer className="border-t border-white/60 bg-white/40 px-5 py-14 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:justify-between">
             <div>
-              <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
+              <img src="/logo.png" alt="Market Intelligence" className="h-10 w-auto mix-blend-multiply dark:invert" />
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
                 A simple way to track, research, and understand your money — for everyone, not just professionals.
               </p>
