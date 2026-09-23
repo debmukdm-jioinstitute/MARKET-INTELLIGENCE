@@ -100,7 +100,7 @@ export function MegaNavBar() {
             <Link
               href={col.items[0]?.href ?? "#"}
               className={cn(
-                "flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+                "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
                 active ? cn("bg-accent", accent.text) : "text-foreground hover:bg-accent",
               )}
             >
@@ -114,7 +114,7 @@ export function MegaNavBar() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.14, ease: "easeOut" }}
-                  className="absolute left-0 top-full z-50 mt-2 w-80 rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)]"
+                  className="absolute left-0 top-full z-50 mt-2 w-96 rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)]"
                   onMouseEnter={() => openCol(i)}
                 >
                   <ul className="space-y-0.5">
@@ -134,18 +134,18 @@ export function MegaNavBar() {
                           >
                             <span
                               className={cn(
-                                "flex items-center gap-1.5 text-[13px] font-medium",
+                                "flex items-center gap-1.5 text-sm font-medium",
                                 isActive ? "text-primary" : "text-gray-900",
                               )}
                             >
                               {item.label}
                               {item.badge ? (
-                                <span className="rounded bg-blue-600/15 px-1 text-[9px] font-bold text-blue-600">{item.badge}</span>
+                                <span className="rounded bg-blue-600/15 px-1.5 py-0.5 text-xs font-bold text-blue-600">{item.badge}</span>
                               ) : item.external ? (
                                 <ExternalLink className="size-3 opacity-50" />
                               ) : null}
                             </span>
-                            {item.desc ? <span className="text-[11.5px] leading-snug text-muted-foreground">{item.desc}</span> : null}
+                            {item.desc ? <span className="text-sm leading-snug text-muted-foreground">{item.desc}</span> : null}
                           </Link>
                         </li>
                       );
