@@ -303,6 +303,58 @@ export function LandingPage() {
                   </div>
                 </div>
               </div>
+              
+              {/* Dense Analytical Metrics Grid */}
+              <div className="mt-4 grid grid-cols-3 gap-x-4 gap-y-3 rounded-2xl border border-white/60 bg-white/40 p-4 backdrop-blur-md sm:grid-cols-4 md:grid-cols-6">
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sharpe Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">1.22</p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Treynor Ratio</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+316.52%</p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sortino Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">1.78</p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Jensen's Alpha</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+30.11%</p>
+                </div>
+                <div className="space-y-0.5 hidden sm:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Info Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">1.58</p>
+                </div>
+                <div className="space-y-0.5 hidden sm:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Calmar Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">3.11</p>
+                </div>
+                <div className="space-y-0.5 hidden sm:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Sterling Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">3.22</p>
+                </div>
+                <div className="space-y-0.5 hidden sm:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Burke Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">5.47</p>
+                </div>
+                <div className="space-y-0.5 hidden md:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Omega Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">1.30</p>
+                </div>
+                <div className="space-y-0.5 hidden md:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Kappa Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">0.07</p>
+                </div>
+                <div className="space-y-0.5 hidden md:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">M² (Modigliani)</p>
+                  <p className="text-[13px] font-bold text-emerald-600">+21.72%</p>
+                </div>
+                <div className="space-y-0.5 hidden md:block">
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Appraisal Ratio</p>
+                  <p className="text-[13px] font-bold text-gray-900">0.89</p>
+                </div>
+              </div>
             </div>
 
             {/* floating glass chips for depth */}
