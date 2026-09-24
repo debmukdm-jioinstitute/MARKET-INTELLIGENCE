@@ -1,8 +1,13 @@
 import type { Bar } from "./types";
 
-/** Daily OHLCV for an NSE symbol from Yahoo Finance (1y). Returns null on any failure. */
-export async function fetchDailyBars(symbol: string, range = "1y"): Promise<Bar[] | null> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}.NS?range=${range}&interval=1d`;
+/** Daily OHLCV for an NSE symbol from Yahoo Finance. Returns null on any failure. */
+export function fetchDailyBars(symbol: string, range = "1y"): Promise<Bar[] | null> {
+  return fetchYahooBars(`${symbol}.NS`, range);
+}
+
+/** Daily OHLCV for any Yahoo ticker (e.g. "^NSEI"). Returns null on any failure. */
+export async function fetchYahooBars(ticker: string, range = "1y"): Promise<Bar[] | null> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=1d`;
   try {
     const res = await fetch(url, { headers: { "user-agent": "Mozilla/5.0" }, cache: "no-store", signal: AbortSignal.timeout(12_000) });
     if (!res.ok) return null;

@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { hasDatabase, sql } from "../db";
-import type { BacktestRun, ScanRun } from "./types";
+import type { BacktestRun, ScanRun, SignalsRun } from "./types";
 
 /** Latest scan and backtest results — Postgres when configured, else a JSON file under `.scanner-cache/`. */
 const DIR = path.join(process.cwd(), ".scanner-cache");
@@ -45,3 +45,5 @@ export const saveScan = (run: ScanRun) => save("latest", run);
 export const loadScan = () => load<ScanRun>("latest");
 export const saveBacktest = (run: BacktestRun) => save("backtest", run);
 export const loadBacktest = () => load<BacktestRun>("backtest");
+export const saveSignals = (run: SignalsRun) => save("signals", run);
+export const loadSignals = () => load<SignalsRun>("signals");

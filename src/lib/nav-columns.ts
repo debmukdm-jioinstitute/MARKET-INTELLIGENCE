@@ -62,7 +62,7 @@ export const NAV_COLUMNS: NavColumn[] = [
       { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Live Nifty 500 technical scans: 52-week breakouts, volume gainers, NR7, RSI, MACD and more.", badge: "NEW" },
       { label: "Alerts & Scanner Bot", href: "/intelligence/alerts", desc: "Scheduled scans, breakout alerts, and on-demand scanner commands.", badge: "NEW" },
       { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K growth charts, morning-vs-close P&L, ATR paper trading.", badge: "NEW" },
-      { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Nifty next-day ML prediction, BTST/STBT signals & trend forecasts.", badge: "AI" },
+      { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Nifty next-day model with its walk-forward track record, plus BTST/STBT candidates.", badge: "AI" },
       { label: "System & Data", href: "/data", desc: "Feed health, sources, and data freshness." },
       { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
       { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },

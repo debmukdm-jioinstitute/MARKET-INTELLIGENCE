@@ -98,3 +98,64 @@ export interface BacktestRun {
   benchmarkEquity: { d: string; v: number }[];
   scanners: BacktestScanner[];
 }
+
+export interface SignalBucket {
+  label: string;
+  n: number;
+  hitRate: number | null; // % correct (for the neutral bucket: % of days that went up)
+  avgRet: number | null; // mean next-session return in the direction of the call, %
+}
+
+export interface StockSignal {
+  symbol: string;
+  name: string;
+  industry: string;
+  ltp: number;
+  changePct: number;
+  pUp: number;
+  confidence: number;
+  rsi: number | null;
+  entry: number;
+  target: number;
+  stop: number;
+}
+
+export interface SignalsRun {
+  asOf: string;
+  lastBar: string;
+  nifty: {
+    close: number;
+    changePct: number;
+    pUp1: number | null;
+    pUp5: number | null;
+    call1: "Bullish" | "Bearish" | "Neutral";
+    call5: "Bullish" | "Bearish" | "Neutral";
+    ema20: number;
+    ema50: number;
+    trend: string;
+    validation: {
+      days: number; // out-of-sample predictions scored
+      from: string;
+      to: string;
+      accuracy: number; // % correct, calling up when pUp ≥ 0.5
+      alwaysUp: number; // % accuracy of simply always predicting "up"
+      buckets: SignalBucket[];
+      strategyReturn: number; // % total, long pUp>0.55 / short pUp<0.45 / flat otherwise (gross)
+      buyHoldReturn: number; // %
+      equity: { d: string; strategy: number; buyHold: number }[];
+      recent: { d: string; pUp: number; call: "Up" | "Down"; actual: "Up" | "Down"; retPct: number }[];
+    };
+  };
+  stocks: {
+    universe: number;
+    scanned: number;
+    validation: {
+      sessions: number;
+      buy: { n: number; hitRate: number; avgRet: number };
+      sell: { n: number; hitRate: number; avgRet: number };
+      base: { n: number; upRate: number; avgRet: number };
+    };
+    btst: StockSignal[];
+    stbt: StockSignal[];
+  };
+}
