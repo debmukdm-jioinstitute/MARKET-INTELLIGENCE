@@ -20,7 +20,7 @@ export default function RiskPage() {
   const te = analysis.kpis.find((k) => k.key === "trackingError")!;
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Risk management"
         title="Active risk budget"

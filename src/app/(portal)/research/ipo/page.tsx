@@ -21,7 +21,7 @@ export default function IpoPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Primary market"
         title="IPOs"

@@ -6,7 +6,7 @@ import { OptionsFlowPanel } from "@/components/options-flow/options-flow-panel";
 
 export default function OptionsFlowPage() {
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Research Desk"
         title="Options flow screener"

@@ -18,7 +18,7 @@ export default function OptimizerPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Portfolio optimization"
         title="Mean-variance / risk parity"

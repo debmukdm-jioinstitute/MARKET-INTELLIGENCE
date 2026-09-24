@@ -17,7 +17,7 @@ export default function QuantPage() {
   const avgDn = a.portRets.some((r) => r < 0) ? mean(a.portRets.filter((r) => r < 0)) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Quantitative analysis"
         title="Return distribution & active statistics"

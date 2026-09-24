@@ -14,14 +14,14 @@ export default function RbiPolicyPage() {
   const rbiNews = feedData?.news?.filter((n) => n.source === "rbi") ?? [];
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Central Banking"
         title="RBI Policy Stance & Banking Liquidity Desk"
         subtitle="Monetary policy corridor, policy repo rate, standing deposit facility (SDF), VRR/VRRR auction operations, and system liquidity balances."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bento-grid-cols-2">
         {data ? <RbiLiquidity data={data} /> : null}
 
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">

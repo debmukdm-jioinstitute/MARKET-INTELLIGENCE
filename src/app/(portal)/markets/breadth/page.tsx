@@ -20,7 +20,7 @@ export default function MarketBreadthPage() {
   const asOf = data?.fetchedAt || "Official Live NSE Feed";
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Market Internals"
         title="Market Breadth & Participation Desk"

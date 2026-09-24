@@ -66,7 +66,7 @@ export default function ResearchReportsPage() {
   const brokerChips = useMemo(() => brokers.slice(0, 14), [brokers]);
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto pb-16">
+    <div className="portal-page max-w-[1400px] pb-10">
       <PageHeader
         kicker="Research Desk"
         title="Research Reports"

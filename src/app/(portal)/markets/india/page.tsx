@@ -20,7 +20,7 @@ export default function IndiaMarketsPage() {
   const live = new Map(quotes.map((q) => [q.symbol, q]));
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="India"
         title="India markets"

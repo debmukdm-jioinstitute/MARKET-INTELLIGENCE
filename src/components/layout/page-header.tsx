@@ -8,7 +8,7 @@ export function PageHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <p className="text-sm uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
       <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">{title}</h2>
       {subtitle ? <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p> : null}

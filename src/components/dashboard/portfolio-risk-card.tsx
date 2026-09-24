@@ -51,7 +51,7 @@ export function PortfolioRiskCard() {
   const top2Weight = displaySectors.slice(0, 2).reduce((sum, s) => sum + s.pct, 0);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-col justify-between">
+    <div className="bento-card-shell bento-card-stack bg-card">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export function PortfolioRiskCard() {
           </Link>
         </div>
 
-        <div className="mt-5 space-y-5">
+        <div className="mt-3 space-y-3">
           {/* Concentration Alert Banner */}
           <div className="rounded-xl border border-blue-600/30 bg-blue-600/10 p-3.5 flex items-start gap-3">
             <AlertTriangle className="size-4 text-blue-600 shrink-0 mt-0.5" />
@@ -148,7 +148,7 @@ export function PortfolioRiskCard() {
         </div>
       </div>
 
-      <div className="mt-5 flex items-center justify-between border-t border-border/50 pt-3 text-sm text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <span>VALUE-AT-RISK (1D 95%):</span>
           <MetricInfo metric="var95" />

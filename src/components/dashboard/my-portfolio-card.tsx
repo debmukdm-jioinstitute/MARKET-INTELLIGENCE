@@ -28,7 +28,7 @@ export function MyPortfolioCard() {
   const totalReturnPct = totalReturnMetric?.value ?? 0;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-col justify-between">
+    <div className="bento-card-shell bento-card-stack bg-card">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
@@ -44,7 +44,7 @@ export function MyPortfolioCard() {
           </Link>
         </div>
 
-        <div className="mt-5 space-y-4">
+        <div className="mt-3 space-y-3">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -169,7 +169,7 @@ export function MyPortfolioCard() {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-2 text-sm">
         {[
           { label: "Book & Holdings", href: "/portfolio" },
           { label: "Asset Allocation", href: "/portfolio/allocation" },

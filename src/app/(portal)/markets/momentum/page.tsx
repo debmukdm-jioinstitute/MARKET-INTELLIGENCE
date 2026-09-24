@@ -7,14 +7,14 @@ import { Flame, Activity, TrendingUp } from "lucide-react";
 
 export default function MarketMomentumPage() {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Technical Diagnostics"
         title="Market Momentum & Trend Regimes"
         subtitle="Analytical moving average dispersions, relative strength indicators, and trend continuation oscillators."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bento-grid-cols-2">
         <MarketMomentumCard />
 
         <Panel

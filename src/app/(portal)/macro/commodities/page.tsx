@@ -36,7 +36,7 @@ export default function CommoditiesMacroPage() {
   }, [data]);
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Macro"
         title="Commodity dashboard"

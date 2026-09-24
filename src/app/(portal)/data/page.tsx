@@ -108,7 +108,7 @@ const SOURCES: DataSource[] = [
 
 export default function DataPage() {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Data Observability"
         title="Data Sources, Quality & Feed Freshness"

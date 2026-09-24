@@ -7,14 +7,14 @@ import { Scale, BarChart2 } from "lucide-react";
 
 export default function MarketValuationPage() {
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Equity Risk Premium"
         title="Market Valuation & Yield Spread Dashboard"
         subtitle="Historical trailing and forward P/E bands, CAPE ratios, price-to-book, and bond-equity earnings yield spreads for Indian equities."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bento-grid-cols-2">
         <MarketValuationCard />
 
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">

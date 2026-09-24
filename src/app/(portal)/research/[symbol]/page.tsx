@@ -58,7 +58,7 @@ export default function ResearchSymbolPage() {
   const us = data?.usDetail;
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Investment research"
         title={data ? `${data.symbol} · ${data.name}` : symbol}

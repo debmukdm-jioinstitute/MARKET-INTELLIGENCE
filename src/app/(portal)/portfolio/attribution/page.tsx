@@ -22,7 +22,7 @@ export default function AttributionPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Performance attribution"
         title="Brinson-Fachler · 1 month"

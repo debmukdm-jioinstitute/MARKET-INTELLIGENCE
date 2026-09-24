@@ -65,7 +65,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
   const areaData = coords.length ? `${pathData} L ${width},${height} L 0,${height} Z` : "";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/90 bg-gradient-to-b from-card to-card/60 p-6 shadow-sm">
+    <div className="bento-card-shell bento-card-stack bg-gradient-to-b from-card to-card/60">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-12 items-center">
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-12 items-center">
         {/* Price & Chart Column */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
@@ -225,7 +225,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
       </div>
 
       {/* Subpage shortcuts */}
-      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 text-sm">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-2 text-sm">
         <span className="text-muted-foreground text-sm uppercase font-bold tracking-wider">
           Direct Indices:
         </span>

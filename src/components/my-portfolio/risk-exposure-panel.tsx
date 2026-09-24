@@ -27,7 +27,7 @@ function Row({ categories, id }: { categories: MetricCategory[]; id: string }) {
 
 export function RiskExposurePanel({ categories }: { categories: MetricCategory[] }) {
   return (
-    <div className="grid grid-cols-2 gap-6 text-sm">
+    <div className="grid grid-cols-2 gap-3 items-start text-sm">
       <div className="space-y-1.5">
         <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Risk</p>
         <Row categories={categories} id="volatility" />

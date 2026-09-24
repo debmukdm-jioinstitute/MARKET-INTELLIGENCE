@@ -22,7 +22,7 @@ export function MacroSectionView({
 
   if (sectionId === "regime") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <RegimeBanner regime={data.regime} />
         <Panel title="Growth + inflation (history)">
           <div className="h-[280px]">
@@ -78,7 +78,7 @@ export function MacroSectionView({
       : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
         <h2 className="mt-2 font-heading text-2xl">{meta.title}</h2>

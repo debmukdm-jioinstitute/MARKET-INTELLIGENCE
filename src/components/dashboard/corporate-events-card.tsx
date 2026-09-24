@@ -80,7 +80,7 @@ export function CorporateEventsCard() {
   });
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/90 bg-gradient-to-b from-card to-card/60 p-6 shadow-sm">
+    <div className="bento-card-shell bg-gradient-to-b from-card to-card/60">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">

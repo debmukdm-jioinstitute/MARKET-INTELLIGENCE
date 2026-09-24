@@ -15,7 +15,7 @@ export default function AllocationPage() {
   const region = useMemo(() => allocationBy(active, "region"), [active]);
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Asset allocation"
         title="Policy vs actual"

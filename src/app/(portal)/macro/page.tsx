@@ -18,7 +18,7 @@ export default function MacroPage() {
   const tape = useMacroTape();
 
   return (
-    <div className="space-y-8">
+    <div className="portal-page">
       <PageHeader
         kicker="Macroeconomic intelligence"
         title="India macro hub"

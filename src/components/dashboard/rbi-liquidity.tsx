@@ -8,7 +8,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
   const { rbiLiquidity } = data;
   const liq = rbiLiquidity.systemLiquidity;
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
+    <section className="bento-card-shell bento-card-stack bg-card">
       <div className="flex justify-between items-center">
         <h2 className="text-sm uppercase tracking-[0.22em] text-primary">RBI / liquidity watch</h2>
         <MetricInfo id="liquidity" asOf={data.fetchedAt} iconSize="xs" />

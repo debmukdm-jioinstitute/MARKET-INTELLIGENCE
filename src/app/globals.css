@@ -122,6 +122,29 @@
   --sidebar-ring: #8ab4f8;
 }
 
+@layer components {
+  /* Portal / bento layout — tight grids, no stretched card dead space */
+  .portal-page {
+    @apply mx-auto max-w-[1600px] space-y-4;
+  }
+
+  .bento-grid-cols-2 {
+    @apply grid grid-cols-1 items-start gap-3 lg:grid-cols-2;
+  }
+
+  .bento-grid-cols-12 {
+    @apply grid grid-cols-1 items-start gap-3 lg:grid-cols-12;
+  }
+
+  .bento-card-shell {
+    @apply relative overflow-hidden rounded-xl border border-border/90 p-4 shadow-sm sm:p-5;
+  }
+
+  .bento-card-stack {
+    @apply flex h-auto flex-col gap-3 self-start;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

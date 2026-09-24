@@ -74,7 +74,7 @@ export default function FinancialModelPage() {
   const currency = dataset?.profile.currency ?? "USD";
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Financial model"
         title={dataset ? `${dataset.profile.name} · ${dataset.profile.symbol}` : symbol}
@@ -156,7 +156,7 @@ export default function FinancialModelPage() {
               </Panel>
 
               <Panel title="Sensitivity" subtitle="Implied share price across WACC and terminal-value assumptions">
-                <div className="space-y-6">
+                <div className="portal-page">
                   <SensitivityGrid table={model.sensitivityGordon} rowFmt="pct2" currency={currency} />
                   <SensitivityGrid table={model.sensitivityExit} rowFmt="mult" currency={currency} />
                 </div>

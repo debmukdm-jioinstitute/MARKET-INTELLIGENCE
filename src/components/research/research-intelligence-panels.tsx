@@ -28,7 +28,7 @@ export function ResearchIntelligencePanels({
   const portals = brokerResearch.filter((b) => b.kind !== "headline");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Panel title="News impact (open RSS · rule-based)">
         <ImpactSummaryBanner summary={newsSummary} />
         {newsFeed.length ? (

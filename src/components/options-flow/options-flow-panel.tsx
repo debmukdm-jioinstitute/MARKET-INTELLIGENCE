@@ -240,7 +240,7 @@ export function OptionsFlowPanel() {
       {error ? <ErrorBanner message={error} /> : null}
 
       {result ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <section className="space-y-2">
             <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Data agent — gathered, not analyzed

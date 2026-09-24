@@ -22,7 +22,7 @@ export default function PortfolioPage() {
   const { data, loading, error, addHolding, removeHolding, resetToDefault, clearHoldings, importHoldings } = useMyPortfolio();
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="PORTFOLIO DESK"
         title={data?.settings.name ?? "Institutional Book"}

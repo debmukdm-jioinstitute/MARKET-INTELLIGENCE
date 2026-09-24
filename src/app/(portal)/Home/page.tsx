@@ -21,9 +21,9 @@ export default function DashboardPage() {
   const { data, loadingFull, error, reload } = useIndiaDashboard(45_000);
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+    <div className="portal-page pb-10">
       {/* Top Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-3">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
@@ -59,8 +59,7 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
-      {/* Row 1: Hero India Market + My Portfolio */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="bento-grid-cols-12">
         <div className="lg:col-span-7 xl:col-span-8">
           <HeroIndiaMarket data={data} />
         </div>
@@ -69,36 +68,30 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Row 2: India Macro + Portfolio Risk */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="bento-grid-cols-2">
         <IndiaMacroCard data={data} />
         <PortfolioRiskCard />
       </div>
 
-      {/* Row 3: Global Macro + Commodities & FX */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="bento-grid-cols-2">
         <GlobalMacroCard data={data} />
         <CommoditiesFxCard data={data} />
       </div>
 
-      {/* Row 4: Full-width WHAT CHANGED? Module */}
       <WhatChangedModule />
 
-      {/* Row 5: Corporate Events (RSS) + Earnings Calendar */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="bento-grid-cols-2">
         <CorporateEventsCard />
         <EarningsCalendarCard />
       </div>
 
-      {/* Row 6: Market Valuation + Market Momentum */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="bento-grid-cols-2">
         <MarketValuationCard />
         <MarketMomentumCard />
       </div>
 
-      {/* Row 7: Liquidity Telemetry & Institutional Money Flow */}
       {data ? (
-        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+        <div className="bento-grid-cols-2">
           <RbiLiquidity data={data} />
           <MoneyFlow data={data} />
         </div>

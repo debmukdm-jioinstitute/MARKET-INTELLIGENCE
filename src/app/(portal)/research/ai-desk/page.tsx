@@ -7,7 +7,7 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 
 export default function AiDeskPage() {
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="AI Desk"
         title="Multi-agent research lab"

@@ -341,7 +341,7 @@ export default function TickerDetailPage({ params }: PageProps) {
   const pct52 = Math.min(100, Math.max(0, ((livePrice - meta.low52) / range52) * 100));
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -361,7 +361,7 @@ export default function TickerDetailPage({ params }: PageProps) {
       </div>
 
       {/* 1. Header & Live Price with MetricInfo */}
-      <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-wrap items-end justify-between gap-6">
+      <div className="bento-card-shell flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-sm">
             <span className="font-bold text-blue-600">{meta.ticker}</span>
@@ -418,7 +418,7 @@ export default function TickerDetailPage({ params }: PageProps) {
       </div>
 
       {/* 2. Interactive Authentic Chart */}
-      <div className="rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
+      <div className="bento-card-shell space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-blue-600 uppercase flex items-center gap-1.5">
@@ -563,7 +563,7 @@ export default function TickerDetailPage({ params }: PageProps) {
       </div>
 
       {/* Grid of 4 Analysis Blocks with MetricInfo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-start text-sm">
         {/* Valuation */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
@@ -683,8 +683,8 @@ export default function TickerDetailPage({ params }: PageProps) {
 
       {/* Constituents & Sector Attribution with MetricInfo */}
       {meta.constituents.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
+        <div className="bento-grid-cols-12">
+          <div className="lg:col-span-8 bento-card-shell space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm uppercase font-bold tracking-wider text-muted-foreground">
                 INDEX CONSTITUENTS & INTRADAY PERFORMANCE
@@ -730,7 +730,7 @@ export default function TickerDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="lg:col-span-4 rounded-xl border border-border/90 bg-card p-6 shadow-sm space-y-4">
+          <div className="lg:col-span-4 bento-card-shell space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm uppercase font-bold tracking-wider text-muted-foreground">
                 SECTOR WEIGHTS

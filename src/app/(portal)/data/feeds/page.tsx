@@ -12,7 +12,7 @@ export default function FeedsPage() {
   const { data, loading, error, reload } = useFeedHub(45_000);
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Data Plane"
         title="Live Market Feeds & Ingestion Health"

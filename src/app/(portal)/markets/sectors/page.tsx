@@ -160,7 +160,7 @@ export default function SectorsPage() {
   const [activeTab, setActiveTab] = useState<"performance" | "rotation" | "valuation" | "fundamentals">("performance");
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+    <div className="portal-page pb-10">
       <PageHeader
         kicker="Sector Matrix"
         title="Sector Intelligence & Rotation Workbench"

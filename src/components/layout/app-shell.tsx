@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <UpdatesBanner />
               <LiveStreamTicker />
               <TopBar />
-              <main className="flex-1 overflow-y-auto p-6">{children}</main>
+              <main className="flex-1 overflow-y-auto p-4 md:p-5">{children}</main>
             </div>
             <CommandPalette />
             <GuidedTour />

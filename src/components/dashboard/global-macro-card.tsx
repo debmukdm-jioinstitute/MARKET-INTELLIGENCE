@@ -45,7 +45,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/90 bg-gradient-to-b from-card to-card/60 p-6 shadow-sm flex flex-col justify-between">
+    <div className="bento-card-shell bento-card-stack bg-gradient-to-b from-card to-card/60">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
           </Link>
         </div>
 
-        <div className="mt-5 space-y-3 text-sm">
+        <div className="mt-3 space-y-3 text-sm">
           {/* US Equities with MetricInfo */}
           <div className="space-y-1.5">
             <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
@@ -126,7 +126,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
         {[
           { label: "US Markets", href: "/macro/global" },
           { label: "Yield Spreads", href: "/macro/global" },

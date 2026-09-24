@@ -18,7 +18,7 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
       : [];
 
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
+    <section className="bento-card-shell bento-card-stack bg-card">
       <h2 className="font-heading text-lg font-semibold">India money flow</h2>
       <p className="text-sm text-muted-foreground">FII / DII from NSE when the feed responds. Longer windows need historical API.</p>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">

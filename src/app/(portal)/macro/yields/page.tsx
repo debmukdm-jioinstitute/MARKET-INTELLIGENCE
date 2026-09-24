@@ -11,7 +11,7 @@ export default function YieldsMacroPage() {
   const { data, loading, error } = useMacroTape();
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="Macro"
         title="Yield curve"

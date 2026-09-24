@@ -24,7 +24,7 @@ export default function DerivativesPage() {
   const fo = legacy?.indiaMoving.fo;
 
   return (
-    <div className="space-y-6">
+    <div className="portal-page">
       <PageHeader
         kicker="F&O"
         title="Derivatives dashboard"
