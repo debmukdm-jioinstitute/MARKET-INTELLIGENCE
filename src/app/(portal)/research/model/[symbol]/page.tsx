@@ -4,6 +4,7 @@ import { AssumptionsEditor } from "@/components/models/assumptions-editor";
 import { ModelSummaryCards } from "@/components/models/model-summary-cards";
 import { ProjectionTable } from "@/components/models/projection-table";
 import { SensitivityGrid } from "@/components/models/sensitivity-grid";
+import { ProwessPanel } from "@/components/research/prowess-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { applyOverrides } from "@/lib/models/assumptions";
 import { buildModel } from "@/lib/models/dcf-engine";
@@ -175,6 +176,13 @@ export default function FinancialModelPage() {
               </Panel>
             </div>
           </div>
+        </>
+      ) : null}
+
+      {symbol ? (
+        <>
+          <ProwessPanel company={symbol} report="financials" title="Reported financials (Prowess)" />
+          <ProwessPanel company={symbol} report="balance" title="Reported balance sheet (Prowess)" />
         </>
       ) : null}
     </div>

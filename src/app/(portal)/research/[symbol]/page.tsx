@@ -6,6 +6,7 @@ import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { ProwessPanel } from "@/components/research/prowess-panel";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
@@ -150,6 +151,16 @@ export default function ResearchSymbolPage() {
               <KeyRatiosPanel snapshot={data.fundamentals} />
             </Panel>
           ) : null}
+        </>
+      ) : null}
+
+      {data ? (
+        <>
+          <ProwessPanel company={data.symbol} report="financials" title="Financials (Prowess)" />
+          <ProwessPanel company={data.symbol} report="balance" title="Balance sheet (Prowess)" />
+          <ProwessPanel company={data.symbol} report="cashflow" title="Cash flow (Prowess)" />
+          <ProwessPanel company={data.symbol} report="returns" title="Annual stock returns (Prowess)" />
+          <ProwessPanel company={data.symbol} report="stock" title="Stock prices & ratios (Prowess)" />
         </>
       ) : null}
 
