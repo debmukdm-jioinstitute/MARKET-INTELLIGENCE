@@ -66,6 +66,7 @@ export const NAV_COLUMNS: NavColumn[] = [
       { label: "System & Data", href: "/data", desc: "Feed health, sources, and data freshness." },
       { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
       { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },
+      { label: "Data Export", href: "/data/export", desc: "Download every dataset on the site as one structured Excel workbook.", badge: "NEW" },
       {
         label: "External Brief (Bazaarbrief)",
         href: "https://abhisheksi2o.github.io/Bazaarbrief/",

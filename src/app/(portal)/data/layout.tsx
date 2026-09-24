@@ -4,6 +4,7 @@ const ITEMS = [
   { href: "/data", label: "Sources & Status" },
   { href: "/data/feeds", label: "Raw Feed Hub" },
   { href: "/data/health", label: "Data Health" },
+  { href: "/data/export", label: "Data Export" },
 ];
 
 export default function DataLayout({ children }: { children: React.ReactNode }) {
