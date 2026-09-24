@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { CorporateEventsCard } from "@/components/dashboard/corporate-events-card";
+import { MonitorsBar } from "@/components/feeds/monitors-bar";
 import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useFeedHub } from "@/hooks/use-feed-hub";
@@ -141,6 +142,7 @@ export default function IntelligencePage() {
             Sourced continuously from RBI, SEBI, NSE, and BSE Official Feeds
           </span>
         </div>
+        <div className="mb-3"><MonitorsBar /></div>
         {feedData?.news ? (
           <NewsStream items={feedData.news} limit={24} />
         ) : (

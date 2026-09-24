@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
-import { PAGE_COMMANDS } from "@/lib/command-registry";
+import { METRIC_COMMANDS, PAGE_COMMANDS } from "@/lib/command-registry";
+import useSWR from "swr";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS, findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import { getInstrument, UNIVERSE } from "@/lib/universe";
 import { ArrowLeft, HelpCircle } from "lucide-react";
@@ -45,10 +46,19 @@ export function CommandPalette() {
   const router = useRouter();
   const [source, setSource] = useState<DataSource>("all");
   const [view, setView] = useState<View | null>(null);
+  const [query, setQuery] = useState("");
+  // Live metric values, only fetched while the palette is open.
+  const { data: metrics } = useSWR<{ catalog: { id: string; label: string; unit: string; current: number | null }[] }>(
+    open ? "/api/alerts" : null,
+    (u: string) => fetch(u).then((r) => r.json()),
+    { revalidateOnFocus: false },
+  );
+  const tickerQuery = /^[A-Za-z][A-Za-z0-9.&-]{0,19}$/.test(query.trim()) ? query.trim().toUpperCase() : null;
 
   function close() {
     setOpen(false);
     setView(null);
+    setQuery("");
   }
 
   function goto(href: string) {
@@ -95,7 +105,7 @@ export function CommandPalette() {
         <Command shouldFilter>
           <div className="flex items-center gap-2 border-b border-border px-1">
             <div className="flex-1">
-              <CommandInput placeholder="Search symbols, pages, or type “help”…" />
+              <CommandInput value={query} onValueChange={setQuery} placeholder="Search symbols, pages, live metrics, or type “help”…" />
             </div>
             <Select value={source} onValueChange={(v) => setSource(v as DataSource)}>
               <SelectTrigger className="mr-1 h-7 w-[120px] text-sm">
@@ -110,6 +120,29 @@ export function CommandPalette() {
           </div>
           <CommandList>
             <CommandEmpty>No results.</CommandEmpty>
+
+            {tickerQuery ? (
+              <CommandGroup heading="Open">
+                <CommandItem forceMount value={`open research ${tickerQuery}`} onSelect={() => goto(`/research/${encodeURIComponent(tickerQuery)}`)}>
+                  <span className="font-medium">Research {tickerQuery}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">quote, risk &amp; events, fundamentals</span>
+                </CommandItem>
+              </CommandGroup>
+            ) : null}
+
+            {metrics?.catalog ? (
+              <CommandGroup heading="Live metrics">
+                {METRIC_COMMANDS.flatMap((m) => {
+                  const c = metrics.catalog.find((x) => x.id === m.id);
+                  return c ? [{ m, c }] : [];
+                }).map(({ m, c }) => (
+                  <CommandItem key={m.id} value={`${c.label} ${m.id.replace(/_/g, " ")}`} onSelect={() => goto(m.href)}>
+                    <span className="font-medium">{c.label}</span>
+                    <span className="ml-2 tabular-nums text-foreground">{c.current == null ? "n/a" : Number(c.current.toFixed(2)).toLocaleString("en-IN")} {c.current == null ? "" : c.unit}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ) : null}
 
             <CommandGroup heading="Commands">
               <CommandItem onSelect={() => setView({ type: "help" })}>
@@ -207,6 +240,8 @@ function HelpView() {
         </p>
       </div>
       <dl className="space-y-2 text-sm">
+        <Item k="Open" v="Type any ticker (e.g. TCS, AAPL) and pick “Research <ticker>” to open its page." />
+        <Item k="Live metrics" v="Current stress score, VIX, USD/INR, Brent, yields, RBI liquidity and FII flow — select one to jump to its page." />
         <Item k="Commands" v="Help, jump to IPOs / Data feeds." />
         <Item k="Pages" v="Jump straight to any page in the app." />
         <Item k="India symbols — Upstox" v="Type a symbol for a live quote or fundamentals; index names (NIFTY, BANKNIFTY, FINNIFTY) for their option chain." />

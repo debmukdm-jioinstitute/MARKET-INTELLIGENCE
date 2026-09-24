@@ -1,3 +1,6 @@
+"use client";
+
+import { matchMonitor, useMonitors } from "@/hooks/use-monitors";
 import type { NewsItem } from "@/lib/feeds/types";
 
 const SOURCE_LABEL: Record<NewsItem["source"], string> = {
@@ -19,14 +22,17 @@ const SOURCE_LABEL: Record<NewsItem["source"], string> = {
 };
 
 export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: number }) {
+  const { monitors } = useMonitors();
   const slice = items.slice(0, limit);
   if (!slice.length) {
     return <p className="text-sm text-muted-foreground">No headlines pulled yet — retry in a minute.</p>;
   }
   return (
     <ul className="divide-y divide-border">
-      {slice.map((item) => (
-        <li key={item.id} className="py-3">
+      {slice.map((item) => {
+        const hit = matchMonitor(monitors, item.title);
+        return (
+        <li key={item.id} className="py-3 pl-2" style={hit ? { borderLeft: `3px solid ${hit.color}` } : undefined}>
           <a
             href={item.link}
             target="_blank"
@@ -38,9 +44,11 @@ export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: n
           <p className="mt-1 text-sm uppercase tracking-wide text-muted-foreground">
             {SOURCE_LABEL[item.source]}
             {item.publishedAt ? ` · ${item.publishedAt}` : ""}
+            {hit ? <span style={{ color: hit.color }}> · monitor: {hit.keywords.join(", ")}</span> : null}
           </p>
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }
