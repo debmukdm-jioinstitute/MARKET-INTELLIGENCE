@@ -5,6 +5,8 @@ const ITEMS = [
   { href: "/macro/india", label: "India Macro" },
   { href: "/macro/global", label: "Global Data" },
   { href: "/macro/stress", label: "Stress Index" },
+  { href: "/macro/transmission", label: "Transmission Map" },
+  { href: "/macro/scenarios", label: "Scenarios" },
   { href: "/macro/rbi", label: "RBI & Liquidity" },
   { href: "/macro/calendar", label: "Economic Calendar" },
 ];

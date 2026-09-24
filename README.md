@@ -396,6 +396,20 @@ Either way, you get a preview before committing, with the choice to replace your
 
 ---
 
+## 13b. Stress, alerts, brief, transmission & scenarios
+
+| Feature | Path | How it works |
+|---|---|---|
+| **Data health** | `/data/health` | 🟢 Freshness (fresh/stale/failing) and source of every series the 3-hourly collector stores. |
+| **India Macro Stress Index** | `/macro/stress` | 🧮 Hand-weighted 0–100 heuristic over 10 inputs (India/US VIX, USD/INR, US10Y, DXY, Brent, FII flow, NIFTY move, breadth) grouped into 6 signal families. Not fitted or backtested. Snapshot stored every 3h. |
+| **Convergence alerts** | `/macro/stress` | 🧮 A family "fires" at ≥60; 3+ families = high, 4+ = critical. De-duplicated 12h, capped 4/day. |
+| **Daily brief** | `/intelligence/brief` | 🤖 Pre-market (08:15 IST) and post-close (16:00 IST). The LLM may only use a supplied fact sheet; items must cite fact ids and every number must match a fact, else the item is dropped. Falls back to a rules-based brief. Email is opt-in only. |
+| **Alert rules** | `/intelligence/alerts` | 🧮 Users define up to 5 conditions (ALL/ANY) over 16 metrics; checked every 3h; push and/or email; per-rule cooldown. |
+| **Transmission map** | `/macro/transmission` | 🧮 Multi-factor OLS of daily sector returns (NSE index-ETF proxies) on Brent, USD/INR, US10Y (per 10bp) and S&P 500 over ~2y, with t-stats. Most Brent betas are not significant, and R² is low (3–16%) — shown, not hidden. |
+| **Scenario engine** | `/macro/scenarios` | 🧮 Applies user shocks to the betas; rolls up to the user's holdings (US holdings assumed β=1 to S&P plus INR translation). Same-day, history-based estimate — not a forecast. |
+
+---
+
 ## 14. Data sources at a glance
 
 | Provider | Used for |

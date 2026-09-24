@@ -25,6 +25,8 @@ export const NAV_COLUMNS: NavColumn[] = [
       { label: "Global Board", href: "/macro", desc: "Regime-first read across growth, inflation, liquidity." },
       { label: "India Macro", href: "/macro/india", desc: "MOSPI, RBI, and fiscal data on one page." },
       { label: "Stress Index", href: "/macro/stress", desc: "India macro stress score and cross-signal convergence alerts." },
+      { label: "Transmission Map", href: "/macro/transmission", desc: "Measured sector sensitivity to oil, INR, US yields and the S&P.", badge: "NEW" },
+      { label: "Scenarios", href: "/macro/scenarios", desc: "Shock oil, INR or yields and see sector and portfolio impact." },
       { label: "RBI & Liquidity", href: "/macro/rbi", desc: "Policy stance, repo path, and system liquidity." },
       { label: "Currency", href: "/macro/currency", desc: "DXY, USDINR, and cross-currency tape." },
       { label: "Commodities", href: "/macro/commodities", desc: "Crude, gold, and industrial metals." },
