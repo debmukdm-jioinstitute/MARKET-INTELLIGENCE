@@ -1,6 +1,7 @@
 "use client";
 
 import type { MacroRegimeBlock } from "@/lib/macro/types";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -38,14 +39,25 @@ export function RegimeBanner({ regime }: { regime: MacroRegimeBlock }) {
         {regime.signals.map((s) => (
           <li
             key={s.dimension}
-            className="flex items-center gap-3 rounded-lg border border-border/60 bg-background/50 px-3 py-2.5 backdrop-blur-sm"
+            className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/50 px-3 py-2.5 backdrop-blur-sm"
           >
-            <span className="text-lg" aria-hidden>{s.emoji}</span>
-            <div className="min-w-0">
-              <p className="text-sm font-medium">
-                {s.label}: <span className="text-foreground/90">{s.status}</span>
-              </p>
-              <p className="truncate text-sm text-muted-foreground">{s.detail}</p>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-lg shrink-0" aria-hidden>{s.emoji}</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium">
+                    {s.label}: <span className="text-foreground/90">{s.status}</span>
+                  </p>
+                  <MetricInfo
+                    id={s.dimension}
+                    name={`${s.label} Regime Pillar`}
+                    customTitle={`${s.label} (${s.status})`}
+                    details={s.detail}
+                    size="xs"
+                  />
+                </div>
+                <p className="truncate text-sm text-muted-foreground">{s.detail}</p>
+              </div>
             </div>
           </li>
         ))}

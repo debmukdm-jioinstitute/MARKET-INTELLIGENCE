@@ -1,7 +1,7 @@
 "use client";
 
-import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { Panel } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
 import type { YieldPoint } from "@/lib/macro/build-tape";
 import Link from "next/link";
 import {
@@ -30,6 +30,9 @@ export function YieldCurveCard({
     us: us[i]?.value ?? null,
   }));
 
+  const us2y = us.find((u) => u.tenor === "2Y");
+  const us10y = us.find((u) => u.tenor === "10Y");
+
   return (
     <Panel
       title="Yield curve"
@@ -39,10 +42,16 @@ export function YieldCurveCard({
         </Link>
       }
     >
-      <p className="mb-3 flex items-center gap-1 text-sm uppercase tracking-wider text-muted-foreground">
-        India government bonds
-        <MetricExplainer copyKey="yield_in_10y" />
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="flex items-center gap-1 text-sm uppercase tracking-wider text-muted-foreground">
+          India government bonds
+          <MetricInfo
+            id="yield_in_10y"
+            name="India 10Y Benchmark Sovereign G-Sec Yield"
+            size="xs"
+          />
+        </span>
+      </div>
       <ul className="space-y-1 text-sm">
         {india.map((p) => (
           <li key={p.tenor} className="flex items-center justify-between gap-2">
@@ -52,7 +61,13 @@ export function YieldCurveCard({
             </span>
             <span className="flex items-center gap-1 tabular-nums">
               {p.value != null ? `${p.value.toFixed(2)}%` : "—"}
-              <MetricExplainer copyKey={p.copyKey} />
+              <MetricInfo
+                id={`yield_in_${p.tenor.toLowerCase()}`}
+                name={`India ${p.label} Sovereign Benchmark Yield`}
+                value={p.value != null ? `${p.value.toFixed(2)}%` : undefined}
+                sourceOverride={p.source}
+                size="xs"
+              />
             </span>
           </li>
         ))}
@@ -72,18 +87,34 @@ export function YieldCurveCard({
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
-        US 2Y / 10Y (global capital flows)
-        <MetricExplainer copyKey="yield_us_10y" />
-      </p>
-      <div className="mt-1 flex gap-4 text-sm">
-        <span>
-          2Y{" "}
-          <strong>{us.find((u) => u.tenor === "2Y")?.value?.toFixed(2) ?? "—"}%</strong>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+          US 2Y / 10Y (global capital flows)
+          <MetricInfo id="us10y" name="US Treasury Sovereign Curve" size="xs" />
         </span>
-        <span>
-          10Y{" "}
-          <strong>{us.find((u) => u.tenor === "10Y")?.value?.toFixed(2) ?? "—"}%</strong>
+      </div>
+      <div className="mt-1 flex items-center gap-4 text-sm">
+        <span className="flex items-center gap-1">
+          <span>2Y</span>
+          <strong>{us2y?.value != null ? `${us2y.value.toFixed(2)}%` : "—"}</strong>
+          <MetricInfo
+            id="yield_us_2y"
+            name="US 2-Year Treasury Yield (DGS2)"
+            value={us2y?.value != null ? `${us2y.value.toFixed(2)}%` : undefined}
+            sourceOverride={us2y?.source}
+            size="xs"
+          />
+        </span>
+        <span className="flex items-center gap-1">
+          <span>10Y</span>
+          <strong>{us10y?.value != null ? `${us10y.value.toFixed(2)}%` : "—"}</strong>
+          <MetricInfo
+            id="yield_us_10y"
+            name="US 10-Year Benchmark Treasury Yield (DGS10)"
+            value={us10y?.value != null ? `${us10y.value.toFixed(2)}%` : undefined}
+            sourceOverride={us10y?.source}
+            size="xs"
+          />
         </span>
       </div>
     </Panel>

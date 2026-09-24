@@ -4,8 +4,11 @@ import { Bars, Donut, Lines } from "@/components/charts/terminal-charts";
 import { Panel } from "@/components/layout/page-header";
 import { RegimeBanner } from "@/components/macro/regime-banner";
 import type { IndiaMacroHubPayload, MacroMetric, MacroSectionId } from "@/lib/macro/types";
+import type { FieldSource } from "@/lib/feeds/india/types";
 import { sectionMeta } from "@/lib/macro/sections-meta";
+import { MetricInfo } from "@/components/ui/metric-info";
 import { cn } from "@/lib/utils";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 export function MacroSectionView({
@@ -33,7 +36,7 @@ export function MacroSectionView({
           </div>
         </Panel>
         <Panel title="Regime quadrants (historical)">
-          <div className="mb-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
@@ -125,21 +128,69 @@ function InflationHero({ metrics }: { metrics: MacroMetric[] }) {
   const children = momentum?.children ?? [];
   return (
     <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-background p-6">
-      <p className="text-sm uppercase tracking-[0.22em] text-orange-300">INFLATION</p>
+      <div className="flex items-center justify-between pb-1">
+        <p className="text-sm uppercase tracking-[0.22em] text-orange-300 font-bold">INFLATION TELEMETRY</p>
+        <MetricInfo
+          id="cpi_headline"
+          name="Headline Consumer Price Index (CPI)"
+          sourceOverride={headline?.source}
+          value={headline?.value != null ? `${headline.value.toFixed(2)}% y/y` : undefined}
+          size="sm"
+        />
+      </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <HeroStat label="Headline CPI" value={headline?.value} unit="% y/y" />
+        <HeroStat
+          label="Headline CPI"
+          value={headline?.value}
+          unit="% y/y"
+          source={headline?.source}
+          metricId="cpi_headline"
+          hint="MoSPI Official Provisional Print (Base 2024=100)"
+        />
         {children.map((c) => (
-          <HeroStat key={c.id} label={c.label} value={c.value} unit={c.unit} />
+          <HeroStat
+            key={c.id}
+            label={c.label}
+            value={c.value}
+            unit={c.unit}
+            source={c.source ?? momentum?.source}
+            metricId={c.id}
+            hint={c.hint ?? "Annualised price index momentum calculated from MoSPI time series"}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function HeroStat({ label, value, unit }: { label: string; value: number | null | undefined; unit: string }) {
+function HeroStat({
+  label,
+  value,
+  unit,
+  source,
+  metricId,
+  hint,
+}: {
+  label: string;
+  value: number | null | undefined;
+  unit: string;
+  source?: FieldSource;
+  metricId?: string;
+  hint?: string;
+}) {
   return (
     <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="flex items-center gap-1">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <MetricInfo
+          id={metricId ?? label.toLowerCase().replace(/[^a-z0-9_]/g, "_")}
+          name={label}
+          value={value != null ? `${value.toFixed(2)} ${unit}` : undefined}
+          sourceOverride={source}
+          hint={hint}
+          size="xs"
+        />
+      </div>
       <p className="text-3xl tabular-nums text-orange-200">
         {value != null ? value.toFixed(2) : "—"}
         <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
@@ -151,7 +202,17 @@ function HeroStat({ label, value, unit }: { label: string; value: number | null 
 function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <p className="text-sm uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm uppercase tracking-wider text-muted-foreground">{metric.label}</p>
+        <MetricInfo
+          id={metric.id}
+          name={metric.label}
+          value={metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : undefined}
+          sourceOverride={metric.source}
+          hint={metric.hint}
+          size="sm"
+        />
+      </div>
       <p className={cn("mt-1 tabular-nums text-foreground", large ? "text-3xl" : "text-2xl")}>
         {metric.value != null ? metric.value.toFixed(2) : metric.hint ? "↗" : "—"}
         <span className="ml-1 text-sm text-muted-foreground">{metric.unit}</span>
@@ -184,7 +245,21 @@ function MetricBlock({ metric, depth }: { metric: MacroMetric; depth: number }) 
   return (
     <div className={cn(depth > 0 && "ml-4 border-l border-border/50 pl-4")}>
       {depth === 0 && (hasChildren || metric.history.length > 1 || metric.value != null) ? (
-        <Panel title={metric.label}>
+        <Panel
+          title={
+            <div className="flex items-center gap-2">
+              <span>{metric.label}</span>
+              <MetricInfo
+                id={metric.id}
+                name={metric.label}
+                value={metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : undefined}
+                sourceOverride={metric.source}
+                hint={metric.hint}
+                size="xs"
+              />
+            </div>
+          }
+        >
           <MetricBody metric={metric} />
           {hasChildren ? (
             <div className="mt-4 space-y-2">
@@ -204,25 +279,36 @@ function MetricBlock({ metric, depth }: { metric: MacroMetric; depth: number }) 
 }
 
 function MetricBody({ metric, compact }: { metric: MacroMetric; compact?: boolean }) {
-  if (metric.value == null && metric.hint) {
-    return (
-      <a
-        href={metric.source.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex flex-wrap items-center justify-between gap-2 text-sm hover:text-primary"
-      >
-        <span>{metric.label}</span>
-        <span className="text-sm text-muted-foreground">{metric.hint}</span>
-      </a>
-    );
-  }
   return (
-    <div className={cn("flex flex-wrap items-baseline justify-between gap-2", compact && "text-sm")}>
-      <span className={compact ? "text-muted-foreground" : "font-medium"}>{metric.label}</span>
-      <span className="tabular-nums">
-        {metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : "—"}
+    <div className={cn("flex flex-wrap items-center justify-between gap-2", compact && "text-sm")}>
+      <span className={cn("flex items-center gap-1.5", compact ? "text-muted-foreground" : "font-medium")}>
+        <span>{metric.label}</span>
+        <MetricInfo
+          id={metric.id}
+          name={metric.label}
+          value={metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : undefined}
+          sourceOverride={metric.source}
+          hint={metric.hint}
+          size="xs"
+        />
       </span>
+      <div className="flex items-center gap-2">
+        <span className="tabular-nums">
+          {metric.value != null ? `${metric.value.toFixed(2)} ${metric.unit}` : "—"}
+        </span>
+        {metric.hint ? (
+          <a
+            href={metric.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline flex items-center gap-0.5"
+            title={`Open official ${metric.source.provider} source`}
+          >
+            <span>{metric.hint}</span>
+            <ExternalLink className="size-3" />
+          </a>
+        ) : null}
+      </div>
     </div>
   );
 }

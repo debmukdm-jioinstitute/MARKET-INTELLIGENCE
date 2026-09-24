@@ -131,7 +131,373 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
   },
 
   // Macroeconomics
-  cpi: {
+  
+  // Macroeconomic Detailed Indicators
+  cpi_headline: {
+    id: "cpi_headline",
+    name: "Headline CPI Inflation (Consumer Price Index)",
+    category: "Macroeconomics",
+    provider: "MOSPI (Ministry of Statistics and Programme Implementation)",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Laspeyres formula weighted basket measuring price changes of retail goods and services consumed by rural and urban households (Base 2024=100): Index = [Σ (P_t × Q_0) / Σ (P_0 × Q_0)] × 100. Headline YoY % is calculated against the corresponding month of previous year.",
+    laymanExplanation:
+      "The official measure of everyday inflation in India. Sourced from MoSPI, it tracks what a standard basket of groceries, utilities, rent, and household services costs compared to last year.",
+    utility:
+      "Primary monetary policy anchor for the RBI (target: 4% ± 2%). High CPI forces interest rate hikes, while lower CPI allows liquidity easing.",
+  },
+  cpi_core_proxy: {
+    id: "cpi_core_proxy",
+    name: "Core CPI Inflation (ex-Food & Fuel)",
+    category: "Macroeconomics",
+    provider: "MOSPI / Economic Intelligence Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Computed by stripping out volatile Food & Beverages (39.06% weight) and Fuel & Light (6.84% weight) from the headline Consumer Price Index basket.",
+    laymanExplanation:
+      "Underlying sticky inflation in services, housing, clothing, and manufactured goods. It strips out food and petrol price swings to reveal true long-term inflation pressure.",
+    utility:
+      "Monitored closely by the RBI MPC to gauge whether inflation expectations have become unanchored in the broader economy.",
+  },
+  cpi_food: {
+    id: "cpi_food",
+    name: "Food Inflation (Consumer Food Price Index - CFPI)",
+    category: "Macroeconomics",
+    provider: "MOSPI",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Weighted retail price movement of all food items in the CPI basket (cereals, pulses, vegetables, milk, edible oils, meat, sugar) representing 39.06% of the national CPI.",
+    laymanExplanation:
+      "How much kitchen grocery bills have increased over the past year. Spikes in vegetable or pulse prices directly impact this number.",
+    utility:
+      "Determines rural purchasing power and headline CPI volatility; high food inflation hurts discretionary consumption.",
+  },
+  cpi_basket: {
+    id: "cpi_basket",
+    name: "CPI Basket Group Decomposition",
+    category: "Macroeconomics",
+    provider: "MOSPI Official Weights",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Six official MoSPI consumption divisions: Food & Beverages (39.06%), Miscellaneous Services (35.12%), Housing (10.07%), Fuel & Light (6.84%), Clothing & Footwear (6.53%), Pan & Tobacco (2.38%).",
+    laymanExplanation:
+      "The breakdown of every ₹100 spent by an average Indian household across essential categories.",
+    utility:
+      "Reveals which specific sector is driving price increases (e.g. housing rent vs food supply shocks).",
+  },
+  infl_momentum: {
+    id: "infl_momentum",
+    name: "CPI Inflation Momentum Engine",
+    category: "Macroeconomics",
+    provider: "MoSPI Time Series / Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Compound annual growth rate of recent index prints: 1M Annualised = ((P_t / P_{t-1})^12 - 1) × 100; 3M Annualised = ((P_t / P_{t-3})^4 - 1) × 100; 6M Annualised = ((P_t / P_{t-6})^2 - 1) × 100.",
+    laymanExplanation:
+      "Shows if price increases are accelerating right now, without being distorted by base effects from 12 months ago.",
+    utility:
+      "Institutional macro traders use momentum to identify inflection points in inflation months before official YoY numbers reflect them.",
+  },
+  mom_1m: {
+    id: "mom_1m",
+    name: "1-Month Annualised CPI Momentum",
+    category: "Macroeconomics",
+    provider: "MoSPI / Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Annualised rate of the single month CPI index jump: ((Index_t / Index_{t-1})^12 - 1) × 100.",
+    laymanExplanation:
+      "If the pace of price increases over just the last month continued for a full year, what inflation would be.",
+    utility:
+      "Ultra-short high-frequency pulse of current retail price pressure.",
+  },
+  mom_3m: {
+    id: "mom_3m",
+    name: "3-Month Annualised CPI Momentum",
+    category: "Macroeconomics",
+    provider: "MoSPI / Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Quarterly annualised momentum: ((Index_t / Index_{t-3})^4 - 1) × 100.",
+    laymanExplanation:
+      "The three-month moving momentum of consumer prices scaled to an annual rate.",
+    utility:
+      "Smooths out 1-month seasonal anomalies while catching policy shifts faster than headline YoY.",
+  },
+  mom_6m: {
+    id: "mom_6m",
+    name: "6-Month Annualised CPI Momentum",
+    category: "Macroeconomics",
+    provider: "MoSPI / Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Half-yearly annualised momentum: ((Index_t / Index_{t-6})^2 - 1) × 100.",
+    laymanExplanation:
+      "The medium-term trajectory of retail price growth over the past two quarters.",
+    utility:
+      "Core input for central bank medium-term inflation forecasting.",
+  },
+  mom_yoy: {
+    id: "mom_yoy",
+    name: "YoY CPI Inflation Run-Rate",
+    category: "Macroeconomics",
+    provider: "MoSPI / Computed",
+    defaultUrl: "https://www.mospi.gov.in/cpi",
+    calculation:
+      "Twelve-month point-to-point change: ((Index_t / Index_{t-12}) - 1) × 100.",
+    laymanExplanation:
+      "The official headline inflation rate over the past full calendar year.",
+    utility:
+      "Directly referenced in RBI policy statements and government wage dearness allowances.",
+  },
+  in_wpi: {
+    id: "in_wpi",
+    name: "Wholesale Price Index (WPI) Inflation",
+    category: "Macroeconomics",
+    provider: "Office of the Economic Adviser (DPIIT)",
+    defaultUrl: "https://eaindustry.nic.in/",
+    calculation:
+      "Laspeyres formula tracking bulk wholesale transaction prices before retail markups (Base 2011-12=100, transitioning to 2022-23=100).",
+    laymanExplanation:
+      "Inflation at the factory and wholesale mandi gate before goods reach shops. Measures producer input costs.",
+    utility:
+      "Leading indicator for corporate gross margins and future consumer retail inflation.",
+  },
+  wpi_decomp: {
+    id: "wpi_decomp",
+    name: "WPI Sectoral Decomposition",
+    category: "Macroeconomics",
+    provider: "Office of the Economic Adviser (DPIIT)",
+    defaultUrl: "https://eaindustry.nic.in/",
+    calculation:
+      "Three primary groups: Manufactured Products (64.23% weight), Primary Articles (22.62% weight), and Fuel & Power (13.15% weight).",
+    laymanExplanation:
+      "Dissects producer price inflation into raw materials, factory manufactured goods, and industrial energy inputs.",
+    utility:
+      "Essential for equity analysts tracking manufacturing margins and input cost inflation across sectors.",
+  },
+  crude_infl: {
+    id: "crude_infl",
+    name: "Brent Crude Spot (India Inflation Transmission)",
+    category: "Commodities & FX",
+    provider: "FRED / ICE / Yahoo Finance",
+    defaultUrl: "https://fred.stlouisfed.org/series/DCOILBRENTEU",
+    calculation:
+      "Spot settlement price per barrel in USD of North Sea Brent blend, the global benchmark for international crude trade.",
+    laymanExplanation:
+      "Price of crude oil. India imports over 85% of its crude requirements, so higher crude directly increases fuel and fertilizer subsidies.",
+    utility:
+      "Every $10/bbl rise in Brent typically adds ~30-40 bps to India CPI and expands current account deficit by ~$12-14 billion.",
+  },
+  rbi_repo: {
+    id: "rbi_repo",
+    name: "RBI Monetary Policy Repo Rate",
+    category: "Central Banking",
+    provider: "Reserve Bank of India (Monetary Policy Committee)",
+    defaultUrl: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
+    calculation:
+      "The rate at which the Reserve Bank lends overnight liquidity to commercial banks against government securities under the Liquidity Adjustment Facility (LAF).",
+    laymanExplanation:
+      "India's benchmark policy interest rate. Determines retail loan borrowing costs and bank fixed deposit rates across the country.",
+    utility:
+      "The primary tool through which RBI tightens or eases monetary conditions.",
+  },
+  yield_in_3m: {
+    id: "yield_in_3m",
+    name: "India 3-Month Sovereign T-Bill Yield",
+    category: "Central Banking",
+    provider: "Financial Benchmarks India (FBIL) / CCIL",
+    defaultUrl: "https://www.fbil.org.in/",
+    calculation:
+      "Cutoff yield at primary RBI weekly auction of 91-day Government of India Treasury Bills.",
+    laymanExplanation:
+      "What the government pays to borrow for 3 months. Anchors liquid mutual fund returns and bank CD rates.",
+    utility:
+      "Measures immediate short-term liquidity conditions and policy rate transmission.",
+  },
+  yield_in_1y: {
+    id: "yield_in_1y",
+    name: "India 1-Year Sovereign Treasury Yield",
+    category: "Central Banking",
+    provider: "Financial Benchmarks India (FBIL) / CCIL",
+    defaultUrl: "https://www.fbil.org.in/",
+    calculation:
+      "Secondary market trading yield of 364-day Treasury bills traded on RBI NDS-OM.",
+    laymanExplanation:
+      "The 1-year risk-free sovereign rate used by corporate treasuries for short-term debt pricing.",
+    utility:
+      "Indicator of near-term RBI monetary policy rate cut or hike expectations.",
+  },
+  yield_in_2y: {
+    id: "yield_in_2y",
+    name: "India 2-Year Sovereign G-Sec Yield",
+    category: "Macroeconomics",
+    provider: "CCIL / RBI NDS-OM",
+    defaultUrl: "https://www.fbil.org.in/",
+    calculation:
+      "Yield to maturity of short-medium term sovereign dated securities.",
+    laymanExplanation:
+      "Borrowing cost for the government over a 2-year horizon.",
+    utility:
+      "Policy-sensitive tenor reflecting market consensus on central bank trajectory.",
+  },
+  yield_in_5y: {
+    id: "yield_in_5y",
+    name: "India 5-Year Sovereign G-Sec Yield",
+    category: "Macroeconomics",
+    provider: "CCIL / RBI NDS-OM",
+    defaultUrl: "https://www.fbil.org.in/",
+    calculation:
+      "Yield to maturity of the benchmark 5-year dated government bond.",
+    laymanExplanation:
+      "Medium-term government bond yield that directly sets the benchmark for 5-year AAA corporate bond spreads.",
+    utility:
+      "Key pricing benchmark for commercial bank corporate lending and infrastructure term financing.",
+  },
+  yield_in_10y: {
+    id: "yield_in_10y",
+    name: "India 10-Year Benchmark G-Sec Sovereign Yield",
+    category: "Macroeconomics",
+    provider: "RBI NDS-OM / CCIL / FRED (OECD)",
+    defaultUrl: "https://fred.stlouisfed.org/series/INDIRLTLT01STM",
+    calculation:
+      "Yield to maturity of India's most actively traded 10-year dated sovereign bond on RBI NDS-OM.",
+    laymanExplanation:
+      "The definitive sovereign benchmark borrowing rate of India. Risk-free anchor for the entire Indian bond and equity valuation universe.",
+    utility:
+      "Used as the risk-free rate (Rf) in CAPM and DCF equity valuation models.",
+  },
+  yield_in_30y: {
+    id: "yield_in_30y",
+    name: "India 30-Year Ultra-Long G-Sec Yield",
+    category: "Macroeconomics",
+    provider: "CCIL / RBI NDS-OM",
+    defaultUrl: "https://www.fbil.org.in/",
+    calculation:
+      "Yield to maturity of long-duration dated sovereign bonds favored by pension funds and insurance companies.",
+    laymanExplanation:
+      "Borrowing cost for the government for 30 years. Sourced by EPFO and LIC to match multi-decade annuity liabilities.",
+    utility:
+      "Reflects ultra-long inflation expectations and term premium for capital in India.",
+  },
+  in_bank_credit: {
+    id: "in_bank_credit",
+    name: "Scheduled Commercial Banks Credit Growth",
+    category: "Central Banking",
+    provider: "Reserve Bank of India (Fortnightly Form A)",
+    defaultUrl: "https://www.rbi.org.in/scripts/BS_ViewWSS.aspx",
+    calculation:
+      "Year-on-year percentage growth in total outstanding bank loans disbursed by scheduled commercial banks.",
+    laymanExplanation:
+      "How fast loans to businesses, home buyers, and consumers are expanding across Indian banks.",
+    utility:
+      "Leading indicator of private capital expenditure and economic momentum; healthy credit growth typically runs at 1.5x GDP.",
+  },
+  in_bank_deposit: {
+    id: "in_bank_deposit",
+    name: "Scheduled Commercial Banks Deposit Growth",
+    category: "Central Banking",
+    provider: "Reserve Bank of India (Fortnightly Form A)",
+    defaultUrl: "https://www.rbi.org.in/scripts/BS_ViewWSS.aspx",
+    calculation:
+      "Year-on-year percentage growth in aggregate demand and time deposits held with commercial banks.",
+    laymanExplanation:
+      "How fast household savings and corporate deposits in bank accounts are accumulating.",
+    utility:
+      "When credit growth significantly exceeds deposit growth, banks face funding crunches and must raise deposit interest rates.",
+  },
+  gst_monthly: {
+    id: "gst_monthly",
+    name: "Gross GST (Goods and Services Tax) Revenue",
+    category: "Macroeconomics",
+    provider: "Ministry of Finance / GST Council",
+    defaultUrl: "https://gstcouncil.gov.in/",
+    calculation:
+      "Total gross indirect tax collected under CGST, SGST, IGST, and GST Compensation Cess in a calendar month.",
+    laymanExplanation:
+      "Monthly consumption tax collected across India on goods and services. A reading above ₹1.75 lakh crore indicates strong retail trade and compliance.",
+    utility:
+      "The cleanest high-frequency gauge of formal economic transaction volume across India.",
+  },
+  govt_capex: {
+    id: "govt_capex",
+    name: "Central Government Capital Expenditure (Capex)",
+    category: "Macroeconomics",
+    provider: "Controller General of Accounts (CGA)",
+    defaultUrl: "https://cga.nic.in/",
+    calculation:
+      "Actual budgetary expenditure incurred by the Union Government on building physical infrastructure (roads, railways, defense, ports).",
+    laymanExplanation:
+      "Money spent directly by the government on building roads, bridges, railway tracks, and airports.",
+    utility:
+      "High government capex crowds in private sector investment and powers revenue growth for engineering, steel, and cement companies.",
+  },
+  fiscal_deficit: {
+    id: "fiscal_deficit",
+    name: "Union Fiscal Deficit (% of Budget Target / GDP)",
+    category: "Macroeconomics",
+    provider: "Ministry of Finance / CGA",
+    defaultUrl: "https://cga.nic.in/",
+    calculation:
+      "The gap between total non-debt receipts and total expenditure of the Central Government, expressed as % of GDP.",
+    laymanExplanation:
+      "How much more money the government spent than it collected in taxes, requiring borrowing to cover.",
+    utility:
+      "Determines sovereign borrowing bond supply. Lower deficit reduces government bond supply and keeps bond yields low.",
+  },
+  upi_volume: {
+    id: "upi_volume",
+    name: "UPI Digital Transactions Volume",
+    category: "Macroeconomics",
+    provider: "National Payments Corporation of India (NPCI)",
+    defaultUrl: "https://www.npci.org.in/what-we-do/upi/product-statistics",
+    calculation:
+      "Total monthly count of peer-to-peer (P2P) and peer-to-merchant (P2M) transactions settled over the Unified Payments Interface.",
+    laymanExplanation:
+      "The number of QR code and mobile digital payments made by Indians every month (currently over 15 billion transactions).",
+    utility:
+      "Real-time indicator of retail consumer velocity and financial formalization.",
+  },
+  auto_sales: {
+    id: "auto_sales",
+    name: "Automobile Domestic Passenger Sales",
+    category: "Macroeconomics",
+    provider: "Society of Indian Automobile Manufacturers (SIAM)",
+    defaultUrl: "https://www.siam.in/",
+    calculation:
+      "Monthly factory dispatches of passenger vehicles, two-wheelers, and commercial vehicles to dealerships.",
+    laymanExplanation:
+      "Number of cars, bikes, and trucks sold each month. Sourced from SIAM.",
+    utility:
+      "Discretionary consumption bellwether. Two-wheeler sales reflect rural health; commercial vehicles reflect industrial freight demand.",
+  },
+  unemp_overall: {
+    id: "unemp_overall",
+    name: "PLFS All-India Unemployment Rate",
+    category: "Macroeconomics",
+    provider: "MoSPI (Periodic Labour Force Survey)",
+    defaultUrl: "https://www.mospi.gov.in/",
+    calculation:
+      "Percentage of unemployed persons in the total labour force under Current Weekly Status (CWS) or Usual Status (ps+ss).",
+    laymanExplanation:
+      "The proportion of people actively looking for work who cannot find employment.",
+    utility:
+      "Measures labour market health, wage bargaining power, and consumer income security.",
+  },
+  epfo_payroll: {
+    id: "epfo_payroll",
+    name: "EPFO Monthly Net Payroll Additions",
+    category: "Macroeconomics",
+    provider: "Employees' Provident Fund Organisation (Ministry of Labour)",
+    defaultUrl: "https://www.epfindia.gov.in/",
+    calculation:
+      "Net increase in formal EPFO members (first-time entrants minus exits plus re-entrants) enrolled with retirement provident fund accounts.",
+    laymanExplanation:
+      "Count of new formal salaried jobs created each month in India's organized corporate sector.",
+    utility:
+      "Official gauge of formalization and white/blue-collar job creation in enterprises with 20+ employees.",
+  },
+cpi: {
     id: "cpi",
     name: "Consumer Price Index (CPI) Inflation",
     category: "Macroeconomics",
@@ -925,19 +1291,90 @@ export const METRICS_CATALOG: Record<string, MetricDefinition> = {
   },
 };
 
+const ALIAS_MAP: Record<string, string> = {
+  cpi_headline: "cpi_headline",
+  cpi_core: "cpi_core_proxy",
+  cpi_cfpi: "cpi_food",
+  rbi_repo: "rbi_repo",
+  repo_rate: "repo",
+  policy_repo: "repo",
+  gsec10y: "gsec10y",
+  yield_in_10y: "yield_in_10y",
+  net_liquidity: "liquidity",
+  fx: "fx_reserves",
+  in_wpi: "in_wpi",
+  brent: "brent",
+  usd_inr: "usdinr",
+};
+
 export function getMetric(id: string): MetricDefinition {
   const normalized = id.toLowerCase().replace(/[^a-z0-9_]/g, "");
-  return (
-    METRICS_CATALOG[normalized] ??
-    METRICS_CATALOG[id] ?? {
+  const targetId = ALIAS_MAP[normalized] ?? ALIAS_MAP[id] ?? normalized;
+
+  if (METRICS_CATALOG[targetId]) return METRICS_CATALOG[targetId];
+  if (METRICS_CATALOG[id]) return METRICS_CATALOG[id];
+
+  // Specific dynamic matches for groups
+  if (id.startsWith("cpi_grp_")) {
+    return {
       id,
-      name: id.toUpperCase(),
-      category: "Market Internals",
-      provider: "Official Exchange / Regulatory Feed",
-      defaultUrl: "https://www.nseindia.com",
-      calculation: "Official regulatory calculation defined by relevant exchange authorities.",
-      laymanExplanation: "Real-time market metric pulled from official data streams.",
-      utility: "Used for institutional investment analysis and market surveillance.",
-    }
-  );
+      name: "CPI Basket Division",
+      category: "Macroeconomics",
+      provider: "MoSPI Official Weights",
+      defaultUrl: "https://www.mospi.gov.in/cpi",
+      calculation: "Division weight and monthly index calculated by the National Statistical Office (NSO), MoSPI.",
+      laymanExplanation: "Official commodity and services consumption group in the All-India Consumer Price Index basket.",
+      utility: "Deconstructs headline inflation to isolate sector-specific price pressures.",
+    };
+  }
+
+  if (id.startsWith("wpi_")) {
+    return {
+      id,
+      name: "WPI Component",
+      category: "Macroeconomics",
+      provider: "Office of the Economic Adviser, DPIIT",
+      defaultUrl: "https://eaindustry.nic.in/",
+      calculation: "Wholesale price movement tracked by DPIIT, Ministry of Commerce and Industry.",
+      laymanExplanation: "Factory-gate and wholesale commodity price index tracking producer input costs.",
+      utility: "Leading indicator of corporate profit margins and supply-chain cost pass-through.",
+    };
+  }
+
+  if (id.startsWith("hf_")) {
+    return {
+      id,
+      name: "High-Frequency Economic Pulse",
+      category: "Macroeconomics",
+      provider: "MoSPI / Industry Associations / S&P Global",
+      defaultUrl: "https://www.mospi.gov.in/",
+      calculation: "Real-time or monthly physical volume and activity pulse tracking economic activity.",
+      laymanExplanation: "High-frequency operational pulse indicator reflecting real-time physical momentum.",
+      utility: "Enables real-time nowcasting of Indian GDP growth weeks ahead of quarterly statistics.",
+    };
+  }
+
+  if (id.startsWith("yield_in_")) {
+    return {
+      id,
+      name: "India Sovereign G-Sec Yield",
+      category: "Central Banking",
+      provider: "Financial Benchmarks India (FBIL) / CCIL",
+      defaultUrl: "https://www.fbil.org.in/",
+      calculation: "Secondary market trading yield of Government of India sovereign securities traded on NDS-OM.",
+      laymanExplanation: "The risk-free sovereign interest rate for this specific bond maturity.",
+      utility: "Forms the risk-free term structure used to price loans, bonds, and equities across India.",
+    };
+  }
+
+  return {
+    id,
+    name: id.toUpperCase().replace(/_/g, " "),
+    category: "Macroeconomics",
+    provider: "Official Macro / Exchange Feed",
+    defaultUrl: "https://www.mospi.gov.in/",
+    calculation: "Official calculation defined by relevant statistical or financial authorities.",
+    laymanExplanation: "Real-time economic or market metric pulled from official data streams.",
+    utility: "Used for institutional investment analysis and macroeconomic surveillance.",
+  };
 }
