@@ -193,6 +193,16 @@ export const SCANNERS: ScannerDef[] = [
     test: (b, _d, i) => (b[i].v > 0 && b[i].v <= minOf(b, "v", i - 4, i) ? "Volume dry-up" : null),
   },
 
+  // ---- Research-validated ----
+  {
+    id: "dip-uptrend",
+    label: "Oversold dip in an uptrend",
+    description:
+      "RSI(14) below 30 while the price is still above its 200-day average. The only rule that survived out-of-sample testing (see the research note on the Backtesting page); hold 3–5 sessions.",
+    bias: "buy",
+    test: (b, d, i) => (d.rsi[i] < 30 && b[i].c > d.sma200[i] ? `RSI ${f(d.rsi[i])} above 200DMA ${f(d.sma200[i], 1)}` : null),
+  },
+
   // ---- Harder scanners ----
   {
     id: "vcp",

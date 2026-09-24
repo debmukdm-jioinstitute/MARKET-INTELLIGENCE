@@ -129,6 +129,53 @@ export function BacktestDashboard() {
         </div>
       </Panel>
 
+
+      <Panel title="Edge research: what survived out-of-sample" subtitle="Research run of 25 Sep 2026 · scripts/edge-search.ts and scripts/edge-holdout.ts in the repository">
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            <span className="font-semibold text-foreground">Search.</span> 648 scanner, scanner+filter and scanner-pair rules were tested at 1- and 5-session horizons on 5 years of Nifty 500 data, measured against the same-day average stock so market direction cannot fake an edge. Rules were ranked on the first 60% of dates; the 40 strongest were then judged on the untouched last 40% with a multiple-testing threshold.
+          </p>
+          <p>
+            <span className="font-semibold text-foreground">Result: 0 of 40 survived.</span> 145 rules looked significant in training (about 42 would by chance alone), but their effects mostly shrank to nothing in testing. The consistent pattern is that strength and volume-spike signals slightly underperform over the next 1–5 sessions, by less than the roughly 0.3% round-trip cost of trading them.
+          </p>
+          <p>
+            <span className="font-semibold text-foreground">One rule held up.</span> "Oversold dip in an uptrend" (RSI below 30 while above the 200-day average), checked on 2017–2022 data the search never used, and again on 2022–2026:
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="px-2 py-1 font-medium">Window</th>
+                  <th className="px-2 py-1 font-medium">Hold</th>
+                  <th className="px-2 py-1 text-right font-medium">Excess vs avg stock</th>
+                  <th className="px-2 py-1 text-right font-medium">t-stat</th>
+                  <th className="px-2 py-1 text-right font-medium">Net of 0.3% cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["2017–2022 (unseen by search)", "3 sessions", "+0.92%", "4.0", "+0.62%"],
+                  ["2017–2022 (unseen by search)", "5 sessions", "+1.04%", "3.1", "+0.74%"],
+                  ["2022–2026", "3 sessions", "+0.54%", "3.7", "+0.24%"],
+                  ["2022–2026", "5 sessions", "+0.58%", "2.8", "+0.28%"],
+                ].map((r, i) => (
+                  <tr key={i} className="border-t border-border/50">
+                    <td className="px-2 py-1.5">{r[0]}</td>
+                    <td className="px-2 py-1.5">{r[1]}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums text-emerald-600">{r[2]}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">{r[3]}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">{r[4]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <span className="font-semibold text-foreground">Read this cautiously.</span> The edge is modest, fires about 3 times a day across 500 stocks, and clusters in market sell-offs. The older window is flattered by survivorship (stocks that kept falling were delisted and are missing), and the recent net-of-cost figure is small. It is a hypothesis that has survived three tests, not a proven strategy.
+          </p>
+        </div>
+      </Panel>
+
       <p className="text-xs text-muted-foreground">
         {run.method} Signals cluster in time and across stocks, so they are not independent trades; a positive edge over a single two-year window is not evidence of a durable strategy. Research and education only — not investment advice.
       </p>
