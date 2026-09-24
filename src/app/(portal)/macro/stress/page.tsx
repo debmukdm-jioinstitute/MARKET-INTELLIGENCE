@@ -4,6 +4,7 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import type { AlertRow, StressPoint } from "@/lib/stress/store";
 import type { StressResult } from "@/lib/stress/compute";
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
 import useSWR from "swr";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -161,6 +162,7 @@ export default function StressIndexPage() {
           </Panel>
 
           <p className="text-xs text-muted-foreground">
+            <Link href="/macro/stress/backtest" className="text-blue-600 hover:underline">See how it has done historically →</Link>{" "}
             Methodology: a hand-weighted heuristic, not a fitted or backtested model. Bands: &lt;25 calm · 25–45 normal · 45–65 elevated · 65–80 high · 80+ extreme.
             Convergence score = 25 × families stressed + a small intensity boost. Research and education only — not investment advice.
           </p>

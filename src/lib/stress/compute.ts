@@ -50,7 +50,7 @@ export const FAMILY_FIRE_AT = 60;
 /** Minimum share of total weight that must be observable before an index is published. */
 const MIN_COVERAGE = 0.5;
 
-type Spec = {
+export type Spec = {
   id: string;
   family: FamilyId;
   label: string;
@@ -63,7 +63,7 @@ type Spec = {
 
 const pct = (v: number) => `${(v * 100).toFixed(2)}%`;
 
-const SPECS: Spec[] = [
+export const SPECS: Spec[] = [
   { id: "india_vix", family: "volatility", label: "India VIX (level)", weight: 0.12, calm: 11, stressed: 28, read: (d) => d.pulse.indiaVix.value, fmt: (v) => v.toFixed(2) },
   { id: "india_vix_1d", family: "volatility", label: "India VIX 1-day jump", weight: 0.06, calm: 0, stressed: 0.25, read: (d) => d.pulse.indiaVix.changePct ?? null, fmt: pct },
   { id: "us_vix", family: "volatility", label: "US VIX (level)", weight: 0.14, calm: 12, stressed: 35, read: (d) => d.globalRadar.vix?.value ?? null, fmt: (v) => v.toFixed(2) },
