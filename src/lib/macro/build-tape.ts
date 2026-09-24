@@ -1,5 +1,6 @@
 import { fetchFiiDii } from "@/lib/feeds/india/nse-market";
 import { fetchIndiaGsec10y } from "@/lib/feeds/india/india-macro";
+import { getRbiHomeMarket } from "@/lib/collector/rbi-live";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
@@ -74,14 +75,6 @@ const US_FRED: { tenor: string; label: string; series: string; copyKey: string }
   { tenor: "30Y", label: "30Y", series: "DGS30", copyKey: "yield_us_10y" },
 ];
 
-const INDIA_FRED: { tenor: string; label: string; series: string }[] = [
-  { tenor: "3M", label: "3M", series: "INDIRSTCI01STM" },
-  { tenor: "1Y", label: "1Y", series: "INDIRLTLT01STM" },
-  { tenor: "2Y", label: "2Y", series: "INDIRLTLT01STM" },
-  { tenor: "5Y", label: "5Y", series: "INDIRLTLT01STM" },
-  { tenor: "10Y", label: "10Y", series: "INDIRLTLT01STM" },
-  { tenor: "30Y", label: "30Y", series: "INDIRLTLT01STM" },
-];
 
 async function lastFredYield(series: string): Promise<number | null> {
   const pts = await fetchFredSeriesCsv(series);
@@ -137,39 +130,24 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
   const qmap = new Map(quotes.map((q) => [q.symbol, q]));
   for (const u of upstoxQuotes) qmap.set(u.symbol, u);
 
-  const live10y = gsec.field.value != null && gsec.field.value > 0 && gsec.field.value < 25 ? gsec.field.value : 6.78;
-  const spreads: Record<string, number> = {
-    "3M": -0.95,
-    "1Y": -0.60,
-    "2Y": -0.45,
-    "5Y": -0.20,
-    "10Y": 0.0,
-    "30Y": +0.34,
+  // India curve = real RBI-published points (T-bill cut-offs + benchmark G-sec yields from rbi.org.in), no interpolation
+  // or assumed spreads. Tenor is remaining maturity rounded to years. Empty if RBI is unreachable.
+  const rbiHome = await getRbiHomeMarket();
+  const nowYear = new Date().getFullYear();
+  const rbiSource = { provider: "Reserve Bank of India (Market Trends)", url: "https://www.rbi.org.in/", asOf: rbiHome?.asOf };
+  const tenorOf = (label: string) => {
+    if (/91 day/.test(label)) return "3M";
+    if (/182 day/.test(label)) return "6M";
+    if (/364 day/.test(label)) return "1Y";
+    const yr = Number(/(\d{4})$/.exec(label)?.[1]);
+    return Number.isFinite(yr) ? `${yr - nowYear}Y` : label;
   };
-
-  const indiaYieldCurve: YieldPoint[] = INDIA_FRED.map((row) => {
-    let value: number;
-    if (row.tenor === "10Y") {
-      value = live10y;
-    } else {
-      value = Number((live10y + (spreads[row.tenor] ?? 0)).toFixed(2));
-    }
-    const copyKey = row.tenor === "10Y" ? "yield_in_10y" : "yield_in_3m";
-    return {
-      tenor: row.tenor,
-      label: row.label,
-      value,
-      copyKey,
-      source: {
-        provider: row.tenor === "10Y" ? gsec.field.source.provider : "FBIL / CCIL Sovereign G-Sec Benchmark",
-        url:
-          row.tenor === "10Y"
-            ? gsec.field.source.url
-            : "https://www.fbil.org.in/",
-        asOf: gsec.field.source.asOf,
-      },
-    };
-  });
+  const indiaYieldCurve: YieldPoint[] = rbiHome
+    ? [...rbiHome.tbills, ...rbiHome.gsecs].map((p) => {
+        const tenor = tenorOf(p.label);
+        return { tenor, label: /GS (\d{4})/.test(p.label) ? `${tenor} (${/GS (\d{4})/.exec(p.label)![1]})` : tenor, value: p.yield, copyKey: tenor === "10Y" ? "yield_in_10y" : "yield_in_3m", source: rbiSource };
+      })
+    : [];
 
   const usYieldCurve: YieldPoint[] = US_FRED.map((row, idx) => ({
     tenor: row.tenor,

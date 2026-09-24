@@ -44,7 +44,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "10Y G-Sec Sovereign Yield",
       metricKey: "gsec10y",
-      value: pulse?.gsec10y?.value != null ? `${Number(pulse.gsec10y.value).toFixed(2)}%` : "6.78%",
+      value: pulse?.gsec10y?.value != null ? `${Number(pulse.gsec10y.value).toFixed(2)}%` : "n/a",
       dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : "↓",
       dirColor: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "text-rose-400" : "text-emerald-400",
       source: pulse?.gsec10y?.source,
@@ -118,7 +118,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                 {rbiLiquidity?.systemLiquidity?.value ?? "Not available"}
               </span>
               <span className={`text-xs font-semibold ${rbiLiquidity?.systemLiquidity?.change7d ? "text-emerald-400" : "text-muted-foreground"}`}>
-                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI source not yet connected"}
+                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI source unavailable"}
               </span>
             </div>
 
@@ -129,8 +129,10 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                 </span>
                 <MetricInfo metric="fx_reserves" />
               </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">Not available</span>
-              <span className="text-xs text-muted-foreground font-semibold">RBI weekly source not yet connected</span>
+              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">{rbiLiquidity?.fxReserves?.value ?? "Not available"}</span>
+              <span className="text-xs text-muted-foreground font-semibold">
+                {rbiLiquidity?.fxReserves?.asOf ? `IMF/FRED, monthly · as of ${rbiLiquidity.fxReserves.asOf.slice(0, 7)}` : "Source unavailable"}
+              </span>
             </div>
           </div>
         </div>

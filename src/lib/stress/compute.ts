@@ -7,7 +7,7 @@ import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
  * Inputs are grouped into independent signal FAMILIES; convergence = several families stressed at once.
  */
 
-export type FamilyId = "volatility" | "currency" | "rates" | "commodity" | "flows" | "price";
+export type FamilyId = "volatility" | "currency" | "rates" | "liquidity" | "commodity" | "flows" | "price";
 
 export type StressComponent = {
   id: string;
@@ -39,6 +39,7 @@ export const FAMILY_LABEL: Record<FamilyId, string> = {
   volatility: "Volatility",
   currency: "Currency",
   rates: "Rates & dollar",
+  liquidity: "Rupee liquidity",
   commodity: "Commodities",
   flows: "Capital flows",
   price: "Price action",
@@ -70,6 +71,8 @@ const SPECS: Spec[] = [
   // Absolute change in yield points (0.15 = 15bp); the feed's changePct for ^TNX is not reliable.
   { id: "us10y_1d", family: "rates", label: "US 10Y yield 1-day rise (bp)", weight: 0.09, calm: 0, stressed: 0.15, read: (d) => d.globalRadar.us10y?.change ?? null, fmt: (v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(0)}bp` },
   { id: "dxy_1d", family: "rates", label: "Dollar index 1-day rise", weight: 0.05, calm: 0, stressed: 0.01, read: (d) => d.globalRadar.dxy?.changePct ?? null, fmt: pct },
+  // RBI net liquidity injected(+)/absorbed(−), ₹ cr: large surplus (−2 L Cr) = calm, injection of +1 L Cr (deficit) = stressed.
+  { id: "rbi_liquidity", family: "liquidity", label: "RBI net liquidity (injection = deficit)", weight: 0.08, calm: -200000, stressed: 100000, read: (d) => d.rbiLiquidity.systemLiquidity.netCr ?? null, fmt: (v) => `${v < 0 ? "−" : "+"}₹${(Math.abs(v) / 100000).toFixed(2)} L Cr` },
   { id: "brent_1d", family: "commodity", label: "Brent 1-day rise (India is a net oil importer)", weight: 0.09, calm: 0, stressed: 0.04, read: (d) => d.pulse.brent.changePct ?? null, fmt: pct },
   { id: "fii_net", family: "flows", label: "FII net flow today (₹ cr; outflow = stress)", weight: 0.14, calm: 0, stressed: -4000, read: (d) => d.moneyFlow.fii.today, fmt: (v) => `${v >= 0 ? "+" : ""}${Math.round(v).toLocaleString("en-IN")}` },
   { id: "nifty_1d", family: "price", label: "NIFTY 1-day fall", weight: 0.12, calm: 0, stressed: -0.02, read: (d) => d.pulse.nifty.changePct ?? null, fmt: pct },

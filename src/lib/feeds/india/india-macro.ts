@@ -1,3 +1,4 @@
+import { getRbiBenchmark10y } from "@/lib/collector/rbi-live";
 import { feedFetch } from "@/lib/feeds/http";
 import { fetchNseGsecBenchmarkYield } from "@/lib/feeds/india/nse-market";
 import type { FieldSource, MacroRow, QuoteField } from "@/lib/feeds/india/types";
@@ -317,6 +318,15 @@ export async function fetchIndiaGsec10y(): Promise<{
     }
   }
 
+  // RBI-published benchmark yield: real and daily, so preferred over the monthly (lagged) OECD/FRED value. No hardcoded placeholder or invented history.
+  if (value == null) {
+    const rbi = await getRbiBenchmark10y();
+    if (rbi) {
+      value = rbi.value;
+      source = { provider: `Reserve Bank of India (${rbi.label} benchmark)`, url: "https://www.rbi.org.in/", asOf: rbi.asOf };
+    }
+  }
+
   // 3. HISTORICAL & BENCHMARK FALLBACK: OECD / FRED series (INDIRLTLT01STM)
   if (value == null || !history.length) {
     try {
@@ -342,34 +352,6 @@ export async function fetchIndiaGsec10y(): Promise<{
     } catch {
       /* no-op */
     }
-  }
-
-  // Baseline benchmark yield
-  if (value == null) {
-    value = 6.78;
-    change = -0.02;
-    changePct = -0.0029;
-    source = {
-      provider: "Reserve Bank of India / FBIL Benchmark",
-      url: "https://www.fbil.org.in/",
-    };
-  }
-
-  if (!history.length) {
-    history = [
-      { date: "2025-09-01", value: 6.95 },
-      { date: "2025-10-01", value: 6.92 },
-      { date: "2025-11-01", value: 6.88 },
-      { date: "2025-12-01", value: 6.84 },
-      { date: "2026-01-01", value: 6.82 },
-      { date: "2026-02-01", value: 6.85 },
-      { date: "2026-03-01", value: 6.80 },
-      { date: "2026-04-01", value: 6.79 },
-      { date: "2026-05-01", value: 6.77 },
-      { date: "2026-06-01", value: 6.76 },
-      { date: "2026-07-01", value: 6.80 },
-      { date: "2026-08-01", value: 6.78 },
-    ];
   }
 
   return {

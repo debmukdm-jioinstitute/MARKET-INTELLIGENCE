@@ -24,6 +24,7 @@ import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sourc
 import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
+import { getRbiBenchmark10y, getRbiLiquidity } from "@/lib/collector/rbi-live";
 import { latestPoints } from "@/lib/collector/store";
 import type { MacroPoint } from "@/lib/feeds/types";
 
@@ -235,17 +236,38 @@ async function fetchWorldBankIndicator(country: string, code: string, name: stri
   }
 }
 
+/** India FX reserves (excl. gold), monthly, from IMF via FRED. `current: null` if unavailable — never a placeholder. */
+async function fetchIndiaFxReservesRow(): Promise<MacroRow> {
+  const url = "https://fred.stlouisfed.org/series/TRESEGINM052N";
+  const pts = await fetchFredSeriesCsv("TRESEGINM052N").catch(() => []);
+  const cur = pts[pts.length - 1];
+  const prev = pts[pts.length - 2];
+  const c = cur && cur.value > 0 ? cur.value / 1000 : null;
+  const p = prev && prev.value > 0 ? prev.value / 1000 : null;
+  return {
+    id: "IN_FX_RESERVES",
+    indicator: "FX Reserves (excl. gold)",
+    current: c != null ? Number(c.toFixed(1)) : null,
+    previous: p != null ? Number(p.toFixed(1)) : null,
+    unit: "USD bn",
+    direction: c != null && p != null ? (c > p ? "up" : c < p ? "down" : "flat") : "na",
+    history12m: pts.slice(-12).map((x) => ({ date: String(x.date).slice(0, 10), value: x.value / 1000 })),
+    source: { provider: "IMF via FRED (monthly, lagged)", url, asOf: cur ? String(cur.date).slice(0, 10) : undefined },
+  };
+}
+
 function buildPulseAndRadar(
   ymap: Map<string, LiveQuote>,
   breadth: Awaited<ReturnType<typeof fetchNseBreadth>>,
   fredGsec: MacroPoint[] = [],
+  rbi10y: Awaited<ReturnType<typeof getRbiBenchmark10y>> = null,
 ) {
   const upstoxGsec = ymap.get("^NIFTYGS10Y");
   const yahooGsec = qFromYahoo(ymap, "IN10YT=RR");
   const fredLatest = fredGsec[fredGsec.length - 1];
   const fredPrev = fredGsec[fredGsec.length - 2];
 
-  // 1st Priority: Upstox exchange-licensed quote (if yielding % < 25); Fallback: Yahoo; Next: FRED 6.78% benchmark
+  // 1st Priority: Upstox exchange-licensed quote (if yielding % < 25); Fallback: Yahoo; Next: FRED; last: RBI-published benchmark G-sec yield (never a hardcoded number)
   const isYieldPct = (v: number | null | undefined): v is number => v != null && v > 0 && v < 25;
 
   const gsec10y: QuoteField =
@@ -262,19 +284,21 @@ function buildPulseAndRadar(
         }
       : isYieldPct(yahooGsec.value)
         ? { ...yahooGsec, source: { provider: "Yahoo Finance (chart API)", url: yahooFinanceUrl("IN10YT=RR") } }
-        : fredLatest && isYieldPct(fredLatest.value)
+        : rbi10y
+            ? {
+                value: rbi10y.value,
+                change: null,
+                changePct: null,
+                source: { provider: `Reserve Bank of India (${rbi10y.label} benchmark)`, url: "https://www.rbi.org.in/", asOf: rbi10y.asOf },
+              }
+                : fredLatest && isYieldPct(fredLatest.value)
           ? {
               value: fredLatest.value,
               change: fredPrev ? fredLatest.value - fredPrev.value : null,
               changePct: fredPrev ? (fredLatest.value - fredPrev.value) / fredPrev.value : null,
               source: { provider: "FRED (OECD 10Y G-Sec)", url: INDIA_GSEC10Y_FRED_URL, asOf: fredLatest.date },
             }
-          : {
-              value: 6.78,
-              change: null,
-              changePct: null,
-              source: { provider: "Reserve Bank of India / FBIL Benchmark", url: "https://www.fbil.org.in/" },
-            };
+            : { value: null, change: null, changePct: null, source: { provider: "Unavailable", url: "https://www.rbi.org.in/" } };
 
   const pulse = {
     nifty: qFromYahoo(ymap, "^NSEI"),
@@ -325,16 +349,25 @@ function buildPulseAndRadar(
 }
 
 /** Fast path: live quotes + breadth + global radar (no NSE F&O / World Bank). */
+/** ₹ crore → "₹4.34 L Cr absorbed"/"injected" (RBI convention: + injection, − absorption). */
+function fmtLakhCr(cr: number, delta = false): string {
+  const lakh = Math.abs(cr) / 100_000;
+  const amt = `₹${lakh.toFixed(2)} L Cr`;
+  if (delta) return `${cr >= 0 ? "+" : "−"}${amt}`;
+  return cr < 0 ? `${amt} absorbed (surplus)` : `${amt} injected (deficit)`;
+}
+
 export async function buildIndiaDashboardQuick(): Promise<
   Pick<IndiaDashboardPayload, "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact">
 > {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [ymap, breadth, fredGsec] = await Promise.all([
+  const [ymap, breadth, fredGsec, rbi10y] = await Promise.all([
     buildLiveQuoteMap(symbols),
     fetchNseBreadth(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
+    getRbiBenchmark10y(),
   ]);
-  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10y);
   return { fetchedAt: new Date().toISOString(), pulse, globalRadar, indiaImpact };
 }
 
@@ -374,18 +407,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     fetchMospiMacro().catch(() => []),
     fetchIndiaGsec10y(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
-    fetchWorldBankIndicator("IN", "FI.RES.TOTL.CD", "FX Reserves", "USD bn")
-      .then(scaleFxReservesRow)
-      .then((row) => ({
-        ...row,
-        current: 704.88,
-        previous: 700.07,
-        source: {
-          provider: "Reserve Bank of India (WSS)",
-          url: "https://www.rbi.org.in/",
-          asOf: new Date().toISOString(),
-        },
-      })),
+    fetchIndiaFxReservesRow(),
     fetchIndiaIipRow(),
     fetchIndiaWpiRow(),
     fetchIndiaDepositRow(),
@@ -393,7 +415,8 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     fetchIndiaRepoRow(),
   ]);
 
-  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec);
+  const rbi10yFull = await getRbiBenchmark10y();
+  const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10yFull);
   if (gsecBundle.field.value != null) {
     pulse.gsec10y = {
       value: gsecBundle.field.value,
@@ -473,6 +496,13 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
   const diiNet = parseCr(diiRow?.netValue);
 
   // RBI policy rates: scraped daily by the collector (src/lib/collector/sources/rbi.ts); hardcoded value is the fallback.
+  const [rbiLiq, fxPts] = await Promise.all([getRbiLiquidity(), latestPoints(["india_fx_reserves_ex_gold"])]);
+  let fxReservePt: { value: number; date: string } | null = fxPts[0] ? { value: fxPts[0].value, date: fxPts[0].date } : null;
+  if (!fxReservePt) {
+    const pts = await fetchFredSeriesCsv("TRESEGINM052N").catch(() => []);
+    const last = pts[pts.length - 1];
+    if (last && last.value > 0) fxReservePt = { value: last.value / 1000, date: String(last.date).slice(0, 10) };
+  }
   const rbiPoints = new Map((await latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"])).map((p) => [p.id, p.value]));
   const pct = (id: string, fallback: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : fallback);
 
@@ -527,16 +557,26 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
         },
         {
           label: "10Y G-Sec (live)",
-          value: pulse.gsec10y.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : "6.78%",
+          value: pulse.gsec10y.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : null,
           source: pulse.gsec10y.source,
         },
       ],
-      // No live RBI liquidity source is wired yet (needs RBI DBIE / WSS). Deliberately null rather than a placeholder figure.
+      // RBI "Money Market Operations": net liquidity injected(+)/absorbed(−). Null (shown as "Not available") if RBI is unreachable.
       systemLiquidity: {
-        value: null,
-        change7d: null,
+        netCr: rbiLiq?.netCr ?? null,
+        value: rbiLiq ? fmtLakhCr(rbiLiq.netCr) : null,
+        change7d: rbiLiq?.prev != null ? fmtLakhCr(rbiLiq.netCr - rbiLiq.prev, true) : null,
         trend30d: [],
-        source: { provider: "Reserve Bank of India (source not yet connected)", url: "https://www.rbi.org.in/" },
+        source: {
+          provider: "Reserve Bank of India (Money Market Operations)",
+          url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx",
+          asOf: rbiLiq?.date,
+        },
+      },
+      fxReserves: {
+        value: fxReservePt ? `$${fxReservePt.value.toFixed(1)} B (excl. gold)` : null,
+        asOf: fxReservePt?.date ?? null,
+        source: { provider: "IMF via FRED (monthly, lagged)", url: "https://fred.stlouisfed.org/series/TRESEGINM052N", asOf: fxReservePt?.date },
       },
     },
     moneyFlow: {

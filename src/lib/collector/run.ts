@@ -6,9 +6,11 @@ import { cboeVix } from "./sources/cboe";
 import { cftc } from "./sources/cftc";
 import { damodaran } from "./sources/damodaran";
 import { ecb } from "./sources/ecb";
+import { fredReserves } from "./sources/fred-reserves";
 import { rbi } from "./sources/rbi";
+import { rbiMarket } from "./sources/rbi-market";
 
-export const COLLECTORS: Collector[] = [rbi, cboeVix, cftc, bls, ecb, amfi, damodaran];
+export const COLLECTORS: Collector[] = [rbi, rbiMarket, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran];
 
 export type RunReport = { collector: string; ok: boolean; series: number; points: number; error?: string; ms: number; sample?: unknown };
 

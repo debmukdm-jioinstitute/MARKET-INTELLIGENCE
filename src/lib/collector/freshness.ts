@@ -2,7 +2,9 @@ export type Freshness = "fresh" | "stale" | "failing" | "pending";
 
 /** Max acceptable age (days) of the latest observation, by series id prefix; longest matching prefix wins. */
 const MAX_AGE_DAYS: [string, number][] = [
-  ["rbi_", 3],
+  ["rbi_", 5],
+  ["in_", 5],
+  ["india_fx_reserves", 100],
   ["cboe_", 6],
   ["eurusd", 6],
   ["ecb_mro", 120],

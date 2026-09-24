@@ -98,7 +98,8 @@ export type IndiaDashboardPayload = {
   indiaMacro: MacroRow[];
   rbiLiquidity: {
     rows: { label: string; value: string | null; source: FieldSource }[];
-    systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; source: FieldSource };
+    systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; netCr?: number | null; source: FieldSource };
+    fxReserves?: { value: string | null; asOf: string | null; source: FieldSource };
     corridor?: {
       repo: string;
       sdf: string;

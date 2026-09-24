@@ -47,7 +47,7 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
           <>
             <p className="mt-1 text-lg text-muted-foreground">Not available</p>
             <p className="text-sm text-muted-foreground">
-              System liquidity needs a live RBI source (DBIE / weekly statistical supplement), which is not connected yet — no figure is shown rather than an estimate.
+              RBI's Money Market Operations page could not be reached just now — no figure is shown rather than an estimate.
             </p>
           </>
         )}
