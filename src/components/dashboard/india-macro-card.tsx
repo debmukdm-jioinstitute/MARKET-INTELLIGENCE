@@ -115,10 +115,10 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                 <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
               </div>
               <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
-                {rbiLiquidity?.systemLiquidity?.value ?? "₹1.42 L Cr"}
+                {rbiLiquidity?.systemLiquidity?.value ?? "Not available"}
               </span>
-              <span className="text-xs text-emerald-400 font-semibold">
-                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI Net Absorption"}
+              <span className={`text-xs font-semibold ${rbiLiquidity?.systemLiquidity?.change7d ? "text-emerald-400" : "text-muted-foreground"}`}>
+                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI source not yet connected"}
               </span>
             </div>
 
@@ -129,8 +129,8 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                 </span>
                 <MetricInfo metric="fx_reserves" />
               </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">$704.8 B</span>
-              <span className="text-xs text-emerald-400 font-semibold">Weekly WSS Report</span>
+              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">Not available</span>
+              <span className="text-xs text-muted-foreground font-semibold">RBI weekly source not yet connected</span>
             </div>
           </div>
         </div>

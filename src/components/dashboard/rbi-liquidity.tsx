@@ -38,8 +38,19 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
           <p className="text-sm font-semibold uppercase text-muted-foreground">System liquidity</p>
           <MetricInfo id="liquidity" asOf={liq.source.asOf ?? data.fetchedAt} iconSize="xs" />
         </div>
-        <p className="mt-1 text-lg">{liq.value ?? "—"}</p>
-        <p className="text-sm text-muted-foreground">7D change: {liq.change7d ?? "—"}</p>
+        {liq.value ? (
+          <>
+            <p className="mt-1 text-lg">{liq.value}</p>
+            <p className="text-sm text-muted-foreground">7D change: {liq.change7d ?? "—"}</p>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-lg text-muted-foreground">Not available</p>
+            <p className="text-sm text-muted-foreground">
+              System liquidity needs a live RBI source (DBIE / weekly statistical supplement), which is not connected yet — no figure is shown rather than an estimate.
+            </p>
+          </>
+        )}
         {liq.trend30d.length > 0 ? (
           <div className="mt-2 flex h-2 gap-0.5">
             {liq.trend30d.map((v, i) => (

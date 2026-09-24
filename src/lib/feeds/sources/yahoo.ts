@@ -60,15 +60,12 @@ function metaToLiveQuote(requestedSymbol: string, meta: ChartMeta): LiveQuote | 
   const price = meta.regularMarketPrice;
   if (price == null || Number.isNaN(price)) return null;
   const prev = meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPreviousClose ?? price;
-  const change = meta.regularMarketChange ?? price - prev;
-  let changePct: number;
-  if (meta.regularMarketChangePercent != null) {
-    changePct = meta.regularMarketChangePercent / 100;
-  } else if (prev) {
-    changePct = (price - prev) / prev;
-  } else {
-    changePct = 0;
-  }
+  // NOTE: with range=5d, chartPreviousClose is the close BEFORE THE RANGE (~5 sessions ago), not yesterday's
+  // close, so (price - prev) is a multi-day move. regularMarketChangePercent is the true 1-day figure, so it is
+  // authoritative and the absolute change is derived from it (this is what was wrong for ^TNX's "change").
+  const reportedPct = meta.regularMarketChangePercent != null ? meta.regularMarketChangePercent / 100 : null;
+  const changePct = reportedPct ?? (prev ? (price - prev) / prev : 0);
+  const change = meta.regularMarketChange ?? (reportedPct != null ? (price * reportedPct) / (1 + reportedPct) : price - prev);
   const asOf = meta.regularMarketTime
     ? new Date(meta.regularMarketTime * 1000).toISOString()
     : new Date().toISOString();

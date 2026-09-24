@@ -531,15 +531,12 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
           source: pulse.gsec10y.source,
         },
       ],
+      // No live RBI liquidity source is wired yet (needs RBI DBIE / WSS). Deliberately null rather than a placeholder figure.
       systemLiquidity: {
-        value: "+₹1.42 L Cr",
-        change7d: "+₹18,400 Cr (Surplus)",
-        trend30d: [1.15, 1.22, 1.28, 1.34, 1.38, 1.42],
-        source: {
-          provider: "Reserve Bank of India (WSS)",
-          url: "https://www.rbi.org.in/",
-          asOf: new Date().toISOString(),
-        },
+        value: null,
+        change7d: null,
+        trend30d: [],
+        source: { provider: "Reserve Bank of India (source not yet connected)", url: "https://www.rbi.org.in/" },
       },
     },
     moneyFlow: {
