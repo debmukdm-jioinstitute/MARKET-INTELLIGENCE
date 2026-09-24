@@ -1,5 +1,7 @@
 import { getReport } from "./client";
+import { blockProwessLive, isProwessAuthError } from "./auth-guard";
 import { loadBatch } from "./batches";
+import { resolveProwessCompany } from "./resolve-company";
 import { NIFTY_500 } from "./nifty500";
 import { REPORTS, REPORT_IDS, type ReportId } from "./reports";
 import { putError, putStored, stateMap } from "./store";
@@ -49,11 +51,16 @@ export async function syncProwess(opts: { budgetMs?: number; concurrency?: numbe
       const job = due[i++];
       result.attempted++;
       try {
-        const data = await getReport(job.symbol, REPORTS[job.report].batch, batches.get(job.report)!);
+        const data = await getReport(
+          resolveProwessCompany(job.symbol),
+          REPORTS[job.report].batch,
+          batches.get(job.report)!,
+        );
         await putStored(job.symbol, job.report, data);
         result.succeeded++;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        if (isProwessAuthError(e)) blockProwessLive();
         result.failed++;
         if (result.errors.length < 20) result.errors.push({ symbol: job.symbol, report: job.report, error: msg });
         await putError(job.symbol, job.report, msg).catch(() => {});

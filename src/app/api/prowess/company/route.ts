@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { getReport, hasProwessKey } from "@/lib/prowess/client";
+import { blockProwessLive, isProwessAuthError, isProwessLiveBlocked } from "@/lib/prowess/auth-guard";
 import { loadBatch } from "@/lib/prowess/batches";
+import { resolveProwessCompany } from "@/lib/prowess/resolve-company";
 import { REPORTS, isReportId } from "@/lib/prowess/reports";
-import { getStored, putStored } from "@/lib/prowess/store";
+import { getStored, putError, putStored } from "@/lib/prowess/store";
 
 export const dynamic = "force-dynamic";
 
@@ -34,12 +36,37 @@ export async function GET(req: Request) {
       : NextResponse.json({ status: "not_configured" });
   }
 
+  if (isProwessLiveBlocked()) {
+    return stored
+      ? NextResponse.json({ status: "ok", data: stored.data, fetchedAt: stored.fetchedAt, source: "store-stale" })
+      : NextResponse.json({
+          status: "unavailable",
+          message:
+            "Live CMIE Prowess data is unavailable (API key or subscription). Use fundamentals above, or ask your admin to update PROWESS_API_KEY.",
+        });
+  }
+
+  const prowessCompany = resolveProwessCompany(company);
+
   try {
-    const data = await getReport(company, cfg.batch, await loadBatch(cfg.batch));
+    const data = await getReport(prowessCompany, cfg.batch, await loadBatch(cfg.batch));
     await putStored(company, report, data).catch(() => {});
     return NextResponse.json({ status: "ok", data, fetchedAt: new Date(), source: "live" });
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "Prowess request failed";
+    if (isProwessAuthError(e)) {
+      blockProwessLive();
+      await putError(company, report, msg).catch(() => {});
+      return stored
+        ? NextResponse.json({ status: "ok", data: stored.data, fetchedAt: stored.fetchedAt, source: "store-stale" })
+        : NextResponse.json({
+            status: "unavailable",
+            message:
+              "CMIE Prowess rejected the server API key or subscription. Reported financials cannot be loaded until PROWESS_API_KEY is valid.",
+          });
+    }
+    await putError(company, report, msg).catch(() => {});
     if (stored) return NextResponse.json({ status: "ok", data: stored.data, fetchedAt: stored.fetchedAt, source: "store-stale" });
-    return NextResponse.json({ status: "error", error: e instanceof Error ? e.message : "Prowess request failed" }, { status: 502 });
+    return NextResponse.json({ status: "error", error: msg }, { status: 502 });
   }
 }
