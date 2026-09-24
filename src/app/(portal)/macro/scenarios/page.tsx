@@ -20,14 +20,15 @@ const inputCls = "w-24 rounded-md border border-border bg-background px-2 py-1.5
 
 export default function ScenarioPage() {
   const [shocks, setShocks] = useState<Shock4>(ZERO);
-  const [resp, setResp] = useState<Resp | null>(null);
+  const [fetched, setFetched] = useState<Resp | null>(null);
+  const active = Object.values(shocks).some((v) => v !== 0);
+  const resp = active ? fetched : null;
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { data: pf } = useMyPortfolio(120_000);
 
   useEffect(() => {
-    const active = Object.values(shocks).some((v) => v !== 0);
-    if (!active) { setResp(null); setErr(null); return; }
+    if (!active) return;
     const t = setTimeout(async () => {
       setLoading(true);
       const res = await fetch("/api/scenario", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ shocks }) });
@@ -35,10 +36,10 @@ export default function ScenarioPage() {
       setLoading(false);
       if (!res.ok) { setErr(json.issues?.join("; ") ?? json.error ?? "Failed"); return; }
       setErr(null);
-      setResp(json);
+      setFetched(json);
     }, 400);
     return () => clearTimeout(t);
-  }, [shocks]);
+  }, [shocks, active]);
 
   // Portfolio roll-up: Indian holdings via their sector proxy; US holdings assumed beta 1 to S&P plus the INR translation effect.
   const portfolio = useMemo(() => {
