@@ -150,7 +150,7 @@ export function AISignalsDashboard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold uppercase">
                   <Brain className="size-3.5 text-primary" />
-                  PKScreener ML Model — Next Session Nifty 50 Prediction
+                  ML Model — Next Session Nifty 50 Prediction
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <PredictionBadge pred={todayPrediction.pred} />
@@ -168,7 +168,7 @@ export function AISignalsDashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground max-w-md">
                   Based on end-of-day price action, FII/DII flow, India VIX (14.82), and Nifty futures OI shift.
-                  Model trained on 5Y of NSE data using PKScreener's Lorentzian + gradient boosting classifier.
+                  Model trained on 5Y of NSE data using a Lorentzian + gradient boosting classifier.
                 </p>
               </div>
               <div className="text-right">
@@ -276,7 +276,7 @@ export function AISignalsDashboard() {
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700 flex items-start gap-2">
             <Info className="size-3.5 shrink-0 mt-0.5" />
             <p>
-              <span className="font-bold">BTST</span> (Buy Today Sell Tomorrow) and <span className="font-bold">STBT</span> (Sell Today Buy Tomorrow) signals are AI-generated from PKScreener's end-of-day scanner. These are swing setups — use with appropriate position sizing.
+              <span className="font-bold">BTST</span> (Buy Today Sell Tomorrow) and <span className="font-bold">STBT</span> (Sell Today Buy Tomorrow) signals are AI-generated from the end-of-day scanner. These are swing setups — use with appropriate position sizing.
             </p>
           </div>
 
@@ -346,7 +346,7 @@ export function AISignalsDashboard() {
           <div className="border-b border-border px-5 py-3.5 flex items-center justify-between">
             <div>
               <h3 className="font-bold text-sm text-foreground">5-Day Trend Forecast — Top Nifty Stocks</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Powered by PKScreener's Lorentzian Classifier + EMA trend detection</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Powered by Lorentzian classifier + EMA trend detection</p>
             </div>
             <button
               onClick={() => { setRefreshing(true); setTimeout(() => setRefreshing(false), 800); }}
@@ -415,7 +415,7 @@ export function AISignalsDashboard() {
           <div className="border-t border-border px-5 py-3 bg-muted/30">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Info className="size-3" />
-              Forecasts are model-generated estimates. Not financial advice. Based on PKScreener's Lorentzian Classifier trained on 5Y NSE data.
+              Forecasts are model-generated estimates. Not financial advice. Based on models trained on 5Y NSE data.
             </p>
           </div>
         </div>

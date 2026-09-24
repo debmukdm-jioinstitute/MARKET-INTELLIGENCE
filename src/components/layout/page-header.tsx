@@ -1,16 +1,20 @@
+import { cn } from "@/lib/utils";
+
 export function PageHeader({
   kicker,
   title,
   subtitle,
 }: {
-  kicker: string;
+  kicker?: string;
   title: string;
   subtitle?: string;
 }) {
   return (
     <div className="mb-4">
-      <p className="text-sm uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
-      <h2 className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+      {kicker ? (
+        <p className="text-sm uppercase tracking-[0.28em] text-blue-600 font-bold">{kicker}</p>
+      ) : null}
+      <h2 className={cn("font-heading text-2xl font-bold tracking-tight text-foreground", kicker ? "mt-1" : "")}>{title}</h2>
       {subtitle ? <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p> : null}
     </div>
   );

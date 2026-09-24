@@ -7,9 +7,8 @@ export default function AISignalsPage() {
   return (
     <div className="space-y-8 max-w-[1600px] mx-auto pb-16">
       <PageHeader
-        kicker="PKScreener AI/ML"
         title="AI Signals & Market Predictions"
-        subtitle="ML-powered Nifty 50 next-day predictions, BTST/STBT trade setups, and 5-day trend forecasts using PKScreener's Lorentzian Classifier."
+        subtitle="ML-powered Nifty 50 next-day predictions, BTST/STBT trade setups, and 5-day trend forecasts from Market Intelligence models."
       />
       <AISignalsDashboard />
     </div>

@@ -59,7 +59,7 @@ export const NAV_COLUMNS: NavColumn[] = [
     items: [
       { label: "Intelligence Feed", href: "/intelligence", desc: "News impact scored for sentiment and relevance.", badge: "AI" },
       { label: "Daily Brief", href: "/intelligence/brief", desc: "Pre-market and post-close brief with cited sources.", badge: "AI" },
-      { label: "Alerts & Scanner Bot", href: "/intelligence/alerts", desc: "PKScreener Telegram alerts, scheduled scans & on-demand bot.", badge: "NEW" },
+      { label: "Alerts & Scanner Bot", href: "/intelligence/alerts", desc: "Scheduled scans, breakout alerts, and on-demand scanner commands.", badge: "NEW" },
       { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K growth charts, morning-vs-close P&L, ATR paper trading.", badge: "NEW" },
       { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Nifty next-day ML prediction, BTST/STBT signals & trend forecasts.", badge: "AI" },
       { label: "System & Data", href: "/data", desc: "Feed health, sources, and data freshness." },

@@ -153,11 +153,9 @@ export default function AlertRulesPage() {
       ) : null}
       <p className="text-xs text-muted-foreground">Alerts are informational and based on delayed, third-party data. Research and education only — not investment advice.</p>
 
-      {/* ── PKScreener Telegram Alerts & Scanner Bot ── */}
       <div className="border-t border-border pt-8 space-y-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">PKScreener Integration</p>
-          <h2 className="text-xl font-bold text-foreground mt-1">Telegram Alerts & Scanner Bot</h2>
+          <h2 className="text-xl font-bold text-foreground">Telegram Alerts & Scanner Bot</h2>
           <p className="text-sm text-muted-foreground mt-1">Real-time breakout alerts via Telegram, scheduled scans at 9:45am & 4pm IST, and an on-demand scanner bot with 33+ strategies.</p>
         </div>
         <TelegramAlerts />

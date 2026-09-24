@@ -33,7 +33,6 @@ export default function DailyBriefPage() {
   return (
     <div className="space-y-6 max-w-[1100px] mx-auto pb-16">
       <PageHeader
-        kicker="Daily Brief"
         title="Pre-market & Post-close Brief"
         subtitle="A short, source-attributed read of the Indian market backdrop, generated twice each trading day from live data. It describes what the numbers say — it does not recommend trades."
       />

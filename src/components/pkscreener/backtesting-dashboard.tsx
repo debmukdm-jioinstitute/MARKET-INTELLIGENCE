@@ -177,7 +177,7 @@ export function BacktestingDashboard() {
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <h3 className="font-bold text-sm text-foreground">Growth of ₹10,000 — Strategy Comparison</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Simulated 12-month backtest using PKScreener scanner signals</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Simulated 12-month backtest using institutional scanner signals</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {STRATEGIES.map((s) => (
@@ -249,7 +249,7 @@ export function BacktestingDashboard() {
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="border-b border-border px-5 py-3.5">
             <h3 className="font-bold text-sm text-foreground">Morning Open vs Day-Close P&L Analysis</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Tracks how PKScreener's morning scan picks perform by market close</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Tracks how morning scan picks perform by market close</p>
           </div>
           <div className="p-5 space-y-5">
             <ResponsiveContainer width="100%" height={260}>
@@ -306,7 +306,7 @@ export function BacktestingDashboard() {
           <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
             <div>
               <h3 className="font-bold text-sm text-foreground">ATR Trailing Stop Paper Trading</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Virtual positions using PKScreener's ATR-based stop logic (Scanner #30)</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Virtual positions using ATR-based stop logic (Scanner #30)</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">Capital: <span className="font-bold text-foreground">₹{capital.toLocaleString()}</span></span>
@@ -364,7 +364,7 @@ export function BacktestingDashboard() {
           <div className="border-t border-border px-5 py-3 flex items-center justify-between">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Info className="size-3" />
-              ATR stops are computed using 14-period ATR × 2 multiplier (PKScreener default)
+              ATR stops are computed using 14-period ATR × 2 multiplier (platform default)
             </p>
             <div className="flex items-center gap-4 text-xs">
               <span className="text-muted-foreground">Total Open P&L:</span>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, BellOff, Send, Bot, Clock, Zap, CheckCircle2, ExternalLink, RefreshCw, ChevronRight, MessageSquare } from "lucide-react";
+import { Bell, BellOff, Send, Bot, Clock, Zap, RefreshCw, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// --- Mock PKScreener Alert Data ---
+// --- Mock scanner alert data ---
 const SCHEDULED_SCANS = [
   {
     id: "morning",
@@ -121,7 +121,7 @@ export function TelegramAlerts() {
   const [botMessages, setBotMessages] = useState<{ from: "user" | "bot"; text: string; time: string }[]>([
     {
       from: "bot",
-      text: "👋 PKScreener Bot active. Type a command or select a quick scan below. Try: /X23 for live breakouts, /X31 for high momentum, or /X20 for tomorrow's bullish picks.",
+      text: "👋 Scanner bot active. Type a command or select a quick scan below. Try: /X23 for live breakouts, /X31 for high momentum, or /X20 for tomorrow's bullish picks.",
       time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -191,15 +191,7 @@ export function TelegramAlerts() {
               <Clock className="size-4 text-blue-600" />
               <span className="font-bold text-sm text-foreground">Scheduled Scans</span>
             </div>
-            <a
-              href="https://t.me/PKScreener"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
-            >
-              Subscribe on Telegram
-              <ExternalLink className="size-3" />
-            </a>
+            <span className="text-xs font-medium text-muted-foreground">In-app alerts</span>
           </div>
           <div className="divide-y divide-border">
             {SCHEDULED_SCANS.map((scan) => (
@@ -247,7 +239,7 @@ export function TelegramAlerts() {
           </div>
           <div className="px-5 py-3 border-t border-border bg-muted/30">
             <p className="text-xs text-muted-foreground">
-              PKScreener delivers alerts via <span className="font-medium text-foreground">Telegram Channel</span> at 9:45am & 4pm IST daily.
+              Scheduled scans publish alerts at <span className="font-medium text-foreground">9:45am & 4pm IST</span> on trading days.
             </p>
           </div>
         </div>
@@ -290,16 +282,14 @@ export function TelegramAlerts() {
             ))}
           </div>
           <div className="px-5 py-3 border-t border-border">
-            <a
-              href="https://t.me/PKScreener"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => setSubscribed(true)}
               className="flex items-center justify-center gap-2 w-full rounded-lg border border-blue-200 bg-blue-50 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 transition-colors"
             >
               <Send className="size-3.5" />
-              Get All Alerts on Telegram
-              <ExternalLink className="size-3" />
-            </a>
+              Enable alert notifications
+            </button>
           </div>
         </div>
       </div>
@@ -309,18 +299,10 @@ export function TelegramAlerts() {
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Bot className="size-4 text-primary" />
-            <span className="font-bold text-sm text-foreground">On-Demand PKScreener Bot</span>
+            <span className="font-bold text-sm text-foreground">On-Demand Scanner Bot</span>
             <span className="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
           </div>
-          <a
-            href="https://t.me/nse_pkscreener_bot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
-          >
-            @nse_pkscreener_bot
-            <ExternalLink className="size-3" />
-          </a>
+          <span className="text-xs font-medium text-muted-foreground">Demo · NSE universe</span>
         </div>
 
         {/* Quick commands */}
@@ -374,7 +356,7 @@ export function TelegramAlerts() {
                 <span className="animate-bounce delay-100 size-1.5 rounded-full bg-muted-foreground" />
                 <span className="animate-bounce delay-200 size-1.5 rounded-full bg-muted-foreground" />
               </span>
-              Running PKScreener scan...
+              Running scan...
             </div>
           )}
         </div>
