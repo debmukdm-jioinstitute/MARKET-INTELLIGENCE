@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { hasDatabase, sql } from "../db";
+import { ensureSchema as ensureAppSchema, hasDatabase, sql } from "../db";
 import type { NewEvent, SiteEvent } from "./types";
 
 /**
@@ -25,6 +25,8 @@ function ensureSchema() {
       href text NOT NULL
     )`;
     await db`CREATE INDEX IF NOT EXISTS idx_site_events_at ON site_events (at DESC)`;
+    // per-device category mutes, so broadcast device alerts honour what each subscriber muted in the bell
+    await db`CREATE TABLE IF NOT EXISTS notify_push_prefs (endpoint text PRIMARY KEY, muted text[] NOT NULL DEFAULT '{}', updated_at timestamptz NOT NULL DEFAULT now())`;
     await db`CREATE TABLE IF NOT EXISTS notify_state (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`;
   })().catch((e) => {
     ready = null;
@@ -45,27 +47,27 @@ async function writeJson(name: string, data: unknown) {
   await writeFile(path.join(DIR, name), JSON.stringify(data));
 }
 
-/** Insert new events; an event whose `key` already exists is ignored. Returns how many were new. */
-export async function addEvents(events: NewEvent[]): Promise<number> {
-  if (!events.length) return 0;
+/** Insert new events; an event whose `key` already exists is ignored. Returns only the events that were actually new. */
+export async function addEvents(events: NewEvent[]): Promise<NewEvent[]> {
+  if (!events.length) return [];
   if (hasDatabase()) {
     await ensureSchema();
-    let added = 0;
+    const added: NewEvent[] = [];
     for (const e of events) {
       const r = await sql()`INSERT INTO site_events (key, category, severity, title, body, href)
         VALUES (${e.key}, ${e.category}, ${e.severity}, ${e.title}, ${e.body}, ${e.href}) ON CONFLICT (key) DO NOTHING RETURNING id`;
-      added += r.length;
+      if (r.length) added.push(e);
     }
     return added;
   }
   const all = await readJson<(SiteEvent & { key: string })[]>("events.json", []);
   const have = new Set(all.map((x) => x.key));
-  let added = 0;
+  const added: NewEvent[] = [];
   for (const e of events) {
     if (have.has(e.key)) continue;
     have.add(e.key);
-    all.unshift({ ...e, id: `${Date.now()}-${added}`, at: new Date().toISOString() });
-    added++;
+    all.unshift({ ...e, id: `${Date.now()}-${added.length}`, at: new Date().toISOString() });
+    added.push(e);
   }
   await writeJson("events.json", all.slice(0, MAX_FILE_EVENTS));
   return added;
@@ -118,4 +120,33 @@ export async function claimRun(name: string, minMs: number): Promise<boolean> {
   s[name] = Date.now();
   await writeJson("runs.json", s);
   return true;
+}
+
+export async function savePushPrefs(endpoint: string, muted: string[]): Promise<boolean> {
+  if (!hasDatabase()) return false;
+  await ensureAppSchema(); // creates push_subscriptions
+  await ensureSchema();
+  const known = await sql()`SELECT 1 FROM push_subscriptions WHERE endpoint = ${endpoint}`;
+  if (!known.length) return false; // only subscribed devices can store prefs
+  await sql()`INSERT INTO notify_push_prefs (endpoint, muted, updated_at) VALUES (${endpoint}, ${muted}, now())
+    ON CONFLICT (endpoint) DO UPDATE SET muted = EXCLUDED.muted, updated_at = now()`;
+  return true;
+}
+
+export type PushTarget = { endpoint: string; p256dh: string; auth: string; muted: string[] };
+
+/** Every subscribed device with its muted categories. */
+export async function listPushTargets(): Promise<PushTarget[]> {
+  if (!hasDatabase()) return [];
+  await ensureAppSchema();
+  await ensureSchema();
+  const rows = await sql()`SELECT s.endpoint, s.p256dh, s.auth, COALESCE(p.muted, '{}') AS muted
+    FROM push_subscriptions s LEFT JOIN notify_push_prefs p ON p.endpoint = s.endpoint`;
+  return rows.map((r) => ({ endpoint: r.endpoint as string, p256dh: r.p256dh as string, auth: r.auth as string, muted: (r.muted as string[]) ?? [] }));
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  if (!hasDatabase()) return;
+  await sql()`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint}`;
+  await sql()`DELETE FROM notify_push_prefs WHERE endpoint = ${endpoint}`;
 }
