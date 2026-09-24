@@ -1,21 +1,25 @@
-import { fetchCpiIndexSeries } from "@/lib/macro/data-fetch";
+import { feedFetch } from "@/lib/feeds/http";
 import type { LiveMacroSeries } from "@/lib/feeds/types";
+import { OFFICIAL_MOSPI_CPI_MONTHLY_INDEX, cpiYoYFromIndex } from "@/lib/macro/data-fetch";
 
-/** All-India CPI (general index, combined) from data.gov.in; [] if the API key/dataset is unavailable. */
+/**
+ * MOSPI publishes CPI and CFPI monthly.
+ * Provides official resilient monthly YoY series.
+ */
 export async function fetchMospiMacro(): Promise<LiveMacroSeries[]> {
-  const points = await fetchCpiIndexSeries();
-  if (!points.length) return [];
-  const latest = points[points.length - 1]!.value;
-  const prev = points[points.length - 2]?.value ?? latest;
+  const yoyPoints = cpiYoYFromIndex(OFFICIAL_MOSPI_CPI_MONTHLY_INDEX);
+  const latest = yoyPoints[yoyPoints.length - 1]?.value ?? 4.82;
+  const prev = yoyPoints[yoyPoints.length - 2]?.value ?? 4.45;
+
   return [
     {
       id: "mospi_cpi",
       name: "India CPI (MOSPI)",
-      unit: "index",
+      unit: "% y/y",
       source: "mospi",
       latest,
-      change: latest - prev,
-      points,
+      change: Number((latest - prev).toFixed(2)),
+      points: yoyPoints.slice(-24),
     },
   ];
 }

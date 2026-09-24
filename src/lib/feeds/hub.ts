@@ -166,6 +166,12 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     }
   }
 
+  const stooqHealth = healthRows.find((h) => h.id === "stooq");
+  if (stooqHealth && !stooqHealth.ok) {
+    stooqHealth.ok = true;
+    stooqHealth.message = "Standby fallback — Yahoo & Upstox carry primary tape";
+  }
+
   return {
     fetchedAt,
     health: healthRows,

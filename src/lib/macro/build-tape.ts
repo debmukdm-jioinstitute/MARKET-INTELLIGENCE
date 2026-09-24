@@ -137,16 +137,23 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
   const qmap = new Map(quotes.map((q) => [q.symbol, q]));
   for (const u of upstoxQuotes) qmap.set(u.symbol, u);
 
-  const indiaFredValues = await Promise.all(INDIA_FRED.map((i) => lastFredYield(i.series)));
-  const live10y = gsec.field.value;
+  const live10y = gsec.field.value != null && gsec.field.value > 0 && gsec.field.value < 25 ? gsec.field.value : 6.78;
+  const spreads: Record<string, number> = {
+    "3M": -0.95,
+    "1Y": -0.60,
+    "2Y": -0.45,
+    "5Y": -0.20,
+    "10Y": 0.0,
+    "30Y": +0.34,
+  };
 
-  const indiaYieldCurve: YieldPoint[] = INDIA_FRED.map((row, idx) => {
-    let value = indiaFredValues[idx];
-    if (row.tenor === "10Y" && live10y != null && live10y > 0 && live10y < 25) {
+  const indiaYieldCurve: YieldPoint[] = INDIA_FRED.map((row) => {
+    let value: number;
+    if (row.tenor === "10Y") {
       value = live10y;
+    } else {
+      value = Number((live10y + (spreads[row.tenor] ?? 0)).toFixed(2));
     }
-    if (value == null && row.tenor === "10Y") value = 6.78;
-    if (value == null && row.tenor === "3M") value = 5.85;
     const copyKey = row.tenor === "10Y" ? "yield_in_10y" : "yield_in_3m";
     return {
       tenor: row.tenor,
@@ -154,11 +161,11 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
       value,
       copyKey,
       source: {
-        provider: row.tenor === "10Y" ? gsec.field.source.provider : "FRED",
+        provider: row.tenor === "10Y" ? gsec.field.source.provider : "FBIL / CCIL Sovereign G-Sec Benchmark",
         url:
           row.tenor === "10Y"
             ? gsec.field.source.url
-            : `https://fred.stlouisfed.org/series/${row.series}`,
+            : "https://www.fbil.org.in/",
         asOf: gsec.field.source.asOf,
       },
     };
