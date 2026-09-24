@@ -63,6 +63,7 @@ export async function GET(req: Request) {
             status: "unavailable",
             message:
               "CMIE Prowess rejected the server API key or subscription. Reported financials cannot be loaded until PROWESS_API_KEY is valid.",
+            detail: msg,
           });
     }
     await putError(company, report, msg).catch(() => {});
