@@ -1,3 +1,4 @@
+import { dataGovKey } from "@/lib/datagov/client";
 import { feedFetch } from "@/lib/feeds/http";
 import { fetchNseGsecBenchmarkYield } from "@/lib/feeds/india/nse-market";
 import type { FieldSource, MacroRow, QuoteField } from "@/lib/feeds/india/types";
@@ -7,9 +8,6 @@ import { fetchUpstoxHistoricalCandles, fetchUpstoxQuotes } from "@/lib/feeds/sou
 import { fetchYahooHistory, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
 const NIFTY_GS_10Y_KEY = "NSE_INDEX|Nifty GS 10Yr";
-const DATA_GOV_KEY =
-  process.env.DATA_GOV_IN_API_KEY?.trim() ||
-  "579b464db66ec23bdd000001cdd3946e44cce2f45628f8dc59a380bfa1e971e";
 
 const WPI_RESOURCES = [
   "monthly-indices-of-all-items-price-wpi-base-year-2011-12",
@@ -24,7 +22,7 @@ const RBI_CREDIT_RESOURCES = [
 ];
 
 function dataGovUrl(resource: string, limit = 48) {
-  return `https://api.data.gov.in/resource/${resource}?api-key=${DATA_GOV_KEY}&format=json&limit=${limit}`;
+  return `https://api.data.gov.in/resource/${resource}?api-key=${dataGovKey()}&format=json&limit=${limit}`;
 }
 
 function macroDirection(current: number | null, previous: number | null): MacroRow["direction"] {

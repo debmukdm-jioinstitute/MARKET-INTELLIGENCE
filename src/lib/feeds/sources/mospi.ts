@@ -1,3 +1,4 @@
+import { dataGovKey } from "@/lib/datagov/client";
 import { feedFetch } from "@/lib/feeds/http";
 import type { LiveMacroSeries } from "@/lib/feeds/types";
 
@@ -6,9 +7,7 @@ import type { LiveMacroSeries } from "@/lib/feeds/types";
  * Falls back gracefully if the gateway is unreachable.
  */
 export async function fetchMospiMacro(): Promise<LiveMacroSeries[]> {
-  const key =
-    process.env.DATA_GOV_IN_API_KEY ??
-    "579b464db66ec23bdd000001cdd3946e44cce2f45628f8dc59a380bfa1e971e";
+  const key = dataGovKey();
   const url = `https://api.data.gov.in/resource/all-india-consumer-price-index-numbers-general?api-key=${key}&format=json&limit=24`;
   const res = await feedFetch(url, { timeoutMs: 10_000 });
   if (!res.ok) return [];
