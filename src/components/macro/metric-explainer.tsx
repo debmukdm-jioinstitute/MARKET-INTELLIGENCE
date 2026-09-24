@@ -3,7 +3,7 @@
 import * as React from "react";
 import { METRIC_COPY } from "@/lib/macro/metric-copy";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ExternalLink, Database, Globe, ShieldCheck } from "lucide-react";
+import { ExternalLink, Database, Globe, ShieldCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MetricExplainer({ copyKey, className }: { copyKey: string; className?: string }) {
@@ -49,29 +49,44 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
       <PopoverContent
         side="top"
         align="start"
-        sideOffset={6}
-        className="z-50 w-76 max-w-[90vw] rounded-xl border border-border/80 bg-popover/95 p-3.5 text-popover-foreground shadow-2xl backdrop-blur-md ring-1 ring-border/50 text-xs duration-150 animate-in fade-in zoom-in-95"
+        sideOffset={8}
+        collisionPadding={16}
+        className="z-50 w-[340px] sm:w-[380px] max-w-[94vw] rounded-2xl border border-border/80 bg-card/95 p-4 sm:p-5 text-card-foreground shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl ring-1 ring-border/50 text-xs duration-200 animate-in fade-in-0 zoom-in-95"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
         }}
       >
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary border-b border-border/50 pb-2">
-            <ShieldCheck className="size-3 text-primary shrink-0" />
-            <span>Macro Data Provenance</span>
+        <div className="space-y-3.5">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+              <ShieldCheck className="size-3 text-primary shrink-0" />
+              <span>Macro Indicator Provenance</span>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live Quote</span>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">In Plain English</p>
-            <p className="text-muted-foreground leading-relaxed text-[11px]">{copy.novice}</p>
+          {/* Plain English Meaning */}
+          <div className="space-y-1.5 rounded-xl border border-border/50 bg-card/60 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Sparkles className="size-3 text-primary/80" />
+              <span>In Plain English</span>
+            </p>
+            <p className="text-muted-foreground leading-relaxed text-[11.5px] font-normal">
+              {copy.novice}
+            </p>
           </div>
 
-          <div className="rounded-lg border border-border/70 bg-card/60 p-2.5 space-y-2 text-[11px]">
+          {/* Provider Card */}
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-2 text-[11px]">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 font-medium text-muted-foreground shrink-0">
                 <Database className="size-3.5 text-primary shrink-0" />
-                <span>Provider</span>
+                <span>Source Agency</span>
               </span>
               <span className="font-semibold text-foreground truncate text-right">
                 {copy.provider}
@@ -83,12 +98,12 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
                 href={copy.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1.5 font-medium text-primary hover:bg-primary/20 hover:border-primary transition-all group"
+                className="mt-1 flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 px-3 py-2 text-xs font-semibold text-primary transition-all duration-150 group shadow-xs"
                 onClick={(e) => e.stopPropagation()}
               >
-                <span className="flex items-center gap-1.5 truncate">
+                <span className="flex items-center gap-2 truncate">
                   <Globe className="size-3.5 shrink-0 text-primary" />
-                  <span className="truncate font-semibold">Open Live Source ({cleanHost})</span>
+                  <span className="truncate">Open Live Source ({cleanHost})</span>
                 </span>
                 <ExternalLink className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>

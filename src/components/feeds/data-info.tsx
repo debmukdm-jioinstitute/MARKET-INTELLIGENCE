@@ -56,25 +56,37 @@ export function DataInfo({
       <PopoverContent
         side="top"
         align="start"
-        sideOffset={6}
-        className="z-50 w-76 max-w-[90vw] rounded-xl border border-border/80 bg-popover/95 p-3.5 text-popover-foreground shadow-2xl backdrop-blur-md ring-1 ring-border/50 text-xs duration-150 animate-in fade-in zoom-in-95"
+        sideOffset={8}
+        collisionPadding={16}
+        className="z-50 w-[340px] sm:w-[380px] max-w-[94vw] rounded-2xl border border-border/80 bg-card/95 p-4 sm:p-5 text-card-foreground shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl ring-1 ring-border/50 text-xs duration-200 animate-in fade-in-0 zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary border-b border-border/50 pb-2">
-            <ShieldCheck className="size-3 text-primary shrink-0" />
-            <span>Official Data Provenance</span>
+        <div className="space-y-3.5">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+              <ShieldCheck className="size-3 text-primary shrink-0" />
+              <span>Official Data Provenance</span>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Verified Live</span>
+            </div>
           </div>
 
+          {/* Title if provided */}
           {name ? (
-            <p className="font-bold text-foreground text-sm leading-snug">{name}</p>
+            <h4 className="text-sm font-bold text-foreground leading-snug tracking-tight">
+              {name}
+            </h4>
           ) : null}
 
-          <div className="rounded-lg border border-border/70 bg-card/60 p-2.5 space-y-2 text-[11px]">
+          {/* Provider Card */}
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-2 text-[11px]">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 font-medium text-muted-foreground shrink-0">
                 <Database className="size-3.5 text-primary shrink-0" />
-                <span>Provider</span>
+                <span>Source Agency</span>
               </span>
               <span className="font-semibold text-foreground truncate text-right">
                 {source.provider}
@@ -86,37 +98,47 @@ export function DataInfo({
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1.5 font-medium text-primary hover:bg-primary/20 hover:border-primary transition-all group"
+                className="mt-1 flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 px-3 py-2 text-xs font-semibold text-primary transition-all duration-150 group shadow-xs"
                 onClick={(e) => e.stopPropagation()}
               >
-                <span className="flex items-center gap-1.5 truncate">
+                <span className="flex items-center gap-2 truncate">
                   <Globe className="size-3.5 shrink-0 text-primary" />
-                  <span className="truncate font-semibold">Open Live Source ({cleanHost})</span>
+                  <span className="truncate">Visit Official Source ({cleanHost})</span>
                 </span>
                 <ExternalLink className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             ) : null}
           </div>
 
-          <div className="space-y-1 text-[10px] text-muted-foreground">
-            {marketTime ? (
-              <p className="flex items-center gap-1">
-                <Calendar className="size-3 shrink-0" />
-                <span>Source date: <strong className="text-foreground">{marketTime}</strong></span>
-              </p>
-            ) : null}
-            {hubTime ? (
-              <p className="flex items-center gap-1">
-                <Clock className="size-3 shrink-0" />
-                <span>Hub sync: <strong className="text-foreground">{hubTime}</strong></span>
-              </p>
-            ) : null}
-          </div>
+          {/* Timestamps */}
+          {(marketTime || hubTime) ? (
+            <div className="space-y-1.5 rounded-xl border border-border/50 bg-background/50 p-2.5 text-[10.5px] text-muted-foreground">
+              {marketTime ? (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="size-3 shrink-0" />
+                    <span>Market / Field As Of</span>
+                  </span>
+                  <span className="font-mono text-foreground font-medium">{marketTime}</span>
+                </div>
+              ) : null}
+              {hubTime ? (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1">
+                    <Clock className="size-3 shrink-0" />
+                    <span>Hub Synchronization</span>
+                  </span>
+                  <span className="font-mono text-foreground font-medium">{hubTime}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
+          {/* Note / Details */}
           {note ? (
-            <p className="border-t border-border/50 pt-2 text-[11px] text-muted-foreground leading-relaxed">
+            <div className="rounded-xl border border-border/50 bg-card/60 p-2.5 text-[11px] text-muted-foreground leading-relaxed">
               {note}
-            </p>
+            </div>
           ) : null}
         </div>
       </PopoverContent>
