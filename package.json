@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "npm run check:typography && eslint",
+    "check:typography": "node scripts/check-typography.mjs",
     "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {

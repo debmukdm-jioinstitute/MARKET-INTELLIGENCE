@@ -14,7 +14,6 @@ interface ChangedItem {
   tag: string;
   tagColor: string;
   dataSummary: string;
-  chartData: number[];
   sourceName: string;
   sourceUrl: string;
   methodology: string;
@@ -31,7 +30,6 @@ const ITEMS: ChangedItem[] = [
     tagColor: "bg-rose-500/10 text-rose-600 border-rose-500/30",
     dataSummary:
       "Net FII selling totaled -₹4,812 Cr across cash equities over the last 3 trading days according to official exchange disclosure reports. Domestic Institutions (DIIs) provided strong counter-support with +₹5,140 Cr.",
-    chartData: [1200, 850, 420, -1100, -1820, -1892],
     sourceName: "NSE FII/DII Daily Trading Activity Report",
     sourceUrl: "https://www.nseindia.com/reports/fii-dii",
     methodology:
@@ -51,7 +49,6 @@ const ITEMS: ChangedItem[] = [
     tagColor: "bg-blue-600/10 text-blue-600 border-blue-600/30",
     dataSummary:
       "India 10Y Benchmark Government Bond yield rose from 6.71% to 6.82% following hawkish commentary in RBI MPC minutes and higher US Treasury yield pass-through.",
-    chartData: [6.71, 6.72, 6.74, 6.78, 6.8, 6.82],
     sourceName: "CCIL (Clearing Corporation of India) / RBI NDS-OM",
     sourceUrl: "https://www.ccilindia.com",
     methodology:
@@ -71,7 +68,6 @@ const ITEMS: ChangedItem[] = [
     tagColor: "bg-purple-500/10 text-purple-400 border-purple-500/30",
     dataSummary:
       "NIFTY IT index fell -0.68% while NIFTY 50 advanced +0.72%, creating a 140 bps negative relative spread driven by cautious discretionary spending commentary in global tech verticals.",
-    chartData: [100, 99.4, 99.1, 98.8, 98.4, 98.6],
     sourceName: "NSE Sectoral Indices & Performance Matrix",
     sourceUrl: "https://www.nseindia.com/market-data/live-equity-market",
     methodology:
@@ -91,7 +87,6 @@ const ITEMS: ChangedItem[] = [
     tagColor: "bg-blue-500/10 text-blue-400 border-blue-500/30",
     dataSummary:
       "TCS reported revenue of ₹64,259 Cr with EBIT margins at 25.8% and declared $1.2B in qualified AI enterprise deal commitments for the upcoming fiscal cycle.",
-    chartData: [3900, 3920, 3915, 3960, 4010, 3995],
     sourceName: "BSE/NSE Corporate Filing & Investor Presentation",
     sourceUrl: "https://www.bseindia.com/corporates/ann.html",
     methodology:
@@ -110,7 +105,6 @@ const ITEMS: ChangedItem[] = [
     tagColor: "bg-rose-500/10 text-rose-600 border-rose-500/30",
     dataSummary:
       "Brent crude futures climbed from $69.55 to $72.40/barrel amid tighter Red Sea maritime logistics and temporary production outages in the North Sea.",
-    chartData: [69.55, 70.1, 70.8, 71.4, 71.9, 72.4],
     sourceName: "ICE Futures Europe / Yahoo Finance Historical Feed",
     sourceUrl: "https://finance.yahoo.com/quote/BZ=F",
     methodology:
@@ -205,43 +199,16 @@ export function WhatChangedModule() {
               {/* Expandable Module Breakdown with Provenance */}
               {isExpanded ? (
                 <div className="mt-4 rounded-xl border border-border/80 bg-accent/20 p-4 space-y-4 text-sm animate-in fade-in duration-200">
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-8 space-y-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm uppercase font-bold text-primary block">
-                          QUANTITATIVE OBSERVATION
-                        </span>
-                        <MetricInfo metric={item.metricKey} />
-                      </div>
-                      <p className="font-sans text-sm text-foreground leading-relaxed">
-                        {item.dataSummary}
-                      </p>
-                    </div>
-
-                    {/* Mini SVG Trendline */}
-                    <div className="md:col-span-4 rounded-lg border border-border/60 bg-card p-3 space-y-1">
-                      <span className="text-sm text-muted-foreground block uppercase">
-                        Trajectory
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm uppercase font-bold text-primary block">
+                        QUANTITATIVE OBSERVATION
                       </span>
-                      <div className="h-10 w-full flex items-end gap-1 pt-2">
-                        {item.chartData.map((pt, idx) => {
-                          const min = Math.min(...item.chartData);
-                          const max = Math.max(...item.chartData);
-                          const hPct = Math.max(15, Math.round(((pt - min) / (max - min || 1)) * 100));
-                          return (
-                            <div
-                              key={idx}
-                              className={cn(
-                                "flex-1 rounded-t transition-all",
-                                pt >= item.chartData[0] ? "bg-emerald-500/80" : "bg-rose-500/80",
-                              )}
-                              style={{ height: `${hPct}%` }}
-                              title={`Observation ${idx + 1}: ${pt}`}
-                            />
-                          );
-                        })}
-                      </div>
+                      <MetricInfo metric={item.metricKey} />
                     </div>
+                    <p className="font-sans text-sm text-foreground leading-relaxed">
+                      {item.dataSummary}
+                    </p>
                   </div>
 
                   {/* Source & Methodology Row with Verified Links */}

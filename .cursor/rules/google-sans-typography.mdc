@@ -1,0 +1,12 @@
+---
+description: Enforce Google Sans as the only typeface in UI, email, and static HTML
+alwaysApply: true
+---
+
+# Typography — Google Sans only
+
+- **Only allowed typeface:** Google Sans (`next/font/google` → `Google_Sans` in `src/app/layout.tsx`).
+- **Never** import `Google_Sans_Code`, use `font-mono` / `font-serif` for UI, or set `font-family` to system-ui, Roboto, Product Sans, monospace, or bare `sans-serif` without `"Google Sans"`.
+- Prefer default `font-sans` inheritance; use `tabular-nums` for numeric columns.
+- Inline HTML (email, API HTML responses): use `GOOGLE_SANS_FONT_STACK` from `src/lib/typography.ts`.
+- Full policy: `docs/TYPOGRAPHY.md`. CI: `npm run check:typography`.

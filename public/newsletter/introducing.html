@@ -4,12 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Introducing Market Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Code:wght@500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
   :root{--ink:#0f172a;--muted:#5f6368;--blue:#1a5cff;--sky:#0ea5e9;--line:rgba(255,255,255,.7)}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;font-family:'Google Sans','Product Sans',Roboto,Arial,sans-serif;color:var(--ink);background:#f6f8fe;overflow-x:hidden}
+  body{margin:0;font-family:'Google Sans',sans-serif;color:var(--ink);background:#f6f8fe;overflow-x:hidden}
   /* mesh background */
   .mesh{position:fixed;inset:0;z-index:-1;background:
     radial-gradient(60% 50% at 15% 10%,#d6e4ff 0%,transparent 60%),
@@ -60,7 +60,7 @@
 
   /* sections */
   section{padding:96px 0 0}
-  .eyebrow{font-family:'Google Sans Code',ui-monospace,monospace;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--blue);font-weight:500}
+  .eyebrow{font-family:'Google Sans',sans-serif;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--blue);font-weight:500}
   h2{margin:12px 0 0;font-size:clamp(30px,4.6vw,46px);line-height:1.12;letter-spacing:-.02em}
   .glass{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:36px;box-shadow:0 30px 70px -30px rgba(30,64,175,.25);backdrop-filter:blur(10px)}
   .note{padding:clamp(28px,5vw,56px);max-width:860px;margin:0 auto}
@@ -80,7 +80,7 @@
   .card:hover{box-shadow:0 50px 80px -30px rgba(30,64,175,.4)}
   .card img{display:block;width:100%;border-bottom:1px solid #eef0f6}
   .card .txt{text-align:left;padding:24px 26px 28px;transform:translateZ(30px)}
-  .card p.k{margin:0;font-family:'Google Sans Code',ui-monospace,monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
+  .card p.k{margin:0;font-family:'Google Sans',sans-serif;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
   .card h3{margin:8px 0 8px;font-size:23px;letter-spacing:-.01em}
   .card p.d{margin:0;font-size:16px;line-height:1.7;color:var(--muted)}
   .wide{grid-column:1/-1;padding:34px 34px 30px}
@@ -97,7 +97,7 @@
   .faces img{width:92px;height:92px;border-radius:50%;object-fit:cover;border:4px solid #fff;margin-left:-22px;box-shadow:0 16px 30px rgba(15,23,42,.18);transition:transform .25s}
   .faces img:first-child{margin-left:0}
   .faces img:hover{transform:translateY(-10px) scale(1.08);z-index:2}
-  .trusted{margin-top:22px;text-align:center;font-family:'Google Sans Code',monospace;font-size:12px;letter-spacing:.22em;color:#5f6368;text-transform:uppercase}
+  .trusted{margin-top:22px;text-align:center;font-family:'Google Sans',sans-serif;font-size:12px;letter-spacing:.22em;color:#5f6368;text-transform:uppercase}
 
   footer{padding:60px 0 70px;text-align:center;font-size:14px;line-height:1.7;color:#80868b;max-width:640px;margin:0 auto}
 
@@ -157,7 +157,7 @@
       <div class="glass card reveal" data-tilt="card"><img src="aidesk.jpg" alt="" /><div class="txt"><p class="k">Research · AI</p><h3>A research desk that thinks out loud</h3><p class="d">Pick any NSE or US stock and watch AI agents debate it using real quotes, fundamentals and headlines.</p></div></div>
       <div class="glass card reveal" data-tilt="card"><img src="markets.jpg" alt="" /><div class="txt"><p class="k">Markets</p><h3>Every market, one live board</h3><p class="d">Equities, sectors, valuation, breadth and derivatives. Click any ticker to open its full research page.</p></div></div>
       <div class="glass card reveal" data-tilt="card"><img src="momentum.jpg" alt="" /><div class="txt"><p class="k">Markets · Momentum</p><h3>See the trend before the headline</h3><p class="d">Moving-average regimes, RSI, MACD and breadth — summarised at a glance.</p></div></div>
-      <div class="glass card wide reveal" style="text-align:left"><p class="k" style="margin:0;font-family:'Google Sans Code',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)">And a lot more</p><h3 style="margin:8px 0 0;font-size:26px">Same calm design, everywhere</h3>
+      <div class="glass card wide reveal" style="text-align:left"><p class="k" style="margin:0;font-family:'Google Sans',sans-serif;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)">And a lot more</p><h3 style="margin:8px 0 0;font-size:26px">Same calm design, everywhere</h3>
         <div class="tags"><span>🌍 Macro &amp; RBI liquidity</span><span>💱 Currency &amp; commodities</span><span>📅 Economic calendar</span><span>🚀 IPO pipeline</span><span>📈 Options flow</span><span>📰 Sentiment news feed</span><span>🧭 Hover menus that show the way</span><span>🔎 Click any ticker → research</span></div></div>
     </div>
   </section>

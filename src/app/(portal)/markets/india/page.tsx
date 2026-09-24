@@ -38,7 +38,7 @@ export default function IndiaMarketsPage() {
                 INDIA BENCHMARKS (NSE / BSE LIVE QUOTES)
               </h3>
             </div>
-            <span className="text-xs text-muted-foreground font-mono">Live Quotes</span>
+            <span className="text-xs text-muted-foreground font-sans">Live Quotes</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {feedData.indices.map((idx) => {

@@ -119,7 +119,7 @@ export function MetricInfo({
           aria-label={`Official source and details for ${title}`}
           title={`Click for official source, live link, and methodology for ${title}`}
         >
-          <span className="font-serif italic font-bold leading-none select-none hover:scale-125 transition-transform">
+          <span className="font-sans italic font-bold leading-none select-none hover:scale-125 transition-transform">
             ⓘ
           </span>
         </button>
@@ -157,7 +157,7 @@ export function MetricInfo({
                 <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   Current Print / Level
                 </span>
-                <span className="font-mono text-xs font-bold text-foreground break-words">
+                <span className="font-sans tabular-nums text-xs font-bold text-foreground break-words">
                   {formattedValue}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function MetricInfo({
                   <Calendar className="size-3.5 text-muted-foreground shrink-0" />
                   <span>Release / As of</span>
                 </span>
-                <span className="font-mono text-foreground truncate text-right">
+                <span className="font-sans tabular-nums text-foreground truncate text-right">
                   {effectiveAsOf}
                 </span>
               </div>
@@ -225,7 +225,7 @@ export function MetricInfo({
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Calculation & Methodology
               </p>
-              <p className="font-mono text-[10.5px] text-foreground leading-relaxed break-words">
+              <p className="font-sans text-[11px] text-foreground leading-relaxed break-words">
                 {effectiveCalculation}
               </p>
             </div>

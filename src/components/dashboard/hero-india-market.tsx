@@ -165,7 +165,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                 />
               </svg>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground font-sans">
                 {loading ? "Loading historical data…" : "Streaming exchange tick history…"}
               </div>
             )}

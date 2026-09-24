@@ -47,7 +47,7 @@ export function DataInfo({
             e.stopPropagation();
           }}
         >
-          <span className="font-serif italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
+          <span className="font-sans italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
             ⓘ
           </span>
         </button>
@@ -119,7 +119,7 @@ export function DataInfo({
                     <Calendar className="size-3 shrink-0" />
                     <span>Market / Field As Of</span>
                   </span>
-                  <span className="font-mono text-foreground font-medium">{marketTime}</span>
+                  <span className="font-sans tabular-nums text-foreground font-medium">{marketTime}</span>
                 </div>
               ) : null}
               {hubTime ? (
@@ -128,7 +128,7 @@ export function DataInfo({
                     <Clock className="size-3 shrink-0" />
                     <span>Hub Synchronization</span>
                   </span>
-                  <span className="font-mono text-foreground font-medium">{hubTime}</span>
+                  <span className="font-sans tabular-nums text-foreground font-medium">{hubTime}</span>
                 </div>
               ) : null}
             </div>

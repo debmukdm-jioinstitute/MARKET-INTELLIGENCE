@@ -33,7 +33,7 @@ export function PerformanceChart({
             key={r}
             type="button"
             onClick={() => setRange(r)}
-            className={`rounded px-2 py-0.5 font-mono text-[11px] ${
+            className={`rounded px-2 py-0.5 font-sans text-[11px] tabular-nums ${
               range === r ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
             }`}
           >

@@ -40,7 +40,7 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
             e.stopPropagation();
           }}
         >
-          <span className="font-serif italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
+          <span className="font-sans italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
             ⓘ
           </span>
         </button>

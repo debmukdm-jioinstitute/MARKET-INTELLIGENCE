@@ -21,7 +21,7 @@ export function Latex({ math, block = false, className }: LatexProps) {
       });
     } catch (err) {
       console.warn("KaTeX render error:", err);
-      return `<span class="font-mono text-xs text-blue-600">${math}</span>`;
+      return `<span class="font-sans text-xs text-blue-600">${math}</span>`;
     }
   }, [math, block]);
 

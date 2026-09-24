@@ -31,18 +31,15 @@ export function MyPortfolioCard() {
     <div className="relative overflow-hidden rounded-xl border border-border/90 bg-card p-6 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
-              <Briefcase className="size-3.5 text-blue-600" />
-              PORTFOLIO DESK · <span className="text-foreground">{data?.settings.name ?? "Working Book"}</span>
-            </span>
-            <MetricInfo metric="nav" customTitle="Portfolio Mark-to-Market NAV" />
-          </div>
+          <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
+            <Briefcase className="size-3.5 text-blue-600" />
+            PORTFOLIO DESK
+          </span>
           <Link
             href="/portfolio"
             className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-sm font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
-            Open Desk
+            Open your Portfolio
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

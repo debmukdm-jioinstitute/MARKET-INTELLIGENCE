@@ -450,7 +450,7 @@ npx vercel --prod
 ## 17. Tech stack
 
 - **Framework:** Next.js 16 (App Router) · React 19 · TypeScript
-- **UI:** Tailwind CSS 4 · shadcn/ui · Radix · Lucide · KaTeX (for the metrics-specification math)
+- **UI:** Tailwind CSS 4 · shadcn/ui · Radix · Lucide · KaTeX (for the metrics-specification math) · **Typography: [Google Sans only](docs/TYPOGRAPHY.md)** (`npm run check:typography`)
 - **Charts:** Recharts · Lightweight Charts (candlesticks)
 - **Database:** Neon serverless Postgres
 - **AI:** Groq (`openai/gpt-oss-120b`)

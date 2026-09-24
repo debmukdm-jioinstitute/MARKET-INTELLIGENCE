@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 
 function unsubscribeSecret(): string {
   return process.env.ADMIN_SYNC_SECRET || process.env.RESEND_API_KEY || "market-intelligence-newsletter";
@@ -63,7 +64,7 @@ export function withUnsubscribeFooter(html: string, email: string): string {
   const url = unsubscribeUrl(email);
   return `${html}
 <hr style="margin-top:32px;border:none;border-top:1px solid #e8eaed" />
-<p style="margin-top:16px;font-size:12px;color:#5f6368;font-family:sans-serif">
+<p style="margin-top:16px;font-size:12px;color:#5f6368;${GOOGLE_SANS_FONT_FAMILY_CSS}">
   You're receiving this because you're subscribed to Market Intelligence updates.
   <a href="${url}" style="color:#5f6368;text-decoration:underline">Unsubscribe</a>
 </p>`;
