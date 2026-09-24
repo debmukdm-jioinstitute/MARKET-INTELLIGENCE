@@ -7,6 +7,7 @@ import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
+import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -80,6 +81,12 @@ export default function ResearchSymbolPage() {
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+
+      {symbol ? (
+        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+          <SecurityRiskPanel symbol={symbol} />
+        </Panel>
+      ) : null}
 
       {data && q ? (
         <>
