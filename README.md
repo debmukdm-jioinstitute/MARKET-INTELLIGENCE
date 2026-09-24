@@ -56,7 +56,7 @@ The India desk landing page. It loads in two passes — a "quick" payload (marke
 | **Global radar** | 🟢 S&P 500, Nasdaq, Dow, US 10Y, DXY, VIX, Brent, Gold, Copper, USD/INR — all Yahoo Finance. |
 | **India-impact score** | 🧮 A hand-weighted composite: S&P 0.35, Nasdaq 0.20, Brent 0.15 (inverted), USD/INR 0.20 (inverted), DXY 0.05 (inverted), US 10Y 0.05 (inverted) — summed and labeled positive/neutral/negative at a ±0.15 threshold. It is a heuristic sensitivity weighting, not a fitted or backtested model. |
 | **India macro strip** | 🟢 CPI/GDP from World Bank (MOSPI override when available), WPI/deposits/credit growth from RBI/data.gov.in resources — see [Macro](#4-macro) for the full source table. |
-| **RBI liquidity** | ⚪ The policy corridor (repo 5.25%, SDF 5.00%, MSF 5.50%, CRR 3.00%, SLR 18.00%, bank rate 5.50%, reverse repo 3.35%, stance "Neutral") is a **hardcoded reference block**, not fetched live — RBI publishes no simple real-time API for it. Only the "10Y G-Sec (live)" row is live. "System liquidity" is an intentional stub (`null`) pending an RBI DBIE integration; the component says so in its own UI copy. |
+| **RBI liquidity** | ⚪ The policy corridor (repo 5.25%, SDF 5.00%, MSF 5.50%, CRR 3.00%, SLR 18.00%, bank rate 5.50%, reverse repo 3.35%, stance "Neutral") is 🟢 **scraped daily from rbi.org.in** by the collector (`src/lib/collector/sources/rbi.ts`, validated and stored in Neon); the hardcoded values remain only as a fallback if the scrape or DB is unavailable. The stance label is still static. Only the "10Y G-Sec (live)" row is live. "System liquidity" is an intentional stub (`null`) pending an RBI DBIE integration; the component says so in its own UI copy. |
 | **Money flow (FII/DII)** | 🟢 NSE's FII/DII trade endpoint, parsed for today's net figure only — 5-day/1-month/YTD columns are always blank, because NSE's feed doesn't carry that history. |
 
 ---
@@ -406,6 +406,7 @@ Either way, you get a preview before committing, with the choice to replace your
 | **Massive** | US market snapshots and daily bars (optional API key) |
 | **SEC EDGAR** | US filings and corporate-action equivalents |
 | **World Bank / FRED / MOSPI / data.gov.in** | Macro series — GDP, CPI, WPI, trade, reserves, US/global benchmarks |
+| **Collector (daily cron `/api/cron/collect`)** | RBI policy rates (scraped), Cboe VIX, CFTC COT positioning, US BLS (CPI/unemployment/payrolls), ECB (policy rate, EUR/USD, HICP), AMFI NAVs, Damodaran ERP/country risk premia → Neon `collected_series`/`collected_obs`; status at `/api/collector` |
 | **Groq** (`openai/gpt-oss-120b`) | Every LLM agent in AI Desk and the Options Flow screener |
 | **Neon (Postgres)** | Holdings, trade log, options-flow snapshots and flag log, research-report cache, admin data |
 

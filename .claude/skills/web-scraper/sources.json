@@ -1,0 +1,418 @@
+{
+ "_doc": "Source registry for the web-scraper skill. tier: api (documented JSON/CSV, prefer) | file (stable download) | html (scrape, fragile) | keyed (needs API key) | paid. status is set by scripts/probe-sources.mjs, never by hand.",
+ "sources": [
+  {
+   "id": "yahoo-chart",
+   "domain": "market",
+   "tier": "api",
+   "cover": "global+India quotes, indices, FX, commodities, history",
+   "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?range=5d&interval=1d",
+   "wired": true
+  },
+  {
+   "id": "stooq",
+   "domain": "market",
+   "tier": "file",
+   "cover": "daily OHLC CSV, indices, FX",
+   "url": "https://stooq.com/q/d/l/?s=%5Espx&i=d",
+   "wired": true
+  },
+  {
+   "id": "nse-allindices",
+   "domain": "market",
+   "tier": "html",
+   "cover": "NSE index snapshot, breadth",
+   "url": "https://www.nseindia.com/api/allIndices",
+   "needs": "cookie warm-up via nse-session.ts",
+   "wired": true
+  },
+  {
+   "id": "nse-fiidii",
+   "domain": "market",
+   "tier": "html",
+   "cover": "FII/DII daily flows",
+   "url": "https://www.nseindia.com/api/fiidiiTradeReact",
+   "needs": "cookie warm-up",
+   "wired": true
+  },
+  {
+   "id": "amfi-nav",
+   "domain": "market",
+   "tier": "file",
+   "cover": "all mutual fund NAVs, daily",
+   "url": "https://www.amfiindia.com/spages/NAVAll.txt",
+   "wired": true
+  },
+  {
+   "id": "nsdl-fpi",
+   "domain": "market",
+   "tier": "html",
+   "cover": "FPI daily/monthly flows, AUC by sector",
+   "url": "https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx",
+   "wired": false
+  },
+  {
+   "id": "sec-edgar",
+   "domain": "market",
+   "tier": "api",
+   "cover": "US filings, XBRL facts",
+   "url": "https://data.sec.gov/submissions/CIK0000320193.json",
+   "needs": "User-Agent with contact email",
+   "wired": true
+  },
+  {
+   "id": "cftc-cot",
+   "domain": "market",
+   "tier": "file",
+   "cover": "US futures positioning (COT)",
+   "url": "https://www.cftc.gov/dea/newcot/deacom.txt",
+   "wired": true
+  },
+  {
+   "id": "cboe-vix",
+   "domain": "market",
+   "tier": "file",
+   "cover": "VIX history",
+   "url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+   "wired": true
+  },
+  {
+   "id": "fred-csv",
+   "domain": "macro",
+   "tier": "file",
+   "cover": "US/global rates, CPI, unemployment, India long-term series",
+   "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10",
+   "wired": true
+  },
+  {
+   "id": "worldbank",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "GDP, CPI, trade, reserves, debt, unemployment (annual)",
+   "url": "https://api.worldbank.org/v2/country/IND/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=5",
+   "wired": true
+  },
+  {
+   "id": "imf-datamapper",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "WEO forecasts: GDP, inflation, CA, debt",
+   "url": "https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH/IND",
+   "wired": true
+  },
+  {
+   "id": "data-gov-in",
+   "domain": "macro",
+   "tier": "keyed",
+   "cover": "India open data: CPI, WPI, RBI series, sector datasets",
+   "url": "https://api.data.gov.in/lists?format=json&limit=1",
+   "needs": "DATA_GOV_IN_API_KEY",
+   "wired": true
+  },
+  {
+   "id": "treasury-fiscaldata",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "US debt, auctions, yields, TGA",
+   "url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?page[size]=1&sort=-record_date",
+   "wired": false
+  },
+  {
+   "id": "bls",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "US CPI, payrolls, unemployment",
+   "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/CUUR0000SA0",
+   "wired": true
+  },
+  {
+   "id": "ecb-sdw",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "Euro area rates, HICP, FX",
+   "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?lastNObservations=3&format=csvdata",
+   "wired": true
+  },
+  {
+   "id": "eurostat",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "EU GDP, HICP, unemployment",
+   "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr?geo=EA&coicop=CP00&lastTimePeriod=3",
+   "wired": false
+  },
+  {
+   "id": "oecd",
+   "domain": "macro",
+   "tier": "api",
+   "cover": "CLI, unemployment, trade",
+   "url": "https://sdmx.oecd.org/public/rest/dataflow/all",
+   "wired": true
+  },
+  {
+   "id": "rbi-rates",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "repo/SDF/MSF/CRR/SLR, forex reserves (WSS), reference rates",
+   "url": "https://www.rbi.org.in/scripts/BS_ViewMasterDirections.aspx",
+   "note": "currently HARDCODED in dashboard; replace with scrape of rbi.org.in home rate ticker + WSS",
+   "wired": true
+  },
+  {
+   "id": "rbi-dbie",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "credit/deposit growth, money supply, BoP",
+   "url": "https://data.rbi.org.in",
+   "wired": "partial (via data.gov.in)"
+  },
+  {
+   "id": "mospi",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "CPI, IIP, GDP releases",
+   "url": "https://mospi.gov.in",
+   "wired": "partial"
+  },
+  {
+   "id": "gst-collections",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "monthly GST collections (PIB release)",
+   "url": "https://pib.gov.in/allRel.aspx",
+   "wired": false,
+   "note": "link-out today"
+  },
+  {
+   "id": "cga-fiscal",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "monthly fiscal deficit, revenue, capex",
+   "url": "https://cga.nic.in/MonthlyAccounts",
+   "wired": false,
+   "note": "link-out today"
+  },
+  {
+   "id": "npci-upi",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "UPI volumes/values monthly",
+   "url": "https://www.npci.org.in/what-we-do/upi/product-statistics",
+   "wired": false,
+   "note": "link-out today"
+  },
+  {
+   "id": "ppac",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "India fuel demand, crude imports, refinery throughput",
+   "url": "https://ppac.gov.in",
+   "wired": false
+  },
+  {
+   "id": "eia",
+   "domain": "macro",
+   "tier": "keyed",
+   "cover": "US crude/gas stocks, production",
+   "url": "https://api.eia.gov/v2/",
+   "needs": "EIA_API_KEY",
+   "wired": false
+  },
+  {
+   "id": "cmie",
+   "domain": "micro",
+   "tier": "paid",
+   "cover": "firm-level India data",
+   "url": "https://www.cmie.com",
+   "wired": false
+  },
+  {
+   "id": "bse-corp",
+   "domain": "micro",
+   "tier": "html",
+   "cover": "announcements, results, shareholding",
+   "url": "https://api.bseindia.com/BseIndiaAPI/api/AnnGetData/w",
+   "needs": "Referer header",
+   "wired": true
+  },
+  {
+   "id": "upstox",
+   "domain": "micro",
+   "tier": "keyed",
+   "cover": "India quotes, option chain, key ratios",
+   "url": "https://api.upstox.com/v2/market-quote/ltp",
+   "needs": "UPSTOX_ACCESS_TOKEN (expires daily)",
+   "wired": true
+  },
+  {
+   "id": "screener-in",
+   "domain": "equities-in",
+   "tier": "html",
+   "cover": "Indian fundamentals, ratios, peers, 10y financials",
+   "url": "https://www.screener.in/company/RELIANCE/consolidated/",
+   "tos": "restricted",
+   "note": "Scraping discouraged in ToS; logged-in Excel export is per-user. Prefer BSE/NSE filings + Upstox key ratios; use only light, cached, personal-use fetches",
+   "wired": false
+  },
+  {
+   "id": "trendlyne",
+   "domain": "equities-in",
+   "tier": "html",
+   "cover": "Indian fundamentals, DVM scores, F&O data, portfolio",
+   "url": "https://trendlyne.com/equity/RELIANCE/",
+   "tos": "restricted",
+   "note": "Login/paid; ToS bars scraping. Link-out or licensed API only",
+   "wired": false
+  },
+  {
+   "id": "chartink",
+   "domain": "equities-in",
+   "tier": "html",
+   "cover": "Technical screener scans (POST scan clauses)",
+   "url": "https://chartink.com/screener/",
+   "tos": "restricted",
+   "note": "No public API; unofficial POST endpoint, breaks often. Prefer computing scans from own OHLC data",
+   "wired": false
+  },
+  {
+   "id": "bse-india",
+   "domain": "equities-in",
+   "tier": "html",
+   "cover": "BSE quotes, announcements, results, shareholding",
+   "url": "https://www.bseindia.com/",
+   "tos": "tolerated",
+   "note": "API needs Referer header; 403 from plain fetch",
+   "wired": false
+  },
+  {
+   "id": "stockanalysis",
+   "domain": "equities-global",
+   "tier": "html",
+   "cover": "US/global financials, statistics, ETFs",
+   "url": "https://stockanalysis.com/stocks/aapl/financials/",
+   "tos": "restricted",
+   "note": "No API; HTML tables. Use SEC EDGAR XBRL as primary, this as cross-check",
+   "wired": false
+  },
+  {
+   "id": "finviz",
+   "domain": "equities-global",
+   "tier": "html",
+   "cover": "US screener, heatmap, quotes",
+   "url": "https://finviz.com/quote.ashx?t=AAPL",
+   "tos": "restricted",
+   "note": "ToS bars scraping; Elite offers CSV export (paid). Link-out preferred",
+   "wired": false
+  },
+  {
+   "id": "tikr",
+   "domain": "equities-global",
+   "tier": "paid",
+   "cover": "Global financials, estimates, transcripts",
+   "url": "https://app.tikr.com/",
+   "tos": "paid",
+   "note": "Paid, login; no public API. Link-out only",
+   "wired": false
+  },
+  {
+   "id": "tradingview",
+   "domain": "charts",
+   "tier": "embed",
+   "cover": "Charts and widgets",
+   "url": "https://www.tradingview.com/widget-docs/widgets/",
+   "tos": "embed",
+   "note": "Use official embeddable widgets (free). Do not scrape data",
+   "wired": false
+  },
+  {
+   "id": "investing-com",
+   "domain": "macro",
+   "tier": "html",
+   "cover": "Economic calendar, yields, commodities",
+   "url": "https://www.investing.com/economic-calendar/",
+   "tos": "restricted",
+   "note": "Aggressive bot blocking, ToS bars scraping. Use FRED/RBI/ECB/BLS + Yahoo instead; link-out only",
+   "wired": false
+  },
+  {
+   "id": "nse-optionchain",
+   "domain": "options",
+   "tier": "html",
+   "cover": "NSE option chain (OI, IV, PCR)",
+   "url": "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY",
+   "tos": "tolerated",
+   "note": "Cookie warm-up; already used as Upstox fallback",
+   "wired": false
+  },
+  {
+   "id": "sensibull",
+   "domain": "options",
+   "tier": "html",
+   "cover": "IV percentile, OI analytics, strategy builder",
+   "url": "https://web.sensibull.com/option-chain",
+   "tos": "restricted",
+   "note": "No public API; login. Link-out; compute IV rank from own chain snapshots",
+   "wired": false
+  },
+  {
+   "id": "opstra",
+   "domain": "options",
+   "tier": "html",
+   "cover": "Option analytics, OI, IV, backtests",
+   "url": "https://opstra.definedge.com/",
+   "tos": "restricted",
+   "note": "Login, no public API. Link-out only",
+   "wired": false
+  },
+  {
+   "id": "quartr",
+   "domain": "earnings",
+   "tier": "paid",
+   "cover": "Earnings calls, transcripts, decks, calendar",
+   "url": "https://quartr.com/",
+   "tos": "paid",
+   "note": "API is paid/licensed. Link-out or use Yahoo earnings calendar (wired)",
+   "wired": false
+  },
+  {
+   "id": "company-filings",
+   "domain": "earnings",
+   "tier": "file",
+   "cover": "10-K/10-Q (EDGAR), BSE/NSE results, investor decks",
+   "url": "https://data.sec.gov/submissions/CIK0000320193.json",
+   "tos": "open",
+   "note": "EDGAR JSON is free; India via BSE/NSE announcements",
+   "wired": false
+  },
+  {
+   "id": "koyfin",
+   "domain": "portfolio",
+   "tier": "paid",
+   "cover": "Portfolio analytics, dashboards, global data",
+   "url": "https://www.koyfin.com/",
+   "tos": "paid",
+   "note": "Paid; no public API. Link-out only",
+   "wired": false
+  },
+  {
+   "id": "google-sheets",
+   "domain": "portfolio",
+   "tier": "api",
+   "cover": "GOOGLEFINANCE + published-to-web CSV as a lightweight data bridge",
+   "url": "https://docs.google.com/spreadsheets/d/e/PLACEHOLDER/pub?output=csv",
+   "tos": "open",
+   "note": "Publish sheet as CSV; fetch by URL. Needs the user to supply the sheet URL",
+   "wired": false
+  },
+  {
+   "id": "damodaran",
+   "domain": "valuation",
+   "tier": "file",
+   "cover": "Implied ERP, country risk premia, industry betas, multiples, margins (annual/Jan update)",
+   "url": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctryprem.xlsx",
+   "tos": "open",
+   "note": "Free Excel files; cite Damodaran. Parse xlsx server-side, refresh yearly/quarterly",
+   "wired": true
+  }
+ ]
+}

@@ -24,6 +24,7 @@ import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sourc
 import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massive";
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
+import { latestPoints } from "@/lib/collector/store";
 import type { MacroPoint } from "@/lib/feeds/types";
 
 /** OECD long-term govt bond yield for India, via FRED's no-key CSV export. */
@@ -471,6 +472,10 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
   const fiiNet = parseCr(fiiRow?.netValue);
   const diiNet = parseCr(diiRow?.netValue);
 
+  // RBI policy rates: scraped daily by the collector (src/lib/collector/sources/rbi.ts); hardcoded value is the fallback.
+  const rbiPoints = new Map((await latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"])).map((p) => [p.id, p.value]));
+  const pct = (id: string, fallback: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : fallback);
+
   return {
     fetchedAt: new Date().toISOString(),
     pulse,
@@ -486,19 +491,19 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     indiaMacro,
     rbiLiquidity: {
       corridor: {
-        repo: "5.25%",
-        sdf: "5.00%",
-        msf: "5.50%",
-        crr: "3.00%",
-        slr: "18.00%",
-        bankRate: "5.50%",
-        reverseRepo: "3.35%",
+        repo: pct("rbi_repo", "5.25%"),
+        sdf: pct("rbi_sdf", "5.00%"),
+        msf: pct("rbi_msf", "5.50%"),
+        crr: pct("rbi_crr", "3.00%"),
+        slr: pct("rbi_slr", "18.00%"),
+        bankRate: pct("rbi_bank_rate", "5.50%"),
+        reverseRepo: pct("rbi_reverse_repo", "3.35%"),
         stance: "Neutral",
       },
       rows: [
         {
           label: "RBI Policy Repo Rate",
-          value: "5.25%",
+          value: pct("rbi_repo", "5.25%"),
           source: {
             provider: "Reserve Bank of India (MPC)",
             url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
@@ -506,7 +511,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
         },
         {
           label: "Cash Reserve Ratio (CRR)",
-          value: "3.00%",
+          value: pct("rbi_crr", "3.00%"),
           source: {
             provider: "Reserve Bank of India (MPC)",
             url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
@@ -514,7 +519,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
         },
         {
           label: "Standing Deposit Facility (SDF)",
-          value: "5.00%",
+          value: pct("rbi_sdf", "5.00%"),
           source: {
             provider: "Reserve Bank of India (MPC)",
             url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
