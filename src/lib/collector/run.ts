@@ -1,4 +1,4 @@
-import { markFailure, saveSeries } from "./store";
+import { clearFailure, markFailure, saveSeries } from "./store";
 import type { Collector } from "./types";
 import { amfi } from "./sources/amfi";
 import { bls } from "./sources/bls";
@@ -22,6 +22,7 @@ export async function runCollectors(only?: string[], dry = false): Promise<RunRe
         const results = await c.run();
         let points = 0;
         for (const r of results) points += dry ? r.obs.length : await saveSeries(r);
+        if (!dry) await clearFailure(c.id).catch(() => {});
         if (dry) return { collector: c.id, ok: true, series: results.length, points, ms: Date.now() - t0, sample: results.map((r) => ({ id: r.id, n: r.obs.length, last: r.obs[r.obs.length - 1] })) } as RunReport;
         return { collector: c.id, ok: true, series: results.length, points, ms: Date.now() - t0 };
       } catch (e) {

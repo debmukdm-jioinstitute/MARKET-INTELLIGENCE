@@ -59,6 +59,12 @@ export async function saveSeries(r: SeriesResult): Promise<number> {
   return r.obs.length;
 }
 
+/** Remove a collector's recorded failure after a successful run. */
+export async function clearFailure(collectorId: string) {
+  await ensureCollectorSchema();
+  await sql()`DELETE FROM collected_series WHERE id = ${`collector:${collectorId}`}`;
+}
+
 export async function markFailure(id: string, provider: string, url: string, error: string) {
   await ensureCollectorSchema();
   await sql()`
