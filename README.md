@@ -406,6 +406,10 @@ Either way, you get a preview before committing, with the choice to replace your
 | **Daily brief** | `/intelligence/brief` | 🤖 Pre-market (08:15 IST) and post-close (16:00 IST). The LLM may only use a supplied fact sheet; items must cite fact ids and every number must match a fact, else the item is dropped. Falls back to a rules-based brief. Email is opt-in only. |
 | **Alert rules** | `/intelligence/alerts` | 🧮 Users define up to 5 conditions (ALL/ANY) over 16 metrics; checked every 3h; push and/or email; per-rule cooldown. |
 | **Transmission map** | `/macro/transmission` | 🧮 Multi-factor OLS of daily sector returns (NSE index-ETF proxies) on Brent, USD/INR, US10Y (per 10bp) and S&P 500 over ~2y, with t-stats. Most Brent betas are not significant, and R² is low (3–16%) — shown, not hidden. |
+| **Risk & events card** | `/research/[symbol]` | 🧮 Realized vol, Wilder ATR(14), max drawdown, beta vs NIFTY/S&P and 52-week position from ~1y of Yahoo bars; next earnings date (India); Form 4 filings (US, SEC EDGAR). No rating or price target by design. |
+| **Stress backtest** | `/macro/stress/backtest` | 🧮 Reduced (market-only) stress index vs forward 5/10-day NIFTY outcomes; publishes the result whichever way it comes out. |
+| **Command palette** | `⌘K` | Pages, live metrics, `Research <ticker>`; personal keyword monitors on news (stored in your browser only). |
+| **MCP server** | `/api/mcp` | Read-only tools over the site's own data; key-gated. See `docs/MCP.md`. |
 | **Scenario engine** | `/macro/scenarios` | 🧮 Applies user shocks to the betas; rolls up to the user's holdings (US holdings assumed β=1 to S&P plus INR translation). Same-day, history-based estimate — not a forecast. |
 
 ---
@@ -456,6 +460,7 @@ npx vercel --prod
 | `ALPHA_VANTAGE_API_KEY` | Optional US quote fallback |
 | `DATA_GOV_IN_API_KEY` | India open data (a default public key ships in the repo) |
 | `TRUEDATA_USERNAME` / `TRUEDATA_PASSWORD` | India quote last resort |
+| `MCP_API_KEYS` | Comma-separated keys enabling `tools/call` on `/api/mcp` (disabled if unset) |
 | `CRON_SECRET` | Authenticates Vercel's scheduled jobs (instrument sync, research scrape, options-flow baseline) |
 | `ADMIN_SYNC_SECRET` | Manual trigger for the NSE instrument sync |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Admin push notifications |

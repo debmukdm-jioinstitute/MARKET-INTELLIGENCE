@@ -39,7 +39,7 @@ Probe: `node scripts/probe-sources.mjs` (reachability from this machine; run bef
 
 ## Collector framework (built)
 `src/lib/collector/`: one file per source in `sources/`, each returns `SeriesResult[]`; `run.ts` runs them independently (failure isolated, last-good kept); `store.ts` = Neon tables `collected_series` / `collected_obs` + `latestPoints()` for panels. Cron `/api/cron/collect` (every 3h via `.github/workflows/collect.yml`, needs GitHub secrets `CRON_SECRET` [+ optional `SITE_URL`]; Vercel daily 03:15 UTC as backup; `?only=rbi,ecb`, `?dry=1` to validate without writing). Status: `/api/collector`, history `/api/collector?id=rbi_repo`.
-Wired: rbi, cboe-vix, cftc-cot, bls, ecb, amfi, damodaran. To add one: new file in `sources/`, register in `COLLECTORS`, dry-run it, read it in a panel via `latestPoints`.
+Wired: rbi, rbi-market (liquidity, call rate, T-bills, G-secs), fred-reserves, cboe-vix, cftc-cot, bls, ecb, amfi, damodaran. To add one: new file in `sources/`, register in `COLLECTORS`, dry-run it, read it in a panel via `latestPoints`.
 
 ## Known gaps (hardcoded / link-out today) → fix targets
 GST collections (PIB), fiscal deficit (CGA), UPI stats (NPCI), fuel demand (PPAC), FPI flow history (NSDL; NSE only gives today), 5D/1M/YTD FII-DII, India yield curve tenors, PMI, IIP, forex reserves (RBI WSS), MF NAV (AMFI).
