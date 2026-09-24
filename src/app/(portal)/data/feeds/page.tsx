@@ -1,13 +1,12 @@
 "use client";
 
-import { NewsStream } from "@/components/feeds/news-stream";
 import { DataInfo } from "@/components/feeds/data-info";
 import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { formatPct } from "@/lib/format";
 import { useFeedHub } from "@/hooks/use-feed-hub";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Newspaper, TrendingUp, Landmark, ShieldCheck, Database } from "lucide-react";
+import Link from "next/link";
 
 export default function FeedsPage() {
   const { data, loading, error, reload } = useFeedHub(45_000);
@@ -15,33 +14,38 @@ export default function FeedsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Data plane"
-        title="Live market feeds"
-        subtitle="Aggregated RSS and open APIs — NSE, BSE, RBI, SEC EDGAR, Yahoo Finance, Stooq, Alpha Vantage, FRED, World Bank, IMF, OECD, MOSPI, and India benchmarks (Upstox primary, TrueData fallback). Refreshes automatically."
+        kicker="Data Plane"
+        title="Live Market Feeds & Ingestion Health"
+        subtitle="Operational telemetry and health monitoring for all upstream market feeds — NSE, BSE, RBI, FRED, World Bank, IMF, OECD, MOSPI, and Upstox market data."
       />
+
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => reload()}
-          className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
+          className="rounded-lg border border-border bg-card px-3.5 py-1.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors shadow-xs"
         >
-          Refresh now
+          Refresh Feeds
         </button>
         <MarketStatusBadge />
       </div>
+
       {loading && !data ? (
-        <p className="text-sm text-muted-foreground">Pulling feeds…</p>
+        <p className="text-sm text-muted-foreground">Connecting to telemetry hub…</p>
       ) : null}
+
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+
       {data ? (
         <>
+          {/* Feed Health Matrix */}
           <Panel
-            title="Source health"
+            title="Upstream Source Health & Latency"
             subtitle={
-              <span className="inline-flex items-center gap-1">
-                Last hub sync {new Date(data.fetchedAt).toLocaleString()}
+              <span className="inline-flex items-center gap-1.5">
+                Last hub synchronization {new Date(data.fetchedAt).toLocaleString()}
                 <DataInfo
-                  source={{ provider: "Feed hub", url: "/api/feeds/hub", asOf: data.fetchedAt }}
+                  source={{ provider: "Feed Hub", url: "/api/feeds/hub", asOf: data.fetchedAt }}
                   hubSyncedAt={data.fetchedAt}
                 />
               </span>
@@ -49,38 +53,80 @@ export default function FeedsPage() {
           >
             <SourceHealthGrid rows={data.health} />
           </Panel>
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Panel title="Regulatory & exchange headlines">
-              <NewsStream items={data.news} limit={24} />
-            </Panel>
-            <Panel title="India benchmarks (NSE / BSE via live quotes)">
-              <table className="w-full text-sm">
-                <thead className="text-left text-muted-foreground">
-                  <tr>
-                    <th className="py-2">Symbol</th>
-                    <th className="text-right">Last</th>
-                    <th className="text-right">Chg</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.indices.map((row) => (
-                    <tr key={row.symbol} className="border-t border-border">
-                      <td className="py-2">{row.symbol}</td>
-                      <td className="py-2 text-right">{row.price.toFixed(2)}</td>
-                      <td
-                        className={cn(
-                          "py-2 text-right",
-                          row.changePct >= 0 ? "text-emerald-600" : "text-rose-600",
-                        )}
-                      >
-                        {formatPct(row.changePct)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Panel>
-          </div>
+
+          {/* Feed Consumers & Routing Architecture */}
+          <Panel
+            title="Live Data Routing & Analytical Desks"
+            subtitle="Upstream data streams aggregated by the feed engine are routed to their designated analytical pages across the platform."
+          >
+            <div className="grid gap-4 md:grid-cols-3">
+              <Link
+                href="/intelligence"
+                className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                    <Newspaper className="size-4" />
+                    <span>Regulatory & News Desk</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-foreground">
+                    Regulatory & Exchange Headlines
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Live RSS headlines from RBI, SEBI, NSE, and BSE corporate filings now stream directly on the Intelligence terminal.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">
+                  <span>View Intelligence Feed</span>
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              <Link
+                href="/markets/india"
+                className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                    <TrendingUp className="size-4" />
+                    <span>Equity Benchmarks</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-foreground">
+                    India Benchmarks Cockpit
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Live prices and intraday percentage moves for Nifty 50, Sensex, and heavyweight index constituents on the India Cockpit.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">
+                  <span>Open India Markets</span>
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              <Link
+                href="/macro/rbi"
+                className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                    <Landmark className="size-4" />
+                    <span>Central Banking</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-foreground">
+                    RBI Policy & Liquidity
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Overnight VRRR auction notices, OMO sales, T-bill auction cut-offs, and LAF corridor operations on the RBI desk.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">
+                  <span>Open RBI Desk</span>
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </div>
+          </Panel>
         </>
       ) : null}
     </div>

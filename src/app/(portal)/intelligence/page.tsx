@@ -4,8 +4,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { CorporateEventsCard } from "@/components/dashboard/corporate-events-card";
+import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { Radio, Sparkles, Send, Bot, ShieldCheck } from "lucide-react";
+import { useFeedHub } from "@/hooks/use-feed-hub";
+import { Radio, Sparkles, Send, Bot, ShieldCheck, Newspaper, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function IntelligencePage() {
@@ -17,6 +19,7 @@ export default function IntelligencePage() {
     },
   ]);
   const [thinking, setThinking] = useState(false);
+  const { data: feedData } = useFeedHub(45_000);
 
   const handleSend = () => {
     if (!query.trim()) return;
@@ -59,7 +62,7 @@ export default function IntelligencePage() {
             <span className="text-sm font-bold text-foreground uppercase tracking-wider">
               AI COPILOT TERMINAL
             </span>
-            <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-sm font-bold text-emerald-600">
+            <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-600">
               DESK ACTIVE
             </span>
             <MetricInfo
@@ -69,7 +72,7 @@ export default function IntelligencePage() {
               iconSize="xs"
             />
           </div>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Model: Deep Institutional Quant Engine
           </span>
         </div>
@@ -86,7 +89,7 @@ export default function IntelligencePage() {
                   : "border border-primary/40 bg-primary/10 text-primary-foreground font-semibold ml-auto max-w-xl",
               )}
             >
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground uppercase font-bold mb-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase font-bold mb-1">
                 {m.role === "assistant" ? <Bot className="size-3 text-primary" /> : null}
                 <span>{m.role === "assistant" ? "MI Copilot" : "Portfolio Manager"}</span>
               </div>
@@ -120,6 +123,29 @@ export default function IntelligencePage() {
             Query
           </button>
         </div>
+      </div>
+
+      {/* Regulatory & Exchange Headlines Section */}
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2">
+            <Newspaper className="size-4 text-primary" />
+            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
+              REGULATORY & EXCHANGE HEADLINES
+            </h3>
+            <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+              LIVE RSS FEED
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            Sourced continuously from RBI, SEBI, NSE, and BSE Official Feeds
+          </span>
+        </div>
+        {feedData?.news ? (
+          <NewsStream items={feedData.news} limit={24} />
+        ) : (
+          <p className="text-sm text-muted-foreground py-4">Loading live headlines…</p>
+        )}
       </div>
 
       {/* Corporate Events Desk */}

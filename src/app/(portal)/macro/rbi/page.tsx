@@ -2,11 +2,16 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
+import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { useFeedHub } from "@/hooks/use-feed-hub";
+import { Landmark, Newspaper } from "lucide-react";
 
 export default function RbiPolicyPage() {
   const { data } = useIndiaDashboard(45_000);
+  const { data: feedData } = useFeedHub(45_000);
+  const rbiNews = feedData?.news?.filter((n) => n.source === "rbi") ?? [];
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
@@ -75,6 +80,27 @@ export default function RbiPolicyPage() {
           </div>
         </div>
       </div>
+
+      {/* Live RBI Operations & Auction Headlines */}
+      {rbiNews.length ? (
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+            <div className="flex items-center gap-2">
+              <Landmark className="size-4 text-primary" />
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
+                RBI REGULATORY ACTIONS & MONEY MARKET OPERATIONS
+              </h3>
+              <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                OFFICIAL PRESS RELEASES
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              Overnight VRRR Auctions · OMO Sales · T-Bill Results · LAF Operations
+            </span>
+          </div>
+          <NewsStream items={rbiNews} limit={16} />
+        </div>
+      ) : null}
     </div>
   );
 }
