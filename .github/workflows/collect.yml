@@ -16,24 +16,30 @@ jobs:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl --fail-with-body -sS -m 90 \
+          code=$(curl -sS -m 90 -o /tmp/out.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/collect"
+            "${SITE_URL:-https://getmarketintelligence.in}/api/cron/collect")
+          cat /tmp/out.json; echo
+          test "$code" = "200"
       - name: Snapshot stress index and evaluate alerts
         if: always()
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl --fail-with-body -sS -m 90 \
+          code=$(curl -sS -m 90 -o /tmp/out.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/stress"
+            "${SITE_URL:-https://getmarketintelligence.in}/api/cron/stress")
+          cat /tmp/out.json; echo
+          test "$code" = "200"
       - name: Evaluate user alert rules
         if: always()
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl --fail-with-body -sS -m 90 \
+          code=$(curl -sS -m 90 -o /tmp/out.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/alerts"
+            "${SITE_URL:-https://getmarketintelligence.in}/api/cron/alerts")
+          cat /tmp/out.json; echo
+          test "$code" = "200"

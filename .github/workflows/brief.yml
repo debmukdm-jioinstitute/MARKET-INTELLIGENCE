@@ -25,6 +25,8 @@ jobs:
         run: |
           KIND="${INPUT_KIND:-pre}"
           if [ "$EVENT_CRON" = "30 10 * * 1-5" ]; then KIND=post; fi
-          curl --fail-with-body -sS -m 90 \
+          code=$(curl -sS -m 90 -o /tmp/out.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/brief?kind=${KIND}"
+            "${SITE_URL:-https://getmarketintelligence.in}/api/cron/brief?kind=${KIND}")
+          cat /tmp/out.json; echo
+          test "$code" = "200"
