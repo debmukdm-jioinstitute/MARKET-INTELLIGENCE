@@ -56,11 +56,13 @@ export const NAV_COLUMNS: NavColumn[] = [
     title: "Intelligence",
     items: [
       { label: "Intelligence Feed", href: "/intelligence", desc: "News impact scored for sentiment and relevance.", badge: "AI" },
+      { label: "Daily Brief", href: "/intelligence/brief", desc: "Pre-market and post-close brief with cited sources.", badge: "AI" },
+      { label: "Alert Rules", href: "/intelligence/alerts", desc: "Custom market alerts by push or email." },
       { label: "System & Data", href: "/data", desc: "Feed health, sources, and data freshness." },
       { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
       { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },
       {
-        label: "Daily Brief",
+        label: "External Brief (Bazaarbrief)",
         href: "https://abhisheksi2o.github.io/Bazaarbrief/",
         desc: "A short, external read on the day's market narrative.",
         external: true,

@@ -1,0 +1,30 @@
+name: daily-brief
+
+# Weekdays: pre-market 08:15 IST (02:45 UTC) and post-close 16:00 IST (10:30 UTC).
+on:
+  schedule:
+    - cron: "45 2 * * 1-5"
+    - cron: "30 10 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "pre or post"
+        default: "pre"
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Generate brief
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          EVENT_CRON: ${{ github.event.schedule }}
+          INPUT_KIND: ${{ github.event.inputs.kind }}
+        run: |
+          KIND="${INPUT_KIND:-pre}"
+          if [ "$EVENT_CRON" = "30 10 * * 1-5" ]; then KIND=post; fi
+          curl --fail-with-body -sS -m 90 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/brief?kind=${KIND}"

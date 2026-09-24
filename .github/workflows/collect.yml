@@ -28,3 +28,12 @@ jobs:
           curl --fail-with-body -sS -m 90 \
             -H "Authorization: Bearer ${CRON_SECRET}" \
             "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/stress"
+      - name: Evaluate user alert rules
+        if: always()
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body -sS -m 90 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL:-https://getmarketintelligence.vercel.app}/api/cron/alerts"
