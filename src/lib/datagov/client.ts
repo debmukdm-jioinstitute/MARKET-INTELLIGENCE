@@ -182,3 +182,20 @@ export async function* iterateResource(
     if (offset >= page.total) return;
   }
 }
+
+/** Curated resource UUIDs (data.gov.in only accepts UUIDs, not slugs). Newest release first. */
+export const RESOURCES = {
+  /** Wholesale Price Index (Base 2011-12), wide format: COMM_NAME + INDXMMYYYY columns. */
+  wpi: ["239ac3d0-f08d-40d0-b03c-9b7a426a62d5"],
+  /** All India CPI (Rural/Urban/Combined) by month with group columns + general_index. */
+  cpi: ["1ca957b4-0cf0-4d7e-a6a7-627d9f13b170", "2a6edbfb-b416-48db-9183-645be023f757"],
+} as const;
+
+/** Rows for a resource, or [] on any failure (macro panels degrade to their fallbacks). */
+export async function safeRecords(id: string, limit = 1000): Promise<Record<string, string>[]> {
+  try {
+    return (await fetchResourcePage(id, { limit })).records;
+  } catch {
+    return [];
+  }
+}

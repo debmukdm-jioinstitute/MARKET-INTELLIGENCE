@@ -122,7 +122,7 @@ export function buildRegimeBlock(input: {
       detail:
         input.creditGrowth != null
           ? `Bank credit growth ~${input.creditGrowth.toFixed(1)}% y/y`
-          : "Credit from RBI / data.gov.in",
+          : "Credit/GDP from World Bank",
     },
     {
       dimension: "rates",

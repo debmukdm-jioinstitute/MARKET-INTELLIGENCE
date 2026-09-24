@@ -1,11 +1,8 @@
+import { RESOURCES, safeRecords } from "@/lib/datagov/client";
 import { feedFetch } from "@/lib/feeds/http";
 import type { MacroRow } from "@/lib/feeds/india/types";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import type { MacroMetric } from "@/lib/macro/types";
-
-const DATA_GOV_KEY =
-  process.env.DATA_GOV_IN_API_KEY?.trim() ||
-  "579b464db66ec23bdd000001cdd3946e44cce2f45628f8dc59a380bfa1e971e";
 
 export function metricFromRow(row: MacroRow): MacroMetric {
   return {
@@ -92,28 +89,40 @@ export async function fetchFredMetric(
   };
 }
 
-export async function fetchCpiIndexSeries(): Promise<{ date: string; value: number }[]> {
-  const url = `https://api.data.gov.in/resource/all-india-consumer-price-index-numbers-general?api-key=${DATA_GOV_KEY}&format=json&limit=48`;
-  try {
-    const res = await feedFetch(url, { timeoutMs: 12_000 });
-    if (!res.ok) return [];
-    const json = (await res.json()) as {
-      records?: { Year?: string; Month?: string; CPI?: string; Value?: string }[];
-    };
-    const points =
-      json.records
-        ?.map((r) => {
-          const value = Number(r.CPI ?? r.Value);
-          const month = r.Month?.padStart(2, "0") ?? "01";
-          const date = r.Year ? `${r.Year}-${month}` : "";
-          return { date, value };
-        })
-        .filter((p) => p.date && Number.isFinite(p.value))
-        .sort((a, b) => a.date.localeCompare(b.date)) ?? [];
-    return points;
-  } catch {
-    return [];
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+function monthNumber(raw: string | undefined): string | null {
+  if (!raw) return null;
+  const t = raw.trim().toLowerCase();
+  const idx = MONTHS.indexOf(t.slice(0, 3));
+  if (idx >= 0) return String(idx + 1).padStart(2, "0");
+  const n = Number(t);
+  return Number.isInteger(n) && n >= 1 && n <= 12 ? String(n).padStart(2, "0") : null;
+}
+
+/** All-India CPI rows for the "Combined" (rural+urban) sector, oldest→newest, from the newest data.gov.in release that has data. */
+async function fetchCpiCombinedRows(): Promise<{ date: string; row: Record<string, string> }[]> {
+  for (const id of RESOURCES.cpi) {
+    const records = await safeRecords(id);
+    const rows = records
+      .filter((r) => /combined/i.test(r.sector ?? ""))
+      .flatMap((r) => {
+        const m = monthNumber(r.month);
+        const y = /^\d{4}/.exec(r.year ?? "")?.[0];
+        return m && y ? [{ date: `${y}-${m}`, row: r }] : [];
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (rows.length) return rows;
   }
+  return [];
+}
+
+export async function fetchCpiIndexSeries(): Promise<{ date: string; value: number }[]> {
+  const rows = await fetchCpiCombinedRows();
+  return rows
+    .map(({ date, row }) => ({ date, value: Number(row.general_index) }))
+    .filter((p) => Number.isFinite(p.value))
+    .slice(-48);
 }
 
 export function cpiYoYFromIndex(points: { date: string; value: number }[]) {
@@ -154,34 +163,19 @@ export function inflationMomentum(points: { date: string; value: number }[]) {
 type CpiGroupRow = { group: string; index: number; weight?: number };
 
 export async function fetchCpiGroupBreakdown(): Promise<CpiGroupRow[]> {
-  const resources = [
-    "current-month-and-last-year-same-month-cpi-and-group-wise-weights",
-    "all-india-consumer-price-index-numbers-group-wise",
-  ];
-  for (const resource of resources) {
-    const url = `https://api.data.gov.in/resource/${resource}?api-key=${DATA_GOV_KEY}&format=json&limit=80`;
-    try {
-      const res = await feedFetch(url, { timeoutMs: 12_000 });
-      if (!res.ok) continue;
-      const json = (await res.json()) as { records?: Record<string, string>[] };
-      const records = json.records ?? [];
-      if (!records.length) continue;
-      const latest = records[records.length - 1]!;
-      const out: CpiGroupRow[] = [];
-      for (const [key, raw] of Object.entries(latest)) {
-        if (!key || key === "Year" || key === "Month" || key === "State") continue;
-        const value = Number(String(raw).replace(/,/g, ""));
-        if (!Number.isFinite(value)) continue;
-        const group = key.replace(/_/g, " ").replace(/CPI/gi, "").trim();
-        if (!group) continue;
-        out.push({ group, index: value });
-      }
-      if (out.length >= 4) return out.slice(0, 24);
-    } catch {
-      /* try next resource */
-    }
+  const rows = await fetchCpiCombinedRows();
+  const latest = rows[rows.length - 1]?.row;
+  if (!latest) return [];
+  const skip = new Set(["document_id", "sector", "year", "month", "general_index", "resource_uuid", "_"]);
+  const out: CpiGroupRow[] = [];
+  for (const [key, raw] of Object.entries(latest)) {
+    if (skip.has(key)) continue;
+    const value = Number(String(raw).replace(/,/g, ""));
+    if (!Number.isFinite(value)) continue;
+    const group = key.replace(/_+/g, " ").trim();
+    if (group) out.push({ group, index: value });
   }
-  return [];
+  return out.length >= 4 ? out.slice(0, 24) : [];
 }
 
 export function staticCpiBasket(): CpiGroupRow[] {

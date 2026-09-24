@@ -1,4 +1,4 @@
-import { dataGovKey } from "@/lib/datagov/client";
+import { RESOURCES, safeRecords } from "@/lib/datagov/client";
 import { feedFetch } from "@/lib/feeds/http";
 import { fetchNseGsecBenchmarkYield } from "@/lib/feeds/india/nse-market";
 import type { FieldSource, MacroRow, QuoteField } from "@/lib/feeds/india/types";
@@ -8,22 +8,6 @@ import { fetchUpstoxHistoricalCandles, fetchUpstoxQuotes } from "@/lib/feeds/sou
 import { fetchYahooHistory, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
 const NIFTY_GS_10Y_KEY = "NSE_INDEX|Nifty GS 10Yr";
-
-const WPI_RESOURCES = [
-  "monthly-indices-of-all-items-price-wpi-base-year-2011-12",
-  "month-wise-indices-of-wholesale-price-index-base-year-2011-12",
-  "all-india-wholesale-price-index-base-year-2011-12",
-];
-
-const RBI_CREDIT_RESOURCES = [
-  "rbi-data-on-scheduled-commercial-banks-in-india",
-  "growth-in-bank-credit",
-  "bank-credit-deposits-and-investments-of-scheduled-commercial-banks",
-];
-
-function dataGovUrl(resource: string, limit = 48) {
-  return `https://api.data.gov.in/resource/${resource}?api-key=${dataGovKey()}&format=json&limit=${limit}`;
-}
 
 function macroDirection(current: number | null, previous: number | null): MacroRow["direction"] {
   if (current == null || previous == null) return "na";
@@ -69,39 +53,15 @@ function yoyFromIndexSeries(
   return out;
 }
 
-async function fetchDataGovRecords(resource: string, limit = 48): Promise<Record<string, string>[]> {
-  try {
-    const res = await feedFetch(dataGovUrl(resource, limit), { timeoutMs: 12_000 });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { records?: Record<string, string>[]; error?: string };
-    if (json.error || !json.records?.length) return [];
-    return json.records;
-  } catch {
-    return [];
-  }
-}
-
+/** WPI (2011-12 base) is published wide: one row per commodity, one INDXMMYYYY column per month. */
 function parseWpiRecords(records: Record<string, string>[]) {
+  const all = records.find((r) => /^all commodities$/i.test((r.COMM_NAME ?? "").trim())) ?? records.find((r) => /all commodities/i.test(r.COMM_NAME ?? ""));
+  if (!all) return [];
   const points: { date: string; value: number }[] = [];
-  for (const r of records) {
-    const year = r.Year ?? r.year ?? r.Financial_Year;
-    const month = r.Month ?? r.month ?? r.Month_Name;
-    const raw =
-      r.WPI_All_commodities ??
-      r.All_commodities ??
-      r.Index ??
-      r.Value ??
-      r.WPI ??
-      r["WPI (All commodities)"];
+  for (const [key, raw] of Object.entries(all)) {
+    const m = /^INDX(\d{2})(\d{4})$/.exec(key);
     const value = Number(raw);
-    if (!Number.isFinite(value)) continue;
-    let date = "";
-    if (year && month) {
-      const m = month.length <= 2 ? month.padStart(2, "0") : String(new Date(`${month} 1, ${year}`).getMonth() + 1).padStart(2, "0");
-      date = `${year}-${m}`;
-    } else if (year) date = `${year}-01`;
-    if (!date) continue;
-    points.push({ date, value });
+    if (m && Number.isFinite(value)) points.push({ date: `${m[2]}-${m[1]}`, value });
   }
   return points.sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -118,14 +78,14 @@ export async function fetchIndiaWpiRow(): Promise<MacroRow> {
     source: { provider: "MOSPI / data.gov.in", url: "https://www.mospi.gov.in/" },
   };
 
-  for (const resource of WPI_RESOURCES) {
-    const records = await fetchDataGovRecords(resource, 60);
+  for (const resource of RESOURCES.wpi) {
+    const records = await safeRecords(resource);
     const indexPts = parseWpiRecords(records);
     const yoyPts = yoyFromIndexSeries(indexPts);
     if (yoyPts.length) {
       return rowFromHistory("in_wpi", "WPI", "% y/y", yoyPts, {
         provider: "MOSPI / data.gov.in",
-        url: dataGovUrl(resource, 1),
+        url: `https://data.gov.in/resource/${resource}`,
         asOf: new Date().toISOString(),
       });
     }
@@ -149,25 +109,6 @@ export async function fetchIndiaWpiRow(): Promise<MacroRow> {
   return empty;
 }
 
-function parseCreditGrowthRecords(records: Record<string, string>[]) {
-  const points: { date: string; value: number }[] = [];
-  for (const r of records) {
-    const date = r.Year ?? r.year ?? r.Date ?? r.Month_Year;
-    const raw =
-      r.Growth_in_Bank_Credit ??
-      r.Bank_Credit_Growth ??
-      r.Credit_Growth ??
-      r.YoY_Growth ??
-      r.Value ??
-      r["Growth in Bank Credit"];
-    const value = Number(String(raw).replace(/,/g, ""));
-    if (!date || !Number.isFinite(value)) continue;
-    const norm = date.includes("-") ? date.slice(0, 7) : `${date}-03`;
-    points.push({ date: norm, value });
-  }
-  return points.sort((a, b) => a.date.localeCompare(b.date));
-}
-
 export async function fetchIndiaCreditGrowthRow(): Promise<MacroRow> {
   const empty: MacroRow = {
     id: "in_credit",
@@ -177,20 +118,8 @@ export async function fetchIndiaCreditGrowthRow(): Promise<MacroRow> {
     unit: "% y/y",
     direction: "na",
     history12m: [],
-    source: { provider: "RBI / data.gov.in", url: "https://www.rbi.org.in/" },
+    source: { provider: "World Bank", url: "https://data.worldbank.org/" },
   };
-
-  for (const resource of RBI_CREDIT_RESOURCES) {
-    const records = await fetchDataGovRecords(resource, 36);
-    const points = parseCreditGrowthRecords(records);
-    if (points.length) {
-      return rowFromHistory("in_credit", "Credit growth", "% y/y", points, {
-        provider: "RBI / data.gov.in",
-        url: dataGovUrl(resource, 1),
-        asOf: new Date().toISOString(),
-      });
-    }
-  }
 
   const wbPts = await fetchWorldBankAnnualPoints("IN", "GFDD.SI.01");
   const yoy = annualYoYPoints(wbPts);
