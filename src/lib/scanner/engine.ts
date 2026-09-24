@@ -45,7 +45,7 @@ export async function runScan(opts: { symbols?: string[]; budgetMs?: number; con
       };
       for (const s of SCANNERS) {
         try {
-          const note = s.test(bars, ind);
+          const note = s.test(bars, ind, bars.length - 1);
           if (note) scanners[s.id].push({ ...base, note });
         } catch {
           /* a scanner failing on one symbol must not stop the rest */

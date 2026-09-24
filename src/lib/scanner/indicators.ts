@@ -127,6 +127,81 @@ export function atrTrailingStop(bars: Bar[], atrs: number[], mult = 3): number[]
   return out;
 }
 
+/** Parabolic SAR (af 0.02 → 0.2). Returns SAR values and a bull flag (1 = SAR below price). */
+export function psar(bars: Bar[], step = 0.02, max = 0.2): { sar: number[]; bull: number[] } {
+  const n = bars.length;
+  const sar = nan(n);
+  const bull = nan(n);
+  if (n < 3) return { sar, bull };
+  let up = bars[1].c > bars[0].c;
+  let ep = up ? bars[0].h : bars[0].l;
+  let cur = up ? bars[0].l : bars[0].h;
+  let af = step;
+  sar[0] = cur;
+  bull[0] = up ? 1 : 0;
+  for (let i = 1; i < n; i++) {
+    cur = cur + af * (ep - cur);
+    if (up) {
+      cur = Math.min(cur, bars[i - 1].l, i > 1 ? bars[i - 2].l : bars[i - 1].l);
+      if (bars[i].l < cur) {
+        up = false;
+        cur = ep;
+        ep = bars[i].l;
+        af = step;
+      } else if (bars[i].h > ep) {
+        ep = bars[i].h;
+        af = Math.min(af + step, max);
+      }
+    } else {
+      cur = Math.max(cur, bars[i - 1].h, i > 1 ? bars[i - 2].h : bars[i - 1].h);
+      if (bars[i].h > cur) {
+        up = true;
+        cur = ep;
+        ep = bars[i].h;
+        af = step;
+      } else if (bars[i].l < ep) {
+        ep = bars[i].l;
+        af = Math.min(af + step, max);
+      }
+    }
+    sar[i] = cur;
+    bull[i] = up ? 1 : 0;
+  }
+  return { sar, bull };
+}
+
+function midpoint(bars: Bar[], n: number): number[] {
+  const out = nan(bars.length);
+  for (let i = n - 1; i < bars.length; i++) {
+    let hi = -Infinity;
+    let lo = Infinity;
+    for (let j = i - n + 1; j <= i; j++) {
+      hi = Math.max(hi, bars[j].h);
+      lo = Math.min(lo, bars[j].l);
+    }
+    out[i] = (hi + lo) / 2;
+  }
+  return out;
+}
+
+/** Ichimoku (9/26/52). Cloud arrays are as plotted at each bar, i.e. computed 26 bars earlier. */
+export function ichimoku(bars: Bar[]) {
+  const tenkan = midpoint(bars, 9);
+  const kijun = midpoint(bars, 26);
+  const spanB = midpoint(bars, 52);
+  const cloudTop = nan(bars.length);
+  const cloudBottom = nan(bars.length);
+  for (let i = 26; i < bars.length; i++) {
+    const a = (tenkan[i - 26] + kijun[i - 26]) / 2;
+    const b = spanB[i - 26];
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      cloudTop[i] = Math.max(a, b);
+      cloudBottom[i] = Math.min(a, b);
+    }
+  }
+  return { tenkan, kijun, cloudTop, cloudBottom };
+}
+
 export function computeIndicators(bars: Bar[]): Indicators {
   const close = bars.map((b) => b.c);
   const fast = ema(close, 12);
@@ -136,7 +211,18 @@ export function computeIndicators(bars: Bar[]): Indicators {
   const macdHist = macd.map((v, i) => v - macdSignal[i]);
   const a = atr(bars, 14);
   const ar = aroon(bars, 14);
+  const ps = psar(bars);
+  const ich = ichimoku(bars);
   return {
+    sma50: sma(close, 50),
+    sma150: sma(close, 150),
+    sma200: sma(close, 200),
+    psar: ps.sar,
+    psarBull: ps.bull,
+    tenkan: ich.tenkan,
+    kijun: ich.kijun,
+    cloudTop: ich.cloudTop,
+    cloudBottom: ich.cloudBottom,
     rsi: rsi(close, 14),
     macd,
     macdSignal,
