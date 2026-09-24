@@ -16,12 +16,14 @@ import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
 import { MoneyFlow } from "@/components/dashboard/money-flow";
 import { RefreshCw, Terminal } from "lucide-react";
+import { ShippedPopup } from "@/components/marketing/shipped-popup";
 
 export default function DashboardPage() {
   const { data, loadingFull, error, reload } = useIndiaDashboard(45_000);
 
   return (
     <div className="portal-page pb-10">
+      <ShippedPopup />
       {/* Top Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-3">
         <div>
