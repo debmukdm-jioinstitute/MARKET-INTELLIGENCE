@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { hasDatabase, sql } from "../db";
+import { diffScan, diffSignals } from "../notify/detect-data";
+import { addEvents } from "../notify/store";
 import type { BacktestRun, ScanRun, SignalsRun } from "./types";
 
 /** Latest scan and backtest results — Postgres when configured, else a JSON file under `.scanner-cache/`. */
@@ -41,9 +43,18 @@ async function load<T>(id: string): Promise<T | null> {
   }
 }
 
-export const saveScan = (run: ScanRun) => save("latest", run);
+/** Saving a new scan/signals result also announces what changed versus the previous one to the notification feed. */
+export async function saveScan(run: ScanRun): Promise<void> {
+  const prev = await load<ScanRun>("latest").catch(() => null);
+  await save("latest", run);
+  await addEvents(diffScan(prev, run)).catch(() => {});
+}
 export const loadScan = () => load<ScanRun>("latest");
 export const saveBacktest = (run: BacktestRun) => save("backtest", run);
 export const loadBacktest = () => load<BacktestRun>("backtest");
-export const saveSignals = (run: SignalsRun) => save("signals", run);
+export async function saveSignals(run: SignalsRun): Promise<void> {
+  const prev = await load<SignalsRun>("signals").catch(() => null);
+  await save("signals", run);
+  await addEvents(diffSignals(prev, run)).catch(() => {});
+}
 export const loadSignals = () => load<SignalsRun>("signals");
