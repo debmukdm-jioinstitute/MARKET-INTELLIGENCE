@@ -3,6 +3,10 @@
 import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import {
+  Server,
+  BellRing,
+  Newspaper,
+  Rss,
   BarChart3,
   Bell,
   LayoutDashboard,
@@ -25,6 +29,10 @@ const NAV = [
   { href: "/admin/newsletters", label: "Newsletters", icon: Mail },
   { href: "/admin/knowledge-base", label: "Knowledge Base (RAG)", icon: Sparkles },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/brief", label: "Daily Brief", icon: Newspaper },
+  { href: "/admin/alerts", label: "Alert Rules", icon: BellRing },
+  { href: "/admin/feeds", label: "Data Feeds", icon: Rss },
+  { href: "/admin/system", label: "System & Jobs", icon: Server },
 ];
 
 export function AdminShell({ user, children }: { user: SessionUser; children: React.ReactNode }) {
