@@ -10,6 +10,7 @@ import {
   suggestionsForSkill,
   type SkillLevel,
 } from "@/lib/site-assistant/education";
+import { AssistantMessageBody } from "@/components/site-assistant/assistant-message-body";
 import { isAllowedHref } from "@/lib/site-assistant/site-map";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
@@ -373,13 +374,20 @@ function SiteAssistantChat({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "max-w-[94%] rounded-xl px-3 py-2 text-sm leading-relaxed shadow-sm",
               m.role === "user"
-                ? "ml-auto bg-primary text-primary-foreground"
-                : "border border-border/80 bg-card text-card-foreground",
+                ? "ml-auto max-w-[94%] rounded-xl bg-primary px-3 py-2.5 text-sm leading-relaxed text-primary-foreground shadow-sm"
+                : "max-w-full rounded-xl border border-border/80 bg-card px-3 py-2.5 text-card-foreground shadow-sm",
             )}
           >
-            {messageText(m) || (m.role === "assistant" && busy ? "…" : "")}
+            {m.role === "assistant" ? (
+              messageText(m) ? (
+                <AssistantMessageBody text={messageText(m)} />
+              ) : busy ? (
+                <span className="text-sm text-muted-foreground">…</span>
+              ) : null
+            ) : (
+              <p className="text-sm leading-relaxed">{messageText(m)}</p>
+            )}
           </motion.div>
         ))}
         {error ? (
