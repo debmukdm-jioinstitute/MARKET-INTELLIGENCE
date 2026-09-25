@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 // ----------------------------------------------------------------------
@@ -90,67 +90,16 @@ const AGENTS = {
 };
 
 // ----------------------------------------------------------------------
-// TYPING HOOK
-// ----------------------------------------------------------------------
-
-function useTypingEffect(
-  textLines: string[],
-  startDelay: number,
-  typingSpeed: number = 8
-) {
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const startTyping = () => {
-      setHasStarted(true);
-      setIsTyping(true);
-      
-      let currentLineIndex = 0;
-      let currentCharIndex = 0;
-      const newDisplayedLines = textLines.map(() => "");
-      setDisplayedLines([...newDisplayedLines]);
-
-      const typeChar = () => {
-        if (currentLineIndex < textLines.length) {
-          const currentLineText = textLines[currentLineIndex];
-          if (currentCharIndex < currentLineText.length) {
-            newDisplayedLines[currentLineIndex] = currentLineText.slice(0, currentCharIndex + 1);
-            setDisplayedLines([...newDisplayedLines]);
-            currentCharIndex++;
-            timeoutId = setTimeout(typeChar, typingSpeed + (Math.random() * 10)); // Variable speed
-          } else {
-            // Move to next line
-            currentLineIndex++;
-            currentCharIndex = 0;
-            timeoutId = setTimeout(typeChar, typingSpeed * 3); // Pause between lines
-          }
-        } else {
-          setIsTyping(false);
-          setIsFinished(true);
-        }
-      };
-
-      typeChar();
-    };
-
-    if (startDelay < 9999999) {
-      timeoutId = setTimeout(startTyping, startDelay);
-    }
-
-    return () => clearTimeout(timeoutId);
-  }, [textLines, startDelay, typingSpeed]);
-
-  return { displayedLines, isTyping, isFinished, hasStarted };
-}
-
-
-// ----------------------------------------------------------------------
-// AGENT CARD
+// ENGINE
+//
+// The whole debate plays inside one fixed-height box, so nothing here can push
+// the page around while it runs:
+//  - every card always holds its FULL text (typed part visible, the rest
+//    transparent), so the layout never changes while typing
+//  - typing is written straight to the DOM in one requestAnimationFrame loop
+//    (no React state, no re-render per character)
+//  - the box "follows" the debate with a GPU transform, not by scrolling the page
+//  - the loop only runs while the box is on screen and the tab is visible
 // ----------------------------------------------------------------------
 
 type Agent = {
@@ -164,174 +113,242 @@ type Agent = {
   subtitle?: string;
 };
 
-function AgentCard({
-  agent,
-  delay,
-  className,
-}: {
-  agent: Agent;
-  delay: number;
-  className?: string;
-}) {
-  // Combine paragraph and points for the typing effect
-  const allLines = React.useMemo(() => {
-    const lines = [];
-    if (agent.paragraph) lines.push(agent.paragraph);
-    if (agent.points && agent.points.length > 0) {
-      agent.points.forEach((p) => lines.push(p));
-    }
-    return lines;
-  }, [agent]);
+const linesOf = (a: Agent) => [...(a.paragraph ? [a.paragraph] : []), ...a.points];
 
-  const { displayedLines, hasStarted, isTyping } = useTypingEffect(allLines, delay, 15);
+/** Rows play one after another; cards inside a row type together. */
+const ROWS: { keys: (keyof typeof AGENTS)[]; grid: string }[] = [
+  { keys: ["fundamental", "sentiment", "technical"], grid: "md:grid-cols-3" },
+  { keys: ["bull", "bear"], grid: "md:grid-cols-2" },
+  { keys: ["trader"], grid: "grid-cols-1" },
+];
 
-  let displayedParagraph = "";
-  let displayedPoints: string[] = [];
+const CHARS_PER_MS = 0.11; // ~110 chars/second per card
+const ROW_GAP_MS = 350;
+const HOLD_MS = 5000; // pause on the finished debate before replaying
 
-  if (agent.paragraph) {
-    displayedParagraph = displayedLines[0] || "";
-    displayedPoints = displayedLines.slice(1);
-  } else {
-    displayedPoints = displayedLines;
-  }
-
+function AgentCard({ agent, id }: { agent: Agent; id: string }) {
+  const lines = linesOf(agent);
   return (
     <div
-      className={cn(
-        "ai-agent-card relative overflow-hidden rounded-2xl border border-white/90 bg-white/60 p-5 sm:p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition group flex flex-col h-full",
-        className
-      )}
+      data-card={id}
+      data-state="idle"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-[var(--shadow-sm)] transition-opacity duration-300 data-[state=idle]:opacity-40 sm:p-6"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${agent.glowColor} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
-      
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 relative z-10">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h4 className="font-semibold text-gray-900 tracking-tight">{agent.title}</h4>
-          {isTyping && (
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-          )}
-        </div>
-        {agent.label && (
-          <span
-            className={cn(
-              "text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border",
-              agent.labelColor
-            )}
-          >
-            {agent.label}
+          <h4 className="font-semibold tracking-tight text-gray-900">{agent.title}</h4>
+          <span className="relative hidden h-2 w-2 group-data-[state=typing]:flex">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
           </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 relative z-10">
-        {!hasStarted ? (
-          <div className="flex items-center gap-2 text-sm text-gray-400 animate-pulse mt-2">
-            <span className="h-1.5 w-1.5 bg-gray-400 rounded-full"></span>
-            <span className="h-1.5 w-1.5 bg-gray-400 rounded-full" style={{ animationDelay: '0.2s' }}></span>
-            <span className="h-1.5 w-1.5 bg-gray-400 rounded-full" style={{ animationDelay: '0.4s' }}></span>
-            <span className="ml-1">Connecting agent...</span>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {agent.paragraph && (
-              <p className="text-[13px] leading-relaxed text-gray-700">
-                {agent.label === "BUY" && (
-                   <span className="text-emerald-600 font-bold uppercase tracking-wider mr-2">{agent.label}</span>
-                )}
-                {agent.label === "SELL" && (
-                   <span className="text-red-600 font-bold uppercase tracking-wider mr-2">{agent.label}</span>
-                )}
-                {displayedParagraph}
-                {isTyping && displayedPoints.length === 0 && <span className="inline-block w-1.5 h-3 bg-blue-500 animate-pulse ml-1 align-middle" />}
-              </p>
-            )}
-
-            {displayedPoints.length > 0 && (
-              <ul className="space-y-2.5 text-[13px] leading-relaxed text-gray-600 list-disc pl-4">
-                {displayedPoints.map((point, idx) => {
-                  if (!point) return null;
-                  const isLastLine = idx === displayedPoints.length - 1;
-                  return (
-                    <li key={idx} className="marker:text-gray-300">
-                      {point}
-                      {isTyping && isLastLine && <span className="inline-block w-1.5 h-3 bg-blue-500 animate-pulse ml-1 align-middle" />}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      {agent.confidence && hasStarted && (
-        <div className="mt-5 pt-4 border-t border-gray-200/50 flex items-center justify-between relative z-10">
-          <p className="text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
-             Confidence: <span className="text-gray-600">{agent.confidence}</span>
-          </p>
-          {agent.subtitle && (
-            <p className="text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
-              {agent.subtitle}
-            </p>
-          )}
         </div>
-      )}
+        {agent.label ? (
+          <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest", agent.labelColor)}>{agent.label}</span>
+        ) : null}
+      </div>
+
+      <div className="flex-1 space-y-3 text-[13px] leading-relaxed">
+        {lines.map((text, i) => {
+          const isPara = Boolean(agent.paragraph) && i === 0;
+          const Wrapper = isPara ? "p" : "div";
+          return (
+            <Wrapper key={i} className={cn(isPara ? "text-gray-700" : "flex gap-2 text-gray-600")}>
+              {!isPara ? <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-gray-300" /> : null}
+              <span>
+                <span data-typed={`${id}:${i}`} />
+                <span data-rest={`${id}:${i}`} className="text-transparent select-none">{text}</span>
+              </span>
+            </Wrapper>
+          );
+        })}
+      </div>
+
+      {agent.confidence ? (
+        <div className="mt-5 flex items-center justify-between border-t border-gray-200/60 pt-4 opacity-0 transition-opacity duration-500 group-data-[state=done]:opacity-100">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            Confidence: <span className="text-gray-600">{agent.confidence}</span>
+          </p>
+          {agent.subtitle ? <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">{agent.subtitle}</p> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-// ----------------------------------------------------------------------
-// MAIN COMPONENT
-// ----------------------------------------------------------------------
-
 export function LiveDebate() {
-  const [inView, setInView] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  // Trigger typing when scrolled into view
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect(); // Only trigger once
-        }
-      },
-      { threshold: 0.2 }
-    );
+    const box = boxRef.current;
+    const track = trackRef.current;
+    if (!box || !track) return;
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
+    const q = <T extends Element>(sel: string) => track.querySelector<T>(sel);
+    const cards = Object.keys(AGENTS) as (keyof typeof AGENTS)[];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Per-card typing state, written straight to the DOM.
+    const written = new Map<string, number>();
+    const setLine = (id: string, i: number, text: string, n: number) => {
+      const key = `${id}:${i}`;
+      if (written.get(key) === n) return;
+      written.set(key, n);
+      const typed = q<HTMLElement>(`[data-typed="${key}"]`);
+      const rest = q<HTMLElement>(`[data-rest="${key}"]`);
+      if (typed) typed.textContent = text.slice(0, n);
+      if (rest) rest.textContent = text.slice(n);
+    };
+    const setState = (id: string, state: "idle" | "typing" | "done") => {
+      const el = q<HTMLElement>(`[data-card="${id}"]`);
+      if (el && el.dataset.state !== state) el.dataset.state = state;
+    };
+    const render = (id: keyof typeof AGENTS, chars: number) => {
+      let left = chars;
+      linesOf(AGENTS[id]).forEach((text, i) => {
+        const n = Math.max(0, Math.min(text.length, left));
+        setLine(id, i, text, n);
+        left -= text.length;
+      });
+    };
+    const total = (id: keyof typeof AGENTS) => linesOf(AGENTS[id]).reduce((a, t) => a + t.length, 0);
+    const resetAll = () => {
+      written.clear();
+      cards.forEach((id) => {
+        render(id, 0);
+        setState(id, "idle");
+      });
+      track.style.transition = "none";
+      track.style.transform = "translate3d(0,0,0)";
+    };
+    const showAll = () => {
+      cards.forEach((id) => {
+        render(id, total(id));
+        setState(id, "done");
+      });
+    };
+
+    if (reduced) {
+      showAll();
+      return;
     }
 
-    return () => observer.disconnect();
+    // Steps play one after another; cards inside a step type together. On phones the cards
+    // are stacked, so each card is its own step and the box follows it down.
+    const stacked = window.matchMedia("(max-width: 767px)").matches;
+    const steps = stacked ? ROWS.flatMap((r) => r.keys.map((k) => [k])) : ROWS.map((r) => r.keys);
+
+    // Timeline: when each step starts, and how long its slowest card takes.
+    const rowStart: number[] = [];
+    let t = 400;
+    for (const keys of steps) {
+      rowStart.push(t);
+      t += Math.max(...keys.map((k) => total(k) / CHARS_PER_MS)) + ROW_GAP_MS;
+    }
+    const typingEnd = t;
+    const cycle = typingEnd + HOLD_MS;
+
+    // Follow the active row with a transform, never by scrolling the page.
+    let followedRow = -1;
+    const follow = (rowIdx: number) => {
+      if (rowIdx === followedRow) return;
+      followedRow = rowIdx;
+      const target = q<HTMLElement>(`[data-card="${steps[rowIdx]![0]}"]`);
+      const max = Math.max(0, track.scrollHeight - box.clientHeight);
+      // rect difference is unaffected by the track's current transform
+      const top = target ? target.getBoundingClientRect().top - track.getBoundingClientRect().top : 0;
+      const y = Math.min(max, Math.max(0, top - 8));
+      track.style.transition = rowIdx === 0 ? "none" : "transform 800ms cubic-bezier(0.22, 1, 0.36, 1)";
+      track.style.transform = `translate3d(0,${-y}px,0)`;
+    };
+
+    let raf = 0;
+    let running = false;
+    let elapsed = 0;
+    let last = 0;
+
+    const frame = (now: number) => {
+      elapsed += Math.min(now - last, 100); // clamp so a background-tab gap doesn't skip ahead
+      last = now;
+
+      if (elapsed >= cycle) {
+        elapsed = 0;
+        followedRow = -1;
+        resetAll();
+      }
+
+      steps.forEach((keys, r) => {
+        const local = elapsed - rowStart[r]!;
+        keys.forEach((id) => {
+          if (local < 0) return;
+          const done = total(id);
+          const chars = Math.min(done, Math.floor(local * CHARS_PER_MS));
+          render(id, chars);
+          setState(id, chars >= done ? "done" : "typing");
+        });
+        if (local >= 0) follow(r);
+      });
+      if (elapsed >= typingEnd - ROW_GAP_MS) follow(steps.length - 1);
+
+      raf = requestAnimationFrame(frame);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    resetAll();
+    let visible = false;
+    const sync = () => (visible && !document.hidden ? start() : stop());
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = Boolean(entry?.isIntersecting);
+        sync();
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(box);
+    document.addEventListener("visibilitychange", sync);
+
+    // Re-measure the follow offset if the box is resized (rotation, breakpoint change).
+    const ro = new ResizeObserver(() => {
+      followedRow = -1;
+    });
+    ro.observe(box);
+
+    return () => {
+      stop();
+      io.disconnect();
+      ro.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
   }, []);
 
   return (
-    <div ref={containerRef} className="space-y-5">
-      {/* Top Row: 3 Analysts */}
-      <div className="grid gap-5 md:grid-cols-3">
-        <AgentCard agent={AGENTS.fundamental} delay={inView ? 500 : 9999999} />
-        <AgentCard agent={AGENTS.sentiment} delay={inView ? 1500 : 9999999} />
-        <AgentCard agent={AGENTS.technical} delay={inView ? 1000 : 9999999} />
+    <div
+      ref={boxRef}
+      className="relative h-[560px] overflow-hidden rounded-3xl sm:h-[600px]"
+      style={{ contain: "layout paint style" }}
+      aria-label="Live multi-agent debate"
+    >
+      <div ref={trackRef} className="space-y-5 will-change-transform">
+        {ROWS.map((row, r) => (
+          <div key={r} data-row={r} className={cn("grid gap-5", row.grid)}>
+            {row.keys.map((k) => (
+              <AgentCard key={k} id={k} agent={AGENTS[k]} />
+            ))}
+          </div>
+        ))}
       </div>
-
-      {/* Middle Row: 2 Researchers */}
-      <div className="grid gap-5 md:grid-cols-2">
-        <AgentCard agent={AGENTS.bull} delay={inView ? 3500 : 9999999} />
-        <AgentCard agent={AGENTS.bear} delay={inView ? 4000 : 9999999} />
-      </div>
-
-      {/* Bottom Row: Trader */}
-      <div className="grid gap-5 grid-cols-1">
-        <AgentCard agent={AGENTS.trader} delay={inView ? 7000 : 9999999} />
-      </div>
+      {/* soft fade so cards slide under the bottom edge instead of being cut */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/70 to-transparent" />
     </div>
   );
 }
