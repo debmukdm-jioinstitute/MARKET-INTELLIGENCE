@@ -54,25 +54,45 @@ const STEPS = [
 ];
 
 const STATS = [
-  { 
-    value: "15+", 
-    label: "Advanced Metrics", 
-    desc: "From basic P&L to Sharpe, Beta, and Max Drawdown. We break down the math so you can just focus on what it means for your money." 
+  {
+    value: "90+",
+    label: "Tracked Metrics",
+    desc: "Sharpe, beta, alpha, VaR, drawdown and more. Every metric comes with its formula and a plain-English example, so you learn as you track.",
   },
-  { 
-    value: "200+", 
-    label: "Global Stocks", 
-    desc: "Track the biggest movers across both the NSE and US markets. Build your dream cross-border portfolio effortlessly." 
+  {
+    value: "500+",
+    label: "Stocks Scanned Live",
+    desc: "The whole Nifty 500, scanned after every NSE close: 52-week breakouts, volume gainers, RSI, MACD and 25+ ready-made scans. Usually a paid feature.",
   },
-  { 
-    value: "Live", 
-    label: "Market Data", 
-    desc: "No more hitting refresh. Watch your portfolio update in real-time as the market moves, giving you the pulse of your investments." 
+  {
+    value: "5",
+    label: "AI Agents, One Debate",
+    desc: "Fundamental, sentiment and technical analysts, a bull, a bear and a trader argue any stock in front of you. See the reasoning, not just a verdict.",
   },
-  { 
-    value: "₹0", 
-    label: "To Get Started", 
-    desc: "Your financial clarity shouldn't come with a subscription fee. Create an account, build a book, and explore — completely on us." 
+  {
+    value: "Live",
+    label: "Market Data",
+    desc: "NSE, BSE and US prices, options chains and macro feeds refresh on their own. No more hitting refresh.",
+  },
+  {
+    value: "Daily",
+    label: "AI Market Brief",
+    desc: "A pre-market and post-close brief where every number is checked against live data before it reaches you. No made-up figures.",
+  },
+  {
+    value: "F&O",
+    label: "Options Flow & Derivatives",
+    desc: "Spot unusual options activity and open-interest positioning across the F&O universe. A feature you would normally pay a terminal for.",
+  },
+  {
+    value: "Macro",
+    label: "Stress Index & Scenarios",
+    desc: "Track India's macro stress score, see how oil, the rupee and US yields hit each sector, then run the shock on your own holdings.",
+  },
+  {
+    value: "₹0",
+    label: "Forever, Not a Trial",
+    desc: "No subscription, no card, no countdown. Sign up, import holdings from Zerodha, Upstox or Dhan, and explore everything, completely on us.",
   },
 ];
 
@@ -382,12 +402,6 @@ export function LandingPage() {
                   Log in
                 </Link>
               ) : null}
-              <a
-                href="#how"
-                className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] text-gray-900 backdrop-blur-md transition hover:bg-white/80"
-              >
-                See how it works
-              </a>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">No credit card · Free forever plan · 2-minute setup</p>
           </div>
@@ -549,6 +563,10 @@ export function LandingPage() {
 
         {/* STATS STRIP */}
         <section className="mx-auto mt-20 max-w-6xl px-5">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Free, and ahead of the paid terminals</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Tools that usually cost money, on the house</h2>
+          </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STATS.map((s) => (
               <div 
@@ -618,7 +636,7 @@ export function LandingPage() {
             </div>
 
             {/* The 3D Glassmorphism Container */}
-            <div className="ai-desk-container relative mx-auto max-w-5xl rounded-[2.5rem] border border-white/80 bg-white/40 p-6 shadow-[0_30px_80px_-20px_rgba(37,99,235,0.15)] backdrop-blur-2xl sm:p-10 transition-transform duration-700 ease-out">
+            <div className="ai-desk-container relative mx-auto max-w-5xl rounded-[2.5rem] border border-white/80 bg-white/70 p-6 shadow-[0_30px_80px_-20px_rgba(37,99,235,0.15)] sm:p-10">
               
               <div className="mb-8 flex items-center justify-between border-b border-gray-200/50 pb-6">
                 <div>
