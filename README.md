@@ -454,6 +454,11 @@ npx vercel --prod
 |---|---|
 | `UPSTOX_ACCESS_TOKEN` | India quotes, depth, options chain, fundamentals, corporate actions, IPO calendar |
 | `GROQ_API_KEY` | Every AI Desk agent and the Options Flow analysis/flagging agents |
+| `OMNIROUTE_BASE_URL` | Portal site assistant — OpenAI-compatible gateway (see [docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
+| `OMNIROUTE_API_KEY` | Bearer key from the OmniRoute dashboard |
+| `OMNIROUTE_MODEL` | Optional; default `auto/fast` for the floating assistant |
+| `OMNIROUTE_FALLBACK_MODEL` | Optional; default `openai/gpt-oss-20b` (Groq via OmniRoute) |
+| `SITE_ASSISTANT_GROQ_MODEL` | Optional; direct Groq fallback when OmniRoute is down |
 | `DATABASE_URL` / `POSTGRES_URL` (Neon) | Holdings, options-flow history, research-report cache, admin data |
 | `MASSIVE_API_KEY` | US market data (optional — Yahoo covers the gap) |
 | `FRED_API_KEY` | Optional; CSV fallbacks exist without it |

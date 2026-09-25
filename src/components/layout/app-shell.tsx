@@ -12,6 +12,7 @@ import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GuidedTour } from "@/components/guided-tour";
+import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -28,6 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <main className="flex-1 overflow-y-auto p-4 md:p-5">{children}</main>
             </div>
             <CommandPalette />
+            <SiteAssistantWidget />
             <GuidedTour />
             <PageviewTracker />
           </MobileNavProvider>
