@@ -11,6 +11,8 @@ import { PortfolioOverview } from "@/components/my-portfolio/portfolio-overview"
 import { RiskExposurePanel } from "@/components/my-portfolio/risk-exposure-panel";
 import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { Lock } from "lucide-react";
+import Link from "next/link";
 
 const BENCHMARK_LABEL: Record<string, string> = {
   NIFTY50: "NIFTY 50",
@@ -19,7 +21,7 @@ const BENCHMARK_LABEL: Record<string, string> = {
 };
 
 export default function PortfolioPage() {
-  const { data, loading, error, addHolding, removeHolding, resetToDefault, clearHoldings, importHoldings } = useMyPortfolio();
+  const { data, loading, error, locked, addHolding, removeHolding, clearHoldings, importHoldings } = useMyPortfolio();
 
   return (
     <div className="portal-page">
@@ -44,27 +46,29 @@ export default function PortfolioPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {data?.hasHoldings && data.positions.length > 0 ? (
-            <button
-              type="button"
-              onClick={clearHoldings}
-              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
-            >
-              Clear Book
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={resetToDefault}
-              className="rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
-            >
-              Load Default Portfolio
-            </button>
-          )}
-          <BrokerImportDialog onImport={importHoldings} />
-          <AddHoldingDialog onAdd={addHolding} />
-        </div>
+        {locked ? (
+          <Link
+            href="/login?next=/portfolio"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-bold text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+          >
+            <Lock className="size-3.5" />
+            Log in to add or import holdings
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2">
+            {data?.hasHoldings && data.positions.length > 0 ? (
+              <button
+                type="button"
+                onClick={clearHoldings}
+                className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
+              >
+                Clear Book
+              </button>
+            ) : null}
+            <BrokerImportDialog onImport={importHoldings} />
+            <AddHoldingDialog onAdd={addHolding} />
+          </div>
+        )}
       </div>
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}

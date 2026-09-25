@@ -15,7 +15,7 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
   const path = usePathname();
 
   return (
-    <nav className="mb-6 flex flex-wrap gap-1 border-b border-border">
+    <nav className="mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.map((item) => {
         const active = path === item.href;
         return (
@@ -23,7 +23,7 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors",
+              "relative flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "text-blue-600"
                 : "text-muted-foreground hover:text-foreground",

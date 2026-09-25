@@ -23,6 +23,34 @@
     {
       "path": "/api/cron/prowess",
       "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/scan",
+      "schedule": "30 11 * * 1-5"
+    },
+    {
+      "path": "/api/cron/backtest",
+      "schedule": "0 12 * * 6"
+    },
+    {
+      "path": "/api/cron/signals",
+      "schedule": "45 11 * * 1-5"
+    },
+    {
+      "path": "/api/cron/52w-levels",
+      "schedule": "35 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/52w-levels",
+      "schedule": "45 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/52w-levels",
+      "schedule": "55 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/52w-levels",
+      "schedule": "5 11 * * 1-5"
     }
   ]
 }

@@ -20,6 +20,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/markets/sectors", label: "Sectors", description: "Sector intelligence" },
   { href: "/research/ipo", label: "IPOs", description: "Mainboard & SME IPOs" },
   { href: "/data/feeds", label: "Data feeds", description: "Live market feeds & source health" },
+  { href: "/data/export", label: "Data export (Excel)", description: "Download every dataset as one structured workbook" },
   { href: "/portfolio/optimizer", label: "Optimizer", description: "Mean-variance / risk parity" },
   { href: "/research/ai-desk", label: "AI Desk", description: "AI-assisted trading desk" },
   { href: "/intelligence", label: "Intelligence", description: "News & events, keyword monitors" },

@@ -5,6 +5,7 @@ import { getPrice } from "@/lib/market";
 import { registerCustomInstrument } from "@/lib/universe";
 import type { VirtualPortfolio } from "@/lib/types";
 import type { Holding as UserHolding } from "@/lib/my-portfolio/types";
+import { useAuth } from "@/components/providers/auth-provider";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 type Store = {
@@ -20,11 +21,12 @@ const Ctx = createContext<Store | null>(null);
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [portfolios, setPortfolios] = useState(SEED_PORTFOLIOS);
   const [activeId, setActiveId] = useState(SEED_PORTFOLIOS[0]!.id);
+  const { ready, isGuest } = useAuth();
 
   // Synchronize active portfolio holdings with unified user storage
   useEffect(() => {
     function syncHoldings() {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || !ready || isGuest) return;
       try {
         const raw = window.localStorage.getItem("mi_user_holdings_v2");
         if (raw) {
@@ -57,7 +59,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     syncHoldings();
     window.addEventListener("mi_portfolio_updated", syncHoldings);
     return () => window.removeEventListener("mi_portfolio_updated", syncHoldings);
-  }, [activeId]);
+  }, [activeId, ready, isGuest]);
   const active = useMemo(
     () => portfolios.find((p) => p.id === activeId) ?? portfolios[0]!,
     [portfolios, activeId],

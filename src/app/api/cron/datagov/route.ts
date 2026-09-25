@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { DataGovAuthError, hasPersonalKey } from "@/lib/datagov/client";
 import { discoverTracked, syncCatalog, syncTracked } from "@/lib/datagov/sync";
@@ -11,10 +12,8 @@ export const maxDuration = 60;
  *              default → sync rows for tracked datasets (resumable, time-boxed)
  */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   const sp = new URL(req.url).searchParams;
   try {
     const mode = sp.get("mode");

@@ -3,7 +3,16 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Play } from "lucide-react";
-import { NAV_COLUMNS } from "@/lib/nav-columns";
+import { slug } from "@/lib/nav-columns";
+
+/** One tour stop per top-level menu section, in menu order. Plain language, no jargon. */
+const TOUR_SECTIONS = [
+  { title: "Today", heading: "Today: what's happening now", text: "Your daily starting point. Check the market snapshot (indices, rupee, oil, gold) and read the AI Daily Brief — a 2-minute summary with sources." },
+  { title: "Invest", heading: "Invest: for the long term", text: "Research a company, check if the market is cheap or expensive, and see how the economy (RBI, inflation, global trends) could affect your stocks." },
+  { title: "Trade", heading: "Trade: short-term and intraday", text: "Scan Nifty 500 for breakouts, follow AI signals and unusual options activity, then backtest an idea on history before you risk money." },
+  { title: "My Portfolio", heading: "My Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, and how you could rebalance. Import holdings from Zerodha, Upstox or Dhan." },
+  { title: "Data & Tools", heading: "Data & Tools: sources and downloads", text: "See where every number comes from and how fresh it is, or download all the data as one Excel workbook." },
+] as const;
 
 export function GuidedTour() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -29,93 +38,77 @@ export function GuidedTour() {
     localStorage.setItem("hasSeenTour", "true");
     setShowPrompt(false);
 
-    const steps: DriveStep[] = [];
-
-    const TOUR_DESCRIPTIONS: Record<string, string> = {
-      // Markets
-      "Overview": "Get a comprehensive bird's-eye view of the global markets. This page aggregates live data across equities, bonds, and currencies so you can instantly gauge the overall market sentiment before diving into specifics.",
-      "India Cockpit": "Your command center for the Indian stock market. Track top movers, monitor sector performance, and analyze major indices like the Nifty and Sensex in real-time to spot domestic trading opportunities.",
-      "Sector Comparables": "Compare different industries side-by-side to spot emerging trends. Find out which sectors are gaining momentum, which are lagging, and discover where the capital is rotating today.",
-      "Valuation": "Evaluate if the market is currently overvalued or undervalued. We provide historical context and key financial ratios (like P/E and P/B bands) so you can make informed decisions about market pricing.",
-      "Breadth & Momentum": "Measure the true underlying strength of the market. Instead of just looking at the index price, see exactly how many individual stocks are actually participating in a rally or driving a sell-off.",
-      "Derivatives": "Track options and futures activity to anticipate market movements. See where the 'smart money' is placing their bets, monitor open interest, and understand institutional positioning.",
-      
-      // Macro
-      "Global Board": "Understand the big picture driving the markets. Track major global economic shifts, monitor inflation trends across countries, and analyze growth metrics that dictate central bank policies.",
-      "India Macro": "Focus specifically on the health of India's economy. Access key localized data such as GDP growth prints, inflation rates, and the government's fiscal health all on one unified dashboard.",
-      "RBI & Liquidity": "Monitor the Reserve Bank of India's policy moves. Understand how changes in interest rates, repo paths, and systemic banking liquidity will ultimately impact stock prices and borrowing costs.",
-      "Currency": "Track the strength of the Indian Rupee against the US Dollar and other major global currencies. Crucial for understanding export/import dynamics and foreign institutional flows.",
-      "Commodities": "Keep an eye on the raw materials that drive the global economy. Track live prices and trends for Crude Oil, Gold, and industrial metals to anticipate inflation and sector-specific impacts.",
-      "Economic Calendar": "Never get caught off-guard by a sudden market move. Use this schedule of upcoming major economic announcements (like jobs reports or rate decisions) to prepare your portfolio in advance.",
-      
-      // Portfolio
-      "Command Center": "Your personal investment dashboard. View your total portfolio value, track your daily profit and loss, and manage all your live positions across different brokers in one unified view.",
-      "Allocation": "See exactly where your money is deployed. Visualize how your investments are spread across different asset classes, sectors, and geographies to ensure you remain properly diversified.",
-      "Risk & VaR": "Understand your true exposure and prepare for the worst. We calculate the maximum potential loss (Value-at-Risk) your portfolio might face during extreme market conditions so you can size positions safely.",
-      "Attribution": "Find out exactly what's working and what isn't. Our attribution models break down your performance so you know which specific stock picks or sector bets are actually driving your returns.",
-      "Quant & Factors": "Advanced systematic analysis of your holdings. Discover how much of your portfolio's performance is driven by underlying market factors like 'Growth', 'Value', or 'Momentum' rather than individual stock picking.",
-      "Optimizer": "Let mathematics improve your returns. Input your constraints and get smart, algorithmic suggestions on how to rebalance your investments for the absolute best risk-to-reward ratio.",
-      
-      // Research
-      "Company Workbench": "The ultimate tool for researching any specific stock. Get instant access to comprehensive financial snapshots, historical performance charts, and direct competitor analysis to build your investment thesis.",
-      "AI Desk": "Your personal, intelligent AI analyst. Have a natural conversation with specialized AI agents to discover new trading ideas, debate stock fundamentals, and get unbiased second opinions on your trades.",
-      "IPO Pipeline": "Stay ahead of the curve on new market listings. Track upcoming Initial Public Offerings, read their prospectuses, and monitor live subscription statuses to find early opportunities.",
-      "Options Flow": "Spot unusual activity before the crowd does. Our AI monitors the entire options tape to highlight large, out-of-the-ordinary trades that might signal an upcoming big move in a stock.",
-      "Research Reports": "Read in-depth, professional analysis. Access detailed, model-driven reports and notes on companies covered by our research team to save hours of manual fundamental analysis.",
-      
-      // Intelligence
-      "Intelligence Feed": "Cut through the noise of traditional news. Our AI reads thousands of articles and scores them in real-time, instantly telling you if a breaking headline is positive or negative for your portfolio.",
-      "System & Data": "Transparency is critical for trust. Check the live health, latency, and freshness of all the underlying data feeds that power the Market Intelligence platform.",
-      "Data Feeds": "See exactly where we get our numbers. View the complete list of trusted, institutional-grade market data providers we connect with to ensure you are trading on the best information.",
-      "Daily Brief": "A quick, expertly curated 5-minute read summarizing the day's main market story. Perfect for catching up on the broader narrative without getting bogged down in the data."
-    };
-
-    NAV_COLUMNS.forEach((col, index) => {
-      // Step for the main column heading
-      steps.push({
-        element: `#nav-${col.title.toLowerCase()}`,
+    const wide = window.matchMedia("(min-width: 1024px)").matches;
+    const steps: DriveStep[] = [
+      {
         popover: {
-          title: col.title,
-          description: `Let's explore the tools and features available under ${col.title}.`,
-          side: "bottom",
-          align: "start"
+          title: "Welcome to Market Intelligence",
+          description: `Everything is organised by what you want to do. There are just ${TOUR_SECTIONS.length} sections — this takes about 30 seconds. ${wide ? "Hover any section afterwards to see its tasks." : "Tap any section afterwards to see its tasks."}`,
         },
-        onHighlightStarted: () => {
-          // ensure the column is closed when highlighting the main nav
-          window.dispatchEvent(new CustomEvent("close-nav"));
-        }
-      });
-      
-      // Steps for each nested item
-      col.items.forEach(item => {
-        const id = `nav-item-${col.title.toLowerCase()}-${item.label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
-        const customDesc = TOUR_DESCRIPTIONS[item.label] || item.desc;
-        
-        steps.push({
-          element: `#${id}`,
-          popover: {
-            title: item.label,
-            description: customDesc,
-            side: "right",
-            align: "start"
-          },
-          onHighlightStarted: () => {
-            // keep the column open
-            window.dispatchEvent(new CustomEvent("open-nav", { detail: index }));
-          }
-        });
+      },
+    ];
+
+    TOUR_SECTIONS.forEach((sec) => {
+      steps.push({
+        element: wide ? `#nav-${slug(sec.title)}` : `#nav-bottom-${slug(sec.title)}`,
+        popover: {
+          title: sec.heading,
+          description: sec.text,
+          side: wide ? "bottom" : "top",
+          align: wide ? "start" : "center",
+        },
       });
     });
+
+    if (!wide) {
+      steps.push({
+        element: "#nav-menu-trigger",
+        popover: {
+          title: "Menu: start here",
+          description: "Not sure where to begin? Open Menu for four quick shortcuts — Daily Brief, Company Workbench, Stock Scanner or My Portfolio.",
+          side: "bottom",
+          align: "start",
+        },
+      });
+    }
+
+    steps.push(
+      {
+        element: "#tour-search",
+        popover: {
+          title: "Search any stock",
+          description: "Type a company or ticker (NSE or US) to jump straight to its page. On a keyboard, press Space to focus it.",
+          side: "bottom",
+          align: wide ? "center" : "start",
+        },
+        onHighlightStarted: () => window.dispatchEvent(new CustomEvent("close-nav")),
+      },
+      {
+        element: "#tour-alerts",
+        popover: {
+          title: "Alerts bell",
+          description: "Important market events and your own alert rules show up here.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+    );
 
     const driverObj = driver({
       showProgress: true,
       animate: true,
+      allowClose: true,
+      smoothScroll: true,
+      stagePadding: wide ? 6 : 4,
       popoverClass: "guided-tour-theme",
+      nextBtnText: "Next",
+      prevBtnText: "Back",
+      doneBtnText: "Got it",
       steps,
       onDestroyStarted: () => {
         window.dispatchEvent(new CustomEvent("close-nav"));
         driverObj.destroy();
-      }
+      },
     });
 
     driverObj.drive();
@@ -128,14 +121,14 @@ export function GuidedTour() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm"
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white p-8 shadow-2xl text-center"
+            className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-3xl border border-white/20 bg-white p-6 text-center shadow-2xl sm:p-8"
           >
             <div className="absolute -left-32 -top-32 h-[300px] w-[300px] rounded-full bg-blue-500/20 blur-[80px] pointer-events-none" />
             <div className="absolute -bottom-32 -right-32 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
@@ -148,19 +141,19 @@ export function GuidedTour() {
                 Welcome to Market Intelligence
               </h2>
               <p className="mb-8 text-gray-500 text-sm leading-relaxed">
-                Would you like a quick guided tour to explore the platform's key features, tools, and analytics?
+                Would you like a quick guided tour to explore the platform&apos;s five sections and where to start?
               </p>
 
               <div className="flex flex-col gap-3">
                 <button
                   onClick={startTour}
-                  className="w-full rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/25 active:scale-[0.98]"
+                  className="w-full min-h-12 rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/25 active:scale-[0.98]"
                 >
                   Start Guided Tour
                 </button>
                 <button
                   onClick={handleSkip}
-                  className="w-full rounded-xl bg-gray-100 px-4 py-3.5 text-sm font-semibold text-gray-600 transition-all hover:bg-gray-200 active:scale-[0.98]"
+                  className="w-full min-h-12 rounded-xl bg-gray-100 px-4 py-3.5 text-sm font-semibold text-gray-600 transition-all hover:bg-gray-200 active:scale-[0.98]"
                 >
                   Skip for now
                 </button>
@@ -169,7 +162,7 @@ export function GuidedTour() {
             
             <button
               onClick={handleSkip}
-              className="absolute right-4 top-4 rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+              aria-label="Close" className="absolute right-3 top-3 rounded-full p-2.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
             >
               <X className="h-5 w-5" />
             </button>

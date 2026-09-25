@@ -2,7 +2,7 @@
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { AppNavTrigger, MegaNavBar } from "@/components/layout/app-nav";
-import { PushNotificationsToggle } from "@/components/layout/push-notifications-toggle";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { Search } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export function TopBar() {
   const { setOpen: setPaletteOpen } = useCommandPalette();
 
   return (
-    <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[auto_minmax(240px,420px)_1fr] lg:gap-4 lg:px-6 lg:py-2">
+    <header className="relative z-50 grid h-auto min-h-14 grid-cols-1 items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:grid-cols-[auto_minmax(180px,420px)_1fr] lg:gap-4 lg:px-6 lg:py-2">
       <div className="flex shrink-0 items-center gap-3">
         <AppNavTrigger />
         <Link href="/Home" className="hidden items-center sm:flex">
@@ -31,12 +31,16 @@ export function TopBar() {
         <MegaNavBar />
       </div>
       {pathname !== "/research" ? (
-        <SymbolSearch variant="bar" className="w-full min-w-0" />
+        <div id="tour-search" className="min-w-0">
+          <SymbolSearch variant="bar" className="w-full min-w-0" />
+        </div>
       ) : (
         <div aria-hidden />
       )}
       <div className="flex flex-wrap items-center justify-end gap-4 text-sm lg:gap-5">
-        <PushNotificationsToggle />
+        <div id="tour-alerts">
+          <NotificationBell />
+        </div>
       </div>
     </header>
   );

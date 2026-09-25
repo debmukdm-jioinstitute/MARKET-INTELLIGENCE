@@ -1,3 +1,4 @@
+import { guardExpensive } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getBetas } from "@/lib/transmission/betas";
@@ -15,6 +16,8 @@ export async function GET() {
 
 /** POST {shocks} → per-sector model-implied impact. Portfolio roll-up happens client-side from the caller's own holdings. */
 export async function POST(req: Request) {
+  const blocked = await guardExpensive(req, { name: "scenario", flag: "scenario", max: 60, windowSec: 60 });
+  if (blocked) return blocked;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid shocks", issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) }, { status: 400 });
   try {

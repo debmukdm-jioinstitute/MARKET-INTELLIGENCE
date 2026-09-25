@@ -44,13 +44,36 @@ export async function fetchUpstoxHistoricalCandles(
     .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
 }
 
-export type CandleRange = "1W" | "1M" | "3M" | "6M" | "1Y";
+/** Today's intraday candles (v3 intraday endpoint) — empty before the open / on holidays. */
+export async function fetchUpstoxIntradayCandles(
+  instrumentKey: string,
+  interval = "5",
+): Promise<Candle[]> {
+  const headers = upstoxHeaders();
+  if (!headers) return [];
+
+  const url = `${UPSTOX_BASE_URL}/v3/historical-candle/intraday/${encodeURIComponent(
+    instrumentKey,
+  )}/minutes/${interval}`;
+  const res = await feedFetch(url, { headers });
+  if (!res.ok) throw new Error(`Upstox intraday candles HTTP ${res.status}`);
+  const json = (await res.json()) as UpstoxCandleResponse;
+  if (json.status !== "success" || !json.data) return [];
+
+  return json.data.candles
+    .map(([ts, open, high, low, close, volume, oi]) => ({ ts, open, high, low, close, volume, oi }))
+    .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+}
+
+export type CandleRange = "1D" | "1W" | "1M" | "3M" | "6M" | "1Y";
 
 /** Maps a simple UI range to daily-candle from/to dates (YYYY-MM-DD). */
 export function candleRangeToDates(range: CandleRange): { from: string; to: string } {
   const to = new Date();
   const from = new Date(to);
-  if (range === "1W") {
+  if (range === "1D") {
+    from.setDate(from.getDate() - 1);
+  } else if (range === "1W") {
     from.setDate(from.getDate() - 7);
   } else {
     const months = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 }[range];

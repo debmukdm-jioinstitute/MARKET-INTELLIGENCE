@@ -213,6 +213,11 @@ async function migrate() {
   `;
   await sql`CREATE INDEX IF NOT EXISTS idx_research_scrape_log_ran ON research_scrape_log(ran_at DESC)`;
 
+  console.log("  → Ensuring tables: rate_limits, feature_flags...");
+  await sql`CREATE TABLE IF NOT EXISTS rate_limits (key text NOT NULL, hit_at timestamptz NOT NULL DEFAULT now())`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_key ON rate_limits(key, hit_at DESC)`;
+  await sql`CREATE TABLE IF NOT EXISTS feature_flags (flag text PRIMARY KEY, enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())`;
+
   console.log(`✅ All database tables and indexes verified successfully in ${Date.now() - start}ms.`);
 }
 

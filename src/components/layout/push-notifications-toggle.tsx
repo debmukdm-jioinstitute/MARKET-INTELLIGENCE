@@ -10,7 +10,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
 
-export function PushNotificationsToggle() {
+/** Push-subscription state and actions, shared by the standalone toggle and the notification centre. */
+export function usePushSubscription() {
   const [supported, setSupported] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -72,13 +73,18 @@ export function PushNotificationsToggle() {
     }
   }
 
+  return { supported, subscribed, busy, toggle: subscribed ? unsubscribe : subscribe };
+}
+
+export function PushNotificationsToggle() {
+  const { supported, subscribed, busy, toggle } = usePushSubscription();
   if (!supported) return null;
 
   return (
     <button
       type="button"
       disabled={busy}
-      onClick={subscribed ? unsubscribe : subscribe}
+      onClick={toggle}
       title={subscribed ? "Disable push notifications" : "Enable push notifications"}
       aria-label={subscribed ? "Disable push notifications" : "Enable push notifications"}
       className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50"

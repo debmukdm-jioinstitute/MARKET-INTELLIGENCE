@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { hasProwessKey } from "@/lib/prowess/client";
 import { isReportId } from "@/lib/prowess/reports";
@@ -14,10 +15,8 @@ export const maxDuration = 300;
  * Optional ?symbols=INFY,TCS&reports=stock,profile for targeted runs; ?status=1 for coverage only.
  */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   if (!hasProwessKey()) return NextResponse.json({ ok: false, error: "PROWESS_API_KEY not set" }, { status: 503 });
   const sp = new URL(req.url).searchParams;
   const total = NIFTY_500.length * REPORT_IDS.length;

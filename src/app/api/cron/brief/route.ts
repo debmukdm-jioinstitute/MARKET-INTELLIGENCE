@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { hasEmailConfigured, sendNewsletter } from "@/lib/admin/email";
 import { hasDatabase } from "@/lib/db";
@@ -10,10 +11,8 @@ export const maxDuration = 60;
 
 /** ?kind=pre|post. Generates, stores, and emails opt-in subscribers only. ?dry=1 generates without storing/sending. */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   const sp = new URL(req.url).searchParams;
   const kind = sp.get("kind") === "post" ? "post" : "pre";
   try {

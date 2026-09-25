@@ -33,6 +33,7 @@ const UPSTOX_QUOTE_SOURCE = {
 };
 
 const RANGE_LABEL: Record<CandleRange, string> = {
+  "1D": "1 day",
   "1W": "1 week",
   "1M": "1 month",
   "3M": "3 months",

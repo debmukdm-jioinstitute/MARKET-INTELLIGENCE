@@ -5,7 +5,7 @@ import { PushNotificationsToggle } from "@/components/layout/push-notifications-
 import { Trash2 } from "lucide-react";
 import useSWR from "swr";
 import { useState } from "react";
-import { TelegramAlerts } from "@/components/pkscreener/telegram-alerts";
+import { ScanAlerts } from "@/components/scanner/scan-alerts";
 
 type Cond = { metric: string; op: string; value: number };
 type Rule = { id: string; name: string; conditions: Cond[]; combinator: "all" | "any"; channels: string[]; cooldownHours: number; active: boolean; lastFiredAt: string | null };
@@ -155,10 +155,10 @@ export default function AlertRulesPage() {
 
       <div className="border-t border-border pt-8 space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Telegram Alerts & Scanner Bot</h2>
-          <p className="text-sm text-muted-foreground mt-1">Real-time breakout alerts via Telegram, scheduled scans at 9:45am & 4pm IST, and an on-demand scanner bot with 33+ strategies.</p>
+          <h2 className="text-xl font-bold text-foreground">Scanner Alerts</h2>
+          <p className="text-sm text-muted-foreground mt-1">Signals from the daily Nifty 500 scan — breakouts, breakdowns, crossovers and chart patterns — plus an on-demand scanner console.</p>
         </div>
-        <TelegramAlerts />
+        <ScanAlerts />
       </div>
     </div>
   );
