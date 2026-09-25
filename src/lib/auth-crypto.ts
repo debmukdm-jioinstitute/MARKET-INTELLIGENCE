@@ -1,9 +1,16 @@
 import crypto from "crypto";
 
-const SECRET_KEY =
-  process.env.AUTH_SECRET ||
-  process.env.SESSION_SECRET ||
-  "market-intel-secret-hmac-sha256-salt-2025-production";
+const DEV_FALLBACK_SECRET = "dev-only-insecure-secret-do-not-use-in-production";
+
+/** Resolved lazily so `next build` never needs it. In production a missing secret is a hard error — no forgeable default. */
+function secretKey(): string {
+  const secret = process.env.AUTH_SECRET || process.env.SESSION_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET (or SESSION_SECRET) must be set in production");
+  }
+  return DEV_FALLBACK_SECRET;
+}
 
 /**
  * Creates a signed token string from a payload object.
@@ -13,7 +20,7 @@ export function signSessionPayload<T extends Record<string, unknown>>(payload: T
   const jsonStr = JSON.stringify(payload);
   const dataB64 = Buffer.from(jsonStr, "utf-8").toString("base64url");
   const signature = crypto
-    .createHmac("sha256", SECRET_KEY)
+    .createHmac("sha256", secretKey())
     .update(dataB64)
     .digest("base64url");
 
@@ -28,24 +35,15 @@ export function verifySessionToken<T extends Record<string, unknown>>(token: str
   if (!token || typeof token !== "string") return null;
 
   const parts = token.split(".");
-  if (parts.length !== 2) {
-    // Check if it's a legacy JSON string from older sessions during rolling upgrades
-    if (token.startsWith("{") && token.endsWith("}")) {
-      try {
-        return JSON.parse(token) as T;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }
+  // Unsigned (legacy JSON) tokens are never accepted: they would let anyone forge a session, including role=admin.
+  if (parts.length !== 2) return null;
 
   const [dataB64, signature] = parts;
   if (!dataB64 || !signature) return null;
 
   try {
     const expectedSig = crypto
-      .createHmac("sha256", SECRET_KEY)
+      .createHmac("sha256", secretKey())
       .update(dataB64)
       .digest("base64url");
 
