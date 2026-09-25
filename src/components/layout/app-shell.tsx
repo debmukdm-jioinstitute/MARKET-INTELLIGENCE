@@ -13,6 +13,7 @@ import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GuidedTour } from "@/components/guided-tour";
+import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -33,6 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <BottomTabBar />
             </div>
             <CommandPalette />
+            <SiteAssistantWidget />
             <GuidedTour />
             <PageviewTracker />
           </MobileNavProvider>

@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { GLOSSARY } from "@/lib/my-portfolio/glossary";
 import { METRIC_COPY } from "@/lib/macro/metric-copy";
+import { PAGE_COMMANDS } from "@/lib/command-registry";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,13 @@ export async function POST() {
     rows.push({
       title: `Macro indicator: ${key}`,
       content: `${copy.novice}\nSource: ${copy.provider} (${copy.url})`,
+    });
+  }
+
+  for (const page of PAGE_COMMANDS) {
+    rows.push({
+      title: `Portal page: ${page.label}`,
+      content: `Path: ${page.href}\n${page.description}`,
     });
   }
 
