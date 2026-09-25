@@ -120,32 +120,46 @@ export interface StockSignal {
   stop: number;
 }
 
+export interface IndexSignalBlock {
+  close: number;
+  changePct: number;
+  horizon: number;
+  pUp: number | null;
+  call: "Bullish" | "Bearish" | "Neutral";
+  ema20: number;
+  ema50: number;
+  trend: string;
+  validation: {
+    days: number;
+    from: string;
+    to: string;
+    accuracy: number;
+    alwaysUp: number;
+    buckets: SignalBucket[];
+    strategyReturn: number;
+    buyHoldReturn: number;
+    equity: { d: string; strategy: number; buyHold: number }[];
+    recent: { d: string; pUp: number; call: "Up" | "Down"; actual: "Up" | "Down"; retPct: number }[];
+  };
+}
+
+export interface FnoIndexSignalsPack {
+  label: string;
+  yahoo: string;
+  horizons: Partial<Record<number, IndexSignalBlock>>;
+}
+
 export interface SignalsRun {
   asOf: string;
   lastBar: string;
-  nifty: {
-    close: number;
-    changePct: number;
+  /** @deprecated Prefer `indices` + horizon selector; kept for notifications and legacy clients. */
+  nifty: IndexSignalBlock & {
     pUp1: number | null;
     pUp5: number | null;
     call1: "Bullish" | "Bearish" | "Neutral";
     call5: "Bullish" | "Bearish" | "Neutral";
-    ema20: number;
-    ema50: number;
-    trend: string;
-    validation: {
-      days: number; // out-of-sample predictions scored
-      from: string;
-      to: string;
-      accuracy: number; // % correct, calling up when pUp ≥ 0.5
-      alwaysUp: number; // % accuracy of simply always predicting "up"
-      buckets: SignalBucket[];
-      strategyReturn: number; // % total, long pUp>0.55 / short pUp<0.45 / flat otherwise (gross)
-      buyHoldReturn: number; // %
-      equity: { d: string; strategy: number; buyHold: number }[];
-      recent: { d: string; pUp: number; call: "Up" | "Down"; actual: "Up" | "Down"; retPct: number }[];
-    };
   };
+  indices?: Record<string, FnoIndexSignalsPack>;
   stocks: {
     universe: number;
     scanned: number;

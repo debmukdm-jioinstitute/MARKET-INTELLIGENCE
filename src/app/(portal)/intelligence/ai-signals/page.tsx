@@ -9,7 +9,7 @@ export default function AISignalsPage() {
       <PageHeader
         kicker="AI Signals"
         title="AI Signals & Market Predictions"
-        subtitle="A Lorentzian nearest-neighbour model for the Nifty 50's next-session direction and for Nifty 500 BTST/STBT candidates — shown together with its walk-forward track record, so you can see how much weight it deserves."
+        subtitle="Lorentzian nearest-neighbour leans for primary NSE F&O indices (pick index and horizon), plus Nifty 500 BTST/STBT candidates — each with walk-forward track record."
       />
       <AiSignals />
     </div>

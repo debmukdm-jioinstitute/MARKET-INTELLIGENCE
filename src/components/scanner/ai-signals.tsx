@@ -1,15 +1,28 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  FNO_INDEX_OPTIONS,
+  pickIndexSignal,
+  SIGNAL_HORIZON_OPTIONS,
+  type FnoIndexId,
+  type SignalHorizon,
+} from "@/lib/scanner/fno-indices";
 import { cn } from "@/lib/utils";
-import type { SignalsRun, StockSignal } from "@/lib/scanner/types";
+import type { IndexSignalBlock, SignalsRun, StockSignal } from "@/lib/scanner/types";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<{ run: SignalsRun | null }>);
 const pct = (n: number, d = 1) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 const lean = { Bullish: "text-emerald-600", Bearish: "text-rose-600", Neutral: "text-muted-foreground" } as const;
+
+function horizonLabel(h: number) {
+  return h === 1 ? "next session" : `next ${h} sessions`;
+}
 
 /** Edge over a baseline in percentage points, with a 2-standard-error threshold for a binomial rate. */
 function verdict(rate: number, baseline: number, n: number) {
@@ -83,47 +96,40 @@ function StockTable({ rows, side }: { rows: StockSignal[]; side: "buy" | "sell" 
   );
 }
 
-export function AiSignals() {
-  const { data, isLoading } = useSWR("/api/signals", fetcher, { refreshInterval: 10 * 60_000 });
-  const run = data?.run ?? null;
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!run) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No signals have been computed yet. They refresh after each NSE close.</p>;
-
-  const n = run.nifty;
-  const v = n.validation;
+function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHorizon; model: IndexSignalBlock; indexLabel: string }) {
+  const v = model.validation;
   const nv = verdict(v.accuracy, v.alwaysUp, v.days);
-  const sv = run.stocks.validation;
-  const bv = verdict(sv.buy.hitRate, sv.base.upRate, sv.buy.n);
-  const sellV = verdict(sv.sell.hitRate, 100 - sv.base.upRate, sv.sell.n);
+  const hText = horizonLabel(horizon);
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">Session {run.lastBar} · updated {new Date(run.asOf).toLocaleString()}</p>
-
+    <>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Stat k="Nifty 50" v={n.close.toLocaleString("en-IN", { maximumFractionDigits: 2 })} sub={`${pct(n.changePct, 2)} on the session`} />
-        <div className="rounded-lg border border-border bg-card p-3">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Model lean · next session</p>
-          <p className={cn("mt-1 text-xl font-semibold", lean[n.call1])}>{n.call1} {n.pUp1 != null ? <span className="text-base tabular-nums text-muted-foreground">· P(up) {(n.pUp1 * 100).toFixed(0)}%</span> : null}</p>
-          <Lean p={n.pUp1} />
+        <Stat k={indexLabel} v={model.close.toLocaleString("en-IN", { maximumFractionDigits: 2 })} sub={`${pct(model.changePct, 2)} on the session`} />
+        <div className="rounded-lg border border-border bg-card p-3 md:col-span-2">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Model lean · {hText}</p>
+          <p className={cn("mt-1 text-xl font-semibold", lean[model.call])}>
+            {model.call}{" "}
+            {model.pUp != null ? <span className="text-base tabular-nums text-muted-foreground">· P(up) {(model.pUp * 100).toFixed(0)}%</span> : null}
+          </p>
+          <Lean p={model.pUp} />
         </div>
-        <div className="rounded-lg border border-border bg-card p-3">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Model lean · next 5 sessions</p>
-          <p className={cn("mt-1 text-xl font-semibold", lean[n.call5])}>{n.call5} {n.pUp5 != null ? <span className="text-base tabular-nums text-muted-foreground">· P(up) {(n.pUp5 * 100).toFixed(0)}%</span> : null}</p>
-          <Lean p={n.pUp5} />
-        </div>
-        <Stat k="Trend" v={n.trend.split(" (")[0]} sub={`20 EMA ${n.ema20.toFixed(0)} · 50 EMA ${n.ema50.toFixed(0)}`} />
+        <Stat k="Trend" v={model.trend.split(" (")[0]} sub={`20 EMA ${model.ema20.toFixed(0)} · 50 EMA ${model.ema50.toFixed(0)}`} />
       </div>
 
       <div className={cn("rounded-lg border border-border bg-card p-4 text-sm")}>
-        <p className="font-semibold">How reliable is this model? <span className={nv.tone}>{nv.text}.</span></p>
+        <p className="font-semibold">
+          How reliable is this model ({indexLabel}, {horizon}-session horizon)? <span className={nv.tone}>{nv.text}.</span>
+        </p>
         <p className="mt-1 text-muted-foreground">
-          Over {v.days} out-of-sample sessions ({v.from} → {v.to}) it called the next day's direction correctly {v.accuracy.toFixed(1)}% of the time; simply always predicting "up" would have been right {v.alwaysUp.toFixed(1)}%.
+          Over {v.days} out-of-sample windows ({v.from} → {v.to}) it called the {hText} direction correctly {v.accuracy.toFixed(1)}% of the time; simply always predicting &quot;up&quot; would have been right {v.alwaysUp.toFixed(1)}%.
           A lean is a statistical tilt from the most similar past days, not a forecast.
         </p>
       </div>
 
-      <Panel title="Walk-forward track record — Nifty 50" subtitle="Each prediction uses only data available at that day's close; the outcome is the next session. Long when P(up) > 55%, short when < 45%, flat otherwise (gross of costs).">
+      <Panel
+        title={`Walk-forward track record — ${indexLabel}`}
+        subtitle={`Each prediction uses only data available at that day's close; the outcome is the ${hText}. Long when P(up) > 55%, short when < 45%, flat otherwise (gross of costs).`}
+      >
         <div className="grid gap-3 md:grid-cols-4">
           <Stat k="Predictions scored" v={v.days.toLocaleString("en-IN")} />
           <Stat k="Direction accuracy" v={`${v.accuracy.toFixed(1)}%`} sub={`always-up baseline ${v.alwaysUp.toFixed(1)}%`} />
@@ -150,7 +156,7 @@ export function AiSignals() {
                   <th className="px-2 py-1 font-medium">When the model said…</th>
                   <th className="px-2 py-1 text-right font-medium">Days</th>
                   <th className="px-2 py-1 text-right font-medium">Right</th>
-                  <th className="px-2 py-1 text-right font-medium">Avg next-day</th>
+                  <th className="px-2 py-1 text-right font-medium">Avg move</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,7 +170,7 @@ export function AiSignals() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-muted-foreground">"Right" = the call's direction was correct; for the no-call row it is the share of days the index rose.</p>
+            <p className="mt-2 text-xs text-muted-foreground">&quot;Right&quot; = the call&apos;s direction was correct over the selected horizon.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -189,14 +195,83 @@ export function AiSignals() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-muted-foreground">Most recent 15 predictions and what actually happened next session.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Most recent 15 predictions and outcomes over {horizon} session(s).</p>
           </div>
         </div>
       </Panel>
+    </>
+  );
+}
+
+export function AiSignals() {
+  const [indexId, setIndexId] = useState<FnoIndexId>("nifty50");
+  const [horizon, setHorizon] = useState<SignalHorizon>(1);
+  const { data, isLoading } = useSWR("/api/signals", fetcher, { refreshInterval: 10 * 60_000 });
+  const run = data?.run ?? null;
+
+  const indexLabel = FNO_INDEX_OPTIONS.find((x) => x.id === indexId)?.label ?? "Index";
+  const model = useMemo(() => (run ? pickIndexSignal(run, indexId, horizon) : null), [run, indexId, horizon]);
+
+  if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (!run) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No signals have been computed yet. They refresh after each NSE close.</p>;
+
+  const sv = run.stocks.validation;
+  const bv = verdict(sv.buy.hitRate, sv.base.upRate, sv.buy.n);
+  const sellV = verdict(sv.sell.hitRate, 100 - sv.base.upRate, sv.sell.n);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="min-w-[200px] flex-1 space-y-1.5">
+          <label htmlFor="fno-index" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            F&O index
+          </label>
+          <Select value={indexId} onValueChange={(v) => setIndexId(v as FnoIndexId)}>
+            <SelectTrigger id="fno-index" className="w-full">
+              <SelectValue placeholder="Select index" />
+            </SelectTrigger>
+            <SelectContent>
+              {FNO_INDEX_OPTIONS.map((idx) => (
+                <SelectItem key={idx.id} value={idx.id}>
+                  {idx.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="min-w-[200px] flex-1 space-y-1.5">
+          <label htmlFor="signal-horizon" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Horizon
+          </label>
+          <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v) as SignalHorizon)}>
+            <SelectTrigger id="signal-horizon" className="w-full">
+              <SelectValue placeholder="Select horizon" />
+            </SelectTrigger>
+            <SelectContent>
+              {SIGNAL_HORIZON_OPTIONS.map((h) => (
+                <SelectItem key={h.value} value={String(h.value)}>
+                  {h.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-sm text-muted-foreground sm:pb-2">
+          Session {run.lastBar} · updated {new Date(run.asOf).toLocaleString()}
+        </p>
+      </div>
+
+      {!model ? (
+        <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-muted-foreground">
+          No precomputed model for {indexLabel} at this horizon yet. It fills in after the next signals job (post NSE close). Try NIFTY 50 · 1 session meanwhile.
+        </p>
+      ) : (
+        <IndexModelSection horizon={horizon} model={model} indexLabel={indexLabel} />
+      )}
 
       <Panel
         title="BTST / STBT candidates — Nifty 500"
-        subtitle={`Same model run on each stock's own history. Buy today's close, sell tomorrow (BTST); short today, cover tomorrow (STBT). Targets and stops are ATR-based levels (1.0× and 0.75× ATR), not model outputs. ${run.stocks.scanned} stocks scanned.`}
+        subtitle={`Same model run on each stock's own history (1-session horizon). Buy today's close, sell tomorrow (BTST); short today, cover tomorrow (STBT). Targets and stops are ATR-based levels (1.0× and 0.75× ATR), not model outputs. ${run.stocks.scanned} stocks scanned.`}
       >
         <div className={cn("mb-4 rounded-lg border border-border bg-card p-3 text-sm")}>
           <p className="font-semibold">Track record over the last {sv.sessions} sessions, all stocks</p>
