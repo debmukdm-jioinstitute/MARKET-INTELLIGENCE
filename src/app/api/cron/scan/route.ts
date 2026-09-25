@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { runScan } from "@/lib/scanner/engine";
 import { SCANNERS } from "@/lib/scanner/scanners";
@@ -32,10 +33,8 @@ async function sendTelegramDigest(run: ScanRun): Promise<boolean> {
 }
 
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   const symbols = new URL(req.url).searchParams.get("symbols")?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
   try {
     const run = await runScan({ symbols });

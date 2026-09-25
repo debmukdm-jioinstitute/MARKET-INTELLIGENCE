@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { runBacktest } from "@/lib/scanner/backtest";
 import { saveBacktest } from "@/lib/scanner/store";
@@ -7,10 +8,8 @@ export const maxDuration = 60;
 
 /** Weekly cron: backtest every scanner over ~2 years of Nifty 500 daily bars and store the result. */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   const symbols = new URL(req.url).searchParams.get("symbols")?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
   try {
     const run = await runBacktest({ symbols });

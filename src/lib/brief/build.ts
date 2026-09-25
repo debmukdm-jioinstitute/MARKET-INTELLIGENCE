@@ -10,7 +10,7 @@ type Fact = Brief["facts"][number];
 const fmt = (v: number | null | undefined, d = 2) => (v == null ? null : v.toFixed(d));
 const signed = (v: number | null | undefined, d = 2, suffix = "") => (v == null ? null : `${v >= 0 ? "+" : ""}${v.toFixed(d)}${suffix}`);
 
-function factsFrom(s: Snapshot): Fact[] {
+export function factsFrom(s: Snapshot): Fact[] {
   const d = s.dashboard;
   const m = s.metrics;
   const out: (Fact | null)[] = [
@@ -53,10 +53,10 @@ function rulesBrief(s: Snapshot, facts: Fact[]): { headline: string; items: Brie
   };
 }
 
-const numbersIn = (t: string) => [...t.replace(/,/g, "").matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+export const numbersIn = (t: string) => [...t.replace(/,/g, "").matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
 
 /** Numeric grounding gate: every number an item states must match a number in the fact sheet (small rounding tolerance). */
-function numbersGrounded(text: string, factNumbers: number[]): boolean {
+export function numbersGrounded(text: string, factNumbers: number[]): boolean {
   return numbersIn(text).every((n) => factNumbers.some((f) => Math.abs(f - n) <= Math.max(0.06, Math.abs(f) * 0.005)));
 }
 

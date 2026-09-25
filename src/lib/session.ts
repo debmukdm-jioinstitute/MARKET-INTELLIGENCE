@@ -39,3 +39,8 @@ export async function getAdminUser(): Promise<SessionUser | null> {
   const user = await getSessionUser();
   return user && !user.guest && user.role === "admin" ? user : null;
 }
+
+/** True when the caller has no real account (no cookie, or the shared guest identity) — such callers must never touch shared DB rows. */
+export async function isGuestSession(): Promise<boolean> {
+  return (await getSessionEmail()) === GUEST_EMAIL;
+}

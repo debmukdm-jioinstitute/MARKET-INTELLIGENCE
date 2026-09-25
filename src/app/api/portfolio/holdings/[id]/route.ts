@@ -1,5 +1,5 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail, isGuestSession } from "@/lib/session";
 import { updateHoldingSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
 
@@ -25,7 +25,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const body = parseResult.data;
 
   try {
-    if (hasDatabase()) {
+    if (hasDatabase() && !(await isGuestSession())) {
       await ensureSchema();
       const email = await getSessionEmail();
       const db = sql();
@@ -53,7 +53,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
 export async function DELETE(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   try {
-    if (hasDatabase()) {
+    if (hasDatabase() && !(await isGuestSession())) {
       await ensureSchema();
       const email = await getSessionEmail();
       const db = sql();

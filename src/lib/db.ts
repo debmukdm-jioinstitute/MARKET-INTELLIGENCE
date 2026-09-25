@@ -265,6 +265,21 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_options_flow_flag_log_symbol ON options_flow_flag_log(symbol, flagged_date DESC)`;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS rate_limits (
+          key text NOT NULL,
+          hit_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_rate_limits_key ON rate_limits(key, hit_at DESC)`;
+      await db`
+        CREATE TABLE IF NOT EXISTS feature_flags (
+          flag text PRIMARY KEY,
+          enabled boolean NOT NULL DEFAULT true,
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

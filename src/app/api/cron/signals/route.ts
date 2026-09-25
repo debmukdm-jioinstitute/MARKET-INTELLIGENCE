@@ -1,3 +1,4 @@
+import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 import { runSignals } from "@/lib/scanner/signals";
 import { saveSignals } from "@/lib/scanner/store";
@@ -7,10 +8,8 @@ export const maxDuration = 60;
 
 /** Daily cron (after NSE close): Nifty next-day/5-day model, walk-forward validation, and Nifty 500 BTST/STBT candidates. */
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = cronUnauthorized(req);
+  if (denied) return denied;
   const symbols = new URL(req.url).searchParams.get("symbols")?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
   try {
     const run = await runSignals({ symbols });

@@ -1,5 +1,5 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail, isGuestSession } from "@/lib/session";
 import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding } from "@/lib/my-portfolio/types";
 import { addHoldingSchema } from "@/lib/validations/portfolio";
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
   };
 
   try {
-    if (hasDatabase()) {
+    if (hasDatabase() && !(await isGuestSession())) {
       await ensureSchema();
       const email = await getSessionEmail();
       const db = sql();

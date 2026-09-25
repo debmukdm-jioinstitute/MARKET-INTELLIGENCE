@@ -1,5 +1,5 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail, isGuestSession } from "@/lib/session";
 import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import type { PortfolioSettings } from "@/lib/my-portfolio/types";
 import { updateSettingsSchema } from "@/lib/validations/portfolio";
@@ -47,7 +47,7 @@ export async function PUT(req: Request) {
   const name = body.name || DEFAULT_PORTFOLIO_SETTINGS.name;
   const benchmark = body.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark;
 
-  if (!hasDatabase()) {
+  if (!hasDatabase() || (await isGuestSession())) {
     return NextResponse.json({ ok: true, note: "Updated in local mode" });
   }
 

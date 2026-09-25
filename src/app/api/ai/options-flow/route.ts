@@ -1,3 +1,4 @@
+import { guardExpensive } from "@/lib/api-guard";
 import { AiKeyMissingError } from "@/lib/ai/llm";
 import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { runOptionsFlowPipeline } from "@/lib/options-flow/run";
@@ -9,6 +10,8 @@ export const maxDuration = 120;
 const MAX_TICKERS = 20;
 
 export async function POST(req: Request) {
+  const blocked = await guardExpensive(req, { name: "ai-options", flag: "ai", max: 6, windowSec: 3600 });
+  if (blocked) return blocked;
   const body = (await req.json().catch(() => ({}))) as { symbols?: string[] };
   const requested = Array.isArray(body.symbols) ? body.symbols : [];
   const universe = await listFoUniverse();

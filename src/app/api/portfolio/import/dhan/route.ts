@@ -1,3 +1,4 @@
+import { guardExpensive } from "@/lib/api-guard";
 import { fetchDhanHoldings, parseDhanCSV } from "@/lib/brokers/dhan";
 import { dhanImportSchema } from "@/lib/validations/dhan";
 import type { Holding } from "@/lib/my-portfolio/types";
@@ -6,6 +7,8 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const blocked = await guardExpensive(req, { name: "import-dhan", flag: "broker-import", max: 20, windowSec: 3600 });
+  if (blocked) return blocked;
   let rawBody: unknown;
   try {
     rawBody = await req.json();
