@@ -57,21 +57,29 @@ export function proxy(request: NextRequest) {
   const sessionRaw = request.cookies.get("mi_session")?.value;
   const session = parseSession(sessionRaw);
   const isPublic = PUBLIC.has(realPathname);
+  const staleSession = Boolean(sessionRaw && !session);
 
-  if (!sessionRaw && !isPublic) {
+  if (!isPublic && !session) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", realPathname);
+    const res = NextResponse.redirect(url);
+    if (staleSession) {
+      res.cookies.set("mi_session", "", { httpOnly: true, path: "/", maxAge: 0 });
+    }
+    return res;
+  }
+
+  if (session && !session.guest && (realPathname === "/login" || realPathname === "/signup")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/Home";
     return NextResponse.redirect(url);
   }
 
-  if (sessionRaw && (realPathname === "/login" || realPathname === "/signup")) {
-    const isGuest = session?.guest === true;
-    if (!isGuest) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/Home";
-      return NextResponse.redirect(url);
-    }
+  if (staleSession && isPublic) {
+    const res = NextResponse.next();
+    res.cookies.set("mi_session", "", { httpOnly: true, path: "/", maxAge: 0 });
+    return res;
   }
 
   return NextResponse.next();
