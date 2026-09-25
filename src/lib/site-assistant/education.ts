@@ -227,8 +227,10 @@ export type OfferingGroup = {
   pages: { href: string; label: string; desc: string; badge?: "AI" | "NEW"; external?: boolean }[];
 };
 
+type StartHereItem = (typeof START_HERE)[number];
+
 export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLevel): {
-  startHere: typeof START_HERE;
+  startHere: StartHereItem[];
   sections: OfferingGroup[];
   aiTools: { href: string; label: string; desc: string }[];
 } {
