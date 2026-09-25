@@ -4,7 +4,8 @@ import { CommandPalette } from "@/components/command-palette/command-palette";
 import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
 import { GuestBanner } from "@/components/layout/guest-banner";
 import { MobileNavProvider } from "@/components/layout/mobile-nav-provider";
-import { AppNav } from "@/components/layout/app-nav";
+import { AppNav, BottomTabBar } from "@/components/layout/app-nav";
+import { GroupTabs } from "@/components/layout/group-tabs";
 import { UpdatesBanner } from "@/components/layout/updates-banner";
 import { PageviewTracker } from "@/components/layout/pageview-tracker";
 import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
@@ -25,7 +26,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <UpdatesBanner />
               <LiveStreamTicker />
               <TopBar />
-              <main className="flex-1 overflow-y-auto p-4 md:p-5">{children}</main>
+              <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-5 lg:pb-5">
+                <GroupTabs />
+                {children}
+              </main>
+              <BottomTabBar />
             </div>
             <CommandPalette />
             <GuidedTour />

@@ -3,7 +3,7 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Play } from "lucide-react";
-import { NAV_COLUMNS } from "@/lib/nav-columns";
+import { NAV_COLUMNS, slug } from "@/lib/nav-columns";
 
 export function GuidedTour() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -73,7 +73,7 @@ export function GuidedTour() {
     NAV_COLUMNS.forEach((col, index) => {
       // Step for the main column heading
       steps.push({
-        element: `#nav-${col.title.toLowerCase()}`,
+        element: `#nav-${slug(col.title)}`,
         popover: {
           title: col.title,
           description: `Let's explore the tools and features available under ${col.title}.`,
@@ -88,7 +88,7 @@ export function GuidedTour() {
       
       // Steps for each nested item
       col.items.forEach(item => {
-        const id = `nav-item-${col.title.toLowerCase()}-${item.label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+        const id = `nav-item-${slug(col.title)}-${slug(item.label)}`;
         const customDesc = TOUR_DESCRIPTIONS[item.label] || item.desc;
         
         steps.push({
