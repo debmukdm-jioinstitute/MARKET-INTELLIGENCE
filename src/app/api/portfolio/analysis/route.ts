@@ -1,7 +1,7 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail, isGuestSession } from "@/lib/session";
 import { computePortfolioAnalysis } from "@/lib/my-portfolio/metrics";
-import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
+import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding, PortfolioSettings, TradeLogRow } from "@/lib/my-portfolio/types";
 import { portfolioAnalysisSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
@@ -12,10 +12,10 @@ export const maxDuration = 45;
 export async function GET() {
   try {
     let settings: PortfolioSettings = DEFAULT_PORTFOLIO_SETTINGS;
-    let holdings: Holding[] = REALISTIC_DEFAULT_HOLDINGS;
+    let holdings: Holding[] = [];
     let tradeLog: TradeLogRow[] = [];
 
-    if (hasDatabase()) {
+    if (hasDatabase() && !(await isGuestSession())) {
       try {
         await ensureSchema();
         const email = await getSessionEmail();
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
         }
       : DEFAULT_PORTFOLIO_SETTINGS;
 
-    const holdings = (body.holdings ?? REALISTIC_DEFAULT_HOLDINGS) as Holding[];
+    const holdings = (body.holdings ?? []) as Holding[];
     const tradeLog = (body.tradeLog ?? []) as TradeLogRow[];
 
     const analysis = await computePortfolioAnalysis(holdings, settings, tradeLog);

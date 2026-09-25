@@ -37,7 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetch("/api/auth/session")
       .then((res) => res.json())
       .then((json) => {
-        if (!cancelled) setUser(json.user ?? null);
+        if (!cancelled) {
+          setUser(json.user ?? null);
+          // A guest never owns a book: clear anything left in this browser by a previous session.
+          if (isGuestUser(json.user ?? null)) {
+            try {
+              window.localStorage.removeItem("mi_user_holdings_v2");
+            } catch {}
+          }
+        }
       })
       .catch(() => {})
       .finally(() => {

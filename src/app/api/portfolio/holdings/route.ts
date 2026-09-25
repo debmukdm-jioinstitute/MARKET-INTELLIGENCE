@@ -1,6 +1,5 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { getSessionEmail, isGuestSession } from "@/lib/session";
-import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding } from "@/lib/my-portfolio/types";
 import { addHoldingSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
@@ -37,7 +36,7 @@ function toHolding(r: Row): Holding {
 
 export async function GET() {
   try {
-    if (hasDatabase()) {
+    if (hasDatabase() && !(await isGuestSession())) {
       try {
         await ensureSchema();
         const email = await getSessionEmail();
@@ -53,7 +52,7 @@ export async function GET() {
         console.warn("DB holdings query failed, using realistic defaults:", err);
       }
     }
-    return NextResponse.json({ holdings: REALISTIC_DEFAULT_HOLDINGS });
+    return NextResponse.json({ holdings: [] });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to load holdings" }, { status: 502 });
   }

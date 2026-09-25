@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Briefcase, PlusCircle } from "lucide-react";
+import { ArrowUpRight, Briefcase, Lock, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export function MyPortfolioCard() {
-  const { data, loading } = useMyPortfolio();
+  const { data, loading, locked } = useMyPortfolio();
+  const { ready, isGuest } = useAuth();
 
-  const totalValue = data?.navInr ?? 0;
-  const todayPnl = data?.todayPnlInr ?? 0;
+  const totalValue = locked ? 0 : (data?.navInr ?? 0);
+  const todayPnl = locked ? 0 : (data?.todayPnlInr ?? 0);
   const positions = data?.positions ?? [];
-  const hasHoldings = Boolean(data?.hasHoldings && positions.length > 0);
+  const hasHoldings = !locked && Boolean(data?.hasHoldings && positions.length > 0);
+  // Nothing to show → cover the numbers with a lock (guests: log in; members: add/import).
+  const showLock = ready && (isGuest || (!loading && !hasHoldings));
 
   // Extract key KPIs from computed institutional analysis
   const todayReturnMetric = data?.overview?.find((m) => m.id === "today_return");
@@ -44,7 +48,37 @@ export function MyPortfolioCard() {
           </Link>
         </div>
 
-        <div className="mt-3 space-y-3">
+        <div className="relative mt-3 space-y-3">
+          {showLock ? (
+            <div
+              role="status"
+              className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-card/80 px-5 text-center backdrop-blur-[3px]"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full bg-blue-600/10 text-blue-600">
+                <Lock className="size-6" />
+              </span>
+              <p className="text-sm font-semibold text-foreground">
+                {isGuest
+                  ? "Log in or create a new account to create or import your holdings and track them."
+                  : "No holdings yet. Add or import your holdings to start tracking."}
+              </p>
+              {isGuest ? (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Link href="/login?next=/Home" className="inline-flex min-h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-700">
+                    Log in
+                  </Link>
+                  <Link href="/signup" className="inline-flex min-h-10 items-center rounded-lg border border-blue-600/40 bg-blue-600/10 px-4 text-sm font-bold text-blue-600 transition-colors hover:bg-blue-600 hover:text-white">
+                    Create account
+                  </Link>
+                </div>
+              ) : (
+                <Link href="/portfolio" className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-700">
+                  <PlusCircle className="size-4" />
+                  Add or import holdings
+                </Link>
+              )}
+            </div>
+          ) : null}
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -52,7 +86,7 @@ export function MyPortfolioCard() {
                 <MetricInfo metric="nav" />
               </div>
               <span className="text-sm text-blue-600 font-semibold">
-                {loading ? "Refreshing…" : hasHoldings ? `${positions.length} Active Positions` : "Clean Book"}
+                {loading && !isGuest ? "Refreshing…" : hasHoldings ? `${positions.length} Active Positions` : "0 Positions"}
               </span>
             </div>
             <div className="text-3xl font-extrabold tracking-tight text-foreground mt-0.5">
@@ -63,23 +97,13 @@ export function MyPortfolioCard() {
                   `₹${(totalValue / 1e5).toFixed(2)} L`
                 )
               ) : (
-                <span className="text-muted-foreground text-2xl">₹0.00 (No Holdings)</span>
+                <span className="text-muted-foreground">₹0</span>
               )}
             </div>
           </div>
 
-          {!hasHoldings && !loading ? (
-            <div className="rounded-xl border border-dashed border-blue-600/40 bg-blue-600/5 p-4 text-center text-sm space-y-2">
-              <p className="text-muted-foreground">Portfolio is clean with zero active positions.</p>
-              <Link
-                href="/portfolio"
-                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 font-bold text-white hover:bg-blue-600 transition-colors"
-              >
-                <PlusCircle className="size-3.5" />
-                Add Your Holdings
-              </Link>
-            </div>
-          ) : (
+          {(
+
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg border border-border/70 bg-secondary/40 p-3">
                 <div className="flex items-center justify-between">
@@ -135,35 +159,35 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Portfolio Alpha (CAPM)</span>
-                <MetricInfo metric="alpha" value={alphaMetric?.formatted ?? "+0.00%"} />
+                <MetricInfo metric="alpha" value={hasHoldings ? (alphaMetric?.formatted ?? "+0.00%") : "0.00%"} />
               </div>
-              <span className={cn("font-bold", (alphaMetric?.value ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                {alphaMetric?.formatted ?? "+0.00%"}
+              <span className={cn("font-bold", (hasHoldings ? (alphaMetric?.value ?? 0) : 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                {hasHoldings ? (alphaMetric?.formatted ?? "+0.00%") : "0.00%"}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Systematic Beta vs {data?.settings.benchmark ?? "NIFTY50"}</span>
-                <MetricInfo metric="beta" value={betaMetric?.formatted ?? "1.00"} />
+                <MetricInfo metric="beta" value={hasHoldings ? (betaMetric?.formatted ?? "1.00") : "0.00"} />
               </div>
-              <span className="font-bold text-blue-600">{betaMetric?.formatted ?? "1.00"}</span>
+              <span className="font-bold text-blue-600">{hasHoldings ? (betaMetric?.formatted ?? "1.00") : "0.00"}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Sharpe Ratio (Ex. G-Sec)</span>
-                <MetricInfo metric="sharpe" value={sharpeMetric?.formatted ?? "1.45"} />
+                <MetricInfo metric="sharpe" value={hasHoldings ? (sharpeMetric?.formatted ?? "1.45") : "0.00"} />
               </div>
-              <span className="font-bold text-foreground">{sharpeMetric?.formatted ?? "1.45"}</span>
+              <span className="font-bold text-foreground">{hasHoldings ? (sharpeMetric?.formatted ?? "1.45") : "0.00"}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Peak-To-Trough Max DD</span>
-                <MetricInfo metric="max_drawdown" value={mddMetric?.formatted ?? "-6.4%"} />
+                <MetricInfo metric="max_drawdown" value={hasHoldings ? (mddMetric?.formatted ?? "-6.4%") : "0.0%"} />
               </div>
-              <span className="font-bold text-rose-600">{mddMetric?.formatted ?? "-6.4%"}</span>
+              <span className="font-bold text-rose-600">{hasHoldings ? (mddMetric?.formatted ?? "-6.4%") : "0.0%"}</span>
             </div>
           </div>
         </div>

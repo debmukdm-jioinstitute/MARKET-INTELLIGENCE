@@ -1,7 +1,7 @@
 "use client";
 
 import type { Holding, PortfolioAnalysis } from "@/lib/my-portfolio/types";
-import { REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
+import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
 import { useCallback, useSyncExternalStore } from "react";
 
@@ -52,7 +52,7 @@ function subscribeHoldings(callback: () => void) {
   return () => window.removeEventListener("mi_portfolio_updated", callback);
 }
 
-const fetcher = async ([url, holdings]: [string, Holding[] | null]) => {
+const fetcher = async ([url, holdings]: [string, Holding[] | null, boolean]) => {
   let res: Response;
   if (holdings && Array.isArray(holdings)) {
     res = await fetch(url, {
@@ -67,8 +67,8 @@ const fetcher = async ([url, holdings]: [string, Holding[] | null]) => {
   const json = await res.json();
   if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
   
-  // Auto-seed if empty
-  if (!holdings && json.positions) {
+  // Sync the account's server-side book into local storage
+  if (!holdings && json.positions && json.positions.length > 0) {
     const seeded: Holding[] = json.positions.map((p: any) => ({
       id: p.id,
       market: p.market,
@@ -88,10 +88,17 @@ const fetcher = async ([url, holdings]: [string, Holding[] | null]) => {
 };
 
 export function useMyPortfolio(refreshMs = 60_000) {
-  const localHoldings = useSyncExternalStore(subscribeHoldings, getLocalHoldings, () => null);
+  const { ready, isGuest } = useAuth();
+  const locked = !ready || isGuest;
+  // Guests (and the moment before the session is known) never read or write holdings: the book stays at zero.
+  const snapshot = useCallback(() => (locked ? null : getLocalHoldings()), [locked]);
+  const localHoldings = useSyncExternalStore(subscribeHoldings, snapshot, () => null);
+  const requireAccount = useCallback(() => {
+    if (locked) throw new Error("Log in or create an account to add or import holdings");
+  }, [locked]);
 
   const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
-    ["/api/portfolio/analysis", localHoldings],
+    ready ? ["/api/portfolio/analysis", localHoldings, isGuest] : null,
     fetcher,
     { refreshInterval: refreshMs }
   );
@@ -100,6 +107,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
 
   const addHolding = useCallback(
     async (input: AddHoldingInput) => {
+      requireAccount();
       const newHolding: Holding = {
         id: `h-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         market: input.market,
@@ -113,7 +121,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
         addedAt: input.addedAt ?? new Date().toISOString().slice(0, 10),
       };
 
-      const current = getLocalHoldings() ?? REALISTIC_DEFAULT_HOLDINGS;
+      const current = getLocalHoldings() ?? [];
       const updated = [...current, newHolding];
       setLocalHoldings(updated);
 
@@ -130,12 +138,13 @@ export function useMyPortfolio(refreshMs = 60_000) {
       await reload();
       return newHolding;
     },
-    [reload],
+    [reload, requireAccount],
   );
 
   const removeHolding = useCallback(
     async (id: string) => {
-      const current = getLocalHoldings() ?? REALISTIC_DEFAULT_HOLDINGS;
+      requireAccount();
+      const current = getLocalHoldings() ?? [];
       const updated = current.filter((h) => h.id !== id && h.symbol !== id);
       setLocalHoldings(updated);
 
@@ -147,12 +156,13 @@ export function useMyPortfolio(refreshMs = 60_000) {
 
       await reload();
     },
-    [reload],
+    [reload, requireAccount],
   );
 
   const editHolding = useCallback(
     async (id: string, patch: { shares?: number; avgCost?: number }) => {
-      const current = getLocalHoldings() ?? REALISTIC_DEFAULT_HOLDINGS;
+      requireAccount();
+      const current = getLocalHoldings() ?? [];
       const updated = current.map((h) =>
         h.id === id || h.symbol === id
           ? {
@@ -176,11 +186,11 @@ export function useMyPortfolio(refreshMs = 60_000) {
 
       await reload();
     },
-    [reload],
+    [reload, requireAccount],
   );
 
   const resetToDefault = useCallback(async () => {
-    setLocalHoldings(REALISTIC_DEFAULT_HOLDINGS);
+    setLocalHoldings([]);
     await reload();
   }, [reload]);
 
@@ -191,6 +201,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
 
   const importHoldings = useCallback(
     async (imported: Holding[], mode: "replace" | "append" = "replace") => {
+      requireAccount();
       let updated: Holding[];
       if (mode === "replace") {
         updated = [...imported];
@@ -228,7 +239,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
       await reload();
       return updated;
     },
-    [reload],
+    [reload, requireAccount],
   );
 
   const updateBenchmark = useCallback(
@@ -245,6 +256,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
   );
 
   return {
+    locked,
     data: data ?? null,
     loading: isLoading && !data,
     error: error instanceof Error ? error.message : error ? String(error) : null,
