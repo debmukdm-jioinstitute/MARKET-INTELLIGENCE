@@ -47,9 +47,26 @@ Check which tier served a reply via the `X-MI-Assistant-Provider` response heade
 
 To add a **third provider** (e.g. OpenRouter `:free`, Cerebras, Gemini), connect it in the OmniRoute dashboard → **Providers**, then set `OMNIROUTE_FALLBACK_MODEL` to that model id.
 
-## Production
+## Production (Vercel)
 
-Vercel cannot reach `localhost` on your machine. Run OmniRoute on a VPS, bind to a private interface, and set `OMNIROUTE_BASE_URL` to that host (Tailscale, internal DNS, or authenticated reverse proxy). Never expose the OmniRoute dashboard or unauthenticated `/v1` to the public internet.
+**Already on the Vercel project (Production / Preview):**
+
+- `GROQ_API_KEY` — direct Groq fallback for the site assistant
+- `OMNIROUTE_MODEL`, `OMNIROUTE_FALLBACK_MODEL`, `SITE_ASSISTANT_GROQ_MODEL` — tier defaults
+
+**Development** env in Vercel also has `OMNIROUTE_BASE_URL` + `OMNIROUTE_API_KEY` (localhost) for `vercel env pull` / local parity.
+
+Vercel **cannot** call `http://127.0.0.1:20128` on your laptop. Until you host OmniRoute on a URL the cloud can reach, Production uses the **direct Groq** tier (`groq-direct`) after OmniRoute probes fail — so the assistant still works with only `GROQ_API_KEY`.
+
+When you have a hosted gateway (VPS, Docker, Tailscale Funnel, etc.):
+
+1. Vercel → Project → Settings → Environment Variables  
+2. Add **Production** (and Preview if you want):  
+   - `OMNIROUTE_BASE_URL` = `https://your-gateway.example/v1`  
+   - `OMNIROUTE_API_KEY` = secret from OmniRoute dashboard  
+3. Redeploy the project.
+
+Never expose the OmniRoute dashboard or unauthenticated `/v1` to the public internet without auth.
 
 ## Verify
 
