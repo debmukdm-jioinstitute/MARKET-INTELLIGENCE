@@ -1,0 +1,165 @@
+/* Scoped terminal palette for AI-trader desk (Google Sans inherited from portal). */
+.algo-trader-desk {
+  --algo-bg: #111318;
+  --algo-panel: #181c24;
+  --algo-panel-alt: #1e222c;
+  --algo-border: #252a33;
+  --algo-border-hi: #333a45;
+  --algo-text: #c8cdd5;
+  --algo-text-dim: #5a6270;
+  --algo-text-muted: #3d4450;
+  --algo-green: #00e87b;
+  --algo-green-dim: #0a3d26;
+  --algo-red: #ff3e3e;
+  --algo-red-dim: #3d1414;
+  --algo-blue: #4da6ff;
+  --algo-yellow: #e8c300;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--algo-text);
+}
+
+.algo-trader-desk * {
+  border-color: var(--algo-border);
+}
+
+.algo-trader-desk .t-panel {
+  background: var(--algo-panel);
+  border: 1px solid var(--algo-border);
+}
+
+.algo-trader-desk .t-green {
+  color: var(--algo-green);
+}
+.algo-trader-desk .t-red {
+  color: var(--algo-red);
+}
+.algo-trader-desk .t-blue {
+  color: var(--algo-blue);
+}
+.algo-trader-desk .t-dim {
+  color: var(--algo-text-dim);
+}
+.algo-trader-desk .t-muted {
+  color: var(--algo-text-muted);
+}
+
+.algo-trader-desk .t-green-glow {
+  color: var(--algo-green);
+  text-shadow: 0 0 8px rgba(0, 232, 123, 0.5);
+}
+.algo-trader-desk .t-red-glow {
+  color: var(--algo-red);
+  text-shadow: 0 0 8px rgba(255, 62, 62, 0.5);
+}
+
+.algo-trader-desk .t-btn {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border: 1px solid var(--algo-border);
+  background: var(--algo-panel);
+  color: var(--algo-text);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.algo-trader-desk .t-btn:hover {
+  border-color: var(--algo-green);
+  color: var(--algo-green);
+  background: var(--algo-green-dim);
+}
+.algo-trader-desk .t-btn-green {
+  border-color: #1a5c3a;
+  color: var(--algo-green);
+  background: var(--algo-green-dim);
+}
+.algo-trader-desk .t-btn-red {
+  border-color: #5c1a1a;
+  color: var(--algo-red);
+  background: var(--algo-red-dim);
+}
+.algo-trader-desk .t-btn-active {
+  border-color: var(--algo-green);
+  background: var(--algo-green);
+  color: #000;
+}
+
+.algo-trader-desk table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.algo-trader-desk th {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--algo-text-dim);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--algo-border);
+}
+.algo-trader-desk td {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid #1e222c;
+}
+.algo-trader-desk tr:hover td {
+  background: var(--algo-panel-alt);
+}
+
+.algo-trader-desk .t-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border: 1px solid;
+}
+
+.algo-trader-desk select,
+.algo-trader-desk input {
+  background: var(--algo-panel);
+  border: 1px solid var(--algo-border);
+  color: var(--algo-text);
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.algo-trader-desk .fullscreen-pnl {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: var(--algo-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.algo-trader-desk .fullscreen-pnl .pnl-value {
+  font-size: clamp(5rem, 14vw, 12rem);
+  font-weight: 700;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes algo-desk-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.algo-trader-desk .t-pulse {
+  animation: algo-desk-pulse 1.5s ease-in-out infinite;
+}
+
+.algo-trader-desk .ticker-bar {
+  background: #0e1117;
+  border-bottom: 1px solid var(--algo-border);
+  font-size: 12px;
+}

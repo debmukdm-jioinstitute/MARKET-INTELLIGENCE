@@ -185,6 +185,13 @@ const ADVANCED_NUDGES: Nudge[] = [
     href: "/portfolio/quant",
     cta: "Quant",
   },
+  {
+    title: "NIFTY Algo Desk",
+    body: "AI-trader integration: tick backtests, XGBoost/RL models, live paper trading, option chain charts.",
+    href: "/algo",
+    cta: "Algo desk",
+    badge: "NEW",
+  },
 ];
 
 export function nudgesForSkill(level: SkillLevel): Nudge[] {

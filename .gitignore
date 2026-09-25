@@ -45,3 +45,4 @@ next-env.d.ts
 .scanner-cache/
 .research-cache/
 .notify-cache/
+.env.vercel.production

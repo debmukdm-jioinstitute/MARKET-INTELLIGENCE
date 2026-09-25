@@ -114,6 +114,20 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K growth charts, morning-vs-close P&L, ATR paper trading.", badge: "NEW" },
         ],
       },
+      {
+        label: "NIFTY Algo Desk",
+        desc: "Intraday options research: ML signals, tick backtests, live paper trading.",
+        badge: "NEW",
+        items: [
+          { label: "Dashboard", href: "/algo", desc: "Equity curve, risk profiles, and system status.", badge: "NEW" },
+          { label: "Live trading", href: "/algo/live", desc: "Scanner, suggestions, auto/manual execution, open positions.", badge: "NEW" },
+          { label: "Trade history", href: "/algo/trades", desc: "Closed trades, P&L breakdown, premium journey charts." },
+          { label: "Tick backtest", href: "/algo/backtest", desc: "Replay engine on historical ticks (LOW/MEDIUM/HIGH risk)." },
+          { label: "Charts & chain", href: "/algo/charts", desc: "NIFTY candles, option chain, premium tick chart." },
+          { label: "AI models", href: "/algo/ai", desc: "XGBoost macro/micro/strategy models and RL exit agent.", badge: "AI" },
+          { label: "Algo settings", href: "/algo/settings", desc: "Risk profile selector and execution thresholds." },
+        ],
+      },
     ],
   },
   {
