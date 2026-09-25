@@ -1,13 +1,13 @@
-import type { FoSnapshot, IndiaDashboardPayload, IndiaImpact, MacroRow, QuoteField } from "@/lib/feeds/india/types";
+import type { BreadthSnapshot, FoSnapshot, IndiaDashboardPayload, IndiaImpact, MacroRow, QuoteField } from "@/lib/feeds/india/types";
 import {
   fetchFiiDii,
   fetchNseAllIndices,
-  fetchNseBreadth,
   fetchNseOptionChain,
   pickIndex,
 } from "@/lib/feeds/india/nse-market";
 import { feedFetch } from "@/lib/feeds/http";
 import type { LiveQuote } from "@/lib/feeds/types";
+import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
 import {
   fetchIndiaCpiRow,
@@ -258,7 +258,7 @@ async function fetchIndiaFxReservesRow(): Promise<MacroRow> {
 
 function buildPulseAndRadar(
   ymap: Map<string, LiveQuote>,
-  breadth: Awaited<ReturnType<typeof fetchNseBreadth>>,
+  breadth: BreadthSnapshot,
   fredGsec: MacroPoint[] = [],
   rbi10y: Awaited<ReturnType<typeof getRbiBenchmark10y>> = null,
 ) {
@@ -363,7 +363,7 @@ export async function buildIndiaDashboardQuick(): Promise<
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
   const [ymap, breadth, fredGsec, rbi10y] = await Promise.all([
     buildLiveQuoteMap(symbols),
-    fetchNseBreadth(),
+    fetchLiveBreadth(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
     getRbiBenchmark10y(),
   ]);
@@ -394,7 +394,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     repo,
   ] = await Promise.all([
     fetchNseAllIndices().catch(() => []),
-    fetchNseBreadth(),
+    fetchLiveBreadth(),
     fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY"),
     fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY"),
     fetchFiiDii(),
