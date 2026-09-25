@@ -31,12 +31,16 @@ export function TopBar() {
         <MegaNavBar />
       </div>
       {pathname !== "/research" ? (
-        <SymbolSearch variant="bar" className="w-full min-w-0" />
+        <div id="tour-search" className="min-w-0">
+          <SymbolSearch variant="bar" className="w-full min-w-0" />
+        </div>
       ) : (
         <div aria-hidden />
       )}
       <div className="flex flex-wrap items-center justify-end gap-4 text-sm lg:gap-5">
-        <NotificationBell />
+        <div id="tour-alerts">
+          <NotificationBell />
+        </div>
       </div>
     </header>
   );

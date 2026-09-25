@@ -198,6 +198,7 @@ export function AppNavTrigger() {
         }
       }}
       aria-expanded={open}
+      id="nav-menu-trigger"
       aria-label="Open navigation"
       className={cn(
         "inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
@@ -229,6 +230,7 @@ export function BottomTabBar() {
         return (
           <button
             key={sec.title}
+            id={`nav-bottom-${slug(sec.title)}`}
             type="button"
             onClick={() => (open && section === sec.title ? openSection(null) : openSection(sec.title))}
             aria-current={on ? "page" : undefined}
