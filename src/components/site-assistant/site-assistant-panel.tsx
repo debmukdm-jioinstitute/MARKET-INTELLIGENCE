@@ -446,9 +446,9 @@ function AssistantFab({ open, onToggle }: { open: boolean; onToggle: () => void 
         aria-expanded={open}
         aria-label={open ? `Close ${ASSISTANT_TITLE}` : `${ASSISTANT_TITLE} — ${ASSISTANT_TAGLINE}`}
         className={cn(
-          "relative z-[1] flex size-14 items-center justify-center rounded-full text-primary-foreground shadow-lg shadow-primary/30 transition-shadow",
-          "bg-gradient-to-b from-[#5eb3ff] via-primary to-[#1558b8]",
-          open && "from-primary to-[#0d47a1]",
+          "relative z-[1] flex size-14 items-center justify-center overflow-hidden rounded-full",
+          "border border-border/90 bg-white shadow-[var(--shadow-lg)] transition-shadow",
+          "dark:bg-card dark:border-border",
         )}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -460,23 +460,26 @@ function AssistantFab({ open, onToggle }: { open: boolean; onToggle: () => void 
               exit={{ rotateX: 90, opacity: 0 }}
               transition={{ duration: 0.45, ease: GOOGLE_FLIP_EASE }}
               style={{ transformOrigin: "center center" }}
-              className="assistant-flip-face"
+              className="assistant-flip-face text-foreground"
             >
               <X className="size-6" strokeWidth={2.25} />
             </motion.span>
           ) : (
             <motion.span
-              key="dots"
+              key="logo"
               initial={{ rotateX: 90, opacity: 0 }}
               animate={{ rotateX: 0, opacity: 1 }}
               exit={{ rotateX: -90, opacity: 0 }}
               transition={{ duration: 0.45, ease: GOOGLE_FLIP_EASE }}
               style={{ transformOrigin: "center center" }}
-              className="assistant-flip-face flex flex-col gap-1"
+              className="assistant-flip-face flex size-full items-center justify-center p-2"
             >
-              <span className="size-1.5 rounded-full bg-white" />
-              <span className="size-1.5 rounded-full bg-white" />
-              <span className="size-1.5 rounded-full bg-white" />
+              <img
+                src="/logo.png"
+                alt=""
+                aria-hidden
+                className="size-10 object-contain mix-blend-multiply dark:invert"
+              />
             </motion.span>
           )}
         </AnimatePresence>
