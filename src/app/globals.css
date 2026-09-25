@@ -219,6 +219,40 @@
   transform-origin: var(--radix-tooltip-content-transform-origin, center);
 }
 
+@keyframes assistant-fab-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.assistant-fab-ring {
+  animation: assistant-fab-pulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.assistant-fab-ring-delay {
+  animation-delay: 1.2s;
+}
+
+.assistant-panel-perspective {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.assistant-flip-stage {
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+.assistant-flip-face {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
 @media print {
   aside, header, button {
     display: none !important;

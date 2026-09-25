@@ -1,6 +1,16 @@
+import {
+  listPortalOfferings,
+  nudgesForSkill,
+  pickDidYouKnow,
+  type SkillLevel,
+} from "@/lib/site-assistant/education";
 import { searchPages } from "@/lib/site-assistant/site-map";
 import { tool } from "ai";
 import { z } from "zod";
+
+const skillSchema = z.enum(["beginner", "intermediate", "advanced"]);
+
+const sectionSchema = z.enum(["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"]);
 
 /** Server-executed tools for streamText. Client tools (navigate, open_command_palette) are defined in the API route without execute. */
 export function createServerSiteAssistantTools() {
@@ -14,6 +24,32 @@ export function createServerSiteAssistantTools() {
       execute: async ({ query }) => ({
         pages: searchPages(query, 8),
       }),
+    }),
+    list_portal_offerings: tool({
+      description:
+        "List the full portal menu: sections (Today, Invest, Trade, My Portfolio, Data & Tools), task groups, pages, Start Here shortcuts, and AI-tagged tools. Use when explaining what the site offers or matching user goals.",
+      inputSchema: z.object({
+        section: sectionSchema.optional().describe("Filter to one section, or omit for all"),
+        skillLevel: skillSchema.optional().describe("Tailors Start Here shortcuts to learner level"),
+      }),
+      execute: async ({ section, skillLevel }) =>
+        listPortalOfferings(section ?? "all", skillLevel as SkillLevel | undefined),
+    }),
+    list_education_content: tool({
+      description:
+        'Return nudges (where to go next) or a "Did you know?" trivia fact about the platform. Use to educate and guide beginners through advanced users.',
+      inputSchema: z.object({
+        kind: z.enum(["nudge", "trivia", "both"]),
+        skillLevel: skillSchema.optional(),
+        triviaSeed: z.number().int().optional().describe("Optional index seed for trivia rotation"),
+      }),
+      execute: async ({ kind, skillLevel, triviaSeed }) => {
+        const level = (skillLevel ?? "beginner") as SkillLevel;
+        const out: { nudges?: ReturnType<typeof nudgesForSkill>; trivia?: ReturnType<typeof pickDidYouKnow> } = {};
+        if (kind === "nudge" || kind === "both") out.nudges = nudgesForSkill(level);
+        if (kind === "trivia" || kind === "both") out.trivia = pickDidYouKnow(triviaSeed ?? Date.now());
+        return out;
+      },
     }),
   };
 }

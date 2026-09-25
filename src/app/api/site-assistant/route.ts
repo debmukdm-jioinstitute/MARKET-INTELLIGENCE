@@ -1,4 +1,5 @@
 import { SiteAssistantConfigError } from "@/lib/ai/omniroute";
+import type { SkillLevel } from "@/lib/site-assistant/education";
 import { buildSiteAssistantSystemPrompt } from "@/lib/site-assistant/prompt";
 import { selectSiteAssistantTier } from "@/lib/site-assistant/select-tier";
 import { ragContextForQuestion } from "@/lib/site-assistant/rag-context";
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as {
     messages?: UIMessage[];
     pathname?: string;
+    skillLevel?: SkillLevel;
   } | null;
 
   const messages = body?.messages;
@@ -54,11 +56,15 @@ export async function POST(req: Request) {
   }
 
   const pathname = typeof body?.pathname === "string" ? body.pathname : "/";
+  const skillLevel =
+    body?.skillLevel === "beginner" || body?.skillLevel === "intermediate" || body?.skillLevel === "advanced"
+      ? body.skillLevel
+      : undefined;
   const userQuestion = lastUserText(messages);
   const ragSnippet = userQuestion ? await ragContextForQuestion(userQuestion) : undefined;
 
   try {
-    const system = buildSiteAssistantSystemPrompt(pathname, ragSnippet);
+    const system = buildSiteAssistantSystemPrompt(pathname, ragSnippet, skillLevel);
     const tier = await selectSiteAssistantTier(system);
 
     const result = streamText({

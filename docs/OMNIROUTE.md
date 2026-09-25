@@ -56,17 +56,35 @@ To add a **third provider** (e.g. OpenRouter `:free`, Cerebras, Gemini), connect
 
 **Development** env in Vercel also has `OMNIROUTE_BASE_URL` + `OMNIROUTE_API_KEY` (localhost) for `vercel env pull` / local parity.
 
-Vercel **cannot** call `http://127.0.0.1:20128` on your laptop. Until you host OmniRoute on a URL the cloud can reach, Production uses the **direct Groq** tier (`groq-direct`) after OmniRoute probes fail — so the assistant still works with only `GROQ_API_KEY`.
+Vercel **cannot** call `http://127.0.0.1:20128` on your laptop. Production needs a **public HTTPS** `/v1` base URL plus `OMNIROUTE_API_KEY`.
 
-When you have a hosted gateway (VPS, Docker, Tailscale Funnel, etc.):
+### Option A — Cloudflare quick tunnel (this laptop)
 
-1. Vercel → Project → Settings → Environment Variables  
-2. Add **Production** (and Preview if you want):  
-   - `OMNIROUTE_BASE_URL` = `https://your-gateway.example/v1`  
-   - `OMNIROUTE_API_KEY` = secret from OmniRoute dashboard  
-3. Redeploy the project.
+1. Set `REQUIRE_API_KEY=true` in `~/.omniroute/.env` and restart OmniRoute (`omniroute serve --daemon`).
+2. Create an API key (`omniroute api api-keys post-api-keys --body '{"name":"vercel-production"}'`).
+3. Run the tunnel (binary in repo `.tools/cloudflared`, or install cloudflared):
 
-Never expose the OmniRoute dashboard or unauthenticated `/v1` to the public internet without auth.
+   ```bash
+   chmod +x scripts/omniroute-tunnel.sh
+   ./scripts/omniroute-tunnel.sh
+   ```
+
+   Copy the `https://….trycloudflare.com` hostname from the log → Vercel **Production** + **Preview**:
+
+   - `OMNIROUTE_BASE_URL` = `https://<hostname>/v1`
+   - `OMNIROUTE_API_KEY` = the `sk-…` key from step 2
+
+4. Redeploy (`vercel --prod` or merge to `main`).
+
+Optional macOS autostart: `~/Library/LaunchAgents/com.market-intelligence.omniroute-tunnel.plist` (uses `scripts/omniroute-tunnel.sh`). **Note:** quick-tunnel hostnames change when cloudflared restarts — update Vercel or switch to Option B.
+
+Keep **OmniRoute** and **cloudflared** running while you rely on this path.
+
+### Option B — Hosted OmniRoute (recommended for 24/7)
+
+Deploy the official image (e.g. [Railway template](https://railway.com/deploy/omniroute)), connect Groq/other providers in the dashboard, create an API key, then set the same Vercel vars to the Railway public URL.
+
+Never expose the OmniRoute dashboard or unauthenticated `/v1` to the public internet without auth (`REQUIRE_API_KEY=true` and scoped API keys).
 
 ## Verify
 
