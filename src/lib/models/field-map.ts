@@ -21,6 +21,7 @@ export const FIELD_MAP: Record<FieldKey, string[]> = {
   basic_shares: ["BasicAverageShares"],
   diluted_eps: ["DilutedEPS"],
   ebitda: ["EBITDA", "NormalizedEBITDA"],
+  ebit: ["EBIT"],
   cash: ["CashAndCashEquivalents"],
   cash_and_sti: ["CashCashEquivalentsAndShortTermInvestments"],
   receivables: ["AccountsReceivable", "Receivables"],
@@ -94,6 +95,17 @@ export const INDEX_BY_SUFFIX: Record<string, [string, string]> = {
   HE: ["^OMXH25", "OMX Helsinki 25"],
   BR: ["^BFX", "BEL 20"],
   VI: ["^ATX", "ATX"],
+  BK: ["^SET.BK", "SET Index"],
+  JK: ["^JKSE", "IDX Composite"],
+  KL: ["^KLSE", "FTSE Bursa Malaysia KLCI"],
+  TA: ["^TA125.TA", "TA-125"],
+  WA: ["WIG20.WA", "WIG20"],
+  SR: ["^TASI.SR", "Tadawul All Share"],
+  NZ: ["^NZ50", "S&P/NZX 50"],
+  IS: ["XU100.IS", "BIST 100"],
+  KQ: ["^KQ11", "KOSDAQ"],
+  TWO: ["^TWOII", "TPEx"],
+  SN: ["^IPSA", "S&P CLX IPSA"],
 };
 
 /** Minor-unit quote currencies used by Yahoo (pence, cents, agorot) -> [major currency, divisor]. */

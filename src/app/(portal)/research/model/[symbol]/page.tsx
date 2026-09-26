@@ -101,7 +101,7 @@ export default function FinancialModelPage() {
   function applyLookback(years: number) {
     if (!dataset) return;
     setLookback(years);
-    const fresh = deriveAssumptions(dataset, assumptions?.years ?? 5, years);
+    const fresh = deriveAssumptions(dataset, assumptions?.years ?? 10, years);
     setDefaultAssumptions(fresh);
     setAssumptions(fresh);
   }

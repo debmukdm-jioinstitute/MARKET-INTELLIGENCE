@@ -34,6 +34,26 @@ export const COUNTRY_DEFAULTS: Record<string, CountryDefault> = {
   BRL: { currency: "BRL", country: "Brazil", riskFree: 0.13, crp: 0.035, g: 0.05 },
   MXN: { currency: "MXN", country: "Mexico", riskFree: 0.093, crp: 0.028, g: 0.045 },
   ZAR: { currency: "ZAR", country: "South Africa", riskFree: 0.095, crp: 0.04, g: 0.045 },
+  ILS: { currency: "ILS", country: "Israel", riskFree: 0.041, crp: 0.0115, g: 0.03 },
+  PLN: { currency: "PLN", country: "Poland", riskFree: 0.055, crp: 0.0115, g: 0.035 },
+  CZK: { currency: "CZK", country: "Czech Republic", riskFree: 0.04, crp: 0.0055, g: 0.03 },
+  HUF: { currency: "HUF", country: "Hungary", riskFree: 0.068, crp: 0.028, g: 0.04 },
+  TRY: { currency: "TRY", country: "Turkey", riskFree: 0.3, crp: 0.055, g: 0.2 },
+  THB: { currency: "THB", country: "Thailand", riskFree: 0.026, crp: 0.0115, g: 0.03 },
+  IDR: { currency: "IDR", country: "Indonesia", riskFree: 0.068, crp: 0.0175, g: 0.05 },
+  MYR: { currency: "MYR", country: "Malaysia", riskFree: 0.035, crp: 0.0115, g: 0.035 },
+  PHP: { currency: "PHP", country: "Philippines", riskFree: 0.06, crp: 0.0175, g: 0.05 },
+  SAR: { currency: "SAR", country: "Saudi Arabia", riskFree: 0.05, crp: 0.0075, g: 0.03 },
+  AED: { currency: "AED", country: "UAE", riskFree: 0.045, crp: 0, g: 0.03 },
+  QAR: { currency: "QAR", country: "Qatar", riskFree: 0.045, crp: 0.0055, g: 0.03 },
+  NZD: { currency: "NZD", country: "New Zealand", riskFree: 0.042, crp: 0, g: 0.03 },
+  CLP: { currency: "CLP", country: "Chile", riskFree: 0.055, crp: 0.0075, g: 0.035 },
+  COP: { currency: "COP", country: "Colombia", riskFree: 0.11, crp: 0.035, g: 0.05 },
+  PEN: { currency: "PEN", country: "Peru", riskFree: 0.06, crp: 0.0175, g: 0.045 },
+  EGP: { currency: "EGP", country: "Egypt", riskFree: 0.27, crp: 0.09, g: 0.15 },
+  NGN: { currency: "NGN", country: "Nigeria", riskFree: 0.19, crp: 0.08, g: 0.12 },
+  VND: { currency: "VND", country: "Vietnam", riskFree: 0.03, crp: 0.02, g: 0.05 },
+  ISK: { currency: "ISK", country: "Iceland", riskFree: 0.065, crp: 0.0055, g: 0.04 },
 };
 
 /**
@@ -75,6 +95,6 @@ export function syntheticRating(coverage: number): { rating: string; spread: num
 export const MARGINAL_TAX: Record<string, number> = {
   USD: 0.25, INR: 0.2517, EUR: 0.25, GBP: 0.25, JPY: 0.3, CNY: 0.25, HKD: 0.165, CAD: 0.265,
   AUD: 0.3, CHF: 0.15, KRW: 0.24, TWD: 0.2, SGD: 0.17, SEK: 0.206, DKK: 0.22, NOK: 0.22,
-  BRL: 0.34, MXN: 0.3, ZAR: 0.27,
+  BRL: 0.34, MXN: 0.3, ZAR: 0.27, ILS: 0.23, PLN: 0.19, CZK: 0.21, HUF: 0.09, TRY: 0.25, THB: 0.2, IDR: 0.22, MYR: 0.24, PHP: 0.25, SAR: 0.2, AED: 0.09, QAR: 0.1, NZD: 0.28, CLP: 0.27, COP: 0.35, PEN: 0.295, EGP: 0.225, NGN: 0.3, VND: 0.2, ISK: 0.2,
 };
 export const marginalTaxRate = (currency: string) => MARGINAL_TAX[currency] ?? 0.25;

@@ -8,7 +8,7 @@
 export const INCOME_FIELDS = [
   "revenue", "cogs", "gross_profit", "sga", "rnd", "opex_total", "operating_income",
   "da", "interest_expense", "interest_income", "pretax_income", "tax", "net_income",
-  "diluted_shares", "basic_shares", "diluted_eps", "ebitda",
+  "diluted_shares", "basic_shares", "diluted_eps", "ebitda", "ebit",
 ] as const;
 
 export const BALANCE_FIELDS = [

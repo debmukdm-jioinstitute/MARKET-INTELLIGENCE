@@ -254,3 +254,31 @@ describe("capex tied to growth", () => {
     expect(-rows[n].capex / rows[n].revenue).toBeCloseTo(0.05, 9);
   });
 });
+
+describe("currency coverage", () => {
+  it("every country default is internally sane (default-free rf positive, growth positive, marginal tax defined)", async () => {
+    const { marginalTaxRate } = await import("@/lib/models/country");
+    for (const c of Object.values(COUNTRY_DEFAULTS)) {
+      expect(c.riskFree - sovereignDefaultSpread(c.crp), c.currency).toBeGreaterThan(0);
+      expect(c.g, c.currency).toBeGreaterThan(0); // (capped at the default-free rf when the assumptions are derived)
+      expect(marginalTaxRate(c.currency), c.currency).toBeGreaterThan(0.05);
+    }
+  });
+});
+
+describe("horizon and equity floor", () => {
+  it("defaults to a 10-year explicit forecast", () => {
+    expect(deriveAssumptions(ds).years).toBe(10);
+    expect(buildModel(ds, deriveAssumptions(ds)).dcf.years).toHaveLength(10);
+  });
+  it("a longer horizon lowers the terminal value share for a growing company", () => {
+    const short = buildModel(ds, deriveAssumptions(ds, 5)).dcf.tvShareOfEv;
+    const long = buildModel(ds, deriveAssumptions(ds, 10)).dcf.tvShareOfEv;
+    expect(long).toBeLessThan(short);
+  });
+  it("floors per-share value at zero and flags it when equity is negative", () => {
+    const m = buildModel(ds, applyOverrides(A(), { minority_interest: 1e6 }));
+    expect(m.dcf.impliedPrice).toBe(0);
+    expect(m.checks.find((c) => c.label === "Equity value is positive")?.pass).toBe(false);
+  });
+});

@@ -6,7 +6,8 @@
  * companies" list, restricted to the target's own exchange so the beta
  * regression benchmark is the same index).
  */
-import { alignMonthly, fetchChart, fetchMonthlySeries, getJson } from "@/lib/models/yahoo-fundamentals";
+import { MINOR_UNITS } from "@/lib/models/field-map";
+import { alignMonthly, fetchChart, fetchFxRate, fetchMonthlySeries, getJson, indexForSymbol } from "@/lib/models/yahoo-fundamentals";
 import { linreg, median, monthlyReturns } from "@/lib/models/stats";
 import type { PeerRow, PeerSet, PriceSeries } from "@/lib/models/types";
 
@@ -101,16 +102,35 @@ async function fetchPeerFinancials(symbol: string) {
   return { g, statementCurrency };
 }
 
-async function fetchOnePeer(symbol: string, index: PriceSeries): Promise<PeerRow | null> {
+const suffixOf = (s: string) => (s.includes(".") ? s.split(".").pop()!.toUpperCase() : "");
+const indexCache = new Map<string, Promise<PriceSeries>>();
+
+async function fetchOnePeer(symbol: string, index: PriceSeries | null): Promise<PeerRow | null> {
+  // a peer on a different exchange is regressed against ITS OWN market index (betas are only comparable within a market)
+  if (!index) {
+    const idx = indexForSymbol(symbol);
+    if (!indexCache.has(idx.symbol)) indexCache.set(idx.symbol, fetchMonthlySeries(idx.symbol, idx.name));
+    index = await indexCache.get(idx.symbol)!;
+  }
   const [chart, monthly, fin] = await Promise.all([
     fetchChart(symbol, "5d", "1d"),
     fetchMonthlySeries(symbol, symbol),
     fetchPeerFinancials(symbol),
   ]);
-  const price = Number(chart.meta?.regularMarketPrice);
-  const listingCcy = chart.meta?.currency;
-  // Skip peers whose price and statements are in different currencies (ADRs) — multiples would be wrong.
-  if (!(price > 0) || !fin.statementCurrency || listingCcy !== fin.statementCurrency) return null;
+  let price = Number(chart.meta?.regularMarketPrice);
+  let listingCcy = chart.meta?.currency;
+  const minor = listingCcy ? MINOR_UNITS[listingCcy] : undefined; // e.g. GBp (pence) -> GBP
+  if (minor) {
+    price /= minor[1];
+    listingCcy = minor[0];
+  }
+  if (!(price > 0) || !fin.statementCurrency || !listingCcy) return null;
+  // ADRs / dual reporters (e.g. CHF-listed, USD-reporting): convert the price into the statement currency
+  if (listingCcy !== fin.statementCurrency) {
+    const fx = await fetchFxRate(listingCcy, fin.statementCurrency);
+    if (fx == null) return null;
+    price *= fx;
+  }
   const shares = fin.g("annualOrdinarySharesNumber");
   if (!shares) return null;
   const [s, ix] = alignMonthly(monthly, index);
@@ -143,13 +163,18 @@ export async function fetchPeerSet(symbol: string, index: PriceSeries, _currency
     {},
     8_000,
   );
-  const suffix = symbol.includes(".") ? symbol.split(".").pop()!.toUpperCase() : "";
-  const candidates = (rec?.finance?.result?.[0]?.recommendedSymbols ?? [])
-    .map((r) => r.symbol)
-    .filter((s) => s && s !== symbol && (s.includes(".") ? s.split(".").pop()!.toUpperCase() : "") === suffix)
-    .slice(0, 6);
+  const suffix = suffixOf(symbol);
+  const all = (rec?.finance?.result?.[0]?.recommendedSymbols ?? []).map((r) => r.symbol).filter((s) => s && s !== symbol);
+  const same = all.filter((s) => suffixOf(s) === suffix);
+  // prefer same-exchange peers (same benchmark index); top up from other markets when fewer than 4 exist
+  const others = all.filter((s) => suffixOf(s) !== suffix);
+  const candidates = [...same, ...(same.length < 4 ? others : [])].slice(0, 6);
   if (!candidates.length) return null;
-  const settled = await Promise.allSettled(candidates.map((c) => fetchOnePeer(c, index)));
+  const settled = await Promise.allSettled(candidates.map((c) => fetchOnePeer(c, suffixOf(c) === suffix ? index : null)));
   const rows = settled.flatMap((r) => (r.status === "fulfilled" && r.value ? [r.value] : []));
-  return summarizePeers(rows, "Yahoo Finance similar-company list (same exchange), TTM multiples, Blume-adjusted & unlevered peer betas");
+  const cross = candidates.some((c) => suffixOf(c) !== suffix);
+  return summarizePeers(
+    rows,
+    `Yahoo Finance similar-company list${cross ? " (same exchange first, topped up from other markets — each peer regressed against its own index)" : " (same exchange)"}, TTM multiples, Blume-adjusted & unlevered peer betas`,
+  );
 }

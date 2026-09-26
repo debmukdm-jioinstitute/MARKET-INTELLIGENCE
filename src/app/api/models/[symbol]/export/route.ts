@@ -20,7 +20,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ symbol: string
   }
   try {
     const dataset = await fetchFinancialDataset(symbol);
-    const defaults = deriveAssumptions(dataset, body.years ?? 5, body.lookback ?? 3);
+    const defaults = deriveAssumptions(dataset, body.years ?? 10, body.lookback ?? 3);
     const assumptions = body.overrides && Object.keys(body.overrides).length ? applyOverrides(defaults, body.overrides) : defaults;
     const model = buildModel(dataset, assumptions);
     const isFcff = model.method === "fcff";

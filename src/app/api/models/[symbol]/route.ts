@@ -17,7 +17,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ symbol: string 
   const symbol = decodeURIComponent(rawSymbol);
   try {
     const lookback = Number(new URL(req.url).searchParams.get("lookback")) || 3;
-    const result = await build(symbol, 5, undefined, lookback);
+    const result = await build(symbol, 10, undefined, lookback);
     return NextResponse.json(result, { headers: { "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200" } });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to build financial model" }, { status: 502 });
@@ -34,7 +34,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ symbol: string
     // no body is fine — use defaults
   }
   try {
-    const result = await build(symbol, body.years ?? 5, body.overrides, body.lookback ?? 3);
+    const result = await build(symbol, body.years ?? 10, body.overrides, body.lookback ?? 3);
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to build financial model" }, { status: 502 });

@@ -86,7 +86,8 @@ const pctStr = (x: number) => `${(x * 100).toFixed(1)}%`;
 const avg = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
 
-export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3): Assumptions {
+/** Default horizon is 10 years: a 5-year fade truncates the growth of high-growth firms and pushes 70%+ of value into the terminal value. */
+export function deriveAssumptions(ds: FinancialDataset, years = 10, lookback = 3): Assumptions {
   lookback = Math.round(clamp(lookback, 1, 6));
   years = Math.round(clamp(years, 3, 10));
   const P = ds.periods;

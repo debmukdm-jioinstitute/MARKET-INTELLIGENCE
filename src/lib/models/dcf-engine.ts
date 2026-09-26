@@ -396,10 +396,11 @@ export function dilutedSharesAtPrice(A: Assumptions, price: number): DilutionRes
 
 /** Solves equity value -> price per diluted share (price depends on dilution, which depends on price). */
 export function priceFromEquity(A: Assumptions, equityValue: number): { price: number; dilution: DilutionResult } {
-  let price = equityValue / (A.values.shares_outstanding as number);
+  // limited liability: equity cannot be worth less than zero per share (flagged by the "equity value positive" check)
+  let price = Math.max(0, equityValue) / (A.values.shares_outstanding as number);
   let d = dilutedSharesAtPrice(A, price);
   for (let i = 0; i < 60; i++) {
-    const next = equityValue / d.dilutedShares;
+    const next = Math.max(0, equityValue) / d.dilutedShares;
     if (Math.abs(next - price) < 1e-9) { price = next; break; }
     price = next;
     d = dilutedSharesAtPrice(A, Math.max(price, 0));
@@ -679,6 +680,7 @@ export function buildModel(dataset: FinancialDataset, baseAssumptions: Assumptio
       { label: "Terminal ROIC at least WACC", value: `${(dcf.terminal.roic * 100).toFixed(1)}% vs ${(wacc.wacc * 100).toFixed(1)}%`, pass: dcf.terminal.roic >= wacc.wacc - 1e-9, why: "Growth beyond the forecast creates value only if new investment earns more than the cost of capital. ROIC below WACC in perpetuity means growth destroys value." },
       { label: "Terminal value share of EV", value: `${(tvShare * 100).toFixed(0)}%`, pass: tvShare <= 0.75, why: "When more than ~75% of enterprise value sits in the terminal value, the valuation is dominated by perpetuity assumptions rather than the explicit forecast." },
       { label: "Implied exit multiple in a sane band", value: `${dcf.impliedExitMultiple.toFixed(1)}x EV/EBITDA`, pass: dcf.impliedExitMultiple >= exitLo && dcf.impliedExitMultiple <= exitHi, why: `The Gordon terminal value implies an EV/EBITDA of ${dcf.impliedExitMultiple.toFixed(1)}x; outside ${exitLo}-${exitHi}x suggests the terminal growth / ROIC assumptions are unrealistic.` },
+      { label: "Equity value is positive", value: dcf.equityValue.toFixed(0), pass: dcf.equityValue > 0, why: "Enterprise value below net debt and other claims means the modelled equity is worthless; the per-share value is floored at zero. Typically an over-levered or loss-making company where the DCF is not a reliable guide." },
       { label: "Net debt vs. DCF enterprise value", value: `${(netDebtToEv * 100).toFixed(0)}% of EV`, pass: netDebtToEv < 0.6, why: "When net debt is a large share of (or exceeds) the modeled enterprise value, small changes in operating assumptions swing equity value — and the implied price — disproportionately. Treat the DCF output as low-confidence here." },
     );
     // forecast reinvestment consistency: incremental ROIC should not persistently exceed ~3x WACC
@@ -710,5 +712,13 @@ export function buildModel(dataset: FinancialDataset, baseAssumptions: Assumptio
     multiples,
   };
   model.quality = runDataQuality(dataset, rows, n);
+  const ratio = dcf.impliedPrice / dcf.currentPrice;
+  if (ratio < 0.35 || ratio > 2.5) {
+    model.quality.push({
+      severity: "info",
+      label: "Model value is far from the market price",
+      detail: `Implied value is ${ratio.toFixed(2)}x the current price. The derived defaults extrapolate trailing growth and margins, fading to terminal growth; they cannot see a step-change in outlook (new businesses, turnarounds, cyclical troughs). Read the reverse DCF to see what the market is pricing before treating the gap as mispricing.`,
+    });
+  }
   return model;
 }
