@@ -46,7 +46,14 @@ export async function GET() {
 export async function POST(req: Request) {
   const guard = await requireAdmin();
   if ("error" in guard) return guard.error;
-  const body = (await req.json().catch(() => ({}))) as { action?: string; path?: string; flag?: string; enabled?: boolean };
+  const body = (await req.json().catch(() => ({}))) as {
+    action?: string;
+    path?: string;
+    flag?: string;
+    enabled?: boolean;
+    email?: string;
+    name?: string;
+  };
 
   if (body.action === "flag") {
     const known = FLAGS.some((f) => f.flag === body.flag);
