@@ -7,7 +7,9 @@ Read-only access to the site's own computed data for Claude and other MCP client
   Keys are set in the `MCP_API_KEYS` environment variable (comma-separated). With none set, tool calls are disabled.
 - **Rate limit:** 60 tool calls per minute per key (best effort, per serverless instance).
 
-## Tools (all read-only)
+## Tools (all read-only, 33 at time of writing)
+
+The authoritative list is `tools/list` (each tool carries a `title` and `_meta.category`). Core tools:
 
 | Tool | Returns |
 |---|---|
@@ -21,6 +23,8 @@ Read-only access to the site's own computed data for Claude and other MCP client
 | `get_daily_brief` | Latest stored daily brief with its fact sheet |
 | `get_security_risk` | Vol, ATR, drawdown, beta, earnings, Form 4 filings for a `symbol` |
 | `get_data_health` | Freshness of every collected series |
+
+Additional site-data tools (markets, macro, research, derivatives, scanners, system) live in `src/lib/mcp/tools-site.ts`; the tables in `/help` list them all.
 
 Outputs are heuristic or descriptive statistics, not investment advice.
 

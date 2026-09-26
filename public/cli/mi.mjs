@@ -228,8 +228,16 @@ function renderArray(arr, indent) {
     const cols = keys.filter((k) => !/^(id|url|link|slug|uuid)$/i.test(k) || keys.length <= 3).slice(0, 8);
     if (cols.length) {
       const shown = NO_LIMIT ? arr : arr.slice(0, ROW_LIMIT);
-      const budget = Math.max(12, Math.floor((termWidth() - indent - cols.length * 2) / cols.length));
-      table(shown.map((r) => cols.map((k) => clip(String(fmtVal(r[k], k)), budget))), cols);
+      const rows = shown.map((r) => cols.map((k) => String(fmtVal(r[k], k))));
+      // fit to the terminal: repeatedly shrink the widest column (min 8) until the table fits
+      const widths = cols.map((k, i) => Math.max(k.length, ...rows.map((r) => stripAnsi(r[i]).length)));
+      const avail = termWidth() - indent - cols.length * 2;
+      while (widths.reduce((a, b) => a + b, 0) > avail) {
+        const m = widths.indexOf(Math.max(...widths));
+        if (widths[m] <= 8) break;
+        widths[m]--;
+      }
+      table(rows.map((r) => r.map((cell, i) => clip(cell, widths[i]))), cols.map((k, i) => clip(k, widths[i])));
       if (shown.length < arr.length) console.log(dim(`${sp}… ${arr.length - shown.length} more (use --all to show every row, --json for raw data)`));
       return;
     }

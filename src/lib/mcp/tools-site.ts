@@ -306,9 +306,19 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_scanner_backtest",
     title: "Scanner backtest",
     category: "Scanners",
-    description: "Latest scanner backtest: stats per scanner and horizon plus equity curves.",
-    inputSchema: empty,
-    run: async () => ({ run: await loadBacktest().catch(() => null) }),
+    description: "Latest scanner backtest, flattened to one row per scanner x holding period (signals, win rate, avg/median return, edge vs benchmark, best/worst). Pass curves=true to also include the Rs 10K equity curves (large).",
+    inputSchema: { type: "object", properties: { curves: { type: "boolean", description: "Include equity curves (very large). Default false" } }, additionalProperties: false },
+    run: async (a) => {
+      const curves = z.object({ curves: z.boolean().default(false) }).parse(a).curves;
+      const run = (await loadBacktest().catch(() => null)) as unknown as Record<string, unknown> | null;
+      if (!run) return { run: null };
+      const scanners = (run.scanners ?? []) as { id: string; label: string; bias: string; equity?: unknown; horizons?: Record<string, unknown>[] }[];
+      const summary = scanners.flatMap((s) =>
+        (s.horizons ?? []).map((h) => ({ scanner: s.label, bias: s.bias, holdDays: h.days, signals: h.signals, winRatePct: h.winRate, avgRetPct: h.avgRet, medRetPct: h.medRet, edgePct: h.edge, benchPct: h.bench, best: h.best, worst: h.worst })),
+      );
+      const head = { asOf: run.asOf, from: run.from, to: run.to, sessions: run.sessions, symbols: run.symbols, method: run.method, summary };
+      return curves ? { ...head, benchmarkEquity: run.benchmarkEquity, curves: scanners.map((s) => ({ scanner: s.label, equity: s.equity })) } : head;
+    },
   },
 
   // ---- Updates ----

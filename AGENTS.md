@@ -15,3 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Policy: `docs/TYPOGRAPHY.md`
 - Shared constant: `src/lib/typography.ts`
 - Verify: `npm run check:typography` (part of `npm run lint`)
+
+## Terminal parity (required for new features)
+
+The `mi` terminal app (`public/cli/mi.mjs`, docs at `/help#terminal`) builds its menu from the MCP `tools/list`. When you add or change a website feature that shows market, macro, research, derivatives or scanner data, add or update a matching **read-only** tool in `src/lib/mcp/tools-site.ts` (with `title` and `category`) so it appears in the terminal with no CLI change, and add it to the tool table in `src/app/help/page.tsx`. Do not expose user-specific data (portfolio, alerts, admin) through MCP. Keep tool output reasonably small (flatten or drop huge series). Only touch `mi.mjs` when a tool needs a custom renderer.
