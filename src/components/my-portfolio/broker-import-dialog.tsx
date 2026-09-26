@@ -158,13 +158,10 @@ export function BrokerImportDialog({ onImport }: Props) {
       }}
     >
       <DialogTrigger asChild>
-        <button
-          type="button"
-          className="flex items-center gap-1.5 rounded-full border border-blue-600/40 bg-blue-600/10 px-3.5 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
-        >
-          <Layers className="h-3.5 w-3.5" />
-          <span>Import from Broker</span>
-        </button>
+        <Button type="button" variant="outline" size="lg" className="font-semibold">
+          <Layers data-icon="inline-start" />
+          Import from Broker
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-2xl border-border bg-card font-sans text-foreground">

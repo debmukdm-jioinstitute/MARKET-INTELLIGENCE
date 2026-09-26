@@ -23,6 +23,7 @@ export const NAV_SECTIONS: NavSection[] = [
         items: [
           { label: "Overview", href: "/markets", desc: "Cross-asset tape: equities, rates, and FX in one board." },
           { label: "India Cockpit", href: "/markets/india", desc: "NSE / BSE headline pulse and index depth." },
+          { label: "World indices", href: "/macro/indices", desc: "Global benchmarks — price, range, and 52-week tape.", badge: "NEW" },
           { label: "Currency", href: "/macro/currency", desc: "DXY, USDINR, and cross-currency tape." },
           { label: "Commodities", href: "/macro/commodities", desc: "Crude, gold, and industrial metals." },
         ],

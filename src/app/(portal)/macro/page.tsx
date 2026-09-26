@@ -7,16 +7,19 @@ import { RegimeBanner } from "@/components/macro/regime-banner";
 import { SectionNavGrid } from "@/components/macro/section-nav-grid";
 import { CommoditiesStrip } from "@/components/macro/commodities-strip";
 import { CurrencyStrip } from "@/components/macro/currency-strip";
+import { IndicesStrip } from "@/components/macro/indices-strip";
 import { TransmissionPanels } from "@/components/macro/transmission-panels";
 import { WhatChangedCard } from "@/components/macro/what-changed-card";
 import { YieldCurveCard } from "@/components/macro/yield-curve-card";
 import { Lines } from "@/components/charts/terminal-charts";
 import { useMacroHub } from "@/hooks/use-macro-hub";
 import { useMacroTape } from "@/hooks/use-macro-tape";
+import { useWorldIndices } from "@/hooks/use-world-indices";
 
 export default function MacroPage() {
   const { data, loading, error } = useMacroHub();
   const tape = useMacroTape();
+  const worldIndices = useWorldIndices();
 
   return (
     <div className="portal-page">
@@ -32,8 +35,9 @@ export default function MacroPage() {
       {tape.data ? <WhatChangedCard seed={tape.data.briefingSeed} /> : null}
 
       {tape.data ? (
-        <div className="grid gap-4 xl:grid-cols-3">
+        <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
           <YieldCurveCard india={tape.data.indiaYieldCurve} us={tape.data.usYieldCurve} />
+          <IndicesStrip rows={worldIndices.data?.indices ?? []} />
           <CommoditiesStrip rows={tape.data.commodities} />
           <CurrencyStrip rows={tape.data.currencies} />
         </div>

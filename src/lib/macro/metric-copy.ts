@@ -414,6 +414,56 @@ export const METRIC_COPY: Record<
     provider: "NSE / Yahoo Finance",
     url: "https://finance.yahoo.com/quote/%5ENSEI",
   },
+  ticker_sensex: {
+    novice: "BSE SENSEX — 30 large-cap India bellwethers on the Bombay Stock Exchange.",
+    provider: "BSE / Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EBSESN",
+  },
+  ticker_spx: {
+    novice: "S&P 500 — broad US large-cap benchmark; global risk appetite often follows its tone.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EGSPC",
+  },
+  ticker_nasdaq: {
+    novice: "NASDAQ Composite — US growth and technology-heavy index.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EIXIC",
+  },
+  ticker_dax: {
+    novice: "DAX — 40 leading German equities; Europe industrial and export pulse.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EGDAXI",
+  },
+  ticker_ftse: {
+    novice: "FTSE 100 — UK large caps; global banks, energy, and miners.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EFTSE",
+  },
+  ticker_hsi: {
+    novice: "Hang Seng — Hong Kong and China-accessible large caps; Asia risk sentiment.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EHSI",
+  },
+  ticker_nikkei: {
+    novice: "Nikkei 225 — Japan’s headline equity benchmark.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5EN225",
+  },
+  ticker_banknifty: {
+    novice: "NIFTY Bank — liquid Indian banking basket; rate and credit cycle proxy.",
+    provider: "NSE / Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5ENSEBANK",
+  },
+  ticker_nifty_it: {
+    novice: "NIFTY IT — Indian software exporters; USD revenue and USD/INR sensitive.",
+    provider: "NSE / Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5ECNXIT",
+  },
+  ticker_nifty_metal: {
+    novice: "NIFTY Metal — steel and base metals producers; China and infra demand beta.",
+    provider: "NSE / Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/%5ECNXMETAL",
+  },
   ticker_vix_in: {
     novice: "India VIX measures expected NIFTY volatility. Higher VIX often means more fear or hedging demand.",
     provider: "NSE India VIX",

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 
 export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) => Promise<unknown> }) {
@@ -75,8 +76,9 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-600 font-bold tracking-tight shadow-sm transition-all">
-          + Add Position
+        <Button type="button" variant="default" size="lg" className="font-semibold">
+          <Plus data-icon="inline-start" />
+          Add Position
         </Button>
       </DialogTrigger>
       <DialogContent>

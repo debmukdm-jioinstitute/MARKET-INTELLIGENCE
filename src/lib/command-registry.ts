@@ -14,6 +14,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/portfolio/attribution", label: "Attribution", description: "Brinson-Fachler performance attribution" },
   { href: "/portfolio/quant", label: "Quant", description: "Return distribution & active statistics" },
   { href: "/macro", label: "Macro", description: "Macroeconomic nowcast board" },
+  { href: "/macro/indices", label: "World indices", description: "Global equity benchmarks — price, volume, ranges" },
   { href: "/markets", label: "Markets", description: "Investable universe" },
   { href: "/markets/india", label: "India Markets", description: "NSE equities, live via Upstox" },
   { href: "/markets/derivatives", label: "Derivatives", description: "Option chain with live Greeks" },

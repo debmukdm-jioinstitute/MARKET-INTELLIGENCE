@@ -55,7 +55,7 @@ export default function PortfolioPage() {
             Log in to add or import holdings
           </Link>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {data?.hasHoldings && data.positions.length > 0 ? (
               <button
                 type="button"

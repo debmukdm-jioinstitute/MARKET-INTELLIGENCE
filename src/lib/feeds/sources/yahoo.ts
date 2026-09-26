@@ -110,6 +110,21 @@ export async function fetchYahooQuoteDetail(symbol: string): Promise<YahooQuoteD
   return { symbol, ...meta };
 }
 
+/** Batch chart-meta quotes (price, day range, 52w, volume) for index dashboards. */
+export async function fetchYahooQuoteDetails(symbols: string[]): Promise<YahooQuoteDetail[]> {
+  const unique = [...new Set(symbols)];
+  const batchSize = 10;
+  const out: YahooQuoteDetail[] = [];
+  for (let i = 0; i < unique.length; i += batchSize) {
+    const chunk = unique.slice(i, i + batchSize);
+    const rows = await Promise.all(chunk.map((s) => fetchYahooQuoteDetail(s)));
+    for (const row of rows) {
+      if (row) out.push(row);
+    }
+  }
+  return out;
+}
+
 export async function fetchYahooHistory(
   symbol: string,
   range = "2y",
