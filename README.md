@@ -27,6 +27,7 @@ This document explains **how every page actually computes what it shows** — th
 
 ## Table of contents
 
+0. [Website architecture](#website-architecture)
 1. [How to read this document](#1-how-to-read-this-document)
 2. [Dashboard](#2-dashboard)
 3. [Markets](#3-markets)
@@ -46,6 +47,216 @@ This document explains **how every page actually computes what it shows** — th
 17. [Run locally & deploy](#17-run-locally--deploy)
 18. [Environment variables](#18-environment-variables)
 19. [Tech stack](#19-tech-stack)
+
+---
+
+## Website architecture
+
+Every user-facing feature follows the same shape: **React page or widget** → **Next.js Route Handler** (`src/app/api/*`) → **builder/library** (`src/lib/*`) → **external APIs and/or Neon Postgres**. Scheduled jobs hit the same builders via **`/api/cron/*`** (Vercel Cron + `CRON_SECRET`). Auth runs in **`src/proxy.ts`**: signed `mi_session` cookie; portal routes redirect to `/login` except `/`, `/login`, `/signup`; `admin.*` host rewrites to `/admin/*` and requires `role=admin`.
+
+### Platform overview
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    P[Portal pages<br/>App Router]
+    W[SiteAssistantWidget]
+    K[Command palette ⌘K]
+  end
+  subgraph Vercel["Next.js 16 (Vercel)"]
+    R[Route handlers /api/*]
+    L[lib builders<br/>build-tape, build-hub, metrics…]
+  end
+  subgraph External
+    U[Upstox · NSE · Yahoo · FRED · WB…]
+    G[Groq · OmniRoute]
+    F[AI-trader Flask<br/>optional]
+  end
+  PG[(Neon Postgres)]
+  P --> R
+  W --> R
+  K --> P
+  R --> L
+  L --> U
+  L --> PG
+  R --> G
+  R --> F
+```
+
+| Layer | Role | Key paths |
+|---|---|---|
+| **UI** | Client components, SWR hooks, charts | `src/app/(portal)/*`, `src/components/*`, `src/hooks/*` |
+| **API** | Auth check, caching, orchestration | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `ai/*`, `cron/*` |
+| **Domain logic** | Pure fetch + math | `src/lib/feeds/*`, `src/lib/macro/*`, `src/lib/my-portfolio/*`, `src/lib/options-flow/*` |
+| **Persistence** | Holdings, snapshots, admin RAG docs | Neon tables (`portfolio_holdings`, `collected_*`, `rag_documents`, options-flow history) |
+| **Edge** | Session gate, admin subdomain rewrite | `src/proxy.ts` |
+
+---
+
+### Site assistant (floating help)
+
+Matches the product diagram: widget → API → static site map + optional RAG → LLM gateway.
+
+```mermaid
+flowchart LR
+  W[SiteAssistantWidget] --> A["/api/site-assistant"]
+  A --> AUTH[Session + rate limit]
+  AUTH --> SYS[buildSiteAssistantSystemPrompt]
+  SYS --> MAP[site-map · nav-columns<br/>command-registry JSON]
+  SYS --> RAG[rag_documents optional<br/>Postgres FTS retrieve]
+  SYS --> TIER[selectSiteAssistantTier]
+  TIER --> OR[OmniRoute gateway]
+  OR --> FT[Free-tier providers<br/>Groq OSS via OmniRoute]
+  TIER --> GROQ[Direct Groq fallback]
+  A --> TOOLS[Tools: search_pages · list_portal_offerings<br/>navigate · open_command_palette]
+  TOOLS --> W
+```
+
+**Logic:** POST with chat messages + current `pathname`. Server loads **education/site-map** into the system prompt, optionally **top-4 FTS snippets** from `rag_documents` when the DB is populated. **OmniRoute** is tried first (model tier by prompt size); else **Groq**. **Server tools** return page lists; **client tools** (`navigate`, `open_command_palette`) execute in the browser after the model calls them. Max **6** tool steps; **429** rate limit per user email.
+
+---
+
+### India desk & markets data
+
+```mermaid
+flowchart LR
+  H["/Home · /markets/*"] --> ID["/api/feeds/india-dashboard"]
+  H --> SEC["/api/feeds/security/[symbol]"]
+  H --> UQ[Upstox quote · candles · depth]
+  ID --> B[build-dashboard.ts]
+  B --> Y[Yahoo chart quotes]
+  B --> U[Upstox override India indices]
+  B --> N[NSE FII/DII · breadth]
+  B --> WB[World Bank · RBI scrape · FRED]
+  SEC --> SD[security-detail.ts waterfall]
+  SD --> U
+  SD --> Y
+  SD --> M[Massive · Stooq · AV fallback]
+```
+
+**Logic:** Dashboard **two-phase** JSON — quick pulse first, fuller macro second. Security sheet **waterfall**: Upstox → Yahoo → optional US providers → simulated last resort (labeled). Derivatives page: **Upstox option chain** → local PCR, max-pain, IV smile math.
+
+---
+
+### Macro hub & live asset dashboards
+
+```mermaid
+flowchart LR
+  M["/macro · /macro/commodities<br/>/macro/currency · /macro/indices"] --> T["/api/macro/tape"]
+  M --> WI["/api/macro/world-indices"]
+  M --> HUB["/api/macro/india · build-hub"]
+  M --> YH["/api/feeds/yahoo/history"]
+  T --> BT[build-tape.ts]
+  BT --> Y[Yahoo batch quotes]
+  BT --> COMM[commodity-universe.ts]
+  BT --> FX[currency-universe.ts]
+  WI --> BI[build-world-indices.ts]
+  BI --> YD[Yahoo quote detail<br/>range · 52w · volume]
+  HUB --> FRED[FRED · MOSPI · data.gov.in · collector DB]
+  YH --> Y
+```
+
+**Logic:** **Tape** = one Yahoo batch for commodities + FX symbols + NIFTY/IT for transmission heuristics; **60s** server cache. **World indices** = separate enriched row per index (not on tape, avoids oversized batch). **Regime** = `build-hub` + `regime.ts` quadrant rules. **Charts** on commodity/currency/indices pages = client parallel fetch **6mo** history per visible symbol.
+
+---
+
+### Portfolio desk
+
+```mermaid
+flowchart LR
+  PF["/portfolio"] --> PH["/api/portfolio/holdings"]
+  PF --> PA["/api/portfolio/analysis"]
+  PF --> IMP["/api/portfolio/import/*"]
+  PH --> PG[(portfolio_holdings)]
+  PH --> LS[localStorage fallback guest/offline]
+  PA --> MET[metrics-spec-engine.ts]
+  MET --> Y[Yahoo history]
+  MET --> U[Upstox quotes]
+  IMP --> BROKER[Zerodha · Dhan · Upstox API or CSV]
+  BROKER --> PG
+  subgraph Sim["Engine B — /portfolio/optimizer etc."]
+    SIM[universe.ts + market.ts seeded factors]
+  end
+  PF --> Sim
+```
+
+**Logic:** Signed-in users persist holdings in **Postgres**; analysis runs **Engine A** (live marks, full metrics spec). Subpages **allocation / optimizer / risk / quant** use **Engine B** simulated tape (fixed seed — do not compare Sharpe to Engine A). Broker import **preview → replace or append**.
+
+---
+
+### Research, AI Desk & options flow
+
+```mermaid
+flowchart LR
+  R["/research/* · /research/ai-desk"] --> FE["/api/feeds/research · /api/models"]
+  R --> AI1["/api/ai/trading-desk"]
+  R --> AI2["/api/ai/sentiment-portfolio"]
+  R --> AI3["/api/ai/alpha-discovery"]
+  R --> OF["/api/ai/options-flow"]
+  OF --> D1[Data agent deterministic]
+  D1 --> UP[Upstox chain + history]
+  D1 --> SNAP[(options-flow snapshots Neon)]
+  OF --> D2[Analysis LLM Groq]
+  OF --> D3[Flagging LLM Groq]
+  AI1 --> G[Groq multi-agent debate]
+  FE --> U[Upstox · Yahoo · EDGAR]
+```
+
+**Logic:** **DCF** = pure TypeScript (`research/model`). **AI Desk** = Groq **`openai/gpt-oss-120b`**, news wrapped as untrusted. **Options flow** = deterministic z-score gate **then** LLM narrative only on flagged names; banned trade verbs enforced post-generation. **Cron** `/api/cron/options-flow` builds baseline snapshots daily.
+
+---
+
+### Intelligence, brief & alerts
+
+```mermaid
+flowchart LR
+  I["/intelligence"] --> HUB["/api/feeds/hub"]
+  I --> BRI["/api/brief · /api/cron/brief"]
+  I --> AL["/api/alerts · /api/cron/alerts"]
+  HUB --> RSS[RSS + news-sort.ts freshness]
+  HUB --> REG[filterRegulatoryExchangeNews NSE BSE RBI]
+  BRI --> FACT[fact sheet from live metrics]
+  FACT --> G[Groq grounded brief]
+  AL --> PG[(alert rules Neon)]
+  AL --> PUSH[Web push optional VAPID]
+```
+
+**Logic:** Regulatory block **sorted by parsed datetime**, not string order. Brief LLM may only cite supplied **fact ids**. Alerts evaluated on cron against **16 metrics** snapshot.
+
+---
+
+### NIFTY Algo Desk (optional backend)
+
+```mermaid
+flowchart LR
+  ALGO["/algo/* UI"] --> PX["/api/ai-trader/* proxy"]
+  PX --> AUTH[Session required]
+  AUTH --> FLASK[AI_TRADER_API_URL Flask :5050]
+  FLASK --> TD[TrueData ticks]
+  FLASK --> TS[(TimescaleDB)]
+  FLASK --> ML[XGBoost + RL exit]
+  FLASK --> Z[Zerodha optional]
+```
+
+**Logic:** Vercel **does not** host ticks or ML training. Portal only **reverse-proxies** authenticated SSE/REST to your Flask host. Without `AI_TRADER_API_URL`, UI shows unreachable state; rest of site unaffected.
+
+---
+
+### Admin, collector, MCP & export
+
+```mermaid
+flowchart LR
+  AD["admin.* → /admin"] --> APIA["/api/admin/*"]
+  CR["Vercel Cron"] --> CRON["/api/cron/collect · stress · scrape…"]
+  CRON --> COL[collector → Neon collected_series]
+  APIA --> PG
+  APIA --> RAGA[Admin RAG ask<br/>FTS not vectors]
+  MCP["/api/mcp"] --> KEY[MCP_API_KEYS gate]
+  KEY --> READ[Read-only tools over app APIs]
+  EXP["/api/export/xlsx"] --> COLL[collect-market.ts aggregate]
+```
+
+**Logic:** **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
 
 ---
 
@@ -479,7 +690,7 @@ Without the backend, algo pages show connection/degraded states; the rest of Mar
 
 ## 15. Site assistant
 
-**UI:** Floating widget in the portal shell · **API:** `/api/site-assistant` · **Code:** `src/lib/site-assistant/*`, `src/lib/ai/omniroute.ts`
+**UI:** Floating widget in the portal shell · **API:** `/api/site-assistant` · **Code:** `src/lib/site-assistant/*`, `src/lib/ai/omniroute.ts` · **Flow diagram:** [Site assistant (floating help)](#site-assistant-floating-help)
 
 🤖 **Live LLM assistant** (not the static Intelligence copilot). Uses **OmniRoute** (OpenAI-compatible gateway) with optional direct **Groq** fallback. Tools (Zod-validated): navigate to allowed routes, open the command palette (`⌘K`), search registered pages. System prompt includes route map and education snippets. Rate-limited and session-gated like other portal APIs. Configure `OMNIROUTE_*` and/or `GROQ_API_KEY` — see [docs/OMNIROUTE.md](docs/OMNIROUTE.md).
 
