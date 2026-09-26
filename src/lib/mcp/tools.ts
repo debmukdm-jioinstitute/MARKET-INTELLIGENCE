@@ -9,10 +9,15 @@ import { buildSnapshot, METRICS } from "@/lib/snapshot";
 import { getBacktest } from "@/lib/stress/backtest";
 import { getBetas } from "@/lib/transmission/betas";
 import { applyShocks, PRESETS, SHOCK_BOUNDS } from "@/lib/transmission/scenario";
+import { SITE_TOOLS } from "./tools-site";
 
 type Json = Record<string, unknown>;
 export type Tool = {
   name: string;
+  /** Short human label for menus (terminal app). */
+  title?: string;
+  /** Menu group in the terminal app. */
+  category?: string;
   description: string;
   inputSchema: Json;
   run: (args: Json) => Promise<unknown>;
@@ -25,7 +30,7 @@ const SymbolArgs = z.object({ symbol: z.string().regex(/^[A-Za-z0-9.&^-]{1,20}$/
 const empty = { type: "object", properties: {}, additionalProperties: false };
 
 /** All tools are READ-ONLY views of the site's own computed data. */
-export const TOOLS: Tool[] = [
+const CORE_TOOLS: Tool[] = [
   {
     name: "get_market_snapshot",
     description: "Current values of the metrics used across the site: India/US VIX, NIFTY, USD/INR, Brent, US10Y, India 10Y, FII/DII flow, RBI net liquidity, stress and convergence scores. Units are in the metric catalog.",
@@ -114,3 +119,18 @@ export const TOOLS: Tool[] = [
     },
   },
 ];
+
+const CORE_META: Record<string, { title: string; category: string }> = {
+  get_market_snapshot: { title: "Market snapshot", category: "Markets" },
+  get_stress_index: { title: "Macro Stress Index", category: "Macro" },
+  get_stress_backtest: { title: "Stress index backtest", category: "Macro" },
+  get_rbi_rates: { title: "RBI rates & liquidity", category: "Macro" },
+  get_india_yield_curve: { title: "India yield curve", category: "Macro" },
+  get_transmission_betas: { title: "Transmission betas", category: "Macro" },
+  run_scenario: { title: "Macro scenario", category: "Macro" },
+  get_daily_brief: { title: "Daily brief", category: "Intelligence" },
+  get_security_risk: { title: "Security risk", category: "Research" },
+  get_data_health: { title: "Data health", category: "System" },
+};
+
+export const TOOLS: Tool[] = [...CORE_TOOLS.map((t) => ({ ...t, ...CORE_META[t.name] })), ...SITE_TOOLS];

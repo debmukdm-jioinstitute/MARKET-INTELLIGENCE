@@ -3,20 +3,35 @@
  * Market Intelligence terminal (mi) - a menu-driven CLI over the site's read-only MCP endpoint.
  * Zero dependencies. Needs Node 18+ and an API key (MI_API_KEY or ~/.mi/config.json).
  *
- *   node mi.mjs                     interactive menu
- *   node mi.mjs snapshot|stress|rbi|yields|brief|health|betas [sector]
- *   node mi.mjs risk TCS
- *   node mi.mjs scenario brent=10 usdinr=2 us10y_bp=25 spx=-3
+ * The menu is built from the server's tool list at start-up, so every feature added to the site's MCP endpoint
+ * shows up here without reinstalling. `mi update` refreshes this script itself.
+ *
+ *   mi                          interactive menu (favourites + browse everything)
+ *   mi tools [text]             list every available tool
+ *   mi <tool> [key=value ...]   run any tool, e.g. mi get_option_chain underlying=NIFTY expiry=2026-10-06
+ *   mi snapshot|stress|brief|rbi|yields|health|backtest|betas|risk|scenario   shortcuts
+ *   flags: --json (raw JSON)  --all (no row limit)
+ *   mi update                   download the latest mi
  */
-import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, realpathSync, renameSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "1.0.0";
+const VERSION = "2.0.0";
+const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
+function ENDPOINT_BASE() {
+  return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
+}
 const ENDPOINT = process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp";
 const CONFIG_DIR = join(homedir(), ".mi");
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
+const STATE_FILE = join(CONFIG_DIR, "state.json");
+const FLAGS = new Set(process.argv.filter((a) => a.startsWith("--")));
+const RAW_JSON = FLAGS.has("--json");
+const NO_LIMIT = FLAGS.has("--all");
+const ROW_LIMIT = 30;
 const useColor = process.stdout.isTTY && !process.env.NO_COLOR;
 
 const c = (code) => (s) => (useColor ? `\x1b[${code}m${s}\x1b[0m` : String(s));
@@ -66,6 +81,107 @@ async function call(name, args = {}) {
   }
 }
 
+async function rpc(method, params = {}) {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    redirect: "manual",
+    headers: { "content-type": "application/json", "x-api-key": API_KEY },
+    body: JSON.stringify({ jsonrpc: "2.0", id: ++rpcId, method, params }),
+    signal: AbortSignal.timeout(20000),
+  });
+  const body = await res.json().catch(() => null);
+  if (!body || body.error) throw new Error(body?.error?.message || `HTTP ${res.status}`);
+  return body.result;
+}
+
+/** Live tool registry from the server. Cached on disk so the menu still works if the listing call fails. */
+let TOOLS = [];
+async function loadTools() {
+  const cache = join(CONFIG_DIR, "tools.json");
+  try {
+    TOOLS = (await rpc("tools/list")).tools ?? [];
+    mkdirSync(CONFIG_DIR, { recursive: true });
+    writeFileSync(cache, JSON.stringify(TOOLS));
+  } catch {
+    try {
+      TOOLS = JSON.parse(readFileSync(cache, "utf8"));
+    } catch {
+      TOOLS = [];
+    }
+  }
+  return TOOLS;
+}
+const toolTitle = (t) => t.title || t._meta?.title || t.name.replace(/^get_/, "").replace(/_/g, " ");
+const toolCategory = (t) => t._meta?.category || "Other";
+const findTool = (q) => {
+  const n = String(q).toLowerCase().replace(/-/g, "_");
+  return TOOLS.find((t) => t.name === n) || TOOLS.find((t) => t.name === `get_${n}`) || TOOLS.find((t) => t.name.replace(/^(get|run)_/, "") === n);
+};
+
+function readState() {
+  try {
+    return JSON.parse(readFileSync(STATE_FILE, "utf8"));
+  } catch {
+    return {};
+  }
+}
+function writeState(patch) {
+  try {
+    mkdirSync(CONFIG_DIR, { recursive: true });
+    writeFileSync(STATE_FILE, JSON.stringify({ ...readState(), ...patch }));
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ---------- self-update ---------- */
+
+const selfPath = () => {
+  try {
+    return realpathSync(process.argv[1]);
+  } catch {
+    return process.argv[1];
+  }
+};
+const sha = (s) => createHash("sha256").update(s).digest("hex");
+
+async function fetchLatestScript() {
+  const res = await fetch(SCRIPT_URL, { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text.startsWith("#!/usr/bin/env node") || !text.includes("Market Intelligence terminal")) throw new Error("Downloaded file does not look like mi");
+  return text;
+}
+
+async function updateSelf() {
+  const latest = await fetchLatestScript();
+  const path = selfPath();
+  const current = readFileSync(path, "utf8");
+  if (sha(current) === sha(latest)) return console.log(green(`  Already up to date (v${VERSION}).`));
+  const tmp = `${path}.new`;
+  writeFileSync(tmp, latest);
+  try {
+    chmodSync(tmp, statSync(path).mode);
+  } catch {
+    /* ignore */
+  }
+  renameSync(tmp, path);
+  writeState({ lastUpdateCheck: Date.now() });
+  console.log(green(`  Updated ${path}. Run mi again to use the new version.`));
+}
+
+/** At most once per 12h: tell the user if a newer script is published. Never blocks for long, never throws. */
+async function updateNotice() {
+  try {
+    if (Date.now() - (readState().lastUpdateCheck || 0) < 12 * 3.6e6) return "";
+    const latest = await Promise.race([fetchLatestScript(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 2500))]);
+    writeState({ lastUpdateCheck: Date.now() });
+    return sha(readFileSync(selfPath(), "utf8")) === sha(latest) ? "" : yellow("  A newer version of mi is available: run `mi update` (menu: U).");
+  } catch {
+    return "";
+  }
+}
+
 /* ---------- formatting helpers ---------- */
 
 const num = (v, d = 2) => (typeof v === "number" ? v.toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d }) : "n/a");
@@ -89,22 +205,59 @@ function table(rows, headers) {
   for (const r of rows) console.log("  " + r.map((cell, i) => (i === 0 ? pad(cell ?? "", widths[i]) : rpad(cell ?? "", widths[i]))).join("  "));
 }
 
+const isScalar = (v) => v === null || ["string", "number", "boolean"].includes(typeof v);
+const fmtVal = (v, key = "") => {
+  if (v === null || v === undefined || v === "") return dim("-");
+  if (typeof v === "number") return /pct|percent|change|chg/i.test(key) ? tone(v, pct(v)) : num(v, Number.isInteger(v) ? 0 : 2);
+  if (typeof v === "boolean") return v ? green("yes") : red("no");
+  const str = String(v);
+  return /^\d{4}-\d{2}-\d{2}T/.test(str) ? str.slice(0, 16).replace("T", " ") : str;
+};
+const clip = (s, n) => {
+  const p = stripAnsi(s);
+  return p.length > n ? s.slice(0, 0) + p.slice(0, n - 1) + "…" : s;
+};
+const termWidth = () => Math.max(60, Math.min(process.stdout.columns || 110, 160));
+
+function renderArray(arr, indent) {
+  const sp = " ".repeat(indent);
+  if (!arr.length) return console.log(`${sp}${dim("(none)")}`);
+  if (arr.every((r) => r && typeof r === "object" && !Array.isArray(r))) {
+    const keys = [];
+    for (const r of arr.slice(0, 50)) for (const [k, v] of Object.entries(r)) if (isScalar(v) && !keys.includes(k)) keys.push(k);
+    const cols = keys.filter((k) => !/^(id|url|link|slug|uuid)$/i.test(k) || keys.length <= 3).slice(0, 8);
+    if (cols.length) {
+      const shown = NO_LIMIT ? arr : arr.slice(0, ROW_LIMIT);
+      const budget = Math.max(12, Math.floor((termWidth() - indent - cols.length * 2) / cols.length));
+      table(shown.map((r) => cols.map((k) => clip(String(fmtVal(r[k], k)), budget))), cols);
+      if (shown.length < arr.length) console.log(dim(`${sp}… ${arr.length - shown.length} more (use --all to show every row, --json for raw data)`));
+      return;
+    }
+  }
+  for (const v of (NO_LIMIT ? arr : arr.slice(0, ROW_LIMIT))) {
+    if (isScalar(v)) console.log(`${sp}${dim("-")} ${fmtVal(v)}`);
+    else {
+      console.log(`${sp}${dim("-")}`);
+      generic(v, indent + 2);
+    }
+  }
+  if (!NO_LIMIT && arr.length > ROW_LIMIT) console.log(dim(`${sp}… ${arr.length - ROW_LIMIT} more (use --all)`));
+}
+
+/** Renders any JSON: scalar fields as key/value, arrays of records as tables, nested objects as indented sections. */
 function generic(obj, indent = 2, depth = 0) {
   const sp = " ".repeat(indent);
-  if (Array.isArray(obj)) {
-    for (const v of obj.slice(0, 40)) {
-      if (v && typeof v === "object") {
-        console.log(`${sp}${dim("-")}`);
-        generic(v, indent + 2, depth + 1);
-      } else console.log(`${sp}${dim("-")} ${v}`);
-    }
-    return;
-  }
-  for (const [k, v] of Object.entries(obj ?? {})) {
-    if (v && typeof v === "object" && depth < 3) {
-      console.log(`${sp}${cyan(k)}:`);
-      generic(v, indent + 2, depth + 1);
-    } else console.log(`${sp}${cyan(k)}: ${typeof v === "number" ? num(v) : v}`);
+  if (Array.isArray(obj)) return renderArray(obj, indent);
+  if (isScalar(obj)) return console.log(`${sp}${fmtVal(obj)}`);
+  const entries = Object.entries(obj ?? {});
+  const scalars = entries.filter(([, v]) => isScalar(v));
+  const w = Math.min(28, Math.max(0, ...scalars.map(([k]) => k.length)));
+  for (const [k, v] of scalars) console.log(`${sp}${cyan(pad(k, w))}  ${fmtVal(v, k)}`);
+  for (const [k, v] of entries) {
+    if (isScalar(v)) continue;
+    console.log(`\n${sp}${boldGreen(k)}`);
+    if (depth >= 4) console.log(`${sp}  ${dim("(nested, use --json)")}`);
+    else generic(v, indent + 2, depth + 1);
   }
 }
 
@@ -268,42 +421,125 @@ async function statusBar() {
   }
 }
 
-const MENU = [
-  ["S", "Market snapshot", () => snapshot()],
-  ["X", "Macro Stress Index", () => stress()],
-  ["B", "Daily brief", () => brief()],
-  ["R", "RBI rates & liquidity", () => rbi()],
-  ["Y", "India yield curve", () => yields()],
-  ["T", "Transmission betas (sector sensitivities)", (ask) => ask("Sector id (blank = all): ").then((s) => betas(s.trim() || undefined))],
-  ["N", "Run a macro scenario", async (ask) => {
-    const g = async (l) => {
-      const v = (await ask(`${l} (blank = 0): `)).trim();
-      return v === "" ? undefined : Number(v);
-    };
-    const shocks = { brent: await g("Brent % move"), usdinr: await g("USD/INR % move"), us10y_bp: await g("US 10Y bp move"), spx: await g("S&P 500 % move") };
-    for (const k of Object.keys(shocks)) if (shocks[k] === undefined || Number.isNaN(shocks[k])) delete shocks[k];
-    await scenario(shocks);
-  }],
-  ["K", "Security risk for a symbol", (ask) => ask("Symbol (e.g. TCS, RELIANCE, AAPL): ").then((s) => risk(s.trim()))],
-  ["H", "Data health (feed freshness)", () => health()],
-  ["A", "Backtest of the stress index", async () => {
-    heading("Stress index backtest");
-    generic(await call("get_stress_backtest"));
-  }],
-  ["E", "Edit / replace API key", async (ask) => {
-    const k = (await ask("New API key: ")).trim();
-    if (k) {
-      API_KEY = k;
-      saveKey(k);
-      console.log(green("  Saved to ~/.mi/config.json"));
+/* ---------- generic tool runner (any tool the server exposes) ---------- */
+
+const coerce = (schema, raw) => {
+  if (schema?.type === "number" || schema?.type === "integer") {
+    const n = Number(raw);
+    if (Number.isNaN(n)) throw new Error(`"${raw}" is not a number`);
+    return n;
+  }
+  if (schema?.type === "boolean") return /^(1|true|yes|y)$/i.test(raw);
+  return raw;
+};
+
+async function promptArgs(tool, ask) {
+  const props = tool.inputSchema?.properties ?? {};
+  const required = new Set(tool.inputSchema?.required ?? []);
+  const args = {};
+  for (const [k, sch] of Object.entries(props)) {
+    const hint = [sch.description, sch.enum ? `one of: ${sch.enum.join(", ")}` : ""].filter(Boolean).join(" - ");
+    for (;;) {
+      const v = (await ask(`  ${cyan(k)}${required.has(k) ? red("*") : ""}${hint ? dim(` (${hint})`) : ""}: `)).trim();
+      if (v === "") {
+        if (required.has(k)) {
+          console.log(red("    required"));
+          continue;
+        }
+        break;
+      }
+      try {
+        args[k] = coerce(sch, v);
+        break;
+      } catch (e) {
+        console.log(red(`    ${e.message}`));
+      }
     }
-  }],
+  }
+  return args;
+}
+
+function parseKv(tool, pairs) {
+  const props = tool.inputSchema?.properties ?? {};
+  const args = {};
+  const positional = pairs.filter((p) => !p.includes("="));
+  const firstRequired = (tool.inputSchema?.required ?? [])[0] ?? Object.keys(props)[0];
+  for (const p of pairs) {
+    if (p.includes("=")) {
+      const i = p.indexOf("=");
+      const k = p.slice(0, i);
+      if (!(k in props)) throw new Error(`Unknown argument "${k}". Accepted: ${Object.keys(props).join(", ") || "none"}`);
+      args[k] = coerce(props[k], p.slice(i + 1));
+    }
+  }
+  if (positional.length && firstRequired && !(firstRequired in args)) args[firstRequired] = coerce(props[firstRequired], positional.join(" "));
+  const missing = (tool.inputSchema?.required ?? []).filter((k) => args[k] === undefined);
+  if (missing.length) throw new Error(`Missing: ${missing.join(", ")}. Usage: mi ${tool.name} ${Object.keys(props).map((k) => `${k}=…`).join(" ")}`);
+  return args;
+}
+
+const SPECIAL = { get_market_snapshot: () => snapshot(), get_stress_index: () => stress(), get_rbi_rates: () => rbi(), get_india_yield_curve: () => yields(), get_daily_brief: () => brief(), get_data_health: () => health() };
+
+async function runTool(tool, args) {
+  if (RAW_JSON) return console.log(JSON.stringify(await call(tool.name, args), null, 2));
+  if (tool.name === "get_transmission_betas") return betas(args.sector);
+  if (tool.name === "run_scenario") return scenario(args);
+  if (tool.name === "get_security_risk") return risk(args.symbol);
+  if (SPECIAL[tool.name]) return SPECIAL[tool.name]();
+  heading(`${toolTitle(tool)}  ${dim(tool.name)}`);
+  generic(await call(tool.name, args));
+  console.log(dim("\n  Read-only data from Market Intelligence. Descriptive, not investment advice."));
+}
+
+/* ---------- interactive menu ---------- */
+
+const FAVOURITES = [
+  ["S", "Market snapshot", "get_market_snapshot"],
+  ["X", "Macro Stress Index", "get_stress_index"],
+  ["B", "Daily brief", "get_daily_brief"],
+  ["R", "RBI rates & liquidity", "get_rbi_rates"],
+  ["Y", "India yield curve", "get_india_yield_curve"],
+  ["T", "Transmission betas (sector sensitivities)", "get_transmission_betas"],
+  ["N", "Run a macro scenario", "run_scenario"],
+  ["K", "Security risk for a symbol", "get_security_risk"],
+  ["H", "Data health (feed freshness)", "get_data_health"],
 ];
 
 function printMenu() {
   console.log(`\n${boldGreen("[+]")} ${bold("Select a menu option:")}\n`);
-  for (const [k, label] of MENU) console.log(`    ${k === "S" ? red(bold(k)) : bold(k)} > ${k === "S" ? red(label) : label}`);
+  for (const [k, label] of FAVOURITES) console.log(`    ${k === "S" ? red(bold(k)) : bold(k)} > ${k === "S" ? red(label) : label}`);
+  console.log(`\n    ${bold("M")} > More: browse all ${TOOLS.length} features by category`);
+  console.log(`    ${bold("F")} > Find a feature (search)`);
+  console.log(`    ${bold("E")} > Edit / replace API key`);
+  console.log(`    ${bold("U")} > Check for software update`);
   console.log(`\n    ${bold("Z")} > Exit (Ctrl + C)\n`);
+}
+
+async function pick(list, ask, label) {
+  list.forEach((t, i) => console.log(`    ${bold(pad(String(i + 1), 3))} ${label(t)}`));
+  const v = (await ask(`\n  Number (blank to go back): `)).trim();
+  const n = Number(v);
+  return v && n >= 1 && n <= list.length ? list[n - 1] : null;
+}
+
+async function browse(ask, filter) {
+  let list = TOOLS;
+  if (filter) {
+    const f = filter.toLowerCase();
+    list = TOOLS.filter((t) => `${t.name} ${toolTitle(t)} ${t.description} ${toolCategory(t)}`.toLowerCase().includes(f));
+    if (!list.length) return console.log(red("  No matching feature."));
+  } else {
+    const cats = [...new Set(TOOLS.map(toolCategory))].sort();
+    console.log("");
+    const cat = await pick(cats, ask, (c) => `${c} ${dim(`(${TOOLS.filter((t) => toolCategory(t) === c).length})`)}`);
+    if (!cat) return;
+    list = TOOLS.filter((t) => toolCategory(t) === cat);
+  }
+  console.log("");
+  const tool = await pick(list, ask, (t) => `${pad(toolTitle(t), 32)} ${dim(t.name)}`);
+  if (!tool) return;
+  console.log(dim(`\n  ${tool.description}\n`));
+  await runTool(tool, await promptArgs(tool, ask));
 }
 
 async function interactive() {
@@ -322,20 +558,35 @@ async function interactive() {
     saveKey(API_KEY);
   }
 
+  const [, notice] = await Promise.all([loadTools(), updateNotice()]);
   console.clear?.();
   console.log(boldGreen(BANNER));
   console.log(await statusBar());
+  if (notice) console.log(notice);
   for (;;) {
     printMenu();
     const choice = (await ask(`Enter your choice > (default is ${bold("S")} > Market snapshot) `)).trim().toUpperCase() || "S";
     if (choice === "Z" || choice === "Q") break;
-    const item = MENU.find(([k]) => k === choice);
-    if (!item) {
-      console.log(red("  Unknown option."));
-      continue;
-    }
     try {
-      await item[2](ask);
+      const fav = FAVOURITES.find(([k]) => k === choice);
+      if (fav) {
+        const tool = findTool(fav[2]);
+        const args = fav[2] === "get_transmission_betas" ? await ask("Sector id (blank = all): ").then((s) => (s.trim() ? { sector: s.trim() } : {})) : tool ? await promptArgs(tool, ask) : {};
+        await runTool(tool ?? { name: fav[2], title: fav[1] }, args);
+      } else if (choice === "M") await browse(ask);
+      else if (choice === "F") await browse(ask, (await ask("  Search text: ")).trim());
+      else if (choice === "E") {
+        const k = (await ask("New API key: ")).trim();
+        if (k) {
+          API_KEY = k;
+          saveKey(k);
+          console.log(green("  Saved to ~/.mi/config.json"));
+        }
+      } else if (choice === "U") await updateSelf();
+      else {
+        console.log(red("  Unknown option."));
+        continue;
+      }
     } catch (e) {
       console.log(red(`\n  Error: ${e.message}`));
     }
@@ -346,40 +597,66 @@ async function interactive() {
 
 /* ---------- entry ---------- */
 
+const HELP = `mi ${VERSION}: Market Intelligence terminal
+
+  mi                          interactive menu (favourites, browse all, search)
+  mi tools [text]             list every available feature
+  mi <tool> [key=value ...]   run any feature, e.g.
+      mi get_option_chain underlying=NIFTY expiry=2026-10-06
+      mi risk TCS        mi scenario brent=10 usdinr=2        mi ipos status=open
+  shortcuts: snapshot stress brief rbi yields health backtest betas risk scenario
+  flags: --json raw JSON   --all show every row
+  mi update                   download the latest mi
+  mi --version
+
+Key: MI_API_KEY env var or ~/.mi/config.json. Endpoint override: MI_ENDPOINT.`;
+
+const ALIASES = { snapshot: "get_market_snapshot", stress: "get_stress_index", brief: "get_daily_brief", rbi: "get_rbi_rates", yields: "get_india_yield_curve", health: "get_data_health", backtest: "get_stress_backtest", betas: "get_transmission_betas", risk: "get_security_risk", scenario: "run_scenario" };
+
 async function main() {
-  const [cmd, ...rest] = process.argv.slice(2);
+  const argv = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const [cmd, ...rest] = argv;
+  if (FLAGS.has("--version") || FLAGS.has("-v")) return console.log(VERSION);
+  if (FLAGS.has("--help") || cmd === "help") return console.log(HELP);
   if (!cmd) return interactive();
-  if (cmd === "-v" || cmd === "--version") return console.log(VERSION);
-  if (cmd === "-h" || cmd === "--help" || cmd === "help") {
-    return console.log(`mi ${VERSION}: Market Intelligence terminal\n\n  mi                        interactive menu\n  mi snapshot|stress|brief|rbi|yields|health|backtest\n  mi betas [sector]\n  mi risk <SYMBOL>\n  mi scenario brent=10 usdinr=2 us10y_bp=25 spx=-3\n\nKey: MI_API_KEY env var or ~/.mi/config.json. Endpoint override: MI_ENDPOINT.`);
+  if (cmd === "update") {
+    try {
+      return await updateSelf();
+    } catch (e) {
+      console.error(red(`Update failed: ${e.message}`));
+      process.exit(1);
+    }
   }
   if (!API_KEY) {
     console.error(red("No API key. Set MI_API_KEY or run `mi` once to save one."));
     process.exit(1);
   }
   try {
-    switch (cmd) {
-      case "snapshot": return await snapshot();
-      case "stress": return await stress();
-      case "brief": return await brief();
-      case "rbi": return await rbi();
-      case "yields": return await yields();
-      case "health": return await health();
-      case "betas": return await betas(rest[0]);
-      case "risk": return await risk(rest[0]);
-      case "backtest": return generic(await call("get_stress_backtest"));
-      case "scenario": {
-        const shocks = {};
-        for (const kv of rest) {
-          const [k, v] = kv.split("=");
-          if (!["brent", "usdinr", "us10y_bp", "spx"].includes(k) || Number.isNaN(Number(v))) throw new Error(`Bad shock "${kv}". Use brent=10 usdinr=2 us10y_bp=25 spx=-3`);
-          shocks[k] = Number(v);
+    await loadTools();
+    if (cmd === "tools") {
+      const f = (rest.join(" ") || "").toLowerCase();
+      const list = TOOLS.filter((t) => !f || `${t.name} ${toolTitle(t)} ${t.description} ${toolCategory(t)}`.toLowerCase().includes(f));
+      for (const cat of [...new Set(list.map(toolCategory))].sort()) {
+        heading(cat);
+        for (const t of list.filter((x) => toolCategory(x) === cat)) {
+          const args = Object.keys(t.inputSchema?.properties ?? {});
+          console.log(`  ${pad(t.name, 26)} ${pad(toolTitle(t), 30)} ${dim(args.length ? args.map((a) => `${a}=`).join(" ") : "")}`);
         }
-        return await scenario(shocks);
       }
-      default:
-        throw new Error(`Unknown command "${cmd}". Try: mi --help`);
+      return console.log(dim(`\n  ${list.length} feature(s). Run one with: mi <name> [key=value ...]`));
     }
+    const tool = findTool(ALIASES[cmd] ?? cmd);
+    if (!tool) throw new Error(`Unknown command "${cmd}". Try: mi tools`);
+    if (tool.name === "run_scenario" || tool.name === "get_transmission_betas" || tool.name === "get_security_risk") {
+      // keep the friendly shortcut forms: `mi risk TCS`, `mi betas bank`, `mi scenario brent=10`
+      const args = {};
+      if (tool.name === "get_security_risk") args.symbol = rest[0];
+      else if (tool.name === "get_transmission_betas") { if (rest[0]) args.sector = rest[0]; }
+      else Object.assign(args, parseKv(tool, rest));
+      if (tool.name === "get_security_risk" && !args.symbol) throw new Error("Symbol required, e.g. mi risk TCS");
+      return await runTool(tool, args);
+    }
+    return await runTool(tool, parseKv(tool, rest));
   } catch (e) {
     console.error(red(`Error: ${e.message}`));
     process.exit(1);

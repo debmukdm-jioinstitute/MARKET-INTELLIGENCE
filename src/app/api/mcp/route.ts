@@ -42,11 +42,11 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
   if (id === undefined) return null; // notification: no response
   switch (method) {
     case "initialize":
-      return ok(id, { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "market-intelligence", version: "1.0.0" }, instructions: "Read-only access to Market Intelligence's India macro analytics. Figures are heuristic/descriptive, not investment advice." });
+      return ok(id, { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "market-intelligence", version: "2.0.0" }, instructions: "Read-only access to Market Intelligence's India macro analytics. Figures are heuristic/descriptive, not investment advice." });
     case "ping":
       return ok(id, {});
     case "tools/list":
-      return ok(id, { tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) });
+      return ok(id, { tools: TOOLS.map(({ name, title, category, description, inputSchema }) => ({ name, title, description, inputSchema, annotations: { readOnlyHint: true, title }, _meta: { category } })) });
     case "tools/call": {
       const auth = authorised(req);
       if (!auth.ok) return err(id, -32001, "Unauthorized: valid API key required for tools/call (X-API-Key header)");
