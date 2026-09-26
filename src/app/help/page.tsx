@@ -125,6 +125,7 @@ export default function HelpPage() {
           ["#basics", "The basics"],
           ["#connect", "Connect a client"],
           ["#test", "Test it"],
+          ["#terminal", "Terminal app (mi)"],
           ["#tools", "The 10 tools"],
           ["#troubleshooting", "Troubleshooting"],
           ["#owners", "For the site owner"],
@@ -239,6 +240,122 @@ export default function HelpPage() {
           <i>&ldquo;If Brent rises 10%, which sectors are most exposed?&rdquo;</i>
         </p>
       </Step>
+
+      <section id="terminal" className="mt-12">
+        <h2 className="text-lg font-semibold">Terminal app: the &ldquo;mi&rdquo; command</h2>
+        <p className="mt-3 text-muted-foreground">
+          Prefer a terminal? <b>mi</b> is a menu-driven screen with an ASCII banner, a live market status bar
+          (NIFTY, VIX, USD/INR, Brent, stress) and one-key access to the stress index, daily brief, RBI rates, yield
+          curve, sector betas, scenarios, single-stock risk and data health. It talks to the same read-only endpoint, so
+          it uses the same API key and the same 60 calls/minute limit.
+        </p>
+
+        <h3 className="mt-6 font-semibold">What you need</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+          <li>
+            <b>Node.js 18 or newer</b>. Check with <b>node -v</b>. Install from nodejs.org if it is missing.
+          </li>
+          <li>An API key (see step 1 above).</li>
+          <li>macOS, Linux, or Windows (use WSL or PowerShell). No other packages are installed.</li>
+        </ul>
+
+        <h3 className="mt-6 font-semibold">Install on macOS or Linux</h3>
+        <Code>{`mkdir -p ~/.local/bin
+curl -fsSL https://getmarketintelligence.in/cli/mi.mjs -o ~/.local/bin/mi
+chmod +x ~/.local/bin/mi`}</Code>
+        <p className="text-muted-foreground">
+          If <b>mi</b> is not found afterwards, add <b>~/.local/bin</b> to your PATH (zsh shown; use ~/.bashrc for
+          bash):
+        </p>
+        <Code>{`echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc`}</Code>
+
+        <h3 className="mt-6 font-semibold">Install on Windows (PowerShell)</h3>
+        <Code>{`mkdir $HOME\\.mi -Force
+curl.exe -fsSL https://getmarketintelligence.in/cli/mi.mjs -o $HOME\\.mi\\mi.mjs
+node $HOME\\.mi\\mi.mjs`}</Code>
+
+        <h3 className="mt-6 font-semibold">First run and your API key</h3>
+        <p className="text-muted-foreground">
+          Run <b>mi</b>. On first launch it asks for your key and saves it to <b>~/.mi/config.json</b> (readable only
+          by you). Or skip the prompt and use an environment variable:
+        </p>
+        <Code>{`export MI_API_KEY="YOUR_KEY"     # add to ~/.zshrc to keep it
+mi`}</Code>
+        <p className="text-muted-foreground">
+          Change the saved key any time from the menu (<b>E</b>) or by deleting <b>~/.mi/config.json</b>.
+        </p>
+
+        <h3 className="mt-6 font-semibold">The menu</h3>
+        <div className="mt-3 overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-muted/60 text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2.5 font-medium">Key</th>
+                <th className="px-4 py-2.5 font-medium">Screen</th>
+                <th className="px-4 py-2.5 font-medium">Direct command</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["S", "Market snapshot (default, press Enter)", "mi snapshot"],
+                ["X", "India Macro Stress Index, families and top components", "mi stress"],
+                ["B", "Daily brief with headlines and what to watch", "mi brief"],
+                ["R", "RBI policy corridor, liquidity, FX reserves", "mi rbi"],
+                ["Y", "India T-bill and G-sec yield curve", "mi yields"],
+                ["T", "Sector sensitivities to Brent, USD/INR, US10Y, S&P", "mi betas [sector]"],
+                ["N", "Macro scenario: sector impact of shocks", "mi scenario brent=10 usdinr=2"],
+                ["K", "Volatility, drawdown, beta, earnings for a symbol", "mi risk TCS"],
+                ["H", "Data health: how fresh each feed is", "mi health"],
+                ["A", "Backtest of the stress index", "mi backtest"],
+                ["E", "Edit or replace your API key", "n/a"],
+                ["Z", "Exit (or press Ctrl + C)", "n/a"],
+              ].map(([k, screen, cmd]) => (
+                <tr key={k} className="border-t border-border align-top">
+                  <td className="px-4 py-2.5 font-semibold">{k}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{screen}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">{cmd}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-muted-foreground">
+          Scenario shocks are <b>brent</b> and <b>usdinr</b> and <b>spx</b> in % and <b>us10y_bp</b> in basis points,
+          for example <b>mi scenario brent=10 usdinr=2 us10y_bp=25 spx=-3</b>. Direct commands print once and exit, so
+          they work in scripts and cron jobs. Set <b>NO_COLOR=1</b> to turn colours off.
+        </p>
+
+        <h3 className="mt-6 font-semibold">Update or remove</h3>
+        <p className="text-muted-foreground">Update by re-running the download command. To remove:</p>
+        <Code>{`rm ~/.local/bin/mi && rm -rf ~/.mi`}</Code>
+
+        <h3 className="mt-6 font-semibold">Terminal troubleshooting</h3>
+        <ul className="mt-2 space-y-2 text-muted-foreground">
+          <li>
+            <b>command not found: mi</b>: the PATH step was skipped. Run it with <b>~/.local/bin/mi</b> or fix your PATH.
+          </li>
+          <li>
+            <b>SyntaxError or fetch is not defined</b>: Node is older than 18. Upgrade and retry.
+          </li>
+          <li>
+            <b>Unauthorized</b>: wrong or missing key. Press <b>E</b> in the menu or set <b>MI_API_KEY</b> again.
+          </li>
+          <li>
+            <b>Endpoint redirected</b>: the default is https://getmarketintelligence.in/api/mcp. Only set{" "}
+            <b>MI_ENDPOINT</b> if you were given a different address.
+          </li>
+          <li>
+            <b>Garbled boxes or symbols</b>: use a UTF-8 terminal (macOS Terminal, iTerm2, Windows Terminal).
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Descriptive statistics only, not investment advice. The script is a single readable file at{" "}
+          <a href="/cli/mi.mjs" className="text-blue-600 hover:underline">
+            /cli/mi.mjs
+          </a>
+          ; read it before you run it.
+        </p>
+      </section>
 
       <section id="tools" className="mt-12">
         <h2 className="text-lg font-semibold">The 10 tools</h2>

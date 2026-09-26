@@ -37,3 +37,16 @@ curl -s https://getmarketintelligence.in/api/mcp -H 'content-type: application/j
   -H 'X-API-Key: <your key>' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_stress_index","arguments":{}}}'
 ```
+
+## Terminal app (`mi`)
+
+A menu-driven terminal screen over the same endpoint (banner, live status bar, stress index, brief, RBI, yields, betas, scenarios, security risk, data health). Needs Node 18+.
+
+```bash
+mkdir -p ~/.local/bin
+curl -fsSL https://getmarketintelligence.in/cli/mi.mjs -o ~/.local/bin/mi && chmod +x ~/.local/bin/mi
+mi                      # interactive; first run asks for the API key (saved to ~/.mi/config.json)
+mi stress               # one-shot commands: snapshot|stress|brief|rbi|yields|health|backtest|betas [sector]|risk SYM|scenario k=v...
+```
+
+Source: `public/cli/mi.mjs`. Full guide: `/help#terminal`.
