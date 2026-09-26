@@ -2,11 +2,14 @@
 
 import {
   MI_CONTENT_SAVED,
+  MI_DRAFT_OVERRIDES,
   MI_EDIT_QUERY,
   MI_REQUEST_SLOTS,
   MI_SELECT_SLOT,
+  MI_SLOT_DRAFT,
   MI_SLOTS,
   portalPreviewOrigin,
+  siteContentSlot,
   type MiIframeMessage,
   type MiSlotSummary,
 } from "@/lib/site-content";
@@ -30,6 +33,8 @@ export function LiveEditorShell() {
   const [slots, setSlots] = useState<MiSlotSummary[]>([]);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [manualPart, setManualPart] = useState("");
+  const [manualText, setManualText] = useState("");
 
   const origin = useMemo(() => portalPreviewOrigin(), []);
   const iframeSrc = `${origin}${path}?${MI_EDIT_QUERY}=1`;
@@ -60,15 +65,33 @@ export function LiveEditorShell() {
           label: data.label,
           text: data.value,
         });
-        setDraft(pending[data.slotKey] ?? data.value);
       }
       if (data?.type === MI_SLOTS) {
         setSlots(data.slots);
       }
+      if (data?.type === MI_SLOT_DRAFT) {
+        setPending((prev) => ({ ...prev, [data.slotKey]: data.value }));
+        setSelected({
+          slotKey: data.slotKey,
+          field: "body",
+          label: data.slotKey,
+          text: data.value,
+        });
+        setDraft(data.value);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [origin, pending]);
+  }, [origin]);
+
+  useEffect(() => {
+    postToFrame({ type: MI_DRAFT_OVERRIDES, overrides: pending });
+  }, [pending, postToFrame]);
+
+  useEffect(() => {
+    if (!selected) return;
+    setDraft(pending[selected.slotKey] ?? selected.text);
+  }, [selected, pending]);
 
   useEffect(() => {
     setSelected(null);
@@ -82,6 +105,20 @@ export function LiveEditorShell() {
     if (!selected) return;
     setDraft(value);
     setPending((prev) => ({ ...prev, [selected.slotKey]: value }));
+  }
+
+  function addManualSlot() {
+    const part = manualPart.trim();
+    const value = manualText.trim();
+    if (!part || !value) {
+      setStatus("Manual slot needs a part id (e.g. card.hero.title) and text.");
+      return;
+    }
+    const slotKey = siteContentSlot(path, part);
+    setPending((prev) => ({ ...prev, [slotKey]: value }));
+    setSelected({ slotKey, field: "body", label: part, text: value });
+    setDraft(value);
+    setStatus(`Queued manual slot ${slotKey}`);
   }
 
   async function applyChanges() {
@@ -146,7 +183,7 @@ export function LiveEditorShell() {
         <div>
           <h1 className="text-lg font-bold text-gray-900">Live editor</h1>
           <p className="text-sm text-gray-500">
-            Click text on preview → edit here → Apply changes goes live (no redeploy).
+            Click or type directly in preview (blue outline) — or edit in sidebar — then Apply. Dashed blocks are CMS slots.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -235,9 +272,34 @@ export function LiveEditorShell() {
             </>
           ) : (
             <p className="mt-2 text-sm text-gray-500">
-              Click a highlighted heading or panel title in the preview.
+              Click any dashed text in the preview, pick from the list below, or add a manual slot.
             </p>
           )}
+
+          <div className="mt-4 border-t border-gray-100 pt-3">
+            <p className="text-xs font-semibold text-gray-600">Manual slot</p>
+            <p className="mt-0.5 text-xs text-gray-400">Part id must match EditableCopy in code (e.g. card.hero.title).</p>
+            <input
+              value={manualPart}
+              onChange={(e) => setManualPart(e.target.value)}
+              placeholder={`Part id on ${path}`}
+              className="mt-2 w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs outline-none focus:border-blue-500"
+            />
+            <textarea
+              value={manualText}
+              onChange={(e) => setManualText(e.target.value)}
+              rows={3}
+              placeholder="New text…"
+              className="mt-1 w-full resize-y rounded-md border border-gray-200 p-2 text-xs outline-none focus:border-blue-500"
+            />
+            <button
+              type="button"
+              onClick={addManualSlot}
+              className="mt-2 w-full rounded-md border border-gray-200 py-1.5 text-xs font-medium hover:bg-gray-50"
+            >
+              Queue manual slot
+            </button>
+          </div>
 
           <div className="mt-auto border-t border-gray-100 pt-3">
             <p className="text-xs font-semibold text-gray-600">Editable on this page ({slots.length})</p>

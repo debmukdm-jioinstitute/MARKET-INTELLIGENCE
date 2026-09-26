@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Google_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
@@ -29,6 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <MathInspectorProvider>{children}</MathInspectorProvider>
         </AuthProvider>
+        <Script
+          src="https://chatwith.tools/chatbot/253293a1-d3c2-4f2a-8542-db10574ada8d.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

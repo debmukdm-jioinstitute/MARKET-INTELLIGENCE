@@ -1,8 +1,9 @@
 "use client";
 
-import { MI_CONTENT_SAVED } from "@/lib/site-content";
-import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { MI_CONTENT_SAVED, MI_DRAFT_OVERRIDES, MI_EDIT_QUERY } from "@/lib/site-content";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import useSWR from "swr";
+import { useSearchParams } from "next/navigation";
 
 type SiteContentCtx = {
   overrides: Record<string, string>;
@@ -16,20 +17,36 @@ const Ctx = createContext<SiteContentCtx | null>(null);
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
+  const searchParams = useSearchParams();
+  const editMode = searchParams.get(MI_EDIT_QUERY) === "1";
+  const [draftOverrides, setDraftOverrides] = useState<Record<string, string>>({});
+
   const { data, isLoading, mutate } = useSWR<{ overrides: Record<string, string> }>(
     "/api/portal/content",
     fetcher,
     { refreshInterval: 120_000, revalidateOnFocus: true },
   );
 
-  const overrides = data?.overrides ?? {};
+  const saved = data?.overrides ?? {};
+  const overrides = useMemo(
+    () => (editMode ? { ...saved, ...draftOverrides } : saved),
+    [editMode, saved, draftOverrides],
+  );
+
+  useEffect(() => {
+    if (!editMode) setDraftOverrides({});
+  }, [editMode]);
 
   useEffect(() => {
     function refresh() {
       void mutate();
+      setDraftOverrides({});
     }
     function onMessage(ev: MessageEvent) {
       if (ev.data?.type === MI_CONTENT_SAVED) refresh();
+      if (editMode && ev.data?.type === MI_DRAFT_OVERRIDES && ev.data.overrides) {
+        setDraftOverrides(ev.data.overrides as Record<string, string>);
+      }
     }
     window.addEventListener("message", onMessage);
     window.addEventListener(MI_CONTENT_SAVED, refresh);
@@ -37,7 +54,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("message", onMessage);
       window.removeEventListener(MI_CONTENT_SAVED, refresh);
     };
-  }, [mutate]);
+  }, [mutate, editMode]);
 
   const text = useCallback(
     (slotKey: string, fallback: string) => {

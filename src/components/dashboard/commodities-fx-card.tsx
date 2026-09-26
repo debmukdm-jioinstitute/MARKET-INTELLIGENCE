@@ -5,6 +5,7 @@ import { ArrowUpRight, Coins } from "lucide-react";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 interface CommoditiesFxCardProps {
@@ -92,8 +93,10 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Coins className="size-3.5" />
-              COMMODITIES & FX DATA
+              <Coins className="size-3.5" aria-hidden />
+              <EditableCopy id="card.commodities.kicker" label="Commodities kicker">
+                COMMODITIES & FX DATA
+              </EditableCopy>
             </span>
             <MetricInfo metric="brent" customTitle="Global Commodity & FX Feeds" />
           </div>
@@ -101,7 +104,9 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
             href="/markets"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
-            Explore Markets
+            <EditableCopy id="card.commodities.cta" label="Commodities CTA">
+              Explore Markets
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

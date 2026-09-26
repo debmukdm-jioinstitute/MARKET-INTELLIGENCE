@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 interface EarningsItem {
@@ -108,14 +109,21 @@ export function EarningsCalendarCard() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <CalendarDays className="size-3.5" />
-              EARNINGS DISCLOSURES & CALENDAR
+              <CalendarDays className="size-3.5" aria-hidden />
+              <EditableCopy id="card.earnings.kicker" label="Earnings kicker">
+                EARNINGS DISCLOSURES & CALENDAR
+              </EditableCopy>
             </span>
             <MetricInfo metric="earnings_results" customTitle="Quarterly Financial Results & EPS" />
           </div>
-          <h3 className="text-base font-bold text-foreground mt-0.5">
+          <EditableCopy
+            id="card.earnings.title"
+            as="h3"
+            label="Earnings title"
+            className="text-base font-bold text-foreground mt-0.5"
+          >
             SEBI Reg 33 Official Results Schedule
-          </h3>
+          </EditableCopy>
         </div>
 
         <Link

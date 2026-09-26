@@ -10,12 +10,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     <div className="min-h-full bg-background text-foreground">
       <AuthGate>
         <PortalPageProvider>
-          <SiteContentProvider>
-            <AppShell>{children}</AppShell>
-            <Suspense fallback={null}>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <SiteContentProvider>
+              <AppShell>{children}</AppShell>
               <LiveEditOverlay />
-            </Suspense>
-          </SiteContentProvider>
+            </SiteContentProvider>
+          </Suspense>
         </PortalPageProvider>
       </AuthGate>
     </div>

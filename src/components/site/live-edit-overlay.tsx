@@ -5,6 +5,7 @@ import {
   MI_EDIT_QUERY,
   MI_REQUEST_SLOTS,
   MI_SELECT_SLOT,
+  MI_SLOT_DRAFT,
   MI_SLOTS,
   type MiSelectSlotMessage,
 } from "@/lib/site-content";
@@ -32,11 +33,16 @@ export function LiveEditOverlay() {
     document.documentElement.classList.add("mi-live-edit");
     notifySlots();
 
+    const slotNodes = () => document.querySelectorAll<HTMLElement>("[data-mi-slot]");
+
+    for (const el of slotNodes()) {
+      el.contentEditable = "true";
+      el.spellcheck = false;
+    }
+
     const onClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest<HTMLElement>("[data-mi-slot]");
       if (!target?.dataset.miSlot) return;
-      e.preventDefault();
-      e.stopPropagation();
       document.querySelectorAll("[data-mi-slot]").forEach((el) => el.classList.remove("mi-slot-selected"));
       target.classList.add("mi-slot-selected");
       const msg: MiSelectSlotMessage = {
@@ -49,10 +55,32 @@ export function LiveEditOverlay() {
       window.parent.postMessage(msg, window.location.origin);
     };
 
-    const observer = new MutationObserver(() => notifySlots());
+    const onInput = (e: Event) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>("[data-mi-slot]");
+      if (!target?.dataset.miSlot) return;
+      window.parent.postMessage(
+        {
+          type: MI_SLOT_DRAFT,
+          slotKey: target.dataset.miSlot,
+          value: (target.textContent ?? "").trim(),
+        },
+        window.location.origin,
+      );
+    };
+
+    const observer = new MutationObserver(() => {
+      for (const el of slotNodes()) {
+        if (el.contentEditable !== "true") {
+          el.contentEditable = "true";
+          el.spellcheck = false;
+        }
+      }
+      notifySlots();
+    });
     observer.observe(document.body, { subtree: true, childList: true, characterData: true });
 
     document.addEventListener("click", onClick, true);
+    document.addEventListener("input", onInput, true);
 
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
@@ -71,8 +99,12 @@ export function LiveEditOverlay() {
 
     return () => {
       document.documentElement.classList.remove("mi-live-edit");
+      for (const el of slotNodes()) {
+        el.contentEditable = "false";
+      }
       observer.disconnect();
       document.removeEventListener("click", onClick, true);
+      document.removeEventListener("input", onInput, true);
       window.removeEventListener("message", onMessage);
     };
   }, [editMode, notifySlots]);
@@ -82,7 +114,7 @@ export function LiveEditOverlay() {
   return (
     <style>{`
       .mi-live-edit [data-mi-slot] {
-        cursor: pointer;
+        cursor: text;
         outline: 2px dashed transparent;
         outline-offset: 4px;
         border-radius: 4px;
@@ -95,6 +127,10 @@ export function LiveEditOverlay() {
       .mi-live-edit [data-mi-slot].mi-slot-selected {
         outline-color: rgb(37 99 235);
         background: rgb(59 130 246 / 0.12);
+      }
+      .mi-live-edit [data-mi-slot]:focus {
+        outline-color: rgb(37 99 235);
+        background: rgb(59 130 246 / 0.08);
       }
       .mi-live-edit [data-mi-slot] {
         position: relative;

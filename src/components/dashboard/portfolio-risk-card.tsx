@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, ShieldAlert, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 
@@ -56,8 +57,10 @@ export function PortfolioRiskCard() {
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
-              <ShieldAlert className="size-3.5 text-blue-600" />
-              RISK & EXPOSURE
+              <ShieldAlert className="size-3.5 text-blue-600" aria-hidden />
+              <EditableCopy id="card.portfolio-risk.kicker" label="Risk card kicker">
+                RISK & EXPOSURE
+              </EditableCopy>
             </span>
             <MetricInfo metric="concentration" customTitle="Sector & Asset Concentration Risk" />
           </div>
@@ -65,7 +68,9 @@ export function PortfolioRiskCard() {
             href="/portfolio/risk"
             className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-sm font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
-            Analyze Risk
+            <EditableCopy id="card.portfolio-risk.cta" label="Risk card CTA">
+              Analyze Risk
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

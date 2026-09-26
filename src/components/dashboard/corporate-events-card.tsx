@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Calendar, ExternalLink, Sparkles, X, FileText, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFeedHub } from "@/hooks/use-feed-hub";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 interface CorporateEvent {
@@ -85,8 +86,10 @@ export function CorporateEventsCard() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Calendar className="size-3.5" />
-              CORPORATE DISCLOSURES & EVENTS
+              <Calendar className="size-3.5" aria-hidden />
+              <EditableCopy id="card.corporate-events.kicker" label="Corporate events kicker">
+                CORPORATE DISCLOSURES & EVENTS
+              </EditableCopy>
             </span>
             <MetricInfo metric="corporate_announcement" customTitle="Material Corporate Events & Filings" />
             <span className="text-sm text-emerald-600 flex items-center gap-1">
@@ -94,9 +97,14 @@ export function CorporateEventsCard() {
               Live RSS Feed
             </span>
           </div>
-          <h3 className="text-base font-bold text-foreground mt-0.5">
+          <EditableCopy
+            id="card.corporate-events.title"
+            as="h3"
+            label="Corporate events title"
+            className="text-base font-bold text-foreground mt-0.5"
+          >
             Real-Time Material Filings (RBI, NSE & BSE RSS)
-          </h3>
+          </EditableCopy>
         </div>
 
         <Link

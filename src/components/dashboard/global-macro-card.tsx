@@ -5,6 +5,7 @@ import { ArrowUpRight, Globe } from "lucide-react";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
@@ -50,8 +51,10 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Globe className="size-3.5" />
-              GLOBAL MACRO DATA
+              <Globe className="size-3.5" aria-hidden />
+              <EditableCopy id="card.global-macro.kicker" label="Global macro kicker">
+                GLOBAL MACRO DATA
+              </EditableCopy>
             </span>
             <MetricInfo metric="sp500" customTitle="Global Cross-Asset Telemetry" />
           </div>
@@ -59,7 +62,9 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
             href="/macro/global"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
-            Explore Global
+            <EditableCopy id="card.global-macro.cta" label="Global macro CTA">
+              Explore Global
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

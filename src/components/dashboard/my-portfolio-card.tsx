@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Briefcase, Lock, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -36,14 +37,18 @@ export function MyPortfolioCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <span className="text-sm uppercase tracking-wider text-blue-600 font-bold flex items-center gap-1.5">
-            <Briefcase className="size-3.5 text-blue-600" />
-            PORTFOLIO DESK
+            <Briefcase className="size-3.5 text-blue-600" aria-hidden />
+            <EditableCopy id="card.portfolio.kicker" label="Portfolio kicker">
+              PORTFOLIO DESK
+            </EditableCopy>
           </span>
           <Link
             href="/portfolio"
             className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-sm font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
-            Open your Portfolio
+            <EditableCopy id="card.portfolio.cta" label="Portfolio CTA">
+              Open your Portfolio
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

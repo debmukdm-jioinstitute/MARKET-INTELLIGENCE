@@ -6,6 +6,7 @@ import { formatPct } from "@/lib/format";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useCandles } from "@/hooks/use-candles";
 
@@ -57,15 +58,24 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold">
+            <EditableCopy
+              id="card.hero-india.kicker"
+              label="India market kicker"
+              className="text-sm uppercase tracking-wider text-primary font-bold"
+            >
               INDIA MARKET
-            </span>
+            </EditableCopy>
             <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
             <MetricInfo metric="nifty50" sourceOverride={nifty?.source} />
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
+          <EditableCopy
+            id="card.hero-india.title"
+            as="h2"
+            label="India market title"
+            className="text-xl font-bold tracking-tight text-foreground mt-0.5"
+          >
             NSE / BSE Headline Pulse
-          </h2>
+          </EditableCopy>
         </div>
 
         <div className="flex items-center gap-2">
@@ -73,7 +83,9 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             href="/markets/india/nifty50"
             className="group flex items-center gap-1.5 rounded-lg border border-border bg-accent/30 px-3 py-1.5 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
-            Explore NIFTY 50 Cockpit
+            <EditableCopy id="card.hero-india.cta" label="India market CTA">
+              Explore NIFTY 50 Cockpit
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

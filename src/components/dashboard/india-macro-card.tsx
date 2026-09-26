@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Globe2 } from "lucide-react";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
@@ -73,8 +74,10 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Globe2 className="size-3.5" />
-              INDIA MACROECONOMIC TELEMETRY
+              <Globe2 className="size-3.5" aria-hidden />
+              <EditableCopy id="card.india-macro.kicker" label="India macro kicker">
+                INDIA MACROECONOMIC TELEMETRY
+              </EditableCopy>
             </span>
             <MetricInfo metric="cpi" customTitle="India Sovereign Macroeconomic Suite" />
           </div>
@@ -82,7 +85,9 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
             href="/macro/india"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
-            Explore Macro
+            <EditableCopy id="card.india-macro.cta" label="India macro CTA">
+              Explore Macro
+            </EditableCopy>
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

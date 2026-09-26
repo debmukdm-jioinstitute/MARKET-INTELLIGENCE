@@ -18,6 +18,8 @@ export const MI_CONTENT_SAVED = "MI_CONTENT_SAVED";
 export const MI_SELECT_SLOT = "MI_SELECT_SLOT";
 export const MI_SLOTS = "MI_SLOTS";
 export const MI_REQUEST_SLOTS = "MI_REQUEST_SLOTS";
+export const MI_DRAFT_OVERRIDES = "MI_DRAFT_OVERRIDES";
+export const MI_SLOT_DRAFT = "MI_SLOT_DRAFT";
 
 export type MiSlotSummary = {
   slotKey: string;
@@ -39,11 +41,22 @@ export type MiSlotsMessage = {
   slots: MiSlotSummary[];
 };
 
-export type MiIframeMessage = MiSelectSlotMessage | MiSlotsMessage | { type: "MI_EDIT_READY"; pathname: string };
+export type MiSlotDraftMessage = {
+  type: typeof MI_SLOT_DRAFT;
+  slotKey: string;
+  value: string;
+};
+
+export type MiIframeMessage =
+  | MiSelectSlotMessage
+  | MiSlotsMessage
+  | MiSlotDraftMessage
+  | { type: "MI_EDIT_READY"; pathname: string };
 
 export type MiParentMessage =
   | { type: typeof MI_CONTENT_SAVED }
   | { type: typeof MI_REQUEST_SLOTS }
+  | { type: typeof MI_DRAFT_OVERRIDES; overrides: Record<string, string> }
   | { type: "MI_EDIT_NAVIGATE"; href: string };
 
 export function portalPreviewOrigin(): string {
