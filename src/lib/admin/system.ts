@@ -24,7 +24,7 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "ADMIN_EMAILS", required: true, note: "Who gets the admin role" },
   { key: "GROQ_API_KEY", required: true, note: "AI desk, copilot, brief" },
   { key: "RESEND_API_KEY", required: false, note: "Welcome email, newsletters, brief" },
-  { key: "RESEND_FROM_EMAIL", required: false, note: "Verified sender — e.g. onboarding@send.getmarketintelligence.in (see docs/RESEND.md)" },
+  { key: "RESEND_FROM_EMAIL", required: false, note: "Verified sender — e.g. onboarding@getmarketintelligence.in (see docs/RESEND.md)" },
   { key: "VAPID_PUBLIC_KEY", required: false, note: "Web push" },
   { key: "VAPID_PRIVATE_KEY", required: false, note: "Web push" },
   { key: "UPSTOX_ACCESS_TOKEN", required: false, note: "Live Upstox quotes / option chain" },

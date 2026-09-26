@@ -26,7 +26,7 @@ Set in `.env.local`:
 
 ```bash
 RESEND_API_KEY=re_...
-RESEND_FROM_EMAIL=Market Intelligence <onboarding@send.getmarketintelligence.in>
+RESEND_FROM_EMAIL=Market Intelligence <onboarding@getmarketintelligence.in>
 ```
 
 ## Troubleshooting
