@@ -19,7 +19,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "2.0.0";
+const VERSION = "2.0.1";
 const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
 function ENDPOINT_BASE() {
   return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
@@ -208,7 +208,7 @@ function table(rows, headers) {
 const isScalar = (v) => v === null || ["string", "number", "boolean"].includes(typeof v);
 const fmtVal = (v, key = "") => {
   if (v === null || v === undefined || v === "") return dim("-");
-  if (typeof v === "number") return /pct|percent|change|chg/i.test(key) ? tone(v, pct(v)) : num(v, Number.isInteger(v) ? 0 : 2);
+  if (typeof v === "number") return /(pct|percent)$/i.test(key) ? tone(v, pct(v)) : num(v, Number.isInteger(v) ? 0 : 2);
   if (typeof v === "boolean") return v ? green("yes") : red("no");
   const str = String(v);
   return /^\d{4}-\d{2}-\d{2}T/.test(str) ? str.slice(0, 16).replace("T", " ") : str;
@@ -225,7 +225,9 @@ function renderArray(arr, indent) {
   if (arr.every((r) => r && typeof r === "object" && !Array.isArray(r))) {
     const keys = [];
     for (const r of arr.slice(0, 50)) for (const [k, v] of Object.entries(r)) if (isScalar(v) && !keys.includes(k)) keys.push(k);
-    const cols = keys.filter((k) => !/^(id|url|link|slug|uuid)$/i.test(k) || keys.length <= 3).slice(0, 8);
+    const noisy = /^(id|uuid|slug|url|link|href|decimals|focus|copyKey)$|(Key|Id|Uuid|Url|Href)$/;
+    const useful = keys.filter((k) => !noisy.test(k));
+    const cols = (useful.length >= 2 ? useful : keys).slice(0, 8);
     if (cols.length) {
       const shown = NO_LIMIT ? arr : arr.slice(0, ROW_LIMIT);
       const rows = shown.map((r) => cols.map((k) => String(fmtVal(r[k], k))));
