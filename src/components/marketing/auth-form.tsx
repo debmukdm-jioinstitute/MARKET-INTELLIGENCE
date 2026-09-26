@@ -1,6 +1,7 @@
 "use client";
 
 import { GoogleSignInButton } from "@/components/marketing/google-sign-in-button";
+import { PrivacyAcceptanceField } from "@/components/marketing/privacy-acceptance-field";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
@@ -16,6 +17,7 @@ const OAUTH_ERRORS: Record<string, string> = {
   google_state_invalid: "Google sign-in expired. Try again.",
   google_missing_code: "Google sign-in incomplete. Try again.",
   accounts_unavailable: "Accounts are not available on this deployment.",
+  privacy_required: "Accept the Privacy Policy on this page before creating an account.",
 };
 
 export function AuthForm({
@@ -32,6 +34,8 @@ export function AuthForm({
   const dest = next.startsWith("/") ? next : "/Home";
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const isSignup = mode === "signup";
   const oauthMessage = useMemo(
     () => (oauthError ? (OAUTH_ERRORS[oauthError] ?? "Sign-in error.") : ""),
     [oauthError],
@@ -43,11 +47,17 @@ export function AuthForm({
     setPending(true);
     const data = new FormData(event.currentTarget);
     try {
+      if (isSignup && !acceptPrivacy) {
+        setError("You must accept the Privacy Policy to create an account.");
+        setPending(false);
+        return;
+      }
       if (mode === "signup") {
         await signup({
           name: String(data.get("name") ?? ""),
           email: String(data.get("email") ?? ""),
           password: String(data.get("password") ?? ""),
+          acceptPrivacy: true,
         });
       } else {
         await login({
@@ -76,8 +86,17 @@ export function AuthForm({
           ? "Open a virtual desk in seconds. No brokerage. No card."
           : "Return to your books, research, and risk terminal."}
       </p>
-      <div className="mt-8 space-y-3">
-        <GoogleSignInButton next={dest} disabled={pending} />
+      {isSignup ? (
+        <div className="mt-6">
+          <PrivacyAcceptanceField checked={acceptPrivacy} onChange={setAcceptPrivacy} />
+        </div>
+      ) : null}
+      <div className={`space-y-3 ${isSignup ? "mt-4" : "mt-8"}`}>
+        <GoogleSignInButton
+          next={dest}
+          disabled={pending}
+          privacyAccepted={isSignup ? acceptPrivacy : undefined}
+        />
         <div className="flex items-center gap-3 py-1">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs uppercase tracking-wide text-muted-foreground">or email</span>

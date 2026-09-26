@@ -3,11 +3,23 @@
 const btnClass =
   "flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-white text-sm font-semibold text-foreground shadow-[var(--shadow-sm)] transition hover:bg-muted disabled:opacity-50";
 
-export function GoogleSignInButton({ next, disabled }: { next: string; disabled?: boolean }) {
+export function GoogleSignInButton({
+  next,
+  disabled,
+  privacyAccepted,
+}: {
+  next: string;
+  disabled?: boolean;
+  /** When false, signup cannot start Google OAuth until privacy is accepted. Omit on login. */
+  privacyAccepted?: boolean;
+}) {
   const dest = next.startsWith("/") ? next : "/Home";
-  const href = `/api/auth/google?next=${encodeURIComponent(dest)}`;
+  const blocked = disabled || privacyAccepted === false;
+  const href = `/api/auth/google?next=${encodeURIComponent(dest)}${
+    privacyAccepted ? "&privacy=1" : ""
+  }`;
 
-  if (disabled) {
+  if (blocked) {
     return (
       <button type="button" disabled className={btnClass}>
         <GoogleIcon />

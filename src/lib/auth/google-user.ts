@@ -18,6 +18,7 @@ export async function sessionResponseForGoogleUser(
   profile: GoogleUserInfo,
   redirectTo: string,
   requestUrl: string,
+  opts?: { privacyAccepted?: boolean },
 ): Promise<NextResponse> {
   await ensureSchema();
   const db = sql();
@@ -42,11 +43,17 @@ export async function sessionResponseForGoogleUser(
         WHERE email = ${email}
       `;
     } else {
+      if (!opts?.privacyAccepted) {
+        const url = new URL("/signup", requestUrl);
+        url.searchParams.set("error", "privacy_required");
+        url.searchParams.set("next", redirectTo);
+        return NextResponse.redirect(url);
+      }
       const role = isBootstrapAdmin(email) ? "admin" : "user";
       const passwordHash = googleOnlyPasswordPlaceholder(sub);
       await db`
-        INSERT INTO users (email, name, password_hash, role, google_sub, last_login_at)
-        VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now())
+        INSERT INTO users (email, name, password_hash, role, google_sub, last_login_at, privacy_accepted_at)
+        VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now())
       `;
       row = { email, name, password_hash: passwordHash, role, google_sub: sub };
     }

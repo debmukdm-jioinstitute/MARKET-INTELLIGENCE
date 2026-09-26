@@ -12,41 +12,41 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function loginErrorRedirect(req: Request, code: string) {
-  const url = new URL("/login", req.url);
+function authErrorRedirect(req: Request, code: string, path: "/login" | "/signup" = "/login") {
+  const url = new URL(path, req.url);
   url.searchParams.set("error", code);
   return NextResponse.redirect(url);
 }
 
 export async function GET(req: Request) {
   if (!hasDatabase()) {
-    return loginErrorRedirect(req, "accounts_unavailable");
+    return authErrorRedirect(req, "accounts_unavailable");
   }
 
   const config = getGoogleOAuthConfig();
   if (!config) {
-    return loginErrorRedirect(req, "google_not_configured");
+    return authErrorRedirect(req, "google_not_configured");
   }
 
   const { searchParams } = new URL(req.url);
   const err = searchParams.get("error");
   if (err) {
-    return loginErrorRedirect(req, err === "access_denied" ? "google_denied" : "google_failed");
+    return authErrorRedirect(req, err === "access_denied" ? "google_denied" : "google_failed");
   }
 
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   if (!code || !state) {
-    return loginErrorRedirect(req, "google_missing_code");
+    return authErrorRedirect(req, "google_missing_code");
   }
 
   const store = await cookies();
   const raw = store.get("mi_google_oauth")?.value;
   const pending = raw
-    ? verifySessionToken<{ state?: string; next?: string; exp?: number }>(raw)
+    ? verifySessionToken<{ state?: string; next?: string; exp?: number; privacyAccepted?: boolean }>(raw)
     : null;
   if (!pending?.state || pending.state !== state || !pending.exp || pending.exp < Date.now()) {
-    return loginErrorRedirect(req, "google_state_invalid");
+    return authErrorRedirect(req, "google_state_invalid");
   }
 
   const next = sanitizeAuthNext(pending.next);
@@ -54,10 +54,12 @@ export async function GET(req: Request) {
   try {
     const { accessToken } = await exchangeGoogleCode(config, code);
     const profile = await fetchGoogleUserInfo(accessToken);
-    const res = await sessionResponseForGoogleUser(profile, next, req.url);
+    const res = await sessionResponseForGoogleUser(profile, next, req.url, {
+      privacyAccepted: pending.privacyAccepted === true,
+    });
     res.cookies.set("mi_google_oauth", "", { httpOnly: true, path: "/", maxAge: 0 });
     return res;
   } catch {
-    return loginErrorRedirect(req, "google_failed");
+    return authErrorRedirect(req, "google_failed");
   }
 }

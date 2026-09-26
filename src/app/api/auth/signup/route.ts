@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Accounts are not configured on this deployment yet." }, { status: 503 });
   }
 
-  let body: { name?: string; email?: string; password?: string };
+  let body: { name?: string; email?: string; password?: string; acceptPrivacy?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -22,6 +22,12 @@ export async function POST(req: Request) {
   const password = body.password ?? "";
   if (!email || !email.includes("@")) return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
   if (password.length < 6) return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
+  if (body.acceptPrivacy !== true) {
+    return NextResponse.json(
+      { error: "You must read and accept the Privacy Policy to create an account." },
+      { status: 400 },
+    );
+  }
 
   await ensureSchema();
   const db = sql();
@@ -34,8 +40,8 @@ export async function POST(req: Request) {
   const passwordHash = await hashPassword(password);
   const role = isBootstrapAdmin(email) ? "admin" : "user";
   await db`
-    INSERT INTO users (email, name, password_hash, role, last_login_at)
-    VALUES (${email}, ${name}, ${passwordHash}, ${role}, now())
+    INSERT INTO users (email, name, password_hash, role, last_login_at, privacy_accepted_at)
+    VALUES (${email}, ${name}, ${passwordHash}, ${role}, now(), now())
   `;
 
   const res = NextResponse.json({ ok: true, user: { email, name, role } });

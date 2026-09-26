@@ -19,10 +19,12 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const next = sanitizeAuthNext(searchParams.get("next"));
+  const privacyAccepted = searchParams.get("privacy") === "1";
   const state = newOAuthState();
   const oauthCookie = signSessionPayload({
     state,
     next,
+    privacyAccepted,
     exp: Date.now() + 10 * 60 * 1000,
   });
 

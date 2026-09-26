@@ -7,7 +7,7 @@ type AuthCtx = {
   user: SessionUser | null;
   ready: boolean;
   isGuest: boolean;
-  signup: (input: { name: string; email: string; password: string }) => Promise<void>;
+  signup: (input: { name: string; email: string; password: string; acceptPrivacy: boolean }) => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
   enterGuest: () => Promise<void>;
   logout: () => Promise<void>;
@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const json = await postJson("/api/auth/session", { guest: true });
         setUser(json.user);
       },
-      async signup({ name, email, password }) {
-        const json = await postJson("/api/auth/signup", { name, email, password });
+      async signup({ name, email, password, acceptPrivacy }) {
+        const json = await postJson("/api/auth/signup", { name, email, password, acceptPrivacy });
         setUser(json.user);
       },
       async login({ email, password }) {
