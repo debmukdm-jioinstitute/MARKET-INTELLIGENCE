@@ -56,13 +56,13 @@ function monthlyReturns(closes: number[]): number[] {
   return out;
 }
 
-export function computeBeta(ds: FinancialDataset, taxRate: number, deCurrent: number, deTarget: number): BetaResult {
+export function computeBeta(ds: FinancialDataset, taxRate: number, deCurrent: number, deTarget: number, useBlume = true): BetaResult {
   const stockReturns = monthlyReturns(ds.stockPrices.closes);
   const indexReturns = monthlyReturns(ds.indexPrices.closes);
   const { n, slope: rawBeta } = linreg(stockReturns, indexReturns);
   const adjBeta = 0.67 * rawBeta + 0.33;
   const fallback = n < 24 || rawBeta < -1 || rawBeta > 4;
-  const leveredBetaUsed = fallback ? 1 : adjBeta; // use_blume defaults to 1 (see assumptions)
+  const leveredBetaUsed = fallback ? 1 : useBlume ? adjBeta : rawBeta;
   const unleveredBeta = leveredBetaUsed / (1 + (1 - taxRate) * deCurrent);
   const selectedBeta = unleveredBeta * (1 + (1 - taxRate) * deTarget);
   return { nObs: n, rawBeta, adjBeta, fallback, leveredBetaUsed, deCurrent, unleveredBeta, selectedBeta };
@@ -72,7 +72,7 @@ export function computeBeta(ds: FinancialDataset, taxRate: number, deCurrent: nu
 // WACC
 // ---------------------------------------------------------------------------
 
-export function computeWacc(ds: FinancialDataset, A: Assumptions, betaSelectedFn: (deCurrent: number, deTarget: number) => number): { wacc: WaccResult; beta: BetaResult } {
+export function computeWacc(ds: FinancialDataset, A: Assumptions): { wacc: WaccResult; beta: BetaResult } {
   const L = ds.periods.length - 1;
   const last = ds.periods[L].fields;
   const price = A.values.price as number;
@@ -86,8 +86,7 @@ export function computeWacc(ds: FinancialDataset, A: Assumptions, betaSelectedFn
   const deTarget = iferror(() => dvTarget / evTarget);
 
   const taxRate = A.values.tax_rate as number;
-  const beta = computeBeta(ds, taxRate, deCurrent, deTarget);
-  void betaSelectedFn; // kept for API symmetry; beta computed directly above
+  const beta = computeBeta(ds, taxRate, deCurrent, deTarget, (A.values.use_blume as number) !== 0);
 
   const rf = A.values.risk_free as number;
   const erp = A.values.erp as number;
@@ -137,7 +136,7 @@ function buildRows(ds: FinancialDataset, A: Assumptions): { rows: Row[]; n: numb
       r.other_opex = r.gross_profit - r.sga - r.rnd - g("operating_income");
       r.total_opex = r.sga + r.rnd + r.other_opex;
       r.ebit = r.gross_profit - r.total_opex;
-      r.da = g("da");
+      r.da = g("da") || g("da_cf");
       r.ebitda = r.ebit + r.da;
       r.interest_expense = g("interest_expense");
       r.interest_income = g("interest_income");
@@ -173,7 +172,7 @@ function buildRows(ds: FinancialDataset, A: Assumptions): { rows: Row[]; n: numb
       r.net_debt = r.total_debt - r.cash_sti;
 
       r.cf_net_income = g("net_income");
-      r.cf_da = g("da");
+      r.cf_da = g("da_cf") || g("da");
       r.cf_sbc = g("sbc");
       r.change_wc = g("change_wc");
       r.other_operating = g("cfo") - r.cf_net_income - r.cf_da - r.cf_sbc - r.change_wc;
@@ -200,10 +199,10 @@ function buildRows(ds: FinancialDataset, A: Assumptions): { rows: Row[]; n: numb
       r.da = p0.ppe * vec("da_pct", j);
       r.ebitda = r.ebit + r.da;
       r.interest_expense = p0.total_debt * sca("cost_of_debt");
-      r.interest_income = p0.cash_sti * sca("cash_yield");
+      r.interest_income = Math.max(0, p0.cash_sti) * sca("cash_yield");
       r.other_nonop = vec("other_nonop", j);
       r.ebt = r.ebit - r.interest_expense + r.interest_income + r.other_nonop;
-      r.tax = r.ebt * sca("tax_rate");
+      r.tax = Math.max(0, r.ebt) * sca("tax_rate"); // no tax credit on losses (no NOL modelled)
       r.other_ni = 0;
       r.net_income = r.ebt - r.tax + r.other_ni;
       r.diluted_shares = p0.diluted_shares * (1 + sca("share_change"));
@@ -224,7 +223,7 @@ function buildRows(ds: FinancialDataset, A: Assumptions): { rows: Row[]; n: numb
       r.ppe = p0.ppe - r.capex - r.da; // capex is negative (outflow), so -capex adds to PP&E
 
       r.cf_sbc = r.revenue * vec("sbc_pct", j);
-      r.dividends = -r.net_income * sca("payout_ratio");
+      r.dividends = -Math.max(0, r.net_income) * sca("payout_ratio");
       r.buybacks = -vec("buybacks", j);
       r.other_financing = 0;
       r.cff = r.net_debt_issuance + r.dividends + r.buybacks + r.other_financing;
@@ -270,7 +269,7 @@ function buildRows(ds: FinancialDataset, A: Assumptions): { rows: Row[]; n: numb
 // DCF
 // ---------------------------------------------------------------------------
 
-function buildDcf(rows: Row[], n: number, years: number, labels: string[], A: Assumptions, wacc: number): DcfResult {
+function buildDcf(rows: Row[], n: number, years: number, labels: string[], A: Assumptions, wacc: number, baseFiscalYear: number): DcfResult {
   const L = n - 1;
   const projIdx = Array.from({ length: years }, (_, i) => n + i);
   const midYear = A.values.mid_year as number;
@@ -284,12 +283,12 @@ function buildDcf(rows: Row[], n: number, years: number, labels: string[], A: As
   for (const p of projIdx) {
     const r = rows[p];
     yearIndex += 1;
-    const nopat = r.ebit * (1 - taxRate);
+    const nopat = r.ebit - Math.max(0, r.ebit) * taxRate;
     const fcff = nopat + r.da + r.capex + r.change_wc + r.other_operating + r.cf_sbc * sbcAddback;
     fcffArr.push(fcff);
     discPeriods.push(yearIndex - 0.5 * midYear);
     projected.push({
-      fiscalYear: L + (p - L), label: labels[p],
+      fiscalYear: baseFiscalYear + (p - L), label: labels[p],
       revenue: r.revenue, grossProfit: r.gross_profit, ebit: r.ebit, ebitda: r.ebitda,
       nopat, da: r.da, capex: r.capex, changeWc: r.change_wc, sbc: r.cf_sbc, fcff,
       netIncome: r.net_income, eps: r.eps,
@@ -304,7 +303,8 @@ function buildDcf(rows: Row[], n: number, years: number, labels: string[], A: As
   const g = A.values.terminal_growth as number;
   const mult = A.values.exit_multiple as number;
 
-  const tvGordon = (fcffTerminal * (1 + g)) / (wacc - g);
+  // Gordon growth is undefined when WACC <= g; report 0 (flagged by the integrity checks) instead of a negative TV.
+  const tvGordon = wacc > g ? (fcffTerminal * (1 + g)) / (wacc - g) : 0;
   const tvExit = ebitdaTerminal * mult;
   const tvDiscPeriodGordon = discPeriods[discPeriods.length - 1];
   const tvDiscPeriodExit = yearIndex;
@@ -356,13 +356,14 @@ function buildSensitivity(fcffArr: number[], discPeriods: number[], fcffTerminal
   const tvDiscPeriodExit = discPeriods.length;
 
   function priceGordon(w: number, g: number): number | null {
-    if (w - g === 0) return null;
+    if (w - g <= 0) return null;
     let pv = 0;
     for (let i = 0; i < fcffArr.length; i++) pv += fcffArr[i] / (1 + w) ** discPeriods[i];
     const tv = (fcffTerminal * (1 + g)) / (w - g) / (1 + w) ** tvDiscPeriodGordon;
     return (pv + tv + lessDebt + plusCash) / shares;
   }
   function priceExit(w: number, m: number): number | null {
+    if (w <= -1) return null;
     let pv = 0;
     for (let i = 0; i < fcffArr.length; i++) pv += fcffArr[i] / (1 + w) ** discPeriods[i];
     const tv = (ebitdaTerminal * m) / (1 + w) ** tvDiscPeriodExit;
@@ -438,8 +439,8 @@ export function buildModel(dataset: FinancialDataset, assumptions: Assumptions):
   const { rows, n, years, labels } = buildRows(dataset, assumptions);
   const L = n - 1;
 
-  const { wacc, beta } = computeWacc(dataset, assumptions, () => 0);
-  const dcf = buildDcf(rows, n, years, labels, assumptions, wacc.wacc);
+  const { wacc, beta } = computeWacc(dataset, assumptions);
+  const dcf = buildDcf(rows, n, years, labels, assumptions, wacc.wacc, dataset.periods[L].fiscalYear);
 
   const projIdx = Array.from({ length: years }, (_, i) => n + i);
   const fcffArr = dcf.years.map((y) => y.fcff);
@@ -465,6 +466,11 @@ export function buildModel(dataset: FinancialDataset, assumptions: Assumptions):
     n >= 2 ? (new Date(dataset.periods[L].periodEnd).getTime() - new Date(dataset.periods[L - 1].periodEnd).getTime()) / 86_400_000 : 365;
   const netDebt = rows[L].total_debt - rows[L].cash_sti;
   const netDebtToEv = iferror(() => netDebt / dcf.enterpriseValue);
+
+  const proj = projIdx.map((i) => rows[i]);
+  const minCash = Math.min(...proj.map((r) => r.cash_sti));
+  const last = proj[proj.length - 1];
+  const capexToDa = iferror(() => -last.capex / last.da);
 
   const checks = [
     {
@@ -496,6 +502,18 @@ export function buildModel(dataset: FinancialDataset, assumptions: Assumptions):
       value: `${Math.round(latestPeriodDays)} days`,
       pass: latestPeriodDays >= 300 && latestPeriodDays <= 400,
       why: "A stub or interim period reported as the latest fiscal year would understate revenue and margins and distort every projection built from it.",
+    },
+    {
+      label: "Projected cash stays non-negative",
+      value: `${minCash.toFixed(0)} min cash & ST investments`,
+      pass: minCash >= 0,
+      why: "The model has no revolver: if buybacks, dividends or debt repayment exceed free cash flow, cash goes negative. Lower buybacks / payout or add debt issuance.",
+    },
+    {
+      label: "Terminal-year capex covers D&A",
+      value: `${capexToDa.toFixed(2)}x`,
+      pass: capexToDa >= 1 || (assumptions.values.terminal_growth as number) <= 0,
+      why: "A growing perpetuity needs reinvestment at least equal to depreciation; capex below D&A in the terminal year overstates terminal free cash flow.",
     },
     {
       label: "Net debt vs. DCF enterprise value",

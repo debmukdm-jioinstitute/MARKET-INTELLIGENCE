@@ -62,7 +62,9 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
   const col = (key: string) => P.map((p) => (Number(p.fields[key as keyof typeof p.fields]) || 0) / M);
 
   const rev = col("revenue"), cogs = col("cogs"), sga = col("sga"), rnd = col("rnd"), ebit = col("operating_income");
-  const da = col("da"), capex = col("capex"), sbc = col("sbc"), tax = col("tax"), ebt = col("pretax_income");
+  const daIs = col("da"), daCf = col("da_cf");
+  const da = daIs.map((x, i) => x || daCf[i]);
+  const capex = col("capex"), sbc = col("sbc"), tax = col("tax"), ebt = col("pretax_income");
   const ar = col("receivables"), inv = col("inventory"), ap = col("payables"), ca = col("current_assets"), cl = col("current_liabilities");
   const csti = col("cash_and_sti"), ta = col("total_assets"), tl = col("total_liabilities"), ppe = col("ppe"), gwi = col("goodwill_intangibles");
   const std = col("short_term_debt"), ltd = col("long_term_debt"), ie = col("interest_expense"), ii = col("interest_income");
@@ -84,7 +86,7 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
   V.price = ds.market.price;
   B.price = `${ds.source} closing price on ${ds.market.priceDate} (${ds.market.currency}).`;
   V.shares_outstanding = ds.market.sharesOutstanding / M;
-  B.shares_outstanding = `Shares outstanding at the latest balance-sheet date (FY${fy[L]}) reported by the source.`;
+  B.shares_outstanding = `Current shares outstanding reported by the source (used for market cap, WACC weights and the per-share bridge).`;
   const rf = ds.market.riskFreeRate ?? 0.04;
   V.risk_free = Math.round(rf * 1e5) / 1e5;
   B.risk_free = ds.market.riskFreeSource || "Default 4.0% (source did not provide a treasury yield).";
@@ -207,12 +209,12 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
     const cagr = L > 0 && rev[baseI] > 0 && rev[L] > 0 ? Math.pow(rev[L] / rev[baseI], 1 / Math.min(3, L)) - 1 : gObs[gObs.length - 1];
     start = clamp(cagr, -0.2, 0.4);
     const histTxt = gObs.map((g, i) => `FY${fy[i + 1]} ${pctStr(g)}`).join(", ");
-    B.rev_growth = `Starts at the ${Math.min(3, L)}-year revenue CAGR (${pctStr(cagr)}, clamped -20%..+40%) and fades linearly toward the terminal growth rate (${pctStr(tg)}). Historical growth: ${histTxt}.`;
+    B.rev_growth = `Starts at the ${Math.min(3, L)}-year revenue CAGR (${pctStr(cagr)}, clamped -20%..+40%) and fades linearly to the terminal growth rate (${pctStr(tg)}) by the final forecast year. Historical growth: ${histTxt}.`;
   } else {
     start = 0.05;
     B.rev_growth = "Single year of history: 5% growth fading to terminal growth.";
   }
-  V.rev_growth = Array.from({ length: years }, (_, j) => Math.round((start + (tg - start) * (j / years)) * 1e4) / 1e4);
+  V.rev_growth = Array.from({ length: years }, (_, j) => Math.round((start + (tg - start) * (years > 1 ? j / (years - 1) : 1)) * 1e4) / 1e4);
 
   function ratioAvg(num: number[], den: number[], label: string, key: string, lo: number, hi: number) {
     const obs = recent.filter((i) => den[i] > 0).map((i) => num[i] / den[i]);
@@ -286,5 +288,5 @@ export function applyOverrides(A: Assumptions, overrides: Record<string, number 
     overridden.push(key);
   }
 
-  return { years, values, basis: A.basis, overridden };
+  return { years, values, basis: A.basis, overridden: [...new Set(overridden)] };
 }
