@@ -3,7 +3,7 @@
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { Panel } from "@/components/layout/page-header";
 import type { TapeQuote } from "@/lib/macro/build-tape";
-import { COMMODITY_UNIVERSE, formatCommodityPrice } from "@/lib/macro/commodity-universe";
+import { COMMODITY_TAPE_IDS, COMMODITY_UNIVERSE, formatCommodityPrice } from "@/lib/macro/commodity-universe";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -17,6 +17,7 @@ function fmtPrice(id: string, price: number | null) {
 }
 
 export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
+  const tapeRows = rows.filter((r) => COMMODITY_TAPE_IDS.has(r.id));
   return (
     <Panel
       title="Commodities"
@@ -27,7 +28,7 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
       }
     >
       <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
-        {rows.map((r) => (
+        {tapeRows.map((r) => (
           <li key={r.id}>
             <Link
               href={r.href}

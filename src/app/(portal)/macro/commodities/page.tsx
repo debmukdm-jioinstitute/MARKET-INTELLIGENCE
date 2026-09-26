@@ -2,21 +2,45 @@
 
 import { Lines } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import {
+  CommodityFocusToggle,
+  type CommodityFocusFilter,
+} from "@/components/macro/commodity-focus-toggle";
 import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { useMacroTape } from "@/hooks/use-macro-tape";
+import type { TapeQuote } from "@/lib/macro/build-tape";
 import {
   COMMODITY_CATEGORY_LABEL,
+  COMMODITY_FOCUS_LABEL,
   COMMODITY_UNIVERSE,
+  commodityFocusCounts,
   formatCommodityPrice,
+  parseCommodityFocusParam,
   type CommodityCategory,
+  type CommodityDef,
 } from "@/lib/macro/commodity-universe";
-import type { TapeQuote } from "@/lib/macro/build-tape";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-const CATEGORY_ORDER: CommodityCategory[] = ["energy", "precious", "industrial", "agriculture"];
+const CATEGORY_ORDER: CommodityCategory[] = [
+  "energy",
+  "precious",
+  "industrial",
+  "agriculture",
+  "us_benchmarks",
+  "india_benchmarks",
+];
+
+/** Categories shown per focus toggle (logic map). */
+const CATEGORIES_BY_FOCUS: Record<CommodityFocusFilter, CommodityCategory[] | "all"> = {
+  all: "all",
+  global: ["energy", "precious", "industrial", "agriculture"],
+  us: ["us_benchmarks"],
+  india: ["india_benchmarks"],
+};
 
 function changePctClass(pct: number | null) {
   if (pct == null) return "text-muted-foreground";
@@ -24,108 +48,164 @@ function changePctClass(pct: number | null) {
 }
 
 function CommodityCard({
-  quote,
   def,
+  quote,
   hist,
 }: {
-  quote: TapeQuote;
-  def: (typeof COMMODITY_UNIVERSE)[number];
+  def: CommodityDef;
+  quote?: TapeQuote;
   hist?: { date: string; v: number }[];
 }) {
+  const price = quote?.price ?? null;
+  const changePct = quote?.changePct ?? null;
+  const sourceUrl = quote?.source.url ?? `https://finance.yahoo.com/quote/${encodeURIComponent(def.sym)}`;
+  const provider = quote?.source.provider ?? "Yahoo Finance";
+
   return (
-    <Panel id={def.id} title={def.label} subtitle={def.unit}>
+    <Panel id={def.id} title={def.label} subtitle={`${def.unit} · ${COMMODITY_FOCUS_LABEL[def.focus]}`}>
       <div className="flex flex-wrap items-baseline gap-3">
-        <p className="text-2xl font-semibold tabular-nums">{formatCommodityPrice(def, quote.price)}</p>
-        <span className={cn("text-sm font-medium tabular-nums", changePctClass(quote.changePct))}>
-          {quote.changePct != null
-            ? `${quote.changePct >= 0 ? "+" : ""}${(quote.changePct * 100).toFixed(2)}%`
-            : "—"}
+        <p className="text-2xl font-semibold tabular-nums">{formatCommodityPrice(def, price)}</p>
+        <span className={cn("text-sm font-medium tabular-nums", changePctClass(changePct))}>
+          {changePct != null ? `${changePct >= 0 ? "+" : ""}${(changePct * 100).toFixed(2)}%` : "—"}
         </span>
         <MetricExplainer copyKey={def.copyKey} />
-        <a href={quote.source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">
-          {quote.source.provider}
+        <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">
+          {provider}
         </a>
       </div>
       {hist?.length ? (
         <div className="mt-4 h-[180px]">
           <Lines data={hist} keys={[{ key: "v", color: "var(--primary)", name: def.label }]} />
         </div>
-      ) : (
+      ) : price != null ? (
         <p className="mt-3 text-xs text-muted-foreground">6-month chart loading…</p>
+      ) : (
+        <p className="mt-3 text-xs text-muted-foreground">Quote unavailable — retry after refresh.</p>
       )}
     </Panel>
   );
 }
 
 export default function CommoditiesMacroPage() {
-  const { data, loading, error } = useMacroTape();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { data, loading, error, reload } = useMacroTape();
   const [hist, setHist] = useState<Record<string, { date: string; v: number }[]>>({});
 
-  const defById = useMemo(() => new Map(COMMODITY_UNIVERSE.map((d) => [d.id, d])), []);
-  const quotesByCategory = useMemo(() => {
-    const map = new Map<CommodityCategory, TapeQuote[]>();
-    for (const cat of CATEGORY_ORDER) map.set(cat, []);
-    if (!data?.commodities) return map;
-    for (const q of data.commodities) {
-      const def = defById.get(q.id);
-      if (!def) continue;
-      map.get(def.category)?.push(q);
-    }
-    return map;
-  }, [data?.commodities, defById]);
+  const focusFromUrl = parseCommodityFocusParam(searchParams.get("focus"));
+  const [focus, setFocusState] = useState<CommodityFocusFilter>(focusFromUrl ?? "all");
 
   useEffect(() => {
-    if (!data?.commodities.length) return;
+    const parsed = parseCommodityFocusParam(searchParams.get("focus"));
+    if (parsed) setFocusState(parsed);
+  }, [searchParams]);
+
+  const setFocus = useCallback(
+    (next: CommodityFocusFilter) => {
+      setFocusState(next);
+      const params = new URLSearchParams(searchParams.toString());
+      if (next === "all") params.delete("focus");
+      else params.set("focus", next);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const focusCounts = useMemo(() => commodityFocusCounts(), []);
+
+  const quoteById = useMemo(() => new Map((data?.commodities ?? []).map((q) => [q.id, q])), [data?.commodities]);
+
+  const visibleDefs = useMemo(() => {
+    const byFocus = focus === "all" ? COMMODITY_UNIVERSE : COMMODITY_UNIVERSE.filter((d) => d.focus === focus);
+    const catFilter = CATEGORIES_BY_FOCUS[focus];
+    if (catFilter === "all") return byFocus;
+    return byFocus.filter((d) => catFilter.includes(d.category));
+  }, [focus]);
+
+  const defsByCategory = useMemo(() => {
+    const map = new Map<CommodityCategory, CommodityDef[]>();
+    for (const cat of CATEGORY_ORDER) map.set(cat, []);
+    for (const d of visibleDefs) {
+      map.get(d.category)?.push(d);
+    }
+    return map;
+  }, [visibleDefs]);
+
+  const categoriesToRender = useMemo(() => {
+    const allowed = CATEGORIES_BY_FOCUS[focus];
+    if (allowed === "all") return CATEGORY_ORDER;
+    return CATEGORY_ORDER.filter((c) => allowed.includes(c));
+  }, [focus]);
+
+  useEffect(() => {
+    if (!visibleDefs.length) return;
     let cancelled = false;
     (async () => {
       const results = await Promise.all(
-        data.commodities.map(async (c) => {
+        visibleDefs.map(async (def) => {
           try {
-            const res = await fetch(`/api/feeds/yahoo/history?symbol=${encodeURIComponent(c.symbol)}&range=6mo`);
-            if (!res.ok) return [c.id, [] as { date: string; v: number }[]] as const;
+            const res = await fetch(`/api/feeds/yahoo/history?symbol=${encodeURIComponent(def.sym)}&range=6mo`);
+            if (!res.ok) return [def.id, [] as { date: string; v: number }[]] as const;
             const json = (await res.json()) as { points?: { date: string; value: number }[] };
-            const points = (json.points ?? []).map((p) => ({ date: p.date, v: p.value }));
-            return [c.id, points] as const;
+            return [def.id, (json.points ?? []).map((p) => ({ date: p.date, v: p.value }))] as const;
           } catch {
-            return [c.id, [] as { date: string; v: number }[]] as const;
+            return [def.id, [] as { date: string; v: number }[]] as const;
           }
         }),
       );
       if (cancelled) return;
-      const out: Record<string, { date: string; v: number }[]> = {};
-      for (const [id, points] of results) out[id] = points;
-      setHist(out);
+      setHist((prev) => {
+        const out = { ...prev };
+        for (const [id, points] of results) out[id] = points;
+        return out;
+      });
     })();
     return () => {
       cancelled = true;
     };
-  }, [data]);
+  }, [visibleDefs]);
+
+  const { global: globalCount, us: usCount, india: indiaCount } = focusCounts;
 
   return (
     <div className="portal-page pb-10">
       <PageHeader
         kicker="Macro"
         title="Commodity dashboard"
-        subtitle={`${COMMODITY_UNIVERSE.length} global benchmarks — energy, metals, and ag softs from Yahoo Finance, with India transmission context on macro home.`}
+        subtitle={`${focusCounts.all} instruments — ${globalCount} global futures, ${usCount} US ETFs, ${indiaCount} India NSE proxies. Yahoo Finance; MCX live requires exchange licence.`}
       />
-      <Link href="/macro" className="text-sm text-primary hover:underline">
-        ← Macro home
-      </Link>
+
+      <CommodityFocusToggle value={focus} onChange={setFocus} counts={focusCounts} className="mt-4" />
+
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <Link href="/macro" className="text-sm text-primary hover:underline">
+          ← Macro home
+        </Link>
+        <button type="button" onClick={() => reload()} className="text-sm text-muted-foreground hover:text-primary">
+          Refresh tape
+        </button>
+        {focus !== "all" ? (
+          <span className="text-xs text-muted-foreground">
+            Showing {COMMODITY_FOCUS_LABEL[focus]} only · {visibleDefs.length} cards
+          </span>
+        ) : null}
+      </div>
+
       {loading && !data ? <MacroTapeSkeleton count={6} /> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      {CATEGORY_ORDER.map((cat) => {
-        const rows = quotesByCategory.get(cat) ?? [];
-        if (!rows.length && !data) return null;
+      {categoriesToRender.map((cat) => {
+        const defs = defsByCategory.get(cat) ?? [];
+        if (!defs.length) return null;
         return (
           <section key={cat} className="mt-8 space-y-4">
             <h2 className="font-heading text-lg font-bold text-foreground">{COMMODITY_CATEGORY_LABEL[cat]}</h2>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {rows.map((q) => {
-                const def = defById.get(q.id);
-                if (!def) return null;
-                return <CommodityCard key={q.id} quote={q} def={def} hist={hist[q.id]} />;
-              })}
+              {defs.map((def) => (
+                <CommodityCard key={def.id} def={def} quote={quoteById.get(def.id)} hist={hist[def.id]} />
+              ))}
             </div>
           </section>
         );
