@@ -17,6 +17,9 @@ type RunResult = { ok: boolean; status: number; ms: number; body: string };
 export default function AdminSystemPage() {
   const [data, setData] = useState<Data | null>(null);
   const [runs, setRuns] = useState<Record<string, RunResult | "running">>({});
+  const [welcomeEmail, setWelcomeEmail] = useState("debmuk.dm@gmail.com");
+  const [welcomeName, setWelcomeName] = useState("Debabrata Mukherjee");
+  const [welcomeRun, setWelcomeRun] = useState<RunResult | "running" | null>(null);
   const [error, setError] = useState("");
 
   function load() {
@@ -32,6 +35,19 @@ export default function AdminSystemPage() {
     const res = await fetch("/api/admin/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "run", path }) });
     const j = await res.json();
     setRuns((r) => ({ ...r, [path]: res.ok || j.status ? j : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" } }));
+  }
+
+  async function sendTestWelcome() {
+    setWelcomeRun("running");
+    const res = await fetch("/api/admin/system", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "testWelcome", email: welcomeEmail, name: welcomeName }),
+    });
+    const j = await res.json();
+    setWelcomeRun(
+      res.ok ? { ok: true, status: res.status, ms: 0, body: JSON.stringify(j) } : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" },
+    );
   }
 
   async function toggle(flag: string, enabled: boolean) {
@@ -57,6 +73,42 @@ export default function AdminSystemPage() {
           {missing.length > 0 ? `Missing required env: ${missing.map((m) => m.key).join(", ")}` : ""}
         </div>
       ) : null}
+
+      <AdminCard title="Welcome email test" subtitle="Sends onboarding welcome HTML + PDF via Resend (production keys).">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <label className="flex-1 text-sm">
+            <span className="text-gray-500">Email</span>
+            <input
+              value={welcomeEmail}
+              onChange={(e) => setWelcomeEmail(e.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="flex-1 text-sm">
+            <span className="text-gray-500">Name</span>
+            <input
+              value={welcomeName}
+              onChange={(e) => setWelcomeName(e.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => void sendTestWelcome()}
+            disabled={welcomeRun === "running"}
+            className="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {welcomeRun === "running" ? "Sending…" : "Send test welcome"}
+          </button>
+        </div>
+        {welcomeRun && welcomeRun !== "running" ? (
+          <pre className={`mt-3 max-h-32 overflow-auto rounded-md p-2 text-xs ${welcomeRun.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+            {welcomeRun.status}
+            {"\n"}
+            {welcomeRun.body}
+          </pre>
+        ) : null}
+      </AdminCard>
 
       <AdminCard title="Scheduled jobs" subtitle={data.cronSecretSet ? "Run any job now (uses CRON_SECRET)." : "CRON_SECRET is not set — jobs are locked in production."}>
         <div className="divide-y divide-gray-200">

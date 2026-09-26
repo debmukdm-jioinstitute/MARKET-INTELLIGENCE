@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/admin/guard";
+import { hasEmailConfigured } from "@/lib/admin/email";
 import { CRONS, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +55,18 @@ export async function POST(req: Request) {
     await ensureSchema();
     await sql()`INSERT INTO feature_flags (flag, enabled, updated_at) VALUES (${body.flag!}, ${body.enabled}, now()) ON CONFLICT (flag) DO UPDATE SET enabled = ${body.enabled}, updated_at = now()`;
     return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === "testWelcome") {
+    if (!hasEmailConfigured()) {
+      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 503 });
+    }
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });
+    const name = typeof body.name === "string" ? body.name.trim() : "Test User";
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+    await sendWelcomePackToUser({ email, name, role: "user", guest: false }, origin);
+    return NextResponse.json({ ok: true, sentTo: email });
   }
 
   if (body.action === "run") {
