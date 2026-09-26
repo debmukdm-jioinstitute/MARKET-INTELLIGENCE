@@ -64,6 +64,10 @@ export type MarketSnapshot = {
   riskFreeCurrency?: string;
   countryRiskPremium?: number;
   countrySource?: string;
+  /** Sovereign default spread already stripped out of the risk-free rate (re-added to the cost of debt). */
+  sovereignDefaultSpread?: number;
+  /** Long-run nominal growth for the currency (caps terminal growth). */
+  longRunGrowth?: number;
 };
 
 export type TtmFigures = { revenue: number | null; ebitda: number | null; ebit: number | null; net_income: number | null };

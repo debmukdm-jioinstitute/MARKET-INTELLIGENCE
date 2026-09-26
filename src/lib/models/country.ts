@@ -11,30 +11,37 @@
 
 export const MATURE_ERP = 0.046;
 
-export type CountryDefault = { currency: string; country: string; riskFree: number; crp: number };
+export type CountryDefault = { currency: string; country: string; riskFree: number; crp: number; g: number };
 
 /** Statement currency -> local 10Y risk-free (nominal, local currency) and country risk premium. */
 export const COUNTRY_DEFAULTS: Record<string, CountryDefault> = {
-  USD: { currency: "USD", country: "United States", riskFree: 0.042, crp: 0 },
-  INR: { currency: "INR", country: "India", riskFree: 0.066, crp: 0.029 },
-  EUR: { currency: "EUR", country: "Euro area", riskFree: 0.027, crp: 0 },
-  GBP: { currency: "GBP", country: "United Kingdom", riskFree: 0.045, crp: 0.0055 },
-  JPY: { currency: "JPY", country: "Japan", riskFree: 0.016, crp: 0.0055 },
-  CNY: { currency: "CNY", country: "China", riskFree: 0.019, crp: 0.0075 },
-  HKD: { currency: "HKD", country: "Hong Kong", riskFree: 0.033, crp: 0.0075 },
-  CAD: { currency: "CAD", country: "Canada", riskFree: 0.033, crp: 0 },
-  AUD: { currency: "AUD", country: "Australia", riskFree: 0.043, crp: 0 },
-  CHF: { currency: "CHF", country: "Switzerland", riskFree: 0.004, crp: 0 },
-  KRW: { currency: "KRW", country: "South Korea", riskFree: 0.03, crp: 0.0075 },
-  TWD: { currency: "TWD", country: "Taiwan", riskFree: 0.015, crp: 0.0075 },
-  SGD: { currency: "SGD", country: "Singapore", riskFree: 0.026, crp: 0 },
-  SEK: { currency: "SEK", country: "Sweden", riskFree: 0.025, crp: 0 },
-  DKK: { currency: "DKK", country: "Denmark", riskFree: 0.026, crp: 0 },
-  NOK: { currency: "NOK", country: "Norway", riskFree: 0.038, crp: 0 },
-  BRL: { currency: "BRL", country: "Brazil", riskFree: 0.13, crp: 0.035 },
-  MXN: { currency: "MXN", country: "Mexico", riskFree: 0.093, crp: 0.028 },
-  ZAR: { currency: "ZAR", country: "South Africa", riskFree: 0.095, crp: 0.04 },
+  USD: { currency: "USD", country: "United States", riskFree: 0.042, crp: 0, g: 0.025 },
+  INR: { currency: "INR", country: "India", riskFree: 0.066, crp: 0.029, g: 0.05 },
+  EUR: { currency: "EUR", country: "Euro area", riskFree: 0.027, crp: 0, g: 0.02 },
+  GBP: { currency: "GBP", country: "United Kingdom", riskFree: 0.045, crp: 0.0055, g: 0.0225 },
+  JPY: { currency: "JPY", country: "Japan", riskFree: 0.016, crp: 0.0055, g: 0.01 },
+  CNY: { currency: "CNY", country: "China", riskFree: 0.019, crp: 0.0075, g: 0.04 },
+  HKD: { currency: "HKD", country: "Hong Kong", riskFree: 0.033, crp: 0.0075, g: 0.03 },
+  CAD: { currency: "CAD", country: "Canada", riskFree: 0.033, crp: 0, g: 0.025 },
+  AUD: { currency: "AUD", country: "Australia", riskFree: 0.043, crp: 0, g: 0.03 },
+  CHF: { currency: "CHF", country: "Switzerland", riskFree: 0.004, crp: 0, g: 0.015 },
+  KRW: { currency: "KRW", country: "South Korea", riskFree: 0.03, crp: 0.0075, g: 0.03 },
+  TWD: { currency: "TWD", country: "Taiwan", riskFree: 0.015, crp: 0.0075, g: 0.025 },
+  SGD: { currency: "SGD", country: "Singapore", riskFree: 0.026, crp: 0, g: 0.03 },
+  SEK: { currency: "SEK", country: "Sweden", riskFree: 0.025, crp: 0, g: 0.02 },
+  DKK: { currency: "DKK", country: "Denmark", riskFree: 0.026, crp: 0, g: 0.02 },
+  NOK: { currency: "NOK", country: "Norway", riskFree: 0.038, crp: 0, g: 0.02 },
+  BRL: { currency: "BRL", country: "Brazil", riskFree: 0.13, crp: 0.035, g: 0.05 },
+  MXN: { currency: "MXN", country: "Mexico", riskFree: 0.093, crp: 0.028, g: 0.045 },
+  ZAR: { currency: "ZAR", country: "South Africa", riskFree: 0.095, crp: 0.04, g: 0.045 },
 };
+
+/**
+ * A government bond yield in local currency embeds the sovereign default spread, which the country risk
+ * premium ALSO captures. Damodaran's fix: risk-free = government yield - default spread, with the
+ * equity CRP = default spread x ~1.5 (equity / bond volatility). Using the raw yield plus a CRP double-counts.
+ */
+export const sovereignDefaultSpread = (crp: number) => crp / 1.5;
 
 export function countryDefaults(currency: string): CountryDefault | null {
   return COUNTRY_DEFAULTS[currency] ?? null;

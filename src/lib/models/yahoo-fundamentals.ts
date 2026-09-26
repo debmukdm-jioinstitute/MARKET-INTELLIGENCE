@@ -7,7 +7,7 @@ import {
   REVENUE_TIMESERIES_KEYS,
   TTM_TYPES,
 } from "@/lib/models/field-map";
-import { countryDefaults } from "@/lib/models/country";
+import { countryDefaults, sovereignDefaultSpread } from "@/lib/models/country";
 import { fetchPeerSet } from "@/lib/models/peers";
 import type { CompanyProfile, FieldKey, FinancialDataset, FiscalPeriod, MarketSnapshot, PriceSeries, TtmFigures } from "@/lib/models/types";
 
@@ -359,8 +359,9 @@ async function buildFinancialDataset(rawSymbol: string): Promise<FinancialDatase
   let rfCurrency = "USD";
   if (currency !== "USD") {
     if (country) {
-      rfRate = country.riskFree;
-      rfSource = `${country.country} 10-year government yield, ${currency} (static default — verify and override)`;
+      const spread = sovereignDefaultSpread(country.crp);
+      rfRate = country.riskFree - spread;
+      rfSource = `${country.country} 10-year government yield ${(country.riskFree * 100).toFixed(2)}% less sovereign default spread ${(spread * 100).toFixed(2)}% (default-free ${currency} rate; static default — verify and override)`;
       rfCurrency = currency;
     } else {
       notes.push(`WARNING: no local-currency risk-free rate for ${currency}; the US 10-year yield is used against ${currency} cash flows — override the risk-free rate.`);
@@ -377,6 +378,8 @@ async function buildFinancialDataset(rawSymbol: string): Promise<FinancialDatase
     riskFreeSource: rfSource,
     riskFreeCurrency: rfCurrency,
     countryRiskPremium: country?.crp ?? 0,
+    sovereignDefaultSpread: currency !== "USD" && country ? sovereignDefaultSpread(country.crp) : 0,
+    longRunGrowth: country?.g,
     countrySource: country ? `${country.country} country risk premium (static Damodaran-style default)` : "No country risk premium available",
     indexSymbol: idx.symbol,
     indexName: idx.name,

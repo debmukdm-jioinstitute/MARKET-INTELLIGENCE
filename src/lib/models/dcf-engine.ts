@@ -290,7 +290,8 @@ function projectYear(p0: Row, j: number, A: Assumptions, years: number, base: Ro
   r.other_ca = r.revenue * sca("other_ca_pct");
   r.payables = (r.cogs * sca("dpo")) / 365;
   r.other_cl = r.revenue * sca("other_cl_pct");
-  r.capex = -r.revenue * vec("capex_pct");
+  // capex funds D&A replacement plus PP&E growth in line with revenue (constant capital intensity); no asset sales modelled
+  r.capex = sca("capex_mode") === 1 ? -Math.max(0, r.da + (r.revenue * sca("ppe_to_revenue") - p0.ppe)) : -r.revenue * vec("capex_pct");
   r.net_debt_issuance = vec("net_debt_issuance");
   r.long_term_debt = p0.long_term_debt + r.net_debt_issuance;
   r.short_term_debt = p0.short_term_debt;

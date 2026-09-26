@@ -176,7 +176,7 @@ export default function FinancialModelPage() {
       {model ? (
         <>
           {model.checks.some((c) => !c.pass) ? (
-            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-sm text-rose-200/90 space-y-1.5">
+            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-3 text-sm text-muted-foreground space-y-1.5">
               <p className="font-semibold text-rose-600">
                 {model.checks.filter((c) => !c.pass).length} model integrity check
                 {model.checks.filter((c) => !c.pass).length > 1 ? "s" : ""} flagged — treat the valuation below with caution.
@@ -185,7 +185,7 @@ export default function FinancialModelPage() {
                 .filter((c) => !c.pass)
                 .map((c) => (
                   <p key={c.label}>
-                    <span className="font-medium text-rose-200">{c.label}</span> ({c.value}): {c.why}
+                    <span className="font-medium text-foreground">{c.label}</span> ({c.value}): {c.why}
                   </p>
                 ))}
             </div>

@@ -155,7 +155,11 @@ export function runTornado(ds: FinancialDataset, A: Assumptions): { basePrice: n
     { label: "EBIT margin", lowLabel: "-2pp", highLabel: "+2pp", low: () => price(ds, A, { margin: -0.02 }), high: () => price(ds, A, { margin: 0.02 }) },
     { label: "WACC", lowLabel: "+1pp", highLabel: "-1pp", low: () => price(ds, A, { wacc: 0.01 }), high: () => price(ds, A, { wacc: -0.01 }) },
     { label: "Terminal growth", lowLabel: "-0.5pp", highLabel: "+0.5pp", low: () => price(ds, A, { terminalGrowth: -0.005 }), high: () => price(ds, A, { terminalGrowth: 0.005 }) },
-    { label: "Capex intensity", lowLabel: "+10%", highLabel: "-10%", low: () => price(ds, scaleVec("capex_pct", 1.1)), high: () => price(ds, scaleVec("capex_pct", 0.9)) },
+    {
+      label: "Capex intensity", lowLabel: "+10%", highLabel: "-10%",
+      low: () => price(ds, (A.values.capex_mode as number) === 1 ? scaleSca("ppe_to_revenue", 1.1) : scaleVec("capex_pct", 1.1)),
+      high: () => price(ds, (A.values.capex_mode as number) === 1 ? scaleSca("ppe_to_revenue", 0.9) : scaleVec("capex_pct", 0.9)),
+    },
     { label: "Terminal tax rate", lowLabel: "+3pp", highLabel: "-3pp", low: () => price(ds, setSca("terminal_tax_rate", (A.values.terminal_tax_rate as number) + 0.03)), high: () => price(ds, setSca("terminal_tax_rate", (A.values.terminal_tax_rate as number) - 0.03)) },
     { label: "Terminal ROIC spread", lowLabel: "-1pp", highLabel: "+1pp", low: () => price(ds, setSca("terminal_roic_spread", (A.values.terminal_roic_spread as number) - 0.01)), high: () => price(ds, setSca("terminal_roic_spread", (A.values.terminal_roic_spread as number) + 0.01)) },
     { label: "Working-capital days", lowLabel: "+10%", highLabel: "-10%", low: () => price(ds, scaleSca("dso", 1.1)), high: () => price(ds, scaleSca("dso", 0.9)) },

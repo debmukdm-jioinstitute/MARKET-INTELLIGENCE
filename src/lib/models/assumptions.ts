@@ -33,6 +33,8 @@ export const ASSUMPTION_SPECS: AssumptionSpec[] = [
   { key: "nol_usage_cap", label: "NOL usage cap (% of taxable income per year)", section: "Operating", fmt: "pct", kind: "scalar", lo: 0, hi: 1 },
   { key: "target_ebit_margin", label: "Long-run EBIT margin (fade target)", section: "Operating", fmt: "pct", kind: "scalar", lo: -1, hi: 1 },
   { key: "margin_fade", label: "Fade EBIT margin linearly to the long-run target (1 = yes)", section: "Operating", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
+  { key: "capex_mode", label: "Capex driver (1 = tied to growth via capital intensity, 0 = % of revenue)", section: "Operating", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
+  { key: "ppe_to_revenue", label: "Net PP&E / revenue (capital intensity)", section: "Operating", fmt: "num", kind: "scalar", lo: 0, hi: 5 },
   { key: "driver_mode", label: "Revenue driver (0 = total growth, 1 = volume x price)", section: "Operating", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
   { key: "dso", label: "Days sales outstanding (receivables)", section: "Working capital", fmt: "days", kind: "scalar", lo: 0, hi: 400 },
   { key: "dio", label: "Days inventory outstanding", section: "Working capital", fmt: "days", kind: "scalar", lo: 0, hi: 400 },
@@ -58,7 +60,7 @@ export const ASSUMPTION_SPECS: AssumptionSpec[] = [
   { key: "rnd_pct", label: "R&D % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
   { key: "other_opex_pct", label: "Other operating expense % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: -1, hi: 2 },
   { key: "da_pct", label: "D&A % of opening net PP&E", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
-  { key: "capex_pct", label: "Capex % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
+  { key: "capex_pct", label: "Capex % of revenue (used when capex mode = 0)", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
   { key: "sbc_pct", label: "Stock-based compensation % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 1 },
   { key: "other_nonop", label: "Other non-operating income / (expense)", section: "Operating drivers", fmt: "num", kind: "vector" },
   { key: "net_debt_issuance", label: "Net debt issuance / (repayment)", section: "Capital allocation", fmt: "num", kind: "vector" },
@@ -146,6 +148,7 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3)
   const bookDebt = std[L] + ltd[L];
 
   // Pre-tax cost of debt: synthetic rating from interest coverage (Damodaran), cross-checked against book-implied.
+  const sovSpread = ds.market.sovereignDefaultSpread ?? 0;
   const avgDebt = Array.from({ length: n - 1 }, (_, i) => i + 1).map((i) => (std[i] + ltd[i] + std[i - 1] + ltd[i - 1]) / 2);
   const kdObs = Array.from({ length: n - 1 }, (_, i) => i + 1).filter((i) => avgDebt[i - 1] > 0 && ie[i] > 0).map((i) => ie[i] / avgDebt[i - 1]);
   const bookKd = kdObs.length ? clamp(avg(kdObs.slice(-3)), 0.01, 0.25) : null;
@@ -153,13 +156,13 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3)
   if (ie[L] > 0 && ebit[L] !== 0) {
     const cov = ebit[L] / ie[L];
     const { rating, spread } = syntheticRating(cov);
-    kd = rf + spread;
-    B.cost_of_debt = `Synthetic rating ${rating} from FY${fy[L]} interest coverage ${cov.toFixed(1)}x: risk-free ${pctStr(rf)} + spread ${pctStr(spread)} = ${pctStr(kd)}${bookKd != null ? ` (book-implied interest / avg debt: ${pctStr(bookKd)}, not used — historical coupons lag today's market rate)` : ""}.`;
+    kd = rf + sovSpread + spread;
+    B.cost_of_debt = `Synthetic rating ${rating} from FY${fy[L]} interest coverage ${cov.toFixed(1)}x: default-free rate ${pctStr(rf)} + sovereign default spread ${pctStr(sovSpread)} + rating spread ${pctStr(spread)} = ${pctStr(kd)}${bookKd != null ? ` (book-implied interest / avg debt: ${pctStr(bookKd)}, not used — historical coupons lag today's market rate)` : ""}.`;
   } else if (bookKd != null) {
     kd = bookKd;
     B.cost_of_debt = `No usable coverage ratio; interest expense / average total debt, recent average ${pctStr(bookKd)} (clamped 1%-25%).`;
   } else {
-    kd = rf + 0.015;
+    kd = rf + sovSpread + 0.015;
     B.cost_of_debt = "No interest expense / debt history: risk-free rate + 150bp credit spread.";
   }
   V.cost_of_debt = Math.round(kd * 1e4) / 1e4;
@@ -251,9 +254,10 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3)
   B.other_nonop = "Non-recurring / other non-operating items assumed nil in the forecast.";
 
   // ---- terminal ----
-  const tg = Math.round(Math.min(0.025, Math.max(rf, 0)) * 1e4) / 1e4;
+  const lrg = ds.market.longRunGrowth ?? 0.025;
+  const tg = Math.round(Math.min(lrg, Math.max(rf, 0)) * 1e4) / 1e4;
   V.terminal_growth = tg;
-  B.terminal_growth = "Long-run nominal growth of 2.5%, capped at the risk-free rate (a firm cannot outgrow the economy forever).";
+  B.terminal_growth = `Long-run nominal growth for ${ds.profile.currency} of ${pctStr(lrg)} (real growth + inflation in the same currency as the discount rate), capped at the default-free risk-free rate (${pctStr(rf)}) — a firm cannot outgrow the economy forever.`;
   const evNow = mcap + bookDebt - csti[L];
   const ltmMult = ebitda[L] > 0 ? evNow / ebitda[L] : 12;
   V.exit_multiple = Math.round(clamp(ltmMult, 4, 30) * 10) / 10;
@@ -302,6 +306,12 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3)
   B.da_pct = daObs.length
     ? `Average D&A / opening net PP&E over recent years (held flat, so D&A grows with the asset base).`
     : "D&A / net PP&E of the latest year.";
+  // capex tied to growth: capex = D&A + change in required net PP&E, holding PP&E / revenue at its latest level
+  V.capex_mode = 1;
+  B.capex_mode = "1 = capex is derived from growth (capex = D&A + the PP&E needed to support the extra revenue at a constant capital intensity), so investment and growth cannot be assumed independently. 0 = capex is the '% of revenue' vector below.";
+  const ppeRev = rev[L] > 0 ? clamp(ppe[L] / rev[L], 0, 5) : 0;
+  V.ppe_to_revenue = Math.round(ppeRev * 1e4) / 1e4;
+  B.ppe_to_revenue = `FY${fy[L]}: net PP&E ${ppe[L].toFixed(0)} / revenue ${rev[L].toFixed(0)} = ${ppeRev.toFixed(2)}x, held constant (a capital-light business has a low ratio; each extra rupee/dollar of revenue needs this much extra PP&E).`;
   const cxObs = recent.filter((i) => rev[i] > 0).map((i) => -capex[i] / rev[i]);
   const cxAvg = cxObs.length ? clamp(avg(cxObs), 0, 2) : 0;
   const cxLast = cxObs.length ? clamp(cxObs[cxObs.length - 1], 0, 2) : 0;

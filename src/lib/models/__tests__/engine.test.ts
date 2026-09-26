@@ -214,3 +214,43 @@ describe("overrides", () => {
     expect(a.overridden.filter((k) => k === "tax_rate")).toHaveLength(1);
   });
 });
+
+import { COUNTRY_DEFAULTS, sovereignDefaultSpread } from "@/lib/models/country";
+
+describe("currency consistency (India-style)", () => {
+  it("strips the sovereign default spread out of the local risk-free rate (no double count with the CRP)", () => {
+    const c = COUNTRY_DEFAULTS.INR;
+    expect(sovereignDefaultSpread(c.crp)).toBeCloseTo(c.crp / 1.5, 12);
+    expect(c.riskFree - sovereignDefaultSpread(c.crp)).toBeLessThan(c.riskFree);
+  });
+  it("cost of debt re-adds the sovereign spread; terminal growth follows the currency's long-run growth capped at rf", () => {
+    const mk = (sov: number, lrg: number, rf: number) =>
+      deriveAssumptions(dataset({ market: { ...ds.market, riskFreeRate: rf, sovereignDefaultSpread: sov, longRunGrowth: lrg } }), 5);
+    const base = mk(0, 0.025, 0.04);
+    const inr = mk(0.02, 0.05, 0.0467);
+    expect((inr.values.cost_of_debt as number) - (base.values.cost_of_debt as number)).toBeCloseTo(0.02 + 0.0067, 3);
+    expect(base.values.terminal_growth).toBe(0.025);
+    expect(inr.values.terminal_growth).toBeCloseTo(0.0467, 4); // 5% long-run growth capped at the 4.67% risk-free rate
+  });
+});
+
+describe("capex tied to growth", () => {
+  it("higher growth needs more capex; zero growth needs only D&A replacement", () => {
+    const flat = applyOverrides(A(), { rev_growth: 0 });
+    const fast = applyOverrides(A(), { rev_growth: 0.15 });
+    const f = buildRows(ds, flat), g = buildRows(ds, fast), n = f.n;
+    expect(-g.rows[n].capex).toBeGreaterThan(-f.rows[n].capex);
+    // flat revenue at the base capital intensity: capex ~ D&A (PP&E stays ~ constant)
+    expect(-f.rows[n].capex).toBeGreaterThanOrEqual(f.rows[n].da - 1e-6);
+  });
+  it("PP&E / revenue is held at the base level under capex mode 1", () => {
+    const { rows, n } = buildRows(ds, A());
+    const ratio = A().values.ppe_to_revenue as number;
+    for (let p = n; p < rows.length; p++) expect(rows[p].ppe / rows[p].revenue).toBeGreaterThanOrEqual(ratio - 1e-6);
+  });
+  it("capex mode 0 restores the %-of-revenue vector", () => {
+    const a = applyOverrides(A(), { capex_mode: 0, capex_pct: 0.05 });
+    const { rows, n } = buildRows(ds, a);
+    expect(-rows[n].capex / rows[n].revenue).toBeCloseTo(0.05, 9);
+  });
+});
