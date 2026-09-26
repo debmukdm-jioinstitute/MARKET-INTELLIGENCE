@@ -55,7 +55,7 @@ export function buildOnboardingFormModel(
       name: user.name,
       email: user.email,
       customerId: buildCustomerId(user.email, dbUser?.created_at),
-      role: user.role,
+      role: user.role ?? "user",
       accountOpenedAt: created,
       privacyAcceptedAt: privacy,
     },

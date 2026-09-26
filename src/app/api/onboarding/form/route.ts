@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     const rows = await db`
       SELECT created_at, privacy_accepted_at FROM users WHERE email = ${user.email}
     `;
-    dbUser = (rows[0] as typeof dbUser) ?? null;
+    dbUser = (rows[0] as { created_at?: string; privacy_accepted_at?: string | null } | undefined) ?? null;
 
     const flagRows = (await db`SELECT flag, enabled FROM feature_flags`) as { flag: string; enabled: boolean }[];
     for (const f of FLAGS) {
