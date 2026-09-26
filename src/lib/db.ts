@@ -315,6 +315,8 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      // Set when the welcome pack (email + PDF) is delivered; drives the one-off backfill for older members.
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS welcome_sent_at timestamptz`;
       await db`
         CREATE TABLE IF NOT EXISTS bug_reports (
           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

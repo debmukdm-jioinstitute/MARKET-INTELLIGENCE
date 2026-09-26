@@ -21,6 +21,10 @@ export default function AdminSystemPage() {
   const [welcomeName, setWelcomeName] = useState("Debabrata Mukherjee");
   const [welcomeRun, setWelcomeRun] = useState<RunResult | "running" | null>(null);
   const [error, setError] = useState("");
+  type Preview = { ready: boolean; blocker?: string; eligible: number; skippedOptedOut: number; alreadySent: number; joinedAfterLaunch: number; sample: string[] };
+  const [bf, setBf] = useState<Preview | null>(null);
+  const [bfLog, setBfLog] = useState<string[]>([]);
+  const [bfBusy, setBfBusy] = useState(false);
 
   function load() {
     fetch("/api/admin/system")
@@ -48,6 +52,40 @@ export default function AdminSystemPage() {
     setWelcomeRun(
       res.ok ? { ok: true, status: res.status, ms: 0, body: JSON.stringify(j) } : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" },
     );
+  }
+
+  async function previewBackfill() {
+    setBfBusy(true);
+    setBfLog([]);
+    const res = await fetch("/api/admin/welcome-backfill");
+    const j = await res.json();
+    setBf(res.ok ? j : null);
+    if (!res.ok) setBfLog([j.error ?? "Preview failed"]);
+    setBfBusy(false);
+  }
+
+  async function sendBackfill() {
+    if (!bf || !window.confirm(`Send the welcome email + PDF to ${bf.eligible} member(s) who never received it? This emails real people.`)) return;
+    setBfBusy(true);
+    const log: string[] = [];
+    for (let i = 0; i < 200; i++) {
+      const res = await fetch("/api/admin/welcome-backfill", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: true, limit: 20 }) });
+      const j = await res.json();
+      if (!res.ok) {
+        log.push(j.error ?? `Failed (${res.status})`);
+        break;
+      }
+      log.push(`Sent ${j.sent}, failed ${j.failed}, remaining ${j.remaining}${j.errors?.length ? ` · ${j.errors.join("; ")}` : ""}`);
+      setBfLog([...log]);
+      if (j.stopped) {
+        log.push(j.stopped);
+        break;
+      }
+      if (!j.remaining || (j.sent === 0 && j.failed === 0)) break;
+    }
+    setBfLog([...log]);
+    setBfBusy(false);
+    await previewBackfill();
   }
 
   async function toggle(flag: string, enabled: boolean) {
@@ -108,6 +146,27 @@ export default function AdminSystemPage() {
             {welcomeRun.body}
           </pre>
         ) : null}
+      </AdminCard>
+
+      <AdminCard title="Welcome email backfill" subtitle="One-off: send the founder's welcome email + onboarding PDF to members who joined before it existed. Skips anyone who unsubscribed, and never sends twice.">
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => void previewBackfill()} disabled={bfBusy} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50">
+            {bfBusy ? "Working…" : "Preview recipients (sends nothing)"}
+          </button>
+          {bf && bf.ready && bf.eligible > 0 ? (
+            <button type="button" onClick={() => void sendBackfill()} disabled={bfBusy} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              Send to {bf.eligible} member{bf.eligible === 1 ? "" : "s"}
+            </button>
+          ) : null}
+        </div>
+        {bf ? (
+          <div className="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-700">
+            {bf.blocker ? <p className="mb-1 text-red-700">Blocked: {bf.blocker}</p> : null}
+            <p>Will receive: <b>{bf.eligible}</b> · Unsubscribed (skipped): {bf.skippedOptedOut} · Already sent: {bf.alreadySent} · Joined after launch (got it at sign-up): {bf.joinedAfterLaunch}</p>
+            {bf.sample.length ? <p className="mt-1 text-gray-500">First few: {bf.sample.join(", ")}</p> : null}
+          </div>
+        ) : null}
+        {bfLog.length ? <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-gray-50 p-2 text-xs text-gray-800">{bfLog.join("\n")}</pre> : null}
       </AdminCard>
 
       <AdminCard title="Scheduled jobs" subtitle={data.cronSecretSet ? "Run any job now (uses CRON_SECRET)." : "CRON_SECRET is not set — jobs are locked in production."}>
