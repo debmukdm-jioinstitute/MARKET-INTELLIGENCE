@@ -15,11 +15,12 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, realpathSync, renameSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "2.0.1";
+const VERSION = "2.1.0";
 const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
 function ENDPOINT_BASE() {
   return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
@@ -132,6 +133,76 @@ function writeState(patch) {
   } catch {
     /* ignore */
   }
+}
+
+/* ---------- text size (macOS Terminal.app only) ---------- */
+
+const DEFAULT_FONT = 16;
+let fontRestore = null;
+
+/** Run AppleScript against the Terminal tab this process is running in. Returns stdout or null. */
+function terminalScript(body) {
+  if (process.platform !== "darwin" || process.env.TERM_PROGRAM !== "Apple_Terminal" || !(process.stdout.isTTY || process.stderr.isTTY)) return null;
+  try {
+    const tty = "/dev/" + execFileSync("ps", ["-o", "tty=", "-p", String(process.pid)], { encoding: "utf8", timeout: 3000 }).trim();
+    const script = `tell application "Terminal"\nrepeat with w in windows\nrepeat with t in tabs of w\nif tty of t is "${tty}" then\n${body}\nend if\nend repeat\nend repeat\nend tell`;
+    return execFileSync("osascript", ["-e", script], { encoding: "utf8", timeout: 5000, stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return null;
+  }
+}
+const getFontSize = () => {
+  const n = Number(terminalScript("return font size of t"));
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+const setFontSize = (n) => terminalScript(`set font size of t to ${n}`) !== null;
+
+/** Make text readable by default: enlarge this tab while mi runs, put it back on exit. Saved size 0 = off. */
+function applyFontSize() {
+  const want = readState().fontSize ?? DEFAULT_FONT;
+  if (!want) return "";
+  if (process.platform === "darwin" && process.env.TERM_PROGRAM === "Apple_Terminal") {
+    const cur = getFontSize();
+    if (cur === null || cur >= want) return "";
+    if (setFontSize(want)) {
+      fontRestore = cur;
+      const restore = () => {
+        if (fontRestore !== null) {
+          setFontSize(fontRestore);
+          fontRestore = null;
+        }
+      };
+      process.on("exit", restore);
+      if (!readState().fontNoticeShown) {
+        writeState({ fontNoticeShown: true });
+        return dim(`  Text size raised to ${want} for this window while mi runs. Change: mi font 14   Turn off: mi font off`);
+      }
+    }
+  } else if (!readState().fontNoticeShown) {
+    writeState({ fontNoticeShown: true });
+    return dim("  Tip: text too small? Zoom your terminal with Cmd + (macOS) or Ctrl + Shift + + (Linux/Windows Terminal).");
+  }
+  return "";
+}
+
+function fontCommand(arg) {
+  if (arg === undefined) {
+    const cur = getFontSize();
+    return console.log(`  Auto text size: ${readState().fontSize === 0 ? "off" : readState().fontSize ?? DEFAULT_FONT}${cur ? `   (this tab is at ${cur})` : ""}\n  Usage: mi font 18   |   mi font off   |   mi font reset`);
+  }
+  if (arg === "off" || arg === "0") {
+    writeState({ fontSize: 0 });
+    return console.log(green("  Auto text size turned off."));
+  }
+  if (arg === "reset") {
+    writeState({ fontSize: DEFAULT_FONT });
+    return console.log(green(`  Auto text size reset to ${DEFAULT_FONT}.`));
+  }
+  const n = Number(arg);
+  if (!Number.isFinite(n) || n < 9 || n > 40) throw new Error("Use a size between 9 and 40, e.g. mi font 18");
+  writeState({ fontSize: n });
+  const ok = process.env.TERM_PROGRAM === "Apple_Terminal" && setFontSize(n);
+  console.log(green(`  Saved. mi will use text size ${n}.`) + (ok ? "" : dim(" (Applies in macOS Terminal.app; elsewhere use your terminal's zoom.)")));
 }
 
 /* ---------- self-update ---------- */
@@ -520,6 +591,7 @@ function printMenu() {
   for (const [k, label] of FAVOURITES) console.log(`    ${k === "S" ? red(bold(k)) : bold(k)} > ${k === "S" ? red(label) : label}`);
   console.log(`\n    ${bold("M")} > More: browse all ${TOOLS.length} features by category`);
   console.log(`    ${bold("F")} > Find a feature (search)`);
+  console.log(`    ${bold("A")} > Text size (make the text bigger or smaller)`);
   console.log(`    ${bold("E")} > Edit / replace API key`);
   console.log(`    ${bold("U")} > Check for software update`);
   console.log(`\n    ${bold("Z")} > Exit (Ctrl + C)\n`);
@@ -569,10 +641,12 @@ async function interactive() {
   }
 
   const [, notice] = await Promise.all([loadTools(), updateNotice()]);
+  const fontNote = applyFontSize();
   console.clear?.();
   console.log(boldGreen(BANNER));
   console.log(await statusBar());
   if (notice) console.log(notice);
+  if (fontNote) console.log(fontNote);
   for (;;) {
     printMenu();
     const choice = (await ask(`Enter your choice > (default is ${bold("S")} > Market snapshot) `)).trim().toUpperCase() || "S";
@@ -585,7 +659,10 @@ async function interactive() {
         await runTool(tool ?? { name: fav[2], title: fav[1] }, args);
       } else if (choice === "M") await browse(ask);
       else if (choice === "F") await browse(ask, (await ask("  Search text: ")).trim());
-      else if (choice === "E") {
+      else if (choice === "A") {
+        const v = (await ask(`  Text size (9-40, current auto: ${readState().fontSize ?? DEFAULT_FONT}, "off" to disable): `)).trim();
+        if (v) fontCommand(v);
+      } else if (choice === "E") {
         const k = (await ask("New API key: ")).trim();
         if (k) {
           API_KEY = k;
@@ -617,6 +694,7 @@ const HELP = `mi ${VERSION}: Market Intelligence terminal
   shortcuts: snapshot stress brief rbi yields health backtest betas risk scenario
   flags: --json raw JSON   --all show every row
   mi update                   download the latest mi
+  mi font [N|off|reset]       text size while mi runs (macOS Terminal.app), default 16
   mi --version
 
 Key: MI_API_KEY env var or ~/.mi/config.json. Endpoint override: MI_ENDPOINT.`;
@@ -629,6 +707,14 @@ async function main() {
   if (FLAGS.has("--version") || FLAGS.has("-v")) return console.log(VERSION);
   if (FLAGS.has("--help") || cmd === "help") return console.log(HELP);
   if (!cmd) return interactive();
+  if (cmd === "font") {
+    try {
+      return fontCommand(rest[0]);
+    } catch (e) {
+      console.error(red(`Error: ${e.message}`));
+      process.exit(1);
+    }
+  }
   if (cmd === "update") {
     try {
       return await updateSelf();

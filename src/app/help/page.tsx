@@ -296,6 +296,7 @@ mi`}</Code>
                 ["H", "Data health: how fresh each feed is"],
                 ["M", "More: browse every feature by category (Markets, Macro, Research, Derivatives, Scanners, System), pick a number, answer the prompts"],
                 ["F", "Find a feature by typing part of its name, for example \"option\" or \"ipo\""],
+                ["A", "Text size: make the text bigger or smaller (see below)"],
                 ["E", "Edit or replace your API key"],
                 ["U", "Check for a newer version of mi and update"],
                 ["Z", "Exit (or press Ctrl + C)"],
@@ -329,6 +330,22 @@ mi get_price_history symbol=TCS range=3mo --json > tcs.json`}</Code>
           <b>mi risk TCS</b>. Flags: <b>--all</b> shows every table row (default is the first 30), <b>--json</b> prints raw
           JSON. Scenario shocks are <b>brent</b>, <b>usdinr</b> and <b>spx</b> in %, and <b>us10y_bp</b> in basis points.
           Set <b>NO_COLOR=1</b> to turn colours off.
+        </p>
+
+        <h3 className="mt-6 font-semibold">Text too small?</h3>
+        <p className="mt-2 text-muted-foreground">
+          A program can&apos;t change your terminal&apos;s font on its own, so there are two ways. In <b>macOS
+          Terminal.app</b>, <b>mi</b> raises the text to size 16 for its own window while it runs and puts it back when you
+          exit. Change or disable that any time:
+        </p>
+        <Code>{`mi font 18        # use size 18 (9 to 40)
+mi font off       # never change my text size
+mi font reset     # back to the default of 16
+mi font           # show the current setting`}</Code>
+        <p className="text-muted-foreground">
+          The <b>A</b> key in the menu does the same. In every other terminal (iTerm2, VS Code, Windows Terminal, Linux),
+          zoom yourself: <b>Cmd and +</b> on macOS, or <b>Ctrl, Shift and +</b> elsewhere. The banner needs a window about
+          70 columns wide, so widen the window if it wraps.
         </p>
 
         <h3 className="mt-6 font-semibold">Keeping mi up to date</h3>
