@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /** POST { "email": "...", "name": "..." } — admin-only test welcome + PDF. */
 export async function POST(req: Request) {
   const guard = await requireAdmin();
-  if (guard) return guard;
+  if ("error" in guard) return guard.error;
 
   let body: { email?: string; name?: string };
   try {
