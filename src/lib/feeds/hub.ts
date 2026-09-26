@@ -12,6 +12,7 @@ import { fetchSecFilings } from "@/lib/feeds/sources/sec";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { fetchUpstoxNews, fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
+import { data360MirrorHealth } from "@/lib/data360/read-macro";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
 import { fetchMassiveUsQuotes, hasMassiveApiKey } from "@/lib/feeds/sources/massive";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
@@ -66,7 +67,8 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     symbol: i.symbol,
   }));
 
-  const [nse, bse, rbi, sec, upstoxNews, upstoxQuotes, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote] =
+  const d360Start = Date.now();
+  const [nse, bse, rbi, sec, upstoxNews, upstoxQuotes, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote, d360] =
     await Promise.all([
       timed(() => fetchNseNews()),
       timed(() => fetchBseNews()),
@@ -84,6 +86,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       timed(() => fetchOecdMacro()),
       timed(() => fetchMospiMacro()),
       timed(() => fetchBiquoteIndices()),
+      timed(() => data360MirrorHealth()),
     ]);
 
   const yahooQuotes = yahoo.value ?? [];
@@ -141,7 +144,17 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       fred,
       (v) => Array.isArray(v) && (v.length > 0 || !process.env.FRED_API_KEY),
     ),
-    health("worldbank", "World Bank", wb, (v) => Array.isArray(v) && v.length > 0),
+    health("worldbank", "World Bank (live API)", wb, (v) => Array.isArray(v) && v.length > 0),
+    {
+      id: "data360",
+      label: "World Bank Data360 mirror",
+      ok: Boolean(d360.value?.ok) && !d360.error,
+      latencyMs: d360.latencyMs || Date.now() - d360Start,
+      message: d360.value
+        ? `${d360.value.observations.toLocaleString()} obs · ${d360.value.pending} cursors pending`
+        : d360.error,
+      updatedAt: new Date().toISOString(),
+    },
     health("imf", "IMF Data", imf, (v) => Array.isArray(v) && v.length > 0),
     health("oecd", "OECD Data", oecd, (v) => Array.isArray(v) && v.length > 0),
     health("mospi", "MOSPI / data.gov.in", mospi, (v) => Array.isArray(v) && v.some((m) => m.points.length)),

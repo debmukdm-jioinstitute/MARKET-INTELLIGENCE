@@ -14,6 +14,7 @@ const SOURCE_LABEL: Record<NewsItem["source"], string> = {
   alphavantage: "Alpha Vantage",
   fred: "FRED",
   worldbank: "World Bank",
+  data360: "Data360",
   imf: "IMF",
   oecd: "OECD",
   mospi: "MOSPI",

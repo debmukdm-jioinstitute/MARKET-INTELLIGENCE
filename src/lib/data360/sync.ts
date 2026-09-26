@@ -1,5 +1,10 @@
 import { fetchDataPage, listDatabaseIds, listIndicators } from "./client.ts";
 import { data360RefAreas } from "./config.ts";
+import {
+  DATA360_MACRO_DATABASE,
+  DATA360_MACRO_WB_CODES,
+  v2CodeToData360Indicator,
+} from "./macro-catalog.ts";
 import { ensureData360Schema, logSync, obsKey } from "./store.ts";
 import { sql } from "../db.ts";
 
@@ -61,6 +66,9 @@ export async function syncIndicatorCatalog(databaseId: string) {
       SELECT ${databaseId}, unnest(${ids}::text[]), true
       ON CONFLICT (database_id, indicator_id) DO NOTHING
     `;
+    if (databaseId === DATA360_MACRO_DATABASE) {
+      await applyMacroIndicatorTracking(databaseId);
+    }
     await ensureRefCursors(databaseId);
     await db`
       UPDATE data360_datasets SET indicators_cataloged = ${ids.length}, last_catalog_at = now(), last_error = NULL
@@ -95,6 +103,22 @@ export async function syncAllIndicatorCatalogs() {
   return results;
 }
 
+/** Sync cron only pulls macro-relevant WDI codes (IND + USA), not full global catalog. */
+async function applyMacroIndicatorTracking(databaseId: string) {
+  const trackedIds = DATA360_MACRO_WB_CODES.map((c) => v2CodeToData360Indicator(c));
+  const db = sql();
+  await db`UPDATE data360_indicators SET tracked = false, complete = true WHERE database_id = ${databaseId}`;
+  await db`
+    UPDATE data360_indicators SET tracked = true, complete = false
+    WHERE database_id = ${databaseId} AND indicator_id = ANY(${trackedIds}::text[])
+  `;
+  await db`
+    DELETE FROM data360_ref_cursors
+    WHERE database_id = ${databaseId}
+      AND indicator_id NOT IN (SELECT indicator_id FROM data360_indicators WHERE database_id = ${databaseId} AND tracked)
+  `;
+}
+
 async function ensureRefCursors(databaseId: string) {
   const refs = data360RefAreas();
   const db = sql();
@@ -103,7 +127,7 @@ async function ensureRefCursors(databaseId: string) {
       INSERT INTO data360_ref_cursors (database_id, indicator_id, ref_area)
       SELECT database_id, indicator_id, ${ref_area}
       FROM data360_indicators
-      WHERE database_id = ${databaseId} AND tracked
+      WHERE database_id = ${databaseId} AND tracked = true
       ON CONFLICT (database_id, indicator_id, ref_area) DO NOTHING
     `;
   }

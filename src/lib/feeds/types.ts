@@ -8,6 +8,7 @@ export type FeedSourceId =
   | "alphavantage"
   | "fred"
   | "worldbank"
+  | "data360"
   | "imf"
   | "oecd"
   | "mospi"

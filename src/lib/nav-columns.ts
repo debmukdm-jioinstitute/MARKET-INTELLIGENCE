@@ -167,6 +167,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Sources & Status", href: "/data", desc: "Feed health, sources, and data freshness." },
           { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
           { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },
+          { label: "Data360 Explorer", href: "/data/data360", desc: "World Bank Data360 mirror — India and US macro series." },
           { label: "Data Export", href: "/data/export", desc: "Download every dataset on the site as one structured Excel workbook.", badge: "NEW" },
         ],
       },

@@ -27,6 +27,10 @@ curl -H "Authorization: Bearer $CRON_SECRET" "https://getmarketintelligence.in/a
 curl -H "Authorization: Bearer $CRON_SECRET" "https://getmarketintelligence.in/api/cron/data360"
 ```
 
+## Portal UI
+
+- **`/data/data360`** — browse datasets, filter indicators, view stored IND/USA time series (nav: Data & Tools → Data360 Explorer).
+
 ## Read API
 
 - `GET /api/data360` — sync status + recent log

@@ -34,15 +34,75 @@ export async function GET(req: Request) {
     });
   }
 
-  if (!database && !indicator) {
-    if (!hasDatabase()) {
-      return NextResponse.json({
-        ok: false,
-        error: "DATABASE_URL not configured",
-        docs: "https://data360.worldbank.org/en/api",
-      });
+  const list = sp.get("list");
+
+  if (!hasDatabase()) {
+    if (list || database || indicator) {
+      return NextResponse.json({ error: "DATABASE_URL not configured" }, { status: 503 });
     }
-    await ensureData360Schema();
+    return NextResponse.json({
+      ok: false,
+      error: "DATABASE_URL not configured",
+      docs: "https://data360.worldbank.org/en/api",
+    });
+  }
+
+  await ensureData360Schema();
+  const db = sql();
+
+  if (list === "datasets") {
+    const rows = await db`
+      SELECT database_id, series_count, indicators_cataloged, last_catalog_at, last_error
+      FROM data360_datasets
+      ORDER BY database_id
+    `;
+    return NextResponse.json({ datasets: rows, refAreas: data360RefAreas() });
+  }
+
+  if (database && list === "indicators") {
+    const q = sp.get("q")?.trim() ?? "";
+    const offset = Math.max(0, Number(sp.get("offset") ?? 0) || 0);
+    const pageSize = Math.min(Math.max(1, Number(sp.get("limit") ?? 50) || 50), 200);
+    const pattern = q ? `%${q.replace(/%/g, "")}%` : null;
+    const [countRow] = pattern
+      ? await db`
+          SELECT count(*)::int AS n FROM data360_indicators
+          WHERE database_id = ${database} AND tracked AND indicator_id ILIKE ${pattern}
+        `
+      : await db`
+          SELECT count(*)::int AS n FROM data360_indicators
+          WHERE database_id = ${database} AND tracked
+        `;
+    const rows = pattern
+      ? await db`
+          SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
+            (SELECT count(*)::int FROM data360_observations o
+             WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id) AS obs_stored
+          FROM data360_indicators i
+          WHERE i.database_id = ${database} AND i.tracked AND i.indicator_id ILIKE ${pattern}
+          ORDER BY i.indicator_id
+          OFFSET ${offset} LIMIT ${pageSize}
+        `
+      : await db`
+          SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
+            (SELECT count(*)::int FROM data360_observations o
+             WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id) AS obs_stored
+          FROM data360_indicators i
+          WHERE i.database_id = ${database} AND i.tracked
+          ORDER BY i.indicator_id
+          OFFSET ${offset} LIMIT ${pageSize}
+        `;
+    return NextResponse.json({
+      database,
+      q: q || null,
+      total: countRow?.n ?? 0,
+      offset,
+      limit: pageSize,
+      indicators: rows,
+    });
+  }
+
+  if (!database && !indicator && !list) {
     const status = await syncStatus();
     const log = await sql()`
       SELECT database_id, indicator_id, kind, ok, rows, error, ran_at
@@ -51,9 +111,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, status, recentSyncs: log });
   }
 
-  if (!hasDatabase()) return NextResponse.json({ error: "No database" }, { status: 503 });
-  await ensureData360Schema();
-  const db = sql();
   const limit = Math.min(Number(sp.get("limit") ?? 200) || 200, 2000);
 
   if (database && indicator) {

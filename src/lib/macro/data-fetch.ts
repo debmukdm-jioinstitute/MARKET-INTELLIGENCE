@@ -1,6 +1,7 @@
 import { feedFetch } from "@/lib/feeds/http";
 import type { MacroRow } from "@/lib/feeds/india/types";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
+import { fetchWorldBankFromData360Mirror } from "@/lib/data360/read-macro";
 import type { MacroMetric } from "@/lib/macro/types";
 
 const DATA_GOV_KEY =
@@ -21,7 +22,7 @@ export function metricFromRow(row: MacroRow): MacroMetric {
   };
 }
 
-export async function fetchWorldBankIndicator(
+async function fetchWorldBankIndicatorLive(
   country: string,
   code: string,
   name: string,
@@ -62,9 +63,30 @@ export async function fetchWorldBankIndicator(
       unit,
       direction: "na",
       history12m: [],
-      source: { provider: "World Bank", url },
+      source: { provider: "World Bank (live API)", url },
     };
   }
+}
+
+/** Postgres Data360 mirror first, then World Bank v2 fallback. */
+export async function fetchWorldBankIndicator(
+  country: string,
+  code: string,
+  name: string,
+  unit: string,
+): Promise<MacroRow> {
+  const mirrored = await fetchWorldBankFromData360Mirror(country, code, name, unit);
+  if (mirrored?.current != null) return mirrored;
+  const live = await fetchWorldBankIndicatorLive(country, code, name, unit);
+  if (mirrored && live.current == null) return mirrored;
+  if (mirrored?.current == null && live.current != null) {
+    live.source = {
+      ...live.source,
+      provider: "World Bank (live API)",
+      asOf: live.history12m[live.history12m.length - 1]?.date ?? live.source.asOf,
+    };
+  }
+  return live;
 }
 
 export async function fetchFredMetric(

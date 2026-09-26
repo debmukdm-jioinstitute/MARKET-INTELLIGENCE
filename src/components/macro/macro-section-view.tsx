@@ -223,6 +223,21 @@ function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean })
           {metric.change.toFixed(2)}
         </p>
       ) : null}
+      {metric.source.asOf ? (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {metric.source.provider}
+          {metric.source.url.startsWith("/data/data360") ? (
+            <>
+              {" · "}
+              <a href={metric.source.url} className="text-blue-600 hover:underline">
+                View series
+              </a>
+            </>
+          ) : null}
+          {" · "}
+          {metric.source.asOf}
+        </p>
+      ) : null}
       {metric.history.length > 1 ? (
         <div className="mt-3 h-[100px]">
           <Lines
