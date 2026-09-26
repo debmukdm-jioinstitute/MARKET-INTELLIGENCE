@@ -1,5 +1,6 @@
 "use client";
 
+import { AnalyticsMetricInfo } from "@/components/admin/analytics-metric-info";
 import { ANALYTICS_SECTIONS, type AnalyticsDashboardPayload } from "@/lib/admin/analytics-catalog";
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { useEffect, useMemo, useState } from "react";
@@ -81,11 +82,23 @@ export default function AdminAnalyticsPage() {
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             {section.metrics.map((m) => {
               const raw = data?.metrics[m.key];
-              const hint = m.hint ?? data?.metricHints[m.key];
+              const formatted = formatMetric(raw, m.format);
+              const extraHint = m.hint ?? data?.metricHints[m.key];
               return (
                 <div key={m.key} className="relative">
-                  <AdminStat label={m.label} value={formatMetric(raw, m.format)} />
-                  {hint ? <p className="mt-1 px-1 text-xs text-gray-400">{hint}</p> : null}
+                  <AdminStat
+                    label={m.label}
+                    value={formatted}
+                    info={
+                      <AnalyticsMetricInfo
+                        metricKey={m.key}
+                        label={m.label}
+                        formattedValue={formatted}
+                        rawValue={raw}
+                        extraHint={extraHint}
+                      />
+                    }
+                  />
                 </div>
               );
             })}

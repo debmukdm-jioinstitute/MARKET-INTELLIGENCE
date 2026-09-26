@@ -243,8 +243,20 @@ export function LiveEditorShell() {
             <p className="text-xs font-semibold text-gray-600">Editable on this page ({slots.length})</p>
             <ul className="mt-1 max-h-40 overflow-y-auto text-xs text-gray-500">
               {slots.map((s) => (
-                <li key={s.slotKey} className="truncate py-0.5">
-                  {s.label}
+                <li key={s.slotKey}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(s);
+                      setDraft(pending[s.slotKey] ?? s.text);
+                    }}
+                    className={cn(
+                      "w-full truncate rounded px-1 py-0.5 text-left hover:bg-gray-100",
+                      selected?.slotKey === s.slotKey && "bg-blue-50 font-medium text-blue-800",
+                    )}
+                  >
+                    {s.label}
+                  </button>
                 </li>
               ))}
             </ul>

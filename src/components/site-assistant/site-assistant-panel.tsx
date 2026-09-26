@@ -540,7 +540,7 @@ export function SiteAssistantWidget() {
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-[4.75rem] right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
+    <div className="site-assistant-widget pointer-events-none fixed bottom-[4.75rem] right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       <AnimatePresence>
         {hintVisible && !open ? (
           <motion.div

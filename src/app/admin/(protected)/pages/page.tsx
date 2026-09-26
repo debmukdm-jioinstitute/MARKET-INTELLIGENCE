@@ -2,6 +2,7 @@
 
 import { AdminCard } from "@/components/admin/admin-card";
 import { DEFAULT_LOCK_MESSAGE } from "@/lib/portal-page-registry";
+import { portalPageUrl, portalPreviewOrigin } from "@/lib/site-content";
 import { useMemo, useState } from "react";
 import { useEffect } from "react";
 
@@ -72,6 +73,8 @@ export default function AdminPortalPagesPage() {
       setBusy(null);
     }
   }
+
+  const siteOrigin = useMemo(() => portalPreviewOrigin(), []);
 
   const grouped = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -168,7 +171,15 @@ export default function AdminPortalPagesPage() {
                               </span>
                             ) : null}
                           </p>
-                          <p className="truncate font-mono text-xs text-gray-500">{c.href}</p>
+                          <a
+                            href={portalPageUrl(c.href, siteOrigin)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={portalPageUrl(c.href, siteOrigin)}
+                            className="mt-0.5 block truncate text-xs text-blue-600 hover:underline"
+                          >
+                            {portalPageUrl(c.href, siteOrigin)}
+                          </a>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <button

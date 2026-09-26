@@ -15,7 +15,8 @@ import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card"
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
 import { MoneyFlow } from "@/components/dashboard/money-flow";
-import { RefreshCw, Terminal } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
+import { RefreshCw } from "lucide-react";
 import { ShippedPopup } from "@/components/marketing/shipped-popup";
 
 export default function DashboardPage() {
@@ -26,21 +27,13 @@ export default function DashboardPage() {
       <ShippedPopup />
       {/* Top Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
-              <Terminal className="size-3.5" />
-              INSTITUTIONAL COCKPIT
-            </span>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground mt-0.5">
-            Executive Market & Portfolio Intelligence
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Real-time multi-asset feeds, risk decomposition, macroeconomic telemetry, and live order books.
-          </p>
-        </div>
+        <PageHeader
+          className="mb-0 min-w-0 flex-1"
+          titleAs="h1"
+          kicker="INSTITUTIONAL COCKPIT"
+          title="Executive Market & Portfolio Intelligence"
+          subtitle="Real-time multi-asset feeds, risk decomposition, macroeconomic telemetry, and live order books."
+        />
 
         <div className="flex items-center gap-3">
           <button

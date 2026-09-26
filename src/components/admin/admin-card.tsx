@@ -25,10 +25,21 @@ export function AdminCard({
   );
 }
 
-export function AdminStat({ label, value }: { label: string; value: string | number }) {
+export function AdminStat({
+  label,
+  value,
+  info,
+}: {
+  label: string;
+  value: string | number;
+  info?: React.ReactNode;
+}) {
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-      <p className="text-sm uppercase tracking-wider text-gray-500">{label}</p>
+      <div className="flex items-start justify-between gap-1">
+        <p className="text-sm uppercase tracking-wider text-gray-500">{label}</p>
+        {info}
+      </div>
       <p className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">{value}</p>
     </div>
   );

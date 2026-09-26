@@ -9,10 +9,14 @@ export function PageHeader({
   kicker,
   title,
   subtitle,
+  className,
+  titleAs: TitleTag = "h2",
 }: {
   kicker?: string;
   title: string;
   subtitle?: string;
+  className?: string;
+  titleAs?: "h1" | "h2";
 }) {
   const path = usePathname();
   const kickerSlot = siteContentSlot(path, "page-header.kicker");
@@ -26,7 +30,7 @@ export function PageHeader({
   const showKicker = Boolean(displayKicker || kicker);
 
   return (
-    <div className="mb-4">
+    <div className={cn("mb-4", className)}>
       {showKicker ? (
         <p
           data-mi-slot={kickerSlot}
@@ -45,14 +49,14 @@ export function PageHeader({
           aria-hidden
         />
       )}
-      <h2
+      <TitleTag
         data-mi-slot={titleSlot}
         data-mi-field="title"
         data-mi-label="Page title"
         className={cn("font-heading text-2xl font-bold tracking-tight text-foreground", showKicker ? "mt-1" : "")}
       >
         {displayTitle}
-      </h2>
+      </TitleTag>
       {(displaySubtitle || subtitle) ? (
         <p
           data-mi-slot={subtitleSlot}

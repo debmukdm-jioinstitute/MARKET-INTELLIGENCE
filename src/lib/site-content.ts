@@ -56,3 +56,9 @@ export function portalPreviewOrigin(): string {
   }
   return process.env.NEXT_PUBLIC_SITE_URL ?? "https://getmarketintelligence.in";
 }
+
+/** Absolute URL for a portal route (live site, not admin). */
+export function portalPageUrl(pathname: string, origin = portalPreviewOrigin()): string {
+  const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return `${origin.replace(/\/$/, "")}${path}`;
+}

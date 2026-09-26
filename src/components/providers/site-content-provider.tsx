@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { MI_CONTENT_SAVED } from "@/lib/site-content";
+import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from "react";
 import useSWR from "swr";
 
 type SiteContentCtx = {
@@ -28,13 +29,13 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       void mutate();
     }
     function onMessage(ev: MessageEvent) {
-      if (ev.data?.type === "MI_CONTENT_SAVED") refresh();
+      if (ev.data?.type === MI_CONTENT_SAVED) refresh();
     }
     window.addEventListener("message", onMessage);
-    window.addEventListener("MI_CONTENT_SAVED", refresh);
+    window.addEventListener(MI_CONTENT_SAVED, refresh);
     return () => {
       window.removeEventListener("message", onMessage);
-      window.removeEventListener("MI_CONTENT_SAVED", refresh);
+      window.removeEventListener(MI_CONTENT_SAVED, refresh);
     };
   }, [mutate]);
 

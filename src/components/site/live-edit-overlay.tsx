@@ -59,7 +59,7 @@ export function LiveEditOverlay() {
       if (event.data?.type === MI_CONTENT_SAVED) {
         void fetch("/api/portal/content", { cache: "no-store" })
           .then(() => {
-            window.dispatchEvent(new CustomEvent(MI_CONTENT_SAVED));
+            window.dispatchEvent(new CustomEvent(MI_CONTENT_SAVED, { bubbles: true }));
           })
           .catch(() => {});
       }
@@ -95,6 +95,14 @@ export function LiveEditOverlay() {
       .mi-live-edit [data-mi-slot].mi-slot-selected {
         outline-color: rgb(37 99 235);
         background: rgb(59 130 246 / 0.12);
+      }
+      .mi-live-edit [data-mi-slot] {
+        position: relative;
+        z-index: 40;
+      }
+      .mi-live-edit .site-assistant-widget {
+        pointer-events: none !important;
+        opacity: 0.25;
       }
     `}</style>
   );
