@@ -56,6 +56,11 @@ export async function sessionResponseForGoogleUser(
         VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now())
       `;
       row = { email, name, password_hash: passwordHash, role, google_sub: sub };
+      const onboard = new URL("/onboarding", requestUrl);
+      onboard.searchParams.set("next", redirectTo);
+      onboard.searchParams.set("download", "1");
+      const res = NextResponse.redirect(onboard);
+      return setSessionCookie(res, { email, name, role, guest: false });
     }
   } else {
     await db`UPDATE users SET name = ${name}, last_login_at = now() WHERE google_sub = ${sub}`;

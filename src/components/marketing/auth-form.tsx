@@ -65,7 +65,11 @@ export function AuthForm({
           password: String(data.get("password") ?? ""),
         });
       }
-      router.push(dest);
+      if (isSignup) {
+        router.push(`/onboarding?next=${encodeURIComponent(dest)}&download=1`);
+      } else {
+        router.push(dest);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
