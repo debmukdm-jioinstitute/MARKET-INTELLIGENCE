@@ -1,19 +1,41 @@
 "use client";
 
+import { GoogleSignInButton } from "@/components/marketing/google-sign-in-button";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 const inputClass =
   "h-12 w-full rounded-lg border border-border bg-white px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-export function AuthForm({ mode, next = "/Home" }: { mode: "login" | "signup"; next?: string }) {
+const OAUTH_ERRORS: Record<string, string> = {
+  google_not_configured: "Google sign-in is not configured on this server yet.",
+  google_denied: "Google sign-in was cancelled.",
+  google_failed: "Google sign-in failed. Try again or use email.",
+  google_state_invalid: "Google sign-in expired. Try again.",
+  google_missing_code: "Google sign-in incomplete. Try again.",
+  accounts_unavailable: "Accounts are not available on this deployment.",
+};
+
+export function AuthForm({
+  mode,
+  next = "/Home",
+  oauthError,
+}: {
+  mode: "login" | "signup";
+  next?: string;
+  oauthError?: string | null;
+}) {
   const { login, signup, enterGuest } = useAuth();
   const router = useRouter();
   const dest = next.startsWith("/") ? next : "/Home";
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const oauthMessage = useMemo(
+    () => (oauthError ? (OAUTH_ERRORS[oauthError] ?? "Sign-in error.") : ""),
+    [oauthError],
+  );
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,12 +76,21 @@ export function AuthForm({ mode, next = "/Home" }: { mode: "login" | "signup"; n
           ? "Open a virtual desk in seconds. No brokerage. No card."
           : "Return to your books, research, and risk terminal."}
       </p>
-      <form onSubmit={onSubmit} className="mt-8 space-y-3">
+      <div className="mt-8 space-y-3">
+        <GoogleSignInButton next={dest} disabled={pending} />
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">or email</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+      <form onSubmit={onSubmit} className="mt-3 space-y-3">
         {mode === "signup" ? (
           <input name="name" required placeholder="Full name" className={inputClass} />
         ) : null}
         <input name="email" type="email" required placeholder="Email" className={inputClass} />
         <input name="password" type="password" required minLength={6} placeholder="Password" className={inputClass} />
+        {oauthMessage ? <p className="text-sm text-destructive">{oauthMessage}</p> : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <button
           disabled={pending}

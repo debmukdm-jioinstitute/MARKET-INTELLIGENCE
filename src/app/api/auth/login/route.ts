@@ -1,3 +1,4 @@
+import { isGoogleOnlyPasswordHash } from "@/lib/auth/google-oauth";
 import { isBootstrapAdmin, verifyPassword } from "@/lib/admin/auth";
 import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -26,7 +27,13 @@ export async function POST(req: Request) {
   const rows = await db`SELECT email, name, password_hash, role FROM users WHERE email = ${email}`;
   const row = rows[0] as { email: string; name: string; password_hash: string; role: "user" | "admin" } | undefined;
 
-  if (!row || !(await verifyPassword(password, row.password_hash))) {
+  if (!row) {
+    return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+  }
+  if (isGoogleOnlyPasswordHash(row.password_hash)) {
+    return NextResponse.json({ error: "This account uses Google sign-in. Continue with Google." }, { status: 401 });
+  }
+  if (!(await verifyPassword(password, row.password_hash))) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 

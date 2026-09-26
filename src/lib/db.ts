@@ -116,6 +116,11 @@ export async function ensureSchema(): Promise<void> {
           last_login_at timestamptz
         )
       `;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub text`;
+      await db`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+        ON users (google_sub) WHERE google_sub IS NOT NULL
+      `;
       await db`
         CREATE TABLE IF NOT EXISTS nav_tabs (
           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

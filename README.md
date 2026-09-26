@@ -744,6 +744,9 @@ npx vercel --prod --yes
 | `SITE_ASSISTANT_GROQ_MODEL` | Optional; direct Groq fallback when OmniRoute is down |
 | `AI_TRADER_API_URL` | Base URL for NIFTY Algo Desk Flask API (e.g. `http://127.0.0.1:5050` or Fly/VPS) |
 | `DATABASE_URL` / `POSTGRES_URL` (Neon) | Holdings, options-flow history, research-report cache, admin data |
+| `AUTH_SECRET` / `SESSION_SECRET` | Signs `mi_session` cookies (required in production) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | **Continue with Google** on login/signup ([setup](docs/GOOGLE_OAUTH.md)) |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for OAuth redirect (e.g. `https://getmarketintelligence.in`) |
 | `MASSIVE_API_KEY` | US market data (optional — Yahoo covers the gap) |
 | `FRED_API_KEY` | Optional; CSV fallbacks exist without it |
 | `ALPHA_VANTAGE_API_KEY` | Optional US quote fallback |
