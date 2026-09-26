@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import { BrokerSettingsPanel } from "@/components/ai-trader/broker-settings-panel";
 import RiskProfileCard from "@/components/ai-trader/RiskProfileCard";
 import { fetchJSON, postJSON, type RiskProfile } from "@/lib/ai-trader/api";
@@ -33,9 +33,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
         <div className="mb-5">
           <h1 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#00e87b' }}>Settings</h1>
           <p className="text-[10px] mt-0.5" style={{ color: '#3d4450' }}>RISK PROFILES, EXECUTION, SYSTEM CONFIG</p>
@@ -130,7 +128,6 @@ export default function SettingsPage() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

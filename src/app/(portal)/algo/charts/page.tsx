@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import Badge from "@/components/ai-trader/Badge";
 import {
   fetchJSON,
@@ -449,9 +449,7 @@ export default function ChartsPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -572,7 +570,6 @@ export default function ChartsPage() {
           Backtest Analytics
         </h3>
         <AnalyticsCharts results={results} />
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

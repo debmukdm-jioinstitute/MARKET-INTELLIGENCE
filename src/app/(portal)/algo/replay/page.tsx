@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import Badge from "@/components/ai-trader/Badge";
 import { API_BASE, fetchJSON } from "@/lib/ai-trader/api";
 import { Play, RefreshCw } from "lucide-react";
@@ -98,9 +98,7 @@ export default function ReplayPage() {
   const regimeColor = replay.regime.includes("BULL") ? "#00e87b" : replay.regime.includes("BEAR") ? "#ff3e3e" : "#e8c300";
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#00e87b" }}>
@@ -225,7 +223,6 @@ export default function ReplayPage() {
             </tbody>
           </table>
         </div>
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

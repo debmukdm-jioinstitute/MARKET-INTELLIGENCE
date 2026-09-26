@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import { fetchJSON, type RLStatus } from "@/lib/ai-trader/api";
 import { RefreshCw } from "lucide-react";
 
@@ -22,9 +22,7 @@ export default function AIPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#00e87b' }}>AI Models</h1>
@@ -176,7 +174,6 @@ export default function AIPage() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

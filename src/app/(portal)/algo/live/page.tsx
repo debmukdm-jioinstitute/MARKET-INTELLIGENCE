@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import Badge from "@/components/ai-trader/Badge";
 import {
   fetchJSON, postJSON,
@@ -162,9 +162,7 @@ export default function LivePage() {
   useEffect(() => () => { if (journeyInterval.current) clearInterval(journeyInterval.current); }, []);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
@@ -678,7 +676,6 @@ export default function LivePage() {
           </div>
         </div>
 
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

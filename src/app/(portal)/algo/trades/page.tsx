@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import Sidebar from "@/components/ai-trader/Sidebar";
+import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import PnlBarChart from "@/components/ai-trader/PnlBarChart";
 import { API_BASE, fetchJSON, type Trade, type LiveTrade, type JourneyPoint } from "@/lib/ai-trader/api";
 import { toDateStr, toISTTimeFull, toISTTime } from "@/lib/ai-trader/time";
@@ -345,9 +345,7 @@ export default function TradesPage() {
   const isLoading = tabMode === "backtest" ? btLoading : liveLoading;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 p-5 overflow-y-auto">
+    <AlgoDeskShell>
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -512,7 +510,6 @@ export default function TradesPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+    </AlgoDeskShell>
   );
 }

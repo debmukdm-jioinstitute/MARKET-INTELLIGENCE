@@ -17,7 +17,10 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
   return (
     <nav className="mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {items.map((item) => {
-        const active = path === item.href;
+        const active =
+          item.href === "/algo"
+            ? path === "/algo"
+            : path === item.href || path.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}

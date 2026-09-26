@@ -1,89 +1,85 @@
-/* Scoped terminal palette for AI-trader desk (Google Sans inherited from portal). */
+/* Algo desk — uses portal design tokens (light/dark via globals.css). */
 .algo-trader-desk {
-  --algo-bg: #111318;
-  --algo-panel: #181c24;
-  --algo-panel-alt: #1e222c;
-  --algo-border: #252a33;
-  --algo-border-hi: #333a45;
-  --algo-text: #c8cdd5;
-  --algo-text-dim: #5a6270;
-  --algo-text-muted: #3d4450;
-  --algo-green: #00e87b;
-  --algo-green-dim: #0a3d26;
-  --algo-red: #ff3e3e;
-  --algo-red-dim: #3d1414;
-  --algo-blue: #4da6ff;
-  --algo-yellow: #e8c300;
-  font-size: 13px;
+  --algo-bg: var(--background);
+  --algo-panel: var(--card);
+  --algo-panel-alt: var(--muted);
+  --algo-border: var(--border);
+  --algo-border-hi: var(--input);
+  --algo-text: var(--foreground);
+  --algo-text-dim: var(--muted-foreground);
+  --algo-text-muted: var(--muted-foreground);
+  --algo-green: var(--chart-2);
+  --algo-green-dim: color-mix(in srgb, var(--chart-2) 12%, transparent);
+  --algo-red: var(--destructive);
+  --algo-red-dim: color-mix(in srgb, var(--destructive) 12%, transparent);
+  --algo-blue: var(--primary);
+  --algo-yellow: var(--chart-3);
+  font-size: 14px;
   line-height: 1.5;
   color: var(--algo-text);
-}
-
-.algo-trader-desk * {
-  border-color: var(--algo-border);
 }
 
 .algo-trader-desk .t-panel {
   background: var(--algo-panel);
   border: 1px solid var(--algo-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .algo-trader-desk .t-green {
-  color: var(--algo-green);
+  color: var(--chart-2);
 }
 .algo-trader-desk .t-red {
-  color: var(--algo-red);
+  color: var(--destructive);
 }
 .algo-trader-desk .t-blue {
-  color: var(--algo-blue);
+  color: var(--primary);
 }
 .algo-trader-desk .t-dim {
-  color: var(--algo-text-dim);
+  color: var(--muted-foreground);
 }
 .algo-trader-desk .t-muted {
-  color: var(--algo-text-muted);
+  color: var(--muted-foreground);
 }
 
 .algo-trader-desk .t-green-glow {
-  color: var(--algo-green);
-  text-shadow: 0 0 8px rgba(0, 232, 123, 0.5);
+  color: var(--chart-2);
 }
 .algo-trader-desk .t-red-glow {
-  color: var(--algo-red);
-  text-shadow: 0 0 8px rgba(255, 62, 62, 0.5);
+  color: var(--destructive);
 }
 
 .algo-trader-desk .t-btn {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 6px 14px;
-  border: 1px solid var(--algo-border);
-  background: var(--algo-panel);
-  color: var(--algo-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--foreground);
   cursor: pointer;
-  transition: all 0.12s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .algo-trader-desk .t-btn:hover {
-  border-color: var(--algo-green);
-  color: var(--algo-green);
-  background: var(--algo-green-dim);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--accent);
 }
 .algo-trader-desk .t-btn-green {
-  border-color: #1a5c3a;
-  color: var(--algo-green);
-  background: var(--algo-green-dim);
+  border-color: color-mix(in srgb, var(--chart-2) 40%, var(--border));
+  color: var(--chart-2);
+  background: color-mix(in srgb, var(--chart-2) 10%, var(--card));
 }
 .algo-trader-desk .t-btn-red {
-  border-color: #5c1a1a;
-  color: var(--algo-red);
-  background: var(--algo-red-dim);
+  border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+  color: var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 10%, var(--card));
 }
 .algo-trader-desk .t-btn-active {
-  border-color: var(--algo-green);
-  background: var(--algo-green);
-  color: #000;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .algo-trader-desk table {
@@ -91,48 +87,50 @@
   border-collapse: collapse;
 }
 .algo-trader-desk th {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--algo-text-dim);
-  padding: 8px 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  padding: 10px 12px;
   text-align: left;
-  border-bottom: 1px solid var(--algo-border);
+  border-bottom: 1px solid var(--border);
 }
 .algo-trader-desk td {
-  padding: 7px 12px;
-  font-size: 12px;
-  border-bottom: 1px solid #1e222c;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
 }
 .algo-trader-desk tr:hover td {
-  background: var(--algo-panel-alt);
+  background: var(--muted);
 }
 
 .algo-trader-desk .t-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   padding: 2px 8px;
-  border: 1px solid;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .algo-trader-desk select,
 .algo-trader-desk input {
-  background: var(--algo-panel);
-  border: 1px solid var(--algo-border);
-  color: var(--algo-text);
-  padding: 5px 10px;
-  font-size: 12px;
+  background: var(--background);
+  border: 1px solid var(--input);
+  color: var(--foreground);
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
 }
 
 .algo-trader-desk .fullscreen-pnl {
   position: fixed;
   inset: 0;
   z-index: 9990;
-  background: var(--algo-bg);
+  background: var(--background);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -151,7 +149,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.35;
   }
 }
 .algo-trader-desk .t-pulse {
@@ -159,7 +157,25 @@
 }
 
 .algo-trader-desk .ticker-bar {
-  background: #0e1117;
-  border-bottom: 1px solid var(--algo-border);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  box-shadow: var(--shadow-sm);
+}
+
+.algo-trader-desk .algo-risk-tab {
+  border-radius: var(--radius-md);
   font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+  transition: all 0.15s;
+}
+.algo-trader-desk .algo-risk-tab[data-active="true"] {
+  color: var(--primary-foreground);
+  border-color: transparent;
 }
