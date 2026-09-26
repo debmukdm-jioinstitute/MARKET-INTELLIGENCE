@@ -230,7 +230,14 @@ export async function ensureSchema(): Promise<void> {
           created_at timestamptz NOT NULL DEFAULT now()
         )
       `;
+      await db`ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS event_type text NOT NULL DEFAULT 'pageview'`;
+      await db`ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS session_id text`;
+      await db`ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS duration_sec numeric`;
+      await db`ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS user_agent text`;
+      await db`ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS meta jsonb`;
       await db`CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events(event_type, created_at DESC)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_analytics_session ON analytics_events(session_id, created_at DESC)`;
 
       // -- Research reports (auto-scraped from broker/research-firm feeds) --
       await db`

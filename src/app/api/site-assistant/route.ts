@@ -9,6 +9,7 @@ import {
   clientOpenPaletteTool,
   createServerSiteAssistantTools,
 } from "@/lib/site-assistant/tools";
+import { logAnalyticsEvent } from "@/lib/analytics/log-event";
 import { getSessionUser } from "@/lib/session";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
@@ -43,6 +44,12 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
     );
   }
+
+  void logAnalyticsEvent({
+    path: "/api/site-assistant",
+    event_type: "ai_query",
+    meta: { email: user.email },
+  });
 
   const body = (await req.json().catch(() => null)) as {
     messages?: UIMessage[];

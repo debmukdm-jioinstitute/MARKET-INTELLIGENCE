@@ -1,38 +1,29 @@
+import { computeAnalyticsDashboard } from "@/lib/admin/compute-analytics-dashboard";
+import type { AnalyticsDashboardPayload } from "@/lib/admin/analytics-catalog";
 import { requireAdmin } from "@/lib/admin/guard";
+import { ensureAlertSchema } from "@/lib/alerts/store";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const EMPTY: AnalyticsDashboardPayload = {
+  generatedAt: new Date().toISOString(),
+  metrics: {},
+  metricHints: {},
+  daily: [],
+  topPaths: [],
+  topFeatures: [],
+  trafficMix: [],
+};
+
 export async function GET() {
   const guard = await requireAdmin();
   if ("error" in guard) return guard.error;
-  if (!hasDatabase()) return NextResponse.json({ daily: [], topPaths: [], uniqueVisitors7d: 0 });
+  if (!hasDatabase()) return NextResponse.json(EMPTY);
 
   await ensureSchema();
-  const db = sql();
-  const [daily, topPaths, uniques] = await Promise.all([
-    db`
-      SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day, count(*)::int AS n
-      FROM analytics_events
-      WHERE created_at > now() - interval '14 days'
-      GROUP BY 1
-      ORDER BY 1
-    `,
-    db`
-      SELECT path, count(*)::int AS n
-      FROM analytics_events
-      WHERE created_at > now() - interval '7 days'
-      GROUP BY path
-      ORDER BY n DESC
-      LIMIT 15
-    `,
-    db`
-      SELECT count(DISTINCT user_email)::int AS n
-      FROM analytics_events
-      WHERE created_at > now() - interval '7 days' AND user_email IS NOT NULL
-    `,
-  ]);
-
-  return NextResponse.json({ daily, topPaths, uniqueVisitors7d: uniques[0]?.n ?? 0 });
+  await ensureAlertSchema();
+  const payload = await computeAnalyticsDashboard(sql());
+  return NextResponse.json(payload);
 }

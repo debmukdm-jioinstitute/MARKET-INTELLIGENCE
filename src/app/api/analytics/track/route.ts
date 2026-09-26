@@ -1,25 +1,24 @@
-import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { getSessionEmail } from "@/lib/session";
-import { GUEST_EMAIL } from "@/lib/auth";
+import { logAnalyticsEvent } from "@/lib/analytics/log-event";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-/** Fire-and-forget pageview beacon — never blocks or errors the page for the visitor. */
+/** Fire-and-forget analytics beacon — never blocks or errors the page for the visitor. */
 export async function POST(req: Request) {
-  if (!hasDatabase()) return NextResponse.json({ ok: true });
   try {
     const body = await req.json().catch(() => ({}));
-    const path = typeof body.path === "string" ? body.path.slice(0, 300) : "";
+    const path = typeof body.path === "string" ? body.path : "";
     if (!path) return NextResponse.json({ ok: true });
-    const referrer = typeof body.referrer === "string" ? body.referrer.slice(0, 300) : null;
-    const email = await getSessionEmail();
 
-    await ensureSchema();
-    await sql()`
-      INSERT INTO analytics_events (user_email, path, referrer)
-      VALUES (${email === GUEST_EMAIL ? null : email}, ${path}, ${referrer})
-    `;
+    await logAnalyticsEvent({
+      path,
+      referrer: typeof body.referrer === "string" ? body.referrer : null,
+      event_type: typeof body.event_type === "string" ? body.event_type : "pageview",
+      session_id: typeof body.session_id === "string" ? body.session_id : null,
+      duration_sec: typeof body.duration_sec === "number" ? body.duration_sec : null,
+      user_agent: typeof body.user_agent === "string" ? body.user_agent : null,
+      meta: body.meta && typeof body.meta === "object" ? body.meta : null,
+    });
   } catch {
     // analytics must never break the app
   }
