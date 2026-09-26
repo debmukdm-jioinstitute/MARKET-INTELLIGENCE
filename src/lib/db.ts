@@ -315,6 +315,23 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS bug_reports (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          email text,
+          name text,
+          title text NOT NULL,
+          details text NOT NULL,
+          severity text NOT NULL DEFAULT 'medium',
+          page_url text,
+          user_agent text,
+          emailed boolean NOT NULL DEFAULT false,
+          status text NOT NULL DEFAULT 'open',
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_bug_reports_created ON bug_reports(created_at DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

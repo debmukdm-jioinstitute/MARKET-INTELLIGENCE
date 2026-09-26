@@ -2,8 +2,8 @@ import type { OnboardingFormModel } from "@/lib/onboarding/build-form-model";
 import { START_HERE } from "@/lib/nav-columns";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 
-const FOUNDER_NAME = "Debabrata Mukherjee";
-const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
+export const FOUNDER_NAME = "Debabrata Mukherjee";
+export const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

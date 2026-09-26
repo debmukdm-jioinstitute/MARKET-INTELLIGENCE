@@ -13,7 +13,13 @@ const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
 
 /** Welcome email + onboarding PDF for new accounts. No-op if Resend missing. */
 export async function sendWelcomePackToUser(user: SessionUser, origin?: string): Promise<void> {
-  if (user.guest || !hasEmailConfigured()) return;
+  await sendWelcomePackWithResult(user, origin);
+}
+
+/** Same send, but reports the outcome (used by "email me a copy" on the profile page, incl. past users). */
+export async function sendWelcomePackWithResult(user: SessionUser, origin?: string): Promise<{ ok: boolean; error?: string }> {
+  if (user.guest) return { ok: false, error: "Sign in to receive your welcome pack." };
+  if (!hasEmailConfigured()) return { ok: false, error: "Email is not configured on this deployment." };
 
   const siteUrl = defaultSiteUrl(origin);
   const model = await loadOnboardingFormModelForUser(user, siteUrl);
@@ -45,5 +51,7 @@ export async function sendWelcomePackToUser(user: SessionUser, origin?: string):
       getResendFromAddress(),
       isSandboxSender() ? "(sandbox)" : "",
     );
+    return { ok: false, error: result.error };
   }
+  return { ok: true };
 }

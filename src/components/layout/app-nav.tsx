@@ -6,7 +6,7 @@ import { usePortalPages } from "@/components/providers/portal-page-provider";
 import { NAV_SECTIONS, START_HERE, findGroup, slug, type NavGroup, type NavLink, type NavSection } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Briefcase, CalendarDays, ChevronDown, Database, ExternalLink, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
+import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -412,7 +412,23 @@ export function AppNav() {
               </div>
             </div>
 
-            <div className="mx-auto flex w-full max-w-7xl shrink-0 items-center justify-end border-t border-border px-4 py-2 sm:px-6">
+            <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-end gap-1 border-t border-border px-4 py-2 sm:px-6">
+              <Link
+                href="/profile"
+                onClick={close}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              >
+                <UserRound className="size-3.5" />
+                My profile
+              </Link>
+              <Link
+                href={`/profile?from=${encodeURIComponent(path ?? "")}#report`}
+                onClick={close}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              >
+                <Bug className="size-3.5" />
+                Report a bug
+              </Link>
               <button
                 type="button"
                 onClick={async () => {
