@@ -9,11 +9,11 @@ DNS already routes **`send.getmarketintelligence.in`** to Resend (`send.forge.rm
 | Vercel env | Value |
 |------------|--------|
 | `RESEND_API_KEY` | API key from [Resend → API Keys](https://resend.com/api-keys) |
-| `RESEND_FROM_EMAIL` | `Market Intelligence <onboarding@send.getmarketintelligence.in>` |
+| `RESEND_FROM_EMAIL` | Must match a **Verified** domain in Resend — e.g. `Market Intelligence <newsletter@getmarketintelligence.in>` or `Market Intelligence <onboarding@getmarketintelligence.in>` |
 
-Without `RESEND_FROM_EMAIL`, production falls back to that address in code. Do **not** use `onboarding@resend.dev` in production — sandbox only delivers to your Resend login email.
+Without `RESEND_FROM_EMAIL`, production falls back to `onboarding@getmarketintelligence.in` in code. Do **not** use `onboarding@resend.dev` in production — sandbox only delivers to your Resend login email.
 
-Optional: add root domain `getmarketintelligence.in` in Resend and switch FROM to `onboarding@getmarketintelligence.in` after DKIM/SPF verify.
+If you use `onboarding@send.getmarketintelligence.in`, add and verify **`send.getmarketintelligence.in`** as its own domain in Resend (a verified apex domain does not automatically cover arbitrary subdomains in the FROM address).
 
 ## Verify in Resend dashboard
 

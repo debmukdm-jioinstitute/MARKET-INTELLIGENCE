@@ -1,10 +1,11 @@
 import { cronUnauthorized } from "@/lib/api-guard";
-import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
+import { getResendFromAddress } from "@/lib/admin/email";
+import { sendWelcomePackWithResult } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-/** POST /api/cron/test-welcome?email=... — send onboarding welcome + PDF (CRON_SECRET). */
+/** GET /api/cron/test-welcome?email=... — send onboarding welcome + PDF (CRON_SECRET). */
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
@@ -15,10 +16,24 @@ export async function GET(req: Request) {
   }
 
   const name = new URL(req.url).searchParams.get("name")?.trim() || "Test User";
-  await sendWelcomePackToUser(
+  const result = await sendWelcomePackWithResult(
     { email, name, role: "user", guest: false },
     "https://getmarketintelligence.in",
   );
 
-  return NextResponse.json({ ok: true, sentTo: email });
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error ?? "Resend rejected the send.", from: result.from ?? getResendFromAddress() },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    sentTo: email,
+    from: result.from ?? getResendFromAddress(),
+    resendId: result.resendId,
+    pdfAttached: result.pdfAttached,
+    pdfSkipReason: result.pdfSkipReason,
+  });
 }

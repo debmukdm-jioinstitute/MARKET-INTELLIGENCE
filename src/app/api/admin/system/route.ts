@@ -1,8 +1,8 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { hasEmailConfigured } from "@/lib/admin/email";
+import { getResendFromAddress, hasEmailConfigured } from "@/lib/admin/email";
 import { CRONS, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
+import { sendWelcomePackWithResult } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -72,8 +72,21 @@ export async function POST(req: Request) {
     if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });
     const name = typeof body.name === "string" ? body.name.trim() : "Test User";
     const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
-    await sendWelcomePackToUser({ email, name, role: "user", guest: false }, origin);
-    return NextResponse.json({ ok: true, sentTo: email });
+    const result = await sendWelcomePackWithResult({ email, name, role: "user", guest: false }, origin);
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: result.error ?? "Resend rejected the send.", from: result.from ?? getResendFromAddress() },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({
+      ok: true,
+      sentTo: email,
+      from: result.from ?? getResendFromAddress(),
+      resendId: result.resendId,
+      pdfAttached: result.pdfAttached,
+      pdfSkipReason: result.pdfSkipReason,
+    });
   }
 
   if (body.action === "run") {

@@ -4,9 +4,9 @@ export function hasEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
 }
 
-/** Verified Resend subdomain (DNS: send → forge.rmta.net). Override with RESEND_FROM_EMAIL on Vercel. */
+/** Default production sender — use a domain verified in Resend (see docs/RESEND.md). Override with RESEND_FROM_EMAIL on Vercel. */
 export const PRODUCTION_RESEND_FROM =
-  "Market Intelligence <onboarding@send.getmarketintelligence.in>";
+  "Market Intelligence <onboarding@getmarketintelligence.in>";
 
 /** True while using Resend sandbox — delivers only to the Resend account owner email. */
 export function isSandboxSender(): boolean {
@@ -30,11 +30,11 @@ export async function sendTransactionalEmail(input: {
   html: string;
   replyTo?: string;
   attachments?: EmailAttachment[];
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; id?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
   const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: getResendFromAddress(),
     to: input.to,
     subject: input.subject,
@@ -46,7 +46,7 @@ export async function sendTransactionalEmail(input: {
     })),
   });
   if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return { ok: true, id: data?.id };
 }
 
 export type NewsletterSendResult = { sent: number; failed: number; errors: string[] };

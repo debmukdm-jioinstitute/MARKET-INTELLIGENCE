@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
+import { getResendFromAddress } from "@/lib/admin/email";
+import { sendWelcomePackWithResult } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,20 @@ export async function POST(req: Request) {
   const name = body.name?.trim() || "Test User";
   const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.in";
 
-  await sendWelcomePackToUser({ email, name, role: "user", guest: false }, origin);
+  const result = await sendWelcomePackWithResult({ email, name, role: "user", guest: false }, origin);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error ?? "Resend rejected the send.", from: result.from ?? getResendFromAddress() },
+      { status: 502 },
+    );
+  }
 
-  return NextResponse.json({ ok: true, sentTo: email });
+  return NextResponse.json({
+    ok: true,
+    sentTo: email,
+    from: result.from ?? getResendFromAddress(),
+    resendId: result.resendId,
+    pdfAttached: result.pdfAttached,
+    pdfSkipReason: result.pdfSkipReason,
+  });
 }

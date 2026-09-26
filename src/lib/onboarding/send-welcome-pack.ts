@@ -12,6 +12,16 @@ import { renderWelcomeEmailHtml, welcomeEmailSubject } from "@/lib/onboarding/we
 
 const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
 
+export type WelcomePackSendResult = {
+  ok: boolean;
+  error?: string;
+  resendId?: string;
+  from?: string;
+  /** False when the onboarding PDF was skipped after an attachment send failure. */
+  pdfAttached?: boolean;
+  pdfSkipReason?: string;
+};
+
 /** Records delivery so the backfill never emails the same member twice. Best effort. */
 async function markWelcomeSent(email: string): Promise<void> {
   if (!hasDatabase()) return;
@@ -28,43 +38,70 @@ export async function sendWelcomePackToUser(user: SessionUser, origin?: string):
   await sendWelcomePackWithResult(user, origin);
 }
 
-/** Same send, but reports the outcome (used by "email me a copy" on the profile page, incl. past users). */
-export async function sendWelcomePackWithResult(user: SessionUser, origin?: string): Promise<{ ok: boolean; error?: string }> {
-  if (user.guest) return { ok: false, error: "Sign in to receive your welcome pack." };
-  if (!hasEmailConfigured()) return { ok: false, error: "Email is not configured on this deployment." };
+/** Same send, but reports the outcome (admin test, profile resend, backfill). */
+export async function sendWelcomePackWithResult(user: SessionUser, origin?: string): Promise<WelcomePackSendResult> {
+  const from = getResendFromAddress();
+  if (user.guest) return { ok: false, error: "Sign in to receive your welcome pack.", from };
+  if (!hasEmailConfigured()) {
+    return { ok: false, error: "Email is not configured on this deployment.", from };
+  }
 
-  const siteUrl = defaultSiteUrl(origin);
-  const model = await loadOnboardingFormModelForUser(user, siteUrl);
-  const pdf = await renderOnboardingFormPdf(model);
-  const firstName = user.name.split(/\s+/)[0] || "Friend";
-  const subject = welcomeEmailSubject(firstName);
-  const html = renderWelcomeEmailHtml(model);
-  const safeId = model.customer.customerId.replace(/[^a-zA-Z0-9-_]/g, "_");
+  try {
+    const siteUrl = defaultSiteUrl(origin);
+    const model = await loadOnboardingFormModelForUser(user, siteUrl);
+    const pdf = await renderOnboardingFormPdf(model);
+    const firstName = user.name.split(/\s+/)[0] || "Friend";
+    const subject = welcomeEmailSubject(firstName);
+    const html = renderWelcomeEmailHtml(model);
+    const safeId = model.customer.customerId.replace(/[^a-zA-Z0-9-_]/g, "_");
 
-  const result = await sendTransactionalEmail({
-    to: user.email,
-    subject,
-    html,
-    replyTo: FOUNDER_EMAIL,
-    attachments: [
-      {
-        filename: `market-intelligence-onboarding-${safeId}.pdf`,
-        content: pdf,
-      },
-    ],
-  });
+    const base = {
+      to: user.email,
+      subject,
+      html,
+      replyTo: FOUNDER_EMAIL,
+    };
 
-  if (!result.ok) {
+    const withPdf = await sendTransactionalEmail({
+      ...base,
+      attachments: [
+        {
+          filename: `market-intelligence-onboarding-${safeId}.pdf`,
+          content: pdf,
+        },
+      ],
+    });
+
+    if (withPdf.ok) {
+      await markWelcomeSent(user.email);
+      return { ok: true, resendId: withPdf.id, from, pdfAttached: true };
+    }
+
+    const withoutPdf = await sendTransactionalEmail(base);
+    if (withoutPdf.ok) {
+      await markWelcomeSent(user.email);
+      console.warn("[welcome-pack] PDF attachment failed; sent HTML only.", user.email, withPdf.error);
+      return {
+        ok: true,
+        resendId: withoutPdf.id,
+        from,
+        pdfAttached: false,
+        pdfSkipReason: withPdf.error,
+      };
+    }
+
     console.error(
       "[welcome-pack]",
       user.email,
-      result.error,
+      withoutPdf.error ?? withPdf.error,
       "from=",
-      getResendFromAddress(),
+      from,
       isSandboxSender() ? "(sandbox)" : "",
     );
-    return { ok: false, error: result.error };
+    return { ok: false, error: withoutPdf.error ?? withPdf.error, from };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Welcome pack failed.";
+    console.error("[welcome-pack]", user.email, message);
+    return { ok: false, error: message, from };
   }
-  await markWelcomeSent(user.email);
-  return { ok: true };
 }
