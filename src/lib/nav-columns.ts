@@ -95,7 +95,7 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Is the rally broad or narrow?",
         items: [
           { label: "Breadth", href: "/markets/breadth", desc: "Advance/decline and participation signals." },
-          { label: "Momentum", href: "/markets/momentum", desc: "Trend and momentum leaders." },
+          { label: "Momentum", href: "/markets/breadth#momentum", desc: "Trend and momentum leaders." },
         ],
       },
       {

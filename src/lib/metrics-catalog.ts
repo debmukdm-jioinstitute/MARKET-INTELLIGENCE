@@ -913,7 +913,7 @@ cpi: {
     name: "Daily Moving Averages (20 / 50 / 200 DMA)",
     category: "Technical Analysis",
     provider: "Technical Computation on NSE / Yahoo Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "SMA_N = (P_1 + P_2 + ... + P_N) ÷ N, where N = 20 (short-term trend), 50 (intermediate trend), or 200 (long-term structural regime).",
     laymanExplanation:
@@ -926,7 +926,7 @@ cpi: {
     name: "Relative Strength Index (RSI 14-Day)",
     category: "Technical Analysis",
     provider: "Wilder's RSI Calculation on Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "RSI = 100 − [100 / (1 + RS)], where RS = Average Gain of Up Sessions over 14 Days ÷ Average Loss of Down Sessions over 14 Days.",
     laymanExplanation:
@@ -939,7 +939,7 @@ cpi: {
     name: "MACD (Moving Average Convergence Divergence)",
     category: "Technical Analysis",
     provider: "Trend Indicator on Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "MACD Line = 12-Day Exponential Moving Average (EMA) − 26-Day EMA. Signal Line = 9-Day EMA of MACD Line. Histogram = MACD Line − Signal Line.",
     laymanExplanation:
@@ -1073,7 +1073,7 @@ cpi: {
     name: "20-Day Simple Moving Average (20 DMA)",
     category: "Technical Analysis",
     provider: "Technical Engine on Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "Average closing price of the security over the rolling past 20 trading sessions (~1 calendar month).",
     laymanExplanation:
@@ -1086,7 +1086,7 @@ cpi: {
     name: "50-Day Simple Moving Average (50 DMA)",
     category: "Technical Analysis",
     provider: "Technical Engine on Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "Average closing price of the security over the rolling past 50 trading sessions (~1 fiscal quarter).",
     laymanExplanation:
@@ -1099,7 +1099,7 @@ cpi: {
     name: "200-Day Simple Moving Average (200 DMA)",
     category: "Technical Analysis",
     provider: "Technical Engine on Daily Closes",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "Average closing price of the security over the rolling past 200 trading sessions (~1 calendar year).",
     laymanExplanation:
@@ -1255,7 +1255,7 @@ cpi: {
     name: "Volume Weighted Average Price (VWAP)",
     category: "Technical Analysis",
     provider: "NSE Tick Data Engine",
-    defaultUrl: "/markets/momentum",
+    defaultUrl: "/markets/breadth#momentum",
     calculation:
       "VWAP = Σ (Price_i × Volume_i) ÷ Σ Volume_i for all intraday transactions since market open.",
     laymanExplanation:

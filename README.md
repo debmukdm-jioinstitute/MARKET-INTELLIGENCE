@@ -316,8 +316,8 @@ The Markets section is a mix of genuinely live panels and a few **explicitly sta
 - **IV smile** — raw per-strike call/put implied volatility plotted as a line; no curve-fitting or smoothing.
 - The legacy NIFTY/Bank Nifty panels at the bottom prefer Upstox and fall back to scraping NSE's own option-chain JSON with the same PCR/max-pain formulas re-implemented against NSE's shape.
 
-### Momentum — `/markets/momentum` ⚪ **entirely static**
-Every figure shown — "NIFTY vs 20 DMA: +2.10%", "RSI (14D): 62.40", "MACD Signal: Positive", "Breadth Thrust Ratio: 1.74x" — is literal placeholder text in the component. There is no moving-average, RSI, or MACD calculation anywhere in the codebase feeding this page, despite its tooltips citing an "NSE / Yahoo Daily Closes Analytics Engine." Treat this page as a design mockup, not a live signal.
+### Momentum — `/markets/breadth#momentum` ⚪ **entirely static**
+Merged into the Breadth page; `/markets/momentum` redirects there. Every figure shown — "NIFTY vs 20 DMA: +2.10%", "RSI (14D): 62.40", "MACD Signal: Positive", "Breadth Thrust Ratio: 1.74x" — is literal placeholder text in the component. There is no moving-average, RSI, or MACD calculation anywhere in the codebase feeding this page, despite its tooltips citing an "NSE / Yahoo Daily Closes Analytics Engine." Treat this page as a design mockup, not a live signal.
 
 ### Sectors — `/markets/sectors` ⚪ **entirely static**
 A hardcoded table of the 10 NIFTY sectors with fixed weight/return/PE/PB/ROE figures and a manually pre-assigned rotation label ("Leading"/"Weakening"/"Lagging"/"Improving"). The "Rotation Quadrant" view just filters those pre-set labels — there is no live sector index or momentum computation behind it.

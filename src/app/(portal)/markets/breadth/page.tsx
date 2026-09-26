@@ -1,9 +1,10 @@
 "use client";
 
-import { PageHeader } from "@/components/layout/page-header";
+import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card";
+import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 export default function MarketBreadthPage() {
   const { data } = useIndiaDashboard(45_000);
@@ -22,8 +23,8 @@ export default function MarketBreadthPage() {
     <div className="portal-page pb-10">
       <PageHeader
         kicker="Market Internals"
-        title="Market Breadth & Participation Desk"
-        subtitle="Real-time advance/decline distribution, McClellan oscillator telemetry, and 52-week new high/low expansion across NSE equities."
+        title="Market Breadth & Momentum Desk"
+        subtitle="Real-time advance/decline distribution, McClellan oscillator telemetry, and 52-week new high/low expansion across NSE equities, plus trend and momentum regimes."
       />
 
       {/* KPI Cards */}
@@ -103,6 +104,56 @@ export default function MarketBreadthPage() {
           </span>
         </div>
       </div>
+
+      {/* Trend & momentum (merged from former /markets/momentum) */}
+      <section id="momentum" className="space-y-3 scroll-mt-20">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          Trend &amp; Momentum Regimes
+        </h2>
+        <div className="bento-grid-cols-2">
+          <MarketMomentumCard />
+
+          <Panel
+            title={
+              <span className="flex items-center gap-1.5">
+                <Activity className="size-4 text-primary" />
+                Benchmark Trend Strength Summary
+              </span>
+            }
+          >
+            <div className="space-y-3 divide-y divide-border/50 text-sm">
+              <div className="pt-2 first:pt-0 flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  NIFTY 50 Short-Term Trend (20 DMA):
+                  <MetricInfo id="dma20" iconSize="xs" />
+                </span>
+                <span className="font-bold text-emerald-600">Bullish Continuation (+2.1%)</span>
+              </div>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  Medium-Term Trend (50 DMA):
+                  <MetricInfo id="dma50" iconSize="xs" />
+                </span>
+                <span className="font-bold text-emerald-600">Expanding Channel (+4.8%)</span>
+              </div>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  Macro Structural Trend (200 DMA):
+                  <MetricInfo id="dma200" iconSize="xs" />
+                </span>
+                <span className="font-bold text-emerald-600">Primary Bull Market (+7.2%)</span>
+              </div>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  RSI Momentum State:
+                  <MetricInfo id="rsi" iconSize="xs" />
+                </span>
+                <span className="font-bold text-foreground">62.4 (Upper Bull Zone)</span>
+              </div>
+            </div>
+          </Panel>
+        </div>
+      </section>
     </div>
   );
 }
