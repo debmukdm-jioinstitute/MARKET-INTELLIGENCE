@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import { AlgoPageHeader } from "@/components/ai-trader/algo-desk-ui";
 import { Panel } from "@/components/layout/page-header";
@@ -98,15 +98,15 @@ export default function LivePage() {
     }>;
   } | null>(null);
 
-  const fetchBrokerStatus = () => {
+  const fetchBrokerStatus = useCallback(() => {
     fetchJSON<typeof brokerStatus>("/api/broker/status").then(setBrokerStatus).catch(() => {});
-  };
+  }, []);
 
   useEffect(() => {
     fetchBrokerStatus();
     const iv = setInterval(fetchBrokerStatus, 10_000);
     return () => clearInterval(iv);
-  }, []);
+  }, [fetchBrokerStatus]);
 
   useEffect(() => {
     const es = new EventSource(SSE_STREAM_URL);

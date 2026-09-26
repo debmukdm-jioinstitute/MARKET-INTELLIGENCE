@@ -27,11 +27,10 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     { refreshInterval: 120_000, revalidateOnFocus: true },
   );
 
-  const saved = data?.overrides ?? {};
-  const overrides = useMemo(
-    () => (editMode ? { ...saved, ...draftOverrides } : saved),
-    [editMode, saved, draftOverrides],
-  );
+  const overrides = useMemo(() => {
+    const saved = data?.overrides ?? {};
+    return editMode ? { ...saved, ...draftOverrides } : saved;
+  }, [editMode, data?.overrides, draftOverrides]);
 
   useEffect(() => {
     if (!editMode) setDraftOverrides({});

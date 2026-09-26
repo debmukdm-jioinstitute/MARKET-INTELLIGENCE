@@ -22,11 +22,12 @@ export default function IntelligencePage() {
   ]);
   const [thinking, setThinking] = useState(false);
   const { data: feedData } = useFeedHub(45_000);
+  const feedNews = feedData?.news;
 
   const regulatoryHeadlines = useMemo(() => {
-    if (!feedData?.news?.length) return [];
-    return sortNewsByFreshness(filterRegulatoryExchangeNews(feedData.news));
-  }, [feedData?.news]);
+    if (!feedNews?.length) return [];
+    return sortNewsByFreshness(filterRegulatoryExchangeNews(feedNews));
+  }, [feedNews]);
 
   const handleSend = () => {
     if (!query.trim()) return;

@@ -1,4 +1,4 @@
-import { clearSiteContentCache, getSiteContentCache, setSiteContentCache } from "@/lib/site-content-cache";
+import { getSiteContentCache, setSiteContentCache } from "@/lib/site-content-cache";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 

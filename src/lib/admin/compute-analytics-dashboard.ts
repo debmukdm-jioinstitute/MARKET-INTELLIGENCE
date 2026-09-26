@@ -259,7 +259,6 @@ export async function computeAnalyticsDashboard(db: NeonQueryFunction<false, fal
     else if (kind === "paid") paid += c;
     else referral += c;
   }
-  const trafficTotal = organic + direct + referral + social + paid;
   const landingViews = (trafficRows as { referrer: string | null; n: number }[]).reduce((s, r) => s + n({ n: r.n }), 0);
 
   const ret = retention[0] as { d1?: number; d7?: number; d30?: number; cohort_d7?: number };

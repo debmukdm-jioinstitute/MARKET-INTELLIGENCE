@@ -25,7 +25,7 @@ function beacon(payload: Record<string, unknown>) {
 /** Fires pageview + time-on-page beacons on every route change. */
 export function PageviewTracker() {
   const pathname = usePathname();
-  const enteredAt = useRef(Date.now());
+  const enteredAt = useRef(0);
   const prevPath = useRef<string | null>(null);
 
   useEffect(() => {

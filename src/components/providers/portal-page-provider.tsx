@@ -35,7 +35,7 @@ export function PortalPageProvider({ children }: { children: ReactNode }) {
     revalidateOnFocus: true,
   });
 
-  const controls = data?.controls ?? [];
+  const controls = useMemo(() => data?.controls ?? [], [data?.controls]);
   const configured = data?.configured ?? false;
   const defaultLockMessage = data?.defaultLockMessage ?? DEFAULT_LOCK_MESSAGE;
 
