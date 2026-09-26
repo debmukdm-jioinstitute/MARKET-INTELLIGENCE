@@ -5,7 +5,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { Layers, TrendingUp, BarChart2, PieChart, Activity } from "lucide-react";
 
 interface SectorRow {
   name: string;

@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { MarketValuationCard } from "@/components/dashboard/market-valuation-card";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { Scale, BarChart2 } from "lucide-react";
+import { Scale } from "lucide-react";
 
 export default function MarketValuationPage() {
   return (

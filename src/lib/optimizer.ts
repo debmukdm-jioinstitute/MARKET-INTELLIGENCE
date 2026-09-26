@@ -1,6 +1,6 @@
 import { covariance, stdev } from "@/lib/analytics";
 import { getReturns } from "@/lib/market";
-import { UNIVERSE, getInstrument } from "@/lib/universe";
+import { getInstrument } from "@/lib/universe";
 
 export type OptimizeGoal = "maxSharpe" | "minVol" | "riskParity";
 

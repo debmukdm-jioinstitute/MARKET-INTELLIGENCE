@@ -46,12 +46,24 @@ See upstream README for training scripts (`incremental_train.py`, `train_rl_on_j
 
 ## Run locally (recommended)
 
+**Mac note:** System Python 3.14 breaks `pandas-ta` / `numba`. Use **Python 3.13** via [uv](https://docs.astral.sh/uv/):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+./scripts/setup-ai-trader-full.sh   # needs Docker Desktop for TimescaleDB
+./scripts/run-ai-trader-live.sh     # Flask :5050 + tunnel + Vercel sync
+```
+
+Without Docker, Flask still starts (`db_connected: false`) but ticks/scanner need Postgres + TrueData in `services/ai-trader/.env`.
+
 1. **Python stack** (from `services/ai-trader/` in this repo — vendored copy of upstream):
 
    ```bash
    cd services/ai-trader
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
+   uv python install 3.13 && uv venv --python 3.13 .venv && source .venv/bin/activate
+   export NUMBA_CACHE_DIR="$HOME/.cache/numba"
+   uv pip install -r requirements.txt flask flask-cors psycopg[binary]
    cp .env.example .env   # DB + TRUEDATA_* credentials
    createdb trading && psql -d trading -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
    uv run python -c "from database.db import init_db; init_db()"
@@ -67,11 +79,11 @@ See upstream README for training scripts (`incremental_train.py`, `train_rl_on_j
 
 3. Open [http://localhost:3000/algo/live](http://localhost:3000/algo/live) after signing in.
 
-## Production (Vercel + VPS)
+## Production (no laptop)
 
-1. Deploy Flask + PostgreSQL/TimescaleDB on a VPS, Railway, or [Diploi](https://diploi.com/launch/aaryansinha16/AI-trader) using upstream `diploi.yaml`.
-2. Set Vercel env **`AI_TRADER_API_URL`** to the public HTTPS origin of Flask (no trailing slash).
-3. Ensure Flask CORS allows your portal origin if you ever call it directly; the portal proxy avoids browser CORS for same-origin `/api/ai-trader`.
+**Tiger Cloud + Fly.io:** step-by-step in **[AI-TRADER-PRODUCTION.md](./AI-TRADER-PRODUCTION.md)** (`scripts/deploy-ai-trader-fly.sh`, `Dockerfile`, `fly.toml`).
+
+Short: Tiger connection string → `./scripts/ai-trader-db-from-url.sh` → `./scripts/deploy-ai-trader-fly.sh` → Vercel `AI_TRADER_API_URL` points at `https://….fly.dev`.
 
 ## Disclaimer
 

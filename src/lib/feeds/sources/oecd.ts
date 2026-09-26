@@ -1,4 +1,3 @@
-import { feedFetch } from "@/lib/feeds/http";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import type { LiveMacroSeries } from "@/lib/feeds/types";
 

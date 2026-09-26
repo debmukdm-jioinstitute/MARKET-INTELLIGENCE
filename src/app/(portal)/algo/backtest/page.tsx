@@ -33,7 +33,7 @@ export default function BacktestPage() {
   const [curves, setCurves] = useState<Record<string, EquityCurvePoint[]>>({});
   const [profiles, setProfiles] = useState<Record<RiskLevel, RiskProfile> | null>(null);
   const [selectedRisk, setSelectedRisk] = useState<RiskLevel>("medium");
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [progress, setProgress] = useState<BacktestProgress | null>(null);
   const termRef = useRef<HTMLDivElement>(null);
 

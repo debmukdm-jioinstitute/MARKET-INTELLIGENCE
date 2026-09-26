@@ -1,7 +1,6 @@
 "use client";
 
 import { Lines } from "@/components/charts/terminal-charts";
-import { DataInfo } from "@/components/feeds/data-info";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { IndiaDashboardPayload, MacroRow } from "@/lib/feeds/india/types";
 import { fmtNum } from "@/lib/format-india";

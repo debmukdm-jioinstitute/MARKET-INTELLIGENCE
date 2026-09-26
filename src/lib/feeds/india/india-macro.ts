@@ -1,16 +1,10 @@
 import { getRbiBenchmark10y } from "@/lib/collector/rbi-live";
-import { feedFetch } from "@/lib/feeds/http";
 import { fetchNseGsecBenchmarkYield } from "@/lib/feeds/india/nse-market";
 import type { FieldSource, MacroRow, QuoteField } from "@/lib/feeds/india/types";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { fetchUpstoxHistoricalCandles, fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
-import { fetchYahooHistory, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 
 const NIFTY_GS_10Y_KEY = "NSE_INDEX|Nifty GS 10Yr";
-const DATA_GOV_KEY =
-  process.env.DATA_GOV_IN_API_KEY?.trim() ||
-  "579b464db66ec23bdd000001cdd3946e44cce2f45628f8dc59a380bfa1e971e";
-
 function macroDirection(current: number | null, previous: number | null): MacroRow["direction"] {
   if (current == null || previous == null) return "na";
   if (current > previous * 1.001) return "up";

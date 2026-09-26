@@ -714,7 +714,7 @@ export const MATH_REGISTRY: Record<string, MetricMathDefinition> = {
       url: "https://www.nseindia.com",
       methodology: "Cumulative sum of sorted weights",
     },
-    generateDerivation: (currentValue, context = {}) => {
+    generateDerivation: (currentValue, _context = {}) => {
       const cVal = parsePct(currentValue, 1.0);
       return {
         activeValueFormatted: currentValue ? String(currentValue) : formatPct(cVal),
@@ -874,7 +874,7 @@ export const MATH_REGISTRY: Record<string, MetricMathDefinition> = {
       url: "https://www.nseindia.com",
       methodology: "Index Market Cap divided by aggregate index trailing earnings",
     },
-    generateDerivation: (currentValue, context = {}) => {
+    generateDerivation: (currentValue, _context = {}) => {
       const pe = parseNum(currentValue, 22.4);
       return {
         activeValueFormatted: currentValue ? String(currentValue) : `${pe.toFixed(1)}x`,
@@ -917,7 +917,7 @@ export const MATH_REGISTRY: Record<string, MetricMathDefinition> = {
       url: "https://www.ccilindia.com",
       methodology: "Secondary market weighted average yield differential",
     },
-    generateDerivation: (currentValue, context = {}) => {
+    generateDerivation: (currentValue, _context = {}) => {
       const spread = parseNum(currentValue, 0.42);
       const y10 = 6.92;
       const y3m = 6.50;

@@ -87,7 +87,7 @@ export function BrokerImportDialog({ onImport }: Props) {
     setLoading(true);
 
     try {
-      let endpoint = `/api/portfolio/import/${broker}`;
+      const endpoint = `/api/portfolio/import/${broker}`;
       let payload: Record<string, unknown> = {};
 
       if (broker === "zerodha") {

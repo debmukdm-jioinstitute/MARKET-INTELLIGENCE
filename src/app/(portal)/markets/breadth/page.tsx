@@ -3,8 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { BarChart3, TrendingUp, TrendingDown, Layers } from "lucide-react";
-import Link from "next/link";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export default function MarketBreadthPage() {
   const { data } = useIndiaDashboard(45_000);

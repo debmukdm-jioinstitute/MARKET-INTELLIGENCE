@@ -1,4 +1,3 @@
-import { feedFetch } from "@/lib/feeds/http";
 import type { LiveMacroSeries } from "@/lib/feeds/types";
 import { OFFICIAL_MOSPI_CPI_MONTHLY_INDEX, cpiYoYFromIndex } from "@/lib/macro/data-fetch";
 

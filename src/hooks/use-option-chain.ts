@@ -2,7 +2,7 @@
 
 import type { OptionChainSnapshot } from "@/lib/feeds/derivatives/types";
 import useSWR from "swr";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -18,7 +18,7 @@ export function useOptionExpiries(underlyingKey: string) {
   const url = underlyingKey ? `/api/feeds/upstox/option-expiries?underlying=${encodeURIComponent(underlyingKey)}` : null;
   const { data, error, isLoading } = useSWR<{ expiries: string[] }>(url, fetcher);
 
-  const expiries = data?.expiries ?? [];
+  const expiries = useMemo(() => data?.expiries ?? [], [data?.expiries]);
 
   useEffect(() => {
     if (expiries.length > 0 && !expiries.includes(expiry)) {

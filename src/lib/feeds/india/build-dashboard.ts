@@ -17,7 +17,6 @@ import {
   fetchIndiaIipRow,
   fetchIndiaRepoRow,
   fetchIndiaWpiRow,
-  scaleFxReservesRow,
 } from "@/lib/feeds/india/india-macro";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchUpstoxFoSnapshot, fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";

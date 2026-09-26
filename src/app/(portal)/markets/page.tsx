@@ -3,7 +3,6 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataInfo } from "@/components/feeds/data-info";
 import { quoteMap, useFeedHub } from "@/hooks/use-feed-hub";
 import { formatPct } from "@/lib/format";
 import { getReturn, lastClose } from "@/lib/market";

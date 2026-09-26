@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Database, CheckCircle2, AlertCircle, Clock, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DataSource {

@@ -15,7 +15,6 @@ export async function runScan(opts: { symbols?: string[]; budgetMs?: number; con
 
   const scanners: Record<string, ScanRow[]> = Object.fromEntries(SCANNERS.map((s) => [s.id, [] as ScanRow[]]));
   let scanned = 0;
-  let failed = 0;
   let lastBarT = 0;
   let i = 0;
 
@@ -25,7 +24,6 @@ export async function runScan(opts: { symbols?: string[]; budgetMs?: number; con
       const [symbol, name, industry] = universe[i++];
       const bars = await fetchDailyBars(symbol);
       if (!bars || bars.length < MIN_BARS) {
-        failed++;
         continue;
       }
       scanned++;

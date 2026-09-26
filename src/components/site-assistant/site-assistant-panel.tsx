@@ -253,7 +253,9 @@ function SiteAssistantChat({
     },
   });
 
-  addToolOutputRef.current = addToolOutput;
+  useEffect(() => {
+    addToolOutputRef.current = addToolOutput;
+  }, [addToolOutput]);
 
   const busy = status === "streaming" || status === "submitted";
 

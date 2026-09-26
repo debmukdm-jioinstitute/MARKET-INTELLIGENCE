@@ -1,11 +1,5 @@
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
-import {
-  fetchIndiaCreditGrowthRow,
-  fetchIndiaDepositRow,
-  fetchIndiaRepoRow,
-  fetchIndiaWpiRow,
-  scaleFxReservesRow,
-} from "@/lib/feeds/india/india-macro";
+import { fetchIndiaCreditGrowthRow, fetchIndiaWpiRow } from "@/lib/feeds/india/india-macro";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import {
   cpiYoYFromIndex,
@@ -36,24 +30,6 @@ function section(
   };
 }
 
-function linkMetric(
-  id: string,
-  label: string,
-  hint: string,
-  url: string,
-  provider: string,
-): MacroMetric {
-  return {
-    id,
-    label,
-    value: null,
-    unit: "link",
-    history: [],
-    source: { provider, url },
-    hint: `${hint} · Open →`,
-  };
-}
-
 export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
   const dashboard = await buildIndiaDashboard();
   const cpiIndex = await fetchCpiIndexSeries();
@@ -66,25 +42,25 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
     gdpReal,
     gdpPc,
     gdpDeflator,
-    privCons,
-    govCons,
-    gfcf,
+    _privCons,
+    _govCons,
+    _gfcf,
     exports,
     imports,
     agri,
     mfg,
     construction,
-    iipFred,
+    _iipFred,
     wpiRow,
     creditRow,
-    fiscalDef,
+    _fiscalDef,
     taxRev,
     debt,
-    unemp,
+    _unemp,
     lfpr,
     fdi,
     tradeBal,
-    mospi,
+    _mospi,
     usGdp,
     cnGdp,
     euGdp,
@@ -387,9 +363,6 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
       hint: "Steel, aluminum, copper wholesale · Open →",
     },
   ];
-
-  const fxRes = dashboard.indiaMacro.find((m) => m.indicator.includes("FX") || m.id.includes("fx"));
-  const scaledFx = fxRes ? scaleFxReservesRow(fxRes) : null;
 
   const sections: Record<MacroSectionId, MacroSectionPayload> = {
     regime: section("regime", [], [

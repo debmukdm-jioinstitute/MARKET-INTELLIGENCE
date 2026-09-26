@@ -5,7 +5,7 @@ import Sidebar from "@/components/ai-trader/Sidebar";
 import Badge from "@/components/ai-trader/Badge";
 import {
   fetchJSON, postJSON,
-  enterPaperTrade, exitPaperTrade, getPaperPositions, clearClosedPositions, setAutoTrade,
+  enterPaperTrade, exitPaperTrade, clearClosedPositions, setAutoTrade,
   SSE_STREAM_URL, API_BASE,
   type LiveState, type TradeSuggestion, type PaperPosition, type StreamPayload,
 } from "@/lib/ai-trader/api";

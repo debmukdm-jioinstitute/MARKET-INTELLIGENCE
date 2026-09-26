@@ -1,7 +1,7 @@
 "use client";
 
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 export function useIndiaDashboard(refreshMs = 55_000) {

@@ -6,7 +6,7 @@ import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { useFeedHub } from "@/hooks/use-feed-hub";
-import { Landmark, Newspaper } from "lucide-react";
+import { Landmark } from "lucide-react";
 
 export default function RbiPolicyPage() {
   const { data } = useIndiaDashboard(45_000);

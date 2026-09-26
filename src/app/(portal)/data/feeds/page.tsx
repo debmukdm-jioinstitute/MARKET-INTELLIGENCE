@@ -5,7 +5,7 @@ import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useFeedHub } from "@/hooks/use-feed-hub";
-import { ArrowRight, Newspaper, TrendingUp, Landmark, ShieldCheck, Database } from "lucide-react";
+import { ArrowRight, Newspaper, TrendingUp, Landmark } from "lucide-react";
 import Link from "next/link";
 
 export default function FeedsPage() {

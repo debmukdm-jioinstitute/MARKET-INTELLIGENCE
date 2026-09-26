@@ -71,13 +71,6 @@ function stdevSample(values: number[]) {
   return Math.sqrt(v);
 }
 
-function stdevPopulation(values: number[]) {
-  if (!values.length) return 0;
-  const m = mean(values);
-  const v = values.reduce((s, x) => s + (x - m) ** 2, 0) / values.length;
-  return Math.sqrt(v);
-}
-
 function covarianceSample(a: number[], b: number[]) {
   const n = Math.min(a.length, b.length);
   if (n < 2) return 0;
@@ -192,7 +185,7 @@ export function jensenAlphaOLS(p: number[], b: number[], rfAnnual: number, A = T
   const n = Math.min(p.length, b.length);
   if (n < 3) return { alphaDaily: 0, beta: 0 };
   const rfD = rfAnnual / A;
-  const y = p.slice(-n).map((r, i) => r - rfD);
+  const y = p.slice(-n).map((r) => r - rfD);
   const x = b.slice(-n).map((r) => r - rfD);
   const mx = mean(x);
   const my = mean(y);

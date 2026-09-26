@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
 import { MetricInfo } from "@/components/ui/metric-info";

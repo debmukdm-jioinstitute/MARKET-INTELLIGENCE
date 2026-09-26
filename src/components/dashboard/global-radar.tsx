@@ -1,6 +1,5 @@
 "use client";
 
-import { DataInfo } from "@/components/feeds/data-info";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { IndiaDashboardPayload, QuoteField } from "@/lib/feeds/india/types";
 import { fmtChgPct, fmtInr, fmtNum, fmtUsd } from "@/lib/format-india";

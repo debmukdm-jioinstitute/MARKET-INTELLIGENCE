@@ -27,7 +27,10 @@ async function broadcast(e: NewEvent): Promise<{ sent: number; failed: number }>
         return r.ok;
       }),
     );
-    for (const ok of results) ok ? sent++ : failed++;
+    for (const ok of results) {
+      if (ok) sent++;
+      else failed++;
+    }
   }
   if (hasDatabase()) {
     await sql()`INSERT INTO notifications_sent (title, body, url, recipient_count, failure_count) VALUES (${e.title}, ${e.body}, ${e.href}, ${sent}, ${failed})`.catch(() => {});

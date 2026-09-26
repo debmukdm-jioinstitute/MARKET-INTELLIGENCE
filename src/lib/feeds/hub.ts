@@ -125,7 +125,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       "massive",
       "Massive (US market data)",
       massive,
-      (v) => hasMassiveApiKey() && !massive.error,
+      (_v) => hasMassiveApiKey() && !massive.error,
     ),
     health("stooq", "Stooq", stooq, (v) => Array.isArray(v) && v.length > 0),
     health(

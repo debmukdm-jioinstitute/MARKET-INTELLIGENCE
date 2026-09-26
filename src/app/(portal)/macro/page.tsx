@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
 import { RegimeBanner } from "@/components/macro/regime-banner";
@@ -57,7 +58,9 @@ export default function MacroPage() {
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               Updated {new Date(data.fetchedAt).toLocaleString()} · Quadrant labels in{" "}
-              <a href="/macro/regime" className="text-primary hover:underline">Macro regime</a>
+              <Link href="/macro/regime" className="text-primary hover:underline">
+                Macro regime
+              </Link>
             </p>
           </Panel>
           <div>

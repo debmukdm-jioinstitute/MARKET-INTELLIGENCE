@@ -51,11 +51,6 @@ const thin: Partial<ExcelJS.Border> = { style: "thin", color: { argb: `FF${BRAND
 
 /** Excel forbids these characters in sheet names. */
 const safeName = (s: string) => s.replace(/[\\/?*[\]:]/g, "-").slice(0, 31);
-const colLetter = (n: number) => {
-  let s = "";
-  for (let x = n; x > 0; x = Math.floor((x - 1) / 26)) s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
-  return s;
-};
 const isUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
 function normalise(v: unknown, fmt: ColFmt): ExcelJS.CellValue {

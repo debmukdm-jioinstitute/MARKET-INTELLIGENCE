@@ -3,7 +3,7 @@
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { Flame, Activity, TrendingUp } from "lucide-react";
+import { Activity } from "lucide-react";
 
 export default function MarketMomentumPage() {
   return (

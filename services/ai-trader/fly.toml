@@ -1,0 +1,33 @@
+# Fly.io — Mumbai region, 2GB RAM for ML stack. See docs/AI-TRADER-PRODUCTION.md
+app = "mi-ai-trader"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  LOG_LEVEL = "INFO"
+  TRADE_MODE = "paper"
+  NUMBA_CACHE_DIR = "/tmp/numba"
+
+[http_service]
+  internal_port = 5050
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "45s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/state"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2048mb"
+
+[deploy]
+  release_command = "python -c \"from database.db import init_db; init_db()\""

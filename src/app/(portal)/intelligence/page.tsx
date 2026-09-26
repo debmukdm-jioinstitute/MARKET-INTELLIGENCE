@@ -8,7 +8,7 @@ import { MonitorsBar } from "@/components/feeds/monitors-bar";
 import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useFeedHub } from "@/hooks/use-feed-hub";
-import { Radio, Sparkles, Send, Bot, ShieldCheck, Newspaper, ExternalLink } from "lucide-react";
+import { Sparkles, Send, Bot, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function IntelligencePage() {

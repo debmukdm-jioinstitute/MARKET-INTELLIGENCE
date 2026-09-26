@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/ai-trader/Sidebar";
 import Badge from "@/components/ai-trader/Badge";
 import {

@@ -8,7 +8,7 @@ import {
 } from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
-import { fetchBenchmarkHistory, weightsFor, BENCHMARK_SNAPSHOT_DATE } from "@/lib/my-portfolio/benchmarks";
+import { fetchBenchmarkHistory, weightsFor } from "@/lib/my-portfolio/benchmarks";
 import { CATEGORY_METRICS, CATEGORY_TITLES, GLOSSARY, OVERVIEW_METRICS } from "@/lib/my-portfolio/glossary";
 import type {
   Holding,
@@ -377,8 +377,6 @@ export async function computePortfolioAnalysis(
   const n = Math.min(portRets.length, benchRets.length);
   const p = portRets.slice(portRets.length - n);
   const b = benchRets.slice(benchRets.length - n);
-  const excess = p.map((r, i) => r - b[i]!);
-
   const overview: MetricResult[] = [];
   const categories: MetricCategory[] = [];
   const resultMap = new Map<string, MetricResult>();
@@ -563,8 +561,6 @@ export async function computePortfolioAnalysis(
   set(m("factorQuality", factorQualityVal, num(factorQualityVal, 2), "approx", tone(factorQualityVal), "Quality factor loading (return consistency and balance sheet proxy)."));
 
   // Factor Market
-  const benchVolApprox = b.length ? stdev(b) * Math.sqrt(252) : 0.16;
-  const portVolApprox = p.length ? stdev(p) * Math.sqrt(252) : 0.20;
   const betaApprox = (p.length && b.length)
     ? covariance(p, b) / Math.max(stdev(b) ** 2, 1e-12)
     : 1.0;

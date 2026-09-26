@@ -1,0 +1,21 @@
+# TimescaleDB for local AI-trader (requires Docker Desktop or Colima).
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trading
+    volumes:
+      - ai_trader_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trading"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  ai_trader_pg:

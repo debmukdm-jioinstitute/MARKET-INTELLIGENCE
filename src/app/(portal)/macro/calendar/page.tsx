@@ -3,7 +3,6 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { Calendar, Clock, Globe } from "lucide-react";
 
 interface CalendarEvent {
   metricId: string;

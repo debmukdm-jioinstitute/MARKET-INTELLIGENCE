@@ -4,7 +4,6 @@ import { getRbiHomeMarket } from "@/lib/collector/rbi-live";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
-import { METRIC_COPY } from "@/lib/macro/metric-copy";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import type { LiveQuote } from "@/lib/feeds/types";
 
@@ -95,13 +94,6 @@ function quoteSource(sym: string, q?: LiveQuote): FieldSource {
     };
   }
   return yahooSource(sym);
-}
-
-function copySource(key: string): FieldSource {
-  const c = METRIC_COPY[key];
-  return c
-    ? { provider: c.provider, url: c.url, asOf: new Date().toISOString() }
-    : { provider: "Open data", url: "#" };
 }
 
 export async function buildMacroTape(): Promise<MacroTapePayload> {

@@ -17,11 +17,11 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "trading")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
-DB_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    if DB_PASSWORD
-    else f"postgresql://{DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+DB_SSLMODE = os.getenv("DB_SSLMODE", "").strip()
+_db_auth = f"{DB_USER}:{DB_PASSWORD}" if DB_PASSWORD else DB_USER
+DB_URL = f"postgresql+psycopg://{_db_auth}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if DB_SSLMODE:
+    DB_URL = f"{DB_URL}?sslmode={DB_SSLMODE}"
 
 # ── Zerodha Kite Connect ──────────────────────────────────────────────────────
 KITE_API_KEY = os.getenv("KITE_API_KEY", "")

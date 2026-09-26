@@ -1,7 +1,7 @@
 import { TRADING_DAYS } from "@/lib/calendar";
 import { formatCompactInr, formatInr, formatNumber, formatPct, toneFromSigned } from "@/lib/format";
 import { getPrice, getPriceSeries, getReturns } from "@/lib/market";
-import type { Holding, KpiMetric, SeriesPoint, Trade, VirtualPortfolio } from "@/lib/types";
+import type { Holding, KpiMetric, VirtualPortfolio } from "@/lib/types";
 import { getInstrument } from "@/lib/universe";
 
 const RF_DAILY = 0.045 / 252;

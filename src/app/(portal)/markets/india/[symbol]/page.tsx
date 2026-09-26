@@ -7,14 +7,7 @@ import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
-  ArrowUpRight,
   BarChart2,
-  TrendingUp,
-  Activity,
-  Layers,
-  Shield,
-  Clock,
-  ExternalLink,
 } from "lucide-react";
 import { MetricInfo } from "@/components/ui/metric-info";
 

@@ -2,7 +2,6 @@
 
 import type { FullMarketQuote } from "@/lib/feeds/sources/upstox";
 import useSWR from "swr";
-import { useEffect } from "react";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);

@@ -7,7 +7,7 @@ import { RefreshCw } from "lucide-react";
 
 export default function AIPage() {
   const [rl, setRl] = useState<RLStatus>({});
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);

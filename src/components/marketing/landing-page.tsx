@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { AnimatedHeadline } from "@/components/marketing/animated-headline";
 import { LenisProvider } from "@/components/marketing/lenis-provider";
@@ -24,7 +25,7 @@ import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headlin
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FEATURES = [
+const _FEATURES = [
   {
     icon: BarChart3,
     title: "Track your portfolio",
@@ -47,7 +48,7 @@ const FEATURES = [
   },
 ];
 
-const STEPS = [
+const _STEPS = [
   { n: "1", title: "Create a free account", body: "No card, no waiting. Sign up with just an email." },
   { n: "2", title: "Build your book", body: "Add your holdings, or start from a ready-made virtual portfolio." },
   { n: "3", title: "See what matters", body: "Get instant insights on performance, risk, and where to look next." },
@@ -126,6 +127,7 @@ const COMPARISON_FEATURES = [
 ];
 
 export function LandingPage() {
+  const router = useRouter();
   const { user, ready, enterGuest, isGuest } = useAuth();
   const hasAccess = ready && Boolean(user);
   const container = useRef<HTMLDivElement>(null);
@@ -206,7 +208,7 @@ export function LandingPage() {
     });
 
     // Stats counter trigger (simple fade up for now to ensure stability)
-    gsap.utils.toArray(".stat-card").forEach((card: any, i) => {
+    gsap.utils.toArray<Element>(".stat-card").forEach((card, _i) => {
       gsap.from(card, {
         y: 40,
         opacity: 0,
@@ -336,7 +338,7 @@ export function LandingPage() {
                   <button
                     type="button"
                     onClick={() => void enterGuest().then(() => {
-                      window.location.href = "/Home";
+                      router.push("/Home");
                     })}
                     className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
                   >
