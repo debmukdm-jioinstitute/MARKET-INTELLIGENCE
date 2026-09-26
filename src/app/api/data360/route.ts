@@ -1,4 +1,5 @@
 import { fetchDataPage } from "@/lib/data360/client";
+import { liveObsToRows } from "@/lib/data360/api-json";
 import { data360RefAreas } from "@/lib/data360/config";
 import { ensureData360Schema } from "@/lib/data360/store";
 import { syncStatus } from "@/lib/data360/sync";
@@ -7,12 +8,17 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+function jsonError(message: string, status = 500) {
+  return NextResponse.json({ ok: false, error: message }, { status });
+}
+
 /**
  * GET /api/data360 — mirror status
  * GET /api/data360?database=WB_WDI&indicator=...&ref_area=IND&limit=100 — stored rows
  * GET /api/data360?live=1&database=...&indicator=... — passthrough to Data360 API (small pages)
  */
 export async function GET(req: Request) {
+  try {
   const sp = new URL(req.url).searchParams;
   const database = sp.get("database") ?? sp.get("DATABASE_ID");
   const indicator = sp.get("indicator") ?? sp.get("INDICATOR");
@@ -76,8 +82,7 @@ export async function GET(req: Request) {
     const rows = pattern
       ? await db`
           SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
-            (SELECT count(*)::int FROM data360_observations o
-             WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id) AS obs_stored
+            i.obs_synced AS obs_stored
           FROM data360_indicators i
           WHERE i.database_id = ${database} AND i.tracked AND i.indicator_id ILIKE ${pattern}
           ORDER BY i.indicator_id
@@ -85,8 +90,7 @@ export async function GET(req: Request) {
         `
       : await db`
           SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
-            (SELECT count(*)::int FROM data360_observations o
-             WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id) AS obs_stored
+            i.obs_synced AS obs_stored
           FROM data360_indicators i
           WHERE i.database_id = ${database} AND i.tracked
           ORDER BY i.indicator_id
@@ -119,7 +123,7 @@ export async function GET(req: Request) {
     if (area && !allowed.includes(area)) {
       return NextResponse.json({ error: `ref_area must be one of: ${allowed.join(", ")}` }, { status: 400 });
     }
-    const rows = area
+    let rows = area
       ? await db`
           SELECT ref_area, time_period, obs_value, unit_measure, freq, payload
           FROM data360_observations
@@ -134,8 +138,36 @@ export async function GET(req: Request) {
           ORDER BY time_period DESC, ref_area
           LIMIT ${limit}
         `;
-    return NextResponse.json({ database, indicator, refAreas: area ? [area] : allowed, count: rows.length, rows });
+    let source: "mirror" | "live" = "mirror";
+    if (!rows.length) {
+      try {
+        const page = await fetchDataPage({
+          databaseId: database,
+          indicator,
+          refArea: area,
+          top: Math.min(limit, 1000),
+        });
+        const liveRows = liveObsToRows(page.value ?? [], area);
+        if (liveRows.length) {
+          rows = liveRows.slice(-limit).reverse();
+          source = "live";
+        }
+      } catch {
+        /* mirror empty is ok */
+      }
+    }
+    return NextResponse.json({
+      database,
+      indicator,
+      refAreas: area ? [area] : allowed,
+      count: rows.length,
+      rows,
+      source,
+    });
   }
 
   return NextResponse.json({ error: "Provide database+indicator, or omit for status" }, { status: 400 });
+  } catch (e) {
+    return jsonError(e instanceof Error ? e.message : String(e));
+  }
 }

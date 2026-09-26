@@ -5,7 +5,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+
+async function readJson<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  if (!text.trim()) {
+    throw new Error(`Empty API response (HTTP ${res.status}). Try refresh or sign in again.`);
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`Bad API response (HTTP ${res.status}). Not JSON.`);
+  }
+}
 
 type StatusPayload = {
   ok: boolean;
@@ -49,7 +61,7 @@ const PRESETS: { database: string; indicator: string; label: string }[] = [
   { database: "WB_WDI", indicator: "WB_WDI_NY_GDP_MKTP_KD_ZG", label: "USA real GDP growth" },
 ];
 
-export default function Data360ExplorerPage() {
+function Data360ExplorerInner() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<StatusPayload["status"] | null>(null);
   const [refAreas, setRefAreas] = useState<string[]>(["IND", "USA"]);
@@ -61,12 +73,13 @@ export default function Data360ExplorerPage() {
   const [selected, setSelected] = useState<{ database: string; indicator: string } | null>(null);
   const [refArea, setRefArea] = useState("IND");
   const [obs, setObs] = useState<ObsRow[]>([]);
+  const [seriesSource, setSeriesSource] = useState<"mirror" | "live" | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
   const loadStatus = useCallback(async () => {
     const res = await fetch("/api/data360");
-    const j = (await res.json()) as StatusPayload & { error?: string };
+    const j = await readJson<StatusPayload & { error?: string }>(res);
     if (!res.ok || j.error) throw new Error(j.error ?? "status failed");
     setStatus(j.status ?? null);
     if (j.status?.refAreas?.length) setRefAreas(j.status.refAreas);
@@ -74,7 +87,7 @@ export default function Data360ExplorerPage() {
 
   const loadDatasets = useCallback(async () => {
     const res = await fetch("/api/data360?list=datasets");
-    const j = (await res.json()) as { datasets?: DatasetRow[]; refAreas?: string[]; error?: string };
+    const j = await readJson<{ datasets?: DatasetRow[]; refAreas?: string[]; error?: string }>(res);
     if (!res.ok) throw new Error(j.error ?? "datasets failed");
     setDatasets(j.datasets ?? []);
     if (j.refAreas?.length) setRefAreas(j.refAreas);
@@ -84,7 +97,7 @@ export default function Data360ExplorerPage() {
     const sp = new URLSearchParams({ list: "indicators", database, limit: "80" });
     if (q.trim()) sp.set("q", q.trim());
     const res = await fetch(`/api/data360?${sp}`);
-    const j = (await res.json()) as { indicators?: IndicatorRow[]; total?: number; error?: string };
+    const j = await readJson<{ indicators?: IndicatorRow[]; total?: number; error?: string }>(res);
     if (!res.ok) throw new Error(j.error ?? "indicators failed");
     setIndicators(j.indicators ?? []);
     setIndTotal(j.total ?? 0);
@@ -99,9 +112,10 @@ export default function Data360ExplorerPage() {
       limit: "120",
     });
     const res = await fetch(`/api/data360?${sp}`);
-    const j = (await res.json()) as { rows?: ObsRow[]; error?: string };
+    const j = await readJson<{ rows?: ObsRow[]; source?: "mirror" | "live"; error?: string }>(res);
     if (!res.ok) throw new Error(j.error ?? "series failed");
     setObs(j.rows ?? []);
+    setSeriesSource(j.source ?? null);
   }, [selected, refArea]);
 
   useEffect(() => {
@@ -275,6 +289,11 @@ export default function Data360ExplorerPage() {
         >
           {selected ? (
             <>
+              {seriesSource === "live" ? (
+                <p className="mb-2 text-xs text-amber-700 bg-amber-500/10 rounded-md px-2 py-1">
+                  Mirror empty — showing live World Bank Data360 for this series. Nightly cron fills local copy.
+                </p>
+              ) : null}
               <div className="mb-3 flex flex-wrap gap-2">
                 {refAreas.map((a) => (
                   <button
@@ -326,5 +345,13 @@ export default function Data360ExplorerPage() {
         </Panel>
       </div>
     </div>
+  );
+}
+
+export default function Data360ExplorerPage() {
+  return (
+    <Suspense fallback={<div className="portal-page p-10 text-sm text-muted-foreground">Loading Data360…</div>}>
+      <Data360ExplorerInner />
+    </Suspense>
   );
 }
