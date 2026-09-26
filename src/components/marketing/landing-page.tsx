@@ -22,6 +22,7 @@ import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
 import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
+import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -825,7 +826,13 @@ export function LandingPage() {
               <NewsletterSubscribeForm className="mt-3" />
             </div>
           </div>
-          <p className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-8 text-center text-sm text-gray-400">
+          <div className="mx-auto mt-12 max-w-6xl border-t border-white/60 pt-10">
+            <p className="text-sm font-semibold uppercase tracking-widest text-gray-400">Featured on</p>
+            <div className="mt-4">
+              <ProductHuntBadges />
+            </div>
+          </div>
+          <p className="mx-auto mt-10 max-w-6xl pt-4 text-center text-sm text-gray-400">
             © Market Intelligence
           </p>
         </footer>
