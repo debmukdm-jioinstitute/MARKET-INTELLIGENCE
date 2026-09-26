@@ -17,6 +17,14 @@
       "schedule": "30 2 * * *"
     },
     {
+      "path": "/api/cron/data360/catalog",
+      "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/data360",
+      "schedule": "45 3 * * *"
+    },
+    {
       "path": "/api/cron/collect",
       "schedule": "15 3 * * *"
     },

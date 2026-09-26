@@ -9,6 +9,7 @@ type Data = {
   series: Series[];
   failures: { collector: string; error: string | null; at: string | null }[];
   datagov: { dataset_id: string | null; kind: string; ok: boolean; rows: number; error: string | null; ran_at: string }[];
+  data360: { database_id: string | null; indicator_id: string | null; kind: string; ok: boolean; rows: number; error: string | null; ran_at: string }[];
   scanner: { id: string; run_at: string }[];
   research: { source: string; ok: boolean; items_found: number; error: string | null; ran_at: string }[];
   prowess: { stored: number; failed: number };
@@ -79,6 +80,18 @@ export default function AdminFeedsPage() {
           <ul className="space-y-1 text-sm">
             {data.datagov.map((d, i) => <li key={i} className={d.ok ? "text-gray-900" : "text-red-600"}>{d.kind} {d.dataset_id ?? ""} · {d.rows} rows{d.error ? ` · ${d.error}` : ""} <span className="text-gray-500">({when(d.ran_at)})</span></li>)}
             {data.datagov.length === 0 ? <li className="text-gray-500">No syncs logged.</li> : null}
+          </ul>
+        </AdminCard>
+        <AdminCard title="World Bank Data360" subtitle="Status at /api/data360 · docs/DATA360.md">
+          <ul className="space-y-1 text-sm">
+            {data.data360?.map((d, i) => (
+              <li key={i} className={d.ok ? "text-gray-900" : "text-red-600"}>
+                {d.kind} {d.database_id ?? ""}{d.indicator_id ? ` · ${d.indicator_id.slice(0, 24)}…` : ""} · {d.rows} rows
+                {d.error ? ` · ${d.error}` : ""}{" "}
+                <span className="text-gray-500">({when(d.ran_at)})</span>
+              </li>
+            ))}
+            {!data.data360?.length ? <li className="text-gray-500">No syncs logged. Run GET /api/cron/data360/catalog then /api/cron/data360.</li> : null}
           </ul>
         </AdminCard>
         <AdminCard title="Research scrapes">

@@ -8,6 +8,8 @@ export const CRONS = [
   { path: "/api/cron/scrape-research", schedule: "0 4 * * *", source: "Vercel", what: "Broker research report scraper" },
   { path: "/api/cron/options-flow", schedule: "45 10 * * 1-5", source: "Vercel", what: "Options-flow snapshots" },
   { path: "/api/cron/datagov", schedule: "30 2 * * *", source: "Vercel", what: "data.gov.in sync" },
+  { path: "/api/cron/data360/catalog", schedule: "0 2 * * 0", source: "Vercel", what: "World Bank Data360 indicator catalog" },
+  { path: "/api/cron/data360", schedule: "45 3 * * *", source: "Vercel", what: "World Bank Data360 observation sync (resumable)" },
   { path: "/api/cron/prowess", schedule: "30 4 * * *", source: "Vercel", what: "CMIE Prowess sync" },
   { path: "/api/cron/scan", schedule: "30 11 * * 1-5", source: "Vercel", what: "Market scanner" },
   { path: "/api/cron/signals", schedule: "45 11 * * 1-5", source: "Vercel", what: "AI signals" },
