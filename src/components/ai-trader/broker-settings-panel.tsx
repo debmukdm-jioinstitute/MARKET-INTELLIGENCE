@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Panel } from "@/components/layout/page-header";
 import { API_BASE, fetchJSON, postJSON } from "@/lib/ai-trader/api";
+import { cn } from "@/lib/utils";
+import Badge from "@/components/ai-trader/Badge";
 
 type BrokerStatus = {
   connected?: boolean;
@@ -76,20 +79,13 @@ export function BrokerSettingsPanel() {
   };
 
   return (
-    <div className="t-panel mb-4 p-5">
-      <h2 className="mb-1 text-[12px] font-bold uppercase tracking-wider" style={{ color: "#c8cdd5" }}>
-        Broker (Zerodha / paper)
-      </h2>
-      <p className="mb-4 text-[10px]" style={{ color: "#5a6270" }}>
-        Same controls as AI-trader live desk: connect, OAuth, reconcile, kill switch. Use TEST mode until you trust the stack.
-      </p>
+    <Panel
+      title="Broker (Zerodha / paper)"
+      subtitle="Connect, OAuth, reconcile, and kill switch. Use test mode until you trust the stack."
+    >
       <div className="mb-3 flex flex-wrap gap-2">
-        <span className="t-badge" style={{ color: status?.connected ? "#00e87b" : "#ff3e3e", borderColor: status?.connected ? "#1a5c3a" : "#5c1a1a" }}>
-          {status?.broker ?? "—"} {status?.connected ? "connected" : "disconnected"}
-        </span>
-        <span className="t-badge" style={{ color: "#4da6ff", borderColor: "#1a3a5c" }}>
-          Mode: {status?.mode?.toUpperCase() ?? "—"}
-        </span>
+        <Badge label={`${status?.broker ?? "—"} ${status?.connected ? "connected" : "disconnected"}`} variant={status?.connected ? "green" : "red"} />
+        <Badge label={`Mode: ${status?.mode?.toUpperCase() ?? "—"}`} variant="blue" />
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="t-btn" onClick={connect}>
@@ -101,11 +97,7 @@ export function BrokerSettingsPanel() {
         <button type="button" className="t-btn" onClick={reconcile}>
           Reconcile positions
         </button>
-        <button
-          type="button"
-          className="t-btn-red"
-          onClick={() => fetch(`${API_BASE}/api/broker/kill`, { method: "POST" }).then(refresh)}
-        >
+        <button type="button" className="t-btn-red" onClick={() => fetch(`${API_BASE}/api/broker/kill`, { method: "POST" }).then(refresh)}>
           Kill switch
         </button>
       </div>
@@ -114,22 +106,14 @@ export function BrokerSettingsPanel() {
           value={requestToken}
           onChange={(e) => setRequestToken(e.target.value)}
           placeholder="Paste request_token after Kite login"
-          className="min-w-[240px] flex-1 text-[11px]"
+          className="min-w-[240px] flex-1 text-sm"
         />
         <button type="button" className="t-btn-green" onClick={completeAuth}>
           Complete OAuth
         </button>
       </div>
-      {loginUrl ? (
-        <p className="mt-2 text-[10px] break-all" style={{ color: "#4da6ff" }}>
-          {loginUrl}
-        </p>
-      ) : null}
-      {msg ? (
-        <p className="mt-2 text-[11px]" style={{ color: "#e8c300" }}>
-          {msg}
-        </p>
-      ) : null}
-    </div>
+      {loginUrl ? <p className="mt-2 break-all text-xs text-primary">{loginUrl}</p> : null}
+      {msg ? <p className={cn("mt-2 text-sm", msg.includes("failed") ? "text-destructive" : "text-chart-3")}>{msg}</p> : null}
+    </Panel>
   );
 }

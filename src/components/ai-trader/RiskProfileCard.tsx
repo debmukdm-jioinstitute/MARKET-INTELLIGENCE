@@ -1,6 +1,8 @@
 "use client";
 
 import type { RiskProfile, RiskLevel } from "@/lib/ai-trader/api";
+import { cn } from "@/lib/utils";
+import { riskActiveBg } from "@/lib/ai-trader/algo-brand";
 
 interface Props {
   level: RiskLevel;
@@ -9,44 +11,46 @@ interface Props {
   onSelect: (l: RiskLevel) => void;
 }
 
-const colors: Record<RiskLevel, string> = {
-  low: "#4da6ff",
-  medium: "#e8c300",
-  high: "#00e87b",
-};
-
 export default function RiskProfileCard({ level, profile, active, onSelect }: Props) {
-  const c = colors[level];
   return (
     <button
+      type="button"
       onClick={() => onSelect(level)}
-      className="text-left w-full p-4 transition-all"
-      style={{
-        background: active ? '#1e222c' : '#181c24',
-        border: `1px solid ${active ? c : '#252a33'}`,
-        color: active ? c : '#5a6270',
-      }}
+      className={cn(
+        "w-full rounded-xl border bg-card p-4 text-left transition-all",
+        active ? cn("border-primary shadow-sm ring-2 ring-primary/20") : "border-border hover:border-primary/40",
+      )}
     >
-      <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: active ? c : '#5a6270' }}>
+      <div
+        className={cn(
+          "mb-3 text-xs font-bold uppercase tracking-wide",
+          active ? (level === "low" ? "text-chart-1" : level === "medium" ? "text-chart-3" : "text-chart-2") : "text-muted-foreground",
+        )}
+      >
         {level} — {profile.name}
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
         {[
-          ["Lot size",    profile.base_lot_size],
-          ["Lot mult",    `×${profile.lot_multiplier}`],
-          ["SL",          `${(profile.sl_pct * 100).toFixed(0)}%`],
-          ["Target",      `${(profile.tgt_pct * 100).toFixed(0)}%`],
-          ["Min score",   (profile.score_threshold * 100).toFixed(0) + "%"],
-          ["Max trades",  profile.max_trades_day],
+          ["Lot size", profile.base_lot_size],
+          ["Lot mult", `×${profile.lot_multiplier}`],
+          ["SL", `${(profile.sl_pct * 100).toFixed(0)}%`],
+          ["Target", `${(profile.tgt_pct * 100).toFixed(0)}%`],
+          ["Min score", `${(profile.score_threshold * 100).toFixed(0)}%`],
+          ["Max trades", profile.max_trades_day],
           ["Max premium", `₹${profile.max_premium}`],
           ["Capital/trade", `${(profile.max_capital_per_trade * 100).toFixed(0)}%`],
         ].map(([k, v]) => (
           <div key={String(k)} className="flex justify-between gap-2">
-            <span style={{ color: '#5a6270' }}>{k}</span>
-            <span className="font-semibold" style={{ color: '#c8cdd5' }}>{v}</span>
+            <span className="text-muted-foreground">{k}</span>
+            <span className="font-semibold text-foreground">{v}</span>
           </div>
         ))}
       </div>
+      {active ? (
+        <span className={cn("mt-3 inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase", riskActiveBg(level))}>
+          Selected
+        </span>
+      ) : null}
     </button>
   );
 }

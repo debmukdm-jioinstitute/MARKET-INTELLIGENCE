@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
+import { AlgoPageHeader, AlgoStatTile } from "@/components/ai-trader/algo-desk-ui";
+import { Panel } from "@/components/layout/page-header";
 import Badge from "@/components/ai-trader/Badge";
 import { API_BASE, fetchJSON } from "@/lib/ai-trader/api";
+import { pnlClass, regimeClass, pnlFmt } from "@/lib/ai-trader/algo-brand";
+import { cn } from "@/lib/utils";
 import { Play, RefreshCw } from "lucide-react";
 
 type ReplayDay = { day: string; ticks: number };
@@ -95,35 +99,22 @@ export default function ReplayPage() {
   const wins = replay.trades.filter((t) => t.pnl > 0).length;
   const winRate = replay.trades.length ? Math.round((wins / replay.trades.length) * 100) : null;
   const timeLabel = replay.current_time?.split(" ")[1] ?? replay.current_time ?? "—";
-  const regimeColor = replay.regime.includes("BULL") ? "#00e87b" : replay.regime.includes("BEAR") ? "#ff3e3e" : "#e8c300";
 
   return (
     <AlgoDeskShell>
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-sm font-bold uppercase tracking-wider" style={{ color: "#00e87b" }}>
-              Tick replay simulation
-            </h1>
-            <p className="text-[10px] mt-0.5" style={{ color: "#3d4450" }}>
-              Fast-forward one historical session with the same ML + strategy pipeline as live (AI-trader)
-            </p>
-          </div>
-          <span className="t-badge" style={{ borderColor: "#a371f7", color: "#a371f7", background: "#1a1028" }}>
-            Simulation
-          </span>
-        </div>
+      <AlgoPageHeader
+        title="Tick replay simulation"
+        subtitle="Fast-forward one historical session with the same ML and strategy pipeline as live trading."
+        badge={<Badge label="Simulation" variant="purple" />}
+      />
 
-        <div className="t-panel p-4 mb-4 flex flex-wrap items-end gap-4">
+      <Panel title="Session setup">
+        <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label htmlFor="replay-day" className="text-[9px] uppercase tracking-wider" style={{ color: "#5a6270" }}>
+            <label htmlFor="replay-day" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Select day
             </label>
-            <select
-              id="replay-day"
-              value={selectedDay}
-              onChange={(e) => setSelectedDay(e.target.value)}
-              className="mt-1 block min-w-[220px] text-[11px]"
-            >
+            <select id="replay-day" value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} className="mt-1 block min-w-[220px]">
               <option value="">— pick a day —</option>
               {days.map((d) => (
                 <option key={d.day} value={d.day}>
@@ -136,48 +127,39 @@ export default function ReplayPage() {
             type="button"
             disabled={!selectedDay || starting || replay.status === "running"}
             onClick={startReplay}
-            className="t-btn-green flex items-center gap-2 px-4 py-2 disabled:opacity-50"
+            className="t-btn-green inline-flex items-center gap-2 disabled:opacity-50"
           >
-            {starting || replay.status === "running" ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+            {starting || replay.status === "running" ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
             Start replay
           </button>
           <div className="min-w-[200px] flex-1">
-            <div className="flex justify-between text-[10px]" style={{ color: "#5a6270" }}>
-              <span>{replay.status}</span>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span className="capitalize">{replay.status}</span>
               <span className="tabular-nums">{replay.progress}%</span>
             </div>
-            <div className="mt-1 h-1.5 w-full" style={{ background: "#21262d" }}>
-              <div className="h-full transition-all" style={{ width: `${replay.progress}%`, background: "#4da6ff" }} />
+            <div className="algo-progress-track mt-2">
+              <div className="algo-progress-fill" style={{ width: `${replay.progress}%` }} />
             </div>
           </div>
         </div>
+      </Panel>
 
-        <div className="mb-4 grid grid-cols-2 gap-[1px] md:grid-cols-4 xl:grid-cols-7">
-          {[
-            { k: "Time", v: timeLabel, c: "#4da6ff" },
-            { k: "NIFTY", v: replay.current_price ? `₹${replay.current_price.toLocaleString("en-IN")}` : "—", c: "#4da6ff" },
-            { k: "Regime", v: replay.regime, c: regimeColor },
-            { k: "Ticks", v: replay.ticks_processed.toLocaleString("en-IN"), c: "#c8cdd5" },
-            { k: "Trades", v: String(replay.trades.length), c: "#c8cdd5" },
-            { k: "Win rate", v: winRate != null ? `${winRate}%` : "—", c: "#00e87b" },
-            {
-              k: "Day P&L",
-              v: `₹${replay.total_pnl.toLocaleString("en-IN")}`,
-              c: replay.total_pnl >= 0 ? "#00e87b" : "#ff3e3e",
-            },
-          ].map(({ k, v, c }) => (
-            <div key={k} className="t-panel p-3">
-              <p className="text-[9px] uppercase tracking-wider" style={{ color: "#5a6270" }}>
-                {k}
-              </p>
-              <p className="mt-1 text-lg font-semibold tabular-nums" style={{ color: c }}>
-                {v}
-              </p>
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+        <AlgoStatTile label="Time" value={timeLabel} valueClassName="text-primary" />
+        <AlgoStatTile
+          label="NIFTY"
+          value={replay.current_price ? `₹${replay.current_price.toLocaleString("en-IN")}` : "—"}
+          valueClassName="text-primary"
+        />
+        <AlgoStatTile label="Regime" value={replay.regime} valueClassName={regimeClass(replay.regime)} />
+        <AlgoStatTile label="Ticks" value={replay.ticks_processed.toLocaleString("en-IN")} />
+        <AlgoStatTile label="Trades" value={String(replay.trades.length)} />
+        <AlgoStatTile label="Win rate" value={winRate != null ? `${winRate}%` : "—"} valueClassName="text-chart-2" />
+        <AlgoStatTile label="Day P&L" value={pnlFmt(replay.total_pnl)} valueClassName={pnlClass(replay.total_pnl)} />
+      </div>
 
-        <div className="t-panel overflow-x-auto p-3">
+      <Panel title="Replay trades" subtitle={replay.trades.length ? `${replay.trades.length} fills this run` : "Select a day and start replay"}>
+        <div className="overflow-x-auto">
           <table>
             <thead>
               <tr>
@@ -196,14 +178,14 @@ export default function ReplayPage() {
             <tbody>
               {replay.trades.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-6 text-center text-[11px]" style={{ color: "#484f58" }}>
-                    Select a day and start replay
+                  <td colSpan={10} className="py-8 text-center text-sm text-muted-foreground">
+                    No trades yet
                   </td>
                 </tr>
               ) : (
                 [...replay.trades].reverse().map((t, i) => (
                   <tr key={`${t.symbol}-${i}`}>
-                    <td style={{ color: "#5a6270" }}>{t.entry_time?.split(" ")[1] ?? t.entry_time ?? ""}</td>
+                    <td className="text-muted-foreground">{t.entry_time?.split(" ")[1] ?? t.entry_time ?? ""}</td>
                     <td className="font-semibold">{t.symbol}</td>
                     <td>
                       <Badge label={t.direction} variant={t.direction === "CALL" ? "green" : "red"} />
@@ -211,9 +193,7 @@ export default function ReplayPage() {
                     <td>{t.strategy}</td>
                     <td className="tabular-nums">₹{t.entry_price}</td>
                     <td className="tabular-nums">{t.exit_price ?? "—"}</td>
-                    <td className="tabular-nums" style={{ color: t.pnl >= 0 ? "#00e87b" : "#ff3e3e", fontWeight: 700 }}>
-                      ₹{t.pnl}
-                    </td>
+                    <td className={cn("tabular-nums font-semibold", pnlClass(t.pnl))}>{pnlFmt(t.pnl)}</td>
                     <td>{t.result}</td>
                     <td className="tabular-nums">{(t.ml_prob * 100).toFixed(0)}%</td>
                     <td className="tabular-nums">{(t.score * 100).toFixed(0)}%</td>
@@ -223,6 +203,7 @@ export default function ReplayPage() {
             </tbody>
           </table>
         </div>
+      </Panel>
     </AlgoDeskShell>
   );
 }

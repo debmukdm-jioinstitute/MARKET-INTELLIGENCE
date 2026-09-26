@@ -2,13 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
+import { AlgoPageHeader } from "@/components/ai-trader/algo-desk-ui";
+import { Panel } from "@/components/layout/page-header";
 import { BrokerSettingsPanel } from "@/components/ai-trader/broker-settings-panel";
 import RiskProfileCard from "@/components/ai-trader/RiskProfileCard";
 import { fetchJSON, postJSON, type RiskProfile } from "@/lib/ai-trader/api";
+import { riskActiveBg, type AlgoRiskLevel } from "@/lib/ai-trader/algo-brand";
+import { cn } from "@/lib/utils";
 import { Play } from "lucide-react";
 
-type RiskLevel = "low" | "medium" | "high";
-const riskColors: Record<string, string> = { low: "#4da6ff", medium: "#e8c300", high: "#00e87b" };
+type RiskLevel = AlgoRiskLevel;
 
 export default function SettingsPage() {
   const [profiles, setProfiles] = useState<Record<RiskLevel, RiskProfile> | null>(null);
@@ -20,114 +23,96 @@ export default function SettingsPage() {
     if (p) setProfiles(p as Record<RiskLevel, RiskProfile>);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const runBacktest = async () => {
     setRunMsg(null);
     try {
       await postJSON("/api/backtest/run", { risk: activeRisk });
-      setRunMsg({ type: "ok", text: `${activeRisk.toUpperCase()} BACKTEST STARTED` });
+      setRunMsg({ type: "ok", text: `${activeRisk.toUpperCase()} backtest started` });
     } catch {
-      setRunMsg({ type: "err", text: "FAILED TO START" });
+      setRunMsg({ type: "err", text: "Failed to start backtest" });
     }
   };
 
   return (
     <AlgoDeskShell>
-        <div className="mb-5">
-          <h1 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#00e87b' }}>Settings</h1>
-          <p className="text-[10px] mt-0.5" style={{ color: '#3d4450' }}>RISK PROFILES, EXECUTION, SYSTEM CONFIG</p>
-        </div>
+      <AlgoPageHeader title="Settings" subtitle="Risk profiles, broker execution, and system configuration." />
 
-        {/* Risk profile selection */}
-        <div className="t-panel p-5 mb-4">
-          <h2 className="text-[12px] font-bold uppercase tracking-wider mb-1" style={{ color: '#c8cdd5' }}>Risk Profile</h2>
-          <p className="text-[10px] mb-4" style={{ color: '#5a6270' }}>
-            Controls lot size, stop-loss, targets, max trades, and premium caps.
-          </p>
+      <Panel title="Risk profile" subtitle="Controls lot size, stop-loss, targets, max trades, and premium caps.">
+        {profiles ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {(["low", "medium", "high"] as RiskLevel[]).map((r) => (
+              <RiskProfileCard key={r} level={r} profile={profiles[r]} active={activeRisk === r} onSelect={setActiveRisk} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Loading profiles…</p>
+        )}
 
-          {profiles ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] mb-4">
-              {(["low", "medium", "high"] as RiskLevel[]).map(r => (
-                <RiskProfileCard
-                  key={r}
-                  level={r}
-                  profile={profiles[r]}
-                  active={activeRisk === r}
-                  onSelect={setActiveRisk}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-[11px]" style={{ color: '#3d4450' }}>LOADING...</div>
-          )}
-
-          <div className="flex items-center gap-3 mt-3">
-            <button
-              onClick={runBacktest}
-              className="flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all"
-              style={{ background: riskColors[activeRisk], color: '#000' }}
-            >
-              <Play className="w-3 h-3" />
-              RUN {activeRisk.toUpperCase()} BACKTEST
-            </button>
-
-            {runMsg && (
-              <span className="text-[11px]" style={{ color: runMsg.type === "ok" ? '#00e87b' : '#ff3e3e' }}>
-                {runMsg.text}
-              </span>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={runBacktest}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wide",
+              riskActiveBg(activeRisk),
+              activeRisk === "medium" ? "text-foreground" : "text-primary-foreground",
             )}
-          </div>
+          >
+            <Play className="h-3.5 w-3.5" />
+            Run {activeRisk} backtest
+          </button>
+          {runMsg ? (
+            <span className={cn("text-sm", runMsg.type === "ok" ? "text-chart-2" : "text-destructive")}>{runMsg.text}</span>
+          ) : null}
         </div>
+      </Panel>
 
-        <BrokerSettingsPanel />
+      <BrokerSettingsPanel />
 
-        {/* System info */}
-        <div className="t-panel p-5 mb-4">
-          <h2 className="text-[12px] font-bold uppercase tracking-wider mb-4" style={{ color: '#c8cdd5' }}>System Info</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
-            {[
-              { label: "Portal proxy", value: "/api/ai-trader → AI_TRADER_API_URL" },
-              { label: "Full backend", value: "services/ai-trader · python backend/app.py" },
-              { label: "Database",         value: "PostgreSQL (local)" },
-              { label: "Index Symbol",     value: "NIFTY-I (TrueData)" },
-              { label: "Data Range",       value: "Sep 2025 – Mar 2026" },
-              { label: "Option Format",    value: "NIFTY+YYMMDD+STRIKE+CE/PE" },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex items-start gap-3">
-                <span className="w-[5px] h-[5px] mt-1 flex-shrink-0" style={{ background: '#00e87b' }} />
-                <div>
-                  <p style={{ color: '#5a6270' }}>{label}</p>
-                  <p className="font-semibold" style={{ color: '#c8cdd5' }}>{value}</p>
-                </div>
+      <Panel title="System info">
+        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+          {[
+            { label: "Portal proxy", value: "/api/ai-trader → AI_TRADER_API_URL" },
+            { label: "Full backend", value: "services/ai-trader · python backend/app.py" },
+            { label: "Database", value: "PostgreSQL (local)" },
+            { label: "Index symbol", value: "NIFTY-I (TrueData)" },
+            { label: "Data range", value: "Sep 2025 – Mar 2026" },
+            { label: "Option format", value: "NIFTY+YYMMDD+STRIKE+CE/PE" },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex items-start gap-3">
+              <span className="algo-status-dot mt-2 bg-chart-2" />
+              <div>
+                <p className="text-muted-foreground">{label}</p>
+                <p className="font-semibold text-foreground">{value}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
+      </Panel>
 
-        {/* CLI reference */}
-        <div className="t-panel p-5">
-          <h2 className="text-[12px] font-bold uppercase tracking-wider mb-4" style={{ color: '#c8cdd5' }}>CLI Reference</h2>
-          <div className="space-y-2">
-            {[
-              { cmd: "python scripts/tick_replay_backtest.py --risk high",      desc: "Full backtest HIGH" },
-              { cmd: "python scripts/forward_test.py --risk medium",             desc: "OOS forward test" },
-              { cmd: "python scripts/train_rl_exit.py --epochs 15",              desc: "Train tabular RL" },
-              { cmd: "python scripts/train_dqn_exit.py --epochs 10",             desc: "Train DQN agent" },
-              { cmd: "python scripts/paper_trade.py --replay 2026-03-20",        desc: "Replay paper trade" },
-              { cmd: "python scripts/paper_trade.py",                            desc: "Live paper trading" },
-              { cmd: "python backend/app.py", desc: "Flask API (5050)" },
-              { cmd: "./scripts/start-ai-trader-backend.sh", desc: "Stub or full backend + docs" },
-            ].map(({ cmd, desc }) => (
-              <div key={cmd} className="flex items-start gap-3">
-                <code className="text-[10px] px-2 py-1 flex-1" style={{ background: '#111318', border: '1px solid #1e222c', color: '#4da6ff' }}>
-                  {cmd}
-                </code>
-                <span className="text-[10px] w-36 flex-shrink-0 pt-1" style={{ color: '#5a6270' }}>{desc}</span>
-              </div>
-            ))}
-          </div>
+      <Panel title="CLI reference">
+        <div className="space-y-3">
+          {[
+            { cmd: "python scripts/tick_replay_backtest.py --risk high", desc: "Full backtest HIGH" },
+            { cmd: "python scripts/forward_test.py --risk medium", desc: "OOS forward test" },
+            { cmd: "python scripts/train_rl_exit.py --epochs 15", desc: "Train tabular RL" },
+            { cmd: "python scripts/train_dqn_exit.py --epochs 10", desc: "Train DQN agent" },
+            { cmd: "python scripts/paper_trade.py --replay 2026-03-20", desc: "Replay paper trade" },
+            { cmd: "python scripts/paper_trade.py", desc: "Live paper trading" },
+            { cmd: "python backend/app.py", desc: "Flask API (5050)" },
+            { cmd: "./scripts/start-ai-trader-backend.sh", desc: "Stub or full backend + docs" },
+          ].map(({ cmd, desc }) => (
+            <div key={cmd} className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-3">
+              <code className="algo-code flex-1">{cmd}</code>
+              <span className="text-xs text-muted-foreground sm:w-36 sm:shrink-0">{desc}</span>
+            </div>
+          ))}
         </div>
+      </Panel>
     </AlgoDeskShell>
   );
 }

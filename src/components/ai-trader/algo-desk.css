@@ -179,3 +179,62 @@
   color: var(--primary-foreground);
   border-color: transparent;
 }
+
+.algo-trader-desk .algo-segment {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--muted-foreground);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.algo-trader-desk .algo-segment:hover {
+  border-color: var(--primary);
+  color: var(--foreground);
+}
+.algo-trader-desk .algo-segment-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.algo-trader-desk .algo-inset {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.algo-trader-desk .algo-code {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+
+.algo-trader-desk .algo-progress-track {
+  height: 6px;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  overflow: hidden;
+}
+.algo-trader-desk .algo-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.2s ease;
+}
+
+.algo-trader-desk .t-yellow {
+  color: var(--chart-3);
+}
+
+.algo-trader-desk .algo-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
