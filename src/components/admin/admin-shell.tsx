@@ -24,6 +24,7 @@ const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/tabs", label: "App Tabs", icon: LayoutList },
+  { href: "/admin/pages", label: "Portal pages", icon: LayoutList },
   { href: "/admin/updates", label: "App Updates", icon: Megaphone },
   { href: "/admin/notifications", label: "Push Notifications", icon: Bell },
   { href: "/admin/newsletters", label: "Newsletters", icon: Mail },

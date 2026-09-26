@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { usePortalPages } from "@/components/providers/portal-page-provider";
 import { METRIC_COMMANDS, PAGE_COMMANDS } from "@/lib/command-registry";
 import useSWR from "swr";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS, findIndiaInstrument } from "@/lib/feeds/india/instruments";
@@ -43,6 +44,8 @@ type View =
 
 export function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
+  const { hrefAllowed } = usePortalPages();
+  const pageCommands = PAGE_COMMANDS.filter((p) => hrefAllowed(p.href));
   const router = useRouter();
   const [source, setSource] = useState<DataSource>("all");
   const [view, setView] = useState<View | null>(null);
@@ -157,7 +160,7 @@ export function CommandPalette() {
               <>
                 <CommandSeparator />
                 <CommandGroup heading="Pages">
-                  {PAGE_COMMANDS.map((p) => (
+                  {pageCommands.map((p) => (
                     <CommandItem key={p.href} value={`${p.label} ${p.description}`} onSelect={() => goto(p.href)}>
                       <span className="font-medium">{p.label}</span>
                       <span className="ml-2 text-sm text-muted-foreground">{p.description}</span>

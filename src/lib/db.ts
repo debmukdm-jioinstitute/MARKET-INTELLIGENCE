@@ -131,6 +131,20 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await db`
+        CREATE TABLE IF NOT EXISTS portal_page_controls (
+          href text PRIMARY KEY,
+          label text NOT NULL,
+          nav_section text NOT NULL,
+          nav_group text NOT NULL DEFAULT '',
+          sort_order int NOT NULL DEFAULT 0,
+          applies_to_children boolean NOT NULL DEFAULT false,
+          enabled boolean NOT NULL DEFAULT true,
+          locked boolean NOT NULL DEFAULT false,
+          lock_message text,
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
         CREATE TABLE IF NOT EXISTS app_updates (
           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
           title text NOT NULL,

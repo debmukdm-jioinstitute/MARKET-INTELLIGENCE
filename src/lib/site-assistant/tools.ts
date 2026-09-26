@@ -4,6 +4,8 @@ import {
   pickDidYouKnow,
   type SkillLevel,
 } from "@/lib/site-assistant/education";
+import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { isPortalHrefAllowed, type PortalPageControlRow } from "@/lib/portal-page-access";
 import { searchPages } from "@/lib/site-assistant/site-map";
 import { tool } from "ai";
 import { z } from "zod";
@@ -11,6 +13,15 @@ import { z } from "zod";
 const skillSchema = z.enum(["beginner", "intermediate", "advanced"]);
 
 const sectionSchema = z.enum(["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"]);
+
+async function loadPortalControls(): Promise<PortalPageControlRow[]> {
+  if (!hasDatabase()) return [];
+  await ensureSchema();
+  return (await sql()`
+    SELECT href, label, nav_section, nav_group, sort_order, enabled, locked, lock_message, applies_to_children
+    FROM portal_page_controls
+  `) as PortalPageControlRow[];
+}
 
 /** Server-executed tools for streamText. Client tools (navigate, open_command_palette) are defined in the API route without execute. */
 export function createServerSiteAssistantTools() {
@@ -21,9 +32,13 @@ export function createServerSiteAssistantTools() {
       inputSchema: z.object({
         query: z.string().describe("Keywords, page name, or feature (e.g. stress, portfolio risk, IPO)"),
       }),
-      execute: async ({ query }) => ({
-        pages: searchPages(query, 8),
-      }),
+      execute: async ({ query }) => {
+        const controls = await loadPortalControls();
+        const pages = searchPages(query, 12).filter((p) =>
+          controls.length ? isPortalHrefAllowed(p.href, controls, false) : true,
+        );
+        return { pages: pages.slice(0, 8) };
+      },
     }),
     list_portal_offerings: tool({
       description:

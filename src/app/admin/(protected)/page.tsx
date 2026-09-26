@@ -50,6 +50,12 @@ export default function AdminDashboardPage() {
         <AdminCard title="Get started">
           <ul className="space-y-2 text-sm text-gray-700">
             <li>
+              <Link href="/admin/pages" className="text-blue-600 hover:underline">
+                Hide or lock portal pages
+              </Link>{" "}
+              — toggle any route off or show an under-construction screen on the live site.
+            </li>
+            <li>
               <Link href="/admin/tabs" className="text-blue-600 hover:underline">
                 Add a new tab
               </Link>{" "}

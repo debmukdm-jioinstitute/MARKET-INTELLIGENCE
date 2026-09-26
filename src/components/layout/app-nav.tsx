@@ -2,7 +2,8 @@
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMobileNav } from "@/components/layout/mobile-nav-provider";
-import { NAV_SECTIONS, START_HERE, findGroup, slug, type NavGroup, type NavSection } from "@/lib/nav-columns";
+import { usePortalPages } from "@/components/providers/portal-page-provider";
+import { NAV_SECTIONS, START_HERE, findGroup, slug, type NavGroup, type NavLink, type NavSection } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Briefcase, CalendarDays, ChevronDown, Database, ExternalLink, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
@@ -41,8 +42,24 @@ const SECTION_ICONS: Record<string, typeof CalendarDays> = {
 /** Old admin-created tabs used the previous five section names; map them onto the new ones. */
 const LEGACY_SECTION: Record<string, string> = { markets: "Today", macro: "Invest", research: "Invest", intelligence: "Trade", portfolio: "My Portfolio" };
 
+function filterNavItems(items: NavLink[], hrefAllowed: (href: string) => boolean): NavLink[] {
+  return items.filter((i) => i.external || hrefAllowed(i.href));
+}
+
+function filterSections(sections: NavSection[], hrefAllowed: (href: string) => boolean): NavSection[] {
+  return sections
+    .map((s) => ({
+      ...s,
+      groups: s.groups
+        .map((g) => ({ ...g, items: filterNavItems(g.items, hrefAllowed) }))
+        .filter((g) => g.items.length > 0),
+    }))
+    .filter((s) => s.groups.length > 0);
+}
+
 /** Static sections plus any admin-created tabs from /api/tabs (each becomes its own single-page group). Shared by the desktop bar, the full menu and the bottom bar. */
 export function useNavSections(): NavSection[] {
+  const { hrefAllowed } = usePortalPages();
   const [dynamicTabs, setDynamicTabs] = useState<DynamicTab[]>([]);
 
   useEffect(() => {
@@ -67,7 +84,12 @@ export function useNavSections(): NavSection[] {
     if (existing) existing.groups.push(group);
     else sections.push({ title: tab.section, tagline: "", groups: [group] });
   }
-  return sections;
+  return filterSections(sections, hrefAllowed);
+}
+
+export function useStartHereLinks() {
+  const { hrefAllowed } = usePortalPages();
+  return START_HERE.filter((s) => hrefAllowed(s.href));
 }
 
 function BadgePill({ badge }: { badge?: string }) {
@@ -252,6 +274,7 @@ export function AppNav() {
   const router = useRouter();
   const { logout } = useAuth();
   const sections = useNavSections();
+  const startHere = useStartHereLinks();
   const [expanded, setExpanded] = useState<string | null | undefined>(undefined);
   const current = findGroup(sections, path);
 
@@ -314,7 +337,7 @@ export function AppNav() {
                   <>
                 <p className="mb-2 text-sm font-semibold text-gray-900">New here? Pick what fits you</p>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                  {START_HERE.map((s) => (
+                  {startHere.map((s) => (
                     <Link key={s.href} href={s.href} onClick={close} className="flex min-h-14 flex-col justify-center rounded-xl border border-border bg-gray-50 px-3 py-2 transition-colors hover:bg-accent">
                       <span className="text-sm text-muted-foreground">{s.label}</span>
                       <span className="text-sm font-semibold text-primary">{s.cta} →</span>

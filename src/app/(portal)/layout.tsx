@@ -1,11 +1,14 @@
 import { AuthGate } from "@/components/providers/auth-gate";
+import { PortalPageProvider } from "@/components/providers/portal-page-provider";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-full bg-background text-foreground">
       <AuthGate>
-        <AppShell>{children}</AppShell>
+        <PortalPageProvider>
+          <AppShell>{children}</AppShell>
+        </PortalPageProvider>
       </AuthGate>
     </div>
   );
