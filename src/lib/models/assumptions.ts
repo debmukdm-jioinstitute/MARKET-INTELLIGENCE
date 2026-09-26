@@ -5,22 +5,35 @@
  *
  * Ported from FinTea's assumptions.py (Python) — same clamps, same formulas.
  */
+import { marketValueOfDebt } from "@/lib/models/capital";
+import { isFinancialCompany } from "@/lib/models/classify";
+import { MATURE_ERP, marginalTaxRate, syntheticRating } from "@/lib/models/country";
 import type { AssumptionSpec, Assumptions, FinancialDataset } from "@/lib/models/types";
 
 const M = 1e6;
 
 export const ASSUMPTION_SPECS: AssumptionSpec[] = [
+  { key: "model_type", label: "Valuation model (1 = FCFF DCF, 2 = residual income — banks / insurers / NBFCs)", section: "General", fmt: "int", kind: "scalar", lo: 1, hi: 2 },
   { key: "projection_years", label: "Projection years", section: "General", fmt: "int", kind: "scalar", lo: 3, hi: 10, help: "Number of explicit forecast years" },
   { key: "price", label: "Current share price", section: "Market data", fmt: "price", kind: "scalar", lo: 0.0001 },
   { key: "shares_outstanding", label: "Shares outstanding (millions)", section: "Market data", fmt: "num1", kind: "scalar", lo: 0.0001 },
   { key: "risk_free", label: "Risk-free rate", section: "Cost of capital", fmt: "pct2", kind: "scalar", lo: -0.02, hi: 0.25 },
   { key: "erp", label: "Equity risk premium", section: "Cost of capital", fmt: "pct2", kind: "scalar", lo: 0, hi: 0.2 },
+  { key: "country_risk_premium", label: "Country risk premium (added to ERP)", section: "Cost of capital", fmt: "pct2", kind: "scalar", lo: 0, hi: 0.15 },
+  { key: "beta_method", label: "Beta source (1 = own regression, 2 = peer bottom-up median)", section: "Cost of capital", fmt: "int", kind: "scalar", lo: 1, hi: 2 },
+  { key: "debt_maturity", label: "Average debt maturity (years, for market value of debt)", section: "Cost of capital", fmt: "num1", kind: "scalar", lo: 1, hi: 30 },
   { key: "size_premium", label: "Size / company-specific premium", section: "Cost of capital", fmt: "pct2", kind: "scalar", lo: -0.05, hi: 0.15 },
   { key: "use_blume", label: "Use Blume-adjusted beta (1 = yes, 0 = raw)", section: "Cost of capital", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
   { key: "target_debt_weight", label: "Target debt / (debt + equity)", section: "Cost of capital", fmt: "pct", kind: "scalar", lo: 0, hi: 0.95 },
   { key: "cost_of_debt", label: "Pre-tax cost of debt", section: "Cost of capital", fmt: "pct2", kind: "scalar", lo: 0, hi: 0.4 },
   { key: "cash_yield", label: "Interest yield on cash", section: "Operating", fmt: "pct2", kind: "scalar", lo: 0, hi: 0.25 },
-  { key: "tax_rate", label: "Effective tax rate", section: "Operating", fmt: "pct", kind: "scalar", lo: 0, hi: 0.6 },
+  { key: "tax_rate", label: "Effective tax rate (near term)", section: "Operating", fmt: "pct", kind: "scalar", lo: 0, hi: 0.6 },
+  { key: "terminal_tax_rate", label: "Terminal / marginal tax rate (effective rate converges to this)", section: "Operating", fmt: "pct", kind: "scalar", lo: 0, hi: 0.6 },
+  { key: "nol_opening", label: "Opening tax-loss carryforward (NOL)", section: "Operating", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "nol_usage_cap", label: "NOL usage cap (% of taxable income per year)", section: "Operating", fmt: "pct", kind: "scalar", lo: 0, hi: 1 },
+  { key: "target_ebit_margin", label: "Long-run EBIT margin (fade target)", section: "Operating", fmt: "pct", kind: "scalar", lo: -1, hi: 1 },
+  { key: "margin_fade", label: "Fade EBIT margin linearly to the long-run target (1 = yes)", section: "Operating", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
+  { key: "driver_mode", label: "Revenue driver (0 = total growth, 1 = volume x price)", section: "Operating", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
   { key: "dso", label: "Days sales outstanding (receivables)", section: "Working capital", fmt: "days", kind: "scalar", lo: 0, hi: 400 },
   { key: "dio", label: "Days inventory outstanding", section: "Working capital", fmt: "days", kind: "scalar", lo: 0, hi: 400 },
   { key: "dpo", label: "Days payables outstanding", section: "Working capital", fmt: "days", kind: "scalar", lo: 0, hi: 400 },
@@ -29,13 +42,17 @@ export const ASSUMPTION_SPECS: AssumptionSpec[] = [
   { key: "other_nca_pct", label: "Other non-current assets % of revenue", section: "Working capital", fmt: "pct", kind: "scalar", lo: 0, hi: 5 },
   { key: "other_ncl_pct", label: "Other non-current liabilities % of revenue", section: "Working capital", fmt: "pct", kind: "scalar", lo: 0, hi: 5 },
   { key: "payout_ratio", label: "Dividend payout ratio (% of net income)", section: "Capital allocation", fmt: "pct", kind: "scalar", lo: 0, hi: 1.5 },
+  { key: "min_cash_pct", label: "Minimum cash & ST investments (% of revenue) — revolver funds any gap", section: "Capital allocation", fmt: "pct", kind: "scalar", lo: 0, hi: 1 },
   { key: "share_change", label: "Diluted share count change p.a.", section: "Capital allocation", fmt: "pct2", kind: "scalar", lo: -0.15, hi: 0.15 },
   { key: "terminal_growth", label: "Terminal (perpetual) growth rate", section: "Terminal value", fmt: "pct2", kind: "scalar", lo: -0.02, hi: 0.06 },
+  { key: "terminal_roic_spread", label: "Terminal ROIC minus WACC (reinvestment = g / ROIC)", section: "Terminal value", fmt: "pct2", kind: "scalar", lo: -0.02, hi: 0.25 },
   { key: "exit_multiple", label: "Exit EV / EBITDA multiple", section: "Terminal value", fmt: "mult", kind: "scalar", lo: 1, hi: 60 },
   { key: "tv_method", label: "Terminal value method (1 = Gordon growth, 2 = exit multiple)", section: "Terminal value", fmt: "int", kind: "scalar", lo: 1, hi: 2 },
   { key: "mid_year", label: "Mid-year discounting convention (1 = yes)", section: "Terminal value", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
   { key: "sbc_addback", label: "Add back stock-based compensation to FCFF (1 = yes)", section: "Terminal value", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
   { key: "rev_growth", label: "Revenue growth", section: "Operating drivers", fmt: "pct", kind: "vector", lo: -0.9, hi: 3.0 },
+  { key: "volume_growth", label: "Volume growth (used when driver mode = 1)", section: "Operating drivers", fmt: "pct", kind: "vector", lo: -0.9, hi: 3.0 },
+  { key: "price_growth", label: "Price / mix growth (used when driver mode = 1)", section: "Operating drivers", fmt: "pct", kind: "vector", lo: -0.5, hi: 1.0 },
   { key: "gross_margin", label: "Gross margin", section: "Operating drivers", fmt: "pct", kind: "vector", lo: -1, hi: 1 },
   { key: "sga_pct", label: "SG&A % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
   { key: "rnd_pct", label: "R&D % of revenue", section: "Operating drivers", fmt: "pct", kind: "vector", lo: 0, hi: 2 },
@@ -46,6 +63,20 @@ export const ASSUMPTION_SPECS: AssumptionSpec[] = [
   { key: "other_nonop", label: "Other non-operating income / (expense)", section: "Operating drivers", fmt: "num", kind: "vector" },
   { key: "net_debt_issuance", label: "Net debt issuance / (repayment)", section: "Capital allocation", fmt: "num", kind: "vector" },
   { key: "buybacks", label: "Share repurchases", section: "Capital allocation", fmt: "num", kind: "vector", lo: 0 },
+  { key: "minority_interest", label: "Minority (non-controlling) interest", section: "Equity bridge", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "preferred_equity", label: "Preferred equity", section: "Equity bridge", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "pension_deficit", label: "Pension / post-retirement deficit", section: "Equity bridge", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "extra_debt_like", label: "Other debt-like items (e.g. operating leases not in reported debt)", section: "Equity bridge", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "lt_investments", label: "Long-term / equity-method investments (non-operating, added back)", section: "Equity bridge", fmt: "num", kind: "scalar", lo: 0 },
+  { key: "use_dilution", label: "Apply dilution (treasury-stock method) (1 = yes)", section: "Dilution", fmt: "int", kind: "scalar", lo: 0, hi: 1 },
+  { key: "options_outstanding", label: "Options outstanding (millions)", section: "Dilution", fmt: "num1", kind: "scalar", lo: 0 },
+  { key: "option_strike", label: "Weighted-average option strike", section: "Dilution", fmt: "price", kind: "scalar", lo: 0 },
+  { key: "rsus", label: "RSUs / dilutive securities (millions)", section: "Dilution", fmt: "num1", kind: "scalar", lo: 0 },
+  { key: "convertible_shares", label: "Convertible shares if converted (millions)", section: "Dilution", fmt: "num1", kind: "scalar", lo: 0 },
+  { key: "convert_price", label: "Conversion price (converts only when implied price is above)", section: "Dilution", fmt: "price", kind: "scalar", lo: 0 },
+  { key: "ri_roe", label: "Starting return on equity", section: "Financials (residual income)", fmt: "pct", kind: "scalar", lo: -0.5, hi: 0.8 },
+  { key: "ri_payout", label: "Dividend payout ratio", section: "Financials (residual income)", fmt: "pct", kind: "scalar", lo: 0, hi: 1 },
+  { key: "ri_terminal_spread", label: "Long-run ROE minus cost of equity", section: "Financials (residual income)", fmt: "pct2", kind: "scalar", lo: -0.05, hi: 0.1 },
 ];
 export const SPEC_BY_KEY = new Map(ASSUMPTION_SPECS.map((s) => [s.key, s]));
 
@@ -53,7 +84,8 @@ const pctStr = (x: number) => `${(x * 100).toFixed(1)}%`;
 const avg = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
 
-export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions {
+export function deriveAssumptions(ds: FinancialDataset, years = 5, lookback = 3): Assumptions {
+  lookback = Math.round(clamp(lookback, 1, 6));
   years = Math.round(clamp(years, 3, 10));
   const P = ds.periods;
   const n = P.length;
@@ -72,13 +104,17 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
   const dsh = col("diluted_shares");
   const ebitda = ebit.map((e, i) => e + da[i]);
   const L = n - 1; // base year index
-  const recent = Array.from({ length: Math.min(3, n) }, (_, i) => n - Math.min(3, n) + i);
+  const recent = Array.from({ length: Math.min(lookback, n) }, (_, i) => n - Math.min(lookback, n) + i);
   const yrsTxt = recent.map((i) => `FY${fy[i]}`).join(", ");
 
   const V: Record<string, number | number[]> = {};
   const B: Record<string, string> = {};
   const overridden: string[] = [];
 
+  V.model_type = isFinancialCompany(ds) ? 2 : 1;
+  B.model_type = V.model_type === 2
+    ? `Detected as a financial company (${ds.profile.sector ?? "sector unknown"} / ${ds.profile.industry ?? "industry unknown"}): FCFF-DCF is not meaningful for lenders, so a residual-income model is used.`
+    : "Non-financial company: unlevered free-cash-flow DCF.";
   V.projection_years = years;
   B.projection_years = "Explicit forecast horizon; terminal value captures cash flows beyond it.";
 
@@ -90,30 +126,48 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
   const rf = ds.market.riskFreeRate ?? 0.04;
   V.risk_free = Math.round(rf * 1e5) / 1e5;
   B.risk_free = ds.market.riskFreeSource || "Default 4.0% (source did not provide a treasury yield).";
-  V.erp = 0.05;
-  B.erp = "Mature-market equity risk premium of 5.0% (within the 4.5-5.5% range of Damodaran / Kroll surveys).";
+  V.erp = MATURE_ERP;
+  B.erp = `Mature-market equity risk premium of ${pctStr(MATURE_ERP)} (Damodaran-style implied ERP; Kroll / survey range 4.5-5.5%).`;
+  V.country_risk_premium = ds.market.countryRiskPremium ?? 0;
+  B.country_risk_premium = ds.market.countrySource ?? "No country risk premium available.";
+  const hasPeerBeta = (ds.peers?.medianUnleveredBeta ?? null) != null;
+  V.beta_method = hasPeerBeta ? 2 : 1;
+  B.beta_method = hasPeerBeta
+    ? `Bottom-up: median unlevered beta of ${ds.peers!.peers.length} peers (${ds.peers!.medianUnleveredBeta!.toFixed(2)}), relevered at the target capital structure — less noisy than one stock's regression.`
+    : "Peer set unavailable or too small (<3): the stock's own Blume-adjusted regression beta is used.";
+  V.debt_maturity = 6;
+  B.debt_maturity = "Assumed average debt maturity for the market-value-of-debt calculation (Damodaran approach).";
   V.size_premium = 0;
   B.size_premium = "No size or company-specific premium applied by default.";
   V.use_blume = 1;
   B.use_blume = "Blume adjustment (0.67 x raw + 0.33) reflects mean reversion of betas toward 1.0.";
 
   const mcap = (V.price as number) * (V.shares_outstanding as number);
-  const debt = std[L] + ltd[L];
-  const dw = debt + mcap > 0 ? debt / (debt + mcap) : 0;
-  V.target_debt_weight = Math.round(dw * 1e4) / 1e4;
-  B.target_debt_weight = `Current market capital structure: debt ${debt.toFixed(0)} / (debt + market cap ${mcap.toFixed(0)}) = ${pctStr(dw)}.`;
+  const bookDebt = std[L] + ltd[L];
 
+  // Pre-tax cost of debt: synthetic rating from interest coverage (Damodaran), cross-checked against book-implied.
   const avgDebt = Array.from({ length: n - 1 }, (_, i) => i + 1).map((i) => (std[i] + ltd[i] + std[i - 1] + ltd[i - 1]) / 2);
   const kdObs = Array.from({ length: n - 1 }, (_, i) => i + 1).filter((i) => avgDebt[i - 1] > 0 && ie[i] > 0).map((i) => ie[i] / avgDebt[i - 1]);
+  const bookKd = kdObs.length ? clamp(avg(kdObs.slice(-3)), 0.01, 0.25) : null;
   let kd: number;
-  if (kdObs.length) {
-    kd = clamp(avg(kdObs.slice(-3)), 0.01, 0.15);
-    B.cost_of_debt = `Interest expense / average total debt, recent average ${pctStr(avg(kdObs.slice(-3)))} (clamped to 1%-15%).`;
+  if (ie[L] > 0 && ebit[L] !== 0) {
+    const cov = ebit[L] / ie[L];
+    const { rating, spread } = syntheticRating(cov);
+    kd = rf + spread;
+    B.cost_of_debt = `Synthetic rating ${rating} from FY${fy[L]} interest coverage ${cov.toFixed(1)}x: risk-free ${pctStr(rf)} + spread ${pctStr(spread)} = ${pctStr(kd)}${bookKd != null ? ` (book-implied interest / avg debt: ${pctStr(bookKd)}, not used — historical coupons lag today's market rate)` : ""}.`;
+  } else if (bookKd != null) {
+    kd = bookKd;
+    B.cost_of_debt = `No usable coverage ratio; interest expense / average total debt, recent average ${pctStr(bookKd)} (clamped 1%-25%).`;
   } else {
     kd = rf + 0.015;
     B.cost_of_debt = "No interest expense / debt history: risk-free rate + 150bp credit spread.";
   }
   V.cost_of_debt = Math.round(kd * 1e4) / 1e4;
+
+  const debt = marketValueOfDebt(bookDebt, ie[L], kd, V.debt_maturity as number);
+  const dw = debt + mcap > 0 ? debt / (debt + mcap) : 0;
+  V.target_debt_weight = Math.round(dw * 1e4) / 1e4;
+  B.target_debt_weight = (V.model_type === 2 ? "Not used for financial companies (cost of equity only; beta is not relevered). " : "") + `Current market capital structure: market value of debt ${debt.toFixed(0)} (book ${bookDebt.toFixed(0)}) / (debt + market cap ${mcap.toFixed(0)}) = ${pctStr(dw)}.`;
 
   const avgCash = Array.from({ length: n - 1 }, (_, i) => i + 1).map((i) => (csti[i] + csti[i - 1]) / 2);
   const cyObs = Array.from({ length: n - 1 }, (_, i) => i + 1).filter((i) => avgCash[i - 1] > 0 && ii[i] > 0).map((i) => ii[i] / avgCash[i - 1]);
@@ -137,6 +191,16 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
     B.tax_rate = "Pre-tax losses in recent years: US statutory 21% assumed.";
   }
   V.tax_rate = Math.round(tr * 1e4) / 1e4;
+  const mtr = marginalTaxRate(ds.profile.currency);
+  V.terminal_tax_rate = mtr;
+  B.terminal_tax_rate = `Marginal statutory rate for ${ds.profile.currency} reporters (${pctStr(mtr)}); the effective rate converges to it by the final forecast year, since low effective rates rarely persist forever.`;
+  // NOL: roll the loss carryforward through history (losses add, profits consume).
+  let nol = 0;
+  for (let i = 0; i < n; i++) nol = ebt[i] < 0 ? nol - ebt[i] : Math.max(0, nol - ebt[i]);
+  V.nol_opening = Math.round(nol * 10) / 10;
+  B.nol_opening = nol > 0 ? `Cumulative pre-tax losses less later profits over the available history = ${nol.toFixed(0)}m (an approximation — actual NOL depends on jurisdiction rules).` : "No accumulated pre-tax losses in the available history.";
+  V.nol_usage_cap = 0.8;
+  B.nol_usage_cap = "NOLs offset at most 80% of taxable income in any year (US post-2017 rule; conservative default elsewhere).";
 
   // ---- working capital (last fiscal year) ----
   const days = (num: number, den: number) => (den > 0 ? clamp((365 * num) / den, 0, 400) : 0);
@@ -190,12 +254,14 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
   const tg = Math.round(Math.min(0.025, Math.max(rf, 0)) * 1e4) / 1e4;
   V.terminal_growth = tg;
   B.terminal_growth = "Long-run nominal growth of 2.5%, capped at the risk-free rate (a firm cannot outgrow the economy forever).";
-  const evNow = mcap + debt - csti[L];
+  const evNow = mcap + bookDebt - csti[L];
   const ltmMult = ebitda[L] > 0 ? evNow / ebitda[L] : 12;
   V.exit_multiple = Math.round(clamp(ltmMult, 4, 30) * 10) / 10;
-  B.exit_multiple = `Current EV / LTM EBITDA: (${mcap.toFixed(0)} + ${debt.toFixed(0)} - ${csti[L].toFixed(0)}) / ${ebitda[L].toFixed(0)} = ${ltmMult.toFixed(1)}x (clamped 4x-30x).`;
+  B.exit_multiple = `Current EV / LTM EBITDA: (${mcap.toFixed(0)} + ${bookDebt.toFixed(0)} - ${csti[L].toFixed(0)}) / ${ebitda[L].toFixed(0)} = ${ltmMult.toFixed(1)}x (clamped 4x-30x).`;
   V.tv_method = 1;
   B.tv_method = "Gordon growth is the primary method; the exit multiple is shown as a cross-check.";
+  V.terminal_roic_spread = 0.02;
+  B.terminal_roic_spread = "Terminal ROIC = WACC + 2%: competitive advantages fade, so growth is not free — reinvestment rate = g / ROIC (Damodaran / McKinsey value-driver formula). Set to 0 for a no-moat firm.";
   V.mid_year = 1;
   B.mid_year = "Cash flows arrive through the year, so they are discounted from mid-year.";
   V.sbc_addback = 0;
@@ -244,6 +310,71 @@ export function deriveAssumptions(ds: FinancialDataset, years = 5): Assumptions 
     ? `Fades linearly from the latest year's capex / revenue (${pctStr(cxLast)}) to the ${cxObs.length}-year average (${pctStr(cxAvg)}).`
     : "No capex history.";
   ratioAvg(sbc, rev, "SBC % revenue", "sbc_pct", 0, 1);
+
+  // ---- revenue drivers: volume x price decomposition (informational until driver_mode = 1) ----
+  V.driver_mode = 0;
+  B.driver_mode = "0 = the revenue-growth vector drives revenue. 1 = (1 + volume growth) x (1 + price growth) - 1 drives revenue (defaults reproduce the same path, so you can flex volume and price independently).";
+  const inflation = (ds.market.countryRiskPremium ?? 0) > 0 ? 0.04 : 0.025;
+  const growthVec = V.rev_growth as number[];
+  V.price_growth = growthVec.map((g) => Math.round(clamp(g, 0, inflation) * 1e4) / 1e4);
+  V.volume_growth = growthVec.map((g, j) => (1 + g) / (1 + (V.price_growth as number[])[j]) - 1); // unrounded so the product reproduces total growth exactly
+  B.price_growth = `Price / mix growth: revenue growth capped at ${pctStr(inflation)} (an inflation-like pass-through), floored at 0.`;
+  B.volume_growth = "Volume growth = the residual so that (1 + volume) x (1 + price) equals total revenue growth.";
+
+  // ---- long-run margin ----
+  const marginObs = recent.filter((i) => rev[i] > 0).map((i) => ebit[i] / rev[i]);
+  const tm = marginObs.length ? avg(marginObs) : 0;
+  V.target_ebit_margin = Math.round(tm * 1e4) / 1e4;
+  B.target_ebit_margin = `Average EBIT margin over ${yrsTxt} (${pctStr(tm)}). With the fade switched on, the projected EBIT margin moves linearly from its starting level to this target by the final year (use a 6-year lookback for cyclicals to capture a mid-cycle margin).`;
+  V.margin_fade = 0;
+  B.margin_fade = "Off by default: margins are held at the recent average. Turn on to converge margins to the long-run target.";
+
+  // ---- minimum cash / revolver ----
+  const cashPct = recent.filter((i) => rev[i] > 0).map((i) => csti[i] / rev[i]);
+  const mc = cashPct.length ? clamp(avg(cashPct) * 0.5, 0.01, 0.1) : 0.02;
+  V.min_cash_pct = Math.round(mc * 1e4) / 1e4;
+  B.min_cash_pct = `Half of recent average cash & short-term investments / revenue (${cashPct.length ? pctStr(avg(cashPct)) : "n/a"}), clamped 1%-10%. If projected cash would fall below this, an automatic revolver draws the gap (and is repaid from later surplus).`;
+
+  // ---- equity bridge items ----
+  const lastF = P[L].fields;
+  const fld = (k: string) => Math.max(0, Number(lastF[k as keyof typeof lastF]) || 0) / M;
+  V.minority_interest = Math.round(fld("minority_interest") * 10) / 10;
+  B.minority_interest = "Non-controlling interest at the latest balance sheet (book value; a market-value estimate would use the subsidiary's P/E or P/B).";
+  V.preferred_equity = Math.round(fld("preferred_equity") * 10) / 10;
+  B.preferred_equity = "Preferred stock at the latest balance sheet.";
+  V.pension_deficit = Math.round(fld("pension_liability") * 10) / 10;
+  B.pension_deficit = "Reported pension / post-retirement liability (gross; tax-effect it if material).";
+  V.extra_debt_like = 0;
+  const leaseAmt = fld("lease_liabilities");
+  B.extra_debt_like = `Zero by default. Reported lease liabilities (${leaseAmt.toFixed(0)}m) are already inside the reported debt figures (Yahoo's "debt & capital lease obligation"); add operating leases here only if they are not.`;
+  V.lt_investments = Math.round(fld("lt_investments") * 10) / 10;
+  B.lt_investments = "Long-term / equity-method investments, whose income is not in EBIT: added to equity value at book.";
+
+  // ---- dilution ----
+  V.use_dilution = 1;
+  B.use_dilution = "Treasury-stock method: options add shares only to the extent they are in the money; RSUs and in-the-money converts add in full.";
+  V.options_outstanding = 0;
+  B.options_outstanding = "Option counts are not available from the free data source — enter from the company's latest annual report (stock-based compensation note).";
+  V.option_strike = 0;
+  B.option_strike = "Weighted-average exercise price of the outstanding options.";
+  const dilProxy = Math.max(0, (dsh[L] || 0) - (col("basic_shares")[L] || 0));
+  V.rsus = Math.round(dilProxy * 10) / 10;
+  B.rsus = `Proxy: FY${fy[L]} weighted-average diluted less basic shares (${dilProxy.toFixed(1)}m) — the dilution the company itself reports, treated as fully dilutive.`;
+  V.convertible_shares = 0;
+  B.convertible_shares = "Shares issuable on conversion of convertible debt / preferred, if any.";
+  V.convert_price = 0;
+  B.convert_price = "Conversion price; converts count only when the implied share price exceeds it.";
+
+  // ---- residual income (financials) ----
+  const eqCol = P.map((p) => (Number(p.fields.stockholders_equity) || Number(p.fields.total_equity) || (Number(p.fields.total_assets) - Number(p.fields.total_liabilities)) || 0) / M);
+  const roeObs = recent.filter((i) => i >= 1 && eqCol[i - 1] > 0).map((i) => ni[i] / ((eqCol[i] + eqCol[i - 1]) / 2));
+  const roe = roeObs.length ? clamp(avg(roeObs), -0.1, 0.6) : 0.1;
+  V.ri_roe = Math.round(roe * 1e4) / 1e4;
+  B.ri_roe = `Average return on average equity over ${yrsTxt}: ${roeObs.map(pctStr).join(", ") || "n/a"}.`;
+  V.ri_payout = Math.round(po * 1e4) / 1e4;
+  B.ri_payout = "Recent average dividend payout; retained earnings fund book-value growth (g = retention x ROE).";
+  V.ri_terminal_spread = 0.01;
+  B.ri_terminal_spread = "ROE fades linearly to cost of equity + 1% by the final year, and the terminal residual income then grows at the terminal growth rate.";
 
   return { years, values: V, basis: B, overridden };
 }

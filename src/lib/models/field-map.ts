@@ -39,6 +39,11 @@ export const FIELD_MAP: Record<FieldKey, string[]> = {
   retained_earnings: ["RetainedEarnings"],
   total_debt: ["TotalDebt"],
   shares_outstanding: ["OrdinarySharesNumber", "ShareIssued"],
+  lease_liabilities: ["CapitalLeaseObligations", "LongTermCapitalLeaseObligation"],
+  minority_interest: ["MinorityInterest"],
+  preferred_equity: ["PreferredStock", "PreferredSecuritiesOutsideStockEquity"],
+  pension_liability: ["NonCurrentPensionAndOtherPostretirementBenefitPlans", "PensionandOtherPostRetirementBenefitPlansCurrent"],
+  lt_investments: ["LongTermEquityInvestment", "InvestmentinFinancialAssets", "InvestmentsAndAdvances"],
   cfo: ["OperatingCashFlow", "CashFlowFromContinuingOperatingActivities"],
   da_cf: ["DepreciationAndAmortization", "DepreciationAmortizationDepletion"],
   sbc: ["StockBasedCompensation"],
@@ -98,3 +103,11 @@ export const MINOR_UNITS: Record<string, [string, number]> = {
   ZAc: ["ZAR", 100],
   ILA: ["ILS", 100],
 };
+
+/** Yahoo "trailing" (TTM) timeseries types used for current-multiple sanity checks and comps. */
+export const TTM_TYPES = {
+  revenue: "TotalRevenue",
+  ebitda: "EBITDA",
+  ebit: "OperatingIncome",
+  net_income: "NetIncome",
+} as const;

@@ -5,13 +5,16 @@ import {
   INDEX_BY_SUFFIX,
   MINOR_UNITS,
   REVENUE_TIMESERIES_KEYS,
+  TTM_TYPES,
 } from "@/lib/models/field-map";
-import type { CompanyProfile, FieldKey, FinancialDataset, FiscalPeriod, MarketSnapshot, PriceSeries } from "@/lib/models/types";
+import { countryDefaults } from "@/lib/models/country";
+import { fetchPeerSet } from "@/lib/models/peers";
+import type { CompanyProfile, FieldKey, FinancialDataset, FiscalPeriod, MarketSnapshot, PriceSeries, TtmFigures } from "@/lib/models/types";
 
 const HEADERS = { "User-Agent": "Mozilla/5.0", Accept: "application/json" };
 const BASE = "https://query2.finance.yahoo.com";
 
-class ProviderError extends Error {}
+export class ProviderError extends Error {}
 
 type YahooChartMeta = {
   symbol?: string;
@@ -38,7 +41,7 @@ type YahooChartResult = {
 type YahooTimeseriesValue = { asOfDate: string; currencyCode?: string; reportedValue?: { raw?: number } };
 type YahooTimeseriesResult = { meta: { type: string[] }; [key: string]: unknown };
 
-async function getJson<T = unknown>(path: string, params: Record<string, string>, timeoutMs = 20_000): Promise<T> {
+export async function getJson<T = unknown>(path: string, params: Record<string, string>, timeoutMs = 20_000): Promise<T> {
   const url = `${BASE}${path}?${new URLSearchParams(params).toString()}`;
   let lastErr: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -60,13 +63,13 @@ async function getJson<T = unknown>(path: string, params: Record<string, string>
   throw new ProviderError(`Yahoo Finance request failed: ${lastErr instanceof Error ? lastErr.message : lastErr}`);
 }
 
-function indexForSymbol(symbol: string): { symbol: string; name: string } {
+export function indexForSymbol(symbol: string): { symbol: string; name: string } {
   const suffix = symbol.includes(".") ? symbol.split(".").pop()!.toUpperCase() : "";
   const found = INDEX_BY_SUFFIX[suffix] ?? INDEX_BY_SUFFIX[""];
   return { symbol: found[0], name: found[1] };
 }
 
-async function fetchChart(symbol: string, range: string, interval: string): Promise<YahooChartResult> {
+export async function fetchChart(symbol: string, range: string, interval: string): Promise<YahooChartResult> {
   const js = await getJson<{ chart?: { result?: YahooChartResult[]; error?: { description?: string } } }>(
     `/v8/finance/chart/${encodeURIComponent(symbol)}`,
     { range, interval, events: "div,splits", includeAdjustedClose: "true" },
@@ -79,7 +82,7 @@ async function fetchChart(symbol: string, range: string, interval: string): Prom
   return result;
 }
 
-async function fetchMonthlySeries(symbol: string, name: string): Promise<PriceSeries> {
+export async function fetchMonthlySeries(symbol: string, name: string): Promise<PriceSeries> {
   const result = await fetchChart(symbol, "6y", "1mo");
   const stamps: number[] = result.timestamp ?? [];
   const adj: (number | null)[] | undefined = result.indicators?.adjclose?.[0]?.adjclose;
@@ -109,7 +112,7 @@ async function fetchMonthlySeries(symbol: string, name: string): Promise<PriceSe
   return { symbol, name, dates: dates.slice(-61), closes: closes.slice(-61) };
 }
 
-function alignMonthly(stock: PriceSeries, index: PriceSeries): [PriceSeries, PriceSeries] {
+export function alignMonthly(stock: PriceSeries, index: PriceSeries): [PriceSeries, PriceSeries] {
   const byMonth = (s: PriceSeries) => {
     const m = new Map<string, [string, number]>();
     for (let i = 0; i < s.dates.length; i++) m.set(s.dates[i].slice(0, 7), [s.dates[i], s.closes[i]]);
@@ -195,7 +198,7 @@ async function fetchRiskFreeRate(): Promise<{ rate: number | null; source: strin
   return { rate: null, source: "" };
 }
 
-async function fetchFxRate(fromCcy: string, toCcy: string): Promise<number | null> {
+export async function fetchFxRate(fromCcy: string, toCcy: string): Promise<number | null> {
   if (fromCcy === toCcy) return 1;
   for (const [sym, invert] of [[`${fromCcy}${toCcy}=X`, false] as const, [`${toCcy}${fromCcy}=X`, true] as const]) {
     try {
@@ -209,30 +212,90 @@ async function fetchFxRate(fromCcy: string, toCcy: string): Promise<number | nul
   return null;
 }
 
+/** Trailing-twelve-month figures (Yahoo "trailing" timeseries). Best-effort: returns null on any failure. */
+async function fetchTtm(symbol: string): Promise<TtmFigures | null> {
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const types = Object.values(TTM_TYPES);
+    const js = await getJson<{ timeseries?: { result?: YahooTimeseriesResult[] } }>(
+      `/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(symbol)}`,
+      { type: types.map((t) => "trailing" + t).join(","), period1: String(now - 2 * 366 * 86400), period2: String(now + 86400), merge: "false" },
+    );
+    const out: TtmFigures = { revenue: null, ebitda: null, ebit: null, net_income: null };
+    for (const res of js?.timeseries?.result ?? []) {
+      const t = res.meta?.type?.[0];
+      if (!t) continue;
+      const series = ((res[t] as YahooTimeseriesValue[] | undefined) ?? []).filter((v) => v?.reportedValue?.raw != null);
+      const latest = series.sort((a, b) => a.asOfDate.localeCompare(b.asOfDate)).pop();
+      if (!latest) continue;
+      for (const [key, name] of Object.entries(TTM_TYPES)) if (t === "trailing" + name) out[key as keyof TtmFigures] = Number(latest.reportedValue!.raw);
+    }
+    return Object.values(out).some((v) => v != null) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Sector / industry from Yahoo search (used to route financials to the residual-income model). */
+async function fetchSector(symbol: string): Promise<{ sector: string | null; industry: string | null }> {
+  try {
+    const js = await getJson<{ quotes?: { symbol?: string; sectorDisp?: string; sector?: string; industryDisp?: string; industry?: string }[] }>(
+      "/v1/finance/search",
+      { q: symbol, quotesCount: "5", newsCount: "0" },
+      8_000,
+    );
+    const q = js?.quotes?.find((x) => x.symbol?.toUpperCase() === symbol.toUpperCase()) ?? js?.quotes?.[0];
+    return { sector: q?.sectorDisp ?? q?.sector ?? null, industry: q?.industryDisp ?? q?.industry ?? null };
+  } catch {
+    return { sector: null, industry: null };
+  }
+}
+
 /** Resolves a bare symbol (e.g. "RELIANCE") to its Yahoo ticker, trying the NSE suffix as a fallback. */
 async function resolveSymbol(input: string): Promise<{ symbol: string; chart: YahooChartResult }> {
   try {
     const chart = await fetchChart(input, "1y", "1d");
     return { symbol: input, chart };
   } catch (e) {
+    // only fall back to the NSE suffix when Yahoo says the bare symbol does not exist — never mask rate limits / outages
     if (input.includes(".") || input.startsWith("^") || input.includes("=")) throw e;
+    if (!(e instanceof ProviderError) || !/not found|no data/i.test(e.message)) throw e;
     const withSuffix = `${input}.NS`;
     const chart = await fetchChart(withSuffix, "1y", "1d");
     return { symbol: withSuffix, chart };
   }
 }
 
-/** Builds a complete FinancialDataset for a Yahoo-style ticker (free, no API key). */
-export async function fetchFinancialDataset(rawSymbol: string): Promise<FinancialDataset> {
+const DATASET_TTL_MS = 30 * 60_000;
+const datasetCache = new Map<string, { at: number; value: Promise<FinancialDataset> }>();
+
+/**
+ * Builds a complete FinancialDataset for a Yahoo-style ticker (free, no API key).
+ * Results are cached in memory for 30 minutes (failures are not cached): a model page load, an export and
+ * every recalculation would otherwise each fire ~25 Yahoo requests (statements, TTM, peers) and trip rate limits.
+ */
+export function fetchFinancialDataset(rawSymbol: string): Promise<FinancialDataset> {
+  const key = rawSymbol.trim().toUpperCase();
+  const hit = datasetCache.get(key);
+  if (hit && Date.now() - hit.at < DATASET_TTL_MS) return hit.value;
+  const value = buildFinancialDataset(rawSymbol);
+  datasetCache.set(key, { at: Date.now(), value });
+  value.catch(() => datasetCache.delete(key));
+  return value;
+}
+
+async function buildFinancialDataset(rawSymbol: string): Promise<FinancialDataset> {
   const { symbol, chart } = await resolveSymbol(rawSymbol);
   const meta = chart.meta ?? {};
   const idx = indexForSymbol(symbol);
 
-  const [{ periods, statementCurrency }, stockRaw, indexRaw, riskFree] = await Promise.all([
+  const [{ periods, statementCurrency }, stockRaw, indexRaw, riskFree, ttm, sectorInfo] = await Promise.all([
     fetchFundamentals(symbol),
     fetchMonthlySeries(symbol, meta.longName ?? symbol),
     fetchMonthlySeries(idx.symbol, idx.name),
     fetchRiskFreeRate(),
+    fetchTtm(symbol),
+    fetchSector(symbol),
   ]);
   const [stockPrices, indexPrices] = alignMonthly(stockRaw, indexRaw);
 
@@ -285,7 +348,24 @@ export async function fetchFinancialDataset(rawSymbol: string): Promise<Financia
     exchange: meta.fullExchangeName ?? meta.exchangeName ?? "",
     currency,
     fiscalYearEndMonth: Number(last.periodEnd.slice(5, 7)),
+    sector: sectorInfo.sector,
+    industry: sectorInfo.industry,
   };
+  // Cost of capital must be denominated in the currency of the cash flows: USD uses the live
+  // 10Y Treasury; every other currency uses its local-currency default + country risk premium.
+  const country = countryDefaults(currency);
+  let rfRate = riskFree.rate;
+  let rfSource = riskFree.source;
+  let rfCurrency = "USD";
+  if (currency !== "USD") {
+    if (country) {
+      rfRate = country.riskFree;
+      rfSource = `${country.country} 10-year government yield, ${currency} (static default — verify and override)`;
+      rfCurrency = currency;
+    } else {
+      notes.push(`WARNING: no local-currency risk-free rate for ${currency}; the US 10-year yield is used against ${currency} cash flows — override the risk-free rate.`);
+    }
+  }
   const market: MarketSnapshot = {
     price,
     priceDate,
@@ -293,16 +373,31 @@ export async function fetchFinancialDataset(rawSymbol: string): Promise<Financia
     currency,
     fiftyTwoWeekHigh: hi,
     fiftyTwoWeekLow: lo,
-    riskFreeRate: riskFree.rate,
-    riskFreeSource: riskFree.source,
+    riskFreeRate: rfRate,
+    riskFreeSource: rfSource,
+    riskFreeCurrency: rfCurrency,
+    countryRiskPremium: country?.crp ?? 0,
+    countrySource: country ? `${country.country} country risk premium (static Damodaran-style default)` : "No country risk premium available",
     indexSymbol: idx.symbol,
     indexName: idx.name,
     listingCurrency,
     listingPrice,
     fxRate: fx,
   };
-  if (riskFree.rate == null) notes.push("Risk-free rate could not be retrieved; a default of 4.0% is used — override in Assumptions.");
-  if (idx.symbol !== "^GSPC") notes.push(`Beta regressed against ${idx.name}; risk-free rate is the US 10-year yield and may need a local-currency adjustment.`);
+  if (rfRate == null) notes.push("Risk-free rate could not be retrieved; a default of 4.0% is used — override in Assumptions.");
+  if (idx.symbol !== "^GSPC") notes.push(`Beta regressed against ${idx.name}.`);
+
+  // Peer set (comps + bottom-up beta): best-effort with a hard time budget so the model never stalls on it.
+  let peers: FinancialDataset["peers"] = null;
+  try {
+    peers = await Promise.race([
+      fetchPeerSet(symbol, indexRaw, currency),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 14_000)),
+    ]);
+  } catch {
+    peers = null;
+  }
+  if (!peers) notes.push("Peer set unavailable: bottom-up beta and trading comps fall back to the regression beta and are omitted.");
 
   return {
     profile,
@@ -313,5 +408,7 @@ export async function fetchFinancialDataset(rawSymbol: string): Promise<Financia
     source: "Yahoo Finance",
     retrievedAt: new Date().toISOString(),
     notes,
+    ttm,
+    peers,
   };
 }

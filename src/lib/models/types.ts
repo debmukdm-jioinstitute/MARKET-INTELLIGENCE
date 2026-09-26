@@ -16,6 +16,7 @@ export const BALANCE_FIELDS = [
   "goodwill_intangibles", "total_assets", "payables", "short_term_debt",
   "current_liabilities", "long_term_debt", "total_liabilities", "total_equity",
   "stockholders_equity", "retained_earnings", "total_debt", "shares_outstanding",
+  "lease_liabilities", "minority_interest", "preferred_equity", "pension_liability", "lt_investments",
 ] as const;
 
 export const CASHFLOW_FIELDS = [
@@ -41,6 +42,8 @@ export type CompanyProfile = {
   exchange: string;
   currency: string;
   fiscalYearEndMonth: number | null;
+  sector?: string | null;
+  industry?: string | null;
 };
 
 export type MarketSnapshot = {
@@ -57,6 +60,34 @@ export type MarketSnapshot = {
   listingCurrency: string;
   listingPrice: number | null;
   fxRate: number | null;
+  /** Currency the risk-free rate is denominated in — must equal the statement currency. */
+  riskFreeCurrency?: string;
+  countryRiskPremium?: number;
+  countrySource?: string;
+};
+
+export type TtmFigures = { revenue: number | null; ebitda: number | null; ebit: number | null; net_income: number | null };
+
+export type PeerRow = {
+  symbol: string;
+  name: string;
+  marketCap: number;
+  enterpriseValue: number;
+  evEbitda: number | null;
+  evSales: number | null;
+  pe: number | null;
+  pb: number | null;
+  leveredBeta: number;
+  unleveredBeta: number;
+  debtToEquity: number;
+};
+
+export type PeerSet = {
+  peers: PeerRow[];
+  medianUnleveredBeta: number | null;
+  medianLeveredBeta: number | null;
+  medians: { evEbitda: number | null; evSales: number | null; pe: number | null; pb: number | null };
+  source: string;
 };
 
 export type PriceSeries = {
@@ -75,6 +106,8 @@ export type FinancialDataset = {
   source: string;
   retrievedAt: string;
   notes: string[];
+  ttm?: TtmFigures | null;
+  peers?: PeerSet | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -134,6 +167,9 @@ export type BetaResult = {
   deCurrent: number;
   unleveredBeta: number;
   selectedBeta: number; // relevered at target D/E
+  method: "regression" | "peer";
+  peerUnlevered: number | null;
+  nPeers: number;
 };
 
 export type WaccResult = {
@@ -171,7 +207,56 @@ export type DcfResult = {
   tvShareOfEv: number;
   impliedExitMultiple: number;
   impliedGrowthFromExit: number;
+  bridge: BridgeResult;
+  terminal: TerminalResult;
+  dilution: DilutionResult;
 };
+
+export type BridgeResult = {
+  enterpriseValue: number;
+  lessDebt: number;
+  lessMinority: number;
+  lessPreferred: number;
+  lessPension: number;
+  lessOtherDebtLike: number;
+  plusCash: number;
+  plusInvestments: number;
+  equityValue: number;
+};
+
+export type DilutionResult = {
+  basicShares: number;
+  dilutedShares: number;
+  incrementalShares: number;
+  optionShares: number;
+  rsuShares: number;
+  convertShares: number;
+};
+
+export type TerminalResult = {
+  growth: number;
+  taxRate: number;
+  nopat: number; // normalised year N+1 NOPAT
+  roic: number; // terminal ROIC = WACC + spread
+  reinvestmentRate: number; // g / ROIC
+  fcff: number; // normalised year N+1 FCFF
+};
+
+export type ResidualIncomeYear = { label: string; bookOpen: number; roe: number; netIncome: number; equityCharge: number; residualIncome: number; dividends: number; bookClose: number };
+export type ResidualIncomeResult = {
+  years: ResidualIncomeYear[];
+  costOfEquity: number;
+  terminalRoe: number;
+  bookValue: number;
+  sumPvRi: number;
+  terminalResidualIncome: number;
+  tvRi: number;
+  pvTvRi: number;
+  equityValue: number;
+  impliedPb: number;
+};
+
+export type QualityFlag = { severity: "warn" | "info"; label: string; detail: string };
 
 export type SensitivityTable = {
   title: string;
@@ -199,4 +284,11 @@ export type ModelResult = {
   sensitivityExit: SensitivityTable;
   ratios: RatioRow[];
   checks: { label: string; value: string; pass: boolean; why: string }[];
+  method: "fcff" | "residual_income";
+  ri?: ResidualIncomeResult;
+  quality: QualityFlag[];
+  multiples: { currentEvEbitda: number | null; currentPe: number | null; currentPb: number | null; impliedEvEbitda: number | null };
 };
+
+/** Shifts used by scenario / Monte Carlo / tornado runs. For financials, `margin` acts as a ROE shift. */
+export type ModelShift = { growth?: number; margin?: number; wacc?: number; terminalGrowth?: number };

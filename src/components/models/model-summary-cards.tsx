@@ -28,18 +28,22 @@ export function ModelSummaryCards({ model }: { model: ModelResult }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
       <Card label="Current price" value={formatByFmt(dcf.currentPrice, "price", ccy)} />
-      <Card label="Implied value (DCF)" value={formatByFmt(dcf.impliedPrice, "price", ccy)} tone={upsideTone} />
+      <Card label={model.method === "fcff" ? "Implied value (DCF)" : "Implied value (residual income)"} value={formatByFmt(dcf.impliedPrice, "price", ccy)} tone={upsideTone} />
       <Card
         label="Upside / (downside)"
         value={`${dcf.upside >= 0 ? "+" : ""}${(dcf.upside * 100).toFixed(1)}%`}
         tone={upsideTone}
       />
-      <Card label="Enterprise value" value={formatMillions(dcf.enterpriseValue, ccy)} />
-      <Card label="WACC" value={formatByFmt(wacc.wacc, "pct2")} />
+      <Card label={model.method === "fcff" ? "Enterprise value" : "Equity value"} value={formatMillions(dcf.enterpriseValue, ccy)} />
+      <Card
+        label={model.method === "fcff" ? "WACC" : "Cost of equity"}
+        value={formatByFmt(model.method === "fcff" ? wacc.wacc : wacc.costOfEquity, "pct2")}
+        sub={`Rf ${formatByFmt(model.assumptions.values.risk_free as number, "pct2")} · ERP ${formatByFmt((model.assumptions.values.erp as number) + (model.assumptions.values.country_risk_premium as number), "pct2")}`}
+      />
       <Card
         label="Selected beta"
         value={formatByFmt(beta.selectedBeta, "beta")}
-        sub={beta.fallback ? "Regression unusable — defaulted to 1.0" : `${beta.nObs} monthly observations`}
+        sub={beta.method === "peer" ? `Bottom-up: ${beta.nPeers} peers` : beta.fallback ? "Regression unusable — defaulted to 1.0" : `${beta.nObs} monthly observations`}
       />
     </div>
   );

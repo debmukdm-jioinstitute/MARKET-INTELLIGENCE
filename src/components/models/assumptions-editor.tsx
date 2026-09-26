@@ -5,7 +5,7 @@ import { formatByFmt } from "@/lib/models/format";
 import type { Assumptions } from "@/lib/models/types";
 import { useMemo, useState } from "react";
 
-const SCALAR_SECTIONS_ORDER = ["Cost of capital", "Operating", "Terminal value", "Capital allocation", "Working capital"];
+const SCALAR_SECTIONS_ORDER = ["General", "Cost of capital", "Operating", "Terminal value", "Capital allocation", "Working capital", "Equity bridge", "Dilution", "Financials (residual income)"];
 
 function toInputValue(value: number, fmt: string): string {
   if (fmt === "pct" || fmt === "pct2") return (value * 100).toFixed(fmt === "pct2" ? 2 : 1);
