@@ -1,4 +1,5 @@
 import type { FeedSourceId, NewsItem } from "@/lib/feeds/types";
+import { normalizeNewsPublishedAt } from "@/lib/feeds/news-sort";
 
 function tag(block: string, name: string) {
   const cdata = new RegExp(`<${name}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${name}>`, "i").exec(
@@ -26,7 +27,8 @@ export function parseRss(xml: string, source: FeedSourceId, limit = 12): NewsIte
     const title = tag(block, "title");
     const link = linkFromBlock(block);
     if (!title || !link) continue;
-    const publishedAt = tag(block, "pubDate") || tag(block, "updated") || undefined;
+    const publishedRaw = tag(block, "pubDate") || tag(block, "updated") || undefined;
+    const publishedAt = normalizeNewsPublishedAt(publishedRaw);
     const id = `${source}-${Buffer.from(link).toString("base64url").slice(0, 24)}`;
     items.push({ id, source, title, link, publishedAt });
   }

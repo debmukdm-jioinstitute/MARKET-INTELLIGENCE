@@ -39,9 +39,9 @@ export const TICKER_INSTRUMENTS: TickerInstrument[] = [
   { id: "gbp_inr", label: "GBP/INR", symbol: "GBPINR=X", prefix: "₹", decimals: 2, copyKey: "gbp_inr", group: "fx" },
   { id: "jpy_inr", label: "JPY/INR", symbol: "JPYINR=X", prefix: "₹", decimals: 2, copyKey: "jpy_inr", group: "fx" },
   { id: "brent", label: "BRENT", symbol: "BZ=F", prefix: "$", decimals: 2, copyKey: "brent", href: "/macro/commodities#brent", group: "commodity" },
-  { id: "wti", label: "WTI", symbol: "CL=F", prefix: "$", decimals: 2, copyKey: "ticker_wti", href: "/macro/commodities", group: "commodity" },
+  { id: "wti", label: "WTI", symbol: "CL=F", prefix: "$", decimals: 2, copyKey: "wti", href: "/macro/commodities#wti", group: "commodity" },
   { id: "gold", label: "GOLD", symbol: "GC=F", prefix: "$", decimals: 0, copyKey: "gold", href: "/macro/commodities#gold", group: "commodity" },
   { id: "silver", label: "SILVER", symbol: "SI=F", prefix: "$", decimals: 2, copyKey: "silver", href: "/macro/commodities#silver", group: "commodity" },
   { id: "copper", label: "COPPER", symbol: "HG=F", prefix: "$", decimals: 2, copyKey: "copper", href: "/macro/commodities#copper", group: "commodity" },
-  { id: "natgas", label: "NAT GAS", symbol: "NG=F", prefix: "$", decimals: 2, copyKey: "ticker_natgas", group: "commodity" },
+  { id: "natgas", label: "NAT GAS", symbol: "NG=F", prefix: "$", decimals: 2, copyKey: "natgas", href: "/macro/commodities#natgas", group: "commodity" },
 ];

@@ -3,13 +3,16 @@
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { Panel } from "@/components/layout/page-header";
 import type { TapeQuote } from "@/lib/macro/build-tape";
+import { COMMODITY_UNIVERSE, formatCommodityPrice } from "@/lib/macro/commodity-universe";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+const defById = new Map(COMMODITY_UNIVERSE.map((d) => [d.id, d]));
+
 function fmtPrice(id: string, price: number | null) {
+  const def = defById.get(id);
+  if (def) return formatCommodityPrice(def, price);
   if (price == null) return "—";
-  if (id === "gold") return `$${price.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-  if (id === "copper") return `$${price.toFixed(2)}`;
   return `$${price.toFixed(2)}`;
 }
 
@@ -23,7 +26,7 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
         </Link>
       }
     >
-      <ul className="space-y-2">
+      <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
         {rows.map((r) => (
           <li key={r.id}>
             <Link

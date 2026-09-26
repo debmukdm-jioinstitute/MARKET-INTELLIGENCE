@@ -15,6 +15,7 @@ import { fetchUpstoxNews, fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
 import { fetchMassiveUsQuotes, hasMassiveApiKey } from "@/lib/feeds/sources/massive";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { sortNewsByFreshness } from "@/lib/feeds/news-sort";
 import type { FeedHealth, FeedHubPayload, LiveQuote } from "@/lib/feeds/types";
 import { UNIVERSE } from "@/lib/universe";
 
@@ -91,13 +92,13 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   const upstoxRows = upstoxQuotes.value ?? [];
   const quotes = mergeQuotes(yahooQuotes, stooqQuotes, massiveQuotes, upstoxRows);
 
-  const news = [
+  const news = sortNewsByFreshness([
     ...(nse.value ?? []),
     ...(bse.value ?? []),
     ...(rbi.value ?? []),
     ...(sec.value ?? []),
     ...(upstoxNews.value ?? []),
-  ].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
+  ]);
 
   const macro = [
     ...(fred.value ?? []),

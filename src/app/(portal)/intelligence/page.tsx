@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { filterRegulatoryExchangeNews, sortNewsByFreshness } from "@/lib/feeds/news-sort";
 import { PageHeader } from "@/components/layout/page-header";
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { CorporateEventsCard } from "@/components/dashboard/corporate-events-card";
@@ -21,6 +22,11 @@ export default function IntelligencePage() {
   ]);
   const [thinking, setThinking] = useState(false);
   const { data: feedData } = useFeedHub(45_000);
+
+  const regulatoryHeadlines = useMemo(() => {
+    if (!feedData?.news?.length) return [];
+    return sortNewsByFreshness(filterRegulatoryExchangeNews(feedData.news));
+  }, [feedData?.news]);
 
   const handleSend = () => {
     if (!query.trim()) return;
@@ -144,7 +150,7 @@ export default function IntelligencePage() {
         </div>
         <div className="mb-3"><MonitorsBar /></div>
         {feedData?.news ? (
-          <NewsStream items={feedData.news} limit={24} />
+          <NewsStream items={regulatoryHeadlines} limit={24} />
         ) : (
           <p className="text-sm text-muted-foreground py-4">Loading live headlines…</p>
         )}

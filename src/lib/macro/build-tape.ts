@@ -6,6 +6,7 @@ import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import type { LiveQuote } from "@/lib/feeds/types";
+import { COMMODITY_UNIVERSE } from "@/lib/macro/commodity-universe";
 
 export type YieldPoint = {
   tenor: string;
@@ -98,10 +99,7 @@ function quoteSource(sym: string, q?: LiveQuote): FieldSource {
 
 export async function buildMacroTape(): Promise<MacroTapePayload> {
   const symbols = [
-    "BZ=F",
-    "GC=F",
-    "SI=F",
-    "HG=F",
+    ...COMMODITY_UNIVERSE.map((c) => c.sym),
     "INR=X",
     "EURINR=X",
     "GBPINR=X",
@@ -153,18 +151,11 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
     },
   }));
 
-  const commodityDefs: { id: string; label: string; sym: string; copyKey: string }[] = [
-    { id: "brent", label: "BRENT", sym: "BZ=F", copyKey: "brent" },
-    { id: "gold", label: "GOLD", sym: "GC=F", copyKey: "gold" },
-    { id: "silver", label: "SILVER", sym: "SI=F", copyKey: "silver" },
-    { id: "copper", label: "COPPER", sym: "HG=F", copyKey: "copper" },
-  ];
-
-  const commodities: TapeQuote[] = commodityDefs.map((c) => {
+  const commodities: TapeQuote[] = COMMODITY_UNIVERSE.map((c) => {
     const q = qmap.get(c.sym);
     return {
       id: c.id,
-      label: c.label,
+      label: c.label.toUpperCase(),
       symbol: c.sym,
       price: q?.price ?? null,
       changePct: q?.changePct ?? null,

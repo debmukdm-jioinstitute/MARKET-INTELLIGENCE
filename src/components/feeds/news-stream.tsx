@@ -2,6 +2,7 @@
 
 import { matchMonitor, useMonitors } from "@/hooks/use-monitors";
 import type { NewsItem } from "@/lib/feeds/types";
+import { formatNewsPublishedAt, sortNewsByFreshness } from "@/lib/feeds/news-sort";
 
 const SOURCE_LABEL: Record<NewsItem["source"], string> = {
   nse: "NSE",
@@ -23,7 +24,7 @@ const SOURCE_LABEL: Record<NewsItem["source"], string> = {
 
 export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: number }) {
   const { monitors } = useMonitors();
-  const slice = items.slice(0, limit);
+  const slice = sortNewsByFreshness(items).slice(0, limit);
   if (!slice.length) {
     return <p className="text-sm text-muted-foreground">No headlines pulled yet — retry in a minute.</p>;
   }
@@ -43,7 +44,7 @@ export function NewsStream({ items, limit = 20 }: { items: NewsItem[]; limit?: n
           </a>
           <p className="mt-1 text-sm uppercase tracking-wide text-muted-foreground">
             {SOURCE_LABEL[item.source]}
-            {item.publishedAt ? ` · ${item.publishedAt}` : ""}
+            {item.publishedAt ? ` · ${formatNewsPublishedAt(item.publishedAt)}` : ""}
             {hit ? <span style={{ color: hit.color }}> · monitor: {hit.keywords.join(", ")}</span> : null}
           </p>
         </li>

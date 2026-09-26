@@ -43,6 +43,71 @@ export const METRIC_COPY: Record<
     provider: "Yahoo Finance (HG=F)",
     url: "https://finance.yahoo.com/quote/HG=F",
   },
+  wti: {
+    novice: "US benchmark crude. Often trades near Brent; spreads matter for global refining margins.",
+    provider: "Yahoo Finance (CL=F)",
+    url: "https://finance.yahoo.com/quote/CL=F",
+  },
+  natgas: {
+    novice: "US natural gas benchmark. Feeds into LNG pricing and fertilizer (urea) cost curves over time.",
+    provider: "Yahoo Finance (NG=F)",
+    url: "https://finance.yahoo.com/quote/NG=F",
+  },
+  gasoline: {
+    novice: "Wholesale US gasoline futures — early signal for transport inflation and OMC marketing margins.",
+    provider: "Yahoo Finance (RB=F)",
+    url: "https://finance.yahoo.com/quote/RB=F",
+  },
+  heating_oil: {
+    novice: "Distillate benchmark; correlates with diesel economics and industrial fuel demand.",
+    provider: "Yahoo Finance (HO=F)",
+    url: "https://finance.yahoo.com/quote/HO=F",
+  },
+  platinum: {
+    novice: "Industrial precious metal (auto catalysts). Complements gold for inflation and manufacturing cycles.",
+    provider: "Yahoo Finance (PL=F)",
+    url: "https://finance.yahoo.com/quote/PL=F",
+  },
+  palladium: {
+    novice: "Auto-catalyst metal; volatile proxy for vehicle production and emissions-regulation demand.",
+    provider: "Yahoo Finance (PA=F)",
+    url: "https://finance.yahoo.com/quote/PA=F",
+  },
+  aluminum: {
+    novice: "Light industrial metal — power costs and China supply drive Hindalco / NALCO sentiment.",
+    provider: "Yahoo Finance (ALI=F)",
+    url: "https://finance.yahoo.com/quote/ALI=F",
+  },
+  corn: {
+    novice: "Global feed-grain benchmark. Matters for poultry, ethanol, and rural inflation spillovers.",
+    provider: "Yahoo Finance (ZC=F)",
+    url: "https://finance.yahoo.com/quote/ZC=F",
+  },
+  soybeans: {
+    novice: "Protein and oilseed benchmark — edible oil and meal prices in India track global soy complex.",
+    provider: "Yahoo Finance (ZS=F)",
+    url: "https://finance.yahoo.com/quote/ZS=F",
+  },
+  wheat: {
+    novice: "Staple grain futures. Global wheat spikes feed into domestic food inflation and import policy.",
+    provider: "Yahoo Finance (ZW=F)",
+    url: "https://finance.yahoo.com/quote/ZW=F",
+  },
+  sugar: {
+    novice: "Soft commodity benchmark. Relevant for sugar mills, ethanol blending, and FMCG sweetener costs.",
+    provider: "Yahoo Finance (SB=F)",
+    url: "https://finance.yahoo.com/quote/SB=F",
+  },
+  coffee: {
+    novice: "Arabica benchmark — affects café chains and packaged beverage input costs.",
+    provider: "Yahoo Finance (KC=F)",
+    url: "https://finance.yahoo.com/quote/KC=F",
+  },
+  cotton: {
+    novice: "Textile raw material benchmark. Moves with monsoon, China demand, and apparel export orders.",
+    provider: "Yahoo Finance (CT=F)",
+    url: "https://finance.yahoo.com/quote/CT=F",
+  },
   usd_inr: {
     novice: "How many Rupees per US Dollar. A weaker Rupee (higher number) helps IT exporters but raises import costs.",
     provider: "Yahoo Finance (INR=X)",
