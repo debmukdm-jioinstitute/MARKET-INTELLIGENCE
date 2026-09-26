@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { MarketValuationCard } from "@/components/dashboard/market-valuation-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Scale } from "lucide-react";
 
 interface SectorRow {
   name: string;
@@ -155,15 +158,36 @@ const SECTOR_DATA: SectorRow[] = [
 
 import { MetricInfo } from "@/components/ui/metric-info";
 
+type SectorTab = "performance" | "rotation" | "valuation" | "fundamentals";
+const SECTOR_TABS: SectorTab[] = ["performance", "rotation", "valuation", "fundamentals"];
+
+const ERP_ROWS = [
+  { label: "NIFTY Earnings Yield (1 / PE):", id: "earnings_yield", value: "4.58%", cls: "text-foreground" },
+  { label: "India 10Y G-Sec Yield:", id: "gsec10y", value: "6.82%", cls: "text-foreground" },
+  { label: "Yield Spread (G-Sec - Earnings Yield):", id: "yield_spread", value: "224 bps (Slightly Stretched)", cls: "text-blue-600" },
+  { label: "Historical 10Y Mean Spread:", id: "yield_spread", name: "Historical 10Y Mean Spread", value: "185 bps", cls: "text-muted-foreground" },
+];
+
 export default function SectorsPage() {
-  const [activeTab, setActiveTab] = useState<"performance" | "rotation" | "valuation" | "fundamentals">("performance");
+  return (
+    <Suspense fallback={null}>
+      <SectorsView />
+    </Suspense>
+  );
+}
+
+function SectorsView() {
+  const tabParam = useSearchParams().get("tab") as SectorTab | null;
+  const [activeTab, setActiveTab] = useState<SectorTab>(
+    tabParam && SECTOR_TABS.includes(tabParam) ? tabParam : "performance",
+  );
 
   return (
     <div className="portal-page pb-10">
       <PageHeader
         kicker="Sector Matrix"
         title="Sector Intelligence & Rotation Workbench"
-        subtitle="Decomposition of Indian industry verticals: relative momentum, rotation quadrant, valuation dispersion, and return on equity."
+        subtitle="Decomposition of Indian industry verticals: relative momentum, rotation quadrant, market and sector valuation, and return on equity."
       />
 
       {/* Navigation Sub-Tabs */}
@@ -189,6 +213,30 @@ export default function SectorsPage() {
           </button>
         ))}
       </div>
+
+      {/* Market-level valuation (merged from former /markets/valuation) */}
+      {activeTab === "valuation" ? (
+        <div className="bento-grid-cols-2">
+          <MarketValuationCard />
+          <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">
+            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Scale className="size-4 text-primary" />
+              EQUITY RISK PREMIUM & YIELD SPREAD
+            </h3>
+            <div className="space-y-3 divide-y divide-border/50">
+              {ERP_ROWS.map((r) => (
+                <div key={r.label} className="pt-2 first:pt-0 flex justify-between items-center">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    {r.label}
+                    <MetricInfo id={r.id} name={r.name} iconSize="xs" />
+                  </span>
+                  <span className={cn("font-bold", r.cls)}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Rotation Quadrant Summary */}
       {activeTab === "rotation" ? (

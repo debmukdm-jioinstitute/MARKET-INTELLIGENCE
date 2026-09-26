@@ -233,7 +233,7 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
           { label: "SENSEX", href: "/markets/india/sensex" },
           { label: "BANK NIFTY", href: "/markets/india/banknifty" },
           { label: "Breadth Desk", href: "/markets/breadth" },
-          { label: "Valuation", href: "/markets/valuation" },
+          { label: "Valuation", href: "/markets/sectors?tab=valuation" },
           { label: "Momentum", href: "/markets/momentum" },
           { label: "F&O Desk", href: "/markets/derivatives" },
         ].map((sub) => (

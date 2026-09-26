@@ -57,7 +57,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Valuation & Sectors",
         desc: "Is the market cheap or expensive? Which sectors lead?",
         items: [
-          { label: "Valuation", href: "/markets/valuation", desc: "P/E, P/B, and yield bands versus history." },
+          { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "P/E, P/B, and yield bands versus history." },
           { label: "Sector Comparables", href: "/markets/sectors", desc: "Rotation and relative strength by sector.", badge: "NEW" },
         ],
       },

@@ -322,8 +322,8 @@ Every figure shown — "NIFTY vs 20 DMA: +2.10%", "RSI (14D): 62.40", "MACD Sign
 ### Sectors — `/markets/sectors` ⚪ **entirely static**
 A hardcoded table of the 10 NIFTY sectors with fixed weight/return/PE/PB/ROE figures and a manually pre-assigned rotation label ("Leading"/"Weakening"/"Lagging"/"Improving"). The "Rotation Quadrant" view just filters those pre-set labels — there is no live sector index or momentum computation behind it.
 
-### Valuation — `/markets/valuation` ⚪ **entirely static**
-Literal figures ("NIFTY 50 Trailing P/E: 21.84x", "5Y Historical Average P/E: 20.42x", "Dividend Yield: 1.22%"). The valuation-meter needle position is a fixed CSS value, not derived from the number next to it.
+### Valuation — `/markets/sectors?tab=valuation` ⚪ **entirely static**
+Merged into the Sectors page ("Valuation Multiples" tab); `/markets/valuation` redirects there. Literal figures ("NIFTY 50 Trailing P/E: 21.84x", "5Y Historical Average P/E: 20.42x", "Dividend Yield: 1.22%"). The valuation-meter needle position is a fixed CSS value, not derived from the number next to it.
 
 ### India equities — `/markets/india` and the security sheet
 🟢 The equities table matches this app's curated NSE list against live quotes. Clicking a row opens a security sheet built from four independent Upstox calls: full quote + 5-level market depth ladder, historical candles (1M/3M/6M/1Y ranges), and key ratios (company value vs. sector value, per metric).

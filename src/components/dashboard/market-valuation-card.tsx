@@ -22,7 +22,7 @@ export function MarketValuationCard() {
             <MetricInfo metric="pe_ratio" sourceOverride={nseSource} customTitle="NSE Valuation Suite" />
           </div>
           <Link
-            href="/markets/valuation"
+            href="/markets/sectors?tab=valuation"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             Explore Valuation
@@ -107,7 +107,7 @@ export function MarketValuationCard() {
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
         <Link
-          href="/markets/valuation"
+          href="/markets/sectors?tab=valuation"
           className="text-primary hover:underline text-sm flex items-center gap-1"
         >
           View Full Valuation & Yield Spread Dashboard →

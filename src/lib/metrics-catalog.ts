@@ -898,7 +898,7 @@ cpi: {
     name: "Bond-Equity Yield Spread",
     category: "Valuation Multiples",
     provider: "Antigravity Cross-Asset Engine",
-    defaultUrl: "/markets/valuation",
+    defaultUrl: "/markets/sectors?tab=valuation",
     calculation:
       "Yield Spread (bps) = 10Y G-Sec Sovereign Yield − NIFTY 50 Earnings Yield (where Earnings Yield = 1 / P/E × 100).",
     laymanExplanation:
@@ -1112,7 +1112,7 @@ cpi: {
     name: "Earnings Yield (E/P)",
     category: "Valuation Multiples",
     provider: "NSE India / Valuation Desk",
-    defaultUrl: "/markets/valuation",
+    defaultUrl: "/markets/sectors?tab=valuation",
     calculation:
       "Earnings Yield % = (1 ÷ P/E Ratio) × 100 = Aggregate Net Profits (PAT) ÷ Total Market Capitalization.",
     laymanExplanation:
@@ -1125,7 +1125,7 @@ cpi: {
     name: "Buffett Indicator (Market Cap to GDP)",
     category: "Valuation Multiples",
     provider: "MOSPI & BSE Listed Equities Aggregate",
-    defaultUrl: "/markets/valuation",
+    defaultUrl: "/markets/sectors?tab=valuation",
     calculation:
       "Buffett Indicator % = (Total Market Capitalization of all domestic listed companies ÷ Nominal Annual GDP) × 100.",
     laymanExplanation:
@@ -1138,7 +1138,7 @@ cpi: {
     name: "Buffett Indicator (Market Cap to GDP)",
     category: "Valuation Multiples",
     provider: "MOSPI & BSE Listed Equities Aggregate",
-    defaultUrl: "/markets/valuation",
+    defaultUrl: "/markets/sectors?tab=valuation",
     calculation:
       "Buffett Indicator % = (Total Market Capitalization of all domestic listed companies ÷ Nominal Annual GDP) × 100.",
     laymanExplanation:
