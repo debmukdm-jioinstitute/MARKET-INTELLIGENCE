@@ -1,8 +1,23 @@
 # Market Intelligence
 
-**Live:** [getmarketintelligence.vercel.app](https://getmarketintelligence.vercel.app)
+**Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — real market data, a full quantitative metrics catalog, macro regime analytics, an automated NSE F&O options-flow screener, and a handful of LLM research agents, all running on real feeds with the underlying math laid out in the open.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), and a floating **site assistant** for navigation and in-app help. Formulas and data paths are documented here and in `docs/`.
+
+## Product capabilities (summary)
+
+| Area | Routes | What it does |
+|---|---|---|
+| **India desk** | `/Home` | Market pulse (NIFTY, SENSEX, Bank Nifty, India VIX, USD/INR, G-Sec 10Y, Brent, gold), global radar, India-impact score, FII/DII, macro strip, corporate events |
+| **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
+| **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
+| **Portfolio** | `/portfolio/*` | Real holdings, live marks, full metrics catalog (Sharpe, Sortino, VaR, IRR, factors, drawdown); broker import (Zerodha / Dhan / Upstox API or CSV); simulated quant pages (allocation, optimizer, risk) on a seeded universe |
+| **Research** | `/research/*` | Symbol detail, integrated **DCF**, IPO calendar, **AI Desk** (three Groq multi-agent flows), **options-flow** screener (deterministic gate + LLM narrative) |
+| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI, sorted by freshness), daily brief, custom alert rules, backtesting UI |
+| **Algo desk** | `/algo/*` | NIFTY F&O scanner, paper/live trades, backtest, replay, charts — proxied to Python **AI-trader** when `AI_TRADER_API_URL` is set ([docs/AI-TRADER.md](docs/AI-TRADER.md)) |
+| **Site assistant** | Floating widget | OmniRoute / Groq chat with tools: navigate, open command palette, search pages, glossary snippets ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
+| **Data & ops** | `/data/feeds`, `/data/export`, `/admin` | Live source health checks, Excel export of datasets, admin customers/briefs/RAG Q&A (Postgres full-text, not vectors) |
+| **Integrations** | `/api/mcp` | Read-only MCP tools over app data (API-key gated, [docs/MCP.md](docs/MCP.md)) |
 
 This document explains **how every page actually computes what it shows** — the formula, the algorithm, the data source, and (where one is used) the AI agent behind it. Where a panel is illustrative, static, or simulated rather than a live computation, that's stated plainly rather than left to look like more than it is — the app's own code comments follow the same rule, and this README just surfaces it.
 
@@ -25,10 +40,12 @@ This document explains **how every page actually computes what it shows** — th
 11. [Data & Feeds transparency](#11-data--feeds-transparency)
 12. [Admin backend](#12-admin-backend)
 13. [Broker import](#13-broker-import)
-14. [Data sources at a glance](#14-data-sources-at-a-glance)
-15. [Run locally & deploy](#15-run-locally--deploy)
-16. [Environment variables](#16-environment-variables)
-17. [Tech stack](#17-tech-stack)
+14. [NIFTY Algo Desk](#14-nifty-algo-desk)
+15. [Site assistant](#15-site-assistant)
+16. [Data sources at a glance](#16-data-sources-at-a-glance)
+17. [Run locally & deploy](#17-run-locally--deploy)
+18. [Environment variables](#18-environment-variables)
+19. [Tech stack](#19-tech-stack)
 
 ---
 
@@ -45,7 +62,7 @@ Three symbols recur through this README:
 
 ## 2. Dashboard
 
-**Path:** `/dashboard` · **Code:** `src/lib/feeds/india/build-dashboard.ts`, `src/app/api/feeds/india-dashboard`
+**Path:** `/Home` · **Code:** `src/lib/feeds/india/build-dashboard.ts`, `src/app/api/feeds/india-dashboard`
 
 The India desk landing page. It loads in two passes — a "quick" payload (market pulse, global radar, India-impact score) renders first, then a fuller payload fills in the rest — which is why the page visibly completes itself a moment after opening.
 
@@ -104,7 +121,22 @@ Literal figures ("NIFTY 50 Trailing P/E: 21.84x", "5Y Historical Average P/E: 20
 
 ## 4. Macro
 
-**Path:** `/macro` and its 13 nested sections
+**Path:** `/macro` and nested sections (regime, growth, inflation, RBI, global, stress, scenarios, transmission, yields, calendar, plus live asset dashboards below)
+
+### Live cross-asset dashboards (Yahoo Finance tape)
+
+**Paths:** [`/macro/commodities`](https://getmarketintelligence.in/macro/commodities), [`/macro/currency`](https://getmarketintelligence.in/macro/currency), [`/macro/indices`](https://getmarketintelligence.in/macro/indices)  
+**Code:** `src/lib/macro/commodity-universe.ts`, `currency-universe.ts`, `indices-universe.ts`, `build-tape.ts`, `build-world-indices.ts` · **APIs:** `/api/macro/tape`, `/api/macro/world-indices`
+
+Three dashboards share one UX pattern: curated symbol universes, regional **focus toggles** (`?focus=` — e.g. India / US / global on commodities; Americas / Europe / Asia / India on indices), grouped sections, per-instrument explainers (`metric-copy.ts`), Yahoo source links, and **6-month charts** (client fetch to `/api/feeds/yahoo/history`). Macro home (`/macro`) shows **subset strips** only (`COMMODITY_TAPE_IDS`, `CURRENCY_TAPE_IDS`, `INDEX_TAPE_IDS`) so the full batch does not run on every page load.
+
+| Dashboard | Scale | Focus filters | Notable fields |
+|---|---|---|---|
+| **Commodities** | 47 instruments | All · Global futures · US ETFs · India NSE proxies | Futures, USO/GLD-style ETFs, GOLDBEES, Nifty Metal/Energy, ONGC, etc. |
+| **Currency** | 29 FX pairs | All · Global & EM · US dollar · India INR crosses | DXY, G10, EM vs USD, INR crosses (USD/EUR/GBP/JPY/AUD/CAD/CHF/SGD/NZD) |
+| **World indices** | 32 benchmarks | All · Americas · Europe · Asia-Pacific · India (+ vol) | Table like [Yahoo world indices](https://finance.yahoo.com/markets/world-indices/): price, change, %, volume, day range, 52-week range; row expand → chart |
+
+Quotes: 🟢 Yahoo chart v8 (`fetchYahooQuotes` / `fetchYahooQuoteDetail`); India index symbols may also appear on the live ticker via Upstox where configured.
 
 ### The regime engine — `src/lib/macro/regime.ts`
 
@@ -359,9 +391,18 @@ Every scraped story is upserted keyed on its URL, so re-scraping the same story 
 
 ## 10. Intelligence
 
-**Path:** `/intelligence`
+**Path:** `/intelligence` and subpages (`/intelligence/brief`, `/intelligence/alerts`, `/intelligence/scanner`, …)
 
-Two parts: a corporate-events feed and a "what changed" module shared with the dashboard (both live, both described above) — and an **"AI Copilot Terminal"** chat box that is worth being upfront about: it is fully client-side and **does not call any LLM or backend**. It pattern-matches your message for a few keywords ("risk"/"portfolio" or "fii"/"flow") and returns one of three pre-written canned replies after a short delay. Nothing you type there reaches a model or a server. If you're looking for the real LLM chat/analysis features, they're in [AI Desk](#7-ai-desk-llm-research-agents).
+| Piece | How it works |
+|---|---|
+| **News stream** | 🟢 RSS / hub aggregation with freshness sorting |
+| **Regulatory & exchange headlines** | 🟢 Filtered to **NSE, BSE, RBI** sources; sorted by parsed publish time (newest first), not raw string order |
+| **Corporate events** | 🟢 Shared with dashboard "what changed" modules |
+| **Daily brief** | 🤖 Scheduled pre-market / post-close; fact-sheet-grounded LLM with citation ids ([§13b](#13b-stress-alerts-brief-transmission--scenarios)) |
+| **Alert rules** | 🧮 User-defined metric conditions, cron-evaluated |
+| **Legacy "Copilot Terminal" on Intelligence** | ⚪ Client-only keyword matcher with canned replies — **not** an LLM |
+
+For **in-app navigation and product help**, use the floating **site assistant** ([§15](#15-site-assistant)). For **ticker-level research agents**, use [AI Desk](#7-ai-desk-llm-research-agents).
 
 ---
 
@@ -414,7 +455,37 @@ Either way, you get a preview before committing, with the choice to replace your
 
 ---
 
-## 14. Data sources at a glance
+## 14. NIFTY Algo Desk
+
+**Paths:** `/algo`, `/algo/live`, `/algo/trades`, `/algo/backtest`, `/algo/replay`, `/algo/charts`, `/algo/ai`, `/algo/settings`  
+**Docs:** [docs/AI-TRADER.md](docs/AI-TRADER.md), [docs/AI-TRADER-PRODUCTION.md](docs/AI-TRADER-PRODUCTION.md) · **Code:** `services/ai-trader/`, `src/app/(portal)/algo/*`, proxy `src/app/api/ai-trader/[...path]`
+
+Optional **NIFTY F&O algo** UI embedded in the portal. The Next.js app **proxies** authenticated calls to a separate **Flask + TimescaleDB** stack (TrueData ticks, XGBoost macro/micro/strategy models, RL exit agent, VWAP/mean-reversion strategies, paper or Zerodha execution). Vercel alone does **not** run the database or market-data websocket — you need a reachable `AI_TRADER_API_URL` (local tunnel, Fly.io, VPS, etc.).
+
+| Route | Capability |
+|---|---|
+| `/algo` | Desk overview — equity curve, risk profile, connection status |
+| `/algo/live` | Live scanner, suggestions, SSE stream, auto/manual paper trades, broker panel |
+| `/algo/trades` | History, P&L, strategy breakdown |
+| `/algo/backtest` | Tick replay backtest runner |
+| `/algo/replay` | Historical day replay |
+| `/algo/charts` | NIFTY candles, option chain, premium charts |
+| `/algo/ai` | Model / RL agent status |
+| `/algo/settings` | Risk tiers (LOW/MEDIUM/HIGH), Zerodha connect |
+
+Without the backend, algo pages show connection/degraded states; the rest of Market Intelligence still works on Yahoo/Upstox/NSE feeds.
+
+---
+
+## 15. Site assistant
+
+**UI:** Floating widget in the portal shell · **API:** `/api/site-assistant` · **Code:** `src/lib/site-assistant/*`, `src/lib/ai/omniroute.ts`
+
+🤖 **Live LLM assistant** (not the static Intelligence copilot). Uses **OmniRoute** (OpenAI-compatible gateway) with optional direct **Groq** fallback. Tools (Zod-validated): navigate to allowed routes, open the command palette (`⌘K`), search registered pages. System prompt includes route map and education snippets. Rate-limited and session-gated like other portal APIs. Configure `OMNIROUTE_*` and/or `GROQ_API_KEY` — see [docs/OMNIROUTE.md](docs/OMNIROUTE.md).
+
+---
+
+## 16. Data sources at a glance
 
 | Provider | Used for |
 |---|---|
@@ -430,7 +501,7 @@ Either way, you get a preview before committing, with the choice to replace your
 
 ---
 
-## 15. Run locally & deploy
+## 17. Run locally & deploy
 
 ```bash
 git clone https://github.com/debmukdm-jioinstitute/MARKET-INTELLIGENCE.git
@@ -441,14 +512,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Most pages render with partial/simulated data until the environment variables below are set — nothing crashes, panels degrade to "unavailable" or their simulated fallback instead.
 
-Deploy (Vercel):
+Deploy (production domain **getmarketintelligence.in**):
 ```bash
-npx vercel --prod
+git push origin main
+npx vercel --prod --yes
 ```
 
 ---
 
-## 16. Environment variables
+## 18. Environment variables
 
 | Variable | Purpose |
 |---|---|
@@ -459,6 +531,7 @@ npx vercel --prod
 | `OMNIROUTE_MODEL` | Optional; default `auto/fast` for the floating assistant |
 | `OMNIROUTE_FALLBACK_MODEL` | Optional; default `openai/gpt-oss-20b` (Groq via OmniRoute) |
 | `SITE_ASSISTANT_GROQ_MODEL` | Optional; direct Groq fallback when OmniRoute is down |
+| `AI_TRADER_API_URL` | Base URL for NIFTY Algo Desk Flask API (e.g. `http://127.0.0.1:5050` or Fly/VPS) |
 | `DATABASE_URL` / `POSTGRES_URL` (Neon) | Holdings, options-flow history, research-report cache, admin data |
 | `MASSIVE_API_KEY` | US market data (optional — Yahoo covers the gap) |
 | `FRED_API_KEY` | Optional; CSV fallbacks exist without it |
@@ -472,7 +545,7 @@ npx vercel --prod
 
 ---
 
-## 17. Tech stack
+## 19. Tech stack
 
 - **Framework:** Next.js 16 (App Router) · React 19 · TypeScript
 - **UI:** Tailwind CSS 4 · shadcn/ui · Radix · Lucide · KaTeX (for the metrics-specification math) · **Typography: [Google Sans only](docs/TYPOGRAPHY.md)** (`npm run check:typography`)
