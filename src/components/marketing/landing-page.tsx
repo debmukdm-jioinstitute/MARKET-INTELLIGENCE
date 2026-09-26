@@ -22,7 +22,7 @@ import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
 import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
-import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
+import { ProductHuntBadges, ProductHuntFeaturedBadge } from "@/components/marketing/product-hunt-badges";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -379,6 +379,10 @@ export function LandingPage() {
                 <span className="size-1.5 rounded-full bg-emerald-500" />
                 Live market data, free to start
               </span>
+
+              <div className="mt-5 flex justify-center">
+                <ProductHuntFeaturedBadge />
+              </div>
 
               <h1 className="mx-auto mt-6 text-[clamp(2.2rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-tight text-gray-900">
                 Manage money like a pro.

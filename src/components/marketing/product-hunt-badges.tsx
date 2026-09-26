@@ -5,11 +5,9 @@ const FEATURED_BADGE_URL = `${PRODUCT_HUNT_PRODUCT_URL}?embed=true&utm_source=ba
 
 const EMBED_POST_URL = `${PRODUCT_HUNT_PRODUCT_URL}?embed=true&utm_source=embed&utm_medium=post_embed`;
 
-const FEATURED_BADGE_IMG =
-  "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1262027&theme=light&t=1790452475263";
-
-const PRODUCT_LOGO =
-  "https://ph-files.imgix.net/9a0fb4fe-74b9-4621-acb8-2e701b16e3b7.png?auto=compress,format&codec=mozjpeg&cs=strip&fit=crop&h=80&w=80";
+/** Served from /public — avoids ad blockers on Product Hunt CDNs */
+const FEATURED_BADGE_IMG = "/product-hunt/featured.svg";
+const PRODUCT_LOGO = "/product-hunt/product-logo.png";
 
 export function ProductHuntFeaturedBadge() {
   return (
@@ -25,6 +23,8 @@ export function ProductHuntFeaturedBadge() {
         width={250}
         height={54}
         src={FEATURED_BADGE_IMG}
+        loading="eager"
+        decoding="async"
         className="h-auto w-[250px] max-w-full"
       />
     </a>
