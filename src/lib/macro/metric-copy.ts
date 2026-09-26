@@ -283,6 +283,126 @@ export const METRIC_COPY: Record<
     provider: "Yahoo Finance",
     url: "https://finance.yahoo.com/quote/JPYINR=X",
   },
+  aud_inr: {
+    novice: "Australian Dollar vs Rupee — coal, metals, and education/travel flows.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/AUDINR=X",
+  },
+  cad_inr: {
+    novice: "Canadian Dollar vs Rupee — energy and immigration-linked remittance context.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/CADINR=X",
+  },
+  chf_inr: {
+    novice: "Swiss Franc vs Rupee — safe-haven FX; pharma and luxury imports.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/CHFINR=X",
+  },
+  sgd_inr: {
+    novice: "Singapore Dollar vs Rupee — ASEAN trade hub and NRI remittance corridor.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/SGDINR=X",
+  },
+  nzd_inr: {
+    novice: "New Zealand Dollar vs Rupee — dairy exports and student migration flows.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/NZDINR=X",
+  },
+  eurusd: {
+    novice: "World’s most traded pair — Euro vs US Dollar; risk and rate differential bellwether.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/EURUSD=X",
+  },
+  gbpusd: {
+    novice: "Pound vs US Dollar — UK rates, gilt moves, and global risk sentiment.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/GBPUSD=X",
+  },
+  usdjpy: {
+    novice: "US Dollar vs Yen — classic risk-on/risk-off gauge; BoJ policy sensitive.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDJPY=X",
+  },
+  usdcad: {
+    novice: "US Dollar vs Canadian Dollar — oil-linked North American cross.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDCAD=X",
+  },
+  usdchf: {
+    novice: "US Dollar vs Swiss Franc — haven demand when volatility spikes.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDCHF=X",
+  },
+  audusd: {
+    novice: "Australian Dollar vs US Dollar — China growth and commodity beta.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/AUDUSD=X",
+  },
+  nzdusd: {
+    novice: "New Zealand Dollar vs US Dollar — dairy cycle and carry-trade proxy.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/NZDUSD=X",
+  },
+  usdcnh: {
+    novice: "US Dollar vs offshore Chinese Yuan — trade and EM Asia sentiment.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDCNH=X",
+  },
+  usdsgd: {
+    novice: "US Dollar vs Singapore Dollar — regional FX anchor for ASEAN.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDSGD=X",
+  },
+  eurgbp: {
+    novice: "Euro vs Pound — UK–EU trade and rate spread without USD leg.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/EURGBP=X",
+  },
+  eurjpy: {
+    novice: "Euro vs Yen — global risk appetite outside the USD.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/EURJPY=X",
+  },
+  gbpjpy: {
+    novice: "Pound vs Yen — volatile cross; risk and UK rate sensitivity.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/GBPJPY=X",
+  },
+  usdmxn: {
+    novice: "US Dollar vs Mexican Peso — US manufacturing supply chain FX.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDMXN=X",
+  },
+  usdbrl: {
+    novice: "US Dollar vs Brazilian Real — LatAm risk and commodity exporter FX.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDBRL=X",
+  },
+  usdzar: {
+    novice: "US Dollar vs South African Rand — EM high-beta; gold and mining linkage.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDZAR=X",
+  },
+  usdkrw: {
+    novice: "US Dollar vs Korean Won — semiconductor export cycle and Asia risk.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDKRW=X",
+  },
+  usdtry: {
+    novice: "US Dollar vs Turkish Lira — high-volatility EM; inflation and policy risk.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDTRY=X",
+  },
+  usdtwd: {
+    novice: "US Dollar vs Taiwan Dollar — tech supply chain and export-heavy economy.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDTWD=X",
+  },
+  usdidr: {
+    novice: "US Dollar vs Indonesian Rupiah — ASEAN commodity demand and rate differential.",
+    provider: "Yahoo Finance",
+    url: "https://finance.yahoo.com/quote/USDIDR=X",
+  },
   ticker_stream: {
     novice:
       "Continuous scroll of India indices, volatility, global benchmarks, FX, and commodities. Hover to pause; click symbols with links for detail pages.",

@@ -7,6 +7,7 @@ import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import type { LiveQuote } from "@/lib/feeds/types";
 import { COMMODITY_UNIVERSE } from "@/lib/macro/commodity-universe";
+import { CURRENCY_UNIVERSE } from "@/lib/macro/currency-universe";
 
 export type YieldPoint = {
   tenor: string;
@@ -100,11 +101,7 @@ function quoteSource(sym: string, q?: LiveQuote): FieldSource {
 export async function buildMacroTape(): Promise<MacroTapePayload> {
   const symbols = [
     ...COMMODITY_UNIVERSE.map((c) => c.sym),
-    "INR=X",
-    "EURINR=X",
-    "GBPINR=X",
-    "JPYINR=X",
-    "DX-Y.NYB",
+    ...CURRENCY_UNIVERSE.map((c) => c.sym),
     "^NSEI",
     "^CNXIT",
   ];
@@ -165,19 +162,11 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
     };
   });
 
-  const currencyDefs: { id: string; label: string; sym: string; copyKey: string; priority?: boolean }[] = [
-    { id: "usd_inr", label: "USD/INR", sym: "INR=X", copyKey: "usd_inr", priority: true },
-    { id: "dxy", label: "DXY", sym: "DX-Y.NYB", copyKey: "dxy", priority: true },
-    { id: "eur_inr", label: "EUR/INR", sym: "EURINR=X", copyKey: "eur_inr" },
-    { id: "gbp_inr", label: "GBP/INR", sym: "GBPINR=X", copyKey: "gbp_inr" },
-    { id: "jpy_inr", label: "JPY/INR", sym: "JPYINR=X", copyKey: "jpy_inr" },
-  ];
-
-  const currencies: TapeQuote[] = currencyDefs.map((c) => {
+  const currencies: TapeQuote[] = CURRENCY_UNIVERSE.map((c) => {
     const q = qmap.get(c.sym);
     return {
       id: c.id,
-      label: c.label,
+      label: c.label.toUpperCase(),
       symbol: c.sym,
       price: q?.price ?? null,
       changePct: q?.changePct ?? null,
