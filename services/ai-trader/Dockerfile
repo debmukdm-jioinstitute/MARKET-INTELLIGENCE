@@ -24,4 +24,4 @@ EXPOSE 5050
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5050/api/state', timeout=3)"
 
-CMD gunicorn -w 2 -b "0.0.0.0:${PORT}" --timeout 120 --access-logfile - backend.app:app
+CMD python -c "from database.db import init_db; init_db()" ; exec python backend/app.py
