@@ -72,6 +72,8 @@ const SHIPPED: { emoji: string; title: string; text: string; href?: string; cta?
     emoji: "🔌",
     title: "Plug us into your AI assistant",
     text: "A read-only MCP endpoint with 10 tools over the site's analytics. Ask your own assistant about the numbers you see here.",
+    href: "/help",
+    cta: "Setup guide",
   },
 ];
 

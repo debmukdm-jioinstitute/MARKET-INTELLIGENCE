@@ -820,6 +820,7 @@ export function LandingPage() {
                 <Link href="/login" className="hover:text-gray-900">Sign in</Link>
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>
                 <Link href="/Home" className="hover:text-gray-900">Terminal</Link>
+                <Link href="/help" className="hover:text-gray-900">Help: connect your AI</Link>
               </div>
             </div>
             <div className="w-full max-w-sm text-sm text-muted-foreground">
