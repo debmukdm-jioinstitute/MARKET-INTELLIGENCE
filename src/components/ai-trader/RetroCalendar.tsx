@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CalendarDate {
-  day: string; // YYYY-MM-DD
+  day: string;
   bars: number;
   ticks?: number;
 }
@@ -15,13 +16,12 @@ interface RetroCalendarProps {
   onSelect: (date: string) => void;
 }
 
-const WEEKDAYS = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 export default function RetroCalendar({ dates, selectedDate, onSelect }: RetroCalendarProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Build lookup maps: "YYYY-MM-DD" → bars / ticks
   const barMap = useMemo(() => {
     const m: Record<string, number> = {};
     for (const d of dates) m[d.day] = d.bars;
@@ -33,14 +33,10 @@ export default function RetroCalendar({ dates, selectedDate, onSelect }: RetroCa
     return m;
   }, [dates]);
 
-  // Current calendar month navigation
-  const initialMonth = selectedDate
-    ? new Date(selectedDate + "T00:00:00")
-    : new Date();
+  const initialMonth = selectedDate ? new Date(`${selectedDate}T00:00:00`) : new Date();
   const [viewYear, setViewYear] = useState(initialMonth.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialMonth.getMonth());
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -50,162 +46,146 @@ export default function RetroCalendar({ dates, selectedDate, onSelect }: RetroCa
   }, []);
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
-    else setViewMonth(m => m - 1);
+    if (viewMonth === 0) {
+      setViewYear((y) => y - 1);
+      setViewMonth(11);
+    } else setViewMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
-    else setViewMonth(m => m + 1);
+    if (viewMonth === 11) {
+      setViewYear((y) => y + 1);
+      setViewMonth(0);
+    } else setViewMonth((m) => m + 1);
   };
 
-  // Build calendar grid
   const calendarDays = useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth, 1);
-    // Monday = 0
     let startDow = firstDay.getDay() - 1;
     if (startDow < 0) startDow = 6;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
     const cells: (null | { date: string; day: number; bars: number | null; ticks: number | null })[] = [];
-    // Padding
     for (let i = 0; i < startDow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const ds = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const b = barMap[ds] ?? null;
-      const t = tickMap[ds] ?? null;
-      cells.push({ date: ds, day: d, bars: b, ticks: t });
+      cells.push({ date: ds, day: d, bars: barMap[ds] ?? null, ticks: tickMap[ds] ?? null });
     }
     return cells;
   }, [viewYear, viewMonth, barMap, tickMap]);
 
-  const monthName = new Date(viewYear, viewMonth).toLocaleString("en-US", { month: "long" });
+  const monthName = new Date(viewYear, viewMonth).toLocaleString("en-IN", { month: "long", year: "numeric" });
+  const todayIso = new Date().toISOString().slice(0, 10);
 
-  // Formatted selected date for button
-  const selectedLabel = selectedDate || "SELECT DATE";
+  const selectedLabel = selectedDate
+    ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    : "Select date";
 
   return (
     <div className="relative" ref={ref}>
-      {/* Trigger button */}
       <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider"
-        style={{
-          background: "#181c24",
-          border: "1px solid #252a33",
-          color: "#c8cdd5",
-        }}
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        className="t-btn inline-flex items-center gap-2 text-sm font-medium normal-case tracking-normal"
       >
-        <span style={{ color: "#4da6ff" }}>{selectedLabel}</span>
-        {selectedDate && barMap[selectedDate] !== undefined && (
-          <span className="text-[9px]" style={{ color: "#5a6270" }}>
-            ({barMap[selectedDate]} bars)
-          </span>
-        )}
+        <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
+        <span className="text-foreground">{selectedLabel}</span>
+        {selectedDate && barMap[selectedDate] !== undefined ? (
+          <span className="text-xs text-muted-foreground">({barMap[selectedDate]} bars)</span>
+        ) : null}
       </button>
 
-      {/* Dropdown calendar */}
-      {open && (
+      {open ? (
         <div
-          className="absolute right-0 top-full mt-1 z-50"
-          style={{
-            background: "#111318",
-            border: "2px solid #252a33",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
-            width: 320,
-          }}
+          role="dialog"
+          aria-label="Choose chart date"
+          className="absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,20rem)] overflow-hidden rounded-xl border border-border bg-card shadow-lg"
         >
-          {/* Header */}
-          <div
-            className="flex items-center justify-between px-3 py-2"
-            style={{ background: "#0e1117", borderBottom: "1px solid #252a33" }}
-          >
-            <button onClick={prevMonth} className="p-1" style={{ color: "#5a6270" }}>
-              <ChevronLeft className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-2">
+            <button type="button" onClick={prevMonth} className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Previous month">
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#c8cdd5" }}>
-              {monthName} {viewYear}
-            </span>
-            <button onClick={nextMonth} className="p-1" style={{ color: "#5a6270" }}>
-              <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-sm font-semibold text-foreground">{monthName}</span>
+            <button type="button" onClick={nextMonth} className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Next month">
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 px-2 pt-2">
-            {WEEKDAYS.map(w => (
-              <div key={w} className="text-center text-[8px] font-bold uppercase tracking-wider py-1" style={{ color: "#3d4450" }}>
+          <div className="grid grid-cols-7 gap-0 px-2 pt-2">
+            {WEEKDAYS.map((w) => (
+              <div key={w} className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {w}
               </div>
             ))}
           </div>
 
-          {/* Day cells */}
-          <div className="grid grid-cols-7 px-2 pb-3 gap-[1px]">
+          <div className="grid grid-cols-7 gap-1 px-2 pb-3">
             {calendarDays.map((cell, i) => {
-              if (!cell) return <div key={`e-${i}`} />;
+              if (!cell) return <div key={`e-${i}`} aria-hidden />;
 
               const hasData = cell.bars !== null || cell.ticks !== null;
               const hasTicks = cell.ticks !== null && cell.ticks > 0;
               const isSelected = cell.date === selectedDate;
-              const isToday = cell.date === new Date().toISOString().slice(0, 10);
+              const isToday = cell.date === todayIso;
 
               return (
                 <button
                   key={cell.date}
+                  type="button"
                   onClick={() => {
-                    if (hasData) { onSelect(cell.date); setOpen(false); }
+                    if (hasData) {
+                      onSelect(cell.date);
+                      setOpen(false);
+                    }
                   }}
                   disabled={!hasData}
-                  className="flex flex-col items-center py-1.5 transition-all"
-                  style={{
-                    background: isSelected ? "#00e87b" : hasData ? "#181c24" : "transparent",
-                    border: isToday && !isSelected ? "1px solid #4da6ff" : isSelected ? "1px solid #00e87b" : "1px solid transparent",
-                    color: isSelected ? "#000" : hasData ? "#c8cdd5" : "#252a33",
-                    cursor: hasData ? "pointer" : "default",
-                    opacity: hasData ? 1 : 0.4,
-                  }}
+                  className={cn(
+                    "flex min-h-[2.75rem] flex-col items-center justify-center rounded-lg border px-0.5 py-1 text-sm transition-colors",
+                    !hasData && "cursor-default border-transparent text-muted-foreground/45",
+                    hasData && !isSelected && "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent",
+                    isSelected && "border-chart-2 bg-chart-2 font-semibold text-primary-foreground shadow-sm",
+                    isToday && !isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card",
+                  )}
                 >
-                  <span className="text-[11px] font-semibold">{cell.day}</span>
-                  {hasData && (
-                    <div className="flex items-center gap-0.5 mt-0.5">
-                      {cell.bars !== null && cell.bars > 0 && (
-                        <span className="text-[7px] font-bold" style={{
-                          color: isSelected ? "#0a3d26" : "#5a6270",
-                        }}>
+                  <span className="tabular-nums">{cell.day}</span>
+                  {hasData ? (
+                    <div className="mt-0.5 flex items-center gap-0.5">
+                      {cell.bars !== null && cell.bars > 0 ? (
+                        <span className={cn("text-[9px] font-medium tabular-nums", isSelected ? "text-primary-foreground/90" : "text-muted-foreground")}>
                           {cell.bars}
                         </span>
-                      )}
-                      {hasTicks && (
-                        <span className="inline-block w-1 h-1 rounded-full" style={{ background: isSelected ? "#0a3d26" : "#e8c300" }} />
-                      )}
+                      ) : null}
+                      {hasTicks ? (
+                        <span className={cn("h-1.5 w-1.5 rounded-full", isSelected ? "bg-primary-foreground/80" : "bg-chart-3")} title="Tick data" />
+                      ) : null}
                     </div>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
           </div>
 
-          {/* Legend */}
-          <div className="px-3 py-2 flex items-center gap-4 text-[8px]" style={{ borderTop: "1px solid #252a33", color: "#3d4450" }}>
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2" style={{ background: "#181c24", border: "1px solid #252a33" }} />
-              HAS DATA
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded border border-border bg-background" />
+              Has data
             </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#e8c300" }} />
-              TICKS
+            <span className="inline-flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-chart-3" />
+              Ticks
             </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2" style={{ background: "#00e87b" }} />
-              SELECTED
+            <span className="inline-flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded bg-chart-2" />
+              Selected
             </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2" style={{ border: "1px solid #4da6ff" }} />
-              TODAY
+            <span className="inline-flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded ring-2 ring-primary" />
+              Today
             </span>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
