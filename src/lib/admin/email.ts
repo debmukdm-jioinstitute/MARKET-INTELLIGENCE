@@ -4,16 +4,49 @@ export function hasEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
 }
 
-/** True while sending from Resend's shared sandbox sender — it can only deliver to the Resend account's own email until a domain is verified. */
+/** Verified Resend subdomain (DNS: send → forge.rmta.net). Override with RESEND_FROM_EMAIL on Vercel. */
+export const PRODUCTION_RESEND_FROM =
+  "Market Intelligence <onboarding@send.getmarketintelligence.in>";
+
+/** True while using Resend sandbox — delivers only to the Resend account owner email. */
 export function isSandboxSender(): boolean {
-  return !process.env.RESEND_FROM_EMAIL;
+  const from = getResendFromAddress();
+  return from.includes("@resend.dev");
 }
 
-function fromAddress(): string {
-  // onboarding@resend.dev works with zero setup (Resend's shared sandbox sender), but Resend
-  // will then refuse to deliver to anyone except the account's own signup email — see isSandboxSender().
-  // Set RESEND_FROM_EMAIL once you've verified your own sending domain in Resend to lift that limit.
-  return process.env.RESEND_FROM_EMAIL || "Market Intelligence <onboarding@resend.dev>";
+export function getResendFromAddress(): string {
+  const configured = process.env.RESEND_FROM_EMAIL?.trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") return PRODUCTION_RESEND_FROM;
+  return "Market Intelligence <onboarding@resend.dev>";
+}
+
+export type EmailAttachment = { filename: string; content: Buffer | string };
+
+/** Single transactional email (welcome, alerts, etc.). */
+export async function sendTransactionalEmail(input: {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+  attachments?: EmailAttachment[];
+}): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: getResendFromAddress(),
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+    replyTo: input.replyTo,
+    attachments: input.attachments?.map((a) => ({
+      filename: a.filename,
+      content: typeof a.content === "string" ? a.content : a.content,
+    })),
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 export type NewsletterSendResult = { sent: number; failed: number; errors: string[] };
@@ -35,7 +68,7 @@ export async function sendNewsletter(
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
   const resend = new Resend(apiKey);
-  const from = fromAddress();
+  const from = getResendFromAddress();
 
   let sent = 0;
   let failed = 0;

@@ -1,6 +1,8 @@
 import { hashPassword, isBootstrapAdmin } from "@/lib/admin/auth";
 import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
+import { after } from "next/server";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +46,12 @@ export async function POST(req: Request) {
     VALUES (${email}, ${name}, ${passwordHash}, ${role}, now(), now())
   `;
 
+  const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };
   const res = NextResponse.json({ ok: true, user: { email, name, role } });
-  return setSessionCookie(res, { email, name, role });
+  const out = setSessionCookie(res, sessionUser);
+  const origin = new URL(req.url).origin;
+  after(() => {
+    void sendWelcomePackToUser(sessionUser, origin);
+  });
+  return out;
 }

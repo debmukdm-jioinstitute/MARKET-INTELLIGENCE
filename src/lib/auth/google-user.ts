@@ -3,6 +3,7 @@ import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { ensureSchema, sql } from "@/lib/db";
 import type { SessionUser } from "@/lib/auth";
 import { googleOnlyPasswordPlaceholder, type GoogleUserInfo } from "@/lib/auth/google-oauth";
+import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
 type UserRow = {
@@ -56,11 +57,15 @@ export async function sessionResponseForGoogleUser(
         VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now())
       `;
       row = { email, name, password_hash: passwordHash, role, google_sub: sub };
+      const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };
+      void sendWelcomePackToUser(sessionUser, new URL(requestUrl).origin).catch((err) => {
+        console.error("[welcome-pack]", email, err);
+      });
       const onboard = new URL("/onboarding", requestUrl);
       onboard.searchParams.set("next", redirectTo);
       onboard.searchParams.set("download", "1");
       const res = NextResponse.redirect(onboard);
-      return setSessionCookie(res, { email, name, role, guest: false });
+      return setSessionCookie(res, sessionUser);
     }
   } else {
     await db`UPDATE users SET name = ${name}, last_login_at = now() WHERE google_sub = ${sub}`;

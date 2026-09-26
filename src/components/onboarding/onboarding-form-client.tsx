@@ -75,7 +75,8 @@ export function OnboardingFormClient({
           Privacy accepted {model.customer.privacyAcceptedAt ? "on record" : "—"}
         </p>
         <p className="mt-2 text-xs">
-          Form auto-updates when we add pages to the site navigation. Download again after major releases.
+          New accounts also receive this form as a PDF in their welcome email. Catalog auto-updates when we add
+          navigation items — download again after major releases.
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
