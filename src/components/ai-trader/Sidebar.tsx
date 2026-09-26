@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, TrendingUp, List, BarChart2,
-  Settings, Radio, FlaskConical, Brain, Power, Maximize2,
+  Settings, Radio, FlaskConical, Brain, Power, Maximize2, Activity,
 } from "lucide-react";
 import { fetchJSON, postJSON, type LiveState } from "@/lib/ai-trader/api";
 import { useTradingMode } from "@/components/ai-trader/contexts/TradingModeContext";
@@ -16,6 +16,7 @@ const nav = [
   { href: "/algo/live", label: "Live", icon: Radio },
   { href: "/algo/trades", label: "Trades", icon: List },
   { href: "/algo/backtest", label: "Backtest", icon: FlaskConical },
+  { href: "/algo/replay", label: "Replay", icon: Activity },
   { href: "/algo/charts", label: "Charts", icon: BarChart2 },
   { href: "/algo/ai", label: "AI models", icon: Brain },
   { href: "/algo/settings", label: "Settings", icon: Settings },

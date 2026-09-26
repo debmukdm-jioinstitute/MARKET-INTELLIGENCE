@@ -123,6 +123,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Live trading", href: "/algo/live", desc: "Scanner, suggestions, auto/manual execution, open positions.", badge: "NEW" },
           { label: "Trade history", href: "/algo/trades", desc: "Closed trades, P&L breakdown, premium journey charts." },
           { label: "Tick backtest", href: "/algo/backtest", desc: "Replay engine on historical ticks (LOW/MEDIUM/HIGH risk)." },
+          { label: "Day replay", href: "/algo/replay", desc: "Fast-forward one historical session with ML + strategies.", badge: "NEW" },
           { label: "Charts & chain", href: "/algo/charts", desc: "NIFTY candles, option chain, premium tick chart." },
           { label: "AI models", href: "/algo/ai", desc: "XGBoost macro/micro/strategy models and RL exit agent.", badge: "AI" },
           { label: "Algo settings", href: "/algo/settings", desc: "Risk profile selector and execution thresholds." },

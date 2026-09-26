@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Sidebar from "@/components/ai-trader/Sidebar";
+import { BrokerSettingsPanel } from "@/components/ai-trader/broker-settings-panel";
 import RiskProfileCard from "@/components/ai-trader/RiskProfileCard";
 import { fetchJSON, postJSON, type RiskProfile } from "@/lib/ai-trader/api";
 import { Play } from "lucide-react";
@@ -81,13 +82,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        <BrokerSettingsPanel />
+
         {/* System info */}
         <div className="t-panel p-5 mb-4">
           <h2 className="text-[12px] font-bold uppercase tracking-wider mb-4" style={{ color: '#c8cdd5' }}>System Info</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
             {[
-              { label: "Flask API",        value: "http://localhost:5050" },
-              { label: "Next.js Frontend", value: "http://localhost:3000" },
+              { label: "Portal proxy", value: "/api/ai-trader → AI_TRADER_API_URL" },
+              { label: "Full backend", value: "services/ai-trader · python backend/app.py" },
               { label: "Database",         value: "PostgreSQL (local)" },
               { label: "Index Symbol",     value: "NIFTY-I (TrueData)" },
               { label: "Data Range",       value: "Sep 2025 – Mar 2026" },
@@ -115,8 +118,8 @@ export default function SettingsPage() {
               { cmd: "python scripts/train_dqn_exit.py --epochs 10",             desc: "Train DQN agent" },
               { cmd: "python scripts/paper_trade.py --replay 2026-03-20",        desc: "Replay paper trade" },
               { cmd: "python scripts/paper_trade.py",                            desc: "Live paper trading" },
-              { cmd: "python frontend/app.py",                                   desc: "Flask API (5050)" },
-              { cmd: "npm run dev",                                               desc: "Next.js dev (3000)" },
+              { cmd: "python backend/app.py", desc: "Flask API (5050)" },
+              { cmd: "./scripts/start-ai-trader-backend.sh", desc: "Stub or full backend + docs" },
             ].map(({ cmd, desc }) => (
               <div key={cmd} className="flex items-start gap-3">
                 <code className="text-[10px] px-2 py-1 flex-1" style={{ background: '#111318', border: '1px solid #1e222c', color: '#4da6ff' }}>

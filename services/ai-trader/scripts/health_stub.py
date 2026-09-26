@@ -11,6 +11,19 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+REPLAY_STATE = {
+    "status": "idle",
+    "date": None,
+    "progress": 0,
+    "total_minutes": 0,
+    "current_time": None,
+    "current_price": 0,
+    "regime": "UNKNOWN",
+    "trades": [],
+    "total_pnl": 0,
+    "ticks_processed": 0,
+}
+
 BASE_STATE = {
     "status": "ready",
     "last_scan": None,
@@ -45,6 +58,21 @@ def api_stream():
             time.sleep(1)
 
     return Response(gen(), mimetype="text/event-stream")
+
+
+@app.route("/api/replay/state")
+def api_replay_state():
+    return jsonify(REPLAY_STATE)
+
+
+@app.route("/api/replay/start", methods=["POST"])
+def api_replay_start():
+    return jsonify({"error": "stub", "note": BASE_STATE["stub_note"]}), 501
+
+
+@app.route("/api/days")
+def api_days():
+    return jsonify([])
 
 
 @app.route("/api/<path:subpath>", methods=["GET", "POST", "PUT", "DELETE"])

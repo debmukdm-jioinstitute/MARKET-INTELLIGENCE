@@ -12,7 +12,23 @@ Market Intelligence embeds the [AI-trader](https://github.com/aaryansinha16/AI-t
 | `/algo/backtest` | Tick replay backtest runner + results |
 | `/algo/charts` | NIFTY candles, option chain, premium tick charts |
 | `/algo/ai` | Macro/micro/strategy models + RL exit agent status |
-| `/algo/settings` | LOW / MEDIUM / HIGH risk profiles |
+| `/algo/settings` | LOW / MEDIUM / HIGH risk profiles + Zerodha connect |
+| `/algo/replay` | Historical day tick replay simulation |
+
+## Feature parity (upstream → portal)
+
+| Upstream (AI-trader) | In Market Intelligence |
+|----------------------|-------------------------|
+| Dashboard | `/algo` |
+| Live + SSE + auto/manual + broker panel | `/algo/live` |
+| Trade history + journey charts | `/algo/trades` |
+| Tick replay backtest UI | `/algo/backtest` |
+| Replay simulation page | `/algo/replay` |
+| Charts + option chain | `/algo/charts` |
+| AI models status | `/algo/ai` |
+| Risk profiles + CLI reference | `/algo/settings` |
+| Vendored Python stack + scripts | `services/ai-trader/` |
+| Flask API (all routes) | Proxied at `/api/ai-trader/api/*` |
 
 ## Backend capabilities (Flask, port 5050)
 
