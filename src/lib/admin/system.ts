@@ -38,4 +38,5 @@ export const FLAGS = [
   { flag: "ai", label: "AI features (AI desk, options-flow AI, copilot)" },
   { flag: "broker-import", label: "Broker holdings import" },
   { flag: "scenario", label: "Scenario engine" },
+  { flag: "chatwith", label: "Chatwith embed (floating terminal chatbot on all pages)" },
 ] as const;
