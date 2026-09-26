@@ -131,6 +131,14 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await db`
+        CREATE TABLE IF NOT EXISTS site_content_overrides (
+          slot_key text PRIMARY KEY,
+          value text NOT NULL,
+          updated_by text,
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
         CREATE TABLE IF NOT EXISTS portal_page_controls (
           href text PRIMARY KEY,
           label text NOT NULL,
