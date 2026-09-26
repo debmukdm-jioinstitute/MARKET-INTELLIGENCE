@@ -53,7 +53,7 @@ export default function IndiaMarketsPage() {
                         isPos ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
                       )}
                     >
-                      {isPos ? "+" : ""}{formatPct(idx.changePct)}
+                      {formatPct(idx.changePct)}
                     </span>
                   </div>
                   <p className="text-base font-bold tabular-nums text-foreground">{idx.price.toFixed(2)}</p>

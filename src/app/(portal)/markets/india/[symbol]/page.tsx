@@ -380,7 +380,6 @@ export default function TickerDetailPage({ params }: PageProps) {
                   : "bg-rose-500/15 text-rose-600",
               )}
             >
-              {isPos ? "+" : ""}
               {formatPct(liveChg)}
             </span>
           </div>
@@ -428,7 +427,7 @@ export default function TickerDetailPage({ params }: PageProps) {
             <div className="text-sm">
               <span className="text-muted-foreground mr-1.5">{activeTf} Move:</span>
               <span className={cn("font-bold", isUp ? "text-emerald-600" : "text-rose-600")}>
-                {isUp ? "+" : ""}{formatPct(periodReturnPct)}
+                {formatPct(periodReturnPct)}
               </span>
             </div>
 
@@ -713,7 +712,6 @@ export default function TickerDetailPage({ params }: PageProps) {
                           c.chg >= 0 ? "text-emerald-600" : "text-rose-600",
                         )}
                       >
-                        {c.chg >= 0 ? "+" : ""}
                         {formatPct(c.chg)}
                       </td>
                     </tr>

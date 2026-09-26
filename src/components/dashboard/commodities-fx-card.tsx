@@ -142,7 +142,6 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                         isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
-                      {isPos ? "+" : ""}
                       {formatPct(c.changePct)}
                     </span>
                   </div>
@@ -180,7 +179,6 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                         isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
-                      {isPos ? "+" : ""}
                       {formatPct(fx.changePct)}
                     </span>
                   </div>

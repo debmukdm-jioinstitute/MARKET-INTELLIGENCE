@@ -92,7 +92,6 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                       isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                     )}
                   >
-                    {isPos ? "+" : ""}
                     {formatPct(idx.chg)}
                   </span>
                 </div>

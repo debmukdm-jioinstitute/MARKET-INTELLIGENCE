@@ -302,16 +302,16 @@ export default function SectorsPage() {
                 <TableCell className="font-bold text-foreground">{s.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{s.niftyWeight}%</TableCell>
                 <TableCell className={cn("text-right font-bold", s.return1D >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                  {s.return1D >= 0 ? "+" : ""}{formatPct(s.return1D)}
+                  {formatPct(s.return1D)}
                 </TableCell>
                 <TableCell className={cn("text-right font-bold", s.return1W >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                  {s.return1W >= 0 ? "+" : ""}{formatPct(s.return1W)}
+                  {formatPct(s.return1W)}
                 </TableCell>
                 <TableCell className={cn("text-right font-bold", s.return1M >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                  {s.return1M >= 0 ? "+" : ""}{formatPct(s.return1M)}
+                  {formatPct(s.return1M)}
                 </TableCell>
                 <TableCell className={cn("text-right font-bold", s.return1Y >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                  {s.return1Y >= 0 ? "+" : ""}{formatPct(s.return1Y)}
+                  {formatPct(s.return1Y)}
                 </TableCell>
                 <TableCell className="text-right text-foreground font-semibold">{s.pe}x</TableCell>
                 <TableCell className="text-right text-foreground">{s.pb}x</TableCell>
