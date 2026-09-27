@@ -45,9 +45,15 @@ const CAPABILITY_TILE =
   "flex w-full items-center gap-2 rounded-lg border border-border/80 bg-muted/50 px-2.5 py-2.5 text-left text-xs text-foreground transition touch-manipulation hover:border-primary/35 hover:bg-accent/40 active:scale-[0.99] cursor-pointer min-h-[44px]";
 
 const CAPABILITIES = [
-  { icon: "🧭", label: "Guide you across Today · Invest · Trade · Portfolio · Data", href: "/markets" as const },
+  { icon: "🧭", label: "Guide you to the right page across Today · Invest · Trade · Portfolio · Data", href: "/markets" as const },
   { icon: "🎓", label: "Beginner → advanced paths, AI tools & pro quant", action: "skill" as const },
   { icon: "⌘K", label: "Open symbol search & commands", action: "palette" as const },
+] as const;
+
+const ONBOARDING_LIMITS = [
+  "I route you to tools — I don't quote live prices or manage orders here.",
+  "Not personalized investment advice; always verify on the linked page.",
+  'Company names like "JP Power" resolve to research pages when I can match them.',
 ] as const;
 
 function NudgeTile({ nudge }: { nudge: ReturnType<typeof nudgesForSkill>[number] }) {
@@ -324,9 +330,23 @@ function SiteAssistantChat({
         {messages.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Hi — I&apos;m <span className="font-semibold text-foreground">{ASSISTANT_TITLE}</span>, your guide across the whole portal
-              (beginner-friendly or pro tools). Tell me your goal, or take the quick skill check so I nudge the right features.
+              Hi — I&apos;m <span className="font-semibold text-foreground">{ASSISTANT_TITLE}</span>, your portal guide.
+              I explain what&apos;s here, match your goal to the right page, and deep-link research when you name a company.
             </p>
+            <div className="rounded-xl border border-border/80 bg-muted/40 px-3 py-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">What I can do</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs leading-relaxed text-foreground">
+                <li>Point you to markets, macro, IPOs, scanners, portfolio, and AI tools</li>
+                <li>Resolve tickers from natural language and open `/research/…` pages</li>
+                <li>Tailor nudges after a 4-question skill check</li>
+              </ul>
+              <p className="mt-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Limits</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs leading-relaxed text-muted-foreground">
+                {ONBOARDING_LIMITS.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
 
             {!skillLevel && !mcqOpen ? (
               <button

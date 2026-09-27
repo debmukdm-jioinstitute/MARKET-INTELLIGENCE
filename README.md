@@ -513,7 +513,7 @@ A genuine textbook Brinson decomposition needs a real per-sector benchmark weigh
 **Known limits** — Yahoo's free feed has no option/RSU detail (defaults to the reported diluted-vs-basic share gap; enter counts manually), no segment data (volume × price is a decomposition, not segment modelling), and peer lists are Yahoo's "similar companies", not a curated set. Country premiums and risk-free rates for non-USD currencies are static defaults to be refreshed.
 
 ### IPO pipeline — `/research/ipo`
-🟢 A direct pass-through of Upstox's IPO calendar (open/upcoming/listed/closed tabs) — issue size, price band, subscription levels, allotment/listing timeline, and prospectus links. No derived computation, no LLM.
+🟢 Upstox IPO calendar (open/upcoming/listed/closed) — issue size, price band, subscription, timeline, prospectus links — plus **best-effort Grey Market Premium (GMP)** from IPO Watch (unofficial OTC; null when unmatched). 🤖 On-demand **AI DRHP/RHP summary** (five-year financials, management, outlook, key findings, decision-oriented overview) with a rules fallback when Groq is unavailable.
 
 ---
 
@@ -602,11 +602,13 @@ The pipeline is deliberately incapable of producing a trade call: raw options vo
 
 ## 9. Research Reports
 
-**Path:** `/research-reports` · **Code:** `src/lib/research/scrape.ts`, `sources.ts`
+**Path:** `/research-reports` · **Code:** `src/lib/research/scrape.ts`, `sources.ts`, `parse-recommendation.ts`, `analyst-credibility.ts`
 
 An auto-updating feed of broker research calls, scraped from two public sources: Economic Times' "Buy, Sell or Hold" page and LiveMint's stock-recommendations page — plain HTML parsing (regex over the page markup), no RSS feed and no headless browser for either. Broker names (Motilal Oswal, Jefferies, CLSA, Kotak, Nomura, and a dozen others) are matched from the story text against a known-broker list, deduplicated, and capped at 3 per story.
 
 Every scraped story is upserted keyed on its URL, so re-scraping the same story just refreshes its broker tag and timestamp rather than duplicating it. Freshness works two ways: a page view checks whether the feed is more than 3 hours stale and, if so, kicks off a background re-scrape *after* the response has already been sent (so a real visit never waits on the scrape); a daily scheduled job provides the guaranteed baseline refresh independent of traffic.
+
+**Analyst credibility** — the same page shows a comparison table over the last ~100 headlines: parsed rating, recommendation basis, time horizon, and a best-effort hit rate vs subsequent price moves (Yahoo). Designed so users can judge credibility rather than blindly follow calls.
 
 ---
 

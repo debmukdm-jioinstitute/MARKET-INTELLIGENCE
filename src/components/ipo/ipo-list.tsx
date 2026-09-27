@@ -6,6 +6,13 @@ import { MetricInfo } from "@/components/ui/metric-info";
 import type { IpoListing } from "@/lib/feeds/ipo/types";
 import { fmtInr } from "@/lib/format-india";
 
+function formatGmp(ipo: IpoListing): string {
+  if (ipo.gmpInr == null) return "GMP —";
+  const sign = ipo.gmpInr > 0 ? "+" : "";
+  const pct = ipo.gmpPct != null ? ` (${sign}${ipo.gmpPct}%)` : "";
+  return `GMP ${sign}${fmtInr(ipo.gmpInr)}${pct}`;
+}
+
 export function IpoList({
   ipos,
   loading,
@@ -40,14 +47,17 @@ export function IpoList({
           </div>
           <p className="text-sm text-muted-foreground">{ipo.industry}</p>
           <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1">
-              {fmtInr(ipo.minPrice)}–{fmtInr(ipo.maxPrice)}
-              <MetricInfo id="ipo_gmp" name="Price Band" iconSize="xs" />
-            </span>
+            <span>{fmtInr(ipo.minPrice)}–{fmtInr(ipo.maxPrice)}</span>
             <span className="text-muted-foreground">
               {ipo.biddingStartDate} → {ipo.biddingEndDate}
             </span>
           </div>
+          <p className="flex items-center gap-1 text-sm tabular-nums text-foreground">
+            <span className={ipo.gmpInr != null && ipo.gmpInr > 0 ? "text-emerald-700" : ipo.gmpInr != null && ipo.gmpInr < 0 ? "text-rose-700" : "text-muted-foreground"}>
+              {formatGmp(ipo)}
+            </span>
+            <MetricInfo id="ipo_gmp" name="Grey Market Premium" iconSize="xs" />
+          </p>
           {ipo.totalSubscription ? (
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <span>Subscribed {ipo.totalSubscription}x</span>

@@ -422,6 +422,16 @@
    "tos": "open",
    "note": "Free Excel files; cite Damodaran. Parse xlsx server-side, refresh yearly/quarterly",
    "wired": true
+  },
+  {
+   "id": "ipowatch-gmp",
+   "domain": "market",
+   "tier": "html",
+   "cover": "India IPO grey market premium (GMP), est. listing gain for open/upcoming issues",
+   "url": "https://ipowatch.in/ipo-grey-market-premium-latest-ipo-gmp/",
+   "tos": "tolerated",
+   "note": "Unofficial OTC quotes; fail-soft scrape joined to Upstox IPO calendar by name. Not NSE/BSE official.",
+   "wired": true
   }
  ]
 }

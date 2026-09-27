@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { AnalystCredibilityPanel } from "@/components/research/analyst-credibility-panel";
 import { cn } from "@/lib/utils";
 import { ExternalLink, FileSearch, Radio, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -70,7 +71,7 @@ export default function ResearchReportsPage() {
       <PageHeader
         kicker="Research Desk"
         title="Research Reports"
-        subtitle="Latest broker and research-house calls, auto-ingested continuously from public research feeds — no manual curation."
+        subtitle="Latest broker and research-house calls, auto-ingested continuously from public research feeds — plus a credibility scorecard so you can judge track records, not just headlines."
       />
 
       {!dbConfigured ? (
@@ -78,6 +79,8 @@ export default function ResearchReportsPage() {
           No database configured — the research feed needs DATABASE_URL / POSTGRES_URL set to store scraped reports.
         </div>
       ) : null}
+
+      <AnalystCredibilityPanel />
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/90 bg-card p-4">
         <div className="flex items-center gap-2 min-w-0">
