@@ -10,6 +10,7 @@ import {
   type SignalHorizon,
 } from "@/lib/scanner/fno-indices";
 import { cn } from "@/lib/utils";
+import { OOS_TRADING_DAYS, TUNE_TRADING_DAYS } from "@/lib/scanner/signals-backtest-config";
 import type { IndexSignalBlock, SignalsRun, StockSignal } from "@/lib/scanner/types";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -126,7 +127,8 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
           How reliable is this model ({indexLabel}, {horizon}-session horizon)? <span className={nv.tone}>{nv.text}.</span>
         </p>
         <p className="mt-1 text-muted-foreground">
-          Walk-forward ensemble (Lorentzian k-NN + ridge logistic + momentum + mean-reversion), tuned on prior {252} sessions then scored on {v.days} OOS windows ({v.from} → {v.to}).
+          Walk-forward ensemble (Lorentzian k-NN + ridge logistic + momentum + mean-reversion), tuned on prior {v.tuneDays ?? TUNE_TRADING_DAYS} sessions then scored on{" "}
+          {v.days} trading days (target {v.oosTargetDays ?? OOS_TRADING_DAYS}, every session in range) ({v.from} → {v.to}).
           {leanN > 0 ? (
             <>
               {" "}

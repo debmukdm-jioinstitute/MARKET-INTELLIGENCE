@@ -139,6 +139,9 @@ export interface IndexSignalBlock {
     leanHitRate?: number;
     leanN?: number;
     leanThresholds?: { bullish: number; bearish: number };
+    oosTargetDays?: number;
+    tuneDays?: number;
+    historyBars?: number;
     buckets: SignalBucket[];
     strategyReturn: number;
     buyHoldReturn: number;

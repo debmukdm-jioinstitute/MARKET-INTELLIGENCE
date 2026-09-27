@@ -3,8 +3,7 @@ import { ema, rsi } from "./indicators";
 import { buildFeatures, predict } from "./lorentzian";
 import type { Bar, IndexSignalBlock, SignalBucket } from "./types";
 
-const OOS_DAYS = 750;
-const TUNE_DAYS = 252;
+import { OOS_TRADING_DAYS, TUNE_TRADING_DAYS } from "./signals-backtest-config";
 const RIDGE_TRAIN = 420;
 const RIDGE_LAMBDA = 0.35;
 const RIDGE_RETRAIN_EVERY = 8;
@@ -170,8 +169,12 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
   const e20 = ema(close, 20);
   const e50 = ema(close, 50);
 
-  const tOosStart = Math.max(200, n - 1 - OOS_DAYS);
-  const tTuneStart = Math.max(120, tOosStart - TUNE_DAYS);
+  const oosCap = Math.min(
+    OOS_TRADING_DAYS,
+    Math.max(60, n - 200 - TUNE_TRADING_DAYS - evalHorizon - 1),
+  );
+  const tOosStart = Math.max(200, n - 1 - oosCap);
+  const tTuneStart = Math.max(120, tOosStart - TUNE_TRADING_DAYS);
 
   let ridgeW = new Float64Array(ENSEMBLE_N_FEATURES + 1);
   let lastRidgeTrain = -999;
@@ -278,6 +281,9 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
       leanHitRate,
       leanN,
       leanThresholds: { bullish, bearish },
+      oosTargetDays: OOS_TRADING_DAYS,
+      tuneDays: TUNE_TRADING_DAYS,
+      historyBars: n,
       buckets,
       strategyReturn: (strat / 10_000 - 1) * 100,
       buyHoldReturn: (hold / 10_000 - 1) * 100,

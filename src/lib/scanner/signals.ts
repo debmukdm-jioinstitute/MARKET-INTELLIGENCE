@@ -26,11 +26,11 @@ function legacyNiftyFields(h1: IndexSignalBlock, h5: IndexSignalBlock | undefine
 }
 
 async function fetchFnoIndexBars(idx: (typeof FNO_INDEX_OPTIONS)[number]): Promise<Bar[] | null> {
-  let bars = await fetchYahooBars(idx.yahoo, "10y");
+  let bars = await fetchYahooBars(idx.yahoo, "max");
   if (bars && bars.length >= 260) return bars;
   const archiveName = "nseArchiveName" in idx ? idx.nseArchiveName : undefined;
   if (archiveName) {
-    bars = await fetchNseArchiveIndexBars(archiveName, 600);
+    bars = await fetchNseArchiveIndexBars(archiveName, 1300);
     if (bars && bars.length >= 260) return bars;
   }
   return null;
