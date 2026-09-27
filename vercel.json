@@ -34,7 +34,7 @@
     },
     {
       "path": "/api/cron/what-changed",
-      "schedule": "0 */3 * * *"
+      "schedule": "45 3 * * *"
     },
     {
       "path": "/api/cron/prowess",
