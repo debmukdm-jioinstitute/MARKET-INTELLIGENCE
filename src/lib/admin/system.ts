@@ -16,6 +16,12 @@ export const CRONS = [
   { path: "/api/cron/backtest", schedule: "0 12 * * 6", source: "Vercel", what: "Weekly backtest" },
   { path: "/api/cron/52w-levels", schedule: "weekday batches (Vercel)", source: "Vercel", what: "52-week high/low levels for breadth" },
   { path: "/api/portfolio/instruments/cron-sync", schedule: "0 3 * * 1", source: "Vercel", what: "NSE instrument master sync" },
+  {
+    path: "/api/cron/benchmark-constituents",
+    schedule: "30 3 * * *",
+    source: "Vercel",
+    what: "NSE index constituent lists + cap-weight proxy for portfolio Brinson/active share",
+  },
 ] as const;
 
 export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
