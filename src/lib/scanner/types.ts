@@ -135,6 +135,13 @@ export interface IndexSignalBlock {
     to: string;
     accuracy: number;
     alwaysUp: number;
+    /** Walk-forward hit rate when lean is Bullish/Bearish (calibrated cutoffs), not Neutral. */
+    leanHitRate?: number;
+    leanN?: number;
+    leanThresholds?: { bullish: number; bearish: number };
+    oosTargetDays?: number;
+    tuneDays?: number;
+    historyBars?: number;
     buckets: SignalBucket[];
     strategyReturn: number;
     buyHoldReturn: number;

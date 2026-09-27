@@ -9,7 +9,7 @@ export default function AISignalsPage() {
       <PageHeader
         kicker="AI Signals"
         title="AI Signals & Market Predictions"
-        subtitle="Lorentzian nearest-neighbour leans for primary NSE F&O indices (pick index and horizon), plus Nifty 500 BTST/STBT candidates — each with walk-forward track record."
+        subtitle="Walk-forward ensemble leans for primary NSE F&O indices (pick index and horizon), plus Nifty 500 BTST/STBT candidates — each with honest out-of-sample track record."
       />
       <AiSignals />
     </div>

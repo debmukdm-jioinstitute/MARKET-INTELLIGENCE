@@ -49,11 +49,11 @@ function parseArchiveDate(ddmmyyyy: string): number | null {
 }
 
 /** Daily OHLCV from NSE index close archives (for indices Yahoo does not chart well). */
-export async function fetchNseArchiveIndexBars(indexCsvName: string, minBars = 600): Promise<Bar[] | null> {
+export async function fetchNseArchiveIndexBars(indexCsvName: string, minBars = 1300): Promise<Bar[] | null> {
   const bars: Bar[] = [];
   const seen = new Set<string>();
   const start = new Date();
-  const maxCalendarDays = 1400;
+  const maxCalendarDays = 2200;
   const concurrency = 24;
 
   for (let offset = 0; offset < maxCalendarDays && bars.length < minBars + 50; offset += concurrency) {

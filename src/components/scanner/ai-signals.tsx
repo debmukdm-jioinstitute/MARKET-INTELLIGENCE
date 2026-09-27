@@ -10,11 +10,13 @@ import {
   type SignalHorizon,
 } from "@/lib/scanner/fno-indices";
 import { cn } from "@/lib/utils";
+import { OOS_TRADING_DAYS, TUNE_TRADING_DAYS } from "@/lib/scanner/signals-backtest-config";
 import type { IndexSignalBlock, SignalsRun, StockSignal } from "@/lib/scanner/types";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { OptionStratPanel } from "@/components/scanner/optionstrat-panel";
 import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
@@ -100,8 +102,11 @@ function StockTable({ rows, side }: { rows: StockSignal[]; side: "buy" | "sell" 
 
 function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHorizon; model: IndexSignalBlock; indexLabel: string }) {
   const v = model.validation;
-  const nv = verdict(v.accuracy, v.alwaysUp, v.days);
+  const leanRate = v.leanHitRate ?? v.accuracy;
+  const leanN = v.leanN ?? v.days;
+  const nv = verdict(leanRate, v.alwaysUp, leanN);
   const hText = horizonLabel(horizon);
+  const th = v.leanThresholds;
 
   return (
     <>
@@ -123,18 +128,31 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
           How reliable is this model ({indexLabel}, {horizon}-session horizon)? <span className={nv.tone}>{nv.text}.</span>
         </p>
         <p className="mt-1 text-muted-foreground">
-          Over {v.days} out-of-sample windows ({v.from} → {v.to}) it called the {hText} direction correctly {v.accuracy.toFixed(1)}% of the time; simply always predicting &quot;up&quot; would have been right {v.alwaysUp.toFixed(1)}%.
-          A lean is a statistical tilt from the most similar past days, not a forecast.
+          Walk-forward ensemble (Lorentzian k-NN + ridge logistic + momentum + mean-reversion), tuned on prior {v.tuneDays ?? TUNE_TRADING_DAYS} sessions then scored on{" "}
+          {v.days} trading days (target {v.oosTargetDays ?? OOS_TRADING_DAYS}, every session in range) ({v.from} → {v.to}).
+          {leanN > 0 ? (
+            <>
+              {" "}
+              On <strong className="font-semibold text-foreground">{leanN}</strong> calibrated Bullish/Bearish leans
+              {th ? ` (P ≥ ${(th.bullish * 100).toFixed(0)}% or ≤ ${(th.bearish * 100).toFixed(0)}%)` : ""}, direction matched{" "}
+              <strong className="font-semibold text-foreground">{leanRate.toFixed(1)}%</strong> of the time.
+            </>
+          ) : null}{" "}
+          All-day sign accuracy {v.accuracy.toFixed(1)}%; always-up baseline {v.alwaysUp.toFixed(1)}%. Not investment advice.
         </p>
       </div>
 
       <Panel
         title={`Walk-forward track record — ${indexLabel}`}
-        subtitle={`Each prediction uses only data available at that day's close; the outcome is the ${hText}. Long when P(up) > 55%, short when < 45%, flat otherwise (gross of costs).`}
+        subtitle={`Each prediction uses only data available at that day's close; the outcome is the ${hText}. Strategy uses calibrated Bullish/Bearish bands; Neutral otherwise (gross of costs).`}
       >
         <div className="grid gap-3 md:grid-cols-4">
           <Stat k="Predictions scored" v={v.days.toLocaleString("en-IN")} />
-          <Stat k="Direction accuracy" v={`${v.accuracy.toFixed(1)}%`} sub={`always-up baseline ${v.alwaysUp.toFixed(1)}%`} />
+          <Stat
+            k="Lean precision"
+            v={leanN ? `${leanRate.toFixed(1)}%` : `${v.accuracy.toFixed(1)}%`}
+            sub={leanN ? `${leanN} calibrated leans · all-day ${v.accuracy.toFixed(1)}%` : `always-up baseline ${v.alwaysUp.toFixed(1)}%`}
+          />
           <Stat k="Model strategy" v={pct(v.strategyReturn)} sub="₹10,000 compounded" />
           <Stat k="Buy & hold" v={pct(v.buyHoldReturn)} sub="same period" />
         </div>
@@ -289,7 +307,15 @@ export function AiSignals() {
           No precomputed model for {indexLabel} at this horizon yet. It fills in after the next signals job (post NSE close). Try NIFTY 50 · 1 session meanwhile.
         </p>
       ) : (
-        <IndexModelSection horizon={horizon} model={model} indexLabel={indexLabel} />
+        <>
+          <IndexModelSection horizon={horizon} model={model} indexLabel={indexLabel} />
+          <OptionStratPanel
+            key={`${indexId}-${model.call}`}
+            indexId={indexId}
+            indexLabel={indexLabel}
+            modelCall={model.call}
+          />
+        </>
       )}
 
       <Panel
@@ -319,7 +345,7 @@ export function AiSignals() {
       </Panel>
 
       <p className="text-xs text-muted-foreground">
-        Method: Lorentzian nearest-neighbour classifier on RSI, CCI, 1- and 5-day returns, distance from the 20/50-day averages and MACD; the 12 most similar past days vote. Research and education only — not investment advice; the walk-forward record above is the honest measure of what this model has done, and past performance does not predict future results.
+        Method: walk-forward ensemble — Lorentzian k-NN (PKScreener-style), ridge logistic on 12 causal features, 20-day momentum, and RSI mean-reversion; weights tuned pre-OOS; Bullish/Bearish cutoffs calibrated for precision on past windows. Research and education only — not investment advice; past walk-forward stats do not guarantee future results.
       </p>
     </div>
   );

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-/** GET ?index=banknifty&horizon=1 — compute or load Lorentzian index model for one F&O underlying. */
+/** GET ?index=banknifty&horizon=1 — compute or load walk-forward ensemble index model for one F&O underlying. */
 export async function GET(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
