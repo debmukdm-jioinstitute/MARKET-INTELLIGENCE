@@ -1,0 +1,45 @@
+name: run-all-crons
+
+# Manual full refresh: every /api/cron/* job plus instrument sync (same auth as scheduled GitHub jobs).
+on:
+  workflow_dispatch:
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Run production cron endpoints
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          BASE="${SITE_URL:-https://getmarketintelligence.in}"
+          AUTH=(-H "Authorization: Bearer ${CRON_SECRET}")
+          run_one() {
+            local path="$1"
+            echo "=== ${path} ==="
+            code=$(curl -sS -m 180 -o /tmp/cron-out.json -w "%{http_code}" "${AUTH[@]}" "${BASE}${path}")
+            cat /tmp/cron-out.json | head -c 2000; echo
+            if [ "$code" != "200" ] && [ "$code" != "202" ]; then
+              echo "WARN: ${path} returned HTTP ${code}" >&2
+            fi
+          }
+          run_one "/api/cron/collect"
+          run_one "/api/cron/stress"
+          run_one "/api/cron/alerts"
+          run_one "/api/cron/betas"
+          run_one "/api/cron/brief?kind=pre"
+          run_one "/api/cron/scrape-research"
+          run_one "/api/cron/options-flow"
+          run_one "/api/cron/datagov"
+          run_one "/api/cron/data360/catalog"
+          run_one "/api/cron/data360"
+          run_one "/api/cron/prowess"
+          run_one "/api/cron/scan"
+          run_one "/api/cron/signals"
+          run_one "/api/cron/52w-levels"
+          run_one "/api/cron/backtest"
+          run_one "/api/portfolio/instruments/cron-sync"
+          echo "Done."
