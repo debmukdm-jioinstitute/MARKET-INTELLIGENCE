@@ -5,7 +5,7 @@ import { SECTION_LANDING_HREF, type NavGroup, type NavSection } from "@/lib/nav-
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Compass } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 function GroupBlock({ group }: { group: NavGroup }) {
   const links = group.items.filter((i) => !i.external);
@@ -43,11 +43,13 @@ export function HomeExploreHub() {
   const titles = useMemo(() => sections.map((s) => s.title), [sections]);
   const [active, setActive] = useState("Today");
 
-  useEffect(() => {
-    if (titles.length && !titles.includes(active)) setActive(titles[0]!);
+  /** Derive tab when portal filters change — never setState in an effect (React #185 loop). */
+  const effectiveActive = useMemo(() => {
+    if (!titles.length) return active;
+    return titles.includes(active) ? active : titles[0]!;
   }, [titles, active]);
 
-  const section: NavSection | undefined = sections.find((s) => s.title === active) ?? sections[0];
+  const section: NavSection | undefined = sections.find((s) => s.title === effectiveActive) ?? sections[0];
   const landing = section ? SECTION_LANDING_HREF[section.title] : "/Home";
 
   return (
@@ -78,7 +80,7 @@ export function HomeExploreHub() {
         aria-label="Portal sections"
       >
         {sections.map((sec) => {
-          const on = sec.title === section?.title;
+          const on = sec.title === effectiveActive;
           return (
             <button
               key={sec.title}
