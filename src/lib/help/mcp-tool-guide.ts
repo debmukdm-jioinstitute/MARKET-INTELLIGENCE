@@ -40,9 +40,18 @@ const ASK: Partial<Record<string, string>> = {
   get_scanner_backtest: "Which scanner has the best backtested edge?",
   get_data_health: "Is any of the data stale?",
   get_latest_update: "What's new on the site?",
+  mi_sign_in: "Sign in with my Market Intelligence email and password.",
+  mi_session_status: "Who am I signed in as on MCP?",
+  get_optionstrat_recommend: "Recommend theta spreads for BANK NIFTY with bullish bias.",
+  get_my_portfolio: "Show my portfolio NAV and risk metrics.",
+  get_my_alerts: "List my alert rules and recent events.",
+  get_algo_desk_snapshot: "What is the algo desk state right now?",
+  ask_site_assistant: "How do I use AI Signals on the site?",
+  get_data_export_info: "How do I download the full data Excel export?",
+  get_admin_system: "Show cron jobs and env status (admin).",
 };
 
-const GROUP_ORDER = ["Markets", "Macro", "Intelligence", "Research", "Derivatives", "Scanners", "System"] as const;
+const GROUP_ORDER = ["Markets", "Macro", "Intelligence", "Research", "Derivatives", "Scanners", "System", "Account"] as const;
 
 /** Help table rows — always derived from the live MCP tool registry (`tools/list`). */
 export function buildHelpMcpToolRows(): HelpToolRow[] {

@@ -20,7 +20,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "2.1.0";
+const VERSION = "2.2.0";
 const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
 function ENDPOINT_BASE() {
   return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
@@ -40,18 +40,18 @@ const green = c("32"), red = c("31"), yellow = c("33"), cyan = c("36"), dim = c(
 
 /* ---------- config + MCP client ---------- */
 
-function loadKey() {
-  if (process.env.MI_API_KEY) return process.env.MI_API_KEY.trim();
+function loadConfig() {
   try {
-    return JSON.parse(readFileSync(CONFIG_FILE, "utf8")).apiKey || "";
+    return JSON.parse(readFileSync(CONFIG_FILE, "utf8"));
   } catch {
-    return "";
+    return {};
   }
 }
 
-function saveKey(apiKey) {
+function saveConfig(patch) {
   mkdirSync(CONFIG_DIR, { recursive: true });
-  writeFileSync(CONFIG_FILE, JSON.stringify({ apiKey }, null, 2));
+  const next = { ...loadConfig(), ...patch };
+  writeFileSync(CONFIG_FILE, JSON.stringify(next, null, 2));
   try {
     chmodSync(CONFIG_FILE, 0o600);
   } catch {
@@ -59,14 +59,40 @@ function saveKey(apiKey) {
   }
 }
 
+function loadKey() {
+  if (process.env.MI_API_KEY) return process.env.MI_API_KEY.trim();
+  return loadConfig().apiKey || "";
+}
+
+function loadSession() {
+  if (process.env.MI_SESSION) return process.env.MI_SESSION.trim();
+  return loadConfig().sessionToken || "";
+}
+
+function saveKey(apiKey) {
+  saveConfig({ apiKey });
+}
+
+function saveSession(sessionToken) {
+  saveConfig({ sessionToken });
+}
+
 let API_KEY = loadKey();
+let SESSION = loadSession();
 let rpcId = 0;
+
+function mcpHeaders() {
+  const headers = { "content-type": "application/json" };
+  if (API_KEY) headers["x-api-key"] = API_KEY;
+  if (SESSION) headers["x-mi-session"] = SESSION;
+  return headers;
+}
 
 async function call(name, args = {}) {
   const res = await fetch(ENDPOINT, {
     method: "POST",
     redirect: "manual",
-    headers: { "content-type": "application/json", "x-api-key": API_KEY },
+    headers: mcpHeaders(),
     body: JSON.stringify({ jsonrpc: "2.0", id: ++rpcId, method: "tools/call", params: { name, arguments: args } }),
   });
   if (res.status >= 300 && res.status < 400) throw new Error(`Endpoint redirected to ${res.headers.get("location")}. Set MI_ENDPOINT to that URL.`);
@@ -86,7 +112,7 @@ async function rpc(method, params = {}) {
   const res = await fetch(ENDPOINT, {
     method: "POST",
     redirect: "manual",
-    headers: { "content-type": "application/json", "x-api-key": API_KEY },
+    headers: mcpHeaders(),
     body: JSON.stringify({ jsonrpc: "2.0", id: ++rpcId, method, params }),
     signal: AbortSignal.timeout(20000),
   });
@@ -633,11 +659,11 @@ async function interactive() {
     process.exit(0);
   });
 
-  if (!API_KEY) {
-    console.log(yellow("No API key found. Get one from Deb@getmarketintelligence.in (see /help on the site)."));
-    API_KEY = (await ask("Paste your API key: ")).trim();
-    if (!API_KEY) process.exit(1);
-    saveKey(API_KEY);
+  if (!API_KEY && !SESSION) {
+    console.log(yellow("No API key or session. Key from /help, or: mi login EMAIL PASSWORD"));
+    API_KEY = (await ask("Paste your API key (Enter to skip): ")).trim();
+    if (API_KEY) saveKey(API_KEY);
+    if (!API_KEY && !SESSION) process.exit(1);
   }
 
   const [, notice] = await Promise.all([loadTools(), updateNotice()]);
@@ -723,8 +749,25 @@ async function main() {
       process.exit(1);
     }
   }
-  if (!API_KEY) {
-    console.error(red("No API key. Set MI_API_KEY or run `mi` once to save one."));
+  if (cmd === "login") {
+    const email = rest[0];
+    const password = rest[1];
+    if (!email || !password) throw new Error("Usage: mi login EMAIL PASSWORD");
+    const out = await call("mi_sign_in", { email, password });
+    if (!out.ok) throw new Error(out.error || "Sign-in failed");
+    SESSION = out.sessionToken;
+    saveSession(SESSION);
+    console.log(green(`Signed in as ${out.user.email} (${out.user.role}). Session saved to ~/.mi/config.json`));
+    return;
+  }
+  if (cmd === "logout") {
+    SESSION = "";
+    saveConfig({ sessionToken: "" });
+    console.log(green("Session cleared."));
+    return;
+  }
+  if (!API_KEY && !SESSION) {
+    console.error(red("No API key or session. Set MI_API_KEY, run `mi login EMAIL PASS`, or save a key in the menu."));
     process.exit(1);
   }
   try {
