@@ -1,3 +1,5 @@
+import { demoModeEnabled } from "@/lib/ai-trader/demo-fixtures";
+import { handleDemoDesk } from "@/lib/ai-trader/demo-handler";
 import { getSessionUser } from "@/lib/session";
 import { NextResponse } from "next/server";
 
@@ -13,6 +15,10 @@ function unauthorized() {
 async function proxy(req: Request, pathSegments: string[]) {
   const user = await getSessionUser();
   if (!user) return unauthorized();
+
+  if (demoModeEnabled()) {
+    return handleDemoDesk(req, pathSegments);
+  }
 
   const subpath = pathSegments.join("/");
   const url = new URL(req.url);

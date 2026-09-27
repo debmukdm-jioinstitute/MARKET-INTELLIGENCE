@@ -58,6 +58,19 @@ export function AlgoDeskSetupCard() {
             return row != null && Number(row.trades) > 0;
           }).length
         : 0;
+      if (state?.demo_mode) {
+        setR({
+          loading: false,
+          error: null,
+          db: true,
+          models: true,
+          tickDays: Array.isArray(days) ? days.length : 5,
+          backtestProfiles: 3,
+          lastPrice: state.last_price ?? null,
+          status: state.status ?? null,
+        });
+        return;
+      }
       setR({
         loading: false,
         error: state ? null : "Could not reach algo API (sign in, or check AI_TRADER_API_URL).",

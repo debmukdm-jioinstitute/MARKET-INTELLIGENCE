@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 type BackendState = {
   stub?: boolean;
   stub_note?: string;
+  demo_mode?: boolean;
+  demo_note?: string;
   db_connected?: boolean;
   models_loaded?: boolean;
 };
@@ -15,7 +17,7 @@ type BackendState = {
 /** Backend connectivity: guest, offline, health stub, partial stack, or full desk. */
 export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: string }) {
   const { ready, isGuest } = useAuth();
-  const [mode, setMode] = useState<"loading" | "auth" | "offline" | "stub" | "partial" | "full">("loading");
+  const [mode, setMode] = useState<"loading" | "auth" | "offline" | "stub" | "demo" | "partial" | "full">("loading");
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,6 +43,9 @@ export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: str
           if (j.stub) {
             setMode("stub");
             setNote(j.stub_note ?? null);
+          } else if (j.demo_mode) {
+            setMode("demo");
+            setNote(j.demo_note ?? null);
           } else if (j.db_connected && j.models_loaded) {
             setMode("full");
           } else if (j.db_connected) {
@@ -64,6 +69,18 @@ export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: str
   }, [ready, isGuest]);
 
   if (mode === "loading" || mode === "full") return null;
+
+  if (mode === "demo") {
+    return (
+      <div className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-muted-foreground">
+        <p className="font-semibold text-foreground">Demo algo desk (free tier)</p>
+        <p className="mt-1">
+          Sample backtests and live-style status — no Tiger DB or TrueData required. Charts use fixture data; paper/live trading stays off.
+        </p>
+        {note ? <p className="mt-2 text-xs">{note}</p> : null}
+      </div>
+    );
+  }
 
   if (mode === "auth") {
     return (

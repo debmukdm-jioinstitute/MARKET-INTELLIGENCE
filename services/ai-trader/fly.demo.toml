@@ -1,0 +1,28 @@
+# Free-tier demo API (no Postgres). See docs/AI-TRADER-FREE.md
+app = "mi-algo-demo"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile.demo"
+
+[env]
+  LOG_LEVEL = "INFO"
+
+[http_service]
+  internal_port = 5050
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/state"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

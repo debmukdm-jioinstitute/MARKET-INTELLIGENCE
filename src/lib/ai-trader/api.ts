@@ -76,6 +76,8 @@ export interface LiveState {
   trades_today: number;
   scanner_enabled?: boolean;
   auto_trade_enabled?: boolean;
+  demo_mode?: boolean;
+  demo_note?: string;
 }
 
 export interface TradeSuggestion {
