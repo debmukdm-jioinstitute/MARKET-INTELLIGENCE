@@ -6,74 +6,67 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 /** Bump this id when there is a new "what we shipped" note, so returning visitors see it once. */
-const NOTE_ID = "mi.shipped.2026-09-25";
+const NOTE_ID = "mi.shipped.2026-09-27";
 
 const SHIPPED: { emoji: string; title: string; text: string; href?: string; cta?: string }[] = [
   {
-    emoji: "🔔",
-    title: "The bell (top right)",
-    text: "Every meaningful change across markets, macro, scanners and AI signals lands there, with a link to the page that explains it. Mute what you don't care about, and get a device alert only for the big stuff. No more missing the one metric that mattered.",
+    emoji: "📊",
+    title: "Portfolio benchmarks that match the index",
+    text: "Pick Nifty 50, Bank, IT, Midcap 150, Sensex, or US indices. Brinson sector attribution and active share now use live NSE constituent lists (refreshed daily), not a Nifty 50 proxy for every benchmark.",
+    href: "/portfolio/attribution",
+    cta: "See attribution",
   },
   {
-    emoji: "📡",
-    title: "Nifty 500 Stock Scanner",
-    text: "27 scans on every Nifty 500 stock: 52-week breakouts, VCP setups, golden crosses, double bottoms, oversold dips and more. Refreshed after every close.",
-    href: "/intelligence/scanner",
-    cta: "Open scanner",
+    emoji: "🏠",
+    title: "Home board: five AI agents + portal map",
+    text: "New Home hub — five agent cards (navigate, research, trade, portfolio, macro) plus an Explore section with deep links into every major area. Less hunting, more doing.",
+    href: "/Home",
+    cta: "Open Home",
   },
   {
-    emoji: "🧪",
-    title: "Backtests that don't lie",
-    text: "Every scanner replayed over two years, no peeking at the future, compared against the average stock. Spoiler: most of them don't beat it. We show you anyway. 😅 (One setup did survive a proper out-of-sample test. Go see which.)",
-    href: "/intelligence/backtesting",
-    cta: "See the receipts",
-  },
-  {
-    emoji: "🤖",
-    title: "AI Signals, with the report card attached",
-    text: "A Nifty next-session model that shows its own track record right next to the prediction. Today it's basically a coin flip, and I'd rather tell you that than sell you a fake “92% confidence” gauge.",
-    href: "/intelligence/ai-signals",
-    cta: "Check the model",
-  },
-  {
-    emoji: "🏦",
-    title: "CMIE Prowess data on stock pages",
-    text: "Reported financials, balance sheets, cash flows and ratios from India's most trusted corporate database, now rolling onto stock pages. First batch of Nifty 500 names is live, more landing as we go.",
-    href: "/research",
-    cta: "Try a stock",
-  },
-  {
-    emoji: "🌡️",
-    title: "Macro stress index, transmission map & scenarios",
-    text: "See when stress builds across volatility, currency, rates, liquidity and flows, how a shock travels through the market, and what a scenario does to you. Backtested against forward Nifty returns.",
-    href: "/macro/stress",
-    cta: "Open stress index",
-  },
-  {
-    emoji: "🏛️",
-    title: "Real RBI liquidity, yield curve & FX reserves",
-    text: "Placeholders are gone. Live numbers, a Data Health page showing how fresh every feed is, and collectors that refresh every 3 hours.",
-    href: "/data/health",
-    cta: "Data health",
-  },
-  {
-    emoji: "📰",
-    title: "A Daily Brief that cites its sources",
-    text: "Pre-market and post-close briefs grounded in real data (not vibes), opt-in email delivery, and your own alert rules like “VIX above 20 and FII selling”.",
-    href: "/intelligence/brief",
-    cta: "Read today's brief",
+    emoji: "💬",
+    title: "Ask Deb — site assistant",
+    text: "Floating AI on every portal page: jump to a route, search pages, open the command palette. Grounded in this site's nav and tools, not generic chat fluff.",
+    href: "/help",
+    cta: "How to use it",
   },
   {
     emoji: "🧭",
-    title: "Find anything, trust everything",
-    text: "⌘K command palette with live metrics, a guided tour, an ⓘ on every number showing where it comes from, and a risk & events card on every stock page.",
+    title: "Wayfinding everywhere",
+    text: "Back link, breadcrumbs, and sibling tabs on portal pages so you always know where you are and what's next (Attribution, Risk, Optimizer, etc.).",
+    href: "/portfolio",
+    cta: "Portfolio hub",
   },
   {
-    emoji: "🔌",
-    title: "Plug us into your AI assistant",
-    text: "A read-only MCP endpoint with 30+ tools over the site's data, plus a terminal app (mi). Ask your own assistant, or open your terminal.",
-    href: "/help",
-    cta: "Setup guide",
+    emoji: "📱",
+    title: "Mobile bottom tabs → real landing pages",
+    text: "Today, Invest, Trade, Portfolio, Tools now go straight to each section's home — not a drawer that hides the destination.",
+  },
+  {
+    emoji: "📈",
+    title: "Nifty hero chart when Upstox is quiet",
+    text: "India cockpit Nifty chart falls back to Yahoo candles when the primary feed is empty (weekends, closed market). Fewer “no data” dead screens.",
+    href: "/Home",
+    cta: "Cockpit",
+  },
+  {
+    emoji: "🛡️",
+    title: "Portfolio crash fixes",
+    text: "Fixed attribution blowing up on full index constituent lists, stopped portfolio API from blocking on slow NSE refresh, and added proper error screens instead of a black “page couldn't load”.",
+    href: "/portfolio/risk",
+    cta: "Risk desk",
+  },
+  {
+    emoji: "⚙️",
+    title: "Admin: benchmark constituent job",
+    text: "System & Jobs can run the NSE index weight refresh on demand (same job as the daily cron). Warm the cache after deploys.",
+    href: "/admin/system",
+    cta: "Admin jobs",
+  },
+  {
+    emoji: "✨",
+    title: "Motion & scroll polish",
+    text: "Smoother page transitions on desktop, safer document scroll on mobile (no stuck scroll), staggered card motion on Home — reduced motion still respected.",
   },
 ];
 
@@ -159,7 +152,7 @@ export function ShippedPopup() {
               <div className="mx-auto mt-8 max-w-2xl space-y-5 text-[16px] leading-relaxed text-gray-700">
                 <p>Hey there,</p>
                 <p>
-                  Two days. A lot of chai. Very little sleep. ☕🔥 I said I'd build the market tool I always wished existed, and I'm not slowing down. Here's everything that went live since you were last here. No fluff, just the receipts. 🧾
+                  Another two-day sprint. ☕🔥 Portfolio math got honest, Home got a map, mobile got less annoying. Here's what landed since the last note — receipts only. 🧾
                 </p>
 
                 <ul className="space-y-3">
