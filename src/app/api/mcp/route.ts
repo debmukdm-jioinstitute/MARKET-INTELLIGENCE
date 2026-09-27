@@ -1,6 +1,7 @@
 import { authErrorForTool, resolveMcpCallContext } from "@/lib/mcp/context";
 import { clientIp, mcpRateLimited, rateLimitCap, rateLimitKey } from "@/lib/mcp/rate-limit";
 import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
+import { authorizationServerMetadata } from "@/lib/mcp/oauth/metadata";
 import { TOOLS } from "@/lib/mcp/tools";
 import { NextResponse } from "next/server";
 
@@ -94,9 +95,10 @@ export async function GET() {
     name: "market-intelligence MCP",
     transport: "Streamable HTTP (POST JSON-RPC)",
     claudeConnector: CLAUDE_CONNECTOR,
+    oauth: authorizationServerMetadata(),
     tools: TOOLS.map((t) => ({ name: t.name, access: t.access ?? "public" })),
     auth: {
-      publicTools: "No API key — add the URL in Cursor/Claude and call tools (IP rate limit).",
+      publicTools: "No API key — Cursor works with URL only; claude.ai uses OAuth DCR + one-time consent.",
       accountTools: "tools/call mi_sign_in → X-MI-Session: <sessionToken>",
       optionalApiKey: "MCP_API_KEYS optional — higher rate limit for automation",
     },

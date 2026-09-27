@@ -31,8 +31,8 @@ const STEPS: Step[] = [
   },
   {
     title: "Paste name and MCP URL",
-    body: "Use the connector name and URL below. Leave OAuth client ID, secret, and scopes empty — our server is public and needs no API key.",
-    hint: "No OAuth fields",
+    body: "Use the connector name and URL below. Leave OAuth client ID and secret blank — Claude registers automatically. Click Connect and approve the one-time consent screen.",
+    hint: "Then Connect",
   },
   {
     title: "Turn it on in a new chat",

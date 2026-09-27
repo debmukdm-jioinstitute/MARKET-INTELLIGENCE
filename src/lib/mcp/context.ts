@@ -1,5 +1,6 @@
 import type { SessionUser } from "@/lib/auth";
 import { verifySessionToken } from "@/lib/auth-crypto";
+import { parseAccessToken } from "@/lib/mcp/oauth/crypto";
 import { createHash, timingSafeEqual } from "crypto";
 
 export type McpAccess = "public" | "user" | "admin" | "auth";
@@ -8,6 +9,8 @@ export type McpCallContext = {
   user: SessionUser | null;
   /** Set when the caller presented a valid MCP API key. */
   apiKey: string | null;
+  /** Claude / MCP OAuth access token (public connector handshake). */
+  oauthAccess: boolean;
 };
 
 const digest = (s: string) => createHash("sha256").update(s).digest();
@@ -44,14 +47,17 @@ export function resolveMcpCallContext(req: Request): McpCallContext {
   let apiKey: string | null = null;
   let sessionToken = xSession;
 
+  let oauthAccess = false;
+
   if (xKey && isMcpApiKey(xKey)) apiKey = xKey;
   if (bearer) {
     if (isMcpApiKey(bearer)) apiKey = bearer;
+    else if (parseAccessToken(bearer)) oauthAccess = true;
     else if (!sessionToken) sessionToken = bearer;
   }
 
   const user = sessionFromToken(sessionToken);
-  return { user, apiKey };
+  return { user, apiKey, oauthAccess };
 }
 
 export function authErrorForTool(_access: McpAccess, _ctx: McpCallContext): string | null {
