@@ -264,7 +264,7 @@ export function OptionStratPanel({
                     <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                     <XAxis dataKey="price_sim" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} width={56} />
-                    <Tooltip formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "P&L"]} />
+                    <Tooltip formatter={(v) => [`₹${Number(v).toLocaleString("en-IN")}`, "P&L"]} />
                     <Area type="monotone" dataKey="pnl" stroke="#1a73e8" fill="#1a73e833" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>

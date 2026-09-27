@@ -176,7 +176,7 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
   const tOosStart = Math.max(200, n - 1 - oosCap);
   const tTuneStart = Math.max(120, tOosStart - TUNE_TRADING_DAYS);
 
-  let ridgeW = new Float64Array(ENSEMBLE_N_FEATURES + 1);
+  let ridgeW: Float64Array = new Float64Array(ENSEMBLE_N_FEATURES + 1);
   let lastRidgeTrain = -999;
 
   const partAt = (t: number) => {
