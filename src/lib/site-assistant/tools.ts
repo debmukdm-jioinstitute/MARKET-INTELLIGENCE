@@ -5,6 +5,7 @@ import {
   type SkillLevel,
 } from "@/lib/site-assistant/education";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { isPortalHrefAllowed, type PortalPageControlRow } from "@/lib/portal-page-access";
 import { searchPages } from "@/lib/site-assistant/site-map";
 import { tool } from "ai";
@@ -28,7 +29,7 @@ export function createServerSiteAssistantTools() {
   return {
     search_pages: tool({
       description:
-        "Search portal pages by name, topic, or path fragment. Returns href, label, and description for each match.",
+        "Search portal pages by name, topic, or path fragment. Returns href, label, and description for each match. Prefer this whenever the user asks where to go.",
       inputSchema: z.object({
         query: z.string().describe("Keywords, page name, or feature (e.g. stress, portfolio risk, IPO)"),
       }),
@@ -38,6 +39,25 @@ export function createServerSiteAssistantTools() {
           controls.length ? isPortalHrefAllowed(p.href, controls, false) : true,
         );
         return { pages: pages.slice(0, 8) };
+      },
+    }),
+    search_symbols: tool({
+      description:
+        'Resolve natural-language company names or tickers to symbols (handles spacing/typos like "JP Power" → JPPOWER). Returns symbol, name, market, and researchPath for navigation.',
+      inputSchema: z.object({
+        query: z.string().describe('Company name or ticker fragment, e.g. "JP Power", "reliance", "AAPL"'),
+      }),
+      execute: async ({ query }) => {
+        const hits = await searchSymbols(query, 8);
+        return {
+          hits: hits.map((h) => ({
+            symbol: h.symbol,
+            name: h.name,
+            market: h.market,
+            exchange: h.exchange ?? null,
+            researchPath: `/research/${h.symbol}`,
+          })),
+        };
       },
     }),
     list_portal_offerings: tool({
@@ -70,9 +90,10 @@ export function createServerSiteAssistantTools() {
 }
 
 export const clientNavigateTool = tool({
-  description: "Navigate the user to an allowed portal path. href must come from search_pages or the site map.",
+  description:
+    "Navigate the user to an allowed portal path. href must come from search_pages, search_symbols (researchPath), or the site map.",
   inputSchema: z.object({
-    href: z.string().describe("Portal path starting with /, e.g. /macro/stress"),
+    href: z.string().describe("Portal path starting with /, e.g. /macro/stress or /research/JPPOWER"),
     label: z.string().optional().describe("Human-readable destination name for confirmation"),
   }),
 });

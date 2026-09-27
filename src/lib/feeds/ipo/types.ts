@@ -1,5 +1,19 @@
 export type IpoStatus = "open" | "closed" | "listed" | "upcoming";
 
+export type IpoGmpSource = {
+  provider: string;
+  url: string;
+  asOf: string;
+};
+
+export type IpoGmpFields = {
+  /** Grey market premium in INR per share (unofficial OTC). Null when unavailable. */
+  gmpInr: number | null;
+  /** Implied listing gain % from GMP vs issue price. */
+  gmpPct: number | null;
+  gmpSource: IpoGmpSource | null;
+};
+
 export type IpoListing = {
   id: string;
   symbol: string;
@@ -14,7 +28,7 @@ export type IpoListing = {
   biddingStartDate: string;
   biddingEndDate: string;
   totalSubscription: string | null;
-};
+} & Partial<IpoGmpFields>;
 
 export type IpoTimeline = {
   preApplyStartDate?: string;

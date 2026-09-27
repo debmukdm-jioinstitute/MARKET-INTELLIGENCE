@@ -1,6 +1,13 @@
 import { gunzipSync } from "node:zlib";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { feedFetch } from "@/lib/feeds/http";
+import {
+  aliasSymbol,
+  compactToken,
+  editDistance,
+  normalizeSymbolQuery,
+  queryTokens,
+} from "@/lib/feeds/symbol-normalize";
 import { UNIVERSE } from "@/lib/universe";
 
 export type SymbolMarket = "IN" | "US";
@@ -65,19 +72,52 @@ async function loadNseEquityIndex(): Promise<SymbolSearchHit[]> {
   return nseEquityIndex;
 }
 
-function scoreHit(q: string, hit: SymbolSearchHit): number {
+/**
+ * Score a hit against a natural-language query.
+ * Handles spacing ("JP POWER" → JPPOWER), aliases, token overlap, and light typos.
+ */
+export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
+  const spaced = normalizeSymbolQuery(rawQuery);
+  const compact = compactToken(rawQuery);
+  if (!spaced && !compact) return 0;
+
   const sym = hit.symbol.toUpperCase();
-  const name = hit.name.toUpperCase();
-  if (sym === q) return 1000;
-  if (sym.startsWith(q)) return 800 - (sym.length - q.length);
-  if (name.startsWith(q)) return 600;
-  if (sym.includes(q)) return 400;
-  if (name.includes(q)) return 200;
+  const nameSpaced = normalizeSymbolQuery(hit.name);
+  const nameCompact = compactToken(hit.name);
+  const alias = aliasSymbol(rawQuery);
+
+  if (alias && alias === sym) return 1100;
+  if (sym === spaced || sym === compact) return 1000;
+  if (compact && sym.startsWith(compact)) return 850 - Math.min(sym.length - compact.length, 40);
+  if (spaced && nameSpaced.startsWith(spaced)) return 700;
+  if (compact && nameCompact.startsWith(compact)) return 680;
+  if (compact && sym.includes(compact)) return 520;
+  if (spaced && nameSpaced.includes(spaced)) return 480;
+  if (compact && nameCompact.includes(compact)) return 460;
+
+  const tokens = queryTokens(rawQuery);
+  if (tokens.length) {
+    const nameTokens = new Set(queryTokens(hit.name));
+    const hitCount = tokens.filter((t) => nameTokens.has(t) || sym.includes(t)).length;
+    if (hitCount === tokens.length && tokens.length >= 2) return 420 + hitCount * 20;
+    if (hitCount > 0 && hitCount >= Math.ceil(tokens.length * 0.6)) return 280 + hitCount * 25;
+  }
+
+  // Light typo tolerance on compact symbol / primary name token (short queries only).
+  if (compact.length >= 4 && compact.length <= 12) {
+    const dSym = editDistance(compact, sym, 2);
+    if (dSym <= 1) return 360 - dSym * 40;
+    if (dSym === 2 && Math.abs(compact.length - sym.length) <= 1) return 220;
+    const primary = nameCompact.slice(0, Math.max(compact.length + 2, 8));
+    const dName = editDistance(compact, primary.slice(0, compact.length), 2);
+    if (dName <= 1) return 300 - dName * 30;
+  }
+
   return 0;
 }
 
 export async function searchSymbols(query: string, limit = 16): Promise<SymbolSearchHit[]> {
-  const q = query.trim().toUpperCase();
+  const q = query.trim();
   if (!q) return [];
 
   const indiaMap = new Map<string, SymbolSearchHit>();
@@ -111,19 +151,27 @@ export async function searchSymbols(query: string, limit = 16): Promise<SymbolSe
 }
 
 export async function resolveSymbol(symbol: string): Promise<SymbolSearchHit | null> {
-  const sym = symbol.trim().toUpperCase();
+  const sym = compactToken(symbol) || symbol.trim().toUpperCase();
   if (!sym) return null;
 
-  const us = US_INDEX.find((h) => h.symbol === sym);
+  const aliased = aliasSymbol(symbol);
+  const want = aliased ?? sym;
+
+  const us = US_INDEX.find((h) => h.symbol === want);
   if (us) return us;
 
-  const curated = INDIA_CURATED.find((h) => h.symbol === sym);
+  const curated = INDIA_CURATED.find((h) => h.symbol === want);
   if (curated) return curated;
 
   try {
     const nse = await loadNseEquityIndex();
-    return nse.find((h) => h.symbol === sym) ?? null;
+    const exact = nse.find((h) => h.symbol === want);
+    if (exact) return exact;
   } catch {
-    return null;
+    /* fall through */
   }
+
+  // Fuzzy fallback for natural-language company names.
+  const hits = await searchSymbols(symbol, 1);
+  return hits[0] ?? null;
 }

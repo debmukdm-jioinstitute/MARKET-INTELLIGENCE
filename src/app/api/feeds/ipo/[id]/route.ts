@@ -1,3 +1,4 @@
+import { enrichIpoDetailWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
 import { fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
@@ -10,7 +11,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     if (!detail) {
       return NextResponse.json({ error: "IPO not found" }, { status: 404 });
     }
-    return NextResponse.json(detail, {
+    const enriched = await enrichIpoDetailWithGmp(detail);
+    return NextResponse.json(enriched, {
       headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
     });
   } catch (e) {

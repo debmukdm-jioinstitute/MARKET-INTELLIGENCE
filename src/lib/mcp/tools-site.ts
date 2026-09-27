@@ -8,6 +8,7 @@ import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instruments";
 import { buildFeedHub } from "@/lib/feeds/hub";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
+import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
@@ -27,6 +28,7 @@ import { applyOverrides, deriveAssumptions } from "@/lib/models/assumptions";
 import { buildModel } from "@/lib/models/dcf-engine";
 import { fetchFinancialDataset } from "@/lib/models/yahoo-fundamentals";
 import { ensureSchema, sql } from "@/lib/db";
+import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
 import { loadBacktest, loadScan, loadSignals } from "@/lib/scanner/store";
 import type { Tool } from "./tools";
@@ -194,11 +196,32 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_ipos",
     title: "IPOs",
     category: "Research",
-    description: "IPO list by status: open, upcoming, closed or listed.",
+    description:
+      "IPO list by status (open, upcoming, closed, listed), enriched with best-effort grey market premium (GMP) when available.",
     inputSchema: { type: "object", properties: { status: { type: "string", enum: ["open", "upcoming", "closed", "listed"], description: "Default open" } }, additionalProperties: false },
     run: async (a) => {
       const status = z.enum(["open", "upcoming", "closed", "listed"]).default("open").parse(a.status);
-      return { status, ipos: await fetchUpstoxIpoList(status) };
+      const base = await fetchUpstoxIpoList(status);
+      const ipos = await enrichIpoListWithGmp(base);
+      return {
+        status,
+        ipos: ipos.map((ipo) => ({
+          id: ipo.id,
+          symbol: ipo.symbol,
+          name: ipo.name,
+          issueType: ipo.issueType,
+          issueSize: ipo.issueSize,
+          industry: ipo.industry,
+          minPrice: ipo.minPrice,
+          maxPrice: ipo.maxPrice,
+          biddingStartDate: ipo.biddingStartDate,
+          biddingEndDate: ipo.biddingEndDate,
+          totalSubscription: ipo.totalSubscription,
+          gmpInr: ipo.gmpInr ?? null,
+          gmpPct: ipo.gmpPct ?? null,
+          gmpProvider: ipo.gmpSource?.provider ?? null,
+        })),
+      };
     },
   },
   {
@@ -225,6 +248,47 @@ export const SITE_TOOLS: Tool[] = [
             WHERE ${b}::text IS NULL OR broker ILIKE ${`%${b ?? ""}%`}
             ORDER BY COALESCE(published_at, scraped_at) DESC LIMIT ${limit}`;
       return { reports: rows };
+    },
+  },
+  {
+    name: "get_analyst_credibility",
+    title: "Analyst credibility",
+    category: "Research",
+    description:
+      "Broker/analyst comparison over the last N (default 100) recommendations: hit rate, basis, time horizon, and scored outcomes. Flattened for terminal use.",
+    inputSchema: {
+      type: "object",
+      properties: { limit: { type: "number", description: "1–100, default 100" } },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { limit } = z.object({ limit: z.number().int().min(1).max(100).default(100) }).parse(a);
+      const data = await buildAnalystCredibility(limit);
+      if (!data.dbConfigured) return { error: "Database not configured" };
+      return {
+        brokers: data.brokers.slice(0, 25).map((b) => ({
+          broker: b.broker,
+          sampleSize: b.sampleSize,
+          scored: b.scored,
+          hitRatePct: b.hitRatePct,
+          avgReturnPct: b.avgReturnPct,
+          topBasis: b.topBasis,
+          typicalHorizon: b.typicalHorizon,
+          mix: { buy: b.buyCount, sell: b.sellCount, hold: b.holdCount },
+        })),
+        recent: data.recommendations.slice(0, 40).map((r) => ({
+          broker: r.broker,
+          rating: r.rating,
+          symbol: r.symbol,
+          targetPrice: r.targetPrice,
+          basis: r.basis,
+          horizon: r.horizon,
+          hit: r.hit,
+          returnPct: r.returnPct,
+          title: r.title.slice(0, 120),
+          published_at: r.published_at,
+        })),
+      };
     },
   },
 
