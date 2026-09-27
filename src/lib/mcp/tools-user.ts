@@ -20,7 +20,6 @@ import type { Tool } from "@/lib/mcp/tools";
 import { mcpSignIn } from "@/lib/mcp/sign-in";
 import { z } from "zod";
 
-type Json = Record<string, unknown>;
 const empty = { type: "object", properties: {}, additionalProperties: false };
 
 function requireUser(ctx: McpCallContext) {
