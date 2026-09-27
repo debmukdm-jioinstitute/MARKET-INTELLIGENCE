@@ -282,6 +282,7 @@ function emptyAnalysis(settings: PortfolioSettings): PortfolioAnalysis {
     navSeries: [],
     allocation: [],
     attribution: [],
+    riskContribution: [],
   };
 }
 
@@ -817,6 +818,24 @@ export async function computePortfolioAnalysis(
     void specNote;
   }
 
+  const riskWeighted = seriesList.map((s) => {
+    const rets = returnsFromPrices(s.history.map((h) => h.value));
+    const volAnn = rets.length >= 5 ? stdev(rets) * Math.sqrt(252) : 0.25;
+    const weight = positions.find((r) => r.symbol === s.holding.symbol)?.weight ?? 0;
+    return {
+      symbol: s.holding.symbol,
+      name: s.holding.name,
+      weighted: weight * volAnn,
+    };
+  });
+  riskWeighted.sort((a, b) => b.weighted - a.weighted);
+  const riskSum = riskWeighted.reduce((s, r) => s + r.weighted, 0);
+  const riskContribution = riskWeighted.slice(0, 12).map((r) => ({
+    symbol: r.symbol,
+    name: r.name,
+    riskShare: riskSum > 0 ? r.weighted / riskSum : 0,
+  }));
+
   // ---- assemble ----
   for (const id of OVERVIEW_METRICS) overview.push(resultMap.get(id) ?? NA(id, "Unavailable."));
   for (const [catId, ids] of Object.entries(CATEGORY_METRICS)) {
@@ -845,5 +864,6 @@ export async function computePortfolioAnalysis(
     navSeries: navSeriesOut,
     allocation,
     attribution,
+    riskContribution,
   };
 }
