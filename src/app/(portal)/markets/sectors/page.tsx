@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MarketValuationCard } from "@/components/dashboard/market-valuation-card";
 import { PageHeader } from "@/components/layout/page-header";
+import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -161,12 +162,44 @@ import { MetricInfo } from "@/components/ui/metric-info";
 type SectorTab = "performance" | "rotation" | "valuation" | "fundamentals";
 const SECTOR_TABS: SectorTab[] = ["performance", "rotation", "valuation", "fundamentals"];
 
-const ERP_ROWS = [
-  { label: "NIFTY Earnings Yield (1 / PE):", id: "earnings_yield", value: "4.58%", cls: "text-foreground" },
-  { label: "India 10Y G-Sec Yield:", id: "gsec10y", value: "6.82%", cls: "text-foreground" },
-  { label: "Yield Spread (G-Sec - Earnings Yield):", id: "yield_spread", value: "224 bps (Slightly Stretched)", cls: "text-blue-600" },
-  { label: "Historical 10Y Mean Spread:", id: "yield_spread", name: "Historical 10Y Mean Spread", value: "185 bps", cls: "text-muted-foreground" },
-];
+function EquityRiskPremiumPanel() {
+  const { data } = useIndiaDashboard(60_000);
+  const gsec = data?.pulse?.gsec10y?.value;
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">
+      <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <Scale className="size-4 text-primary" />
+        EQUITY RISK PREMIUM & YIELD SPREAD
+      </h3>
+      <p className="text-muted-foreground text-sm">
+        Earnings yield needs index P/E from NSE — not auto-scraped. G-Sec is live when dashboard loads.
+      </p>
+      <div className="space-y-3 divide-y divide-border/50">
+        <div className="pt-2 first:pt-0 flex justify-between items-center">
+          <span className="text-muted-foreground flex items-center gap-1">
+            NIFTY Earnings Yield (1 / PE):
+            <MetricInfo id="earnings_yield" iconSize="xs" />
+          </span>
+          <span className="font-bold text-muted-foreground">—</span>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-muted-foreground flex items-center gap-1">
+            India 10Y G-Sec Yield:
+            <MetricInfo id="gsec10y" iconSize="xs" />
+          </span>
+          <span className="font-bold text-foreground tabular-nums">{gsec != null ? `${gsec.toFixed(2)}%` : "—"}</span>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-muted-foreground flex items-center gap-1">
+            Yield spread vs earnings yield:
+            <MetricInfo id="yield_spread" iconSize="xs" />
+          </span>
+          <span className="font-bold text-muted-foreground">—</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SectorsPage() {
   return (
@@ -187,8 +220,12 @@ function SectorsView() {
       <PageHeader
         kicker="Sector Matrix"
         title="Sector Intelligence & Rotation Workbench"
-        subtitle="Decomposition of Indian industry verticals: relative momentum, rotation quadrant, market and sector valuation, and return on equity."
+        subtitle="Sector workbench — table below is illustrative until NSE sector indices are wired."
       />
+
+      <p className="mb-4 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
+        Performance, rotation, P/E and ROE in the sector matrix are static teaching numbers, not live NSE sector indices. Valuation tab uses live G-Sec plus NSE link for index multiples.
+      </p>
 
       {/* Navigation Sub-Tabs */}
       <div className="flex items-center gap-2 border-b border-border pb-3 text-sm">
@@ -218,23 +255,7 @@ function SectorsView() {
       {activeTab === "valuation" ? (
         <div className="bento-grid-cols-2">
           <MarketValuationCard />
-          <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm shadow-sm">
-            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <Scale className="size-4 text-primary" />
-              EQUITY RISK PREMIUM & YIELD SPREAD
-            </h3>
-            <div className="space-y-3 divide-y divide-border/50">
-              {ERP_ROWS.map((r) => (
-                <div key={r.label} className="pt-2 first:pt-0 flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    {r.label}
-                    <MetricInfo id={r.id} name={r.name} iconSize="xs" />
-                  </span>
-                  <span className={cn("font-bold", r.cls)}>{r.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <EquityRiskPremiumPanel />
         </div>
       ) : null}
 

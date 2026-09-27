@@ -7,7 +7,7 @@ import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import Link from "next/link";
 
 export default function GlobalMacroPage() {
-  const { data } = useIndiaDashboard(45_000);
+  const { data, loading, error } = useIndiaDashboard(45_000);
 
   return (
     <div className="portal-page pb-10">
@@ -16,6 +16,9 @@ export default function GlobalMacroPage() {
         title="Global Macroeconomic Data & Cross-Market Spreads"
         subtitle="Tracking US benchmarks, global sovereign yield curves, currency strength (DXY), and inter-market correlation coefficients."
       />
+
+      {loading && !data ? <p className="text-sm text-muted-foreground mb-4">Loading global macro…</p> : null}
+      {error ? <p className="text-sm text-rose-600 mb-4">{error}</p> : null}
 
       <p className="mb-4 text-sm text-muted-foreground">
         Live equity benchmarks (Americas, Europe, Asia, India) with ranges and charts on{" "}

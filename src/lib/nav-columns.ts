@@ -48,7 +48,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Research Companies",
         desc: "Look up any stock, read reports, track IPOs.",
         items: [
-          { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and simulated history." },
+          { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and price history (Upstox/Yahoo when configured)." },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings and subscription tracking." },
         ],
@@ -57,8 +57,8 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Valuation & Sectors",
         desc: "Is the market cheap or expensive? Which sectors lead?",
         items: [
-          { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "P/E, P/B, and yield bands versus history." },
-          { label: "Sector Comparables", href: "/markets/sectors", desc: "Rotation and relative strength by sector.", badge: "NEW" },
+          { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "NSE index multiples (link-out) plus live 10Y G-Sec from dashboard." },
+          { label: "Sector Comparables", href: "/markets/sectors", desc: "Illustrative sector matrix — live NSE sector feed planned.", badge: "NEW" },
         ],
       },
       {
@@ -112,7 +112,7 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Get AI trade ideas, then test them on history.",
         items: [
           { label: "AI Desk", href: "/research/ai-desk", desc: "Alpha discovery and AI-assisted trade ideas.", badge: "AI" },
-          { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K growth charts, morning-vs-close P&L, ATR paper trading.", badge: "NEW" },
+          { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K scanner equity curves vs Nifty 500 — signal hold horizons after each close.", badge: "NEW" },
         ],
       },
       {

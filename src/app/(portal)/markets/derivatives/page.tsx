@@ -78,7 +78,7 @@ export default function DerivativesPage() {
               <div>
                 <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground flex items-center gap-1">
                   Open interest by strike
-                  <MetricInfo id="pcr" name="Open Interest Distribution" iconSize="xs" />
+                  <MetricInfo id="openInterest" name="Open Interest Distribution" iconSize="xs" />
                 </p>
                 <div className="h-[220px]">
                   <OiByStrikeChart snapshot={snapshot} />
@@ -114,10 +114,10 @@ function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
     <Panel title={title} subtitle="NSE option chain indices API">
       <dl className="grid grid-cols-2 gap-2 text-sm">
         <Row metricId="pcr" k="PCR" v={snap.pcr != null ? snap.pcr.toFixed(3) : "—"} />
-        <Row metricId="pcr" k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row metricId="pcr" k="Change in OI" v={snap.changeOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row metricId="pcr" k="Call OI" v={snap.callOi?.toLocaleString("en-IN") ?? "—"} />
-        <Row metricId="pcr" k="Put OI" v={snap.putOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="openInterest" k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="openInterest" k="Change in OI" v={snap.changeOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="callOi" k="Call OI" v={snap.callOi?.toLocaleString("en-IN") ?? "—"} />
+        <Row metricId="putOi" k="Put OI" v={snap.putOi?.toLocaleString("en-IN") ?? "—"} />
         <Row metricId="max_pain" k="Max pain" v={snap.maxPain != null ? fmtNum(snap.maxPain, 0) : "—"} />
       </dl>
       <div className="mt-4 grid gap-4 md:grid-cols-2">

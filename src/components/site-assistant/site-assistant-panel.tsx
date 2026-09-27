@@ -40,11 +40,32 @@ const HINT_FLIP_LINES = [
   { text: "Find tools in minutes", className: "text-foreground" },
 ] as const;
 
+const CAPABILITY_TILE =
+  "flex w-full items-center gap-2 rounded-lg border border-border/80 bg-muted/50 px-2.5 py-2.5 text-left text-xs text-foreground transition touch-manipulation hover:border-primary/35 hover:bg-accent/40 active:scale-[0.99] cursor-pointer min-h-[44px]";
+
 const CAPABILITIES = [
-  { icon: "🧭", label: "Guide you across Today · Invest · Trade · Portfolio · Data" },
-  { icon: "🎓", label: "Beginner → advanced paths, AI tools & pro quant" },
-  { icon: "⌘K", label: "Open symbol search & commands" },
+  { icon: "🧭", label: "Guide you across Today · Invest · Trade · Portfolio · Data", href: "/markets" as const },
+  { icon: "🎓", label: "Beginner → advanced paths, AI tools & pro quant", action: "skill" as const },
+  { icon: "⌘K", label: "Open symbol search & commands", action: "palette" as const },
 ] as const;
+
+function NudgeTile({ nudge }: { nudge: ReturnType<typeof nudgesForSkill>[number] }) {
+  return (
+    <Link
+      href={nudge.href}
+      className="block w-full rounded-xl border border-border/90 bg-card p-3 shadow-sm transition touch-manipulation hover:border-primary/35 hover:bg-accent/30 active:scale-[0.99] cursor-pointer min-h-[44px]"
+    >
+      <p className="text-xs font-semibold text-foreground">
+        {nudge.title}
+        {nudge.badge ? (
+          <span className="ml-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">{nudge.badge}</span>
+        ) : null}
+      </p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{nudge.body}</p>
+      <span className="mt-1.5 inline-block text-xs font-semibold text-primary">{nudge.cta} →</span>
+    </Link>
+  );
+}
 
 function loadStoredSkill(): SkillLevel | null {
   try {
@@ -100,26 +121,46 @@ function SkillMcqPanel({ onComplete }: { onComplete: (level: SkillLevel) => void
   );
 }
 
-function DidYouKnowBanner({ seed }: { seed: number }) {
+function DidYouKnowBanner({
+  seed,
+  onOpenPalette,
+}: {
+  seed: number;
+  onOpenPalette: () => void;
+}) {
   const tip = pickDidYouKnow(seed);
+  const inner = (
+    <p className="flex items-start gap-2 text-xs leading-relaxed text-foreground">
+      <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-[#f9ab00]" aria-hidden />
+      <span>
+        <span className="font-semibold text-[#b06000]">Did you know? </span>
+        {tip.fact}
+        {tip.href && tip.label ? (
+          <span className="mt-1 block font-semibold text-primary">{tip.label} →</span>
+        ) : null}
+      </span>
+    </p>
+  );
+
+  if (tip.href && tip.label) {
+    return (
+      <Link
+        href={tip.href}
+        className="block rounded-xl border border-[#fef7e0] bg-[#fef7e0]/60 px-3 py-2.5 transition touch-manipulation hover:border-[#f9ab00]/50 hover:bg-[#fef7e0] active:scale-[0.99] cursor-pointer min-h-[44px]"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
   return (
-    <div className="rounded-xl border border-[#fef7e0] bg-[#fef7e0]/60 px-3 py-2.5">
-      <p className="flex items-start gap-2 text-xs leading-relaxed text-foreground">
-        <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-[#f9ab00]" aria-hidden />
-        <span>
-          <span className="font-semibold text-[#b06000]">Did you know? </span>
-          {tip.fact}
-          {tip.href && tip.label ? (
-            <>
-              {" "}
-              <Link href={tip.href} className="font-semibold text-primary hover:underline">
-                {tip.label} →
-              </Link>
-            </>
-          ) : null}
-        </span>
-      </p>
-    </div>
+    <button
+      type="button"
+      onClick={onOpenPalette}
+      className="block w-full rounded-xl border border-[#fef7e0] bg-[#fef7e0]/60 px-3 py-2.5 text-left transition touch-manipulation hover:border-[#f9ab00]/50 hover:bg-[#fef7e0] active:scale-[0.99] cursor-pointer min-h-[44px]"
+    >
+      {inner}
+    </button>
   );
 }
 
@@ -278,7 +319,7 @@ function SiteAssistantChat({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3">
+      <div className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-3.5 py-3 scroll-pb-2">
         {messages.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -290,7 +331,7 @@ function SiteAssistantChat({
               <button
                 type="button"
                 onClick={() => setMcqOpen(true)}
-                className="w-full rounded-xl border border-dashed border-primary/40 bg-accent/30 px-3 py-2.5 text-left text-xs font-medium text-primary transition hover:bg-accent/60"
+                className="w-full rounded-xl border border-dashed border-primary/40 bg-accent/30 px-3 py-3 text-left text-xs font-medium text-primary transition touch-manipulation hover:bg-accent/60 active:scale-[0.99] cursor-pointer min-h-[44px]"
               >
                 🎓 New here? 4 quick questions — I&apos;ll tailor Today, Invest, Trade &amp; AI tools for you
               </button>
@@ -314,39 +355,50 @@ function SiteAssistantChat({
               </p>
             ) : null}
 
-            <DidYouKnowBanner seed={triviaSeed} />
+            <DidYouKnowBanner seed={triviaSeed} onOpenPalette={() => setPaletteOpen(true)} />
 
-            {nudges[0] ? (
-              <Link
-                href={nudges[0].href}
-                className="block rounded-xl border border-border/90 bg-card p-2.5 shadow-sm transition hover:border-primary/35 hover:bg-accent/30"
-              >
-                <p className="text-xs font-semibold text-foreground">
-                  {nudges[0].title}
-                  {nudges[0].badge ? (
-                    <span className="ml-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">{nudges[0].badge}</span>
-                  ) : null}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{nudges[0].body}</p>
-                <span className="mt-1 inline-block text-xs font-semibold text-primary">{nudges[0].cta} →</span>
-              </Link>
-            ) : null}
+            <div className="space-y-2">
+              {nudges.map((nudge) => (
+                <NudgeTile key={nudge.href + nudge.title} nudge={nudge} />
+              ))}
+            </div>
 
             <ul className="space-y-1.5">
-              {CAPABILITIES.map((c, i) => (
-                <motion.li
-                  key={c.label}
-                  initial={{ opacity: 0, rotateX: -12, y: 6 }}
-                  animate={{ opacity: 1, rotateX: 0, y: 0 }}
-                  transition={{ delay: 0.06 * i, duration: 0.4, ease: GOOGLE_FLIP_EASE }}
-                  className="flex items-center gap-2 rounded-lg border border-border/80 bg-muted/50 px-2.5 py-2 text-xs text-foreground"
-                >
+              {CAPABILITIES.map((c, i) => {
+                const icon = (
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-[11px] font-semibold text-accent-foreground">
                     {c.icon}
                   </span>
-                  {c.label}
-                </motion.li>
-              ))}
+                );
+                const body = (
+                  <>
+                    {icon}
+                    <span className="flex-1">{c.label}</span>
+                  </>
+                );
+                return (
+                  <motion.li
+                    key={c.label}
+                    initial={{ opacity: 0, rotateX: -12, y: 6 }}
+                    animate={{ opacity: 1, rotateX: 0, y: 0 }}
+                    transition={{ delay: 0.06 * i, duration: 0.4, ease: GOOGLE_FLIP_EASE }}
+                  >
+                    {"href" in c ? (
+                      <Link href={c.href} className={CAPABILITY_TILE}>
+                        {body}
+                      </Link>
+                    ) : "action" in c && c.action === "skill" ? (
+                      <button type="button" onClick={() => setMcqOpen(true)} className={CAPABILITY_TILE}>
+                        {body}
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => setPaletteOpen(true)} className={CAPABILITY_TILE}>
+                        {body}
+                      </button>
+                    )}
+                  </motion.li>
+                );
+              })}
             </ul>
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {suggestions.map((s, i) => (
@@ -361,7 +413,7 @@ function SiteAssistantChat({
                     onPickSuggestion(s);
                     void sendText(s);
                   }}
-                  className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm transition hover:border-primary/40 hover:bg-accent/60 disabled:opacity-50"
+                  className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground shadow-sm transition touch-manipulation hover:border-primary/40 hover:bg-accent/60 active:scale-[0.98] disabled:opacity-50 min-h-[36px]"
                 >
                   {s}
                 </motion.button>
@@ -415,7 +467,7 @@ function SiteAssistantChat({
             }
           }}
           rows={1}
-          placeholder={`Ask ${ASSISTANT_TITLE}…`}
+          placeholder="Ask about any page or tool…"
           className="max-h-20 min-h-[2.25rem] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
         />
         <button
@@ -540,7 +592,7 @@ export function SiteAssistantWidget() {
   };
 
   return (
-    <div className="site-assistant-widget pointer-events-none fixed bottom-[4.75rem] right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
+    <div className="site-assistant-widget pointer-events-none fixed bottom-[max(4.75rem,env(safe-area-inset-bottom,0px)+3.5rem)] right-[max(1rem,env(safe-area-inset-right,0px))] z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       <AnimatePresence>
         {hintVisible && !open ? (
           <motion.div
@@ -590,8 +642,8 @@ export function SiteAssistantWidget() {
             animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, rotateX: 12, scale: 0.97 }}
             transition={{ duration: 0.5, ease: GOOGLE_FLIP_EASE }}
-            className="assistant-panel-perspective pointer-events-auto flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-border/90 bg-card shadow-[var(--shadow-lg)]"
-            style={{ maxHeight: "min(78vh, 520px)", transformOrigin: "bottom right" }}
+            className="assistant-panel-perspective pointer-events-auto flex w-[min(calc(100vw-1rem),400px)] flex-col overflow-hidden rounded-2xl border border-border/90 bg-card shadow-[var(--shadow-lg)] max-sm:max-w-[calc(100vw-0.5rem)]"
+            style={{ maxHeight: "min(85dvh, 560px)", transformOrigin: "bottom right" }}
           >
             <header className="flex items-center gap-2.5 border-b border-border bg-gradient-to-r from-accent/80 via-card to-card px-3.5 py-2.5">
               <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm">

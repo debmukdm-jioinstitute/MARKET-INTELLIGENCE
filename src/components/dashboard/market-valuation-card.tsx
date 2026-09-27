@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { ArrowUpRight, Scale } from "lucide-react";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 
 export function MarketValuationCard() {
+  const { data, loading } = useIndiaDashboard(60_000);
+  const gsec = data?.pulse?.gsec10y?.value;
   const nseSource = {
     provider: "NSE India (Index PE/PB/Yield Reports)",
     url: "https://www.nseindia.com/reports-indices-historical-pepb",
@@ -21,96 +24,71 @@ export function MarketValuationCard() {
             </span>
             <MetricInfo metric="pe_ratio" sourceOverride={nseSource} customTitle="NSE Valuation Suite" />
           </div>
-          <Link
-            href="/markets/sectors?tab=valuation"
+          <a
+            href={nseSource.url}
+            target="_blank"
+            rel="noreferrer"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
-            Explore Valuation
-            <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
+            NSE PE/PB report
+            <ArrowUpRight className="size-3.5" />
+          </a>
         </div>
 
-        <div className="mt-3 space-y-4 text-sm">
-          {/* NIFTY P/E Highlights with MetricInfo */}
-          <div className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2">
-            <div className="flex items-baseline justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-foreground font-semibold">NIFTY 50 Trailing P/E</span>
-                <MetricInfo metric="pe_ratio" sourceOverride={nseSource} />
+        {loading && !data ? (
+          <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+        ) : (
+          <div className="mt-3 space-y-4 text-sm">
+            <p className="rounded-lg border border-dashed border-border bg-card/40 p-3 text-muted-foreground">
+              Index P/E, P/B and dividend yield are not scraped here yet — use the official NSE historical PE/PB report. India 10Y G-Sec below comes from the live dashboard feed.
+            </p>
+
+            <div className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2">
+              <div className="flex items-baseline justify-between">
+                <div className="flex items-center gap-1">
+                  <span className="text-foreground font-semibold">NIFTY 50 Trailing P/E</span>
+                  <MetricInfo metric="pe_ratio" sourceOverride={nseSource} />
+                </div>
+                <span className="font-bold text-base text-muted-foreground">See NSE report</span>
               </div>
-              <span className="font-bold text-base text-foreground">21.84x</span>
             </div>
 
-            <div className="flex items-center justify-between text-muted-foreground text-sm">
-              <div className="flex items-center gap-1">
-                <span>5Y Historical Average P/E</span>
-                <MetricInfo metric="pe_ratio" customTitle="5-Year Historical Average P/E" sourceOverride={nseSource} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border/70 bg-card/40 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm uppercase">NIFTY P/B</span>
+                  <MetricInfo metric="pb_ratio" sourceOverride={nseSource} />
+                </div>
+                <span className="font-bold text-muted-foreground text-sm mt-0.5 block">—</span>
               </div>
-              <span className="font-semibold text-foreground">20.42x</span>
+
+              <div className="rounded-lg border border-border/70 bg-card/40 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm uppercase">Index dividend yield</span>
+                  <MetricInfo metric="div_yield" sourceOverride={nseSource} />
+                </div>
+                <span className="font-bold text-muted-foreground text-sm mt-0.5 block">—</span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between text-muted-foreground text-sm">
-              <div className="flex items-center gap-1">
-                <span>10Y Historical Average P/E</span>
-                <MetricInfo metric="pe_ratio" customTitle="10-Year Historical Average P/E" sourceOverride={nseSource} />
-              </div>
-              <span className="font-semibold text-foreground">19.78x</span>
-            </div>
-
-            {/* Visual Valuation Meter */}
-            <div className="pt-2">
-              <div className="flex justify-between text-sm text-muted-foreground mb-1 uppercase">
-                <span>Undervalued (17x)</span>
-                <span>Fair (20x)</span>
-                <span>Rich (24x)</span>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-accent overflow-hidden relative">
-                <div
-                  className="absolute top-0 bottom-0 bg-blue-600 rounded-full"
-                  style={{ left: "62%", width: "12px" }}
-                />
+            <div className="rounded-xl border border-border/70 bg-card/40 p-3.5 space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">India 10Y G-Sec (live)</span>
+                  <MetricInfo metric="gsec10y" sourceOverride={data?.pulse?.gsec10y?.source} />
+                </div>
+                <span className="font-bold text-foreground tabular-nums">
+                  {gsec != null ? `${gsec.toFixed(2)}%` : "—"}
+                </span>
               </div>
             </div>
           </div>
-
-          {/* Other Multiples with MetricInfo */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-border/70 bg-card/40 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm uppercase">NIFTY P/B</span>
-                <MetricInfo metric="pb_ratio" sourceOverride={nseSource} />
-              </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block">3.12x</span>
-            </div>
-
-            <div className="rounded-lg border border-border/70 bg-card/40 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm uppercase">Dividend Yield</span>
-                <MetricInfo metric="div_yield" sourceOverride={nseSource} />
-              </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block">1.22%</span>
-            </div>
-          </div>
-
-          {/* Yield Spread Callout */}
-          <div className="rounded-xl border border-border/70 bg-card/40 p-3.5 space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">Bond-Equity Yield Spread</span>
-                <MetricInfo metric="yield_spread" />
-              </div>
-              <span className="font-bold text-blue-600">224 bps (Mild Premium)</span>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
-        <Link
-          href="/markets/sectors?tab=valuation"
-          className="text-primary hover:underline text-sm flex items-center gap-1"
-        >
-          View Full Valuation & Yield Spread Dashboard →
+        <Link href="/macro/india" className="text-primary hover:underline text-sm">
+          India macro & G-Sec context →
         </Link>
       </div>
     </div>

@@ -4,6 +4,8 @@ import { Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
+import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
 type Bias = "buy" | "sell" | "watch";
@@ -14,15 +16,19 @@ type Payload = {
   symbolHits?: { scanner: string; label: string; bias: Bias; symbol: string; name: string; ltp: number; changePct: number; note: string }[];
 };
 
-const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<Payload>);
+const fetcher = (url: string) => fetchJsonAuth<Payload>(url);
 const dot = { buy: "bg-emerald-500", sell: "bg-rose-500", watch: "bg-blue-500" } as const;
 
 /** Live scan alerts (from the daily Nifty 500 scan) plus an on-demand scanner console. */
 export function ScanAlerts() {
-  const { data } = useSWR("/api/scanner", fetcher, { refreshInterval: 5 * 60_000 });
+  const { data, error } = useSWR("/api/scanner", fetcher, { refreshInterval: 5 * 60_000 });
   const [cmd, setCmd] = useState("");
   const [out, setOut] = useState<{ title: string; lines: { symbol: string; text: string; up: boolean | null }[] } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  if (isAuthRequiredError(error)) {
+    return <SignInRequiredBanner feature="scan alerts" nextPath="/intelligence/alerts" />;
+  }
 
   const actionable = (data?.scanners ?? []).filter((s) => s.bias !== "watch" && s.matches > 0);
 

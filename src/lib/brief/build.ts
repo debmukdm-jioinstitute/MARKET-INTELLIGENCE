@@ -24,7 +24,9 @@ export function factsFrom(s: Snapshot): Fact[] {
     m.fii_net != null ? { id: "fii", label: "FII net flow (cash, today)", value: `₹${Math.round(m.fii_net).toLocaleString("en-IN")} cr`, provider: d.moneyFlow.fii.source.provider } : null,
     m.dii_net != null ? { id: "dii", label: "DII net flow (cash, today)", value: `₹${Math.round(m.dii_net).toLocaleString("en-IN")} cr`, provider: d.moneyFlow.dii.source.provider } : null,
     s.stress.score != null ? { id: "stress", label: "India Macro Stress Index", value: `${s.stress.score} (${s.stress.band}); families stressed: ${s.stress.convergence.firing.join(", ") || "none"}`, provider: "Market Intelligence heuristic" } : null,
-    d.rbiLiquidity.corridor ? { id: "rbi", label: "RBI policy repo rate", value: d.rbiLiquidity.corridor.repo, provider: "Reserve Bank of India" } : null,
+    d.rbiLiquidity.corridor?.repo
+      ? { id: "rbi", label: "RBI policy repo rate", value: d.rbiLiquidity.corridor.repo, provider: "Reserve Bank of India" }
+      : null,
   ];
   return out.filter((f): f is Fact => f !== null);
 }

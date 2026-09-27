@@ -60,16 +60,12 @@ export default function AIPage() {
               Not loaded — <code className="algo-code">python scripts/train_rl_exit.py --epochs 10</code>
             </p>
           )}
-          <div className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Last known results</p>
-            <p className="mt-1">Trained on 247,234 episodes · 124 days · 11,606 states</p>
-            <p>
-              Eval: <span className="text-chart-2">88.1% win rate</span>, <span className="text-chart-2">+1.01% avg P&L</span>
-            </p>
-            <p>
-              Backtest: <span className="text-chart-2">100% RL_EXIT win rate</span>
-            </p>
-          </div>
+          {!rl.tabular ? (
+            <div className="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">Reference training run (offline docs)</p>
+              <p className="mt-1">Example: 247k episodes · 124 days — not live until model loads above.</p>
+            </div>
+          ) : null}
         </Panel>
 
         <Panel title="DQN agent" subtitle="models/saved/dqn_exit_agent.pt">

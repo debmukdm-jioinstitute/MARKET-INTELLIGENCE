@@ -5,15 +5,17 @@ import { cn } from "@/lib/utils";
 import type { BacktestRun } from "@/lib/scanner/types";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<{ run: BacktestRun | null; error?: string }>);
+const fetcher = (url: string) => fetchJsonAuth<{ run: BacktestRun | null; error?: string }>(url);
 const COLORS = ["#1a73e8", "#e8710a", "#188038", "#a142f4", "#d93025"];
 const biasCls = { buy: "text-emerald-600", sell: "text-rose-600", watch: "text-blue-600" } as const;
 const fmt = (n: number, d = 2) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 
 export function BacktestDashboard() {
-  const { data, isLoading } = useSWR("/api/backtest", fetcher);
+  const { data, error, isLoading } = useSWR("/api/backtest", fetcher);
   const run = data?.run ?? null;
   const [horizon, setHorizon] = useState(2); // index into horizons: 1,3,5,10 sessions
   const [picked, setPicked] = useState<string[]>(["vcp", "rsi-oversold", "inside-bar-bear"]);
@@ -38,8 +40,15 @@ export function BacktestDashboard() {
   }, [run, chartIds]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading backtest…</p>;
+  if (isAuthRequiredError(error)) {
+    return <SignInRequiredBanner feature="scanner backtests" nextPath="/intelligence/backtesting" />;
+  }
   if (!run) {
-    return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No backtest has run yet. It runs weekly; the first result appears after the next scheduled run.</p>;
+    return (
+      <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+        No scanner backtest yet — weekly job; first result after next scheduled run. (Tick replay lives under NIFTY Algo Desk → Tick backtest.)
+      </p>
+    );
   }
 
   return (

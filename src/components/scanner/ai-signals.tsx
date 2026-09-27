@@ -14,9 +14,11 @@ import type { IndexSignalBlock, SignalsRun, StockSignal } from "@/lib/scanner/ty
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<{ run: SignalsRun | null }>);
+const fetcher = (url: string) => fetchJsonAuth<{ run: SignalsRun | null }>(url);
 const pct = (n: number, d = 1) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 const lean = { Bullish: "text-emerald-600", Bearish: "text-rose-600", Neutral: "text-muted-foreground" } as const;
 
@@ -206,14 +208,23 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
 export function AiSignals() {
   const [indexId, setIndexId] = useState<FnoIndexId>("nifty50");
   const [horizon, setHorizon] = useState<SignalHorizon>(1);
-  const { data, isLoading } = useSWR("/api/signals", fetcher, { refreshInterval: 10 * 60_000 });
+  const { data, error, isLoading } = useSWR("/api/signals", fetcher, { refreshInterval: 10 * 60_000 });
   const run = data?.run ?? null;
 
   const indexLabel = FNO_INDEX_OPTIONS.find((x) => x.id === indexId)?.label ?? "Index";
   const model = useMemo(() => (run ? pickIndexSignal(run, indexId, horizon) : null), [run, indexId, horizon]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!run) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No signals have been computed yet. They refresh after each NSE close.</p>;
+  if (isAuthRequiredError(error)) {
+    return <SignInRequiredBanner feature="AI signals" nextPath="/intelligence/ai-signals" />;
+  }
+  if (!run) {
+    return (
+      <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+        No signals computed yet — refresh after NSE close once a scan has run.
+      </p>
+    );
+  }
 
   const sv = run.stocks.validation;
   const bv = verdict(sv.buy.hitRate, sv.base.upRate, sv.buy.n);

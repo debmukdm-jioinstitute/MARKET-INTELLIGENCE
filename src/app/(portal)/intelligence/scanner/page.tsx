@@ -4,6 +4,8 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
+import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { AuthRequiredError, fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
 type Row = { symbol: string; name: string; industry: string; ltp: number; changePct: number; volume: number; volRatio: number; rsi: number | null; note: string };
@@ -14,12 +16,13 @@ type Payload = {
   error?: string;
 };
 
-const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<Payload>);
+const fetcher = (url: string) => fetchJsonAuth<Payload>(url);
 const biasCls = { buy: "text-emerald-600", sell: "text-rose-600", watch: "text-blue-600" } as const;
 
 export default function ScannerPage() {
   const [active, setActive] = useState("high52w");
-  const { data, isLoading } = useSWR(`/api/scanner?scanner=${active}`, fetcher, { refreshInterval: 5 * 60_000 });
+  const { data, error, isLoading } = useSWR(`/api/scanner?scanner=${active}`, fetcher, { refreshInterval: 5 * 60_000 });
+  const needsAuth = isAuthRequiredError(error);
   const current = data?.scanners.find((s) => s.id === active);
 
   return (
@@ -30,8 +33,11 @@ export default function ScannerPage() {
         subtitle="Technical scans over daily prices for every Nifty 500 stock, refreshed after each NSE close. Scan definitions follow the PKScreener menu (open-source, pkjmesra/PKScreener)."
       />
 
-      {data?.error ? <p className="text-sm text-rose-600">{data.error}</p> : null}
-      {data && !data.run ? (
+      {needsAuth ? <SignInRequiredBanner feature="the Nifty 500 scanner" nextPath="/intelligence/scanner" /> : null}
+      {!needsAuth && error && !(error instanceof AuthRequiredError) ? (
+        <p className="text-sm text-rose-600">{error instanceof Error ? error.message : String(error)}</p>
+      ) : null}
+      {!needsAuth && data && !data.run ? (
         <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No scan has run yet. The first scan runs automatically after the next NSE close.</p>
       ) : null}
       {data?.run ? (

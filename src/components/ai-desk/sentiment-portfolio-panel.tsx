@@ -4,6 +4,8 @@ import { ErrorBanner, SetupBanner } from "@/components/ai-desk/setup-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import Link from "next/link";
 import { useState } from "react";
 
 type SentimentHoldingRow = {
@@ -29,6 +31,7 @@ function labelColor(label: SentimentHoldingRow["label"]) {
 }
 
 export function SentimentPortfolioPanel() {
+  const { holdings, locked } = useMyPortfolio();
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,20 @@ export function SentimentPortfolioPanel() {
     setError(null);
     setSetupMessage(null);
     try {
-      const res = await fetch("/api/ai/sentiment-portfolio", { cache: "no-store" });
+      const bodyHoldings = holdings.map((h) => ({
+        symbol: h.symbol,
+        name: h.name,
+        market: h.market,
+        instrument_key: h.instrumentKey,
+        shares: String(h.shares),
+        avg_cost: String(h.avgCost),
+      }));
+      const res = await fetch("/api/ai/sentiment-portfolio", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ holdings: bodyHoldings }),
+        cache: "no-store",
+      });
       const json = await res.json();
       if (!res.ok) {
         if (json.setupRequired) setSetupMessage(json.error);
@@ -58,16 +74,30 @@ export function SentimentPortfolioPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Reads recent headlines for each holding in{" "}
-          <a href="/portfolio" className="underline">
+          Headlines for holdings in{" "}
+          <Link href="/portfolio" className="underline">
             My Portfolio
-          </a>{" "}
-          — yours if you&apos;ve added any, otherwise the sample book — and scores sentiment.
+          </Link>{" "}
+          (local book + synced DB).
         </p>
-        <Button onClick={run} disabled={loading}>
+        <Button onClick={run} disabled={loading || locked || holdings.length === 0}>
           {loading ? "Reading news…" : "Score my portfolio"}
         </Button>
       </div>
+
+      {locked ? (
+        <p className="text-sm text-muted-foreground">
+          <Link href="/login?next=/research/ai-desk" className="font-semibold text-blue-600 hover:underline">
+            Sign in
+          </Link>{" "}
+          to score your book.
+        </p>
+      ) : null}
+      {!locked && holdings.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Add holdings on <Link href="/portfolio" className="underline">Portfolio</Link> first.
+        </p>
+      ) : null}
 
       {setupMessage ? <SetupBanner message={setupMessage} /> : null}
       {error ? <ErrorBanner message={error} /> : null}

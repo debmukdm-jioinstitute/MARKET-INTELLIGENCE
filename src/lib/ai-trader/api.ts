@@ -31,9 +31,21 @@ export interface StreamPayload {
   total_pnl_live: number;
 }
 
+export class AlgoApiError extends Error {
+  readonly status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "AlgoApiError";
+    this.status = status;
+  }
+}
+
 export async function fetchJSON<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`API ${path} → ${res.status}`);
+  if (!res.ok) {
+    const j = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new AlgoApiError(res.status, j.error ?? `API ${path} → ${res.status}`);
+  }
   return res.json();
 }
 

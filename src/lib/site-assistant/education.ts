@@ -147,7 +147,7 @@ const INTERMEDIATE_NUDGES: Nudge[] = [
   {
     title: "Sector & valuation",
     body: "Check if the market looks cheap and which sectors are leading.",
-    href: "/markets/valuation",
+    href: "/markets/sectors?tab=valuation",
     cta: "Valuation",
   },
   {

@@ -150,25 +150,26 @@ export function AssistantMessageBody({ text }: { text: string }) {
           >
             {block.items.map((item, j) => {
               const path = extractPrimaryPath(item);
-              return (
-                <li
-                  key={j}
-                  className={cn(
-                    "list-none rounded-lg border border-border/75 bg-background/80 px-2.5 py-2 shadow-sm",
-                    path && "border-primary/15 bg-accent/20",
-                  )}
-                >
-                  <div className="text-[13px] leading-snug">{renderInline(item, onNavigate)}</div>
-                  {path ? (
-                    <button
-                      type="button"
-                      onClick={() => onNavigate(path)}
-                      className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      Open page
-                      <ArrowRight className="size-3" aria-hidden />
+              const tileCls = cn(
+                "list-none w-full rounded-lg border border-border/75 bg-background/80 px-2.5 py-2.5 text-left shadow-sm transition touch-manipulation min-h-[44px]",
+                path && "cursor-pointer border-primary/15 bg-accent/20 hover:border-primary/35 hover:bg-accent/35 active:scale-[0.99]",
+              );
+              if (path) {
+                return (
+                  <li key={j} className="list-none">
+                    <button type="button" onClick={() => onNavigate(path)} className={tileCls}>
+                      <div className="text-[13px] leading-snug">{renderInline(item, onNavigate)}</div>
+                      <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                        Open page
+                        <ArrowRight className="size-3" aria-hidden />
+                      </span>
                     </button>
-                  ) : null}
+                  </li>
+                );
+              }
+              return (
+                <li key={j} className={tileCls}>
+                  <div className="text-[13px] leading-snug">{renderInline(item, onNavigate)}</div>
                 </li>
               );
             })}

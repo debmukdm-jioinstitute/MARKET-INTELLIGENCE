@@ -101,14 +101,14 @@ export type IndiaDashboardPayload = {
     systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; netCr?: number | null; source: FieldSource };
     fxReserves?: { value: string | null; asOf: string | null; source: FieldSource };
     corridor?: {
-      repo: string;
-      sdf: string;
-      msf: string;
-      crr: string;
-      slr: string;
-      bankRate: string;
-      reverseRepo: string;
-      stance: string;
+      repo: string | null;
+      sdf: string | null;
+      msf: string | null;
+      crr: string | null;
+      slr: string | null;
+      bankRate: string | null;
+      reverseRepo: string | null;
+      stance: string | null;
     };
   };
   moneyFlow: {

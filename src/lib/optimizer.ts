@@ -5,14 +5,17 @@ import { getInstrument } from "@/lib/universe";
 export type OptimizeGoal = "maxSharpe" | "minVol" | "riskParity";
 
 export function optimizeWeights(symbols: string[], goal: OptimizeGoal) {
+  const rets = symbols.map((symbol) => getReturns(symbol));
+  return optimizeWeightsFromReturns(symbols, rets, goal);
+}
+
+export function optimizeWeightsFromReturns(symbols: string[], rets: number[][], goal: OptimizeGoal) {
   if (symbols.length === 0) {
     return {
       weights: [],
       stats: { vol: 0, ret: 0, sharpe: 0 },
     };
   }
-
-  const rets = symbols.map((symbol) => getReturns(symbol));
   const n = symbols.length;
   let weights = Array.from({ length: n }, () => 1 / n);
   const mu = rets.map((r) => (r.length > 0 ? r.reduce((a, b) => a + b, 0) / r.length : 0));

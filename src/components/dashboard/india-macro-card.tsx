@@ -6,6 +6,12 @@ import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 
+function dirGlyph(direction: string | undefined) {
+  if (direction === "up") return { dir: "↑", dirColor: "text-amber-400" };
+  if (direction === "down") return { dir: "↓", dirColor: "text-emerald-400" };
+  return { dir: "→", dirColor: "text-muted-foreground" };
+}
+
 export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
   const macroRows = data?.indiaMacro ?? [];
   const rbiLiquidity = data?.rbiLiquidity;
@@ -16,55 +22,56 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
   const cpiRow = getRow("cpi");
   const gdpRow = getRow("gdp");
 
-  // Real live indicator mapping with official upstream provenance
   const indicators = [
     {
       label: "CPI Inflation (YoY)",
       metricKey: "cpi",
-      value: cpiRow?.current != null ? `${Number(cpiRow.current).toFixed(2)}%` : "4.82%",
-      dir: cpiRow?.direction === "up" ? "↑" : cpiRow?.direction === "down" ? "↓" : "→",
-      dirColor: cpiRow?.direction === "up" ? "text-amber-400" : "text-emerald-400",
+      value: cpiRow?.current != null ? `${Number(cpiRow.current).toFixed(2)}%` : "—",
+      ...dirGlyph(cpiRow?.direction),
       source: cpiRow?.source,
     },
     {
       label: "Real GDP Growth",
       metricKey: "gdp",
-      value: gdpRow?.current != null ? `${Number(gdpRow.current).toFixed(2)}%` : "7.60%",
-      dir: "↑",
-      dirColor: "text-emerald-400",
+      value: gdpRow?.current != null ? `${Number(gdpRow.current).toFixed(2)}%` : "—",
+      ...dirGlyph(gdpRow?.direction),
       source: gdpRow?.source,
     },
     {
       label: "RBI Policy Repo Rate",
       metricKey: "repo",
-      value: data?.rbiLiquidity?.corridor?.repo ?? "5.25%",
-      dir: "→",
-      dirColor: "text-muted-foreground",
+      value: rbiLiquidity?.corridor?.repo ?? rbiLiquidity?.rows.find((r) => r.label.includes("Repo"))?.value ?? "—",
+      ...dirGlyph("flat"),
       source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
     },
     {
       label: "10Y G-Sec Sovereign Yield",
       metricKey: "gsec10y",
-      value: pulse?.gsec10y?.value != null ? `${Number(pulse.gsec10y.value).toFixed(2)}%` : "n/a",
-      dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : "↓",
-      dirColor: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "text-rose-400" : "text-emerald-400",
+      value: pulse?.gsec10y?.value != null ? `${Number(pulse.gsec10y.value).toFixed(2)}%` : "—",
+      dir: pulse?.gsec10y?.change && pulse.gsec10y.change > 0 ? "↑" : pulse?.gsec10y?.change ? "↓" : "→",
+      dirColor:
+        pulse?.gsec10y?.change && pulse.gsec10y.change > 0
+          ? "text-rose-400"
+          : pulse?.gsec10y?.change
+            ? "text-emerald-400"
+            : "text-muted-foreground",
       source: pulse?.gsec10y?.source,
     },
     {
       label: "PMI Manufacturing",
       metricKey: "pmi_mfg",
-      value: "58.1",
-      dir: "↑",
-      dirColor: "text-emerald-400",
-      source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com" },
+      value: "—",
+      dir: "→",
+      dirColor: "text-muted-foreground",
+      source: { provider: "Not wired in dashboard feed yet", url: "https://www.pmi.spglobal.com" },
     },
     {
       label: "PMI Services",
       metricKey: "pmi_services",
-      value: "60.4",
-      dir: "↑",
-      dirColor: "text-emerald-400",
-      source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com" },
+      value: "—",
+      dir: "→",
+      dirColor: "text-muted-foreground",
+      source: { provider: "Not wired in dashboard feed yet", url: "https://www.pmi.spglobal.com" },
     },
   ];
 
@@ -92,55 +99,59 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           </Link>
         </div>
 
-        {/* Indicators List with MetricInfo */}
-        <div className="mt-3 space-y-2.5 text-sm font-sans">
-          {indicators.map((ind) => (
-            <div
-              key={ind.label}
-              className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
-            >
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">{ind.label}</span>
-                <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} value={ind.value} />
+        {!data ? (
+          <p className="mt-3 text-sm text-muted-foreground">Loading India macro feed…</p>
+        ) : (
+          <div className="mt-3 space-y-2.5 text-sm font-sans">
+            {indicators.map((ind) => (
+              <div
+                key={ind.label}
+                className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">{ind.label}</span>
+                  <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} value={ind.value} />
+                </div>
+                <div className="flex items-center gap-2 font-bold tabular-nums">
+                  <span className="text-foreground">{ind.value}</span>
+                  <span className={ind.dirColor}>{ind.dir}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 font-bold tabular-nums">
-                <span className="text-foreground">{ind.value}</span>
-                <span className={ind.dirColor}>{ind.dir}</span>
-              </div>
-            </div>
-          ))}
+            ))}
 
-          {/* Liquidity & FX Reserves Callout with MetricInfo */}
-          <div className="mt-3 grid grid-cols-2 gap-3 pt-2">
-            <div className="rounded-lg border border-border/70 bg-card/50 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                  NET LIQUIDITY
+            <div className="mt-3 grid grid-cols-2 gap-3 pt-2">
+              <div className="rounded-lg border border-border/70 bg-card/50 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground">NET LIQUIDITY</span>
+                  <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
+                </div>
+                <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
+                  {rbiLiquidity?.systemLiquidity?.value ?? "Not available"}
                 </span>
-                <MetricInfo metric="liquidity" sourceOverride={rbiLiquidity?.systemLiquidity?.source} />
+                <span
+                  className={`text-xs font-semibold ${rbiLiquidity?.systemLiquidity?.change7d ? "text-emerald-400" : "text-muted-foreground"}`}
+                >
+                  {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI source unavailable"}
+                </span>
               </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
-                {rbiLiquidity?.systemLiquidity?.value ?? "Not available"}
-              </span>
-              <span className={`text-xs font-semibold ${rbiLiquidity?.systemLiquidity?.change7d ? "text-emerald-400" : "text-muted-foreground"}`}>
-                {rbiLiquidity?.systemLiquidity?.change7d ? `${rbiLiquidity.systemLiquidity.change7d} 7D` : "RBI source unavailable"}
-              </span>
-            </div>
 
-            <div className="rounded-lg border border-border/70 bg-card/50 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                  FX RESERVES
+              <div className="rounded-lg border border-border/70 bg-card/50 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground">FX RESERVES</span>
+                  <MetricInfo metric="fx_reserves" />
+                </div>
+                <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
+                  {rbiLiquidity?.fxReserves?.value ?? "Not available"}
                 </span>
-                <MetricInfo metric="fx_reserves" />
+                <span className="text-xs text-muted-foreground font-semibold">
+                  {rbiLiquidity?.fxReserves?.asOf
+                    ? `IMF/FRED, monthly · as of ${rbiLiquidity.fxReserves.asOf.slice(0, 7)}`
+                    : "Source unavailable"}
+                </span>
               </div>
-              <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">{rbiLiquidity?.fxReserves?.value ?? "Not available"}</span>
-              <span className="text-xs text-muted-foreground font-semibold">
-                {rbiLiquidity?.fxReserves?.asOf ? `IMF/FRED, monthly · as of ${rbiLiquidity.fxReserves.asOf.slice(0, 7)}` : "Source unavailable"}
-              </span>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm font-sans">

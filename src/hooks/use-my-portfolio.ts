@@ -257,6 +257,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
 
   return {
     locked,
+    holdings: localHoldings ?? [],
     data: data ?? null,
     loading: isLoading && !data,
     error: error instanceof Error ? error.message : error ? String(error) : null,

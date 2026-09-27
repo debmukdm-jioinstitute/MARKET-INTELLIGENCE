@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, HelpCircle, Search } from "lucide-react";
+import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -81,6 +82,7 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 
 export function OptionsFlowPanel() {
   const router = useRouter();
+  const { holdings } = useMyPortfolio();
   const [universe, setUniverse] = useState<FoInstrument[]>([]);
   const [universeLoaded, setUniverseLoaded] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -106,20 +108,13 @@ export function OptionsFlowPanel() {
   // only run once the universe has loaded, so "eligible" is checked against the real list, not an empty one.
   useEffect(() => {
     if (!universeLoaded) return;
-    fetch("/api/portfolio/holdings")
-      .then((r) => r.json())
-      .then((json) => {
-        const holdings: { market: string; symbol: string }[] = json.holdings ?? [];
-        const inUniverse = new Set(universe.map((i) => i.symbol));
-        const symbols = [...new Set(holdings.filter((h) => h.market === "IN").map((h) => h.symbol.toUpperCase()))]
-          .filter((s) => inUniverse.has(s))
-          .slice(0, DEFAULT_MAX);
-        setPortfolioSymbols(symbols);
-        if (!touchedRef.current) setSelected(symbols);
-      })
-      .catch(() => setPortfolioSymbols([]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [universeLoaded]);
+    const inUniverse = new Set(universe.map((i) => i.symbol));
+    const symbols = [...new Set(holdings.filter((h) => h.market === "IN").map((h) => h.symbol.toUpperCase()))]
+      .filter((s) => inUniverse.has(s))
+      .slice(0, DEFAULT_MAX);
+    setPortfolioSymbols(symbols);
+    if (!touchedRef.current) setSelected(symbols);
+  }, [universeLoaded, holdings, universe]);
 
   const filteredEquities = useMemo(() => {
     const q = query.trim().toLowerCase();

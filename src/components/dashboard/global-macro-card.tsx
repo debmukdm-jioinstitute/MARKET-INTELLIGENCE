@@ -19,28 +19,28 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
   const vix = radar?.["^VIX"];
 
   const indices = [
-    { name: "S&P 500", metricKey: "sp500", chg: spx?.changePct ?? 0.0041, source: spx?.source },
-    { name: "NASDAQ 100", metricKey: "nasdaq", chg: ndx?.changePct ?? 0.0072, source: ndx?.source },
-    { name: "DOW JONES", metricKey: "sp500", chg: dji?.changePct ?? 0.0018, source: dji?.source },
+    { name: "S&P 500", metricKey: "sp500", chg: spx?.changePct, source: spx?.source },
+    { name: "NASDAQ 100", metricKey: "nasdaq", chg: ndx?.changePct, source: ndx?.source },
+    { name: "DOW JONES", metricKey: "sp500", chg: dji?.changePct, source: dji?.source },
   ];
 
   const rates = [
     {
       name: "US 10Y Benchmark",
       metricKey: "us10y",
-      val: tnx?.value != null ? `${tnx.value.toFixed(2)}%` : "4.12%",
+      val: tnx?.value != null ? `${tnx.value.toFixed(2)}%` : "—",
       source: tnx?.source,
     },
     {
       name: "Dollar Index (DXY)",
       metricKey: "dxy",
-      val: dxy?.value != null ? dxy.value.toFixed(2) : "101.40",
+      val: dxy?.value != null ? dxy.value.toFixed(2) : "—",
       source: dxy?.source,
     },
     {
       name: "CBOE VIX Volatility",
       metricKey: "vix",
-      val: vix?.value != null ? vix.value.toFixed(2) : "14.80",
+      val: vix?.value != null ? vix.value.toFixed(2) : "—",
       source: vix?.source,
     },
   ];
@@ -69,65 +69,70 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
           </Link>
         </div>
 
-        <div className="mt-3 space-y-3 text-sm">
-          {/* US Equities with MetricInfo */}
-          <div className="space-y-1.5">
-            <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
-              DEVELOPED MARKET BENCHMARKS
-            </span>
-            {indices.map((idx) => {
-              const isPos = idx.chg >= 0;
-              return (
+        {!data ? (
+          <p className="mt-3 text-sm text-muted-foreground">Loading global radar…</p>
+        ) : (
+          <div className="mt-3 space-y-3 text-sm">
+            <div className="space-y-1.5">
+              <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
+                DEVELOPED MARKET BENCHMARKS
+              </span>
+              {indices.map((idx) => {
+                const isPos = idx.chg != null && idx.chg >= 0;
+                return (
+                  <div
+                    key={idx.name}
+                    className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold text-foreground">{idx.name}</span>
+                      <MetricInfo metric={idx.metricKey} sourceOverride={idx.source} />
+                    </div>
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-sm font-bold tabular-nums",
+                        idx.chg == null
+                          ? "text-muted-foreground"
+                          : isPos
+                            ? "text-emerald-600 bg-emerald-500/10"
+                            : "text-rose-600 bg-rose-500/10",
+                      )}
+                    >
+                      {idx.chg != null ? formatPct(idx.chg) : "—"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-border/50">
+              <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
+                GLOBAL RATES & CURRENCY
+              </span>
+              {rates.map((r) => (
                 <div
-                  key={idx.name}
-                  className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-2"
+                  key={r.name}
+                  className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-1.5"
                 >
                   <div className="flex items-center gap-1">
-                    <span className="font-semibold text-foreground">{idx.name}</span>
-                    <MetricInfo metric={idx.metricKey} sourceOverride={idx.source} />
+                    <span className="text-muted-foreground text-sm">{r.name}</span>
+                    <MetricInfo metric={r.metricKey} sourceOverride={r.source} />
                   </div>
-                  <span
-                    className={cn(
-                      "rounded px-1.5 py-0.5 text-sm font-bold",
-                      isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
-                    )}
-                  >
-                    {formatPct(idx.chg)}
-                  </span>
+                  <span className="font-bold text-foreground tabular-nums">{r.val}</span>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {/* Rates & Dollar with MetricInfo */}
-          <div className="space-y-1.5 pt-2 border-t border-border/50">
-            <span className="text-sm uppercase font-bold tracking-wider text-muted-foreground block">
-              GLOBAL RATES & CURRENCY
-            </span>
-            {rates.map((r) => (
-              <div
-                key={r.name}
-                className="flex items-center justify-between rounded-lg border border-border/50 bg-card/40 px-3 py-1.5"
-              >
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground text-sm">{r.name}</span>
-                  <MetricInfo metric={r.metricKey} sourceOverride={r.source} />
-                </div>
-                <span className="font-bold text-foreground">{r.val}</span>
+            {tnx?.value != null && vix?.value != null ? (
+              <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+                <span className="text-primary font-bold block text-sm uppercase">INDIA ↔ GLOBAL LIQUIDITY PASS-THROUGH</span>
+                <p className="text-muted-foreground mt-0.5 font-sans leading-relaxed">
+                  US 10Y at {tnx.value.toFixed(2)}% · VIX {vix.value.toFixed(2)} — context for FII risk appetite into India.
+                </p>
               </div>
-            ))}
+            ) : null}
           </div>
-
-          {/* India Cross-Market Impact */}
-          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
-            <span className="text-primary font-bold block text-sm uppercase">
-              INDIA ↔ GLOBAL LIQUIDITY PASS-THROUGH
-            </span>
-            <p className="text-muted-foreground mt-0.5 font-sans leading-relaxed">
-              Live feeds confirm US 10Y ({tnx?.value ? `${tnx.value.toFixed(2)}%` : "sub-4.2%"}) and sub-15 VIX continue to support foreign institutional capital allocation into Indian capital markets.
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
