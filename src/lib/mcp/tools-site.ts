@@ -383,7 +383,8 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_ai_signals",
     title: "AI signals",
     category: "Scanners",
-    description: "Latest AI signals: Nifty model output with walk-forward validation and Nifty 500 BTST/STBT candidates.",
+    description:
+      "Latest AI signals: walk-forward ensemble index models (all F&O indices in the run), validation metrics, and Nifty 500 BTST/STBT candidates.",
     inputSchema: empty,
     run: async () => ({ run: await loadSignals().catch(() => null) }),
   },

@@ -16,6 +16,7 @@ import { GuidedTour } from "@/components/guided-tour";
 import { PortalPageGuard } from "@/components/layout/portal-page-guard";
 import { PortalPageTransition } from "@/components/layout/portal-page-transition";
 import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -35,6 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <PortalPageTransition>{children}</PortalPageTransition>
                 </PortalPageGuard>
               </main>
+              <SiteFooter />
               <BottomTabBar />
             </div>
             <CommandPalette />

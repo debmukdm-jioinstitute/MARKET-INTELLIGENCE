@@ -1,6 +1,7 @@
 /** Static registry of scheduled jobs, required env vars and admin kill switches shown on /admin/system. */
 export const CRONS = [
   { path: "/api/cron/collect", schedule: "15 3 * * * (Vercel) + every 3h (GitHub)", source: "Vercel + GitHub", what: "Macro/market series collector" },
+  { path: "/api/cron/what-changed", schedule: "45 3 * * *", source: "Vercel", what: "Home “What changed” institutional shifts panel" },
   { path: "/api/cron/stress", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Stress-index history" },
   { path: "/api/cron/alerts", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Evaluate user alert rules" },
   { path: "/api/cron/betas", schedule: "0 1 * * * (GitHub)", source: "GitHub Actions", what: "Factor betas refresh" },
