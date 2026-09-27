@@ -59,7 +59,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         below. For your portfolio in AI, use your normal website login. Open each section to see steps.
       </p>
 
-      <Accordion type="multiple" defaultValue={["start", "mcp"]} className="rounded-xl border border-border px-4">
+      <Accordion type="multiple" defaultValue={["mcp"]} className="rounded-xl border border-border px-4">
         <AccordionItem value="start">
           <AccordionTrigger className="text-base font-semibold">Start here — what is this?</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
