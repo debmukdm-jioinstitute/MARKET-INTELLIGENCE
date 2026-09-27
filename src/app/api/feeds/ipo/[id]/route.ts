@@ -1,6 +1,6 @@
 import { enrichIpoDetailWithGmp, enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
 import type { IpoDetail, IpoStatus } from "@/lib/feeds/ipo/types";
-import { fetchUpstoxIpoDetail, fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
+import { fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
