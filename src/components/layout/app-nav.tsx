@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type DynamicTab = {
   id: string;
@@ -84,16 +84,18 @@ export function useNavSections(): NavSection[] {
     };
   }, []);
 
-  const sections: NavSection[] = NAV_SECTIONS.map((s) => ({ ...s, groups: [...s.groups] }));
-  for (const tab of dynamicTabs) {
-    const link = { label: tab.label, href: tab.href, desc: "", badge: (tab.badge ?? undefined) as "AI" | "NEW" | undefined, external: tab.external };
-    const group: NavGroup = { label: tab.label, desc: "", badge: link.badge, items: [link] };
-    const wanted = LEGACY_SECTION[tab.section.toLowerCase()] ?? tab.section;
-    const existing = sections.find((c) => c.title.toLowerCase() === wanted.toLowerCase());
-    if (existing) existing.groups.push(group);
-    else sections.push({ title: tab.section, tagline: "", groups: [group] });
-  }
-  return filterSections(sections, hrefAllowed);
+  return useMemo(() => {
+    const sections: NavSection[] = NAV_SECTIONS.map((s) => ({ ...s, groups: [...s.groups] }));
+    for (const tab of dynamicTabs) {
+      const link = { label: tab.label, href: tab.href, desc: "", badge: (tab.badge ?? undefined) as "AI" | "NEW" | undefined, external: tab.external };
+      const group: NavGroup = { label: tab.label, desc: "", badge: link.badge, items: [link] };
+      const wanted = LEGACY_SECTION[tab.section.toLowerCase()] ?? tab.section;
+      const existing = sections.find((c) => c.title.toLowerCase() === wanted.toLowerCase());
+      if (existing) existing.groups.push(group);
+      else sections.push({ title: tab.section, tagline: "", groups: [group] });
+    }
+    return filterSections(sections, hrefAllowed);
+  }, [dynamicTabs, hrefAllowed]);
 }
 
 export function useStartHereLinks() {

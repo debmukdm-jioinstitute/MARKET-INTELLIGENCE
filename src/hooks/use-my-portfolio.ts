@@ -42,7 +42,11 @@ function getLocalHoldings(): Holding[] | null {
 function setLocalHoldings(holdings: Holding[]) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
+    const next = JSON.stringify(holdings);
+    if (cachedRaw === next) return;
+    window.localStorage.setItem(STORAGE_KEY, next);
+    cachedRaw = next;
+    cachedHoldings = holdings;
     window.dispatchEvent(new Event("mi_portfolio_updated"));
   } catch (e) {
     console.warn("Failed to write holdings to localStorage:", e);
@@ -104,8 +108,8 @@ const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, b
     throw new Error(msg.slice(0, 200));
   }
   
-  // Sync the account's server-side book into local storage
-  if (!holdings && json.positions && json.positions.length > 0) {
+  // Sync server book into local storage once (avoid SWR ↔ external store ping-pong).
+  if (!holdings && json.positions && json.positions.length > 0 && !getLocalHoldings()?.length) {
     const seeded: Holding[] = json.positions.map((p: any) => ({
       id: p.id,
       market: p.market,

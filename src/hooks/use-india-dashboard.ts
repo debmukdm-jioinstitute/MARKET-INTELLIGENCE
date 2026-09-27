@@ -1,67 +1,76 @@
 "use client";
 
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 export function useIndiaDashboard(refreshMs = 55_000) {
   const { mutate } = useSWRConfig();
   const [loadingFull, setLoadingFull] = useState(true);
+  const fullLoadedRef = useRef(false);
 
-  const fetcher = async (url: string) => {
-    // 1. Fetch quick payload
-    const quickRes = await fetch(url + "?quick=1", { cache: "no-store" });
-    if (quickRes.ok) {
-      const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
-      
-      // Optimistically update SWR cache with merged quick data
-      mutate(url, (prev: IndiaDashboardPayload | undefined) => {
-        const base = prev ?? emptyShell();
-        const q = quick as Partial<IndiaDashboardPayload> & {
-          rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
-        };
-        return {
-          ...base,
-          fetchedAt: q.fetchedAt ?? base.fetchedAt,
-          pulse: q.pulse ?? base.pulse,
-          globalRadar: q.globalRadar ?? base.globalRadar,
-          indiaImpact: q.indiaImpact ?? base.indiaImpact,
-          moneyFlow: q.moneyFlow ?? base.moneyFlow,
-          rbiLiquidity: q.rbiLiquidity
-            ? {
-                ...base.rbiLiquidity,
-                ...q.rbiLiquidity,
-                systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
-                corridor: base.rbiLiquidity.corridor,
-                rows: base.rbiLiquidity.rows,
-                fxReserves: base.rbiLiquidity.fxReserves,
-              }
-            : base.rbiLiquidity,
-        };
-      }, { revalidate: false });
-    }
+  /** Stable fetcher — inline fn each render made SWR revalidate forever (React #185 on Home). */
+  const fetcher = useCallback(
+    async (url: string) => {
+      const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
+      if (quickRes.ok) {
+        const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
 
-    // 2. Fetch full payload
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const full = await res.json() as IndiaDashboardPayload;
-    
-    setLoadingFull(false);
-    return full;
-  };
+        mutate(
+          url,
+          (prev: IndiaDashboardPayload | undefined) => {
+            const base = prev ?? emptyShell();
+            const q = quick as Partial<IndiaDashboardPayload> & {
+              rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
+            };
+            return {
+              ...base,
+              fetchedAt: q.fetchedAt ?? base.fetchedAt,
+              pulse: q.pulse ?? base.pulse,
+              globalRadar: q.globalRadar ?? base.globalRadar,
+              indiaImpact: q.indiaImpact ?? base.indiaImpact,
+              moneyFlow: q.moneyFlow ?? base.moneyFlow,
+              rbiLiquidity: q.rbiLiquidity
+                ? {
+                    ...base.rbiLiquidity,
+                    ...q.rbiLiquidity,
+                    systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
+                    corridor: base.rbiLiquidity.corridor,
+                    rows: base.rbiLiquidity.rows,
+                    fxReserves: base.rbiLiquidity.fxReserves,
+                  }
+                : base.rbiLiquidity,
+            };
+          },
+          { revalidate: false },
+        );
+      }
+
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const full = (await res.json()) as IndiaDashboardPayload;
+
+      if (!fullLoadedRef.current) {
+        fullLoadedRef.current = true;
+        setLoadingFull(false);
+      }
+      return full;
+    },
+    [mutate],
+  );
 
   const { data, error, isLoading, mutate: reloadMutate } = useSWR<IndiaDashboardPayload>(
     "/api/feeds/india-dashboard",
     fetcher,
-    { refreshInterval: refreshMs }
+    { refreshInterval: refreshMs },
   );
 
-  return { 
-    data: data ?? null, 
-    loading: isLoading && !data, 
-    loadingFull: loadingFull && !data, 
+  return {
+    data: data ?? null,
+    loading: isLoading && !data,
+    loadingFull: loadingFull && !data,
     error: error instanceof Error ? error.message : error ? String(error) : null,
-    reload: () => reloadMutate() 
+    reload: () => reloadMutate(),
   };
 }
 

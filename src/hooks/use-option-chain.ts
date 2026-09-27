@@ -2,7 +2,7 @@
 
 import type { OptionChainSnapshot } from "@/lib/feeds/derivatives/types";
 import useSWR from "swr";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -20,15 +20,14 @@ export function useOptionExpiries(underlyingKey: string) {
 
   const expiries = useMemo(() => data?.expiries ?? [], [data?.expiries]);
 
-  useEffect(() => {
-    if (expiries.length > 0 && !expiries.includes(expiry)) {
-      setExpiry(expiries[0] ?? "");
-    }
+  const effectiveExpiry = useMemo(() => {
+    if (!expiries.length) return expiry;
+    return expiries.includes(expiry) ? expiry : (expiries[0] ?? "");
   }, [expiries, expiry]);
 
   return { 
     expiries, 
-    expiry, 
+    expiry: effectiveExpiry, 
     setExpiry, 
     loading: isLoading && !data, 
     error: error instanceof Error ? error.message : error ? String(error) : null 
