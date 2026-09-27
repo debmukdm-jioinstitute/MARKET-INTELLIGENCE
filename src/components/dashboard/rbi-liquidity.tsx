@@ -41,7 +41,10 @@ export function RbiLiquidity({ data }: { data: IndiaDashboardPayload }) {
         {liq.value ? (
           <>
             <p className="mt-1 text-lg">{liq.value}</p>
-            <p className="text-sm text-muted-foreground">7D change: {liq.change7d ?? "—"}</p>
+            <p className="text-sm text-muted-foreground">
+              7D change: {liq.change7d ?? "—"}
+              {!liq.change7d ? " (needs ~7 days of RBI liquidity history in DB)" : ""}
+            </p>
           </>
         ) : (
           <>

@@ -20,7 +20,9 @@ export function MoneyFlow({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="bento-card-shell bento-card-stack bg-card">
       <h2 className="font-heading text-lg font-semibold">India money flow</h2>
-      <p className="text-sm text-muted-foreground">FII / DII from NSE when the feed responds. Longer windows need historical API.</p>
+      <p className="text-sm text-muted-foreground">
+        FII / DII from NSE when the feed responds. 5D / 1M / YTD sum stored daily snapshots (Neon collector + dashboard persist).
+      </p>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <FlowCard row={moneyFlow.fii} hubSyncedAt={data.fetchedAt} />
         <FlowCard row={moneyFlow.dii} hubSyncedAt={data.fetchedAt} />

@@ -1,6 +1,6 @@
 import { hasDatabase } from "@/lib/db";
 import { fetchRbiHomeMarket, fetchRbiLiquidity, type RbiHomeMarket, type RbiLiquidity } from "./sources/rbi-market";
-import { latestPoints } from "./store";
+import { latestPoints, observationOnOrBefore } from "./store";
 
 const TTL = 30 * 60_000;
 const cache = new Map<string, { at: number; value: unknown }>();
@@ -27,6 +27,11 @@ export async function getRbiLiquidity(): Promise<(RbiLiquidity & { prev: number 
   if (hasDatabase()) {
     const [p] = await latestPoints(["rbi_net_liquidity"]);
     prev = p?.prev ?? null;
+    if (prev == null) {
+      const week = new Date();
+      week.setDate(week.getDate() - 7);
+      prev = await observationOnOrBefore("rbi_net_liquidity", week.toISOString().slice(0, 10));
+    }
   }
   return { ...live, prev };
 }

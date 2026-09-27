@@ -25,6 +25,8 @@ import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feed
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { getRbiBenchmark10y, getRbiLiquidity } from "@/lib/collector/rbi-live";
 import { latestPoints } from "@/lib/collector/store";
+import { persistFiiDiiRows, rollupFiiDiiFromStore } from "@/lib/feeds/india/fii-dii-store";
+import { fetchNifty50IndexValuation } from "@/lib/feeds/india/nse-index-valuation";
 import type { MacroPoint } from "@/lib/feeds/types";
 
 /** OECD long-term govt bond yield for India, via FRED's no-key CSV export. */
@@ -363,27 +365,32 @@ function parseFiiNetCr(netValue?: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function buildMoneyFlow(fiiDii: FiiDiiLike[]): IndiaDashboardPayload["moneyFlow"] {
+async function buildMoneyFlow(fiiDii: FiiDiiLike[]): Promise<IndiaDashboardPayload["moneyFlow"]> {
   const fiiRow = fiiDii.find((r) => r.category.toUpperCase().includes("FII"));
   const diiRow = fiiDii.find((r) => r.category.toUpperCase().includes("DII"));
   const fiiNet = parseFiiNetCr(fiiRow?.netValue);
   const diiNet = parseFiiNetCr(diiRow?.netValue);
   const nseApi = "https://www.nseindia.com/api/fiidiiTradeReact";
+  await persistFiiDiiRows(fiiDii).catch(() => {});
+  const roll = await rollupFiiDiiFromStore().catch(() => ({
+    fii: { d5: null, m1: null, ytd: null },
+    dii: { d5: null, m1: null, ytd: null },
+  }));
   return {
     fii: {
       label: "FII",
       today: fiiNet,
-      d5: null,
-      m1: null,
-      ytd: null,
+      d5: roll.fii.d5,
+      m1: roll.fii.m1,
+      ytd: roll.fii.ytd,
       source: { provider: "NSE India", url: nseApi, asOf: fiiRow?.date },
     },
     dii: {
       label: "DII",
       today: diiNet,
-      d5: null,
-      m1: null,
-      ytd: null,
+      d5: roll.dii.d5,
+      m1: roll.dii.m1,
+      ytd: roll.dii.ytd,
       source: { provider: "NSE India", url: nseApi, asOf: diiRow?.date },
     },
     fiiVsDii: { fii: fiiNet, dii: diiNet, source: { provider: "NSE India", url: nseApi } },
@@ -525,6 +532,51 @@ async function buildIndiaMacroLite() {
           value: repoPct,
           source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
         },
+        ...(pct("rbi_sdf")
+          ? [
+              {
+                label: "Standing Deposit Facility (SDF)",
+                value: pct("rbi_sdf"),
+                source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+              },
+            ]
+          : []),
+        ...(pct("rbi_msf")
+          ? [
+              {
+                label: "Marginal Standing Facility (MSF)",
+                value: pct("rbi_msf"),
+                source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+              },
+            ]
+          : []),
+        ...(pct("rbi_reverse_repo")
+          ? [
+              {
+                label: "Reverse Repo Rate",
+                value: pct("rbi_reverse_repo"),
+                source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+              },
+            ]
+          : []),
+        ...(pct("rbi_crr")
+          ? [
+              {
+                label: "Cash Reserve Ratio (CRR)",
+                value: pct("rbi_crr"),
+                source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+              },
+            ]
+          : []),
+        ...(pct("rbi_slr")
+          ? [
+              {
+                label: "Statutory Liquidity Ratio (SLR)",
+                value: pct("rbi_slr"),
+                source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+              },
+            ]
+          : []),
       ],
       systemLiquidity: buildSystemLiquidity(rbiLiq),
       fxReserves: {
@@ -543,21 +595,22 @@ async function buildIndiaMacroLite() {
 /** Fast path: quotes + breadth + FII/DII + RBI system liquidity (skips F&O, macro rows). */
 export async function buildIndiaDashboardQuick(): Promise<IndiaDashboardQuickPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [ymap, breadth, fredGsec, rbi10y, fiiDii, macroLite] = await Promise.all([
+  const [ymap, breadth, fredGsec, rbi10y, fiiDii, macroLite, indexValuation] = await Promise.all([
     buildLiveQuoteMap(symbols),
     fetchLiveBreadth(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
     getRbiBenchmark10y(),
     fetchFiiDii(),
     buildIndiaMacroLite(),
+    fetchNifty50IndexValuation().catch(() => null),
   ]);
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10y);
   return {
     fetchedAt: new Date().toISOString(),
-    pulse,
+    pulse: indexValuation ? { ...pulse, indexValuation } : pulse,
     globalRadar,
     indiaImpact,
-    moneyFlow: buildMoneyFlow(fiiDii),
+    moneyFlow: await buildMoneyFlow(fiiDii),
     indiaMacro: macroLite.indiaMacro,
     rbiLiquidity: macroLite.rbiLiquidity,
   };
@@ -676,10 +729,15 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     credit,
   ];
 
-  const moneyFlow = buildMoneyFlow(fiiDii);
+  const [indexValuation, moneyFlow, rbiLiq, fxPts] = await Promise.all([
+    fetchNifty50IndexValuation().catch(() => null),
+    buildMoneyFlow(fiiDii),
+    getRbiLiquidity(),
+    latestPoints(["india_fx_reserves_ex_gold"]),
+  ]);
+  const pulseOut = indexValuation ? { ...pulse, indexValuation } : pulse;
 
   // RBI policy rates: scraped daily by the collector (src/lib/collector/sources/rbi.ts); hardcoded value is the fallback.
-  const [rbiLiq, fxPts] = await Promise.all([getRbiLiquidity(), latestPoints(["india_fx_reserves_ex_gold"])]);
   let fxReservePt: { value: number; date: string } | null = fxPts[0] ? { value: fxPts[0].value, date: fxPts[0].date } : null;
   if (!fxReservePt) {
     const pts = await fetchFredSeriesCsv("TRESEGINM052N").catch(() => []);
@@ -691,7 +749,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
 
   return {
     fetchedAt: new Date().toISOString(),
-    pulse,
+    pulse: pulseOut,
     indiaMoving: {
       nifty: niftySnap,
       bankNifty: bankSnap,

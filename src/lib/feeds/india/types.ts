@@ -85,6 +85,12 @@ export type IndiaDashboardPayload = {
     brent: QuoteField;
     gold: QuoteField;
     breadth: BreadthSnapshot;
+    indexValuation?: {
+      pe: QuoteField;
+      pb: QuoteField;
+      divYield: QuoteField;
+      indexDate: string | null;
+    };
   };
   indiaMoving: {
     nifty: IndexSnapshot;
