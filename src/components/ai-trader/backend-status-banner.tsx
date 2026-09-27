@@ -5,12 +5,17 @@ import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type BackendState = { stub?: boolean; stub_note?: string; db_connected?: boolean; models_loaded?: boolean };
+type BackendState = {
+  stub?: boolean;
+  stub_note?: string;
+  db_connected?: boolean;
+  models_loaded?: boolean;
+};
 
-/** Backend connectivity: guest, offline, stub, or full AI-trader Flask. */
+/** Backend connectivity: guest, offline, health stub, partial stack, or full desk. */
 export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: string }) {
   const { ready, isGuest } = useAuth();
-  const [mode, setMode] = useState<"loading" | "auth" | "offline" | "stub" | "full">("loading");
+  const [mode, setMode] = useState<"loading" | "auth" | "offline" | "stub" | "partial" | "full">("loading");
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,8 +41,15 @@ export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: str
           if (j.stub) {
             setMode("stub");
             setNote(j.stub_note ?? null);
-          } else if (j.db_connected && j.models_loaded) setMode("full");
-          else setMode("stub");
+          } else if (j.db_connected && j.models_loaded) {
+            setMode("full");
+          } else if (j.db_connected) {
+            setMode("partial");
+            setNote(null);
+          } else {
+            setMode("partial");
+            setNote("Database not connected on API host.");
+          }
         })
         .catch(() => {
           if (!cancelled) setMode("offline");
@@ -64,15 +76,29 @@ export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: str
   if (mode === "stub") {
     return (
       <div className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground">Algo desk connected (limited backend)</p>
+        <p className="font-semibold text-foreground">Health stub only</p>
         <p className="mt-1">
-          Portal reaches health stub or partial stack. Full{" "}
-          <a href="https://github.com/aaryansinha16/AI-trader" className="text-blue-600 underline" target="_blank" rel="noreferrer">
-            AI-trader
-          </a>{" "}
-          needs <span className="text-foreground">services/ai-trader</span> + <span className="tabular-nums">AI_TRADER_API_URL</span>. See{" "}
-          <Link href="/data/health" className="text-blue-600 underline">
-            Data health
+          <span className="tabular-nums">AI_TRADER_API_URL</span> points at <code className="text-foreground">scripts/health_stub.py</code>, not full Flask. Deploy{" "}
+          <span className="text-foreground">services/ai-trader</span> per{" "}
+          <Link href="https://github.com/debmukdm-jioinstitute/MARKET-INTELLIGENCE/blob/main/docs/AI-TRADER-PRODUCTION.md" className="text-blue-600 underline">
+            AI-TRADER-PRODUCTION
+          </Link>
+          .
+        </p>
+        {note ? <p className="mt-2 text-xs">{note}</p> : null}
+      </div>
+    );
+  }
+
+  if (mode === "partial") {
+    return (
+      <div className="mb-4 rounded-lg border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
+        <p className="font-semibold text-foreground">Flask API up — desk not fully armed</p>
+        <p className="mt-1">
+          Proxy OK. Missing trained <span className="text-foreground">models/saved/*.pkl</span>, tick history, and/or{" "}
+          <span className="text-foreground">backtest_results/</span> on the API host. Use checklist below, then{" "}
+          <Link href="/algo/backtest" className="text-blue-600 underline">
+            tick backtest
           </Link>
           .
         </p>

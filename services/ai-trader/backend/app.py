@@ -25,6 +25,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 load_dotenv()
 
+
+def project_python() -> str:
+    """Local dev uses .venv; Docker/Fly use the running interpreter."""
+    root = Path(__file__).resolve().parent.parent
+    venv_py = root / ".venv" / "bin" / "python"
+    if venv_py.is_file():
+        return str(venv_py)
+    return sys.executable
+
+
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template_string, jsonify, request
@@ -1335,7 +1345,7 @@ def _run_end_of_day():
     logger.info("=== END-OF-DAY AUTOMATION STARTING ===")
 
     project_root = Path(__file__).resolve().parent.parent
-    python_bin = str(project_root / ".venv" / "bin" / "python")
+    python_bin = project_python()
 
     # 1. Backfill missing candles
     try:
@@ -2189,8 +2199,8 @@ def _ensure_collector():
     # Start collector
     project_root = Path(__file__).resolve().parent.parent
     collector_script = project_root / "scripts" / "collect_ticks.py"
-    python_bin = project_root / ".venv" / "bin" / "python"
-    if collector_script.exists() and python_bin.exists():
+    python_bin = project_python()
+    if collector_script.exists():
         logger.info("Auto-starting collect_ticks.py for live tick data...")
         _collector_process = subprocess.Popen(
             [str(python_bin), str(collector_script)],
@@ -2798,7 +2808,7 @@ def api_backtest_run():
                              "started": datetime.now().strftime("%H:%M:%S"),
                              "start_date": start_date, "end_date": end_date}
         project_root = Path(__file__).resolve().parent.parent
-        python_bin = str(project_root / ".venv" / "bin" / "python")
+        python_bin = project_python()
 
         # Build date list if range specified
         date_args: list = []

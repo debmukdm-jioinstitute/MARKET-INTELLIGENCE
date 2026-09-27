@@ -132,8 +132,18 @@ export default function Home() {
               <StatCard label="Profit Factor" value={p.avg_loss !== 0 ? (p.avg_win / Math.abs(p.avg_loss)).toFixed(2) : "∞"} color="blue" />
             </div>
           ) : (
-            <Panel title="No backtest data yet" subtitle={`Run tick replay for ${activeRisk} risk on the backend.`}>
-              <code className="text-sm text-primary">python scripts/tick_replay_backtest.py --risk {activeRisk}</code>
+            <Panel
+              title="No backtest data yet"
+              subtitle={`Run tick backtest for ${activeRisk} risk once tick history and models exist on the API host.`}
+            >
+              <p className="text-sm text-muted-foreground">
+                Portal →{" "}
+                <a href="/algo/backtest" className="font-semibold text-primary hover:underline">
+                  Tick backtest
+                </a>{" "}
+                (uses <span className="tabular-nums">POST /api/backtest/run</span>). Server CLI:{" "}
+                <code className="text-sm text-primary">python scripts/tick_replay_backtest.py --risk {activeRisk}</code>
+              </p>
             </Panel>
           )}
 

@@ -1,4 +1,5 @@
 import { AlgoBackendStatusBanner } from "@/components/ai-trader/backend-status-banner";
+import { AlgoDeskSetupCard } from "@/components/ai-trader/algo-desk-setup-card";
 import { AlgoDeskControls } from "@/components/ai-trader/algo-desk-controls";
 import { AlgoProviders } from "@/components/ai-trader/algo-providers";
 import { PageHeader } from "@/components/layout/page-header";
@@ -13,6 +14,7 @@ export default function AlgoDeskLayout({ children }: { children: React.ReactNode
         subtitle="Research-grade F&O stack: live scanner, backtests, charts, and model status — same portal look as Markets and Portfolio."
       />
       <AlgoBackendStatusBanner />
+      <AlgoDeskSetupCard />
       <AlgoProviders>
         <AlgoDeskControls />
         {children}
