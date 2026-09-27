@@ -13,7 +13,12 @@ export function normalizeSectorLabel(raw: string | null | undefined, symbol?: st
     return INDIA_SECTOR_BY_SYMBOL[symbol.toUpperCase()]!;
   }
   const s = (raw ?? "").trim().toLowerCase();
-  if (!s) return symbol ? normalizeSectorLabel(null, symbol) : "Unclassified";
+  if (!s) {
+    if (!symbol) return "Unclassified";
+    const inst = getInstrument(symbol);
+    if (inst?.sector && inst.sector !== "Multi-Asset") return normalizeSectorLabel(inst.sector);
+    return "Unclassified";
+  }
   if (s.includes("tech") || s.includes("it") || s.includes("software")) return "Technology";
   if (s.includes("bank") || s.includes("fin")) return "Financials";
   if (s.includes("energy") || s.includes("oil")) return "Energy";
