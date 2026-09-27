@@ -1,0 +1,7 @@
+{
+  "name": "Market Intelligence",
+  "description": "Live India markets, macro stress index, scanners, AI signals, and research — read-only MCP. No API key.",
+  "mcp_url": "https://getmarketintelligence.in/api/mcp",
+  "setup": "https://getmarketintelligence.in/connect/claude",
+  "help": "https://getmarketintelligence.in/help"
+}
