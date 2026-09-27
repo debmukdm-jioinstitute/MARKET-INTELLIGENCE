@@ -458,7 +458,7 @@ const PMI_SVC_ROW: MacroRow = {
 
 /** CPI/GDP/repo/PMI + RBI corridor + FX — fast enough for Home quick path. */
 async function buildIndiaMacroLite() {
-  const [macroCpi, macroGdp, repo, rbiLiq, fxPts, rbiPointRows] = await Promise.all([
+  const [macroCpi, macroGdp, repo, rbiLiq, fxPts, rbiPointRows, mospi] = await Promise.all([
     fetchIndiaCpiRow(),
     fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "Real GDP Growth", "% y/y").then((row) => ({
       ...row,
@@ -469,7 +469,29 @@ async function buildIndiaMacroLite() {
     getRbiLiquidity(),
     latestPoints(["india_fx_reserves_ex_gold"]),
     latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"]),
+    fetchMospiMacro().catch(() => []),
   ]);
+
+  const mospiCpi = mospi.find((m) => m.points.length > 0);
+  if (mospiCpi?.latest != null) {
+    macroCpi.current = mospiCpi.latest;
+    macroCpi.previous = mospiCpi.latest - mospiCpi.change;
+    macroCpi.history12m = mospiCpi.points.slice(-12);
+    macroCpi.source = {
+      provider: "MoSPI / data.gov.in",
+      url: "https://www.mospi.gov.in/",
+      asOf: mospiCpi.points[mospiCpi.points.length - 1]?.date ?? macroCpi.source.asOf,
+    };
+  }
+
+  const gdpYear = macroGdp.history12m[macroGdp.history12m.length - 1]?.date;
+  if (gdpYear && macroGdp.current != null) {
+    macroGdp.indicator = `Real GDP Growth (${gdpYear}, World Bank)`;
+    macroGdp.source = {
+      ...macroGdp.source,
+      asOf: gdpYear,
+    };
+  }
 
   let fxReservePt: { value: number; date: string } | null = fxPts[0]
     ? { value: fxPts[0].value, date: fxPts[0].date }

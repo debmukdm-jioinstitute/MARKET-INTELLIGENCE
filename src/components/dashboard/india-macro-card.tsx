@@ -12,6 +12,14 @@ function dirGlyph(direction: string | undefined) {
   return { dir: "→", dirColor: "text-muted-foreground" };
 }
 
+function fmtVintage(asOf?: string) {
+  if (!asOf) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(asOf)) return asOf.slice(0, 10);
+  if (/^\d{4}-\d{2}$/.test(asOf)) return asOf;
+  if (/^\d{4}$/.test(asOf)) return `year ${asOf}`;
+  return asOf.length > 16 ? asOf.slice(0, 10) : asOf;
+}
+
 export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
   const macroRows = data?.indiaMacro ?? [];
   const rbiLiquidity = data?.rbiLiquidity;
@@ -32,13 +40,15 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       value: cpiRow?.current != null ? `${Number(cpiRow.current).toFixed(2)}%` : "—",
       ...dirGlyph(cpiRow?.direction),
       source: cpiRow?.source,
+      vintage: fmtVintage(cpiRow?.source?.asOf ?? cpiRow?.history12m?.[cpiRow.history12m.length - 1]?.date),
     },
     {
-      label: "Real GDP Growth",
+      label: gdpRow?.indicator?.includes("World Bank") ? gdpRow.indicator : "Real GDP Growth",
       metricKey: "gdp",
       value: gdpRow?.current != null ? `${Number(gdpRow.current).toFixed(2)}%` : "—",
       ...dirGlyph(gdpRow?.direction),
       source: gdpRow?.source,
+      vintage: fmtVintage(gdpRow?.source?.asOf),
     },
     {
       label: "RBI Policy Repo Rate",
@@ -53,6 +63,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
         provider: "Reserve Bank of India (MPC)",
         url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
       },
+      vintage: fmtVintage(repoRow?.source?.asOf),
     },
     {
       label: "10Y G-Sec Sovereign Yield",
@@ -66,6 +77,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
             ? "text-emerald-400"
             : "text-muted-foreground",
       source: pulse?.gsec10y?.source,
+      vintage: fmtVintage(pulse?.gsec10y?.source?.asOf),
     },
     {
       label: "PMI Manufacturing",
@@ -73,6 +85,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       value: pmiMfgRow?.current != null ? `${Number(pmiMfgRow.current).toFixed(1)}` : "—",
       ...dirGlyph(pmiMfgRow?.direction),
       source: pmiMfgRow?.source ?? { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/" },
+      vintage: fmtVintage(pmiMfgRow?.source?.asOf),
     },
     {
       label: "PMI Services",
@@ -80,6 +93,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
       value: pmiSvcRow?.current != null ? `${Number(pmiSvcRow.current).toFixed(1)}` : "—",
       ...dirGlyph(pmiSvcRow?.direction),
       source: pmiSvcRow?.source ?? { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/" },
+      vintage: fmtVintage(pmiSvcRow?.source?.asOf),
     },
   ];
 
@@ -120,9 +134,14 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
                   <span className="text-muted-foreground">{ind.label}</span>
                   <MetricInfo metric={ind.metricKey} sourceOverride={ind.source} value={ind.value} />
                 </div>
-                <div className="flex items-center gap-2 font-bold tabular-nums">
-                  <span className="text-foreground">{ind.value}</span>
-                  <span className={ind.dirColor}>{ind.dir}</span>
+                <div className="flex flex-col items-end gap-0.5 font-bold tabular-nums">
+                  <div className="flex items-center gap-2">
+                    <span className="text-foreground">{ind.value}</span>
+                    <span className={ind.dirColor}>{ind.dir}</span>
+                  </div>
+                  {"vintage" in ind && ind.vintage ? (
+                    <span className="text-[10px] font-normal text-muted-foreground">as of {ind.vintage}</span>
+                  ) : null}
                 </div>
               </div>
             ))}

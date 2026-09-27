@@ -88,18 +88,25 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                       <span className="font-semibold text-foreground">{idx.name}</span>
                       <MetricInfo metric={idx.metricKey} sourceOverride={idx.source} />
                     </div>
-                    <span
-                      className={cn(
-                        "rounded px-1.5 py-0.5 text-sm font-bold tabular-nums",
-                        idx.chg == null
-                          ? "text-muted-foreground"
-                          : isPos
-                            ? "text-emerald-600 bg-emerald-500/10"
-                            : "text-rose-600 bg-rose-500/10",
-                      )}
-                    >
-                      {idx.chg != null ? formatPct(idx.chg) : "—"}
-                    </span>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span
+                        className={cn(
+                          "rounded px-1.5 py-0.5 text-sm font-bold tabular-nums",
+                          idx.chg == null
+                            ? "text-muted-foreground"
+                            : isPos
+                              ? "text-emerald-600 bg-emerald-500/10"
+                              : "text-rose-600 bg-rose-500/10",
+                        )}
+                      >
+                        {idx.chg != null ? formatPct(idx.chg) : "—"}
+                      </span>
+                      {idx.source?.asOf ? (
+                        <span className="text-[10px] font-normal text-muted-foreground tabular-nums">
+                          {String(idx.source.asOf).slice(0, 10)}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 );
               })}
