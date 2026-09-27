@@ -1,5 +1,5 @@
 import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
-import { CRONS, WEB_ONLY_FEATURES, helpSitemapSections } from "@/lib/help/site-guide";
+import { CRONS, MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
 import Link from "next/link";
 
 export const metadata = {
@@ -76,7 +76,8 @@ export default function HelpPage() {
         {[
           ["#site", "Using the website"],
           ["#operations", "Background jobs"],
-          ["#web-only", "Portal-only features"],
+          ["#account-mcp", "Account tools (MCP)"],
+          ["#web-only", "Portal-only UI"],
           ["#basics", "MCP basics"],
           ["#connect", "Connect a client"],
           ["#test", "Test it"],
@@ -178,13 +179,46 @@ export default function HelpPage() {
         </p>
       </section>
 
-      <section id="web-only" className="mt-10 rounded-xl border border-border p-5">
-        <h2 className="text-base font-semibold">Portal-only (not in MCP / mi)</h2>
+      <section id="account-mcp" className="mt-10 rounded-xl border border-border p-5">
+        <h2 className="text-base font-semibold">Account tools on MCP / mi</h2>
         <p className="mt-2 text-muted-foreground">
-          MCP and <b>mi</b> expose read-only market data. Personal or interactive features stay in the browser:
+          Portfolio, OptionStrat lab, alerts, algo desk, assistant, and admin status are available over the same MCP endpoint after
+          sign-in. Public market tools still use your <b>MCP API key</b>; account tools use a <b>session token</b> from{" "}
+          <b>mi_sign_in</b> (no API key required for sign-in itself).
+        </p>
+        <Code>{`# 1) Sign in (returns sessionToken)
+curl -s ${ENDPOINT} -H 'content-type: application/json' \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"mi_sign_in","arguments":{"email":"YOU@example.com","password":"YOUR_PASSWORD"}}}'
+
+# 2) Call an account tool
+curl -s ${ENDPOINT} \\
+  -H 'content-type: application/json' \\
+  -H 'X-MI-Session: SESSION_TOKEN_FROM_STEP_1' \\
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_my_portfolio","arguments":{}}}'`}</Code>
+        <p className="mt-3 text-muted-foreground">
+          Terminal: <b>mi login EMAIL PASSWORD</b> saves the session to <b>~/.mi/config.json</b>. Then{" "}
+          <b>mi get_my_portfolio</b>, <b>mi get_optionstrat_recommend index=banknifty bias=bullish</b>, etc.
+        </p>
+        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          {MCP_ACCOUNT_TOOLS.map((t) => (
+            <li key={t.name}>
+              <span className="font-semibold text-foreground">{t.name}</span> — {t.label}. {t.note}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Treat <b>sessionToken</b> like a password. Revoke by changing your account password on the site.
+        </p>
+      </section>
+
+      <section id="web-only" className="mt-10 rounded-xl border border-border p-5">
+        <h2 className="text-base font-semibold">Portal-only UI</h2>
+        <p className="mt-2 text-muted-foreground">
+          Some flows stay in the browser (rich editors, OAuth, streaming). Data for most of these is still reachable via MCP after
+          sign-in — see Account tools above.
         </p>
         <ul className="mt-3 space-y-2 text-muted-foreground">
-          {WEB_ONLY_FEATURES.map((f) => (
+          {PORTAL_ONLY_UI.map((f) => (
             <li key={f.href}>
               <Link href={f.href} className="font-medium text-blue-600 hover:underline">
                 {f.label}
@@ -204,8 +238,9 @@ export default function HelpPage() {
           <dd>Streamable HTTP, JSON-RPC 2.0</dd>
           <dt className="text-muted-foreground">Auth</dt>
           <dd>
-            API key in the <b>X-API-Key</b> header (or <b>Authorization: Bearer</b>). Listing tools is open; running
-            them needs a key.
+            <b>Public tools:</b> API key in <b>X-API-Key</b> or <b>Authorization: Bearer</b> (must match{" "}
+            <b>MCP_API_KEYS</b>). <b>Account tools:</b> call <b>mi_sign_in</b>, then pass{" "}
+            <b>X-MI-Session</b> (or Bearer session token). <b>tools/list</b> is open.
           </dd>
           <dt className="text-muted-foreground">Rate limit</dt>
           <dd>60 tool calls per minute per key</dd>

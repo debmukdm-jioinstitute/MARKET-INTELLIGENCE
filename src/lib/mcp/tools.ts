@@ -9,7 +9,9 @@ import { buildSnapshot, METRICS } from "@/lib/snapshot";
 import { getBacktest } from "@/lib/stress/backtest";
 import { getBetas } from "@/lib/transmission/betas";
 import { applyShocks, PRESETS, SHOCK_BOUNDS } from "@/lib/transmission/scenario";
+import type { McpAccess, McpCallContext } from "@/lib/mcp/context";
 import { SITE_TOOLS } from "./tools-site";
+import { USER_TOOLS } from "./tools-user";
 
 type Json = Record<string, unknown>;
 export type Tool = {
@@ -18,10 +20,18 @@ export type Tool = {
   title?: string;
   /** Menu group in the terminal app. */
   category?: string;
+  /** public = MCP API key; user/admin = session token; auth = open (sign-in only). */
+  access?: McpAccess;
   description: string;
   inputSchema: Json;
-  run: (args: Json) => Promise<unknown>;
+  run: (args: Json, ctx: McpCallContext) => Promise<unknown>;
 };
+
+type PublicToolDef = Omit<Tool, "access" | "run"> & { run: (args: Json) => Promise<unknown> };
+
+function bindPublic(t: PublicToolDef): Tool {
+  return { ...t, access: "public", run: (args) => t.run(args) };
+}
 
 const num = (k: keyof typeof SHOCK_BOUNDS) => z.number().finite().min(SHOCK_BOUNDS[k][0]).max(SHOCK_BOUNDS[k][1]).optional();
 const ScenarioArgs = z.object({ brent: num("brent"), usdinr: num("usdinr"), us10y_bp: num("us10y_bp"), spx: num("spx") });
@@ -133,4 +143,8 @@ const CORE_META: Record<string, { title: string; category: string }> = {
   get_data_health: { title: "Data health", category: "System" },
 };
 
-export const TOOLS: Tool[] = [...CORE_TOOLS.map((t) => ({ ...t, ...CORE_META[t.name] })), ...SITE_TOOLS];
+export const TOOLS: Tool[] = [
+  ...CORE_TOOLS.map((t) => bindPublic({ ...t, ...CORE_META[t.name] } as PublicToolDef)),
+  ...(SITE_TOOLS as PublicToolDef[]).map((t) => bindPublic(t)),
+  ...USER_TOOLS,
+];
