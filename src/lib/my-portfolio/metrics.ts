@@ -9,7 +9,9 @@ import {
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
 import { computeBrinsonSectorAttribution } from "@/lib/my-portfolio/brinson-sectors";
+import { benchmarkSupportsActiveShare, isIndiaBenchmark } from "@/lib/my-portfolio/benchmark-constituents";
 import { fetchBenchmarkHistory, weightsFor } from "@/lib/my-portfolio/benchmarks";
+import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { CATEGORY_METRICS, CATEGORY_TITLES, GLOSSARY, OVERVIEW_METRICS } from "@/lib/my-portfolio/glossary";
 import type {
   Holding,
@@ -478,26 +480,30 @@ export async function computePortfolioAnalysis(
     );
   }
 
-  // Active Share (approx, static benchmark weights)
   const benchWeights = weightsFor(settings.benchmark);
-  const names = new Set([...positions.map((r) => r.symbol), ...Object.keys(benchWeights)]);
-  let activeShareSum = 0;
-  for (const sym of names) {
-    const pw = positions.find((r) => r.symbol === sym)?.weight ?? 0;
-    const bw = benchWeights[sym] ?? 0;
-    activeShareSum += Math.abs(pw - bw);
+  const benchLabel = BENCHMARK_LABEL[settings.benchmark] ?? settings.benchmark;
+  if (benchmarkSupportsActiveShare(settings.benchmark)) {
+    const names = new Set([...positions.map((r) => r.symbol), ...Object.keys(benchWeights)]);
+    let activeShareSum = 0;
+    for (const sym of names) {
+      const pw = positions.find((r) => r.symbol === sym)?.weight ?? 0;
+      const bw = benchWeights[sym] ?? 0;
+      activeShareSum += Math.abs(pw - bw);
+    }
+    const activeShare = activeShareSum / 2;
+    set(
+      m(
+        "activeShare",
+        activeShare,
+        pct(activeShare, 0),
+        "approx",
+        undefined,
+        `Active share vs ${benchLabel} constituent snapshot (see benchmark snapshot date in docs).`,
+      ),
+    );
+  } else {
+    set(NA("activeShare", `${benchLabel} is not an equity basket — active share not defined.`));
   }
-  const activeShare = activeShareSum / 2;
-  set(
-    m(
-      "activeShare",
-      activeShare,
-      pct(activeShare, 0),
-      "approx",
-      undefined,
-      `Approximate active share versus ${settings.benchmark} constituents.`,
-    ),
-  );
 
   // Factor proxies
   const momentumEntries = seriesList
@@ -805,8 +811,7 @@ export async function computePortfolioAnalysis(
     const missingBench = benchSyms.filter((sym) => !symbolReturns.has(sym.toUpperCase()));
     await Promise.all(
       missingBench.map(async (sym) => {
-        const isIndia = settings.benchmark === "NIFTY50";
-        const candidates = isIndia ? [`${sym}.NS`, `${sym}.BO`, sym] : [sym];
+        const candidates = isIndiaBenchmark(settings.benchmark) ? [`${sym}.NS`, `${sym}.BO`, sym] : [sym];
         for (const cand of candidates) {
           try {
             const pts = await fetchYahooHistory(cand, "1y");
@@ -859,7 +864,7 @@ export async function computePortfolioAnalysis(
         sectorAttribution.length ? "approx" : "approx",
         tone(selectionEffect),
         sectorAttribution.length
-          ? "Brinson selection + interaction by sector (benchmark sector returns from index constituents)."
+          ? "Brinson selection + interaction by sector (benchmark weights match selected index snapshot)."
           : "Simplified stock-vs-benchmark selection proxy until sector benchmark returns load.",
       ),
     );
