@@ -216,6 +216,18 @@ export const START_HERE = [
 
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+export type SitemapSection = { title: string; links: { label: string; href: string }[] };
+
+/** Footer sitemap — derived from NAV_SECTIONS so new pages stay in sync. */
+export function buildSitemapSections(): SitemapSection[] {
+  return NAV_SECTIONS.map((section) => ({
+    title: section.title,
+    links: section.groups.flatMap((group) =>
+      group.items.filter((item) => !item.external).map((item) => ({ label: item.label, href: item.href })),
+    ),
+  })).filter((section) => section.links.length > 0);
+}
+
 /** Legacy flat view: each group becomes one item. Kept for the marketing menu and guided tour. */
 export const NAV_COLUMNS: NavColumn[] = NAV_SECTIONS.map((s) => ({
   title: s.title,
