@@ -33,6 +33,10 @@
       "schedule": "15 3 * * *"
     },
     {
+      "path": "/api/cron/what-changed",
+      "schedule": "0 */3 * * *"
+    },
+    {
       "path": "/api/cron/prowess",
       "schedule": "30 4 * * *"
     },

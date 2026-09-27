@@ -4,6 +4,7 @@ import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
 import { buildMacroTape } from "@/lib/macro/build-tape";
 import { buildWorldIndices } from "@/lib/macro/build-world-indices";
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
+import { getMarketShiftsCached } from "@/lib/feeds/what-changed/cache";
 import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instruments";
 import { buildFeedHub } from "@/lib/feeds/hub";
@@ -56,6 +57,26 @@ export const SITE_TOOLS: Tool[] = [
     description: "The India markets home view: pulse, indices, movers, global radar and India-impact read-through.",
     inputSchema: empty,
     run: () => buildIndiaDashboard(),
+  },
+  {
+    name: "get_what_changed",
+    title: "What changed (institutional shifts)",
+    category: "Markets",
+    description: "Home 'What changed' panel: FII/DII, G-Sec, sector spreads, commodities — refreshed every 3 hours.",
+    inputSchema: empty,
+    run: async () => {
+      const p = await getMarketShiftsCached(false);
+      return {
+        fetchedAt: p.fetchedAt,
+        slot: p.slot,
+        items: p.items.map((i) => ({
+          num: i.num,
+          headline: i.headline,
+          tag: i.tag,
+          summary: i.dataSummary,
+        })),
+      };
+    },
   },
   {
     name: "get_market_breadth",

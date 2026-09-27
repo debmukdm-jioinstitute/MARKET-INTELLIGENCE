@@ -11,6 +11,7 @@ const ENDPOINT = "https://getmarketintelligence.in/api/mcp";
 const TOOLS: { name: string; returns: string; ask: string; group: string }[] = [
   { group: "Markets", name: "get_market_snapshot", returns: "Current values: VIX, NIFTY, USD/INR, Brent, yields, flows, RBI liquidity, stress", ask: "Give me today's market snapshot." },
   { group: "Markets", name: "get_india_dashboard", returns: "India markets home view: pulse, indices, movers, global radar, India impact", ask: "How are Indian markets doing right now?" },
+  { group: "Markets", name: "get_what_changed", returns: "Institutional & macro shifts (FII/DII, yields, sectors) — 3h refresh", ask: "What changed in markets since my last visit?" },
   { group: "Markets", name: "get_market_breadth", returns: "Live NSE advancers, decliners, 52-week highs and lows", ask: "What is market breadth today?" },
   { group: "Markets", name: "get_india_equity_quotes", returns: "Live quotes for the tracked large-cap universe", ask: "Show live large-cap quotes." },
   { group: "Markets", name: "get_world_indices", returns: "Major global indices with levels and 1-day change", ask: "How are global markets?" },
