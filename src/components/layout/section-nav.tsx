@@ -12,13 +12,16 @@ export interface SectionNavItem {
 }
 
 /** In-page tab strip for switching between the sub-pages nested under a sidebar section. */
-export function SectionNav({ items }: { items: SectionNavItem[] }) {
+export function SectionNav({ items, className }: { items: SectionNavItem[]; className?: string }) {
   const path = usePathname();
   const reduce = useReducedMotion();
 
   return (
     <nav
-      className="mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border scroll-px-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+      className={cn(
+        "mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border scroll-px-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden",
+        className,
+      )}
       aria-label="Section pages"
     >
       {items.map((item) => {

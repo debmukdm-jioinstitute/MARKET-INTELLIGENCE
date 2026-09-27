@@ -5,7 +5,7 @@ import { CommandPaletteProvider } from "@/components/command-palette/command-pal
 import { GuestBanner } from "@/components/layout/guest-banner";
 import { MobileNavProvider } from "@/components/layout/mobile-nav-provider";
 import { AppNav, BottomTabBar } from "@/components/layout/app-nav";
-import { GroupTabs } from "@/components/layout/group-tabs";
+import { PortalWayfinding } from "@/components/layout/portal-wayfinding";
 import { UpdatesBanner } from "@/components/layout/updates-banner";
 import { PageviewTracker } from "@/components/layout/pageview-tracker";
 import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
@@ -30,7 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <LiveStreamTicker />
               <TopBar />
               <main className="portal-main flex-1 overflow-x-hidden px-3 pt-3 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-4 md:p-5 md:pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
-                <GroupTabs />
+                <PortalWayfinding />
                 <PortalPageGuard>
                   <PortalPageTransition>{children}</PortalPageTransition>
                 </PortalPageGuard>
