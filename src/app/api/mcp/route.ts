@@ -1,36 +1,17 @@
 import { authErrorForTool, resolveMcpCallContext } from "@/lib/mcp/context";
+import { clientIp, mcpRateLimited, rateLimitCap, rateLimitKey } from "@/lib/mcp/rate-limit";
 import { TOOLS } from "@/lib/mcp/tools";
-import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 /**
- * MCP server (Streamable HTTP). Public market tools need MCP_API_KEYS.
- * Account tools need mi_sign_in + X-MI-Session (or Bearer session token).
+ * MCP server (Streamable HTTP). Public market tools are open (IP rate limit).
+ * Account tools need mi_sign_in + X-MI-Session. Optional MCP_API_KEYS raise limits only.
  */
 
 const PROTOCOL = "2025-03-26";
-const digest = (s: string) => createHash("sha256").update(s).digest();
-
-function isApiKeyConfigured(): boolean {
-  return (process.env.MCP_API_KEYS ?? "").split(",").some((k) => k.trim());
-}
-
-// Best-effort per-key rate limit (per serverless instance): 60 tool calls / minute.
-const hits = new Map<string, number[]>();
-function limited(rateKey: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(digest(rateKey).toString("hex")) ?? []).filter((t) => now - t < 60_000);
-  arr.push(now);
-  hits.set(digest(rateKey).toString("hex"), arr);
-  return arr.length > 60;
-}
-
-function rateLimitKey(ctx: ReturnType<typeof resolveMcpCallContext>): string {
-  return ctx.user?.email ?? ctx.apiKey ?? "anon";
-}
 
 type Rpc = { jsonrpc?: string; id?: string | number | null; method?: string; params?: { name?: string; arguments?: Record<string, unknown> } };
 const ok = (id: Rpc["id"], result: unknown) => ({ jsonrpc: "2.0", id: id ?? null, result });
@@ -44,9 +25,9 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
       return ok(id, {
         protocolVersion: PROTOCOL,
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "market-intelligence", version: "2.1.0" },
+        serverInfo: { name: "market-intelligence", version: "2.3.0" },
         instructions:
-          "Public tools need MCP API key. Account tools (portfolio, alerts, OptionStrat, algo desk, assistant, admin) need mi_sign_in then X-MI-Session header. Figures are descriptive, not investment advice.",
+          "Plug-and-play: public market tools need no API key. For portfolio, OptionStrat, alerts, etc., call mi_sign_in then pass X-MI-Session. Descriptive data only, not investment advice.",
       });
     case "ping":
       return ok(id, {});
@@ -74,8 +55,13 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
       const authErr = authErrorForTool(access, ctx);
       if (authErr) return err(id, -32001, authErr);
 
-      const rlKey = rateLimitKey(ctx);
-      if (limited(rlKey)) return err(id, -32002, "Rate limit exceeded (60 calls/minute)");
+      const rlKey = rateLimitKey(req, ctx);
+      if (mcpRateLimited(rlKey, rateLimitCap(ctx))) {
+        return err(id, -32002, "Rate limit exceeded — wait a minute or sign in with mi_sign_in for a higher cap.");
+      }
+      if (tool.name === "mi_sign_in" && mcpRateLimited(`signin:${clientIp(req)}`, 8)) {
+        return err(id, -32002, "Too many sign-in attempts — try again in a minute.");
+      }
 
       try {
         const out = await tool.run(msg.params?.arguments ?? {}, ctx);
@@ -108,9 +94,9 @@ export async function GET() {
     transport: "Streamable HTTP (POST JSON-RPC)",
     tools: TOOLS.map((t) => ({ name: t.name, access: t.access ?? "public" })),
     auth: {
-      publicTools: "X-API-Key or Authorization: Bearer <MCP_API_KEY>",
-      accountTools: "mi_sign_in → X-MI-Session: <sessionToken> (Bearer also accepted if not an API key)",
-      apiKeysConfigured: isApiKeyConfigured(),
+      publicTools: "No API key — add the URL in Cursor/Claude and call tools (IP rate limit).",
+      accountTools: "tools/call mi_sign_in → X-MI-Session: <sessionToken>",
+      optionalApiKey: "MCP_API_KEYS optional — higher rate limit for automation",
     },
   });
 }

@@ -54,20 +54,19 @@ export function resolveMcpCallContext(req: Request): McpCallContext {
   return { user, apiKey };
 }
 
-export function authErrorForTool(access: McpAccess, ctx: McpCallContext): string | null {
-  if (access === "auth") return null;
-  if (access === "public") {
-    if (!mcpApiKeys().length) return "MCP tool calls disabled: MCP_API_KEYS not configured on server.";
-    if (!ctx.apiKey) return "Unauthorized: valid API key required (X-API-Key or Authorization: Bearer <key>).";
+export function authErrorForTool(_access: McpAccess, _ctx: McpCallContext): string | null {
+  if (_access === "auth") return null;
+  if (_access === "public") {
+    // Open read-only market data — rate-limited by IP in the MCP route (no customer API keys).
     return null;
   }
-  if (access === "user") {
-    if (!ctx.user) return "Sign in required: call mi_sign_in, then send the session token via X-MI-Session or Authorization: Bearer <token>.";
+  if (_access === "user") {
+    if (!_ctx.user) return "Sign in required: call mi_sign_in, then send the session token via X-MI-Session or Authorization: Bearer <token>.";
     return null;
   }
-  if (access === "admin") {
-    if (!ctx.user) return "Admin sign-in required.";
-    if (ctx.user.role !== "admin") return "Admin role required.";
+  if (_access === "admin") {
+    if (!_ctx.user) return "Admin sign-in required.";
+    if (_ctx.user.role !== "admin") return "Admin role required.";
     return null;
   }
   return null;

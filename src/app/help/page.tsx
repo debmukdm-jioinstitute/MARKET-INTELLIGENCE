@@ -14,16 +14,16 @@ const SITEMAP = helpSitemapSections();
 
 const TROUBLE: { problem: string; fix: string }[] = [
   {
-    problem: "\"Unauthorized: valid API key required for tools/call\"",
-    fix: "The X-API-Key header is missing or wrong. Re-check the key, and make sure there is no trailing space or quote around it. Listing tools works without a key; running them does not.",
-  },
-  {
     problem: "Tools connect but every call fails, or the request redirects (HTTP 308)",
-    fix: "Use https://getmarketintelligence.in/api/mcp. The old getmarketintelligence.vercel.app address redirects, and redirects can drop the POST body and the key header.",
+    fix: "Use https://getmarketintelligence.in/api/mcp. The old getmarketintelligence.vercel.app address redirects and can drop the POST body.",
   },
   {
-    problem: "\"Rate limit exceeded (60 calls/minute)\"",
-    fix: "Each key allows 60 tool calls per minute. Wait a minute and retry, and ask for one broad tool (such as the snapshot) instead of many small ones.",
+    problem: "\"Rate limit exceeded\"",
+    fix: "Public tools allow about 45 calls/minute per IP. Wait a minute, batch questions, or use mi_sign_in for a higher cap.",
+  },
+  {
+    problem: "\"Sign in required\" on portfolio / OptionStrat tools",
+    fix: "Call mi_sign_in (or mi login in the terminal), then pass X-MI-Session on later calls.",
   },
   {
     problem: "The assistant does not see the tools",
@@ -32,10 +32,6 @@ const TROUBLE: { problem: string; fix: string }[] = [
   {
     problem: "\"Unknown tool\" or \"Method not found\"",
     fix: "Tool names are case-sensitive and use underscores, for example get_stress_index. Call tools/list to see the current names.",
-  },
-  {
-    problem: "I don't have a key",
-    fix: "Keys are issued by the site owner. Email Deb@getmarketintelligence.in to request one.",
   },
 ];
 
@@ -182,9 +178,8 @@ export default function HelpPage() {
       <section id="account-mcp" className="mt-10 rounded-xl border border-border p-5">
         <h2 className="text-base font-semibold">Account tools on MCP / mi</h2>
         <p className="mt-2 text-muted-foreground">
-          Portfolio, OptionStrat lab, alerts, algo desk, assistant, and admin status are available over the same MCP endpoint after
-          sign-in. Public market tools still use your <b>MCP API key</b>; account tools use a <b>session token</b> from{" "}
-          <b>mi_sign_in</b> (no API key required for sign-in itself).
+          Portfolio, OptionStrat lab, alerts, algo desk, assistant, and admin status use the same MCP URL after{" "}
+          <b>mi_sign_in</b> (website email/password). No separate MCP API key.
         </p>
         <Code>{`# 1) Sign in (returns sessionToken)
 curl -s ${ENDPOINT} -H 'content-type: application/json' \\
@@ -238,35 +233,23 @@ curl -s ${ENDPOINT} \\
           <dd>Streamable HTTP, JSON-RPC 2.0</dd>
           <dt className="text-muted-foreground">Auth</dt>
           <dd>
-            <b>Public tools:</b> API key in <b>X-API-Key</b> or <b>Authorization: Bearer</b> (must match{" "}
-            <b>MCP_API_KEYS</b>). <b>Account tools:</b> call <b>mi_sign_in</b>, then pass{" "}
-            <b>X-MI-Session</b> (or Bearer session token). <b>tools/list</b> is open.
+            <b>No API key</b> for public market tools. <b>Account tools:</b> <b>mi_sign_in</b> →{" "}
+            <b>X-MI-Session</b>. Optional owner <b>MCP_API_KEYS</b> only raises automation rate limits.
           </dd>
           <dt className="text-muted-foreground">Rate limit</dt>
-          <dd>60 tool calls per minute per key</dd>
+          <dd>~45 calls/minute per IP (public); higher when signed in</dd>
           <dt className="text-muted-foreground">Access</dt>
           <dd>Read-only. Nothing you ask can change data on the site.</dd>
         </dl>
       </section>
 
-      <Step n={1} title="Get an API key">
-        <p>
-          Keys are issued by the site owner. Email{" "}
-          <a href="mailto:Deb@getmarketintelligence.in" className="text-blue-600 hover:underline">
-            Deb@getmarketintelligence.in
-          </a>{" "}
-          to request one. Treat it like a password: don&apos;t paste it into chats, screenshots or public repos.
-        </p>
-        <p>
-          In the steps below, replace <b>YOUR_KEY</b> with your key.
-        </p>
-      </Step>
-
-      <Step n={2} title="Connect your assistant">
+      <Step n={1} title="Connect your assistant (no API key)">
         <div id="connect" />
+        <p>
+          Add the URL below in your MCP client. Public market data works immediately — no email, no key, no headers.
+        </p>
         <h3 className="font-semibold text-foreground">Claude Code (terminal)</h3>
-        <Code>{`claude mcp add --scope user --transport http market-intelligence ${ENDPOINT} \\
-  --header "X-API-Key: YOUR_KEY"`}</Code>
+        <Code>{`claude mcp add --scope user --transport http market-intelligence ${ENDPOINT}`}</Code>
         <p>
           <b>--scope user</b> makes it available in every project. Drop it to connect for the current project only.
           Confirm with:
@@ -282,8 +265,7 @@ curl -s ${ENDPOINT} \\
         <Code>{`{
   "mcpServers": {
     "market-intelligence": {
-      "url": "${ENDPOINT}",
-      "headers": { "X-API-Key": "YOUR_KEY" }
+      "url": "${ENDPOINT}"
     }
   }
 }`}</Code>
@@ -297,11 +279,7 @@ curl -s ${ENDPOINT} \\
   "mcpServers": {
     "market-intelligence": {
       "command": "npx",
-      "args": [
-        "-y", "mcp-remote",
-        "${ENDPOINT}",
-        "--header", "X-API-Key:YOUR_KEY"
-      ]
+      "args": ["-y", "mcp-remote", "${ENDPOINT}"]
     }
   }
 }`}</Code>
@@ -309,17 +287,15 @@ curl -s ${ENDPOINT} \\
 
         <h3 className="pt-3 font-semibold text-foreground">Any other MCP client</h3>
         <p>
-          Choose the <b>HTTP</b> (Streamable HTTP) server type, set the URL to the endpoint above, and add the header{" "}
-          <b>X-API-Key</b> with your key.
+          Choose <b>HTTP</b> (Streamable HTTP) and paste the endpoint URL. Leave auth headers empty for market data.
         </p>
       </Step>
 
-      <Step n={3} title="Test it">
+      <Step n={2} title="Test it">
         <div id="test" />
-        <p>From a terminal, call a tool directly. A JSON reply means your key and the endpoint both work:</p>
+        <p>From a terminal — no key required:</p>
         <Code>{`curl -s ${ENDPOINT} \\
   -H 'content-type: application/json' \\
-  -H 'X-API-Key: YOUR_KEY' \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_stress_index","arguments":{}}}'`}</Code>
         <p>To list the tools without a key:</p>
         <Code>{`curl -s ${ENDPOINT} \\
@@ -327,7 +303,7 @@ curl -s ${ENDPOINT} \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`}</Code>
       </Step>
 
-      <Step n={4} title="Ask questions">
+      <Step n={3} title="Ask questions">
         <p>
           Once connected, just ask. Your assistant picks the right tool. Try{" "}
           <i>&ldquo;What&apos;s the India Macro Stress Index right now and what is driving it?&rdquo;</i> or{" "}
@@ -341,8 +317,7 @@ curl -s ${ENDPOINT} \\
           Prefer a terminal? <b>mi</b> is a menu-driven screen with an ASCII banner, a live market status bar
           (NIFTY, VIX, USD/INR, Brent, stress) and one-key access to the stress index, daily brief, RBI rates, yield
           curve, sector betas, scenarios and single-stock risk, plus every other market, macro, research, derivatives and
-          scanner feature on the site. It talks to the same read-only endpoint, so
-          it uses the same API key and the same 60 calls/minute limit.
+          scanner feature on the site. No API key — run <b>mi</b> and press Enter.
         </p>
 
         <h3 className="mt-6 font-semibold">What you need</h3>
@@ -350,7 +325,7 @@ curl -s ${ENDPOINT} \\
           <li>
             <b>Node.js 18 or newer</b>. Check with <b>node -v</b>. Install from nodejs.org if it is missing.
           </li>
-          <li>An API key (see step 1 above).</li>
+          <li>No API key. Optional: <b>mi login</b> for portfolio tools.</li>
           <li>macOS, Linux, or Windows (use WSL or PowerShell). No other packages are installed.</li>
         </ul>
 
@@ -369,15 +344,10 @@ chmod +x ~/.local/bin/mi`}</Code>
 curl.exe -fsSL https://getmarketintelligence.in/cli/mi.mjs -o $HOME\\.mi\\mi.mjs
 node $HOME\\.mi\\mi.mjs`}</Code>
 
-        <h3 className="mt-6 font-semibold">First run and your API key</h3>
+        <h3 className="mt-6 font-semibold">First run</h3>
         <p className="text-muted-foreground">
-          Run <b>mi</b>. On first launch it asks for your key and saves it to <b>~/.mi/config.json</b> (readable only
-          by you). Or skip the prompt and use an environment variable:
-        </p>
-        <Code>{`export MI_API_KEY="YOUR_KEY"     # add to ~/.zshrc to keep it
-mi`}</Code>
-        <p className="text-muted-foreground">
-          Change the saved key any time from the menu (<b>E</b>) or by deleting <b>~/.mi/config.json</b>.
+          Run <b>mi</b> — market tools work immediately. For portfolio or OptionStrat:{" "}
+          <b>mi login YOUR_EMAIL YOUR_PASSWORD</b> (session saved in <b>~/.mi/config.json</b>).
         </p>
 
         <h3 className="mt-6 font-semibold">The menu</h3>
@@ -408,7 +378,7 @@ mi`}</Code>
                 ["M", "More: browse every feature by category (Markets, Macro, Research, Derivatives, Scanners, System), pick a number, answer the prompts"],
                 ["F", "Find a feature by typing part of its name, for example \"option\" or \"ipo\""],
                 ["A", "Text size: make the text bigger or smaller (see below)"],
-                ["E", "Edit or replace your API key"],
+                ["E", "Optional: save an owner API key for higher rate limits"],
                 ["U", "Check for a newer version of mi and update"],
                 ["Z", "Exit (or press Ctrl + C)"],
               ].map(([k, what]) => (
@@ -472,8 +442,7 @@ mi font           # show the current setting`}</Code>
         <h3 className="mt-6 font-semibold">What the terminal does not include</h3>
         <p className="mt-2 text-muted-foreground">
           See <a href="#web-only" className="text-blue-600 hover:underline">Portal-only features</a> above — portfolio, alerts, algo
-          desk, OptionStrat lab, admin, and exports. An API key identifies a client, not a person. All read-only market, macro,
-          research, derivatives, and scanner data is available through MCP and <b>mi</b>.
+          desk live controls, and exports. Market data needs no key; account data needs <b>mi login</b>.
         </p>
 
         <h3 className="mt-6 font-semibold">Update or remove</h3>
@@ -554,20 +523,11 @@ mi font           # show the current setting`}</Code>
       </section>
 
       <section id="owners" className="mt-12">
-        <h2 className="text-lg font-semibold">For the site owner: issuing keys</h2>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-muted-foreground">
-          <li>
-            Generate a key: <b>openssl rand -hex 24</b>
-          </li>
-          <li>
-            In Vercel, open <b>Project → Settings → Environment Variables</b> and add <b>MCP_API_KEYS</b> (type Secret,
-            Production). Use a comma-separated list to issue one key per person, for example <b>key-a,key-b</b>.
-          </li>
-          <li>Redeploy. New variables only apply to new deployments.</li>
-          <li>To revoke someone, remove their key from the list and redeploy.</li>
-        </ol>
+        <h2 className="text-lg font-semibold">For the site owner</h2>
         <p className="mt-3 text-muted-foreground">
-          With no keys set, tool calls are disabled and only tool listing works.
+          Customers do <b>not</b> need MCP keys anymore. Public tools are open with IP rate limits. Optional{" "}
+          <b>MCP_API_KEYS</b> (comma-separated in Vercel) only bumps rate limits for your own automation — not required
+          for normal users.
         </p>
       </section>
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Market Intelligence terminal (mi) - a menu-driven CLI over the site's read-only MCP endpoint.
- * Zero dependencies. Needs Node 18+ and an API key (MI_API_KEY or ~/.mi/config.json).
+ * Zero dependencies. Needs Node 18+. No API key for market data; optional mi login for account tools.
  *
  * The menu is built from the server's tool list at start-up, so every feature added to the site's MCP endpoint
  * shows up here without reinstalling. `mi update` refreshes this script itself.
@@ -20,7 +20,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "2.2.0";
+const VERSION = "2.3.0";
 const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
 function ENDPOINT_BASE() {
   return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
@@ -659,13 +659,6 @@ async function interactive() {
     process.exit(0);
   });
 
-  if (!API_KEY && !SESSION) {
-    console.log(yellow("No API key or session. Key from /help, or: mi login EMAIL PASSWORD"));
-    API_KEY = (await ask("Paste your API key (Enter to skip): ")).trim();
-    if (API_KEY) saveKey(API_KEY);
-    if (!API_KEY && !SESSION) process.exit(1);
-  }
-
   const [, notice] = await Promise.all([loadTools(), updateNotice()]);
   const fontNote = applyFontSize();
   console.clear?.();
@@ -723,7 +716,7 @@ const HELP = `mi ${VERSION}: Market Intelligence terminal
   mi font [N|off|reset]       text size while mi runs (macOS Terminal.app), default 16
   mi --version
 
-Key: MI_API_KEY env var or ~/.mi/config.json. Endpoint override: MI_ENDPOINT.`;
+No API key needed. Account tools: mi login EMAIL PASS. Optional MI_API_KEY for higher limits. MI_ENDPOINT to override URL.`;
 
 const ALIASES = { snapshot: "get_market_snapshot", stress: "get_stress_index", brief: "get_daily_brief", rbi: "get_rbi_rates", yields: "get_india_yield_curve", health: "get_data_health", backtest: "get_stress_backtest", betas: "get_transmission_betas", risk: "get_security_risk", scenario: "run_scenario" };
 
@@ -765,10 +758,6 @@ async function main() {
     saveConfig({ sessionToken: "" });
     console.log(green("Session cleared."));
     return;
-  }
-  if (!API_KEY && !SESSION) {
-    console.error(red("No API key or session. Set MI_API_KEY, run `mi login EMAIL PASS`, or save a key in the menu."));
-    process.exit(1);
   }
   try {
     await loadTools();

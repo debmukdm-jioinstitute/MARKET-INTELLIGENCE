@@ -40,7 +40,7 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "DATA_GOV_IN_API_KEY", required: false, note: "data.gov.in" },
   { key: "PROWESS_API_KEY", required: false, note: "CMIE Prowess" },
   { key: "PROWESS_INGEST_SECRET", required: false, note: "Prowess/scanner ingest endpoints" },
-  { key: "MCP_API_KEYS", required: false, note: "/api/mcp clients" },
+  { key: "MCP_API_KEYS", required: false, note: "Optional — higher MCP rate limits for automation (public MCP is open without keys)" },
   { key: "ADMIN_SYNC_SECRET", required: false, note: "Manual instrument sync" },
   { key: "NEXT_PUBLIC_SITE_URL", required: false, note: "Absolute links in emails" },
 ];
