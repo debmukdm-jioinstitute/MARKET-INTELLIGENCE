@@ -2,6 +2,7 @@ import { buildIndiaDashboard, buildIndiaDashboardQuick } from "@/lib/feeds/india
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 let fullCache: { at: number; payload: Awaited<ReturnType<typeof buildIndiaDashboard>> } | null = null;
 let quickCache: { at: number; payload: Awaited<ReturnType<typeof buildIndiaDashboardQuick>> } | null = null;
@@ -40,6 +41,8 @@ export async function GET(request: Request) {
         pulse: payload.pulse,
         globalRadar: payload.globalRadar,
         indiaImpact: payload.indiaImpact,
+        moneyFlow: payload.moneyFlow,
+        rbiLiquidity: { systemLiquidity: payload.rbiLiquidity.systemLiquidity },
       },
     };
     return NextResponse.json(payload, {

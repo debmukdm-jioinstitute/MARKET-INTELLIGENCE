@@ -4,6 +4,13 @@ import type { Collector, SeriesResult } from "../types";
 const MMO_URL = "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx";
 const HOME_URL = "https://www.rbi.org.in/";
 
+const RBI_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-IN,en;q=0.9",
+};
+
 const strip = (html: string) =>
   html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
 
@@ -20,7 +27,7 @@ export type RbiLiquidity = { date: string; netCr: number; todayOpsCr: number | n
 
 /** RBI "Money Market Operations": net liquidity injected (+) / absorbed (−), outstanding incl. today's operations, ₹ crore. */
 export async function fetchRbiLiquidity(): Promise<RbiLiquidity> {
-  const text = strip(await getText(MMO_URL, { timeoutMs: 30_000 }));
+  const text = strip(await getText(MMO_URL, { timeoutMs: 30_000, headers: RBI_HEADERS }));
   const f = /F\.\s*Net liquidity injected \(outstanding including today's operations\)[^:]*?\*?\s*(-?[\d,]+\.?\d*)/i.exec(text);
   if (!f) throw new Error("RBI MMO layout changed: net liquidity (F) not found");
   const net = inRange("rbi_net_liquidity", num(f[1]), -2_000_000, 2_000_000);
@@ -40,7 +47,7 @@ export type RbiHomeMarket = {
 
 /** Scrapes the "Market Trends" block of the RBI home page (call money range, benchmark G-sec yields, T-bill cut-offs). */
 export async function fetchRbiHomeMarket(): Promise<RbiHomeMarket> {
-  const text = strip(await getText(HOME_URL, { timeoutMs: 30_000 }));
+  const text = strip(await getText(HOME_URL, { timeoutMs: 30_000, headers: RBI_HEADERS }));
   const start = text.indexOf("Money Market");
   if (start < 0) throw new Error("RBI home layout changed: Market Trends block not found");
   const block = text.slice(start, start + 1600);

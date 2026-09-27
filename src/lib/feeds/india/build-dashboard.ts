@@ -347,7 +347,6 @@ function buildPulseAndRadar(
   return { pulse, globalRadar, indiaImpact };
 }
 
-/** Fast path: live quotes + breadth + global radar (no NSE F&O / World Bank). */
 /** ₹ crore → "₹4.34 L Cr absorbed"/"injected" (RBI convention: + injection, − absorption). */
 function fmtLakhCr(cr: number, delta = false): string {
   const lakh = Math.abs(cr) / 100_000;
@@ -356,18 +355,88 @@ function fmtLakhCr(cr: number, delta = false): string {
   return cr < 0 ? `${amt} absorbed (surplus)` : `${amt} injected (deficit)`;
 }
 
-export async function buildIndiaDashboardQuick(): Promise<
-  Pick<IndiaDashboardPayload, "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact">
-> {
+type FiiDiiLike = { category: string; date?: string; netValue: string };
+
+function parseFiiNetCr(netValue?: string): number | null {
+  if (!netValue) return null;
+  const n = Number(netValue.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+function buildMoneyFlow(fiiDii: FiiDiiLike[]): IndiaDashboardPayload["moneyFlow"] {
+  const fiiRow = fiiDii.find((r) => r.category.toUpperCase().includes("FII"));
+  const diiRow = fiiDii.find((r) => r.category.toUpperCase().includes("DII"));
+  const fiiNet = parseFiiNetCr(fiiRow?.netValue);
+  const diiNet = parseFiiNetCr(diiRow?.netValue);
+  const nseApi = "https://www.nseindia.com/api/fiidiiTradeReact";
+  return {
+    fii: {
+      label: "FII",
+      today: fiiNet,
+      d5: null,
+      m1: null,
+      ytd: null,
+      source: { provider: "NSE India", url: nseApi, asOf: fiiRow?.date },
+    },
+    dii: {
+      label: "DII",
+      today: diiNet,
+      d5: null,
+      m1: null,
+      ytd: null,
+      source: { provider: "NSE India", url: nseApi, asOf: diiRow?.date },
+    },
+    fiiVsDii: { fii: fiiNet, dii: diiNet, source: { provider: "NSE India", url: nseApi } },
+    extras: [
+      { label: "FII category", value: fiiRow?.category ?? null, source: { provider: "NSE India", url: "https://www.nseindia.com/" } },
+      { label: "DII category", value: diiRow?.category ?? null, source: { provider: "NSE India", url: "https://www.nseindia.com/" } },
+    ],
+  };
+}
+
+function buildSystemLiquidity(
+  rbiLiq: Awaited<ReturnType<typeof getRbiLiquidity>>,
+): IndiaDashboardPayload["rbiLiquidity"]["systemLiquidity"] {
+  return {
+    netCr: rbiLiq?.netCr ?? null,
+    value: rbiLiq ? fmtLakhCr(rbiLiq.netCr) : null,
+    change7d: rbiLiq?.prev != null ? fmtLakhCr(rbiLiq.netCr - rbiLiq.prev, true) : null,
+    trend30d: [],
+    source: {
+      provider: "Reserve Bank of India (Money Market Operations)",
+      url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx",
+      asOf: rbiLiq?.date,
+    },
+  };
+}
+
+export type IndiaDashboardQuickPayload = Pick<
+  IndiaDashboardPayload,
+  "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact" | "moneyFlow"
+> & {
+  rbiLiquidity: Pick<IndiaDashboardPayload["rbiLiquidity"], "systemLiquidity">;
+};
+
+/** Fast path: quotes + breadth + FII/DII + RBI system liquidity (skips F&O, macro rows). */
+export async function buildIndiaDashboardQuick(): Promise<IndiaDashboardQuickPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [ymap, breadth, fredGsec, rbi10y] = await Promise.all([
+  const [ymap, breadth, fredGsec, rbi10y, fiiDii, rbiLiq] = await Promise.all([
     buildLiveQuoteMap(symbols),
     fetchLiveBreadth(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
     getRbiBenchmark10y(),
+    fetchFiiDii(),
+    getRbiLiquidity(),
   ]);
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10y);
-  return { fetchedAt: new Date().toISOString(), pulse, globalRadar, indiaImpact };
+  return {
+    fetchedAt: new Date().toISOString(),
+    pulse,
+    globalRadar,
+    indiaImpact,
+    moneyFlow: buildMoneyFlow(fiiDii),
+    rbiLiquidity: { systemLiquidity: buildSystemLiquidity(rbiLiq) },
+  };
 }
 
 export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
@@ -483,16 +552,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     credit,
   ];
 
-  const fiiRow = fiiDii.find((r) => r.category.toUpperCase().includes("FII"));
-  const diiRow = fiiDii.find((r) => r.category.toUpperCase().includes("DII"));
-  const parseCr = (s?: string) => {
-    if (!s) return null;
-    const n = Number(s.replace(/,/g, ""));
-    return Number.isFinite(n) ? n : null;
-  };
-
-  const fiiNet = parseCr(fiiRow?.netValue);
-  const diiNet = parseCr(diiRow?.netValue);
+  const moneyFlow = buildMoneyFlow(fiiDii);
 
   // RBI policy rates: scraped daily by the collector (src/lib/collector/sources/rbi.ts); hardcoded value is the fallback.
   const [rbiLiq, fxPts] = await Promise.all([getRbiLiquidity(), latestPoints(["india_fx_reserves_ex_gold"])]);
@@ -560,69 +620,13 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
           source: pulse.gsec10y.source,
         },
       ],
-      // RBI "Money Market Operations": net liquidity injected(+)/absorbed(−). Null (shown as "Not available") if RBI is unreachable.
-      systemLiquidity: {
-        netCr: rbiLiq?.netCr ?? null,
-        value: rbiLiq ? fmtLakhCr(rbiLiq.netCr) : null,
-        change7d: rbiLiq?.prev != null ? fmtLakhCr(rbiLiq.netCr - rbiLiq.prev, true) : null,
-        trend30d: [],
-        source: {
-          provider: "Reserve Bank of India (Money Market Operations)",
-          url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx",
-          asOf: rbiLiq?.date,
-        },
-      },
+      systemLiquidity: buildSystemLiquidity(rbiLiq),
       fxReserves: {
         value: fxReservePt ? `$${fxReservePt.value.toFixed(1)} B (excl. gold)` : null,
         asOf: fxReservePt?.date ?? null,
         source: { provider: "IMF via FRED (monthly, lagged)", url: "https://fred.stlouisfed.org/series/TRESEGINM052N", asOf: fxReservePt?.date },
       },
     },
-    moneyFlow: {
-      fii: {
-        label: "FII",
-        today: fiiNet,
-        d5: null,
-        m1: null,
-        ytd: null,
-        source: {
-          provider: "NSE India",
-          url: "https://www.nseindia.com/api/fiidiiTradeReact",
-          asOf: fiiRow?.date,
-        },
-      },
-      dii: {
-        label: "DII",
-        today: diiNet,
-        d5: null,
-        m1: null,
-        ytd: null,
-        source: {
-          provider: "NSE India",
-          url: "https://www.nseindia.com/api/fiidiiTradeReact",
-          asOf: diiRow?.date,
-        },
-      },
-      fiiVsDii: {
-        fii: fiiNet,
-        dii: diiNet,
-        source: {
-          provider: "NSE India",
-          url: "https://www.nseindia.com/api/fiidiiTradeReact",
-        },
-      },
-      extras: [
-        {
-          label: "FII category",
-          value: fiiRow?.category ?? null,
-          source: { provider: "NSE India", url: "https://www.nseindia.com/" },
-        },
-        {
-          label: "DII category",
-          value: diiRow?.category ?? null,
-          source: { provider: "RBI", url: "https://www.rbi.org.in/" },
-        },
-      ],
-    },
+    moneyFlow,
   };
 }

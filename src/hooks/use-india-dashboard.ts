@@ -15,14 +15,30 @@ export function useIndiaDashboard(refreshMs = 55_000) {
       const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
       
       // Optimistically update SWR cache with merged quick data
-      mutate(url, (prev: IndiaDashboardPayload | undefined) => ({
-        ...(prev ?? emptyShell()),
-        ...quick,
-        fetchedAt: quick.fetchedAt,
-        pulse: quick.pulse ?? prev?.pulse ?? emptyShell().pulse,
-        globalRadar: quick.globalRadar ?? prev?.globalRadar ?? emptyShell().globalRadar,
-        indiaImpact: quick.indiaImpact ?? prev?.indiaImpact ?? emptyShell().indiaImpact,
-      }), { revalidate: false }); // Do not trigger a revalidation from this mutation
+      mutate(url, (prev: IndiaDashboardPayload | undefined) => {
+        const base = prev ?? emptyShell();
+        const q = quick as Partial<IndiaDashboardPayload> & {
+          rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
+        };
+        return {
+          ...base,
+          fetchedAt: q.fetchedAt ?? base.fetchedAt,
+          pulse: q.pulse ?? base.pulse,
+          globalRadar: q.globalRadar ?? base.globalRadar,
+          indiaImpact: q.indiaImpact ?? base.indiaImpact,
+          moneyFlow: q.moneyFlow ?? base.moneyFlow,
+          rbiLiquidity: q.rbiLiquidity
+            ? {
+                ...base.rbiLiquidity,
+                ...q.rbiLiquidity,
+                systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
+                corridor: base.rbiLiquidity.corridor,
+                rows: base.rbiLiquidity.rows,
+                fxReserves: base.rbiLiquidity.fxReserves,
+              }
+            : base.rbiLiquidity,
+        };
+      }, { revalidate: false });
     }
 
     // 2. Fetch full payload
