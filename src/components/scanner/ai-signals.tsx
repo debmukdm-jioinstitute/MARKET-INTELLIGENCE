@@ -212,7 +212,15 @@ export function AiSignals() {
   const run = data?.run ?? null;
 
   const indexLabel = FNO_INDEX_OPTIONS.find((x) => x.id === indexId)?.label ?? "Index";
-  const model = useMemo(() => (run ? pickIndexSignal(run, indexId, horizon) : null), [run, indexId, horizon]);
+  const storedModel = useMemo(() => (run ? pickIndexSignal(run, indexId, horizon) : null), [run, indexId, horizon]);
+  const fnoModelKey =
+    run && !storedModel ? `/api/signals/fno-model?index=${encodeURIComponent(indexId)}&horizon=${horizon}` : null;
+  const { data: fnoModelRes, isLoading: fnoModelLoading } = useSWR(
+    fnoModelKey,
+    (url) => fetchJsonAuth<{ ok: boolean; model: IndexSignalBlock | null }>(url),
+    { revalidateOnFocus: false },
+  );
+  const model = storedModel ?? fnoModelRes?.model ?? null;
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (isAuthRequiredError(error)) {
@@ -272,7 +280,11 @@ export function AiSignals() {
         </p>
       </div>
 
-      {!model ? (
+      {fnoModelLoading && !model ? (
+        <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+          Building {indexLabel} model from index history…
+        </p>
+      ) : !model ? (
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-muted-foreground">
           No precomputed model for {indexLabel} at this horizon yet. It fills in after the next signals job (post NSE close). Try NIFTY 50 · 1 session meanwhile.
         </p>

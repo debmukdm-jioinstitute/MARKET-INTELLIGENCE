@@ -1,6 +1,7 @@
 import { NIFTY_500 } from "../prowess/nifty500";
 import { fetchDailyBars, fetchYahooBars } from "./data";
 import { FNO_INDEX_OPTIONS, SIGNAL_HORIZON_OPTIONS } from "./fno-indices";
+import { fetchNseArchiveIndexBars } from "./nse-index-bars";
 import { atr, computeIndicators, ema } from "./indicators";
 import { buildFeatures, predict } from "./lorentzian";
 import type { Bar, IndexSignalBlock, SignalBucket, SignalsRun, StockSignal } from "./types";
@@ -13,7 +14,7 @@ const day = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
 const call = (p: number | null) => (p == null ? "Neutral" : p >= 0.6 ? "Bullish" : p <= 0.4 ? "Bearish" : "Neutral");
 
 function indexBlockFromBars(bars: Bar[], evalHorizon: number): IndexSignalBlock | null {
-  if (bars.length < 600) return null;
+  if (bars.length < 260) return null;
   const n = bars.length;
   const feats = buildFeatures(bars);
   const close = bars.map((b) => b.c);
@@ -97,13 +98,24 @@ function legacyNiftyFields(h1: IndexSignalBlock, h5: IndexSignalBlock | undefine
   };
 }
 
-async function buildFnoIndices(): Promise<{ indices: SignalsRun["indices"]; lastBar: string; nifty: SignalsRun["nifty"] } | null> {
+async function fetchFnoIndexBars(idx: (typeof FNO_INDEX_OPTIONS)[number]): Promise<Bar[] | null> {
+  let bars = await fetchYahooBars(idx.yahoo, "10y");
+  if (bars && bars.length >= 260) return bars;
+  const archiveName = "nseArchiveName" in idx ? idx.nseArchiveName : undefined;
+  if (archiveName) {
+    bars = await fetchNseArchiveIndexBars(archiveName, 600);
+    if (bars && bars.length >= 260) return bars;
+  }
+  return null;
+}
+
+export async function buildFnoIndices(): Promise<{ indices: SignalsRun["indices"]; lastBar: string; nifty: SignalsRun["nifty"] } | null> {
   const indices: SignalsRun["indices"] = {};
   let lastBar = "";
 
   await Promise.all(
     FNO_INDEX_OPTIONS.map(async (idx) => {
-      const bars = await fetchYahooBars(idx.yahoo, "10y");
+      const bars = await fetchFnoIndexBars(idx);
       if (!bars?.length) return;
       lastBar = day(bars[bars.length - 1].t);
       const horizons: Partial<Record<number, IndexSignalBlock>> = {};
@@ -123,13 +135,38 @@ async function buildFnoIndices(): Promise<{ indices: SignalsRun["indices"]; last
   return { indices, lastBar, nifty };
 }
 
+const emptyStockPack = (): SignalsRun["stocks"] => ({
+  universe: 0,
+  scanned: 0,
+  validation: {
+    sessions: 0,
+    buy: { n: 0, hitRate: 0, avgRet: 0 },
+    sell: { n: 0, hitRate: 0, avgRet: 0 },
+    base: { n: 0, upRate: 0, avgRet: 0 },
+  },
+  btst: [],
+  stbt: [],
+});
+
 /** Next-session direction model for the Nifty 50 index, plus BTST/STBT candidates across the Nifty 500, each with walk-forward validation. */
-export async function runSignals(opts: { symbols?: string[]; budgetMs?: number; concurrency?: number } = {}): Promise<SignalsRun | null> {
+export async function runSignals(
+  opts: { symbols?: string[]; budgetMs?: number; concurrency?: number; indicesOnly?: boolean } = {},
+): Promise<SignalsRun | null> {
   const budgetMs = opts.budgetMs ?? 50_000;
   const concurrency = opts.concurrency ?? 12;
   const started = Date.now();
   const fno = await buildFnoIndices();
   if (!fno) return null;
+
+  if (opts.indicesOnly) {
+    return {
+      asOf: new Date().toISOString(),
+      lastBar: fno.lastBar,
+      nifty: fno.nifty,
+      indices: fno.indices,
+      stocks: emptyStockPack(),
+    };
+  }
 
   const universe = NIFTY_500.filter(([s]) => !opts.symbols || opts.symbols.includes(s));
   const cand: StockSignal[] = [];
