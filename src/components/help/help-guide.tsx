@@ -37,6 +37,10 @@ type Props = {
 
 const TROUBLE = [
   {
+    problem: "Claude says it couldn't register with sign-in service",
+    fix: "Retry after our OAuth update: add connector → Connect → approve the consent page. Leave OAuth client ID/secret blank. If it persists, email support with the ofid_ reference.",
+  },
+  {
     problem: "My AI says it cannot connect or tools are missing",
     fix: "Close and reopen the app (Cursor, Claude, etc.), or start a new chat. In Claude Code, run claude mcp list and check that market-intelligence shows Connected.",
   },
