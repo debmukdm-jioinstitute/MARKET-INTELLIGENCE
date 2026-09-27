@@ -5,7 +5,7 @@ import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding, PortfolioAnalysis, PortfolioSettings } from "@/lib/my-portfolio/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mi_user_holdings_v2";
 const SETTINGS_KEY = "mi_portfolio_settings_v1";
@@ -27,11 +27,33 @@ let cachedHoldings: Holding[] | null = null;
 let cachedSettingsRaw: string | null = null;
 let cachedSettings: PortfolioSettings | null = null;
 
+function getHoldingsRaw(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getSettingsRaw(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(SETTINGS_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function getLocalHoldings(): Holding[] | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    const raw = getHoldingsRaw();
+    if (!raw) {
+      cachedRaw = null;
+      cachedHoldings = null;
+      return null;
+    }
     if (raw === cachedRaw) return cachedHoldings;
     cachedRaw = raw;
     cachedHoldings = JSON.parse(raw) as Holding[];
@@ -69,7 +91,7 @@ function subscribeHoldings(callback: () => void) {
 function getLocalSettings(): PortfolioSettings {
   if (typeof window === "undefined") return DEFAULT_PORTFOLIO_SETTINGS;
   try {
-    const raw = window.localStorage.getItem(SETTINGS_KEY);
+    const raw = getSettingsRaw();
     if (!raw) {
       cachedSettingsRaw = null;
       cachedSettings = null;
@@ -141,9 +163,16 @@ const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, b
   return json as PortfolioAnalysis;
 };
 
-type PortfolioAnalysisKey = readonly [string, Holding[] | null, boolean, PortfolioSettings["benchmark"], string];
+type PortfolioAnalysisKey = readonly [
+  string,
+  string | null,
+  boolean,
+  PortfolioSettings["benchmark"],
+  string,
+];
 
-function fetchPortfolioAnalysis([url, holdings, guest, benchmark, name]: PortfolioAnalysisKey) {
+function fetchPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name]: PortfolioAnalysisKey) {
+  const holdings = holdingsRaw ? getLocalHoldings() : null;
   return fetcher([
     url,
     holdings,
@@ -156,10 +185,15 @@ export function useMyPortfolio(refreshMs = 60_000) {
   const { ready, isGuest } = useAuth();
   const locked = !ready || isGuest;
   // Guests (and the moment before the session is known) never read or write holdings: the book stays at zero.
-  const snapshot = useCallback(() => (locked ? null : getLocalHoldings()), [locked]);
-  const localHoldings = useSyncExternalStore(subscribeHoldings, snapshot, () => null);
-  const settingsSnapshot = useCallback(() => (locked ? DEFAULT_PORTFOLIO_SETTINGS : getLocalSettings()), [locked]);
-  const localSettings = useSyncExternalStore(subscribeHoldings, settingsSnapshot, () => DEFAULT_PORTFOLIO_SETTINGS);
+  const holdingsRawSnapshot = useCallback(() => (locked ? null : getHoldingsRaw()), [locked]);
+  const settingsRawSnapshot = useCallback(() => (locked ? null : getSettingsRaw()), [locked]);
+  const holdingsRaw = useSyncExternalStore(subscribeHoldings, holdingsRawSnapshot, () => null);
+  const settingsRaw = useSyncExternalStore(subscribeHoldings, settingsRawSnapshot, () => null);
+  const localHoldings = useMemo(() => (locked ? null : getLocalHoldings()), [locked, holdingsRaw]);
+  const localSettings = useMemo(
+    () => (locked ? DEFAULT_PORTFOLIO_SETTINGS : getLocalSettings()),
+    [locked, settingsRaw],
+  );
   const requireAccount = useCallback(() => {
     if (locked) throw new Error("Log in or create an account to add or import holdings");
   }, [locked]);
@@ -167,7 +201,13 @@ export function useMyPortfolio(refreshMs = 60_000) {
   // SWR key uses primitives only — object in key or unstable snapshot → revalidate / #185 loop.
   const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
     ready
-      ? (["/api/portfolio/analysis", localHoldings, isGuest, localSettings.benchmark, localSettings.name] as const)
+      ? ([
+          "/api/portfolio/analysis",
+          holdingsRaw,
+          isGuest,
+          localSettings.benchmark,
+          localSettings.name,
+        ] as const)
       : null,
     fetchPortfolioAnalysis,
     { refreshInterval: refreshMs },

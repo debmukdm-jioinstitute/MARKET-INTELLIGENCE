@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isGuestUser(json.user ?? null)) {
             try {
               window.localStorage.removeItem("mi_user_holdings_v2");
+              window.dispatchEvent(new Event("mi_portfolio_updated"));
             } catch {}
           }
         }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 
 export type TradingMode = "test" | "live";
 
@@ -34,11 +34,12 @@ export function TradingModeProvider({ children }: { children: ReactNode }) {
     setModeInternal(newMode);
   }, []);
 
-  return (
-    <TradingModeContext.Provider value={{ mode, setMode, dialogError, setDialogError, showDialog, setShowDialog }}>
-      {children}
-    </TradingModeContext.Provider>
+  const value = useMemo(
+    () => ({ mode, setMode, dialogError, setDialogError, showDialog, setShowDialog }),
+    [mode, setMode, dialogError, showDialog],
   );
+
+  return <TradingModeContext.Provider value={value}>{children}</TradingModeContext.Provider>;
 }
 
 export function useTradingMode() {

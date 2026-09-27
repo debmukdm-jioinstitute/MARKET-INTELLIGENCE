@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { TradingModeProvider, useTradingMode } from "@/components/ai-trader/contexts/TradingModeContext";
 import RetroDialog from "@/components/ai-trader/RetroDialog";
 import FullscreenPnl from "@/components/ai-trader/FullscreenPnl";
@@ -85,6 +85,8 @@ function GlobalDialogs() {
 
 function GlobalShortcuts({ children }: { children: React.ReactNode }) {
   const [showFullPnl, setShowFullPnl] = useState(false);
+  const showFullscreenPnl = useCallback(() => setShowFullPnl(true), []);
+  const pnlCtx = useMemo(() => ({ show: showFullscreenPnl }), [showFullscreenPnl]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -99,7 +101,7 @@ function GlobalShortcuts({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <FullscreenPnlContext.Provider value={{ show: () => setShowFullPnl(true) }}>
+    <FullscreenPnlContext.Provider value={pnlCtx}>
       {showFullPnl && <FullscreenPnl onClose={() => setShowFullPnl(false)} />}
       {children}
     </FullscreenPnlContext.Provider>
