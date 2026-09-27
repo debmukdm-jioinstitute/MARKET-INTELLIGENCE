@@ -5,11 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { findMetric } from "@/lib/my-portfolio/find-metric";
-import type { PositionRow } from "@/lib/my-portfolio/types";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useMemo } from "react";
 
 const BENCHMARK_LABEL: Record<string, string> = {
   NIFTY50: "NIFTY 50",
@@ -17,45 +15,15 @@ const BENCHMARK_LABEL: Record<string, string> = {
   NDX: "NASDAQ 100",
 };
 
-/** Sector-level return contribution (weight × holding return); selection vs benchmark is approximate. */
-function sectorRows(positions: PositionRow[], benchmarkReturn: number) {
-  const map = new Map<string, { weight: number; contribution: number }>();
-  for (const p of positions) {
-    const sector = p.sector || "Unclassified";
-    const cur = map.get(sector) ?? { weight: 0, contribution: 0 };
-    map.set(sector, {
-      weight: cur.weight + p.weight,
-      contribution: cur.contribution + p.weight * p.pnlPct,
-    });
-  }
-  return [...map.entries()]
-    .map(([sector, { weight, contribution }]) => {
-      const sectorRet = weight > 0 ? contribution / weight : 0;
-      const selection = contribution - weight * benchmarkReturn;
-      return {
-        sector,
-        weight,
-        sectorRet,
-        allocation: 0,
-        selection,
-        total: contribution,
-      };
-    })
-    .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
-}
-
 export default function AttributionPage() {
   const { data, loading, error, locked } = useMyPortfolio();
 
   const benchLabel = data?.settings.benchmark ? BENCHMARK_LABEL[data.settings.benchmark] ?? data.settings.benchmark : "benchmark";
-  const benchReturn = findMetric(data?.categories ?? [], "benchmarkReturn")?.value ?? 0;
 
-  const sectors = useMemo(
-    () => (data?.hasHoldings ? sectorRows(data.positions, benchReturn) : []),
-    [data, benchReturn],
-  );
+  const sectors = data?.sectorAttribution ?? [];
 
   const activeReturn = findMetric(data?.categories ?? [], "activeReturn");
+  const allocation = findMetric(data?.categories ?? [], "assetAllocation");
   const selection = findMetric(data?.categories ?? [], "securitySelection");
   const absoluteReturn = findMetric(data?.categories ?? [], "absoluteReturn");
 
@@ -68,7 +36,7 @@ export default function AttributionPage() {
         title="Return decomposition"
         subtitle={
           data?.hasHoldings
-            ? `Active return vs ${benchLabel}; stock and sector views from live marks (simplified Brinson where noted).`
+            ? `Active return vs ${benchLabel}; sector table uses Brinson-Fachler vs ${benchLabel} constituent weights.`
             : "Add holdings on Portfolio to attribute return to names and sectors."
         }
       />
@@ -99,9 +67,10 @@ export default function AttributionPage() {
 
       {data?.hasHoldings ? (
         <>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <Tile metricId="activeReturn" label="Active return" value={activeReturn?.formatted ?? "—"} />
-            <Tile metricId="securitySelection" label="Selection (approx.)" value={selection?.formatted ?? "—"} />
+            <Tile metricId="assetAllocation" label="Allocation effect" value={allocation?.formatted ?? "—"} />
+            <Tile metricId="securitySelection" label="Selection effect" value={selection?.formatted ?? "—"} />
             <Tile metricId="absoluteReturn" label="Absolute return" value={absoluteReturn?.formatted ?? "—"} />
           </div>
 
@@ -132,13 +101,15 @@ export default function AttributionPage() {
 
           <Panel
             title="Sector attribution"
-            subtitle="Allocation column reserved until sector benchmark weights are wired; selection uses portfolio vs benchmark return."
+            subtitle="Portfolio vs benchmark sector weights; returns aligned to your NAV history window."
           >
+            {sectors.length ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Sector</TableHead>
-                  <TableHead className="text-right">Weight</TableHead>
+                  <TableHead className="text-right">Port. wt</TableHead>
+                  <TableHead className="text-right">Bench. wt</TableHead>
                   <TableHead className="text-right">Sector return</TableHead>
                   <TableHead className="text-right">
                     <span className="inline-flex items-center gap-1 justify-end">
@@ -165,14 +136,18 @@ export default function AttributionPage() {
                   <TableRow key={row.sector}>
                     <TableCell>{row.sector}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatPct(row.weight, 1)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">{formatPct(row.benchmarkWeight, 1)}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatPct(row.sectorRet)}</TableCell>
                     <Cell v={row.allocation} />
-                    <Cell v={row.selection} />
+                    <Cell v={row.selection + row.interaction} />
                     <Cell v={row.total} />
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            ) : (
+              <p className="text-sm text-muted-foreground">Need a few days of price history for Brinson sector attribution.</p>
+            )}
           </Panel>
         </>
       ) : null}

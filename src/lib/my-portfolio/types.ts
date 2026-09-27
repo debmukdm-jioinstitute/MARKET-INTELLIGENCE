@@ -63,6 +63,18 @@ export type PositionRow = {
   pnlPct: number;
 };
 
+export type BrinsonSectorRow = {
+  sector: string;
+  weight: number;
+  benchmarkWeight: number;
+  sectorRet: number;
+  benchmarkSectorRet: number;
+  allocation: number;
+  selection: number;
+  interaction: number;
+  total: number;
+};
+
 export type PortfolioAnalysis = {
   fetchedAt: string;
   settings: PortfolioSettings;
@@ -78,4 +90,6 @@ export type PortfolioAnalysis = {
   attribution: { symbol: string; name: string; contributionPct: number }[];
   /** Weight × annualized vol, normalized — name-level risk budget share. */
   riskContribution: { symbol: string; name: string; riskShare: number }[];
+  /** Brinson-Fachler sector effects over the NAV history window. */
+  sectorAttribution: BrinsonSectorRow[];
 };

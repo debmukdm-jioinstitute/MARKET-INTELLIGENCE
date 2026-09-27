@@ -8,6 +8,7 @@ import {
 } from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
+import { computeBrinsonSectorAttribution } from "@/lib/my-portfolio/brinson-sectors";
 import { fetchBenchmarkHistory, weightsFor } from "@/lib/my-portfolio/benchmarks";
 import { CATEGORY_METRICS, CATEGORY_TITLES, GLOSSARY, OVERVIEW_METRICS } from "@/lib/my-portfolio/glossary";
 import type {
@@ -283,6 +284,7 @@ function emptyAnalysis(settings: PortfolioSettings): PortfolioAnalysis {
     allocation: [],
     attribution: [],
     riskContribution: [],
+    sectorAttribution: [],
   };
 }
 
@@ -370,6 +372,7 @@ export async function computePortfolioAnalysis(
   });
 
   const hasHistory = navSeries.length >= 3;
+  let sectorAttribution: PortfolioAnalysis["sectorAttribution"] = [];
   const portRets = hasHistory ? returnsFromPrices(navSeries.map((p) => p.value)) : [];
   const benchValuesAligned = hasHistory
     ? navSeries.map((p) => forwardFill(benchSorted, p.date) ?? benchSorted[0]?.value ?? 1)
@@ -459,19 +462,21 @@ export async function computePortfolioAnalysis(
     set(m("sectorContribution", 0, "0.00%", "ok", "neutral", "No sector classification available."));
   }
 
-  // Asset allocation (India vs US equity)
+  // Asset allocation — Brinson allocation effect when history exists (overwritten in history block)
   const inWeight = positions.filter((r) => r.market === "IN").reduce((s, r) => s + r.weight, 0);
   const usWeight = 1 - inWeight;
-  set(
-    m(
-      "assetAllocation",
-      null,
-      `${pct(inWeight, 0)} India / ${pct(usWeight, 0)} US`,
-      "approx",
-      undefined,
-      "Portfolio geographic capital allocation split.",
-    ),
-  );
+  if (!resultMap.has("assetAllocation")) {
+    set(
+      m(
+        "assetAllocation",
+        null,
+        `${pct(inWeight, 0)} India / ${pct(usWeight, 0)} US`,
+        "approx",
+        undefined,
+        "Portfolio geographic capital allocation split.",
+      ),
+    );
+  }
 
   // Active Share (approx, static benchmark weights)
   const benchWeights = weightsFor(settings.benchmark);
@@ -786,18 +791,76 @@ export async function computePortfolioAnalysis(
         : NA("battingAverage", "Not enough overlapping history."),
     );
 
-    const selectionEffect = positions.reduce(
-      (sum, r) => sum + r.weight * (r.pnlPct - spec.benchmarkReturn),
-      0,
+    const navFirst = navSeries[0]!.date;
+    const navLast = navSeries[navSeries.length - 1]!.date;
+    const symbolReturns = new Map<string, number>();
+    for (const s of holdingSorted) {
+      const start = forwardFill(s.sorted, navFirst) ?? s.sorted[0]?.value;
+      const end = forwardFill(s.sorted, navLast) ?? s.sorted[s.sorted.length - 1]?.value;
+      if (start && end && start > 0) {
+        symbolReturns.set(s.holding.symbol.toUpperCase(), end / start - 1);
+      }
+    }
+    const benchSyms = Object.keys(weightsFor(settings.benchmark));
+    const missingBench = benchSyms.filter((sym) => !symbolReturns.has(sym.toUpperCase()));
+    await Promise.all(
+      missingBench.map(async (sym) => {
+        const isIndia = settings.benchmark === "NIFTY50";
+        const candidates = isIndia ? [`${sym}.NS`, `${sym}.BO`, sym] : [sym];
+        for (const cand of candidates) {
+          try {
+            const pts = await fetchYahooHistory(cand, "1y");
+            if (pts.length < 2) continue;
+            const sorted = [...pts].sort((a, b) => (a.date < b.date ? -1 : 1));
+            const start = forwardFill(sorted, navFirst) ?? sorted[0]?.value;
+            const end = forwardFill(sorted, navLast) ?? sorted[sorted.length - 1]?.value;
+            if (start && end && start > 0) {
+              symbolReturns.set(sym.toUpperCase(), end / start - 1);
+              break;
+            }
+          } catch {
+            // try next candidate
+          }
+        }
+      }),
+    );
+
+    sectorAttribution = computeBrinsonSectorAttribution({
+      positions,
+      symbolReturns,
+      benchmark: settings.benchmark,
+      benchmarkReturn: spec.benchmarkReturn,
+    });
+
+    const allocationEffect = sectorAttribution.reduce((sum, r) => sum + r.allocation, 0);
+    const selectionEffect = sectorAttribution.length
+      ? sectorAttribution.reduce((sum, r) => sum + r.selection + r.interaction, 0)
+      : positions.reduce((sum, r) => sum + r.weight * (r.pnlPct - spec.benchmarkReturn), 0);
+
+    set(
+      m(
+        "assetAllocation",
+        sectorAttribution.length ? allocationEffect : null,
+        sectorAttribution.length
+          ? pct(allocationEffect)
+          : `${pct(inWeight, 0)} India / ${pct(usWeight, 0)} US`,
+        sectorAttribution.length ? "approx" : "approx",
+        sectorAttribution.length ? tone(allocationEffect) : undefined,
+        sectorAttribution.length
+          ? "Brinson sector allocation effect vs static benchmark weights over the NAV window."
+          : "Portfolio geographic capital allocation split.",
+      ),
     );
     set(
       m(
         "securitySelection",
         selectionEffect,
         pct(selectionEffect),
-        "approx",
+        sectorAttribution.length ? "approx" : "approx",
         tone(selectionEffect),
-        "Simplified stock-vs-benchmark selection proxy; full Brinson §7.2 needs sector benchmark returns.",
+        sectorAttribution.length
+          ? "Brinson selection + interaction by sector (benchmark sector returns from index constituents)."
+          : "Simplified stock-vs-benchmark selection proxy until sector benchmark returns load.",
       ),
     );
     if (spec.beta != null) {
@@ -865,5 +928,6 @@ export async function computePortfolioAnalysis(
     allocation,
     attribution,
     riskContribution,
+    sectorAttribution,
   };
 }
