@@ -13,7 +13,7 @@
  *   flags: --json (raw JSON)  --all (no row limit)
  *   mi update                   download the latest mi
  */
-import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, realpathSync, renameSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, chmodSync, realpathSync, renameSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";

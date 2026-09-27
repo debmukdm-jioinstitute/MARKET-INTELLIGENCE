@@ -20,17 +20,17 @@ export function PortalPageTransition({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  if (reduce) {
+  if (reduce || compact) {
     return <div className="min-h-[50vh]">{children}</div>;
   }
 
   return (
     <motion.div
       key={pathname}
-      initial={{ opacity: 0, y: compact ? 8 : 12 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: compact ? 0.26 : 0.32, ease: EASE }}
-      className="min-h-[50vh] will-change-[transform,opacity] motion-reduce:transform-none"
+      transition={{ duration: 0.32, ease: EASE }}
+      className="min-h-[50vh]"
     >
       {children}
     </motion.div>

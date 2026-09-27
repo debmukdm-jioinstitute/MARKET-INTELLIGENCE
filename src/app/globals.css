@@ -177,7 +177,7 @@
   }
 
   .portal-main {
-    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .portal-header-enter {
@@ -227,12 +227,14 @@
     font-size: 14px;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans;
     -webkit-tap-highlight-color: transparent;
   }
   body {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    touch-action: pan-y;
   }
 }
 
@@ -446,16 +448,22 @@
   100% { transform: translate(0, 0) scale(1); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+@media (hover: none) and (pointer: coarse) {
+  .portal-page > *,
+  .portal-header-enter,
+  .portal-panel-enter {
+    animation: none !important;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .animate-text-gradient,
   .hero-mesh-blob,
   .portal-page > *,
   .portal-header-enter,
   .portal-panel-enter,
-  .assistant-fab-ring {
+  .assistant-fab-ring,
+  .ticker-marquee {
     animation: none !important;
   }
   .bento-card-shell:hover {

@@ -75,10 +75,7 @@ export function LiveStreamTicker() {
           {loading && !items.length ? (
             <p className="flex h-full items-center px-4 text-sm text-muted-foreground">Connecting to market data…</p>
           ) : (
-            <div
-              className="flex h-full w-max items-center animate-[marquee_120s_linear_infinite] hover:[animation-play-state:paused]"
-              style={{ willChange: "transform" }}
-            >
+            <div className="ticker-marquee flex h-full w-max items-center animate-[marquee_120s_linear_infinite] hover:[animation-play-state:paused]">
               {loop.map((item, i) => (
                 <TickerCell key={`${item.id}-${i}`} item={item} />
               ))}

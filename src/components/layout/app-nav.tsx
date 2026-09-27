@@ -313,14 +313,20 @@ export function AppNav() {
   }, [path]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      document.body.style.removeProperty("overflow");
+      document.documentElement.style.removeProperty("overflow");
+      return;
+    }
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.removeProperty("overflow");
+      document.documentElement.style.removeProperty("overflow");
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [open, setOpen]);

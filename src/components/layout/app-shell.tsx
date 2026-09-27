@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <UpdatesBanner />
               <LiveStreamTicker />
               <TopBar />
-              <main className="portal-main flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scroll-smooth px-3 pt-3 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-4 md:p-5 md:pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
+              <main className="portal-main flex-1 overflow-x-hidden px-3 pt-3 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-4 md:p-5 md:pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
                 <GroupTabs />
                 <PortalPageGuard>
                   <PortalPageTransition>{children}</PortalPageTransition>

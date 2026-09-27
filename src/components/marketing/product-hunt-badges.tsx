@@ -17,7 +17,6 @@ export function ProductHuntFeaturedBadge() {
       rel="noopener noreferrer"
       className="inline-block shrink-0"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- Product Hunt widget SVG */}
       <img
         alt="Get Market Intelligence.in - Institutional-grade insights. now Simplified. | Product Hunt"
         width={250}
@@ -35,7 +34,6 @@ export function ProductHuntEmbedCard() {
   return (
     <div className="max-w-[500px] rounded-xl border border-border bg-card p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element -- Product Hunt CDN logo */}
         <img
           alt="Get Market Intelligence.in"
           src={PRODUCT_LOGO}

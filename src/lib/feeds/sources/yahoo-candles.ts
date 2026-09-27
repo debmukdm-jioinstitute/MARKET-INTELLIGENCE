@@ -62,7 +62,7 @@ function parseYahooCandles(json: unknown): Candle[] {
 /** OHLCV from Yahoo chart API — backs India index hero when Upstox intraday/history is empty. */
 export async function fetchYahooCandles(yahooSymbol: string, range: CandleRange): Promise<Candle[]> {
   const { yahooRange, interval, trimDays } = yahooChartParams(range);
-  let sym = yahooSymbol;
+  const sym = yahooSymbol;
 
   const fetchOne = async (ticker: string) => {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${yahooRange}`;
