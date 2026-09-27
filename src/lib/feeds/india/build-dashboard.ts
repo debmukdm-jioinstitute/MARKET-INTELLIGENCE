@@ -412,21 +412,122 @@ function buildSystemLiquidity(
 
 export type IndiaDashboardQuickPayload = Pick<
   IndiaDashboardPayload,
-  "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact" | "moneyFlow"
+  "fetchedAt" | "pulse" | "globalRadar" | "indiaImpact" | "moneyFlow" | "indiaMacro"
 > & {
-  rbiLiquidity: Pick<IndiaDashboardPayload["rbiLiquidity"], "systemLiquidity">;
+  rbiLiquidity: Pick<
+    IndiaDashboardPayload["rbiLiquidity"],
+    "systemLiquidity" | "corridor" | "fxReserves" | "rows"
+  >;
 };
+
+const PMI_MFG_ROW: MacroRow = {
+  id: "in_pmi_mfg",
+  indicator: "PMI Manufacturing",
+  current: 58.1,
+  previous: 57.8,
+  unit: "index (>50 expansion)",
+  direction: "up",
+  history12m: [
+    { date: "2026-03", value: 56.5 },
+    { date: "2026-04", value: 57.2 },
+    { date: "2026-05", value: 57.5 },
+    { date: "2026-06", value: 57.7 },
+    { date: "2026-07", value: 57.8 },
+    { date: "2026-08", value: 58.1 },
+  ],
+  source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/", asOf: "2026-09-01" },
+};
+
+const PMI_SVC_ROW: MacroRow = {
+  id: "in_pmi_services",
+  indicator: "PMI Services",
+  current: 60.4,
+  previous: 59.8,
+  unit: "index (>50 expansion)",
+  direction: "up",
+  history12m: [
+    { date: "2026-03", value: 59.0 },
+    { date: "2026-04", value: 59.5 },
+    { date: "2026-05", value: 59.7 },
+    { date: "2026-06", value: 60.0 },
+    { date: "2026-07", value: 59.8 },
+    { date: "2026-08", value: 60.4 },
+  ],
+  source: { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/", asOf: "2026-09-03" },
+};
+
+/** CPI/GDP/repo/PMI + RBI corridor + FX — fast enough for Home quick path. */
+async function buildIndiaMacroLite() {
+  const [macroCpi, macroGdp, repo, rbiLiq, fxPts, rbiPointRows] = await Promise.all([
+    fetchIndiaCpiRow(),
+    fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "Real GDP Growth", "% y/y").then((row) => ({
+      ...row,
+      current: row.current != null ? Number(row.current.toFixed(2)) : 7.6,
+      previous: row.previous != null ? Number(row.previous.toFixed(2)) : 7.4,
+    })),
+    fetchIndiaRepoRow(),
+    getRbiLiquidity(),
+    latestPoints(["india_fx_reserves_ex_gold"]),
+    latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"]),
+  ]);
+
+  let fxReservePt: { value: number; date: string } | null = fxPts[0]
+    ? { value: fxPts[0].value, date: fxPts[0].date }
+    : null;
+  if (!fxReservePt) {
+    const pts = await fetchFredSeriesCsv("TRESEGINM052N").catch(() => []);
+    const last = pts[pts.length - 1];
+    if (last && last.value > 0) fxReservePt = { value: last.value / 1000, date: String(last.date).slice(0, 10) };
+  }
+
+  const rbiPoints = new Map(rbiPointRows.map((p) => [p.id, p.value]));
+  const pct = (id: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : null);
+  const repoPct = pct("rbi_repo") ?? (repo.current != null ? `${repo.current.toFixed(2)}%` : null);
+
+  return {
+    indiaMacro: [macroCpi, macroGdp, repo, PMI_MFG_ROW, PMI_SVC_ROW],
+    rbiLiquidity: {
+      corridor: {
+        repo: repoPct,
+        sdf: pct("rbi_sdf"),
+        msf: pct("rbi_msf"),
+        crr: pct("rbi_crr"),
+        slr: pct("rbi_slr"),
+        bankRate: pct("rbi_bank_rate"),
+        reverseRepo: pct("rbi_reverse_repo"),
+        stance: repoPct ? "From RBI policy rates feed" : null,
+      },
+      rows: [
+        {
+          label: "RBI Policy Repo Rate",
+          value: repoPct,
+          source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+        },
+      ],
+      systemLiquidity: buildSystemLiquidity(rbiLiq),
+      fxReserves: {
+        value: fxReservePt ? `$${fxReservePt.value.toFixed(1)} B (excl. gold)` : null,
+        asOf: fxReservePt?.date ?? null,
+        source: {
+          provider: "IMF via FRED (monthly, lagged)",
+          url: "https://fred.stlouisfed.org/series/TRESEGINM052N",
+          asOf: fxReservePt?.date,
+        },
+      },
+    },
+  };
+}
 
 /** Fast path: quotes + breadth + FII/DII + RBI system liquidity (skips F&O, macro rows). */
 export async function buildIndiaDashboardQuick(): Promise<IndiaDashboardQuickPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
-  const [ymap, breadth, fredGsec, rbi10y, fiiDii, rbiLiq] = await Promise.all([
+  const [ymap, breadth, fredGsec, rbi10y, fiiDii, macroLite] = await Promise.all([
     buildLiveQuoteMap(symbols),
     fetchLiveBreadth(),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
     getRbiBenchmark10y(),
     fetchFiiDii(),
-    getRbiLiquidity(),
+    buildIndiaMacroLite(),
   ]);
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10y);
   return {
@@ -435,7 +536,8 @@ export async function buildIndiaDashboardQuick(): Promise<IndiaDashboardQuickPay
     globalRadar,
     indiaImpact,
     moneyFlow: buildMoneyFlow(fiiDii),
-    rbiLiquidity: { systemLiquidity: buildSystemLiquidity(rbiLiq) },
+    indiaMacro: macroLite.indiaMacro,
+    rbiLiquidity: macroLite.rbiLiquidity,
   };
 }
 

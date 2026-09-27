@@ -11,12 +11,12 @@ import { MetricInfo } from "@/components/ui/metric-info";
 export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null }) {
   const radar = data?.globalRadar;
 
-  const spx = radar?.["^GSPC"];
-  const ndx = radar?.["^IXIC"];
-  const dji = radar?.["^DJI"];
-  const tnx = radar?.["^TNX"];
-  const dxy = radar?.["DX-Y.NYB"];
-  const vix = radar?.["^VIX"];
+  const spx = radar?.sp500 ?? radar?.["^GSPC"];
+  const ndx = radar?.nasdaq ?? radar?.["^IXIC"];
+  const dji = radar?.dow ?? radar?.["^DJI"];
+  const tnx = radar?.us10y ?? radar?.["^TNX"];
+  const dxy = radar?.dxy ?? radar?.["DX-Y.NYB"];
+  const vix = radar?.vix ?? radar?.["^VIX"];
 
   const indices = [
     { name: "S&P 500", metricKey: "sp500", chg: spx?.changePct, source: spx?.source },

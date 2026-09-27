@@ -30,14 +30,15 @@ async function loadIndiaDashboard(url: string, mutate: DashboardMutate, onFirstF
           globalRadar: q.globalRadar ?? base.globalRadar,
           indiaImpact: q.indiaImpact ?? base.indiaImpact,
           moneyFlow: q.moneyFlow ?? base.moneyFlow,
+          indiaMacro: q.indiaMacro?.length ? q.indiaMacro : base.indiaMacro,
           rbiLiquidity: q.rbiLiquidity
             ? {
                 ...base.rbiLiquidity,
                 ...q.rbiLiquidity,
                 systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
-                corridor: base.rbiLiquidity.corridor,
-                rows: base.rbiLiquidity.rows,
-                fxReserves: base.rbiLiquidity.fxReserves,
+                corridor: q.rbiLiquidity.corridor ?? base.rbiLiquidity.corridor,
+                rows: q.rbiLiquidity.rows?.length ? q.rbiLiquidity.rows : base.rbiLiquidity.rows,
+                fxReserves: q.rbiLiquidity.fxReserves ?? base.rbiLiquidity.fxReserves,
               }
             : base.rbiLiquidity,
         };

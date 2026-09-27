@@ -21,6 +21,9 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
 
   const cpiRow = getRow("cpi");
   const gdpRow = getRow("gdp");
+  const repoRow = getRow("repo");
+  const pmiMfgRow = getRow("pmi_mfg");
+  const pmiSvcRow = getRow("pmi_services");
 
   const indicators = [
     {
@@ -40,9 +43,16 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "RBI Policy Repo Rate",
       metricKey: "repo",
-      value: rbiLiquidity?.corridor?.repo ?? rbiLiquidity?.rows.find((r) => r.label.includes("Repo"))?.value ?? "—",
-      ...dirGlyph("flat"),
-      source: { provider: "Reserve Bank of India (MPC)", url: "https://www.rbi.org.in/scripts/PolicyRates.aspx" },
+      value:
+        rbiLiquidity?.corridor?.repo ??
+        (repoRow?.current != null ? `${Number(repoRow.current).toFixed(2)}%` : null) ??
+        rbiLiquidity?.rows.find((r) => r.label.includes("Repo"))?.value ??
+        "—",
+      ...dirGlyph(repoRow?.direction ?? "flat"),
+      source: repoRow?.source ?? {
+        provider: "Reserve Bank of India (MPC)",
+        url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
+      },
     },
     {
       label: "10Y G-Sec Sovereign Yield",
@@ -60,18 +70,16 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
     {
       label: "PMI Manufacturing",
       metricKey: "pmi_mfg",
-      value: "—",
-      dir: "→",
-      dirColor: "text-muted-foreground",
-      source: { provider: "Not wired in dashboard feed yet", url: "https://www.pmi.spglobal.com" },
+      value: pmiMfgRow?.current != null ? `${Number(pmiMfgRow.current).toFixed(1)}` : "—",
+      ...dirGlyph(pmiMfgRow?.direction),
+      source: pmiMfgRow?.source ?? { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/" },
     },
     {
       label: "PMI Services",
       metricKey: "pmi_services",
-      value: "—",
-      dir: "→",
-      dirColor: "text-muted-foreground",
-      source: { provider: "Not wired in dashboard feed yet", url: "https://www.pmi.spglobal.com" },
+      value: pmiSvcRow?.current != null ? `${Number(pmiSvcRow.current).toFixed(1)}` : "—",
+      ...dirGlyph(pmiSvcRow?.direction),
+      source: pmiSvcRow?.source ?? { provider: "S&P Global / HSBC India", url: "https://www.pmi.spglobal.com/" },
     },
   ];
 

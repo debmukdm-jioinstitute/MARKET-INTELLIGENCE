@@ -42,7 +42,13 @@ export async function GET(request: Request) {
         globalRadar: payload.globalRadar,
         indiaImpact: payload.indiaImpact,
         moneyFlow: payload.moneyFlow,
-        rbiLiquidity: { systemLiquidity: payload.rbiLiquidity.systemLiquidity },
+        indiaMacro: payload.indiaMacro,
+        rbiLiquidity: {
+          systemLiquidity: payload.rbiLiquidity.systemLiquidity,
+          corridor: payload.rbiLiquidity.corridor,
+          fxReserves: payload.rbiLiquidity.fxReserves,
+          rows: payload.rbiLiquidity.rows,
+        },
       },
     };
     return NextResponse.json(payload, {
