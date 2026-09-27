@@ -1,6 +1,7 @@
 "use client";
 
 import type { OptionChainSnapshot } from "@/lib/feeds/derivatives/types";
+import { pickControlledString } from "@/lib/react/pick-controlled-list-item";
 import useSWR from "swr";
 import { useMemo, useState } from "react";
 
@@ -20,10 +21,7 @@ export function useOptionExpiries(underlyingKey: string) {
 
   const expiries = useMemo(() => data?.expiries ?? [], [data?.expiries]);
 
-  const effectiveExpiry = useMemo(() => {
-    if (!expiries.length) return expiry;
-    return expiries.includes(expiry) ? expiry : (expiries[0] ?? "");
-  }, [expiries, expiry]);
+  const effectiveExpiry = useMemo(() => pickControlledString(expiries, expiry), [expiries, expiry]);
 
   return { 
     expiries, 

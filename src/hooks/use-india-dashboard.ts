@@ -2,60 +2,69 @@
 
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { useCallback, useRef, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import useSWR, { type MutatorCallback, useSWRConfig } from "swr";
+
+type DashboardMutate = (
+  key: string,
+  data?: IndiaDashboardPayload | MutatorCallback<IndiaDashboardPayload> | undefined,
+  opts?: { revalidate?: boolean },
+) => void;
+
+/** Module-level loader — never define `const fetcher = async` inside a hook body (SWR #185). */
+async function loadIndiaDashboard(url: string, mutate: DashboardMutate, onFirstFull: () => void): Promise<IndiaDashboardPayload> {
+  const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
+  if (quickRes.ok) {
+    const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
+
+    mutate(
+      url,
+      (prev: IndiaDashboardPayload | undefined) => {
+        const base = prev ?? emptyShell();
+        const q = quick as Partial<IndiaDashboardPayload> & {
+          rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
+        };
+        return {
+          ...base,
+          fetchedAt: q.fetchedAt ?? base.fetchedAt,
+          pulse: q.pulse ?? base.pulse,
+          globalRadar: q.globalRadar ?? base.globalRadar,
+          indiaImpact: q.indiaImpact ?? base.indiaImpact,
+          moneyFlow: q.moneyFlow ?? base.moneyFlow,
+          rbiLiquidity: q.rbiLiquidity
+            ? {
+                ...base.rbiLiquidity,
+                ...q.rbiLiquidity,
+                systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
+                corridor: base.rbiLiquidity.corridor,
+                rows: base.rbiLiquidity.rows,
+                fxReserves: base.rbiLiquidity.fxReserves,
+              }
+            : base.rbiLiquidity,
+        };
+      },
+      { revalidate: false },
+    );
+  }
+
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const full = (await res.json()) as IndiaDashboardPayload;
+  onFirstFull();
+  return full;
+}
 
 export function useIndiaDashboard(refreshMs = 55_000) {
   const { mutate } = useSWRConfig();
   const [loadingFull, setLoadingFull] = useState(true);
   const fullLoadedRef = useRef(false);
 
-  /** Stable fetcher — inline fn each render made SWR revalidate forever (React #185 on Home). */
   const fetcher = useCallback(
-    async (url: string) => {
-      const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
-      if (quickRes.ok) {
-        const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
-
-        mutate(
-          url,
-          (prev: IndiaDashboardPayload | undefined) => {
-            const base = prev ?? emptyShell();
-            const q = quick as Partial<IndiaDashboardPayload> & {
-              rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
-            };
-            return {
-              ...base,
-              fetchedAt: q.fetchedAt ?? base.fetchedAt,
-              pulse: q.pulse ?? base.pulse,
-              globalRadar: q.globalRadar ?? base.globalRadar,
-              indiaImpact: q.indiaImpact ?? base.indiaImpact,
-              moneyFlow: q.moneyFlow ?? base.moneyFlow,
-              rbiLiquidity: q.rbiLiquidity
-                ? {
-                    ...base.rbiLiquidity,
-                    ...q.rbiLiquidity,
-                    systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
-                    corridor: base.rbiLiquidity.corridor,
-                    rows: base.rbiLiquidity.rows,
-                    fxReserves: base.rbiLiquidity.fxReserves,
-                  }
-                : base.rbiLiquidity,
-            };
-          },
-          { revalidate: false },
-        );
-      }
-
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const full = (await res.json()) as IndiaDashboardPayload;
-
-      if (!fullLoadedRef.current) {
+    (url: string) =>
+      loadIndiaDashboard(url, mutate as DashboardMutate, () => {
+        if (fullLoadedRef.current) return;
         fullLoadedRef.current = true;
         setLoadingFull(false);
-      }
-      return full;
-    },
+      }),
     [mutate],
   );
 

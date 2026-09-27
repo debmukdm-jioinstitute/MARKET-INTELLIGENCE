@@ -2,6 +2,7 @@
 
 import { useNavSections } from "@/components/layout/app-nav";
 import { SECTION_LANDING_HREF, type NavGroup, type NavSection } from "@/lib/nav-columns";
+import { pickControlledString } from "@/lib/react/pick-controlled-list-item";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Compass } from "lucide-react";
 import Link from "next/link";
@@ -43,11 +44,7 @@ export function HomeExploreHub() {
   const titles = useMemo(() => sections.map((s) => s.title), [sections]);
   const [active, setActive] = useState("Today");
 
-  /** Derive tab when portal filters change — never setState in an effect (React #185 loop). */
-  const effectiveActive = useMemo(() => {
-    if (!titles.length) return active;
-    return titles.includes(active) ? active : titles[0]!;
-  }, [titles, active]);
+  const effectiveActive = useMemo(() => pickControlledString(titles, active), [titles, active]);
 
   const section: NavSection | undefined = sections.find((s) => s.title === effectiveActive) ?? sections[0];
   const landing = section ? SECTION_LANDING_HREF[section.title] : "/Home";

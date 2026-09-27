@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "npm run check:typography && eslint",
+    "lint": "npm run check:typography && npm run check:react-loops && eslint",
     "check:typography": "node scripts/check-typography.mjs",
+    "check:react-loops": "node scripts/check-react-update-loops.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "test": "vitest run"
   },
