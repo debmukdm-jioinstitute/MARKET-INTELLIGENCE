@@ -11,8 +11,8 @@ export class AuthRequiredError extends Error {
 }
 
 /** JSON fetcher that surfaces 401 instead of returning error payloads as data. */
-export async function fetchJsonAuth<T>(url: string): Promise<T> {
-  const res = await fetch(url, { cache: "no-store" });
+export async function fetchJsonAuth<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { cache: "no-store", ...init });
   if (res.status === 401) throw new AuthRequiredError();
   const json = (await res.json()) as T & { error?: string };
   if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);

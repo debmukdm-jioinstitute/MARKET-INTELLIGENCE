@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
+import { OptionStratPanel } from "@/components/scanner/optionstrat-panel";
 import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 
@@ -306,7 +307,15 @@ export function AiSignals() {
           No precomputed model for {indexLabel} at this horizon yet. It fills in after the next signals job (post NSE close). Try NIFTY 50 · 1 session meanwhile.
         </p>
       ) : (
-        <IndexModelSection horizon={horizon} model={model} indexLabel={indexLabel} />
+        <>
+          <IndexModelSection horizon={horizon} model={model} indexLabel={indexLabel} />
+          <OptionStratPanel
+            key={`${indexId}-${model.call}`}
+            indexId={indexId}
+            indexLabel={indexLabel}
+            modelCall={model.call}
+          />
+        </>
       )}
 
       <Panel
