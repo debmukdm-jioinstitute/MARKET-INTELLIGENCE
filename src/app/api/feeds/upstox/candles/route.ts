@@ -5,6 +5,7 @@ import {
   fetchUpstoxIntradayCandles,
   type CandleRange,
 } from "@/lib/feeds/sources/upstox";
+import { fetchYahooCandles, yahooTickerForIndiaSymbol } from "@/lib/feeds/sources/yahoo-candles";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -36,18 +37,29 @@ export async function GET(req: Request) {
   }
 
   try {
+    let candles: Awaited<ReturnType<typeof fetchUpstoxIntradayCandles>> = [];
     if (range === "1D") {
-      const candles = await fetchUpstoxIntradayCandles(instrument.instrumentKey, "5");
-      return NextResponse.json(
-        { symbol: instrument.symbol, range, candles },
-        { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } },
-      );
+      candles = await fetchUpstoxIntradayCandles(instrument.instrumentKey, "5");
+    } else {
+      const { from, to } = candleRangeToDates(range);
+      candles = await fetchUpstoxHistoricalCandles(instrument.instrumentKey, "days", "1", from, to);
     }
-    const { from, to } = candleRangeToDates(range);
-    const candles = await fetchUpstoxHistoricalCandles(instrument.instrumentKey, "days", "1", from, to);
+
+    let source: "upstox" | "yahoo" = "upstox";
+    if (!candles.length) {
+      const yahoo = yahooTickerForIndiaSymbol(symbol, instrument.symbol);
+      candles = await fetchYahooCandles(yahoo, range);
+      if (candles.length) source = "yahoo";
+    }
+
+    const cache =
+      range === "1D"
+        ? "public, max-age=30, stale-while-revalidate=60"
+        : "public, max-age=300, stale-while-revalidate=600";
+
     return NextResponse.json(
-      { symbol: instrument.symbol, range, candles },
-      { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" } },
+      { symbol: instrument.symbol, range, candles, source },
+      { headers: { "Cache-Control": cache } },
     );
   } catch (e) {
     return NextResponse.json(

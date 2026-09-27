@@ -64,13 +64,10 @@ export function LiveStreamTicker() {
       aria-label="Live market stream"
     >
       <div className="flex h-10 items-stretch">
-        <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-muted px-4">
-          <span className="relative flex h-2 w-2">
+        <div className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-muted px-3 sm:px-4">
+          <span className="relative flex h-2 w-2" aria-hidden>
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          <span className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
-            Live stream
           </span>
           <MetricExplainer copyKey="ticker_stream" />
         </div>
