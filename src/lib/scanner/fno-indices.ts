@@ -1,12 +1,12 @@
 import type { IndexSignalBlock, SignalsRun } from "./types";
 
-/** Primary NSE F&O index underlyings (Yahoo Finance daily chart tickers). */
+/** Primary NSE F&O index underlyings — Yahoo where reliable; else NSE `ind_close_all_*` archive name. */
 export const FNO_INDEX_OPTIONS = [
   { id: "nifty50", label: "NIFTY 50", yahoo: "^NSEI" },
   { id: "banknifty", label: "BANK NIFTY", yahoo: "^NSEBANK" },
-  { id: "finnifty", label: "FINNIFTY", yahoo: "^CNXFIN" },
-  { id: "midcpnifty", label: "MIDCPNIFTY", yahoo: "^NSEMDCP50" },
-  { id: "niftynxt50", label: "NIFTYNXT50", yahoo: "^NN50" },
+  { id: "finnifty", label: "FINNIFTY", yahoo: "^CNXFIN", nseArchiveName: "Nifty Financial Services" },
+  { id: "midcpnifty", label: "MIDCPNIFTY", yahoo: "NIFTY_MID_SELECT.NS", nseArchiveName: "Nifty Midcap Select" },
+  { id: "niftynxt50", label: "NIFTYNXT50", yahoo: "^NSMIDCP" },
 ] as const;
 
 export type FnoIndexId = (typeof FNO_INDEX_OPTIONS)[number]["id"];
