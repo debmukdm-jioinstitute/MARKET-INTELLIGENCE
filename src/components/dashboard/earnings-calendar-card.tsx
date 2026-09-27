@@ -1,107 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays } from "lucide-react";
+import { ArrowUpRight, CalendarDays, RefreshCw } from "lucide-react";
+import useSWR from "swr";
 import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { cn } from "@/lib/utils";
+import type { EarningsCalendarItem, EarningsCalendarPeriod } from "@/lib/feeds/earnings/build-calendar";
 
-interface EarningsItem {
-  id: string;
-  company: string;
-  symbol: string;
-  period: "TODAY" | "TOMORROW" | "THIS WEEK";
-  timing: "After Market" | "Before Market" | "During Hours";
-  lastRevenue: string;
-  eps: string;
-  previousSurprise: string;
-  expectedResult: string;
-  portfolioWeight: string;
-  sourceUrl: string;
+type Panel = {
+  asOf: string;
+  items: EarningsCalendarItem[];
+  source: string;
+  priorQuarterNote: string;
+  failed?: number;
+};
+
+async function loadPanel(): Promise<Panel> {
+  const res = await fetch("/api/feeds/earnings-calendar", { cache: "no-store" });
+  if (!res.ok) throw new Error(`earnings-calendar ${res.status}`);
+  return res.json();
 }
 
-const EARNINGS_DATA: EarningsItem[] = [
-  {
-    id: "e-1",
-    company: "Tata Consultancy Services",
-    symbol: "TCS",
-    period: "TODAY",
-    timing: "After Market",
-    lastRevenue: "₹64,259 Cr",
-    eps: "₹33.20",
-    previousSurprise: "+2.4%",
-    expectedResult: "₹65,400 Cr (Consensus)",
-    portfolioWeight: "7.8%",
-    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
-  },
-  {
-    id: "e-2",
-    company: "Reliance Industries",
-    symbol: "RELIANCE",
-    period: "TOMORROW",
-    timing: "Before Market",
-    lastRevenue: "₹2,35,481 Cr",
-    eps: "₹28.40",
-    previousSurprise: "+1.8%",
-    expectedResult: "₹2,42,000 Cr (Jio ARPU Focus)",
-    portfolioWeight: "9.4%",
-    sourceUrl: "https://www.nseindia.com/companies-listing/corporate-filings-announcements",
-  },
-  {
-    id: "e-3",
-    company: "HDFC Bank Ltd",
-    symbol: "HDFCBANK",
-    period: "TOMORROW",
-    timing: "After Market",
-    lastRevenue: "₹85,182 Cr",
-    eps: "₹21.60",
-    previousSurprise: "+3.2%",
-    expectedResult: "₹88,200 Cr (NII Expansion)",
-    portfolioWeight: "11.2%",
-    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
-  },
-  {
-    id: "e-4",
-    company: "Infosys Ltd",
-    symbol: "INFY",
-    period: "THIS WEEK",
-    timing: "After Market",
-    lastRevenue: "₹40,986 Cr",
-    eps: "₹15.80",
-    previousSurprise: "+0.9%",
-    expectedResult: "₹41,800 Cr (CC Guidance)",
-    portfolioWeight: "5.6%",
-    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
-  },
-  {
-    id: "e-5",
-    company: "Asian Paints",
-    symbol: "ASIANPAINT",
-    period: "THIS WEEK",
-    timing: "Before Market",
-    lastRevenue: "₹9,103 Cr",
-    eps: "₹12.40",
-    previousSurprise: "-1.5%",
-    expectedResult: "₹9,350 Cr (Margin Check)",
-    portfolioWeight: "3.1%",
-    sourceUrl: "https://www.nseindia.com/companies-listing/corporate-filings-announcements",
-  },
-  {
-    id: "e-6",
-    company: "Bajaj Finance",
-    symbol: "BAJFINANCE",
-    period: "THIS WEEK",
-    timing: "After Market",
-    lastRevenue: "₹14,928 Cr",
-    eps: "₹58.10",
-    previousSurprise: "+4.1%",
-    expectedResult: "₹16,100 Cr (AUM Expansion)",
-    portfolioWeight: "4.5%",
-    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
-  },
-];
+function fmtAsOf(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 export function EarningsCalendarCard() {
-  const periods: ("TODAY" | "TOMORROW" | "THIS WEEK")[] = ["TODAY", "TOMORROW", "THIS WEEK"];
+  const { data, error, isLoading, mutate, isValidating } = useSWR("earnings-calendar-v1", loadPanel, {
+    refreshInterval: 6 * 60 * 60 * 1000,
+    revalidateOnFocus: true,
+  });
+
+  const periods: EarningsCalendarPeriod[] = ["TODAY", "TOMORROW", "THIS WEEK"];
+  const items = data?.items ?? [];
 
   return (
     <div className="bento-card-shell bg-gradient-to-b from-card to-card/60">
@@ -122,23 +62,53 @@ export function EarningsCalendarCard() {
             label="Earnings title"
             className="text-base font-bold text-foreground mt-0.5"
           >
-            SEBI Reg 33 Official Results Schedule
+            Upcoming results dates (large caps)
           </EditableCopy>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {data?.asOf
+              ? `Yahoo calendar · refreshed ${fmtAsOf(data.asOf)} IST · ${data.priorQuarterNote}`
+              : isLoading
+                ? "Loading earnings dates…"
+                : error
+                  ? "Could not refresh calendar."
+                  : null}
+          </p>
         </div>
 
-        <Link
-          href="/research"
-          className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
-        >
-          View Research Desk
-          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => mutate()}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            disabled={isValidating}
+          >
+            <RefreshCw className={cn("size-3.5", isValidating && "animate-spin")} />
+            Refresh
+          </button>
+          <Link
+            href="/research"
+            className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
+          >
+            View Research Desk
+            <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
       </div>
 
       <div className="mt-4 space-y-4">
+        {items.length === 0 && !isLoading ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            No earnings in the next 14 days for tracked Nifty names — check{" "}
+            <Link href="/research" className="text-primary underline">
+              research desk
+            </Link>
+            .
+          </p>
+        ) : null}
+
         {periods.map((p) => {
-          const items = EARNINGS_DATA.filter((e) => e.period === p);
-          if (items.length === 0) return null;
+          const bucket = items.filter((e) => e.period === p);
+          if (bucket.length === 0) return null;
           return (
             <div key={p} className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-sm font-bold tracking-wider text-muted-foreground uppercase border-b border-border/40 pb-1">
@@ -147,14 +117,17 @@ export function EarningsCalendarCard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {items.map((item) => (
+                {bucket.map((item) => (
                   <div
                     key={item.id}
                     className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2 hover:border-border transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                         <span className="font-bold text-foreground text-sm">{item.symbol}</span>
+                        <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground tabular-nums">
+                          {item.date}
+                        </span>
                         <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground">
                           {item.timing}
                         </span>
@@ -162,34 +135,45 @@ export function EarningsCalendarCard() {
                           metric="earnings_results"
                           customTitle={`${item.company} Financial Results`}
                           sourceOverride={{
-                            provider: "Exchange Regulatory Filing (BSE / NSE)",
+                            provider: data?.source ?? "Yahoo Finance",
                             url: item.sourceUrl,
                           }}
                         />
                       </div>
-                      <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-sm font-bold text-emerald-600">
-                        Weight: {item.portfolioWeight}
-                      </span>
+                      {item.portfolioWeight ? (
+                        <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-sm font-bold text-emerald-600 shrink-0">
+                          Weight: {item.portfolioWeight}
+                        </span>
+                      ) : null}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm pt-1 border-t border-border/40">
                       <div>
                         <span className="text-muted-foreground block text-sm">Last Rev:</span>
-                        <span className="font-semibold text-foreground">{item.lastRevenue}</span>
+                        <span className="font-semibold text-foreground">{item.lastRevenue ?? "—"}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-sm">Last EPS:</span>
-                        <span className="font-semibold text-foreground">{item.eps}</span>
+                        <span className="font-semibold text-foreground">{item.eps ?? "—"}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-sm">Surprise:</span>
-                        <span className="font-semibold text-emerald-600">{item.previousSurprise}</span>
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            item.previousSurprise?.startsWith("-")
+                              ? "text-rose-600"
+                              : item.previousSurprise
+                                ? "text-emerald-600"
+                                : "text-muted-foreground",
+                          )}
+                        >
+                          {item.previousSurprise ?? "—"}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-sm">Consensus:</span>
-                        <span className="font-semibold text-foreground truncate block">
-                          {item.expectedResult}
-                        </span>
+                        <span className="text-muted-foreground block text-sm">Note:</span>
+                        <span className="font-semibold text-foreground truncate block">{item.expectedResult}</span>
                       </div>
                     </div>
                   </div>
