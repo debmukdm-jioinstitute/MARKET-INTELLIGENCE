@@ -182,6 +182,30 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+/** Default route when tapping a bottom-tab section on mobile (matches START_HERE intent). */
+export const SECTION_LANDING_HREF: Record<string, string> = {
+  Today: "/Home",
+  Invest: "/research",
+  Trade: "/intelligence/scanner",
+  "My Portfolio": "/portfolio",
+  "Data & Tools": "/data",
+};
+
+/** First allowed in-app page for a nav section (mobile bottom bar direct navigation). */
+export function sectionLandingHref(
+  section: NavSection,
+  hrefAllowed: (href: string) => boolean = () => true,
+): string {
+  const preferred = SECTION_LANDING_HREF[section.title];
+  if (preferred && hrefAllowed(preferred)) return preferred;
+  for (const group of section.groups) {
+    for (const item of group.items) {
+      if (!item.external && hrefAllowed(item.href)) return item.href;
+    }
+  }
+  return hrefAllowed("/Home") ? "/Home" : "/markets";
+}
+
 /** Beginner shortcuts shown at the top of the full menu. */
 export const START_HERE = [
   { label: "Just want today's view?", cta: "Read the Daily Brief", href: "/intelligence/brief" },

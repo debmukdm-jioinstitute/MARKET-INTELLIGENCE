@@ -3,7 +3,16 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { usePortalPages } from "@/components/providers/portal-page-provider";
-import { NAV_SECTIONS, START_HERE, findGroup, slug, type NavGroup, type NavLink, type NavSection } from "@/lib/nav-columns";
+import {
+  NAV_SECTIONS,
+  START_HERE,
+  findGroup,
+  sectionLandingHref,
+  slug,
+  type NavGroup,
+  type NavLink,
+  type NavSection,
+} from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
@@ -233,11 +242,12 @@ export function AppNavTrigger() {
   );
 }
 
-/** Phone/tablet bottom tab bar: one tap on a section opens the menu already expanded to it. */
+/** Phone/tablet bottom tab bar: one tap navigates to the section landing page. */
 export function BottomTabBar() {
   const sections = useNavSections();
   const path = usePathname();
-  const { open, section, openSection } = useMobileNav();
+  const { setOpen, openSection } = useMobileNav();
+  const { hrefAllowed } = usePortalPages();
   const current = findGroup(sections, path);
   return (
     <nav
@@ -248,13 +258,20 @@ export function BottomTabBar() {
       {sections.slice(0, 5).map((sec) => {
         const Icon = SECTION_ICONS[sec.title] ?? BarChart3;
         const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
-        const on = (open && section === sec.title) || (!open && current?.section.title === sec.title);
+        const landing = sectionLandingHref(sec, hrefAllowed);
+        const on =
+          current?.section.title === sec.title ||
+          path === landing ||
+          (landing.length > 1 && path.startsWith(`${landing}/`));
         return (
-          <button
+          <Link
             key={sec.title}
             id={`nav-bottom-${slug(sec.title)}`}
-            type="button"
-            onClick={() => (open && section === sec.title ? openSection(null) : openSection(sec.title))}
+            href={landing}
+            onClick={() => {
+              openSection(null);
+              setOpen(false);
+            }}
             aria-current={on ? "page" : undefined}
             className={cn(
               "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95",
@@ -270,7 +287,7 @@ export function BottomTabBar() {
             ) : null}
             <Icon className={cn("size-5 transition-transform duration-200", on && "scale-110")} />
             <span className="max-w-full truncate">{sec.title === "My Portfolio" ? "Portfolio" : sec.title === "Data & Tools" ? "Tools" : sec.title}</span>
-          </button>
+          </Link>
         );
       })}
     </nav>
