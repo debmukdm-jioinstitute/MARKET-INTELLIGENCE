@@ -2,6 +2,8 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { HelpToolRow } from "@/lib/help/mcp-tool-guide";
+import { ClaudeMcpSetupVisual } from "@/components/help/claude-mcp-setup-visual";
+import { CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
 
@@ -124,34 +126,24 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             </p>
             <Code>{ENDPOINT}</Code>
 
-            <Accordion type="single" collapsible className="mt-4 border-t border-border pt-2">
-              <AccordionItem value="claude-web">
-                <AccordionTrigger className="text-sm font-semibold">
-                  Claude app (claude.ai) — custom connector
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  <p className="mb-3">
-                    Official <b>Custom connector</b> — paste our URL in Claude settings. Step-by-step with copy button:{" "}
-                    <Link href="/connect/claude" className="text-blue-600 hover:underline">
-                      /connect/claude
-                    </Link>
-                    .
-                  </p>
-                  <Steps
-                    items={[
-                      "Sign in at claude.ai → Customize → Connectors.",
-                      "Click + → Add custom connector.",
-                      `Name: ${CLAUDE_CONNECTOR.name}. URL: ${ENDPOINT} (no OAuth fields).`,
-                      "New chat → + → Connectors → enable Market Intelligence.",
-                      "Ask about stress index, NIFTY, or scanners.",
-                    ]}
-                  />
-                  <p className="mt-2 text-xs">Free plan: one custom connector. Connection runs from Anthropic cloud to our server.</p>
-                </AccordionContent>
-              </AccordionItem>
+            <div className="mt-8 border-t border-border pt-8">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-base font-semibold text-foreground">Claude — custom connector (step by step)</h3>
+                <Link href="/connect/claude" className="text-sm font-medium text-blue-600 hover:underline">
+                  Shareable page →
+                </Link>
+              </div>
+              <ClaudeMcpSetupVisual endpoint={ENDPOINT} connectorName={CLAUDE_CONNECTOR.name} />
+            </div>
 
+            <Accordion type="single" collapsible className="mt-8 border-t border-border pt-2">
               <AccordionItem value="cursor">
-                <AccordionTrigger className="text-sm font-semibold">Cursor (recommended for many users)</AccordionTrigger>
+                <AccordionTrigger className="text-sm font-semibold">
+                  <span className="flex items-center gap-2">
+                    <CursorBrandIcon className="h-6 w-6" />
+                    Cursor (recommended for many users)
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   <Steps
                     items={[
