@@ -23,6 +23,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 1. **Unstable SWR fetcher** — `const fetcher = async` inside a hook body without `useCallback`, or inline `async` passed to `useSWR`. New function identity every render → endless revalidate → `setState` in fetcher → loop. **Fix:** module-level loader (see `loadIndiaDashboard` in `src/hooks/use-india-dashboard.ts`) or `useCallback` with minimal deps.
 2. **Effect-synced list selection** — `useEffect(() => { if (!list.includes(x)) setX(list[0]) })` when the list flickers. **Fix:** derive with `pickControlledString` / `pickControlledListItem` from `src/lib/react/pick-controlled-list-item.ts` inside `useMemo`, not `useEffect`.
 
+3. **Unstable `useSyncExternalStore` snapshot** — `getSnapshot()` returning a new object/array when storage unchanged (e.g. `{ ...parsed }` every call). React treats each snapshot as changed → render loop. **Fix:** cache by localStorage raw string (see `getLocalSettings` / `getLocalHoldings` in `src/hooks/use-my-portfolio.ts`). SWR keys should use **primitives**, not settings objects.
+
 CI: `npm run check:react-loops` (part of `npm run lint`).
 
 ## Terminal parity (required for new features)

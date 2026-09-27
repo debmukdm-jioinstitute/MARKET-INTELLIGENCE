@@ -24,6 +24,8 @@ export type AddHoldingInput = {
 
 let cachedRaw: string | null = null;
 let cachedHoldings: Holding[] | null = null;
+let cachedSettingsRaw: string | null = null;
+let cachedSettings: PortfolioSettings | null = null;
 
 function getLocalHoldings(): Holding[] | null {
   if (typeof window === "undefined") return null;
@@ -68,13 +70,20 @@ function getLocalSettings(): PortfolioSettings {
   if (typeof window === "undefined") return DEFAULT_PORTFOLIO_SETTINGS;
   try {
     const raw = window.localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return DEFAULT_PORTFOLIO_SETTINGS;
+    if (!raw) {
+      cachedSettingsRaw = null;
+      cachedSettings = null;
+      return DEFAULT_PORTFOLIO_SETTINGS;
+    }
+    if (raw === cachedSettingsRaw && cachedSettings) return cachedSettings;
     const parsed = JSON.parse(raw) as Partial<PortfolioSettings>;
-    return {
+    cachedSettingsRaw = raw;
+    cachedSettings = {
       name: parsed.name ?? DEFAULT_PORTFOLIO_SETTINGS.name,
       benchmark: parsed.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
       baseCurrency: "INR",
     };
+    return cachedSettings;
   } catch {
     return DEFAULT_PORTFOLIO_SETTINGS;
   }
@@ -83,7 +92,11 @@ function getLocalSettings(): PortfolioSettings {
 function setLocalSettings(settings: PortfolioSettings) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    const next = JSON.stringify(settings);
+    if (cachedSettingsRaw === next && cachedSettings) return;
+    window.localStorage.setItem(SETTINGS_KEY, next);
+    cachedSettingsRaw = next;
+    cachedSettings = settings;
     window.dispatchEvent(new Event("mi_portfolio_settings_updated"));
   } catch {
     /* ignore */
@@ -128,6 +141,17 @@ const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, b
   return json as PortfolioAnalysis;
 };
 
+type PortfolioAnalysisKey = readonly [string, Holding[] | null, boolean, PortfolioSettings["benchmark"], string];
+
+function fetchPortfolioAnalysis([url, holdings, guest, benchmark, name]: PortfolioAnalysisKey) {
+  return fetcher([
+    url,
+    holdings,
+    guest,
+    { ...DEFAULT_PORTFOLIO_SETTINGS, benchmark, name, baseCurrency: "INR" },
+  ]);
+}
+
 export function useMyPortfolio(refreshMs = 60_000) {
   const { ready, isGuest } = useAuth();
   const locked = !ready || isGuest;
@@ -140,10 +164,13 @@ export function useMyPortfolio(refreshMs = 60_000) {
     if (locked) throw new Error("Log in or create an account to add or import holdings");
   }, [locked]);
 
+  // SWR key uses primitives only — object in key or unstable snapshot → revalidate / #185 loop.
   const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
-    ready ? ["/api/portfolio/analysis", localHoldings, isGuest, localSettings] : null,
-    fetcher,
-    { refreshInterval: refreshMs }
+    ready
+      ? (["/api/portfolio/analysis", localHoldings, isGuest, localSettings.benchmark, localSettings.name] as const)
+      : null,
+    fetchPortfolioAnalysis,
+    { refreshInterval: refreshMs },
   );
 
   const reload = useCallback(() => mutate(), [mutate]);
