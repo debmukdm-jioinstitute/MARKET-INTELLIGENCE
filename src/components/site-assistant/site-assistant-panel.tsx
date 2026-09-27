@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { GraduationCap, Lightbulb, Loader2, Send, Sparkles, X, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { OPEN_SITE_ASSISTANT_EVENT } from "@/lib/home/open-assistant";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const HINT_STORAGE_KEY = "mi.assistant.hint.dismissed";
@@ -590,6 +591,15 @@ export function SiteAssistantWidget() {
     setOpen((v) => !v);
     if (!open) dismissHint();
   };
+
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen(true);
+      dismissHint();
+    };
+    window.addEventListener(OPEN_SITE_ASSISTANT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_SITE_ASSISTANT_EVENT, onOpen);
+  }, []);
 
   return (
     <div className="site-assistant-widget pointer-events-none fixed bottom-[max(4.75rem,env(safe-area-inset-bottom,0px)+3.5rem)] right-[max(1rem,env(safe-area-inset-right,0px))] z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">

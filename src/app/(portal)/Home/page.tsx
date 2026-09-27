@@ -17,6 +17,8 @@ import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
 import { MoneyFlow } from "@/components/dashboard/money-flow";
 import { PageHeader } from "@/components/layout/page-header";
 import { RefreshCw } from "lucide-react";
+import { HomeAiFiveAgents } from "@/components/dashboard/home-ai-five-agents";
+import { HomeExploreHub } from "@/components/dashboard/home-explore-hub";
 import { ShippedPopup } from "@/components/marketing/shipped-popup";
 
 export default function DashboardPage() {
@@ -32,7 +34,7 @@ export default function DashboardPage() {
           titleAs="h1"
           kicker="INSTITUTIONAL COCKPIT"
           title="Executive Market & Portfolio Intelligence"
-          subtitle="Real-time multi-asset feeds, risk decomposition, macroeconomic telemetry, and live order books."
+          subtitle="Five AI agents, full portal map, and live India macro + portfolio telemetry on one board."
         />
 
         <div className="flex items-center gap-3">
@@ -53,6 +55,9 @@ export default function DashboardPage() {
           Feed Error: {error}
         </div>
       ) : null}
+
+      <HomeAiFiveAgents />
+      <HomeExploreHub />
 
       <div className="bento-grid-cols-12">
         <div className="lg:col-span-7 xl:col-span-8">
