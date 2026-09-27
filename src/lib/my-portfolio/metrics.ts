@@ -10,7 +10,7 @@ import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
 import { computeBrinsonSectorAttribution } from "@/lib/my-portfolio/brinson-sectors";
 import { benchmarkSupportsActiveShare, isIndiaBenchmark } from "@/lib/my-portfolio/benchmark-constituents";
-import { fetchBenchmarkHistory, weightsFor } from "@/lib/my-portfolio/benchmarks";
+import { fetchBenchmarkHistory, getBenchmarkStockWeights, getBenchmarkWeightsSnapshot } from "@/lib/my-portfolio/benchmarks";
 import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { CATEGORY_METRICS, CATEGORY_TITLES, GLOSSARY, OVERVIEW_METRICS } from "@/lib/my-portfolio/glossary";
 import type {
@@ -297,10 +297,12 @@ export async function computePortfolioAnalysis(
 ): Promise<PortfolioAnalysis> {
   if (holdings.length === 0) return emptyAnalysis(settings);
 
-  const [seriesList, benchmarkHistory, fxHistory] = await Promise.all([
+  const [seriesList, benchmarkHistory, fxHistory, benchWeights, benchSnapshot] = await Promise.all([
     Promise.all(holdings.map(fetchHoldingSeries)),
     fetchBenchmarkHistory(settings.benchmark),
     fetchYahooHistory("INR=X", "1y").catch(() => []),
+    getBenchmarkStockWeights(settings.benchmark),
+    getBenchmarkWeightsSnapshot(settings.benchmark),
   ]);
 
   const fxLast = fxHistory[fxHistory.length - 1]?.value ?? 87;
@@ -480,8 +482,13 @@ export async function computePortfolioAnalysis(
     );
   }
 
-  const benchWeights = weightsFor(settings.benchmark);
   const benchLabel = BENCHMARK_LABEL[settings.benchmark] ?? settings.benchmark;
+  const benchWeightNote =
+    benchSnapshot.method === "static_fallback"
+      ? "static fallback"
+      : benchSnapshot.method === "cap_yahoo"
+        ? `NSE constituents, cap-weight proxy (${benchSnapshot.asOf})`
+        : `NSE constituents, equal-weight (${benchSnapshot.asOf})`;
   if (benchmarkSupportsActiveShare(settings.benchmark)) {
     const names = new Set([...positions.map((r) => r.symbol), ...Object.keys(benchWeights)]);
     let activeShareSum = 0;
@@ -498,7 +505,7 @@ export async function computePortfolioAnalysis(
         pct(activeShare, 0),
         "approx",
         undefined,
-        `Active share vs ${benchLabel} constituent snapshot (see benchmark snapshot date in docs).`,
+        `Active share vs ${benchLabel} (${benchWeightNote}).`,
       ),
     );
   } else {
@@ -807,7 +814,7 @@ export async function computePortfolioAnalysis(
         symbolReturns.set(s.holding.symbol.toUpperCase(), end / start - 1);
       }
     }
-    const benchSyms = Object.keys(weightsFor(settings.benchmark));
+    const benchSyms = Object.keys(benchWeights);
     const missingBench = benchSyms.filter((sym) => !symbolReturns.has(sym.toUpperCase()));
     await Promise.all(
       missingBench.map(async (sym) => {
@@ -835,6 +842,7 @@ export async function computePortfolioAnalysis(
       symbolReturns,
       benchmark: settings.benchmark,
       benchmarkReturn: spec.benchmarkReturn,
+      benchStock: benchWeights,
     });
 
     const allocationEffect = sectorAttribution.reduce((sum, r) => sum + r.allocation, 0);

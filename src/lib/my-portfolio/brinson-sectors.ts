@@ -33,8 +33,11 @@ function sectorForPosition(p: PositionRow): string {
   return normalizeSectorLabel(p.sector, p.symbol);
 }
 
-function aggregateBenchmarkSectorWeights(benchmark: PortfolioSettings["benchmark"]): Map<string, number> {
-  const stock = weightsFor(benchmark);
+function aggregateBenchmarkSectorWeights(
+  benchmark: PortfolioSettings["benchmark"],
+  benchStock?: Record<string, number>,
+): Map<string, number> {
+  const stock = benchStock ?? weightsFor(benchmark);
   const map = new Map<string, number>();
   let sum = 0;
   for (const [sym, w] of Object.entries(stock)) {
@@ -74,10 +77,11 @@ export function computeBrinsonSectorAttribution(input: {
   symbolReturns: Map<string, number>;
   benchmark: PortfolioSettings["benchmark"];
   benchmarkReturn: number;
+  benchStock?: Record<string, number>;
 }): BrinsonSectorRow[] {
-  const { positions, symbolReturns, benchmark, benchmarkReturn } = input;
-  const benchStock = weightsFor(benchmark);
-  const wBenchSector = aggregateBenchmarkSectorWeights(benchmark);
+  const { positions, symbolReturns, benchmark, benchmarkReturn, benchStock: benchStockIn } = input;
+  const benchStock = benchStockIn ?? weightsFor(benchmark);
+  const wBenchSector = aggregateBenchmarkSectorWeights(benchmark, benchStock);
 
   const wPortSector = new Map<string, number>();
   const portSymbolsBySector = new Map<string, { sym: string; weight: number }[]>();

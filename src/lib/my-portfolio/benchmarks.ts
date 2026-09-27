@@ -28,15 +28,11 @@ export async function fetchBenchmarkHistory(benchmark: PortfolioSettings["benchm
   return points;
 }
 
-/**
- * Approximate, periodically-refreshed constituent weight snapshots — NOT live
- * index data. Used only to estimate Active Share (how different your holdings'
- * weights are from the benchmark's). Compiled from widely-published large-cap
- * index weightings; dated below. Good enough for an approximate "how
- * different from the index" read, not for precision index replication.
- */
+/** @deprecated Sync fallback only — prefer `getBenchmarkStockWeights` (NSE CSV + cap proxy). */
 export const BENCHMARK_SNAPSHOT_DATE = "2026-06-01";
 
 export function weightsFor(benchmark: PortfolioSettings["benchmark"]) {
   return benchmarkStockWeights(benchmark);
 }
+
+export { getBenchmarkSnapshotDate, getBenchmarkStockWeights, getBenchmarkWeightsSnapshot } from "@/lib/my-portfolio/benchmark-weights-live";

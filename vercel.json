@@ -5,6 +5,10 @@
       "schedule": "0 3 * * 1"
     },
     {
+      "path": "/api/cron/benchmark-constituents",
+      "schedule": "30 3 * * *"
+    },
+    {
       "path": "/api/cron/scrape-research",
       "schedule": "0 4 * * *"
     },

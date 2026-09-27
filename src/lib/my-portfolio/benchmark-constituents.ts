@@ -75,6 +75,9 @@ const SENSEX_WEIGHTS_RAW: Record<string, number> = {
   SUNPHARMA: 0.02,
 };
 
+/** BSE Sensex — symbol list for live weight refresh (Yahoo .BO cap proxy). */
+export const SENSEX_CONSTITUENT_SYMBOLS = Object.keys(SENSEX_WEIGHTS_RAW);
+
 const BANKNIFTY_WEIGHTS_RAW: Record<string, number> = {
   HDFCBANK: 0.27,
   ICICIBANK: 0.24,
