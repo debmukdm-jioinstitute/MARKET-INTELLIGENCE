@@ -14,6 +14,7 @@ import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GuidedTour } from "@/components/guided-tour";
 import { PortalPageGuard } from "@/components/layout/portal-page-guard";
+import { PortalPageTransition } from "@/components/layout/portal-page-transition";
 import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -28,9 +29,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <UpdatesBanner />
               <LiveStreamTicker />
               <TopBar />
-              <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-5 lg:pb-5">
+              <main className="portal-main flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scroll-smooth px-3 pt-3 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-4 md:p-5 md:pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
                 <GroupTabs />
-                <PortalPageGuard>{children}</PortalPageGuard>
+                <PortalPageGuard>
+                  <PortalPageTransition>{children}</PortalPageTransition>
+                </PortalPageGuard>
               </main>
               <BottomTabBar />
             </div>

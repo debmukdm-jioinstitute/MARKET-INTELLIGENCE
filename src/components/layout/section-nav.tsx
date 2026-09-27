@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,9 +14,13 @@ export interface SectionNavItem {
 /** In-page tab strip for switching between the sub-pages nested under a sidebar section. */
 export function SectionNav({ items }: { items: SectionNavItem[] }) {
   const path = usePathname();
+  const reduce = useReducedMotion();
 
   return (
-    <nav className="mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <nav
+      className="mb-6 flex flex-nowrap gap-1 overflow-x-auto border-b border-border scroll-px-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+      aria-label="Section pages"
+    >
       {items.map((item) => {
         const active =
           item.href === "/algo"
@@ -26,7 +31,7 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "relative flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors",
+              "relative flex min-h-11 shrink-0 snap-start items-center gap-1.5 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors touch-manipulation active:opacity-80",
               active
                 ? "text-blue-600"
                 : "text-muted-foreground hover:text-foreground",
@@ -43,7 +48,13 @@ export function SectionNav({ items }: { items: SectionNavItem[] }) {
                 {item.badge}
               </span>
             ) : null}
-            {active ? (
+            {active && !reduce ? (
+              <motion.span
+                layoutId="section-nav-indicator"
+                className="absolute inset-x-0 -bottom-px h-0.5 bg-blue-600"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              />
+            ) : active ? (
               <span className="absolute inset-x-0 -bottom-px h-0.5 bg-blue-600" />
             ) : null}
           </Link>

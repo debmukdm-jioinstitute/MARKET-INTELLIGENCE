@@ -30,7 +30,7 @@ export function PageHeader({
   const showKicker = Boolean(displayKicker || kicker);
 
   return (
-    <div className={cn("mb-4", className)}>
+    <div className={cn("portal-header-enter mb-4 sm:mb-5", className)}>
       {showKicker ? (
         <p
           data-mi-slot={kickerSlot}
@@ -110,7 +110,7 @@ export function Panel({
   const displaySubtitle = useSiteContent(subSlot, subtitleStr);
 
   return (
-    <section id={id} className={`rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] ${className ?? ""}`}>
+    <section id={id} className={`portal-panel-enter rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] ${className ?? ""}`}>
       <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3.5">
         <div>
           <h3

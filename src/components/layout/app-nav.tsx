@@ -256,9 +256,19 @@ export function BottomTabBar() {
             type="button"
             onClick={() => (open && section === sec.title ? openSection(null) : openSection(sec.title))}
             aria-current={on ? "page" : undefined}
-            className={cn("flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium transition-colors", on ? accent.text : "text-muted-foreground")}
+            className={cn(
+              "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95",
+              on ? accent.text : "text-muted-foreground",
+            )}
           >
-            <Icon className="size-5" />
+            {on ? (
+              <motion.span
+                layoutId="bottom-tab-indicator"
+                className={cn("absolute inset-x-2 top-0 h-0.5 rounded-full", accent.dot)}
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              />
+            ) : null}
+            <Icon className={cn("size-5 transition-transform duration-200", on && "scale-110")} />
             <span className="max-w-full truncate">{sec.title === "My Portfolio" ? "Portfolio" : sec.title === "Data & Tools" ? "Tools" : sec.title}</span>
           </button>
         );
@@ -338,7 +348,7 @@ export function AppNav() {
                 <p className="mb-2 text-sm font-semibold text-gray-900">New here? Pick what fits you</p>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {startHere.map((s) => (
-                    <Link key={s.href} href={s.href} onClick={close} className="flex min-h-14 flex-col justify-center rounded-xl border border-border bg-gray-50 px-3 py-2 transition-colors hover:bg-accent">
+                    <Link key={s.href} href={s.href} onClick={close} className="flex min-h-14 flex-col justify-center rounded-xl border border-border bg-gray-50 px-3 py-2 transition-[colors,transform] duration-200 touch-manipulation active:scale-[0.98] hover:bg-accent">
                       <span className="text-sm text-muted-foreground">{s.label}</span>
                       <span className="text-sm font-semibold text-primary">{s.cta} →</span>
                     </Link>

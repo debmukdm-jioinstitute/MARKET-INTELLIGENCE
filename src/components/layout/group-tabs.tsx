@@ -12,7 +12,7 @@ export function GroupTabs() {
   const hit = findGroup(sections, path);
   if (!hit || hit.group.items.length < 2) return null;
   return (
-    <div className="mb-1">
+    <div className="portal-header-enter mb-1">
       <p className="mb-1 text-sm text-muted-foreground">
         {hit.section.title} <span aria-hidden>›</span> {hit.group.label}
       </p>

@@ -125,23 +125,96 @@
 @layer components {
   /* Portal / bento layout — tight grids, no stretched card dead space */
   .portal-page {
-    @apply mx-auto max-w-[1600px] space-y-4;
+    @apply mx-auto max-w-[1600px] space-y-4 sm:space-y-5 md:space-y-6;
+  }
+
+  .portal-page > * {
+    animation: portal-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .portal-page > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .portal-page > *:nth-child(2) {
+    animation-delay: 45ms;
+  }
+  .portal-page > *:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .portal-page > *:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .portal-page > *:nth-child(5) {
+    animation-delay: 150ms;
+  }
+  .portal-page > *:nth-child(n + 6) {
+    animation-delay: 180ms;
+  }
+
+  @media (max-width: 1023px) {
+    .portal-page > * {
+      animation-duration: 0.3s;
+    }
+    .portal-page > *:nth-child(2) {
+      animation-delay: 30ms;
+    }
+    .portal-page > *:nth-child(3) {
+      animation-delay: 55ms;
+    }
+    .portal-page > *:nth-child(4) {
+      animation-delay: 75ms;
+    }
+    .portal-page > *:nth-child(5) {
+      animation-delay: 95ms;
+    }
+    .portal-page > *:nth-child(n + 6) {
+      animation-delay: 110ms;
+    }
+    .portal-panel-enter {
+      animation-duration: 0.32s;
+      animation-delay: 40ms;
+    }
+  }
+
+  .portal-main {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .portal-header-enter {
+    animation: portal-rise 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .portal-panel-enter {
+    animation: portal-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 60ms;
   }
 
   .bento-grid-cols-2 {
-    @apply grid grid-cols-1 items-start gap-3 lg:grid-cols-2;
+    @apply grid grid-cols-1 items-start gap-3 sm:gap-4 md:grid-cols-2;
   }
 
   .bento-grid-cols-12 {
-    @apply grid grid-cols-1 items-start gap-3 lg:grid-cols-12;
+    @apply grid grid-cols-1 items-start gap-3 sm:gap-4 lg:grid-cols-12;
   }
 
   .bento-card-shell {
-    @apply relative overflow-hidden rounded-xl border border-border/90 p-4 shadow-sm sm:p-5;
+    @apply relative overflow-hidden rounded-xl border border-border/90 bg-card p-4 shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out sm:p-5;
+  }
+
+  @media (min-width: 768px) {
+    .bento-card-shell:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+    }
   }
 
   .bento-card-stack {
     @apply flex h-auto flex-col gap-3 self-start;
+  }
+
+  .portal-skeleton > div {
+    @apply animate-pulse bg-muted/80;
   }
 }
 
@@ -154,7 +227,23 @@
     font-size: 14px;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@keyframes portal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -358,9 +447,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .animate-text-gradient,
-  .hero-mesh-blob {
+  .hero-mesh-blob,
+  .portal-page > *,
+  .portal-header-enter,
+  .portal-panel-enter,
+  .assistant-fab-ring {
     animation: none !important;
+  }
+  .bento-card-shell:hover {
+    transform: none !important;
   }
 }
 /* Guided tour popover: readable and thumb-friendly on phones and tablets. */
