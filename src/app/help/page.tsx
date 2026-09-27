@@ -3,9 +3,9 @@ import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
 import { CRONS, MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
 
 export const metadata = {
-  title: "Help · Easy setup guide · Market Intelligence",
+  title: "Help · Setup guide · Market Intelligence",
   description:
-    "Step-by-step help for the website, connecting AI (MCP) with no API key, optional terminal mi, and troubleshooting — written for non-technical users.",
+    "Step-by-step help for the website, Claude custom connector (MCP OAuth), Cursor, terminal mi, portfolio in AI, and troubleshooting.",
 };
 
 export default function HelpPage() {
@@ -15,8 +15,10 @@ export default function HelpPage() {
       <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600">Market Intelligence · Help</p>
       <h1 className="mb-3 text-3xl font-semibold">Help center</h1>
       <p className="text-base text-muted-foreground">
-        Open a section below for step-by-step instructions. Connecting your AI takes about two minutes and does not require an
-        API key.
+        Pick a section below. <b className="font-semibold text-foreground">Claude on the web</b> uses a custom connector plus a
+        one-time <b className="font-semibold text-foreground">Allow access</b> screen (automatic sign-in — not your website
+        password). <b className="font-semibold text-foreground">Cursor</b> only needs the MCP link pasted once. No API keys to
+        email us for market data.
       </p>
       <div className="mt-8">
         <HelpGuide
