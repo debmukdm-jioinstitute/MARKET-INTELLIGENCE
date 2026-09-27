@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   }
   try {
     const base = await fetchUpstoxIpoList(status);
-    const ipos = await enrichIpoListWithGmp(base);
+    const ipos = await enrichIpoListWithGmp(base, status);
     return NextResponse.json(
       { status, ipos },
       { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" } },

@@ -202,7 +202,7 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const status = z.enum(["open", "upcoming", "closed", "listed"]).default("open").parse(a.status);
       const base = await fetchUpstoxIpoList(status);
-      const ipos = await enrichIpoListWithGmp(base);
+      const ipos = await enrichIpoListWithGmp(base, status);
       return {
         status,
         ipos: ipos.map((ipo) => ({
