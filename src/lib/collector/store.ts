@@ -101,6 +101,23 @@ export async function latestPoints(ids: string[]): Promise<LatestPoint[]> {
   }
 }
 
+/** Latest observation on or before a calendar date (for 7D liquidity delta). */
+export async function observationOnOrBefore(id: string, onOrBeforeIso: string): Promise<number | null> {
+  if (!hasDatabase()) return null;
+  try {
+    await ensureCollectorSchema();
+    const rows = (await sql()`
+      SELECT value FROM collected_obs
+      WHERE series_id = ${id} AND obs_date <= ${onOrBeforeIso}::date
+      ORDER BY obs_date DESC
+      LIMIT 1
+    `) as { value: number }[];
+    return rows[0] != null ? Number(rows[0].value) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function seriesHistory(id: string, limit = 500) {
   await ensureCollectorSchema();
   const rows = (await sql()`

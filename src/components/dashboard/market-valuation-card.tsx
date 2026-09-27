@@ -8,7 +8,8 @@ import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 export function MarketValuationCard() {
   const { data, loading } = useIndiaDashboard(60_000);
   const gsec = data?.pulse?.gsec10y?.value;
-  const nseSource = {
+  const val = data?.pulse?.indexValuation;
+  const nseSource = val?.pe.source ?? {
     provider: "NSE India (Index PE/PB/Yield Reports)",
     url: "https://www.nseindia.com/reports-indices-historical-pepb",
   };
@@ -39,17 +40,26 @@ export function MarketValuationCard() {
           <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
         ) : (
           <div className="mt-3 space-y-4 text-sm">
-            <p className="rounded-lg border border-dashed border-border bg-card/40 p-3 text-muted-foreground">
-              Index P/E, P/B and dividend yield are not scraped here yet — use the official NSE historical PE/PB report. India 10Y G-Sec below comes from the live dashboard feed.
-            </p>
+            {val?.pe.value == null && val?.pb.value == null && val?.divYield.value == null ? (
+              <p className="rounded-lg border border-dashed border-border bg-card/40 p-3 text-muted-foreground">
+                Index P/E, P/B and dividend yield unavailable from NSE archives right now. India 10Y G-Sec below comes from the live dashboard feed.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                NIFTY 50 trailing P/E, P/B and dividend yield from NSE daily index close archive
+                {val.indexDate ? ` (as of ${val.indexDate})` : ""}. India 10Y G-Sec is live from the dashboard feed.
+              </p>
+            )}
 
             <div className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2">
               <div className="flex items-baseline justify-between">
                 <div className="flex items-center gap-1">
                   <span className="text-foreground font-semibold">NIFTY 50 Trailing P/E</span>
-                  <MetricInfo metric="pe_ratio" sourceOverride={nseSource} />
+                  <MetricInfo metric="pe_ratio" sourceOverride={val?.pe.source ?? nseSource} />
                 </div>
-                <span className="font-bold text-base text-muted-foreground">See NSE report</span>
+                <span className="font-bold text-base tabular-nums text-foreground">
+                  {val?.pe.value != null ? val.pe.value.toFixed(2) : "—"}
+                </span>
               </div>
             </div>
 
@@ -57,17 +67,21 @@ export function MarketValuationCard() {
               <div className="rounded-lg border border-border/70 bg-card/40 p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm uppercase">NIFTY P/B</span>
-                  <MetricInfo metric="pb_ratio" sourceOverride={nseSource} />
+                  <MetricInfo metric="pb_ratio" sourceOverride={val?.pb.source ?? nseSource} />
                 </div>
-                <span className="font-bold text-muted-foreground text-sm mt-0.5 block">—</span>
+                <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
+                  {val?.pb.value != null ? val.pb.value.toFixed(2) : "—"}
+                </span>
               </div>
 
               <div className="rounded-lg border border-border/70 bg-card/40 p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm uppercase">Index dividend yield</span>
-                  <MetricInfo metric="div_yield" sourceOverride={nseSource} />
+                  <MetricInfo metric="div_yield" sourceOverride={val?.divYield.source ?? nseSource} />
                 </div>
-                <span className="font-bold text-muted-foreground text-sm mt-0.5 block">—</span>
+                <span className="font-bold text-foreground text-sm mt-0.5 block tabular-nums">
+                  {val?.divYield.value != null ? `${val.divYield.value.toFixed(2)}%` : "—"}
+                </span>
               </div>
             </div>
 
