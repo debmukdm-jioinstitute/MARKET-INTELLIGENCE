@@ -51,24 +51,22 @@ async function refreshOne(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow> 
   return job;
 }
 
-/** Live NSE constituent list + cap-weight proxy (DB-backed, cron-refreshed). */
+/** Live NSE constituent list + cap-weight proxy (DB-backed, cron-refreshed). Never blocks on network refresh. */
 export async function getBenchmarkWeightsSnapshot(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow> {
   const cached = memory.get(benchmark);
   if (cached && Date.now() - cached.at < MEMORY_TTL_MS) return cached.row;
 
   const db = await loadBenchmarkWeights(benchmark);
-  if (db?.weights && Object.keys(db.weights).length && isFresh(db, STALE_MS)) {
-    memory.set(benchmark, { row: db, at: Date.now() });
-    return db;
-  }
-
   if (db?.weights && Object.keys(db.weights).length) {
     memory.set(benchmark, { row: db, at: Date.now() });
-    void refreshOne(benchmark);
+    if (!isFresh(db, STALE_MS)) void refreshOne(benchmark);
     return db;
   }
 
-  return refreshOne(benchmark);
+  const fallback = fromStatic(benchmark);
+  memory.set(benchmark, { row: fallback, at: Date.now() });
+  void refreshOne(benchmark);
+  return fallback;
 }
 
 export async function getBenchmarkStockWeights(benchmark: BenchmarkId): Promise<Record<string, number>> {

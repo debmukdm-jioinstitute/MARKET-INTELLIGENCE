@@ -99,7 +99,10 @@ const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, b
   }
 
   const json = await res.json();
-  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+  if (!res.ok) {
+    const msg = typeof json.error === "string" ? json.error : `HTTP ${res.status}`;
+    throw new Error(msg.slice(0, 200));
+  }
   
   // Sync the account's server-side book into local storage
   if (!holdings && json.positions && json.positions.length > 0) {
