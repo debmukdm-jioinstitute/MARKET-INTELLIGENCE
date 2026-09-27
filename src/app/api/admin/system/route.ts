@@ -89,20 +89,41 @@ export async function POST(req: Request) {
     });
   }
 
+  async function invokeCron(path: string) {
+    const started = Date.now();
+    const url = new URL(path, req.url);
+    if (path === "/api/cron/brief") url.searchParams.set("kind", "pre");
+    try {
+      const res = await fetch(url, {
+        headers: process.env.CRON_SECRET ? { authorization: `Bearer ${process.env.CRON_SECRET}` } : {},
+        cache: "no-store",
+        signal: AbortSignal.timeout(180_000),
+      });
+      const text = await res.text();
+      return { path, ok: res.ok, status: res.status, ms: Date.now() - started, body: text.slice(0, 1500) };
+    } catch (e) {
+      return {
+        path,
+        ok: false,
+        status: 0,
+        ms: Date.now() - started,
+        body: e instanceof Error ? e.message : String(e),
+      };
+    }
+  }
+
+  if (body.action === "runAll") {
+    const results = await Promise.all(CRONS.map((c) => invokeCron(c.path)));
+    return NextResponse.json({
+      ok: results.every((r) => r.ok),
+      results,
+    });
+  }
+
   if (body.action === "run") {
     const job = CRONS.find((c) => c.path === body.path);
     if (!job) return NextResponse.json({ error: "Unknown job" }, { status: 400 });
-    const started = Date.now();
-    try {
-      const res = await fetch(new URL(job.path, req.url), {
-        headers: process.env.CRON_SECRET ? { authorization: `Bearer ${process.env.CRON_SECRET}` } : {},
-        cache: "no-store",
-      });
-      const text = await res.text();
-      return NextResponse.json({ ok: res.ok, status: res.status, ms: Date.now() - started, body: text.slice(0, 1500) });
-    } catch (e) {
-      return NextResponse.json({ ok: false, status: 0, ms: Date.now() - started, body: e instanceof Error ? e.message : String(e) });
-    }
+    return NextResponse.json(await invokeCron(job.path));
   }
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }

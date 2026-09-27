@@ -14,6 +14,7 @@ export const CRONS = [
   { path: "/api/cron/scan", schedule: "30 11 * * 1-5", source: "Vercel", what: "Market scanner" },
   { path: "/api/cron/signals", schedule: "45 11 * * 1-5", source: "Vercel", what: "AI signals" },
   { path: "/api/cron/backtest", schedule: "0 12 * * 6", source: "Vercel", what: "Weekly backtest" },
+  { path: "/api/cron/52w-levels", schedule: "weekday batches (Vercel)", source: "Vercel", what: "52-week high/low levels for breadth" },
   { path: "/api/portfolio/instruments/cron-sync", schedule: "0 3 * * 1", source: "Vercel", what: "NSE instrument master sync" },
 ] as const;
 

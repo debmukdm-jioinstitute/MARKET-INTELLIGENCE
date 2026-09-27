@@ -41,6 +41,25 @@ export default function AdminSystemPage() {
     setRuns((r) => ({ ...r, [path]: res.ok || j.status ? j : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" } }));
   }
 
+  async function runAll() {
+    if (!window.confirm("Run every scheduled job now? Heavy — may take several minutes.")) return;
+    const pending = Object.fromEntries((data?.crons ?? []).map((c) => [c.path, "running" as const]));
+    setRuns((r) => ({ ...r, ...pending }));
+    const res = await fetch("/api/admin/system", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "runAll" }) });
+    const j = await res.json();
+    if (j.results?.length) {
+      setRuns((r) => {
+        const next = { ...r };
+        for (const row of j.results as (RunResult & { path: string })[]) {
+          next[row.path] = row;
+        }
+        return next;
+      });
+    } else {
+      setError(j.error ?? "Run all failed");
+    }
+  }
+
   async function sendTestWelcome() {
     setWelcomeRun("running");
     const res = await fetch("/api/admin/system", {
@@ -170,6 +189,14 @@ export default function AdminSystemPage() {
       </AdminCard>
 
       <AdminCard title="Scheduled jobs" subtitle={data.cronSecretSet ? "Run any job now (uses CRON_SECRET)." : "CRON_SECRET is not set — jobs are locked in production."}>
+        <button
+          type="button"
+          onClick={() => void runAll()}
+          disabled={Object.values(runs).some((r) => r === "running")}
+          className="mb-3 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          Run all jobs now
+        </button>
         <div className="divide-y divide-gray-200">
           {data.crons.map((c) => {
             const r = runs[c.path];
