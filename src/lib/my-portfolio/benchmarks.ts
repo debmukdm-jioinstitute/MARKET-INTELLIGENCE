@@ -1,6 +1,7 @@
 import { INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
 import { candleRangeToDates, fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
+import { benchmarkYahooSymbol } from "@/lib/my-portfolio/benchmark-options";
 import type { PortfolioSettings } from "@/lib/my-portfolio/types";
 
 export type BenchmarkPoint = { date: string; value: number };
@@ -18,10 +19,9 @@ export async function fetchBenchmarkHistory(benchmark: PortfolioSettings["benchm
     } catch {
       // fallback to Yahoo below
     }
-    return fetchYahooHistory("^NSEI", "1y").catch(() => []);
   }
-  const symbol = benchmark === "NDX" ? "^NDX" : "^GSPC";
-  const points = await fetchYahooHistory(symbol, "1y").catch(() => []);
+  const yahoo = benchmarkYahooSymbol(benchmark);
+  const points = await fetchYahooHistory(yahoo, "1y").catch(() => []);
   return points;
 }
 
@@ -86,7 +86,7 @@ export const NDX_WEIGHTS: Record<string, number> = {
 };
 
 export function weightsFor(benchmark: PortfolioSettings["benchmark"]) {
-  if (benchmark === "NIFTY50") return NIFTY50_WEIGHTS;
   if (benchmark === "NDX") return NDX_WEIGHTS;
-  return SPX_WEIGHTS;
+  if (benchmark === "SPX") return SPX_WEIGHTS;
+  return NIFTY50_WEIGHTS;
 }

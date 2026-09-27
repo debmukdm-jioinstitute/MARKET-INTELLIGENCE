@@ -5,16 +5,11 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import { Progress } from "@/components/ui/progress";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { findMetric } from "@/lib/my-portfolio/find-metric";
 import { formatPct } from "@/lib/format";
 import Link from "next/link";
 import { useMemo } from "react";
-
-const BENCHMARK_LABEL: Record<string, string> = {
-  NIFTY50: "NIFTY 50",
-  SPX: "S&P 500",
-  NDX: "NASDAQ 100",
-};
 
 /** Policy limits for progress bars (illustrative desk budgets). */
 const POLICY = {

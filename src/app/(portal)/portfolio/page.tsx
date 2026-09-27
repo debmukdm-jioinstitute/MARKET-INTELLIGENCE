@@ -10,18 +10,17 @@ import { PerformanceChart } from "@/components/my-portfolio/performance-chart";
 import { PortfolioOverview } from "@/components/my-portfolio/portfolio-overview";
 import { RiskExposurePanel } from "@/components/my-portfolio/risk-exposure-panel";
 import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
+import { BenchmarkSelect } from "@/components/my-portfolio/benchmark-select";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { Lock } from "lucide-react";
 import Link from "next/link";
-
-const BENCHMARK_LABEL: Record<string, string> = {
-  NIFTY50: "NIFTY 50",
-  SPX: "S&P 500",
-  NDX: "NASDAQ 100",
-};
+import { useState } from "react";
 
 export default function PortfolioPage() {
-  const { data, loading, error, locked, addHolding, removeHolding, clearHoldings, importHoldings } = useMyPortfolio();
+  const { data, loading, error, locked, addHolding, removeHolding, clearHoldings, importHoldings, updateBenchmark } =
+    useMyPortfolio();
+  const [benchBusy, setBenchBusy] = useState(false);
 
   return (
     <div className="portal-page">
@@ -32,18 +31,24 @@ export default function PortfolioPage() {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">
             {data?.hasHoldings && data.positions.length > 0 ? (
-              <>
-                <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
-                {" · "}
-                <span>Benchmark: <strong className="text-foreground">{BENCHMARK_LABEL[data.settings.benchmark]}</strong></span>
-              </>
+              <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
             ) : (
               <span className="text-blue-600 font-semibold">Clean Book (0 Active Positions)</span>
             )}
           </p>
+          {data ? (
+            <BenchmarkSelect
+              value={data.settings.benchmark}
+              disabled={locked || benchBusy}
+              onChange={(id) => {
+                setBenchBusy(true);
+                void updateBenchmark(id).finally(() => setBenchBusy(false));
+              }}
+            />
+          ) : null}
         </div>
 
         {locked ? (

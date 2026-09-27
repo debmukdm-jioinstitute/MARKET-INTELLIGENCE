@@ -1,3 +1,4 @@
+import { BENCHMARK_IDS } from "@/lib/my-portfolio/benchmark-options";
 import { z } from "zod";
 
 export const addHoldingSchema = z.object({
@@ -44,7 +45,7 @@ export type UpdateHoldingInput = z.infer<typeof updateHoldingSchema>;
 
 export const updateSettingsSchema = z.object({
   name: z.string().min(1, "Portfolio name cannot be empty").max(60, "Portfolio name is too long").trim().optional(),
-  benchmark: z.enum(["NIFTY50", "SPX", "NDX"]).optional(),
+  benchmark: z.enum(BENCHMARK_IDS).optional(),
   baseCurrency: z.literal("INR").optional(),
 });
 

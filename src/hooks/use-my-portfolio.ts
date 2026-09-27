@@ -1,11 +1,14 @@
 "use client";
 
-import type { Holding, PortfolioAnalysis } from "@/lib/my-portfolio/types";
+import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
+import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
+import type { Holding, PortfolioAnalysis, PortfolioSettings } from "@/lib/my-portfolio/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
 import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mi_user_holdings_v2";
+const SETTINGS_KEY = "mi_portfolio_settings_v1";
 
 export type AddHoldingInput = {
   market: "IN" | "US";
@@ -48,17 +51,48 @@ function setLocalHoldings(holdings: Holding[]) {
 
 function subscribeHoldings(callback: () => void) {
   if (typeof window === "undefined") return () => {};
-  window.addEventListener("mi_portfolio_updated", callback);
-  return () => window.removeEventListener("mi_portfolio_updated", callback);
+  const bump = () => callback();
+  window.addEventListener("mi_portfolio_updated", bump);
+  window.addEventListener("mi_portfolio_settings_updated", bump);
+  return () => {
+    window.removeEventListener("mi_portfolio_updated", bump);
+    window.removeEventListener("mi_portfolio_settings_updated", bump);
+  };
 }
 
-const fetcher = async ([url, holdings]: [string, Holding[] | null, boolean]) => {
+function getLocalSettings(): PortfolioSettings {
+  if (typeof window === "undefined") return DEFAULT_PORTFOLIO_SETTINGS;
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return DEFAULT_PORTFOLIO_SETTINGS;
+    const parsed = JSON.parse(raw) as Partial<PortfolioSettings>;
+    return {
+      name: parsed.name ?? DEFAULT_PORTFOLIO_SETTINGS.name,
+      benchmark: parsed.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
+      baseCurrency: "INR",
+    };
+  } catch {
+    return DEFAULT_PORTFOLIO_SETTINGS;
+  }
+}
+
+function setLocalSettings(settings: PortfolioSettings) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    window.dispatchEvent(new Event("mi_portfolio_settings_updated"));
+  } catch {
+    /* ignore */
+  }
+}
+
+const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, boolean, PortfolioSettings]) => {
   let res: Response;
   if (holdings && Array.isArray(holdings)) {
     res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ holdings }),
+      body: JSON.stringify({ holdings, settings }),
     });
   } else {
     res = await fetch(url);
@@ -93,12 +127,14 @@ export function useMyPortfolio(refreshMs = 60_000) {
   // Guests (and the moment before the session is known) never read or write holdings: the book stays at zero.
   const snapshot = useCallback(() => (locked ? null : getLocalHoldings()), [locked]);
   const localHoldings = useSyncExternalStore(subscribeHoldings, snapshot, () => null);
+  const settingsSnapshot = useCallback(() => (locked ? DEFAULT_PORTFOLIO_SETTINGS : getLocalSettings()), [locked]);
+  const localSettings = useSyncExternalStore(subscribeHoldings, settingsSnapshot, () => DEFAULT_PORTFOLIO_SETTINGS);
   const requireAccount = useCallback(() => {
     if (locked) throw new Error("Log in or create an account to add or import holdings");
   }, [locked]);
 
   const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
-    ready ? ["/api/portfolio/analysis", localHoldings, isGuest] : null,
+    ready ? ["/api/portfolio/analysis", localHoldings, isGuest, localSettings] : null,
     fetcher,
     { refreshInterval: refreshMs }
   );
@@ -243,13 +279,24 @@ export function useMyPortfolio(refreshMs = 60_000) {
   );
 
   const updateBenchmark = useCallback(
-    async (benchmark: string, name?: string) => {
-      const res = await fetch("/api/portfolio/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ benchmark, name }),
-      });
-      if (!res.ok) throw new Error("Failed to update settings");
+    async (benchmark: BenchmarkId, name?: string) => {
+      const next: PortfolioSettings = {
+        ...getLocalSettings(),
+        benchmark,
+        name: name ?? getLocalSettings().name,
+        baseCurrency: "INR",
+      };
+      setLocalSettings(next);
+      try {
+        const res = await fetch("/api/portfolio/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ benchmark, name: next.name }),
+        });
+        if (!res.ok) throw new Error("Failed to update settings");
+      } catch (e) {
+        console.warn("Benchmark saved locally; server sync skipped:", e);
+      }
       await reload();
     },
     [reload],

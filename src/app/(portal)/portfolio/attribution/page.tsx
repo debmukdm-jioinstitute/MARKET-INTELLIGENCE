@@ -4,16 +4,11 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { findMetric } from "@/lib/my-portfolio/find-metric";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-const BENCHMARK_LABEL: Record<string, string> = {
-  NIFTY50: "NIFTY 50",
-  SPX: "S&P 500",
-  NDX: "NASDAQ 100",
-};
 
 export default function AttributionPage() {
   const { data, loading, error, locked } = useMyPortfolio();

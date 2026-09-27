@@ -1,3 +1,5 @@
+import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
+
 export type Market = "IN" | "US";
 
 export type Holding = {
@@ -15,7 +17,7 @@ export type Holding = {
 
 export type PortfolioSettings = {
   name: string;
-  benchmark: "NIFTY50" | "SPX" | "NDX";
+  benchmark: BenchmarkId;
   baseCurrency: "INR";
 };
 
