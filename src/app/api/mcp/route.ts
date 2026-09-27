@@ -1,5 +1,6 @@
 import { authErrorForTool, resolveMcpCallContext } from "@/lib/mcp/context";
 import { clientIp, mcpRateLimited, rateLimitCap, rateLimitKey } from "@/lib/mcp/rate-limit";
+import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
 import { TOOLS } from "@/lib/mcp/tools";
 import { NextResponse } from "next/server";
 
@@ -92,11 +93,23 @@ export async function GET() {
   return NextResponse.json({
     name: "market-intelligence MCP",
     transport: "Streamable HTTP (POST JSON-RPC)",
+    claudeConnector: CLAUDE_CONNECTOR,
     tools: TOOLS.map((t) => ({ name: t.name, access: t.access ?? "public" })),
     auth: {
       publicTools: "No API key — add the URL in Cursor/Claude and call tools (IP rate limit).",
       accountTools: "tools/call mi_sign_in → X-MI-Session: <sessionToken>",
       optionalApiKey: "MCP_API_KEYS optional — higher rate limit for automation",
+    },
+  });
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key, X-MI-Session",
     },
   });
 }

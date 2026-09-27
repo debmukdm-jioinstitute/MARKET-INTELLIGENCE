@@ -2,9 +2,10 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { HelpToolRow } from "@/lib/help/mcp-tool-guide";
+import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
 
-const ENDPOINT = "https://getmarketintelligence.in/api/mcp";
+const ENDPOINT = MCP_ENDPOINT;
 
 function Code({ children }: { children: string }) {
   return (
@@ -56,7 +57,11 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
     <div className="space-y-8">
       <p className="rounded-xl border border-blue-600/20 bg-blue-600/5 p-4 text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">No API keys.</span> To ask an AI about live markets, paste one link
-        below. For your portfolio in AI, use your normal website login. Open each section to see steps.
+        below. Using Claude? Start at{" "}
+        <Link href="/connect/claude" className="font-semibold text-blue-600 hover:underline">
+          Add to Claude
+        </Link>
+        . Portfolio in AI → website login. Open each section for steps.
       </p>
 
       <Accordion type="multiple" defaultValue={["mcp"]} className="rounded-xl border border-border px-4">
@@ -120,6 +125,31 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             <Code>{ENDPOINT}</Code>
 
             <Accordion type="single" collapsible className="mt-4 border-t border-border pt-2">
+              <AccordionItem value="claude-web">
+                <AccordionTrigger className="text-sm font-semibold">
+                  Claude app (claude.ai) — custom connector
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    Official <b>Custom connector</b> — paste our URL in Claude settings. Step-by-step with copy button:{" "}
+                    <Link href="/connect/claude" className="text-blue-600 hover:underline">
+                      /connect/claude
+                    </Link>
+                    .
+                  </p>
+                  <Steps
+                    items={[
+                      "Sign in at claude.ai → Customize → Connectors.",
+                      "Click + → Add custom connector.",
+                      `Name: ${CLAUDE_CONNECTOR.name}. URL: ${ENDPOINT} (no OAuth fields).`,
+                      "New chat → + → Connectors → enable Market Intelligence.",
+                      "Ask about stress index, NIFTY, or scanners.",
+                    ]}
+                  />
+                  <p className="mt-2 text-xs">Free plan: one custom connector. Connection runs from Anthropic cloud to our server.</p>
+                </AccordionContent>
+              </AccordionItem>
+
               <AccordionItem value="cursor">
                 <AccordionTrigger className="text-sm font-semibold">Cursor (recommended for many users)</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">

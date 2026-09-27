@@ -1,7 +1,7 @@
 import { verifySessionToken } from "@/lib/auth-crypto";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = new Set(["/", "/login", "/signup", "/help", "/privacy", "/terms"]);
+const PUBLIC = new Set(["/", "/login", "/signup", "/help", "/privacy", "/terms", "/connect/claude"]);
 
 function parseSession(raw: string | undefined) {
   if (!raw) return null;
