@@ -3,7 +3,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { HelpToolRow } from "@/lib/help/mcp-tool-guide";
 import { ClaudeMcpSetupVisual } from "@/components/help/claude-mcp-setup-visual";
-import { CursorBrandIcon } from "@/components/help/mcp-brand-icons";
+import { ClaudeBrandIcon, CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
 
@@ -37,24 +37,28 @@ type Props = {
 
 const TROUBLE = [
   {
-    problem: "Claude says it couldn't register with sign-in service",
-    fix: "Retry after our OAuth update: add connector → Connect → approve the consent page. Leave OAuth client ID/secret blank. If it persists, email support with the ofid_ reference.",
+    problem: "Claude: “Couldn't register with … sign-in service” (ofid_…)",
+    fix: `Delete the old connector and add again with URL ${ENDPOINT}. Leave OAuth client ID/secret empty. Click Connect and complete Allow access. If it still fails, email Deb@getmarketintelligence.in with the full ofid_ code.`,
   },
   {
-    problem: "My AI says it cannot connect or tools are missing",
-    fix: "Close and reopen the app (Cursor, Claude, etc.), or start a new chat. In Claude Code, run claude mcp list and check that market-intelligence shows Connected.",
+    problem: "Claude connected but no tools / stale answers",
+    fix: "Start a new chat, open + → Connectors, and enable Market Intelligence. Ask one clear question. Disconnect and reconnect the connector if needed.",
   },
   {
-    problem: "Link redirects or nothing comes back",
-    fix: `Use exactly ${ENDPOINT} — not an old vercel.app address.`,
+    problem: "Cursor or Claude Code cannot connect",
+    fix: "Confirm the MCP URL is exact (see below). Restart the app. Claude Code: run claude mcp list and check market-intelligence shows Connected.",
+  },
+  {
+    problem: "Link redirects to login or empty response",
+    fix: `Use exactly ${ENDPOINT} for MCP — not /help or an old vercel.app host.`,
   },
   {
     problem: "Too many requests / rate limit",
-    fix: "Wait about a minute and ask one clear question at a time. Sign in with mi login in the terminal, or mi_sign_in in MCP, for a higher limit on personal tools.",
+    fix: "Wait about a minute between bursts. Use mi login or mi_sign_in for a higher cap on personal tools.",
   },
   {
     problem: "Portfolio or options tools say sign in required",
-    fix: "Use the same email and password as the website: mi login YOUR_EMAIL YOUR_PASSWORD in the terminal, or the mi_sign_in tool in MCP.",
+    fix: "Claude OAuth Allow access is only for public market data. For holdings, use mi_sign_in (or mi login) with your website email and password.",
   },
 ];
 
@@ -62,12 +66,12 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
   return (
     <div className="space-y-8">
       <p className="rounded-xl border border-blue-600/20 bg-blue-600/5 p-4 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">No API keys.</span> To ask an AI about live markets, paste one link
-        below. Using Claude? Start at{" "}
+        <span className="font-semibold text-foreground">Quick paths:</span>{" "}
         <Link href="/connect/claude" className="font-semibold text-blue-600 hover:underline">
-          Add to Claude
-        </Link>
-        . Portfolio in AI → website login. Open each section for steps.
+          Claude setup page
+        </Link>{" "}
+        · open <span className="font-semibold text-foreground">Connect your AI (MCP)</span> below · portfolio in AI needs{" "}
+        <span className="font-semibold text-foreground">mi_sign_in</span>, not the Claude Allow screen.
       </p>
 
       <Accordion type="multiple" defaultValue={["mcp"]} className="rounded-xl border border-border px-4">
@@ -83,8 +87,9 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
               .
             </p>
             <p>
-              <b>Connect to your AI</b> means tools like Cursor, Claude, or ChatGPT can pull the same numbers automatically when
-              you ask in plain English — for example &ldquo;What is the stress index today?&rdquo;
+              <b>Connect to your AI (MCP)</b> lets Cursor or Claude pull live numbers when you ask in plain English — for example
+              &ldquo;What is the stress index today?&rdquo; <b>Claude on claude.ai</b> uses a custom connector plus a one-time
+              Allow access step. <b>Cursor</b> only needs the MCP URL in settings.
             </p>
             <p>
               <b>mi</b> is an optional text menu in Terminal for people who like the command line. You do not need it if you
@@ -122,19 +127,40 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
 
         <AccordionItem value="mcp">
           <AccordionTrigger className="text-base font-semibold">
-            Connect your AI (MCP) — free, no API key
+            Connect your AI (MCP) — free market data
           </AccordionTrigger>
           <AccordionContent>
-            <p className="mb-4 text-muted-foreground">
-              Copy this address once. You do <b>not</b> need to email anyone for a key.
+            <p className="mb-3 text-muted-foreground">
+              One MCP URL for every client. You never need to email us for an API key for public market tools.
             </p>
             <Code>{ENDPOINT}</Code>
 
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-[#CC785C]/25 bg-[#CC785C]/5 p-4">
+                <div className="flex items-center gap-2">
+                  <ClaudeBrandIcon className="h-8 w-8" />
+                  <p className="font-semibold text-foreground">Claude (claude.ai)</p>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Custom connector → <b>Connect</b> → <b>Allow access</b> (OAuth). OAuth client fields stay blank.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-muted/30 p-4">
+                <div className="flex items-center gap-2">
+                  <CursorBrandIcon className="h-8 w-8" />
+                  <p className="font-semibold text-foreground">Cursor</p>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Paste URL in MCP settings only — no OAuth screen. Fastest for many users.
+                </p>
+              </div>
+            </div>
+
             <div className="mt-8 border-t border-border pt-8">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-base font-semibold text-foreground">Claude — custom connector (step by step)</h3>
+                <h3 className="text-base font-semibold text-foreground">Claude on the web — full walkthrough</h3>
                 <Link href="/connect/claude" className="text-sm font-medium text-blue-600 hover:underline">
-                  Shareable page →
+                  Open /connect/claude →
                 </Link>
               </div>
               <ClaudeMcpSetupVisual endpoint={ENDPOINT} connectorName={CLAUDE_CONNECTOR.name} />
@@ -169,14 +195,22 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
               </AccordionItem>
 
               <AccordionItem value="claude-code">
-                <AccordionTrigger className="text-sm font-semibold">Claude Code (terminal on your Mac/PC)</AccordionTrigger>
+                <AccordionTrigger className="text-sm font-semibold">
+                  <span className="flex items-center gap-2">
+                    <ClaudeBrandIcon className="h-6 w-6" />
+                    Claude Code (terminal)
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
+                  <p className="mb-2 text-sm">
+                    Uses HTTP transport directly — no claude.ai OAuth screen. Same public tools as the website.
+                  </p>
                   <Steps
                     items={[
                       "Open Terminal.",
                       "Run the command below (one line).",
                       "Run claude mcp list — you should see market-intelligence Connected.",
-                      "Open Claude Code again and ask about NIFTY, stress index, or scanners.",
+                      "Ask about NIFTY, stress index, or scanners in Claude Code.",
                     ]}
                   />
                   <Code>{`claude mcp add --scope user --transport http market-intelligence ${ENDPOINT}`}</Code>
@@ -184,11 +218,20 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
               </AccordionItem>
 
               <AccordionItem value="claude-desktop">
-                <AccordionTrigger className="text-sm font-semibold">Claude Desktop app</AccordionTrigger>
+                <AccordionTrigger className="text-sm font-semibold">
+                  <span className="flex items-center gap-2">
+                    <ClaudeBrandIcon className="h-6 w-6" />
+                    Claude Desktop (fallback)
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
+                  <p className="mb-2 text-sm">
+                    Prefer <b>Customize → Connectors</b> on the Desktop app when available (same as claude.ai). If not, use{" "}
+                    <b>mcp-remote</b> below.
+                  </p>
                   <Steps
                     items={[
-                      "Install Node.js from nodejs.org if you do not have it.",
+                      "Install Node.js from nodejs.org if needed.",
                       "Claude → Settings → Developer → Edit Config.",
                       "Paste the JSON below, save, fully quit Claude, reopen.",
                     ]}
@@ -205,13 +248,14 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
               </AccordionItem>
 
               <AccordionItem value="other-mcp">
-                <AccordionTrigger className="text-sm font-semibold">Other AI apps with “MCP” or “HTTP tools”</AccordionTrigger>
+                <AccordionTrigger className="text-sm font-semibold">Other AI apps (ChatGPT, Copilot, etc.)</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   <Steps
                     items={[
-                      "Choose server type HTTP or Streamable HTTP (not local command unless the app requires a bridge).",
-                      "Server URL: paste the endpoint above.",
-                      "Leave username, password, and API key empty for market data.",
+                      "Pick HTTP or Streamable HTTP transport (use mcp-remote locally only if the app requires it).",
+                      "Server URL: paste the MCP endpoint above.",
+                      "If the app supports OAuth discovery, it may open the same Allow access flow as Claude.",
+                      "If the app asks for API keys, leave them empty for public market data.",
                       "Save and start a new conversation.",
                     ]}
                   />
@@ -243,10 +287,14 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             </Accordion>
 
             <dl className="mt-6 grid gap-2 text-sm sm:grid-cols-[8rem_1fr]">
+              <dt className="text-muted-foreground">Claude OAuth</dt>
+              <dd className="text-muted-foreground">
+                One-time Allow access for public data only — not your website password. Portfolio tools use mi_sign_in separately.
+              </dd>
               <dt className="text-muted-foreground">Rate limit</dt>
-              <dd className="text-muted-foreground">About 45 questions per minute per connection (public data).</dd>
+              <dd className="text-muted-foreground">About 45 public tool calls per minute per connection.</dd>
               <dt className="text-muted-foreground">Safety</dt>
-              <dd className="text-muted-foreground">Read-only — AI cannot place trades or change your account.</dd>
+              <dd className="text-muted-foreground">Read-only market data — AI cannot place trades or change your account.</dd>
             </dl>
           </AccordionContent>
         </AccordionItem>
@@ -257,8 +305,9 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <p className="mb-3">
-              Market data needs no key. For <b>your</b> holdings, alerts, OptionStrat lab, algo desk snapshot, or site
-              assistant via MCP, sign in with the same email and password as the website.
+              Public market data needs no API key. Claude&apos;s <b>Allow access</b> step does <b>not</b> unlock your portfolio.
+              For <b>your</b> holdings, alerts, OptionStrat lab, algo desk snapshot, or site assistant via MCP, sign in with the
+              same email and password as the website using <b>mi_sign_in</b> or <b>mi login</b>.
             </p>
             <p className="font-semibold text-foreground">Easiest: terminal</p>
             <Steps
