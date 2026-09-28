@@ -594,6 +594,27 @@ export function LandingPage() {
           </div>
         </section>
 
+        {/* HOW IT WORKS */}
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">How it works</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">From sign-up to insight in three steps</h2>
+          </div>
+          <ol className="grid gap-5 md:grid-cols-3">
+            {[
+              { title: "Open a free desk", body: "Create an account in seconds, or explore as a guest. No brokerage, no card." },
+              { title: "Build your book", body: "Import holdings or start a virtual portfolio across Indian and US markets." },
+              { title: "Research and act", body: "Track risk, run backtests, and use the AI desk to test ideas with zero real money." },
+            ].map((step, i) => (
+              <li key={step.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
+                <span className="grid size-9 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white">{i + 1}</span>
+                <h3 className="mt-4 text-lg font-semibold tracking-tight text-gray-900">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         {/* FOUNDER LETTER (Replaces Features) */}
         <section id="features" className="mx-auto w-full px-5 py-24 md:py-32">
           <div className="founder-note mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">

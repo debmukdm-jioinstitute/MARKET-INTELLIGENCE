@@ -44,8 +44,9 @@ export default function AdminLoginPage() {
           <h1 className="mt-1 text-xl font-semibold text-foreground">Backend sign-in</h1>
         </div>
         <div className="space-y-1">
-          <label className="text-sm text-gray-500">Email</label>
+          <label htmlFor="admin-email" className="text-sm text-gray-500">Email</label>
           <input
+            id="admin-email"
             type="email"
             required
             value={email}
@@ -54,8 +55,9 @@ export default function AdminLoginPage() {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-sm text-gray-500">Password</label>
+          <label htmlFor="admin-password" className="text-sm text-gray-500">Password</label>
           <input
+            id="admin-password"
             type="password"
             required
             value={password}

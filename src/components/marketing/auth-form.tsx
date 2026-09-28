@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 const inputClass =
   "h-12 w-full rounded-lg border border-border bg-white px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
 
+const labelClass = "mb-1.5 block text-sm font-medium text-foreground";
+
 const OAUTH_ERRORS: Record<string, string> = {
   google_not_configured: "Google sign-in is not configured on this server yet.",
   google_denied: "Google sign-in was cancelled.",
@@ -109,10 +111,34 @@ export function AuthForm({
       </div>
       <form onSubmit={onSubmit} className="mt-3 space-y-3">
         {mode === "signup" ? (
-          <input name="name" required placeholder="Full name" className={inputClass} />
+          <div>
+            <label htmlFor="auth-name" className={labelClass}>Full name</label>
+            <input id="auth-name" name="name" required autoComplete="name" className={inputClass} />
+          </div>
         ) : null}
-        <input name="email" type="email" required placeholder="Email" className={inputClass} />
-        <input name="password" type="password" required minLength={6} placeholder="Password" className={inputClass} />
+        <div>
+          <label htmlFor="auth-email" className={labelClass}>Email</label>
+          <input id="auth-email" name="email" type="email" required autoComplete="email" className={inputClass} />
+        </div>
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="auth-password" className="text-sm font-medium text-foreground">Password</label>
+            {!isSignup ? (
+              <Link href="/forgot-password" className="text-sm text-primary underline-offset-4 hover:underline">
+                Forgot password?
+              </Link>
+            ) : null}
+          </div>
+          <input
+            id="auth-password"
+            name="password"
+            type="password"
+            required
+            minLength={6}
+            autoComplete={isSignup ? "new-password" : "current-password"}
+            className={inputClass}
+          />
+        </div>
         {oauthMessage ? <p className="text-sm text-destructive">{oauthMessage}</p> : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <button

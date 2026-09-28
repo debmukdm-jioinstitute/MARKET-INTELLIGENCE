@@ -7,7 +7,17 @@ function isWorldMonitorApiRoute(pathname: string): boolean {
   return isWorldMonitorProxiedApiPath(pathname.slice(5));
 }
 
-const PUBLIC = new Set(["/", "/login", "/signup", "/help", "/privacy", "/terms", "/connect/claude"]);
+const PUBLIC = new Set([
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/help",
+  "/privacy",
+  "/terms",
+  "/connect/claude",
+]);
 
 function parseSession(raw: string | undefined) {
   if (!raw) return null;
