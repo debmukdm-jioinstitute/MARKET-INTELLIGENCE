@@ -7,6 +7,7 @@ import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useAuth } from "@/components/providers/auth-provider";
+import { formatPct } from "@/lib/format";
 
 export function MyPortfolioCard() {
   const { data, loading, locked } = useMyPortfolio();
@@ -20,16 +21,19 @@ export function MyPortfolioCard() {
   const showLock = ready && (isGuest || (!loading && !hasHoldings));
 
   // Extract key KPIs from computed institutional analysis
-  const todayReturnMetric = data?.overview?.find((m) => m.id === "today_return");
-  const totalPnlMetric = data?.overview?.find((m) => m.id === "total_pnl");
-  const totalReturnMetric = data?.overview?.find((m) => m.id === "total_return");
   const alphaMetric = data?.overview?.find((m) => m.id === "alpha");
   const betaMetric = data?.overview?.find((m) => m.id === "beta");
   const sharpeMetric = data?.overview?.find((m) => m.id === "sharpe");
   const mddMetric = data?.overview?.find((m) => m.id === "max_drawdown");
+  // "absoluteReturn" is the book's cumulative return; there is no separate "total_return" metric.
+  const totalReturnMetric = data?.overview?.find((m) => m.id === "absoluteReturn");
 
-  const todayReturnPct = todayReturnMetric?.value ?? 0;
-  const totalPnl = totalPnlMetric?.value ?? 0;
+  // Today's move and total gain/loss are derived straight from positions/NAV, not looked up by
+  // metric id — no "today_return" / "total_pnl" ids exist in the metrics glossary, so those
+  // lookups always missed and rendered as a static "+0.00%".
+  const prevNavInr = totalValue - todayPnl;
+  const todayReturnPct = prevNavInr > 0 ? todayPnl / prevNavInr : 0;
+  const totalPnl = locked ? 0 : positions.reduce((sum, p) => sum + p.pnlInr, 0);
   const totalReturnPct = totalReturnMetric?.value ?? 0;
 
   return (
@@ -130,7 +134,7 @@ export function MyPortfolioCard() {
                     todayReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
-                  {todayReturnMetric?.formatted ?? "+0.00%"} TODAY
+                  {formatPct(todayReturnPct)} TODAY
                 </span>
               </div>
 
