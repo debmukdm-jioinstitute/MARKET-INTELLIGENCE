@@ -44,24 +44,24 @@ export const WORLDMONITOR_API_EXACT = [
   "wm-session",
 ] as const;
 
-export function worldMonitorApiRewrites(upstreamOrigin: string): Rewrite[] {
-  const base = upstreamOrigin.replace(/\/$/, "");
+/** Rewrites to server-side proxy (strips browser Origin — upstream blocks MI origin). */
+export function worldMonitorApiRewrites(): Rewrite[] {
   const rules: Rewrite[] = [];
 
   for (const prefix of WORLDMONITOR_API_PREFIXES) {
     rules.push(
-      { source: `/api/${prefix}`, destination: `${base}/api/${prefix}` },
-      { source: `/api/${prefix}/:path*`, destination: `${base}/api/${prefix}/:path*` },
+      { source: `/api/${prefix}`, destination: `/api/wm-upstream/${prefix}` },
+      { source: `/api/${prefix}/:path*`, destination: `/api/wm-upstream/${prefix}/:path*` },
     );
   }
 
   for (const exact of WORLDMONITOR_API_EXACT) {
-    rules.push({ source: `/api/${exact}`, destination: `${base}/api/${exact}` });
+    rules.push({ source: `/api/${exact}`, destination: `/api/wm-upstream/${exact}` });
   }
 
   rules.push(
-    { source: "/api/scenario/v1/:path*", destination: `${base}/api/scenario/v1/:path*` },
-    { source: "/api/v2/:path*", destination: `${base}/api/v2/:path*` },
+    { source: "/api/scenario/v1/:path*", destination: "/api/wm-upstream/scenario/v1/:path*" },
+    { source: "/api/v2/:path*", destination: "/api/wm-upstream/v2/:path*" },
   );
 
   return rules;

@@ -1,5 +1,11 @@
 import { verifySessionToken } from "@/lib/auth-crypto";
+import { isWorldMonitorProxiedApiPath } from "@/lib/worldmonitor/api-path-allowlist";
 import { NextResponse, type NextRequest } from "next/server";
+
+function isWorldMonitorApiRoute(pathname: string): boolean {
+  if (!pathname.startsWith("/api/")) return false;
+  return isWorldMonitorProxiedApiPath(pathname.slice(5));
+}
 
 const PUBLIC = new Set(["/", "/login", "/signup", "/help", "/privacy", "/terms", "/connect/claude"]);
 
@@ -60,7 +66,8 @@ export function proxy(request: NextRequest) {
     realPathname.startsWith("/worldmonitor") ||
     realPathname.startsWith("/assets/") ||
     realPathname.startsWith("/favico/") ||
-    realPathname === "/manifest.webmanifest";
+    realPathname === "/manifest.webmanifest" ||
+    isWorldMonitorApiRoute(realPathname);
   const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset;
   const staleSession = Boolean(sessionRaw && !session);
 

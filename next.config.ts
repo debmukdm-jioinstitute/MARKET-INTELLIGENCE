@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   async rewrites() {
     return [
-      ...worldMonitorApiRewrites(WORLDMONITOR_UPSTREAM),
+      ...worldMonitorApiRewrites(),
       ...worldMonitorStaticRewrites(WORLDMONITOR_UPSTREAM),
       {
         source: "/worldmonitor",
@@ -74,6 +74,7 @@ const nextConfig: NextConfig = {
       { source: "/markets/momentum", destination: "/markets/breadth#momentum", permanent: true },
       { source: "/sectors", destination: "/markets/sectors", permanent: true },
       { source: "/feeds", destination: "/data/feeds", permanent: true },
+      { source: "/macro/calendar", destination: "/macro/india#calendar", permanent: true },
     ];
   },
 };
