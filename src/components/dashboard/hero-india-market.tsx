@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatPct } from "@/lib/format";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { EditableCopy } from "@/components/site/editable-copy";
+import { AccessibleLineChart } from "@/components/charts/accessible-line-chart";
+import { SignedPct } from "@/components/ui/signed-value";
+import { QuoteProvenance } from "@/components/ui/quote-provenance";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useCandles } from "@/hooks/use-candles";
 
@@ -14,7 +16,8 @@ interface HeroIndiaMarketProps {
   data?: IndiaDashboardPayload | null;
 }
 
-const TIMEFRAMES = ["1D", "1W", "1M", "3M", "1Y"] as const;
+const TIMEFRAMES = ["1D", "1W", "1M", "3M", "6M", "1Y"] as const;
+const RANGE_LABEL: Record<string, string> = { "1D": "Today", "1W": "Last 7 days", "1M": "Last 1 month", "3M": "Last 3 months", "6M": "Last 6 months", "1Y": "Last 1 year" };
 type Timeframe = (typeof TIMEFRAMES)[number];
 
 export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
@@ -32,26 +35,6 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
   const l52 = breadth?.low52w;
 
   const { candles, loading } = useCandles("NIFTY 50", selectedTf, true);
-
-  // Real Upstox candles for every timeframe (1D = today's 5-min intraday). No synthetic fallback.
-  const points = candles.map((c) => c.close);
-
-  const min = points.length ? Math.min(...points) : 0;
-  const max = points.length ? Math.max(...points) : 1;
-  const range = max - min || 1;
-
-  // Build SVG polygon points
-  const width = 480;
-  const height = 120;
-  const coords = points.length
-    ? points.map((val, idx) => {
-        const x = (idx / (points.length - 1 || 1)) * width;
-        const y = height - ((val - min) / range) * (height - 20) - 10;
-        return `${x},${y}`;
-      })
-    : [];
-  const pathData = coords.length ? `M ${coords.join(" L ")}` : "";
-  const areaData = coords.length ? `${pathData} L ${width},${height} L 0,${height} Z` : "";
 
   return (
     <div className="bento-card-shell bento-card-stack bg-gradient-to-b from-card to-card/60">
@@ -109,18 +92,19 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                     : "Connecting to live feed…"}
                 </span>
                 {niftyChg != null ? (
-                  <span
-                    className={cn(
-                      "text-sm font-semibold rounded px-2 py-0.5",
-                      niftyChg >= 0
-                        ? "text-emerald-600 bg-emerald-500/10"
-                        : "text-rose-600 bg-rose-500/10",
-                    )}
-                  >
-                    {formatPct(niftyChg)}
-                  </span>
+                  <SignedPct value={niftyChg} label="today" className="rounded bg-muted/40 px-2 py-0.5 text-sm font-semibold" />
                 ) : null}
               </div>
+              <QuoteProvenance
+                className="mt-1.5"
+                exchange="NSE"
+                symbol="NIFTY 50"
+                currency="Index points"
+                asOf={nifty?.source.asOf ?? data?.fetchedAt}
+                nseSession
+                provider={nifty?.source.provider}
+                url={nifty?.source.url}
+              />
             </div>
 
             {/* Timeframe selector */}
@@ -143,32 +127,17 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             </div>
           </div>
 
-          {/* Real Area Chart */}
-          <div className="relative h-28 w-full overflow-hidden rounded-lg bg-accent/10 p-2">
-            {coords.length ? (
-              <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full overflow-visible">
-                <defs>
-                  <linearGradient id="niftyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.28" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d={areaData} fill="url(#niftyGradient)" />
-                <path
-                  d={pathData}
-                  fill="none"
-                  stroke="#10b981"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-muted-foreground font-sans">
-                {loading ? "Loading chart data…" : "No candle data (market closed or feed unavailable)"}
-              </div>
-            )}
-          </div>
+          <AccessibleLineChart
+            title="Index level · NIFTY 50"
+            range={RANGE_LABEL[selectedTf]}
+            frequency={selectedTf === "1D" ? "5-minute candles, close" : "Daily close"}
+            unit="Index points"
+            points={candles.map((c) => ({ ts: c.ts, value: c.close }))}
+            intraday={selectedTf === "1D"}
+            loading={loading}
+            sourceStatus={`${nifty?.source.provider ?? "Upstox"} · candles`}
+            filename={`nifty50-${selectedTf.toLowerCase()}`}
+          />
         </div>
 
         {/* Stats Column with MetricInfo */}
@@ -181,9 +150,9 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
             <span className="font-semibold text-foreground">
               {adv != null && dec != null ? (
                 <>
-                  <span className="text-emerald-600 font-bold">{adv.toLocaleString()}</span>
-                  {" / "}
-                  <span className="text-rose-600 font-bold">{dec.toLocaleString()}</span>
+                  <span className="text-emerald-600 font-bold">▲ {adv.toLocaleString()} advancing</span>
+                  {" · "}
+                  <span className="text-rose-600 font-bold">▼ {dec.toLocaleString()} declining</span>
                 </>
               ) : (
                 <span className="text-muted-foreground">Streaming NSE…</span>

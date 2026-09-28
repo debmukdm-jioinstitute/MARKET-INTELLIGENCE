@@ -6,6 +6,8 @@ import { useMathInspector } from "@/components/providers/math-inspector-provider
 import { getMetric, type MetricDefinition } from "@/lib/metrics-catalog";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { cn } from "@/lib/utils";
+import { dataIssueHref, formatAsOfIst, freshness } from "@/lib/provenance";
+import Link from "next/link";
 import {
   ExternalLink,
   Database,
@@ -25,6 +27,10 @@ export interface MetricInfoProps {
   provider?: string;
   sourceUrl?: string;
   asOf?: string;
+  /** Reporting period the figure covers, e.g. "FY25" or "Trailing 12 months". */
+  period?: string;
+  /** "Adjusted" / "Unadjusted" state, e.g. "Corporate actions adjusted". */
+  adjustment?: string;
   sourceOverride?: FieldSource;
   calculation?: string;
   laymanExplanation?: string;
@@ -48,6 +54,8 @@ export function MetricInfo({
   provider: propProvider,
   sourceUrl: propUrl,
   asOf: propAsOf,
+  period,
+  adjustment,
   sourceOverride,
   calculation: propCalculation,
   laymanExplanation: propLayman,
@@ -92,6 +100,10 @@ export function MetricInfo({
     }
   }
 
+  const fresh = freshness(effectiveAsOf);
+  const asOfDisplay = formatAsOfIst(effectiveAsOf);
+  const missing = value == null && !effectiveAsOf;
+
   let cleanHost = "Official Source";
   try {
     if (effectiveUrl && effectiveUrl.startsWith("http")) {
@@ -100,7 +112,7 @@ export function MetricInfo({
       cleanHost = "Internal Telemetry";
     }
   } catch {
-    cleanHost = "Live Source";
+    cleanHost = "Source";
   }
 
   return (
@@ -116,8 +128,8 @@ export function MetricInfo({
             sizeClasses[effectiveSize],
             className
           )}
-          aria-label={`Official source and details for ${title}`}
-          title={`Click for official source, live link, and methodology for ${title}`}
+          aria-label={`Source and details for ${title}`}
+          title={`Source, timestamp and methodology for ${title}`}
         >
           <span className="font-sans italic font-bold leading-none select-none hover:scale-125 transition-transform">
             ⓘ
@@ -138,12 +150,16 @@ export function MetricInfo({
           <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
               <ShieldCheck className="size-3 text-primary shrink-0" />
-              <span className="truncate">{def.category ?? "Official Macro Telemetry"}</span>
+              <span className="truncate">{def.category ?? "Market data"}</span>
             </div>
-            <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-500">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live Provenance</span>
-            </div>
+            <span
+              className={cn(
+                "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                fresh.tone === "stale" ? "bg-rose-500/10 text-rose-600" : fresh.tone === "unknown" ? "bg-muted text-muted-foreground" : "bg-amber-500/10 text-amber-700",
+              )}
+            >
+              {fresh.label}
+            </span>
           </div>
 
           {/* Title & Value Block */}
@@ -183,9 +199,25 @@ export function MetricInfo({
                   <span>Release / As of</span>
                 </span>
                 <span className="font-sans tabular-nums text-foreground truncate text-right">
-                  {effectiveAsOf}
+                  {asOfDisplay}
                 </span>
               </div>
+            ) : null}
+
+            {period ? (
+              <div className="flex items-center justify-between text-[11px] gap-2">
+                <span className="text-muted-foreground shrink-0">Reporting period</span>
+                <span className="text-foreground text-right">{period}</span>
+              </div>
+            ) : null}
+            {adjustment ? (
+              <div className="flex items-center justify-between text-[11px] gap-2">
+                <span className="text-muted-foreground shrink-0">Adjustment</span>
+                <span className="text-foreground text-right">{adjustment}</span>
+              </div>
+            ) : null}
+            {missing ? (
+              <p className="text-[11px] text-rose-600">No timestamp or value is available for this figure right now.</p>
             ) : null}
 
             {/* Prominent Live Link Button */}
@@ -262,6 +294,15 @@ export function MetricInfo({
               <ChevronRight className="size-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
             </button>
           ) : null}
+
+          <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-[11px] text-muted-foreground">
+            <Link href="/methodology" className="underline-offset-2 hover:underline" onClick={() => setOpen(false)}>
+              Methodology
+            </Link>
+            <a href={dataIssueHref(title, { Provider: effectiveProvider, "As of": effectiveAsOf })} className="underline-offset-2 hover:underline">
+              Report an issue with this figure
+            </a>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

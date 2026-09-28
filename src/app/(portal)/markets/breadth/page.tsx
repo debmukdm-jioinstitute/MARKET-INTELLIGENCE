@@ -45,7 +45,8 @@ export default function MarketBreadthPage() {
         kicker="Market Internals"
         title="Market Breadth & Momentum Desk"
         subtitle="Advance/decline and 52-week expansion from the India dashboard feed; NIFTY trend from daily closes."
-      />
+        trust={{ source: breadthSource?.provider ?? "NSE India", asOf }}
+        />
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading market breadth…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

@@ -25,7 +25,8 @@ export default function IndiaMarketsPage() {
         kicker="India"
         title="India markets"
         subtitle="NSE equities — live via Upstox (exchange-licensed). Click a row for full quote, depth, candles, and fundamentals."
-      />
+        trust={{ source: "Upstox, NSE India", asOf: feedData?.fetchedAt, delayed: "Quotes may be delayed" }}
+        />
       <MarketStatusBadge />
 
       {/* Benchmark Indices Grid */}

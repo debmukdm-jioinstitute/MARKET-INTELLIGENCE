@@ -64,17 +64,17 @@ export function MobileNav() {
             </div>
 
             <nav className="flex flex-col gap-1 px-3 py-4 text-[15px] font-medium text-gray-900">
-              <a href="#features" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
-                Features
+              <a href="#product" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Product
               </a>
-              <a href="#how" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
-                How it works
+              <a href="#coverage" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Data coverage
               </a>
               <a href="#pricing" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Pricing
               </a>
-              <a href="#faq" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
-                FAQ
+              <a href="/methodology" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Methodology
               </a>
             </nav>
 

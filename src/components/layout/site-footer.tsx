@@ -6,6 +6,9 @@ import Link from "next/link";
 
 const LEGAL = [
   { label: "Help & MCP", href: "/help" },
+  { label: "Methodology & data sources", href: "/methodology" },
+  { label: "AI methodology", href: "/methodology#ai" },
+  { label: "Report a data issue", href: "/methodology#corrections" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
 ] as const;
@@ -68,9 +71,14 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
           ))}
         </div>
 
+        <p className={cn("mt-8 max-w-3xl text-xs leading-5", marketing ? "text-gray-500" : "text-muted-foreground")}>
+          Market Intelligence provides descriptive data and analytics for information and education only. It is not
+          investment advice or an offer to buy or sell any security. Quotes may be delayed and can contain errors;
+          verify with your broker or the exchange before acting. Guest and demo portfolios are simulated.
+        </p>
         <div
           className={cn(
-            "mt-8 flex flex-col gap-3 border-t pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
+            "mt-6 flex flex-col gap-3 border-t pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
             marketing ? "border-white/60" : "border-border",
           )}
         >

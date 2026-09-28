@@ -10,7 +10,8 @@ export default function AISignalsPage() {
         kicker="AI Signals"
         title="AI Signals & Market Predictions"
         subtitle="Walk-forward ensemble leans for primary NSE F&O indices (pick index and horizon), plus Nifty 500 BTST/STBT candidates — each with honest out-of-sample track record."
-      />
+        trust={{ source: "Model output on NSE / Upstox data", note: "AI-generated and can be wrong. Not investment advice" }}
+        />
       <AiSignals />
     </div>
   );

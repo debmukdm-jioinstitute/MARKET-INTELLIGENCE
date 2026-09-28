@@ -221,7 +221,8 @@ function SectorsView() {
         kicker="Sector Matrix"
         title="Sector Intelligence & Rotation Workbench"
         subtitle="Sector workbench — table below is illustrative until NSE sector indices are wired."
-      />
+        trust={{ source: "Illustrative sample data", note: "Not live market data. Not investment advice" }}
+        />
 
       <p className="mb-4 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
         Performance, rotation, P/E and ROE in the sector matrix are static teaching numbers, not live NSE sector indices. Valuation tab uses live G-Sec plus NSE link for index multiples.

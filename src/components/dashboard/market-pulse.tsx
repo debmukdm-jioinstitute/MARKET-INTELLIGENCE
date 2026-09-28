@@ -57,6 +57,7 @@ function PulseCell({
         {suffix}
       </p>
       <p className={cn("text-sm", up ? "text-emerald-600" : "text-rose-600")}>
+        <span aria-hidden>{q.changePct == null ? "" : up ? "▲ " : "▼ "}</span>
         {fmtChgPct(q.changePct ?? null)}
       </p>
       <DataInfo source={q.source} hubSyncedAt={hubSyncedAt} />

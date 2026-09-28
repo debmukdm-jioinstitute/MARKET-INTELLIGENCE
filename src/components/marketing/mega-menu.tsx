@@ -49,7 +49,7 @@ export function MegaMenu() {
         aria-expanded={open}
         className={`inline-flex items-center gap-1 transition ${open ? "text-gray-900" : "hover:text-gray-900"}`}
       >
-        Explore
+        Product
         <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 

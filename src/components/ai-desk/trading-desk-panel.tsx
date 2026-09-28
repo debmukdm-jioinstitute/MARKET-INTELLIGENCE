@@ -2,6 +2,7 @@
 
 import { ErrorBanner, SetupBanner } from "@/components/ai-desk/setup-banner";
 import { TickerPicker, type InstrumentSearchResult } from "@/components/ai-desk/ticker-picker";
+import { AiOutputNote } from "@/components/ui/ai-output-note";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -185,6 +186,14 @@ export function TradingDeskPanel() {
             <p className="mt-1.5 text-sm leading-4 text-muted-foreground">{result.risk.rationale}</p>
           </div>
 
+          <AiOutputNote
+            evidenceAsOf={`${result.headlineCount} news headlines and ${result.market === "IN" ? "NSE" : "US"} price at time of run`}
+            disagreement={
+              new Set(result.analysts.map((a) => a.view)).size > 1
+                ? result.analysts.map((a) => `${a.role}: ${a.view}`).join("; ")
+                : null
+            }
+          />
           <p className="text-sm text-muted-foreground/70">{result.disclaimer}</p>
         </div>
       ) : null}

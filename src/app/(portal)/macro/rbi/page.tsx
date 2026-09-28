@@ -24,7 +24,8 @@ export default function RbiPolicyPage() {
         kicker="Central Banking"
         title="RBI Policy Stance & Banking Liquidity Desk"
         subtitle="Monetary policy corridor, system liquidity, and RBI press releases — no placeholder policy rates."
-      />
+        trust={{ source: "Reserve Bank of India", asOf: data?.fetchedAt }}
+        />
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading RBI dashboard…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

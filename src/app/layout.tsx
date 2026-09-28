@@ -15,7 +15,7 @@ const googleSans = Google_Sans({
 export const metadata: Metadata = {
   title: "Market Intelligence | Terminal",
   description:
-    "Institutional-grade virtual portfolio management, real-time market data, and quantitative investment intelligence.",
+    "Institutional-grade virtual portfolio management, market data with source and timestamp shown, and quantitative investment intelligence.",
 };
 
 export const viewport: Viewport = {

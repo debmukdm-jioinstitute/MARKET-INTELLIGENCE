@@ -14,6 +14,7 @@ const PUBLIC = new Set([
   "/forgot-password",
   "/reset-password",
   "/help",
+  "/methodology",
   "/privacy",
   "/terms",
   "/connect/claude",

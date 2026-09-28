@@ -40,8 +40,10 @@ export function formatCompactUsd(value: number) {
 }
 
 export function formatPct(value: number, digits = 2, signed = true) {
-  const sign = signed && value > 0 ? "+" : "";
-  return `${sign}${(value * 100).toFixed(digits)}%`;
+  const pct = (value * 100).toFixed(digits);
+  // One negative convention app-wide: true minus sign, never a hyphen.
+  if (pct.startsWith("-")) return `\u2212${pct.slice(1)}%`;
+  return `${signed && value > 0 ? "+" : ""}${pct}%`;
 }
 
 export function formatNumber(value: number, digits = 2) {

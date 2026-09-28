@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { RefreshCw } from "lucide-react";
 import { HomeAiFiveAgents } from "@/components/dashboard/home-ai-five-agents";
 import { HomeExploreHub } from "@/components/dashboard/home-explore-hub";
+import { TrustNote } from "@/components/ui/trust-note";
 import { ShippedPopup } from "@/components/marketing/shipped-popup";
 
 export default function DashboardPage() {
@@ -49,6 +50,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <TrustNote
+        className="mt-2"
+        source={[data?.pulse.nifty.source.provider, data?.pulse.usdInr.source.provider].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ") || "NSE India, Upstox"}
+        asOf={data?.fetchedAt}
+        delayed="Quotes may be delayed"
+      />
       <FetchingBanner active={loadingFull} />
       {error ? (
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-600">

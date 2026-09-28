@@ -2,6 +2,8 @@
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { MegaMenu } from "@/components/marketing/mega-menu";
+import { AiOutputNote } from "@/components/ui/ai-output-note";
+import { ProductProof } from "@/components/marketing/product-proof";
 import { MobileNav } from "@/components/marketing/mobile-nav";
 import { NewsletterSubscribeForm } from "@/components/marketing/newsletter-subscribe-form";
 import {
@@ -15,14 +17,13 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { AnimatedHeadline } from "@/components/marketing/animated-headline";
 import { LenisProvider } from "@/components/marketing/lenis-provider";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
 import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
-import { ProductHuntBadges, ProductHuntFeaturedBadge } from "@/components/marketing/product-hunt-badges";
+import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -56,47 +57,17 @@ const _STEPS = [
   { n: "3", title: "See what matters", body: "Get instant insights on performance, risk, and where to look next." },
 ];
 
-const STATS = [
-  {
-    value: "90+",
-    label: "Tracked Metrics",
-    desc: "Sharpe, beta, alpha, VaR, drawdown and more. Every metric comes with its formula and a plain-English example, so you learn as you track.",
-  },
-  {
-    value: "500+",
-    label: "Stocks Scanned Live",
-    desc: "The whole Nifty 500, scanned after every NSE close: 52-week breakouts, volume gainers, RSI, MACD and 25+ ready-made scans. Usually a paid feature.",
-  },
-  {
-    value: "5",
-    label: "AI Agents, One Debate",
-    desc: "Fundamental, sentiment and technical analysts, a bull, a bear and a trader argue any stock in front of you. See the reasoning, not just a verdict.",
-  },
-  {
-    value: "Live",
-    label: "Market Data",
-    desc: "NSE, BSE and US prices, options chains and macro feeds refresh on their own. No more hitting refresh.",
-  },
-  {
-    value: "Daily",
-    label: "AI Market Brief",
-    desc: "A pre-market and post-close brief where every number is checked against live data before it reaches you. No made-up figures.",
-  },
-  {
-    value: "F&O",
-    label: "Options Flow & Derivatives",
-    desc: "Spot unusual options activity and open-interest positioning across the F&O universe. A feature you would normally pay a terminal for.",
-  },
-  {
-    value: "Macro",
-    label: "Stress Index & Scenarios",
-    desc: "Track India's macro stress score, see how oil, the rupee and US yields hit each sector, then run the shock on your own holdings.",
-  },
-  {
-    value: "₹0",
-    label: "Forever, Not a Trial",
-    desc: "No subscription, no card, no countdown. Sign up, import holdings from Zerodha, Upstox or Dhan, and explore everything, completely on us.",
-  },
+const USE_CASES = [
+  { title: "Research", body: "Look up any Indian or US stock: price history, valuation, sector context and a sourced AI brief." },
+  { title: "Monitor", body: "Follow your holdings, scanner hits and macro moves in one place, with alerts when something changes." },
+  { title: "Practice", body: "Test ideas on a virtual book and run backtests before any real money is involved." },
+];
+
+const FEATURE_SECTIONS = [
+  { title: "Screeners", body: "The whole Nifty 500 scanned after every NSE close: 52-week breakouts, volume gainers, RSI, MACD and 25+ ready-made scans.", href: "/intelligence/scanner" },
+  { title: "Portfolio", body: "Import holdings or build a virtual book, then see performance, risk, Sharpe, beta and drawdown with formulas explained.", href: "/portfolio" },
+  { title: "Alerts", body: "Get notified about price, scanner and macro changes so you do not have to keep refreshing.", href: "/intelligence/alerts" },
+  { title: "AI Desk", body: "Fundamental, sentiment and technical agents debate a stock in front of you. You see the reasoning, not just a verdict.", href: "/research/ai-desk" },
 ];
 
 const FAQS = [
@@ -119,7 +90,7 @@ const FAQS = [
 ];
 
 const COMPARISON_FEATURES = [
-  { name: "Live Market Data & Research", mi: true, traditional: false },
+  { name: "Market Data & Research with source and timestamp", mi: true, traditional: false },
   { name: "Advanced Portfolio Analytics (Sharpe, Beta, VaR)", mi: true, traditional: false },
   { name: "Global Stocks Coverage (NSE & US)", mi: true, traditional: "Extra Add-on" },
   { name: "Institutional Grade Flow & Sweeps", mi: true, traditional: "Expensive Tier" },
@@ -322,9 +293,9 @@ export function LandingPage() {
             </Link>
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <MegaMenu />
-              <a href="#features" className="transition hover:text-gray-900">Features</a>
-              <a href="#how" className="transition hover:text-gray-900">How it works</a>
-              <a href="#faq" className="transition hover:text-gray-900">FAQ</a>
+              <a href="#coverage" className="transition hover:text-gray-900">Data coverage</a>
+              <a href="#pricing" className="transition hover:text-gray-900">Pricing</a>
+              <Link href="/methodology" className="transition hover:text-gray-900">Methodology</Link>
             </nav>
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
@@ -337,27 +308,19 @@ export function LandingPage() {
                 </Link>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => void enterGuest().then(() => {
-                      router.push("/Home");
-                    })}
-                    className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
-                  >
-                    Try as guest
-                  </button>
                   <Link
                     href="/login"
-                    className="hidden rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:inline-flex"
+                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
                   >
-                    Log in
+                    Sign in
                   </Link>
-                  <Link
-                    href="/signup"
+                  <button
+                    type="button"
+                    onClick={() => void enterGuest().then(() => router.push("/Home"))}
                     className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                   >
-                    Sign up
-                  </Link>
+                    Open demo
+                  </button>
                 </>
               )}
               <MobileNav />
@@ -378,40 +341,42 @@ export function LandingPage() {
             <div className="mx-auto max-w-4xl text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
-                Live market data, free to start
+                Free in beta · no card
               </span>
 
-              <div className="mt-5 flex justify-center">
-                <ProductHuntFeaturedBadge />
-              </div>
-
               <h1 className="mx-auto mt-6 text-[clamp(2.2rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-tight text-gray-900">
-                Manage money like a pro.
-                <div className="mt-2 text-[clamp(1.5rem,3.5vw,2.5rem)]">
-                  <AnimatedHeadline />
-                </div>
+                See the market clearly, then test your ideas risk-free.
               </h1>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
-              Track your portfolio, research stocks, and understand your risk — all in one simple dashboard.
-              Free to start. No credit card.
+              Research Indian and US stocks, monitor your portfolio and practise on a virtual book, with the source and time of every number shown.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href={hasAccess ? "/Home" : "/signup"}
-                className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
-              >
-                {hasAccess ? "Open terminal →" : "Sign up for free →"}
-              </Link>
-              {!hasAccess ? (
+              {hasAccess ? (
                 <Link
-                  href="/login"
-                  className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                  href="/Home"
+                  className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
                 >
-                  Log in
+                  Open terminal →
                 </Link>
-              ) : null}
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void enterGuest().then(() => router.push("/Home"))}
+                    className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+                  >
+                    Open live demo →
+                  </button>
+                  <Link
+                    href="/signup"
+                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                  >
+                    Create free account
+                  </Link>
+                </>
+              )}
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">No credit card · Free forever plan · 2-minute setup</p>
+            <p className="mt-4 text-sm text-muted-foreground">See live markets in seconds — no sign-up, no card. Create an account later to save your watchlist and portfolio.</p>
           </div>
 
           {/* Glass dashboard mockup */}
@@ -569,82 +534,50 @@ export function LandingPage() {
         </section>
       </div>
 
-        {/* STATS STRIP */}
-        <section className="mx-auto mt-20 max-w-6xl px-5">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Free, and ahead of the paid terminals</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Tools that usually cost money, on the house</h2>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map((s) => (
-              <div 
-                key={s.label} 
-                className="group relative overflow-hidden rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:bg-white/80 hover:shadow-[var(--shadow-lg)]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-violet-600/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <div className="relative z-10 flex h-full flex-col">
-                  <p className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{s.value}</p>
-                  <p className="mt-2 text-[15px] font-semibold tracking-tight text-blue-600">{s.label}</p>
-                  <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-gray-900">
-                    {s.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* TRUST STRIP */}
+        <section aria-label="At a glance" className="mx-auto mt-16 max-w-6xl px-5">
+          <ul className="grid gap-3 rounded-2xl border border-white/70 bg-white/50 p-4 text-sm text-gray-700 shadow-[var(--shadow-sm)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
+            <li><span className="font-semibold text-gray-900">Free in beta.</span> No card, no trial countdown.</li>
+            <li><span className="font-semibold text-gray-900">Coverage.</span> NSE and BSE equities, F&amp;O, US stocks, RBI and global macro.</li>
+            <li><span className="font-semibold text-gray-900">Data freshness.</span> Every figure shows its source and update time; quotes may be delayed.</li>
+            <li><span className="font-semibold text-gray-900">Not advice.</span> Research and education only. <Link href="/methodology" className="text-blue-600 hover:underline">Methodology</Link></li>
+          </ul>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
+        {/* THREE USE CASES */}
+        <section id="product" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
           <div className="mx-auto mb-12 max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">How it works</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">From sign-up to insight in three steps</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Built for three jobs</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Research, monitor, practice</h2>
           </div>
-          <ol className="grid gap-5 md:grid-cols-3">
-            {[
-              { title: "Open a free desk", body: "Create an account in seconds, or explore as a guest. No brokerage, no card." },
-              { title: "Build your book", body: "Import holdings or start a virtual portfolio across Indian and US markets." },
-              { title: "Research and act", body: "Track risk, run backtests, and use the AI desk to test ideas with zero real money." },
-            ].map((step, i) => (
-              <li key={step.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
-                <span className="grid size-9 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white">{i + 1}</span>
-                <h3 className="mt-4 text-lg font-semibold tracking-tight text-gray-900">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">{step.body}</p>
-              </li>
+          <div className="grid gap-5 md:grid-cols-3">
+            {USE_CASES.map((u) => (
+              <div key={u.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
+                <h3 className="text-lg font-semibold tracking-tight text-gray-900">{u.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{u.body}</p>
+              </div>
             ))}
-          </ol>
+          </div>
         </section>
 
-        {/* FOUNDER LETTER (Replaces Features) */}
-        <section id="features" className="mx-auto w-full px-5 py-24 md:py-32">
-          <div className="founder-note mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
-            <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
-              👋
-            </div>
-            <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
-              A note to our beta users
-            </h2>
-            <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700 max-w-4xl mx-auto">
-              <p>
-                Hey there,
-              </p>
-              <p>
-                I built Market Intelligence because I was tired of cluttered, expensive, and overwhelming financial tools. I wanted a space where anyone — whether you're a student, a new investor, or a seasoned trader — could see their money clearly, without the noise. 🎯
-              </p>
-              <p>
-                This platform is designed to give you the exact tools the professionals use, but wrapped in an interface that actually feels good to use. No hidden fees, no credit card required to start, and no confusing jargon. Just clean data, beautiful charts, and insights you can trust. 🚀
-              </p>
-              <p>
-                I'm incredibly grateful you're here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let's build a smarter financial future, together. 🌟 I know that there will be a lot of bugs, so in case you find any, please do mail me at <a href="mailto:Deb@getmarketintelligence.in" className="font-semibold text-blue-600 hover:underline">Deb@getmarketintelligence.in</a>.
-              </p>
-              <div className="pt-6">
-                <p className="font-medium text-gray-900">Warmly,</p>
-                <img src="/founder.png" alt="Debabrata Mukherjee" className="mt-5 h-20 w-auto object-contain sm:h-24" />
-                <p className="mt-8 text-sm text-muted-foreground italic border-t border-gray-200/60 pt-6">
-                  Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507
-                </p>
+        <ProductProof hasAccess={hasAccess} onOpenDemo={() => void enterGuest().then(() => router.push("/Home"))} />
+
+        {/* FEATURE SECTIONS */}
+        <section id="features" className="mx-auto mt-24 max-w-6xl scroll-mt-20 px-5 md:mt-32">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">What is inside</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Screeners, portfolio, alerts and an AI desk</h2>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {FEATURE_SECTIONS.map((f) => (
+              <div key={f.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
+                <h3 className="text-lg font-semibold tracking-tight text-gray-900">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{f.body}</p>
+                <Link href={hasAccess ? f.href : "/signup"} className="mt-4 inline-block text-sm font-medium text-blue-600 hover:underline">
+                  {hasAccess ? "Open →" : "Try it free →"}
+                </Link>
               </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -660,7 +593,7 @@ export function LandingPage() {
                 Multi-agent research lab
               </h2>
               <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-                Run a live multi-agent debate. Pick any ticker and watch five LLM agents analyze fundamentals, sentiment, and technicals in real-time.
+                Pick any ticker in the terminal and five LLM agents argue it from fundamentals, sentiment and technicals, with each agent's evidence shown. The example below is a recorded sample.
               </p>
             </div>
 
@@ -669,20 +602,25 @@ export function LandingPage() {
               
               <div className="mb-8 flex items-center justify-between border-b border-gray-200/50 pb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">Trading desk — live debate</h3>
-                  <p className="text-sm font-medium text-gray-500 mt-1">ADANI PORT & SEZ LTD (ADANIPORTS) • price 1807.3</p>
+                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">Trading desk — recorded sample debate</h3>
+                  <p className="text-sm font-medium text-gray-500 mt-1">NSE · ADANIPORTS · INR · sample run, not live</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 border border-white/70 shadow-sm">
                   <span className="flex h-2.5 w-2.5 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
                   </span>
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Agents Active</span>
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Sample</span>
                 </div>
               </div>
 
               {/* Agent Cards Grid */}
               <LiveDebate />
+              <AiOutputNote
+                className="mt-6"
+                evidenceAsOf="sample run; headlines cited in the debate are from that run"
+                disagreement="Fundamental analyst bearish, sentiment analyst bullish, technical analyst neutral."
+              />
 
             </div>
 
@@ -695,6 +633,28 @@ export function LandingPage() {
               </Link>
             </div>
           </div>
+        </section>
+
+        {/* DATA METHODOLOGY */}
+        <section id="coverage" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Data coverage &amp; methodology</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Know where every number comes from</h2>
+          </div>
+          <dl className="grid gap-5 rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl sm:grid-cols-2 sm:p-8">
+            {[
+              ["Providers", "NSE India and Upstox for Indian equities and derivatives; RBI and public open-data portals for macro; Yahoo Finance and FRED for global series."],
+              ["Timestamps", "Each figure shows its source and when it was fetched. Outside market hours you see the last close."],
+              ["Adjustments", "Models, scans and backtests state their assumptions. Backtests exclude some real-world costs."],
+              ["Caveats", "Quotes may be delayed and can contain errors. Guest portfolios are simulated. Nothing here is investment advice."],
+            ].map(([t, d]) => (
+              <div key={t}>
+                <dt className="text-sm font-semibold text-gray-900">{t}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-gray-600">{d}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-center text-sm"><Link href="/methodology" className="font-medium text-blue-600 hover:underline">Read the full methodology →</Link></p>
         </section>
 
         {/* PRICING / COMPARISON */}
@@ -763,6 +723,33 @@ export function LandingPage() {
             {FAQS.map((item) => (
               <Faq key={item.q} {...item} />
             ))}
+          </div>
+        </section>
+
+        {/* FOUNDER STORY */}
+        <section id="founder" className="mx-auto w-full px-5 py-24 md:py-32">
+          <div className="founder-note mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
+            <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
+              👋
+            </div>
+            <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
+              A note to our beta users
+            </h2>
+            <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700 max-w-4xl mx-auto">
+              <p>
+                I built Market Intelligence because financial tools felt cluttered, expensive and overwhelming. I wanted students, new investors and seasoned traders to see their money clearly, with the sources shown.
+              </p>
+              <p>
+                It is a beta, so there will be bugs. If you find one, please mail me at <a href="mailto:Deb@getmarketintelligence.in" className="font-semibold text-blue-600 hover:underline">Deb@getmarketintelligence.in</a>.
+              </p>
+              <div className="pt-6">
+                <p className="font-medium text-gray-900">Warmly,</p>
+                <img src="/founder.png" alt="Debabrata Mukherjee" className="mt-5 h-20 w-auto object-contain sm:h-24" />
+                <p className="mt-8 text-sm text-muted-foreground italic border-t border-gray-200/60 pt-6">
+                  Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 

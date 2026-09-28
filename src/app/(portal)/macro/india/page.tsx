@@ -15,7 +15,8 @@ export default function IndiaMacroPage() {
         kicker="Sovereign Macro"
         title="India Macroeconomic Intelligence Desk"
         subtitle="Comprehensive official indicators: GDP growth, CPI/WPI inflation, PMI surveys, banking credit growth, and foreign exchange reserves."
-      />
+        trust={{ source: "RBI, NSE India, MOSPI", asOf: data?.fetchedAt }}
+        />
 
       {loading && !data ? <p className="text-sm text-muted-foreground mb-4">Loading India macro…</p> : null}
       {error ? <p className="text-sm text-rose-600 mb-4">{error}</p> : null}

@@ -21,7 +21,7 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
       cleanHost = new URL(copy.url).hostname.replace(/^www\./, "");
     }
   } catch {
-    cleanHost = "Live Source";
+    cleanHost = "Source";
   }
 
   return (
@@ -103,7 +103,7 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
               >
                 <span className="flex items-center gap-2 truncate">
                   <Globe className="size-3.5 shrink-0 text-primary" />
-                  <span className="truncate">Open Live Source ({cleanHost})</span>
+                  <span className="truncate">Open source ({cleanHost})</span>
                 </span>
                 <ExternalLink className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>

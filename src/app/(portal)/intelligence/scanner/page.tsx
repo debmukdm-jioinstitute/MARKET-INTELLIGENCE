@@ -1,5 +1,7 @@
 "use client";
 
+import { DataTable } from "@/components/ui/data-table";
+import { SignedPct } from "@/components/ui/signed-value";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -31,7 +33,8 @@ export default function ScannerPage() {
         kicker="Scanner"
         title="Nifty 500 Stock Scanner"
         subtitle="Technical scans over daily prices for every Nifty 500 stock, refreshed after each NSE close. Scan definitions follow the PKScreener menu (open-source, pkjmesra/PKScreener)."
-      />
+        trust={{ source: "NSE daily prices (PKScreener scan definitions)", asOf: data?.run?.asOf, delayed: "Refreshed after each NSE close", note: "Technical screens, not recommendations" }}
+        />
 
       {needsAuth ? <SignInRequiredBanner feature="the Nifty 500 scanner" nextPath="/intelligence/scanner" /> : null}
       {!needsAuth && error && !(error instanceof AuthRequiredError) ? (
@@ -66,39 +69,32 @@ export default function ScannerPage() {
         {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
         {data?.results && data.results.length === 0 && data.run ? <p className="text-sm text-muted-foreground">No stocks match this scan in the latest session.</p> : null}
         {data?.results?.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th className="px-2 py-1 font-medium">Symbol</th>
-                  <th className="px-2 py-1 font-medium">Industry</th>
-                  <th className="px-2 py-1 text-right font-medium">LTP (₹)</th>
-                  <th className="px-2 py-1 text-right font-medium">Change</th>
-                  <th className="px-2 py-1 text-right font-medium">Vol ×20d</th>
-                  <th className="px-2 py-1 text-right font-medium">RSI</th>
-                  <th className="px-2 py-1 font-medium">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.results.map((r) => (
-                  <tr key={r.symbol} className="border-t border-border/50">
-                    <td className="whitespace-nowrap px-2 py-1.5">
-                      <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="font-semibold text-primary hover:underline">{r.symbol}</Link>
-                      <span className="ml-2 text-muted-foreground">{r.name}</span>
-                    </td>
-                    <td className="px-2 py-1.5 text-muted-foreground">{r.industry}</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums">{r.ltp.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
-                    <td className={cn("px-2 py-1.5 text-right tabular-nums", r.changePct >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                      {r.changePct >= 0 ? "+" : ""}{r.changePct.toFixed(2)}%
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums">{r.volRatio.toFixed(1)}×</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums">{r.rsi == null ? "—" : r.rsi.toFixed(0)}</td>
-                    <td className={cn("px-2 py-1.5", current ? biasCls[current.bias] : "")}>{r.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            caption={`${current?.label ?? "Scan"} results`}
+            summary={`Scan: ${current?.label ?? active}`}
+            filename={`scanner-${active}`}
+            rows={data.results}
+            rowKey={(r) => r.symbol}
+            columns={[
+              {
+                key: "symbol",
+                label: "Symbol",
+                value: (r) => r.symbol,
+                render: (r) => (
+                  <>
+                    <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="font-semibold text-primary hover:underline">{r.symbol} ›</Link>
+                    <span className="ml-2 text-muted-foreground">{r.name}</span>
+                  </>
+                ),
+              },
+              { key: "industry", label: "Industry", value: (r) => r.industry, render: (r) => <span className="text-muted-foreground">{r.industry}</span>, defaultVisible: false },
+              { key: "ltp", label: "LTP (₹)", numeric: true, value: (r) => r.ltp, render: (r) => r.ltp.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
+              { key: "chg", label: "Change", numeric: true, value: (r) => r.changePct, render: (r) => <SignedPct value={r.changePct / 100} /> },
+              { key: "vol", label: "Vol ×20d", numeric: true, value: (r) => r.volRatio, render: (r) => `${r.volRatio.toFixed(1)}×` },
+              { key: "rsi", label: "RSI", numeric: true, value: (r) => r.rsi, render: (r) => (r.rsi == null ? "n/a" : r.rsi.toFixed(0)) },
+              { key: "signal", label: "Signal", value: (r) => r.note, render: (r) => <span className={current ? biasCls[current.bias] : ""}>{r.note}</span> },
+            ]}
+          />
         ) : null}
       </Panel>
       <p className="text-xs text-muted-foreground">Scans use delayed daily data from Yahoo Finance. Research and education only — not investment advice.</p>

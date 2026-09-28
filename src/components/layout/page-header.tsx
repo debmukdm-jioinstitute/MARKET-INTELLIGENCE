@@ -2,8 +2,12 @@
 
 import { useSiteContent } from "@/components/providers/site-content-provider";
 import { siteContentSlot } from "@/lib/site-content";
+import { TrustNote } from "@/components/ui/trust-note";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import type { ComponentProps } from "react";
+
+type TrustProps = ComponentProps<typeof TrustNote>;
 
 export function PageHeader({
   kicker,
@@ -11,12 +15,15 @@ export function PageHeader({
   subtitle,
   className,
   titleAs: TitleTag = "h2",
+  trust,
 }: {
   kicker?: string;
   title: string;
   subtitle?: string;
   className?: string;
   titleAs?: "h1" | "h2";
+  /** Source / freshness / methodology line shown under the subtitle. */
+  trust?: TrustProps;
 }) {
   const path = usePathname();
   const kickerSlot = siteContentSlot(path, "page-header.kicker");
@@ -75,6 +82,7 @@ export function PageHeader({
           aria-hidden
         />
       )}
+      {trust ? <TrustNote {...trust} className="mt-1.5" /> : null}
     </div>
   );
 }
@@ -91,6 +99,7 @@ export function Panel({
   children,
   className,
   id,
+  trust,
 }: {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -98,6 +107,8 @@ export function Panel({
   children: React.ReactNode;
   className?: string;
   id?: string;
+  /** Renders a source / freshness / methodology / disclaimer line under the panel body. */
+  trust?: { source: string; asOf?: string | null; delayed?: string };
 }) {
   const path = usePathname();
   const titleStr = typeof title === "string" ? title : String(title);
@@ -143,6 +154,7 @@ export function Panel({
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div className="p-4">{children}</div>
+      {trust ? <TrustNote {...trust} className="border-t border-border px-4 py-2.5" /> : null}
     </section>
   );
 }

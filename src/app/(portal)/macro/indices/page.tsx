@@ -213,7 +213,8 @@ export default function WorldIndicesPage() {
         kicker="Macro"
         title="World stock indices"
         subtitle={`${focusCounts.all} benchmarks — live price, day change, volume, intraday and 52-week ranges (Yahoo Finance). Same coverage as Yahoo world indices, tuned for India-first context.`}
-      />
+        trust={{ source: "Yahoo Finance", asOf: data?.fetchedAt, delayed: "Quotes may be delayed; closed markets show last close" }}
+        />
 
       <IndicesFocusToggle value={focus} onChange={setFocus} counts={focusCounts} className="mt-4" />
 

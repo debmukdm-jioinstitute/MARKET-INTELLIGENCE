@@ -29,7 +29,8 @@ export default function DerivativesPage() {
         kicker="F&O"
         title="Derivatives dashboard"
         subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
-      />
+        trust={{ source: snapshot?.source.provider ?? "Upstox", asOf: snapshot?.source.asOf, note: "Greeks are model-derived. Not investment advice" }}
+        />
       <Link href="/Home" className="text-sm text-primary hover:underline">
         ← Back to dashboard
       </Link>
