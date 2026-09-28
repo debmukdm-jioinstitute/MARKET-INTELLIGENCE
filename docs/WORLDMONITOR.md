@@ -30,7 +30,7 @@ NEXT_PUBLIC_WORLDMONITOR_URL=https://your-worldmonitor-host.example/dashboard
 WORLDMONITOR_UPSTREAM_ORIGIN=https://finance.worldmonitor.app
 ```
 
-Redeploy MI. By default, **`/worldmonitor/dashboard`** is reverse-proxied so the dashboard runs on the Market Intelligence origin (upstream `frame-ancestors` blocks cross-site iframes). World Monitor’s **`/api/*`** calls (bootstrap, news digest, market RPC, etc.) are proxied to the same upstream origin so panels load on MI; paths that Market Intelligence already owns (e.g. `/api/scenario` without `/v1`) stay local.
+Redeploy MI. By default, **`/worldmonitor/dashboard`** is reverse-proxied so the dashboard runs on the Market Intelligence origin (upstream `frame-ancestors` blocks cross-site iframes). World Monitor’s **`/api/*`** calls (bootstrap, news digest, market RPC, etc.) and static map geo files (`/data/countries-110m.json`, etc.) are proxied to the same upstream origin so panels load on MI; paths that Market Intelligence already owns (e.g. `/api/scenario` without `/v1`, `/data/feeds`) stay local.
 
 ## Submodule updates
 
