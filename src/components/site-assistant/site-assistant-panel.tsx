@@ -3,6 +3,7 @@
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { useWatchlist } from "@/hooks/use-watchlist";
 import { isBenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 import {
   nudgesForSkill,
@@ -254,6 +255,7 @@ function SiteAssistantChat({
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const { isGuest } = useAuth();
   const { data: portfolioData, addHolding, removeHolding, updateBenchmark } = useMyPortfolio();
+  const { add: addWatchlistItem, remove: removeWatchlistItem } = useWatchlist();
   const currentBenchmark = portfolioData?.settings?.benchmark ?? "NIFTY50";
   const [draft, setDraft] = useState("");
   const [mcqOpen, setMcqOpen] = useState(false);
@@ -378,6 +380,46 @@ function SiteAssistantChat({
           const summary = e instanceof Error ? e.message : "Could not create that alert.";
           logAssistantAction("create_alert", input, summary, false);
           submit({ tool: "create_alert", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary } });
+        }
+        return;
+      }
+
+      if (toolCall.toolName === "add_to_watchlist") {
+        const input = toolCall.input as { market: "IN" | "US"; symbol: string; name: string; sector?: string; note?: string };
+        if (isGuest) {
+          const summary = "Guest mode does not save a watchlist — create a free account to track names.";
+          submit({ tool: "add_to_watchlist", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary, upsell: "/signup" } });
+          return;
+        }
+        try {
+          await addWatchlistItem({ ...input, sector: input.sector ?? null, note: input.note ?? null });
+          const summary = `Added ${input.symbol} to your watchlist.`;
+          logAssistantAction("add_to_watchlist", input, summary, true);
+          submit({ tool: "add_to_watchlist", toolCallId: toolCall.toolCallId, output: { ok: true, summary } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not add that to your watchlist.";
+          logAssistantAction("add_to_watchlist", input, summary, false);
+          submit({ tool: "add_to_watchlist", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary } });
+        }
+        return;
+      }
+
+      if (toolCall.toolName === "remove_from_watchlist") {
+        const input = toolCall.input as { id: string; symbol: string };
+        if (isGuest) {
+          const summary = "Guest mode has no watchlist to change.";
+          submit({ tool: "remove_from_watchlist", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary, upsell: "/signup" } });
+          return;
+        }
+        try {
+          await removeWatchlistItem(input.id);
+          const summary = `Removed ${input.symbol} from your watchlist.`;
+          logAssistantAction("remove_from_watchlist", input, summary, true);
+          submit({ tool: "remove_from_watchlist", toolCallId: toolCall.toolCallId, output: { ok: true, summary } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not remove that from your watchlist.";
+          logAssistantAction("remove_from_watchlist", input, summary, false);
+          submit({ tool: "remove_from_watchlist", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary } });
         }
         return;
       }

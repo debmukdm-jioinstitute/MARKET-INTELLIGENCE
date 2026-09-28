@@ -6,9 +6,11 @@ import { ragContextForQuestion } from "@/lib/site-assistant/rag-context";
 import { checkSiteAssistantRateLimit } from "@/lib/site-assistant/rate-limit";
 import {
   clientAddHoldingTool,
+  clientAddToWatchlistTool,
   clientCreateAlertTool,
   clientNavigateTool,
   clientOpenPaletteTool,
+  clientRemoveFromWatchlistTool,
   clientRemoveHoldingTool,
   clientUpdateSettingsTool,
   createServerSiteAssistantTools,
@@ -90,6 +92,8 @@ export async function POST(req: Request) {
         remove_holding: clientRemoveHoldingTool,
         create_alert: clientCreateAlertTool,
         update_settings: clientUpdateSettingsTool,
+        add_to_watchlist: clientAddToWatchlistTool,
+        remove_from_watchlist: clientRemoveFromWatchlistTool,
       },
       stopWhen: stepCountIs(6),
     });

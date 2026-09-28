@@ -148,6 +148,7 @@ export const NAV_SECTIONS: NavSection[] = [
         items: [
           { label: "Command Center", href: "/portfolio", desc: "Mark-to-market NAV, P&L, and live positions." },
           { label: "Allocation", href: "/portfolio/allocation", desc: "Policy weights versus actual exposure." },
+          { label: "Watchlist", href: "/portfolio/watchlist", desc: "Names you're tracking without a position.", badge: "NEW" },
         ],
       },
       {

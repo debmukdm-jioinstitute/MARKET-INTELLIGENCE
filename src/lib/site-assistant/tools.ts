@@ -14,6 +14,7 @@ import { latestBriefs } from "@/lib/brief/store";
 import { loadPortfolioAnalysisForUser } from "@/lib/portfolio/load-for-user";
 import { listRules, recentEvents } from "@/lib/alerts/store";
 import { SCANNERS } from "@/lib/scanner/scanners";
+import { listWatchlist } from "@/lib/watchlist/store";
 import { loadScan } from "@/lib/scanner/store";
 import { tool } from "ai";
 import { z } from "zod";
@@ -166,6 +167,16 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
         return { catalog, rules, events, dbConfigured: true };
       },
     }),
+    get_my_watchlist: tool({
+      description:
+        "The signed-in user's own watchlist (names tracked without a position). Use for \"what's on my watchlist?\" or before add_to_watchlist to avoid a duplicate.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        if (!user || user.guest) return { error: "Guest mode does not save a watchlist. Create a free account to track names.", upsell: "/signup" };
+        if (!hasDatabase()) return { items: [], dbConfigured: false };
+        return { items: await listWatchlist(user.email), dbConfigured: true };
+      },
+    }),
   };
 }
 
@@ -241,5 +252,26 @@ export const clientUpdateSettingsTool = tool({
   inputSchema: z.object({
     name: z.string().min(1).max(60).optional(),
     benchmark: z.string().max(20).optional().describe("Benchmark id, e.g. NIFTY50, SENSEX — confirm valid ids from the portfolio settings page if unsure"),
+  }),
+});
+
+export const clientAddToWatchlistTool = tool({
+  description:
+    "Add a company to the signed-in user's watchlist (tracking without a position). Resolve the company name/ticker with search_symbols FIRST — never guess a symbol. Reversible and non-destructive, so this runs immediately.",
+  inputSchema: z.object({
+    market: z.enum(["IN", "US"]),
+    symbol: z.string().min(1).max(25),
+    name: z.string().min(1).max(120),
+    sector: z.string().max(100).optional(),
+    note: z.string().max(280).optional().describe("Why it's on the list, e.g. \"waiting for a pullback below 1400\""),
+  }),
+});
+
+export const clientRemoveFromWatchlistTool = tool({
+  description:
+    "Remove a name from the signed-in user's watchlist. Non-destructive to their portfolio (it never held a position), so this runs immediately without a confirmation card.",
+  inputSchema: z.object({
+    id: z.string().min(1).describe("Watchlist item id, from get_my_watchlist"),
+    symbol: z.string().min(1).max(25).describe("Symbol, for the confirmation message"),
   }),
 });
