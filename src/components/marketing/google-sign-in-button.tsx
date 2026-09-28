@@ -7,21 +7,29 @@ export function GoogleSignInButton({
   next,
   disabled,
   privacyAccepted,
+  onPrivacyRequired,
 }: {
   next: string;
   disabled?: boolean;
-  /** When false, signup cannot start Google OAuth until privacy is accepted. Omit on login. */
+  /** Sign-up only: when false, block navigation and call onPrivacyRequired. Omit on login. */
   privacyAccepted?: boolean;
+  onPrivacyRequired?: () => void;
 }) {
   const dest = next.startsWith("/") ? next : "/Home";
-  const blocked = disabled || privacyAccepted === false;
-  const href = `/api/auth/google?next=${encodeURIComponent(dest)}${
-    privacyAccepted ? "&privacy=1" : ""
-  }`;
+  const href = `/api/auth/google?next=${encodeURIComponent(dest)}${privacyAccepted ? "&privacy=1" : ""}`;
 
-  if (blocked) {
+  if (disabled) {
     return (
       <button type="button" disabled className={btnClass}>
+        <GoogleIcon />
+        Continue with Google
+      </button>
+    );
+  }
+
+  if (privacyAccepted === false && onPrivacyRequired) {
+    return (
+      <button type="button" className={btnClass} onClick={onPrivacyRequired}>
         <GoogleIcon />
         Continue with Google
       </button>

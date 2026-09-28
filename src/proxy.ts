@@ -85,6 +85,9 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", realPathname);
+    if (staleSession) {
+      url.searchParams.set("expired", "1");
+    }
     const res = NextResponse.redirect(url);
     if (staleSession) {
       res.cookies.set("mi_session", "", { httpOnly: true, path: "/", maxAge: 0 });
