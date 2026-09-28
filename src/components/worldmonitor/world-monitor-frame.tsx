@@ -58,12 +58,7 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
     <div className="flex flex-col gap-4 pb-10">
       <Panel
         title="Dashboard"
-        subtitle={
-          <>
-            Proxied endpoint{" "}
-            <span className="break-all font-medium text-blue-600 tabular-nums">{launchPath}</span>
-          </>
-        }
+        subtitle={`Proxied endpoint ${launchPath}`}
         action={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button type="button" onClick={handleRefresh} className={btnGhost} title="Reload dashboard">
