@@ -10,7 +10,7 @@ export function WorldMonitorPageShell({ children }: { children: ReactNode }) {
       <PageHeader
         kicker="Global intelligence"
         title="World Monitor"
-        subtitle="Maps, geopolitical layers, country instability (CII), and cross-asset radar — proxied on Market Intelligence. India portfolio and macro tools stay in the main menu."
+        subtitle="Maps, geopolitical layers, country instability (CII), and cross-asset radar. India portfolio and macro tools stay in the main menu."
         titleAs="h1"
       />
       {children}
