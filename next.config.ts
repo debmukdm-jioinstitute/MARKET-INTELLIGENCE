@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
+const WORLDMONITOR_UPSTREAM = process.env.WORLDMONITOR_UPSTREAM_ORIGIN?.trim() || "https://finance.worldmonitor.app";
+
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/worldmonitor",
+        destination: `${WORLDMONITOR_UPSTREAM}/dashboard`,
+      },
+      {
+        source: "/worldmonitor/:path*",
+        destination: `${WORLDMONITOR_UPSTREAM}/:path*`,
+      },
+    ];
+  },
   async redirects() {
     return [
       { 

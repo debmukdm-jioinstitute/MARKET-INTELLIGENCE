@@ -99,10 +99,10 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="worldmonitor" id="worldmonitor">
+        <AccordionItem value="worldmonitor">
           <AccordionTrigger className="text-base font-semibold">World Monitor (global dashboard)</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
-            <p>
+            <p id="worldmonitor">
               <b>Not a full clone inside one app yet.</b> We ship upstream{" "}
               <a
                 href="https://github.com/koala73/worldmonitor"
@@ -121,8 +121,9 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             <Steps
               items={[
                 "Sign in to Market Intelligence → Today → World Monitor (or open the path above).",
-                "Use Open World Monitor full screen if the embed is blank (iframe blocked).",
-                "For your own host: clone submodule services/worldmonitor, npm run dev:finance, set NEXT_PUBLIC_WORLDMONITOR_URL, redeploy MI.",
+                "Click Launch World Monitor — loads /worldmonitor/dashboard proxied on our domain (upstream blocks iframes).",
+                "Or open on worldmonitor.app in a new tab if the proxy is down.",
+                "Self-host: submodule services/worldmonitor, deploy separately, set NEXT_PUBLIC_WORLDMONITOR_URL.",
                 "India portfolio, stress index, and scanners stay in other MI menus — World Monitor is global situational awareness.",
               ]}
             />

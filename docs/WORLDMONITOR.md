@@ -5,7 +5,7 @@
 | Layer | State |
 | ----- | ----- |
 | Full in-repo clone of UI/logic | **Submodule** at `services/worldmonitor` (upstream [koala73/worldmonitor](https://github.com/koala73/worldmonitor)) |
-| Embedded in Market Intelligence | **`/intelligence/world-monitor`** (iframe → configurable URL) |
+| Embedded in Market Intelligence | **`/intelligence/world-monitor`** + proxy **`/worldmonitor/*`** → finance.worldmonitor.app |
 | Feature parity with worldmonitor.app | **Not merged into Next.js** — run upstream app separately for 100% panels/maps/desktop |
 
 Market Intelligence remains India-first; World Monitor adds global situational awareness (news, maps, CII, finance variant).
@@ -25,10 +25,12 @@ npm run dev:finance   # finance variant — port from DEV_PORT in .env.local (de
 Deploy `services/worldmonitor` to its own host (Vercel project, Docker, etc.). Set in Market Intelligence:
 
 ```bash
-NEXT_PUBLIC_WORLDMONITOR_URL=https://your-worldmonitor-host.example
+NEXT_PUBLIC_WORLDMONITOR_URL=https://your-worldmonitor-host.example/dashboard
+# optional upstream for proxy (default finance.worldmonitor.app)
+WORLDMONITOR_UPSTREAM_ORIGIN=https://finance.worldmonitor.app
 ```
 
-Redeploy MI. The portal page loads that URL in the iframe.
+Redeploy MI. By default, **`/worldmonitor/dashboard`** is reverse-proxied so the dashboard runs on the Market Intelligence origin (upstream `frame-ancestors` blocks cross-site iframes).
 
 ## Submodule updates
 
