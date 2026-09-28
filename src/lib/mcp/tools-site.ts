@@ -32,6 +32,7 @@ import { ensureSchema, sql } from "@/lib/db";
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
 import { loadBacktest, loadScan, loadSignals } from "@/lib/scanner/store";
+import { WORLDMONITOR_PUBLIC_URL, WORLDMONITOR_UPSTREAM_REPO } from "@/lib/worldmonitor/public-url";
 import type { Tool } from "./tools";
 
 /**
@@ -405,6 +406,21 @@ export const SITE_TOOLS: Tool[] = [
       const head = { asOf: run.asOf, from: run.from, to: run.to, sessions: run.sessions, symbols: run.symbols, method: run.method, summary };
       return curves ? { ...head, benchmarkEquity: run.benchmarkEquity, curves: scanners.map((s) => ({ scanner: s.label, equity: s.equity })) } : head;
     },
+  },
+
+  {
+    name: "get_world_monitor",
+    title: "World Monitor (global dashboard)",
+    category: "Research",
+    description:
+      "Link and status for the integrated World Monitor global intelligence dashboard (news, maps, CII, finance variant).",
+    inputSchema: empty,
+    run: async () => ({
+      portalPath: "/intelligence/world-monitor",
+      embedUrl: WORLDMONITOR_PUBLIC_URL,
+      upstream: WORLDMONITOR_UPSTREAM_REPO,
+      note: "Full panel set runs from upstream World Monitor; MI embeds or self-host via NEXT_PUBLIC_WORLDMONITOR_URL.",
+    }),
   },
 
   // ---- Updates ----

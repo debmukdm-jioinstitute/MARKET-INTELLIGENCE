@@ -1,0 +1,3 @@
+[submodule "services/worldmonitor"]
+	path = services/worldmonitor
+	url = https://github.com/koala73/worldmonitor.git
