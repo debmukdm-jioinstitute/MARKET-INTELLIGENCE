@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { worldMonitorApiRewrites } from "./src/lib/worldmonitor/api-proxy-rewrites";
 
 const WORLDMONITOR_UPSTREAM = process.env.WORLDMONITOR_UPSTREAM_ORIGIN?.trim() || "https://finance.worldmonitor.app";
 
@@ -6,6 +7,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   async rewrites() {
     return [
+      ...worldMonitorApiRewrites(WORLDMONITOR_UPSTREAM),
       {
         source: "/worldmonitor",
         destination: `${WORLDMONITOR_UPSTREAM}/dashboard`,
