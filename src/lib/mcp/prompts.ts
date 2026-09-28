@@ -67,3 +67,19 @@ export function getPromptMessages(name: string, args: Record<string, string> = {
       return null;
   }
 }
+
+export const MCP_PROMPTS = PROMPTS;
+
+export function getMcpPrompt(name: string, args: Record<string, unknown> = {}) {
+  const strArgs: Record<string, string> = {};
+  for (const [k, v] of Object.entries(args)) {
+    if (v != null) strArgs[k] = String(v);
+  }
+  const messages = getPromptMessages(name, strArgs);
+  if (!messages) return null;
+  const def = PROMPTS.find((prompt) => prompt.name === name);
+  return {
+    description: def?.description,
+    messages,
+  };
+}

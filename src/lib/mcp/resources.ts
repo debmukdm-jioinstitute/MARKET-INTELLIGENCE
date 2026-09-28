@@ -99,3 +99,10 @@ All data on Market Intelligence is sourced directly from official or primary mar
       return null;
   }
 }
+
+export const MCP_RESOURCES = RESOURCES;
+
+export function readMcpResource(uri: string) {
+  const res = readResource(uri);
+  return res?.contents[0] ?? null;
+}

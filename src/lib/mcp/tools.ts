@@ -47,6 +47,24 @@ const CORE_TOOLS: Tool[] = [
     name: "get_market_overview",
     description: "Composite market overview in a single call: snapshot metrics, macro stress index, live market breadth (advancers/decliners), and latest market brief. Recommended primary call for market analysis agents.",
     inputSchema: empty,
+    outputSchema: {
+      type: "object",
+      properties: {
+        asOf: { type: "string" },
+        snapshot: { type: "object" },
+        stress: {
+          type: "object",
+          properties: {
+            score: { type: "number" },
+            band: { type: "string" },
+            convergence: { type: "number" },
+            families: { type: "array" },
+          },
+        },
+        breadth: { type: "object" },
+        brief: { type: "object" },
+      },
+    },
     run: async () => {
       const [s, breadth, briefs] = await Promise.all([
         buildSnapshot(),
@@ -60,7 +78,7 @@ const CORE_TOOLS: Tool[] = [
           score: s.stress.score,
           band: s.stress.band,
           convergence: s.stress.convergence,
-          families: s.stress.families.map((f) => ({ family: f.family, count: f.count, stressed: f.count > 0 })),
+          families: s.stress.families.map((f) => ({ id: f.id, label: f.label, score: f.score, firing: f.firing })),
         },
         breadth,
         brief: briefs[0] ?? { status: "unavailable", reason: "No brief stored yet" },
