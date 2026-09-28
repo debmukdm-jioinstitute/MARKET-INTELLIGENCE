@@ -2,6 +2,8 @@ import { ClaudeConnectorClient } from "@/components/help/claude-connector-client
 import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Add Market Intelligence to Claude · Custom connector",
   description:

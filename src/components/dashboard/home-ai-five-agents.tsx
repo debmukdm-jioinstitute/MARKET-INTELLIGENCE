@@ -21,7 +21,7 @@ function AgentCard({ agent }: { agent: (typeof HOME_AI_AGENTS)[number] }) {
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{agent.role}</p>
       <p className="mt-1.5 text-sm leading-snug text-muted-foreground">{agent.desc}</p>
       <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-        {agent.opensAssistant ? "Open Ask Deb" : "Open desk"}
+        {agent.cta}
         <ArrowUpRight className="size-3.5" />
       </span>
     </>

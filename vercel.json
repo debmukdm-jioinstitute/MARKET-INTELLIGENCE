@@ -13,8 +13,12 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/52w-levels",
+      "schedule": "5 10 * * 1-5"
+    },
+    {
       "path": "/api/cron/options-flow",
-      "schedule": "45 10 * * 1-5"
+      "schedule": "25 10 * * 1-5"
     },
     {
       "path": "/api/cron/datagov",
@@ -34,7 +38,7 @@
     },
     {
       "path": "/api/cron/what-changed",
-      "schedule": "45 3 * * *"
+      "schedule": "15 4 * * *"
     },
     {
       "path": "/api/cron/prowess",
@@ -51,22 +55,6 @@
     {
       "path": "/api/cron/signals",
       "schedule": "45 11 * * 1-5"
-    },
-    {
-      "path": "/api/cron/52w-levels",
-      "schedule": "35 10 * * 1-5"
-    },
-    {
-      "path": "/api/cron/52w-levels",
-      "schedule": "45 10 * * 1-5"
-    },
-    {
-      "path": "/api/cron/52w-levels",
-      "schedule": "55 10 * * 1-5"
-    },
-    {
-      "path": "/api/cron/52w-levels",
-      "schedule": "5 11 * * 1-5"
     }
   ]
 }

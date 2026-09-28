@@ -5,8 +5,8 @@ import { fetchUpstoxHistoricalCandles } from "@/lib/feeds/sources/upstox";
 /**
  * Per-stock 52-week high/low from a year of Upstox daily candles, persisted in
  * Postgres so breadth can count new 52W highs/lows without ~2,700 candle calls
- * per request. A cron refreshes it after the close, resumably (a run only
- * touches symbols not yet refreshed today, within its time budget).
+ * per request. A once-daily cron after the close refreshes rows (resumable within
+ * its time budget if the universe is not finished in one run).
  */
 
 export type Week52Level = { high52: number; low52: number };

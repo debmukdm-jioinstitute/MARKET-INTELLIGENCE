@@ -1,6 +1,8 @@
 import { DATA_ISSUE_EMAIL, STALE_AFTER_MINUTES } from "@/lib/provenance";
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Methodology & data sources — Market Intelligence",
   description:

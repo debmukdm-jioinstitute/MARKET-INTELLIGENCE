@@ -2,22 +2,27 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), and a floating **site assistant** for navigation and in-app help. Formulas and data paths are documented here and in `docs/`.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), a floating **Ask Deb** site assistant, **World Monitor** global headlines on the portal, and **Claude / MCP** connectors for read-only market tools. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
 
 ## Product capabilities (summary)
 
 | Area | Routes | What it does |
 |---|---|---|
-| **India desk** | `/Home` | Market pulse (NIFTY, SENSEX, Bank Nifty, India VIX, USD/INR, G-Sec 10Y, Brent, gold), global radar, India-impact score, FII/DII, macro strip, corporate events |
+| **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, Nifty algo) |
 | **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | Real holdings, live marks, full metrics catalog (Sharpe, Sortino, VaR, IRR, factors, drawdown); broker import (Zerodha / Dhan / Upstox API or CSV); simulated quant pages (allocation, optimizer, risk) on a seeded universe |
 | **Research** | `/research/*` | Symbol detail, integrated **DCF**, IPO calendar, **AI Desk** (three Groq multi-agent flows), **options-flow** screener (deterministic gate + LLM narrative) |
-| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI, sorted by freshness), daily brief, custom alert rules, backtesting UI |
+| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor** (RSS / global feeds) |
 | **Algo desk** | `/algo/*` | NIFTY F&O scanner, paper/live trades, backtest, replay, charts — proxied to Python **AI-trader** when `AI_TRADER_API_URL` is set ([docs/AI-TRADER.md](docs/AI-TRADER.md)) |
-| **Site assistant** | Floating widget | OmniRoute / Groq chat with tools: navigate, open command palette, search pages, glossary snippets ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
-| **Data & ops** | `/data/feeds`, `/data/export`, `/admin` | Live source health checks, Excel export of datasets, admin customers/briefs/RAG Q&A (Postgres full-text, not vectors) |
-| **Integrations** | `/api/mcp` | Read-only MCP tools over app data (API-key gated, [docs/MCP.md](docs/MCP.md)) |
+| **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, open command palette, search pages ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
+| **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
+| **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — no API key for read-only tools ([docs/MCP.md](docs/MCP.md)) |
+| **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections |
+| **Auth** | `/login`, `/signup` | Email/password sessions; **Continue with Google** when OAuth env is set ([docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md)) |
+| **Data & ops** | `/data/feeds`, `/data/export`, `/admin` | Live source health checks, Excel export, admin customers/briefs/RAG Q&A (Postgres FTS, not vectors) |
+| **Integrations** | `/api/mcp` | Read-only MCP tools; optional `MCP_API_KEYS` for higher limits; account tools use signed-in session |
+| **SEO** | `/robots.txt`, `/sitemap.xml` | Crawl rules and sitemap for marketing + help routes |
 
 This document explains **how every page actually computes what it shows** — the formula, the algorithm, the data source, and (where one is used) the AI agent behind it. Where a panel is illustrative, static, or simulated rather than a live computation, that's stated plainly rather than left to look like more than it is — the app's own code comments follow the same rule, and this README just surfaces it.
 
@@ -47,6 +52,7 @@ This document explains **how every page actually computes what it shows** — th
 17. [Run locally & deploy](#17-run-locally--deploy)
 18. [Environment variables](#18-environment-variables)
 19. [Tech stack](#19-tech-stack)
+20. [Release history](#release-history)
 
 ---
 
@@ -778,6 +784,68 @@ npx vercel --prod --yes
 - **Charts:** Recharts · Lightweight Charts (candlesticks)
 - **Database:** Neon serverless Postgres
 - **AI:** Groq (`openai/gpt-oss-120b`)
+- **Cron:** Vercel Cron on `/api/cron/*` (see `vercel.json`, admin **System** registry in `src/lib/admin/system.ts`); supplemental jobs on GitHub Actions (`collect`, `brief`, `stress`, `alerts`, `betas`)
+- **Caching:** Live quotes via SWR client polling; slow-moving marketing/help pages use Next.js ISR (`revalidate = 3600`) where configured
+
+---
+
+## Release history
+
+Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.4 — 29 Sep 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Improvement | Cron | Single daily `52w-levels` run (~5m budget); stagger `options-flow` / `what-changed` away from scan cluster (14 Vercel crons, was 17) |
+| Improvement | Performance | ISR `revalidate = 3600` on `/`, `/help`, `/methodology`, legal pages, `/connect/claude`, research-reports layout shell |
+| Improvement | Copy | Home five AI agent cards — plain-language roles, descriptions, CTAs (Ask Deb, brief, signals, flow, algo) |
+| Improvement | Docs | README product summary + versioned release history tables |
+
+### 0.1.3 — 28 Sep 2026 (PR #31–#32, follow-ups)
+
+| Type | Area | Change |
+|---|---|---|
+| Improvement | Copy | Plain-language landing, guest banners, portfolio/data/algo/world-monitor strings |
+| Improvement | Portfolio | Attribution, risk, quant, optimizer pages — clearer “under construction” / guest gates where simulated |
+| Feature | SEO | `robots.txt`, sitemap; deep-link tabs (`?view=`, sectors/breadth); macro India calendar view |
+| Fix | Portfolio | Today’s P&L and total gain/loss no longer stuck at ₹0 on home card |
+| Improvement | Home | Dashboard headline/subtitle plain-language refresh |
+
+### 0.1.2 — 28 Sep 2026 (PR #17–#30, World Monitor)
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | World Monitor | Portal page at `/intelligence/world-monitor`; submodule under `services/worldmonitor` |
+| Feature | World Monitor | Free RSS / open API dashboard (replaced iframe-only embed) |
+| Improvement | World Monitor | Same-origin API + geo proxy; light theme aligned with MI chrome |
+| Improvement | World Monitor | Mobile UX; auth recovery flows |
+| Fix | World Monitor | Origin 403 on embed; `[object Object]` panel subtitle; map basemap/geo defaults |
+| Improvement | Perf | Deferred iframe autoload on WM landing |
+
+### 0.1.1 — 27 Sep 2026 (PR #2–#16, assistant & MCP)
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Assistant | Floating **Ask Deb** — `/api/site-assistant`, OmniRoute + Groq fallback, navigate / palette tools |
+| Feature | MCP | Read-only site tools; public plug-and-play without customer API keys |
+| Feature | MCP | Account-scoped tools when signed in; OAuth DCR for **Claude custom connector** |
+| Feature | Help | Accordion help center, `/connect/claude`, footer sitemap synced to nav + MCP |
+| Feature | Signals | Walk-forward ensemble for AI Signals index models |
+| Improvement | Home | Valuation module wiring, FII rollups, RBI corridor from collector when available |
+| Improvement | Ops | Manual `run-all-crons` GitHub workflow |
+| Fix | Signals | F&O index model bugs |
+| Improvement | Research | Chatbot polish; IPO GMP + DRHP summaries; analyst credibility on research reports |
+
+### 0.1.0 — baseline (Sep 2026)
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Core product | India desk, markets, macro hub, portfolio Engine A/B, research + DCF, AI Desk, options-flow pipeline |
+| Feature | Intelligence | Daily brief, alerts, scanner, regulatory news sort |
+| Feature | Algo | NIFTY Algo Desk UI proxied to optional Flask `AI-trader` stack |
+| Feature | Admin | Customers, briefs, newsletters, FTS RAG Q&A |
+| Feature | Data | Collector cron → Neon; `/data/feeds` live health vs static `/data` mock |
 
 ---
 

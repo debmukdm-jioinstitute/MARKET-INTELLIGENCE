@@ -1,13 +1,13 @@
 /** Static registry of scheduled jobs, required env vars and admin kill switches shown on /admin/system. */
 export const CRONS = [
   { path: "/api/cron/collect", schedule: "15 3 * * * (Vercel) + every 3h (GitHub)", source: "Vercel + GitHub", what: "Macro/market series collector" },
-  { path: "/api/cron/what-changed", schedule: "45 3 * * *", source: "Vercel", what: "Home “What changed” institutional shifts panel" },
+  { path: "/api/cron/what-changed", schedule: "15 4 * * *", source: "Vercel", what: "Home “What changed” institutional shifts panel" },
   { path: "/api/cron/stress", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Stress-index history" },
   { path: "/api/cron/alerts", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Evaluate user alert rules" },
   { path: "/api/cron/betas", schedule: "0 1 * * * (GitHub)", source: "GitHub Actions", what: "Factor betas refresh" },
   { path: "/api/cron/brief", schedule: "45 2 & 30 10 weekdays (GitHub)", source: "GitHub Actions", what: "Daily brief + email delivery" },
   { path: "/api/cron/scrape-research", schedule: "0 4 * * *", source: "Vercel", what: "Broker research report scraper" },
-  { path: "/api/cron/options-flow", schedule: "45 10 * * 1-5", source: "Vercel", what: "Options-flow snapshots" },
+  { path: "/api/cron/options-flow", schedule: "25 10 * * 1-5", source: "Vercel", what: "Options-flow snapshots" },
   { path: "/api/cron/datagov", schedule: "30 2 * * *", source: "Vercel", what: "data.gov.in sync" },
   { path: "/api/cron/data360/catalog", schedule: "0 2 * * 0", source: "Vercel", what: "World Bank Data360 indicator catalog" },
   { path: "/api/cron/data360", schedule: "45 3 * * *", source: "Vercel", what: "World Bank Data360 observation sync (resumable)" },
@@ -15,7 +15,7 @@ export const CRONS = [
   { path: "/api/cron/scan", schedule: "30 11 * * 1-5", source: "Vercel", what: "Market scanner" },
   { path: "/api/cron/signals", schedule: "45 11 * * 1-5", source: "Vercel", what: "AI signals" },
   { path: "/api/cron/backtest", schedule: "0 12 * * 6", source: "Vercel", what: "Weekly backtest" },
-  { path: "/api/cron/52w-levels", schedule: "weekday batches (Vercel)", source: "Vercel", what: "52-week high/low levels for breadth" },
+  { path: "/api/cron/52w-levels", schedule: "5 10 * * 1-5 (Vercel, ~5m budget)", source: "Vercel", what: "52-week high/low levels for breadth" },
   { path: "/api/portfolio/instruments/cron-sync", schedule: "0 3 * * 1", source: "Vercel", what: "NSE instrument master sync" },
   {
     path: "/api/cron/benchmark-constituents",

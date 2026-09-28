@@ -2,6 +2,9 @@ import { HelpGuide } from "@/components/help/help-guide";
 import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
 import { MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
 
+/** Static guide content — refresh hourly; MCP tool list changes rarely. */
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Help · Setup guide · Market Intelligence",
   description:
