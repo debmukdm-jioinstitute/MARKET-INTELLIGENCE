@@ -79,7 +79,9 @@ export function proxy(request: NextRequest) {
     realPathname.startsWith("/favico/") ||
     realPathname === "/manifest.webmanifest" ||
     isWorldMonitorApiRoute(realPathname);
-  const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset;
+  const isResearchPublic =
+    realPathname.startsWith("/research") || realPathname.startsWith("/research-reports");
+  const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset || isResearchPublic;
   const staleSession = Boolean(sessionRaw && !session);
 
   if (!isPublic && !session) {
