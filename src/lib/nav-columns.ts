@@ -144,16 +144,16 @@ export const NAV_SECTIONS: NavSection[] = [
     groups: [
       {
         label: "Holdings",
-        desc: "Your positions, value and profit & loss.",
+        desc: "Everything you own, what it's worth, and what you've gained or lost.",
         items: [
-          { label: "Command Center", href: "/portfolio", desc: "Mark-to-market NAV, P&L, and live positions." },
+          { label: "Overview", href: "/portfolio", desc: "Mark-to-market NAV, P&L, and live positions." },
           { label: "Allocation", href: "/portfolio/allocation", desc: "Policy weights versus actual exposure." },
           { label: "Watchlist", href: "/portfolio/watchlist", desc: "Names you're tracking without a position.", badge: "NEW" },
         ],
       },
       {
-        label: "Risk & Optimise",
-        desc: "How risky is it, and how could it be better?",
+        label: "Risk & ideas",
+        desc: "How bumpy the ride could get — and simple ways to smooth it.",
         items: [
           { label: "Risk & VaR", href: "/portfolio/risk", desc: "Vol, drawdown, and 95% Value-at-Risk." },
           { label: "Attribution", href: "/portfolio/attribution", desc: "Brinson-Fachler sector and security effects." },

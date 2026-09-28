@@ -108,7 +108,7 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
     label: "Backtests",
   },
   {
-    fact: "Portfolio Risk shows VaR and drawdown once you add holdings — start at Command Center.",
+    fact: "Portfolio Risk shows VaR and drawdown once you add holdings — start at Overview.",
     href: "/portfolio",
     label: "Portfolio",
   },
