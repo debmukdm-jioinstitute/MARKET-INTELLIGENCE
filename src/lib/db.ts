@@ -253,14 +253,30 @@ export async function ensureSchema(): Promise<void> {
           broker text,
           title text NOT NULL,
           url text NOT NULL UNIQUE,
+          pdf_url text,
+          symbol text,
+          recommendation text,
+          target_price numeric,
+          cmp numeric,
+          upside_pct numeric,
+          report_type text,
           summary text,
           published_at timestamptz,
           scraped_at timestamptz NOT NULL DEFAULT now(),
           created_at timestamptz NOT NULL DEFAULT now()
         )
       `;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS pdf_url text`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS symbol text`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS recommendation text`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS target_price numeric`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS cmp numeric`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS upside_pct numeric`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS report_type text`;
       await db`CREATE INDEX IF NOT EXISTS idx_research_reports_published ON research_reports(published_at DESC NULLS LAST)`;
       await db`CREATE INDEX IF NOT EXISTS idx_research_reports_broker ON research_reports(broker)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_research_reports_symbol ON research_reports(symbol)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_research_reports_pdf ON research_reports(pdf_url) WHERE pdf_url IS NOT NULL`;
       await db`
         CREATE TABLE IF NOT EXISTS research_scrape_log (
           id bigserial PRIMARY KEY,

@@ -30,10 +30,25 @@ export async function scrapeAllResearchSources(): Promise<ScrapeRunResult[]> {
         for (const item of items) {
           if (!item.url || !item.title) continue;
           await db`
-            INSERT INTO research_reports (source, broker, title, url, summary, published_at)
-            VALUES (${source.key}, ${item.broker}, ${item.title}, ${item.url}, ${item.summary}, ${item.publishedAt})
+            INSERT INTO research_reports (
+              source, broker, title, url, pdf_url, symbol, recommendation,
+              target_price, cmp, upside_pct, report_type, summary, published_at
+            )
+            VALUES (
+              ${source.key}, ${item.broker}, ${item.title}, ${item.url}, ${item.pdfUrl ?? null},
+              ${item.symbol ?? null}, ${item.recommendation ?? null}, ${item.targetPrice ?? null},
+              ${item.cmp ?? null}, ${item.upsidePct ?? null}, ${item.reportType ?? null},
+              ${item.summary}, ${item.publishedAt}
+            )
             ON CONFLICT (url) DO UPDATE SET
               broker = COALESCE(EXCLUDED.broker, research_reports.broker),
+              pdf_url = COALESCE(EXCLUDED.pdf_url, research_reports.pdf_url),
+              symbol = COALESCE(EXCLUDED.symbol, research_reports.symbol),
+              recommendation = COALESCE(EXCLUDED.recommendation, research_reports.recommendation),
+              target_price = COALESCE(EXCLUDED.target_price, research_reports.target_price),
+              cmp = COALESCE(EXCLUDED.cmp, research_reports.cmp),
+              upside_pct = COALESCE(EXCLUDED.upside_pct, research_reports.upside_pct),
+              report_type = COALESCE(EXCLUDED.report_type, research_reports.report_type),
               summary = COALESCE(EXCLUDED.summary, research_reports.summary),
               published_at = COALESCE(research_reports.published_at, EXCLUDED.published_at),
               scraped_at = now()
