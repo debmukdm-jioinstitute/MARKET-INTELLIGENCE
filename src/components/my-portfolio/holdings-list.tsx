@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { PositionRow } from "@/lib/my-portfolio/types";
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 function inr(v: number) {
   if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(2)} Cr`;
@@ -17,16 +18,22 @@ function inr(v: number) {
 export function HoldingsList({
   positions,
   onRemove,
+  emptyAction,
 }: {
   positions: PositionRow[];
   onRemove: (id: string) => void;
+  emptyAction?: ReactNode;
 }) {
   const router = useRouter();
   if (!positions.length) {
     return (
-      <p className="p-4 text-sm text-muted-foreground">
-        No holdings yet — add your first India or US stock to start tracking.
-      </p>
+      <div className="space-y-3 p-6 text-center">
+        <p className="text-sm font-semibold text-foreground">Your portfolio is empty — let&apos;s fix that.</p>
+        <p className="text-sm text-muted-foreground">
+          Add your first stock, Indian or American, and this page will come alive.
+        </p>
+        {emptyAction ? <div className="flex justify-center pt-1">{emptyAction}</div> : null}
+      </div>
     );
   }
   return (

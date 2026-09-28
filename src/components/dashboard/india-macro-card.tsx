@@ -186,7 +186,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
           { label: "GDP", href: "/macro/india" },
           { label: "Inflation", href: "/macro/india" },
           { label: "RBI Policy", href: "/macro/rbi" },
-          { label: "Calendar", href: "/macro/calendar" },
+          { label: "Calendar", href: "/macro/india?view=calendar" },
         ].map((sub) => (
           <Link
             key={sub.label}

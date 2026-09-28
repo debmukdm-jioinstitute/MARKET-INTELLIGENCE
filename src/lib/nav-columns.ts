@@ -41,7 +41,7 @@ export const NAV_SECTIONS: NavSection[] = [
             desc: "Global news, maps, country instability (CII), and finance radar (World Monitor integration).",
             badge: "NEW",
           },
-          { label: "Economic Calendar", href: "/macro/calendar", desc: "Upcoming prints that can move the book." },
+          { label: "Economic Calendar", href: "/macro/india?view=calendar", desc: "Upcoming prints that can move the book." },
         ],
       },
     ],
@@ -101,7 +101,7 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Is the rally broad or narrow?",
         items: [
           { label: "Breadth", href: "/markets/breadth", desc: "Advance/decline and participation signals." },
-          { label: "Momentum", href: "/markets/breadth#momentum", desc: "Trend and momentum leaders." },
+          { label: "Momentum", href: "/markets/breadth?view=momentum", desc: "Trend and momentum leaders." },
         ],
       },
       {

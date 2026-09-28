@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef } from "react";
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "";
@@ -22,20 +22,26 @@ function beacon(payload: Record<string, unknown>) {
   }).catch(() => {});
 }
 
-/** Fires pageview + time-on-page beacons on every route change. */
-export function PageviewTracker() {
+function routeKey(pathname: string, search: URLSearchParams): string {
+  const qs = search.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
+}
+
+function PageviewTrackerInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const enteredAt = useRef(0);
-  const prevPath = useRef<string | null>(null);
+  const prevRoute = useRef<string | null>(null);
 
   useEffect(() => {
     const sessionId = getSessionId();
     const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 240) : "";
+    const current = routeKey(pathname, searchParams);
 
-    if (prevPath.current) {
+    if (prevRoute.current && prevRoute.current !== current) {
       const duration_sec = Math.min(86400, Math.round((Date.now() - enteredAt.current) / 1000));
       beacon({
-        path: prevPath.current,
+        path: prevRoute.current,
         referrer: document.referrer || null,
         session_id: sessionId,
         duration_sec,
@@ -44,17 +50,27 @@ export function PageviewTracker() {
       });
     }
 
-    prevPath.current = pathname;
-    enteredAt.current = Date.now();
-
-    beacon({
-      path: pathname,
-      referrer: document.referrer || null,
-      session_id: sessionId,
-      event_type: "pageview",
-      user_agent: ua,
-    });
-  }, [pathname]);
+    if (prevRoute.current !== current) {
+      prevRoute.current = current;
+      enteredAt.current = Date.now();
+      beacon({
+        path: current,
+        referrer: document.referrer || null,
+        session_id: sessionId,
+        event_type: "pageview",
+        user_agent: ua,
+      });
+    }
+  }, [pathname, searchParams]);
 
   return null;
+}
+
+/** Fires pageview + time-on-page beacons on route and query changes. */
+export function PageviewTracker() {
+  return (
+    <Suspense fallback={null}>
+      <PageviewTrackerInner />
+    </Suspense>
+  );
 }

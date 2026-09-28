@@ -23,10 +23,10 @@ export default function IndiaMarketsPage() {
     <div className="portal-page">
       <PageHeader
         kicker="India"
-        title="India markets"
-        subtitle="NSE equities — live via Upstox (exchange-licensed). Click a row for full quote, depth, candles, and fundamentals."
+        title="Indian markets"
+        subtitle="Live NSE prices, via Upstox. Tap any row for the full quote, market depth, charts and fundamentals."
         trust={{ source: "Upstox, NSE India", asOf: feedData?.fetchedAt, delayed: "Quotes may be delayed" }}
-        />
+      />
       <MarketStatusBadge />
 
       {/* Benchmark Indices Grid */}
@@ -145,6 +145,10 @@ export default function IndiaMarketsPage() {
           </TableBody>
         </Table>
       </div>
+      <p className="mt-4 text-xs text-muted-foreground">
+        Prices come from Upstox&apos;s exchange feed. When the market is closed, you see the last closing price.
+      </p>
+
       <SecuritySheet
         instrument={selected}
         open={selected != null}

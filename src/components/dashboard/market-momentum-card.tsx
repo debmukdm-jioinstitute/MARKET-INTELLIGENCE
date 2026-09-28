@@ -18,7 +18,7 @@ export function MarketMomentumCard() {
     v == null ? "text-muted-foreground" : v >= 0 ? "text-emerald-600" : "text-rose-600";
 
   return (
-    <div className="bento-card-shell bento-card-stack bg-gradient-to-b from-card to-card/60">
+    <div className="bento-card-shell bento-card-stack min-h-[220px] bg-gradient-to-b from-card to-card/60">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
@@ -29,7 +29,7 @@ export function MarketMomentumCard() {
             <MetricInfo metric="dma" sourceOverride={techSource} customTitle="Trend & Momentum Suite" />
           </div>
           <Link
-            href="/markets/breadth#momentum"
+            href="/markets/breadth?view=momentum"
             className="group flex items-center gap-1 rounded-full border border-border bg-accent/30 px-3 py-1.5 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             Explore Momentum

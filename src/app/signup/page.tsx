@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Create account | Market Intelligence",
   description: "Create a free Market Intelligence account — no brokerage, no card.",
+  robots: { index: false, follow: false },
 };
 
 export default async function SignupPage({

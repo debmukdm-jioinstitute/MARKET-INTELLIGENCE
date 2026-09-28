@@ -41,5 +41,6 @@ export function useMarketStatus(refreshMs = 60_000) {
     isOpen,
     todayHoliday: info?.todayHoliday ?? null,
     nextHoliday: info?.nextHoliday ?? null,
+    istNow: ist,
   };
 }

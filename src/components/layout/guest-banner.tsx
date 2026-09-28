@@ -8,17 +8,14 @@ export function GuestBanner() {
   if (!isGuest) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-600/20 bg-blue-600/10 px-6 py-2 text-sm text-blue-700">
+    <div className="border-b border-blue-600/20 bg-blue-600/10 px-6 py-2.5 text-sm text-blue-800">
       <p>
-        <span className="font-semibold uppercase tracking-wide text-blue-600">Guest mode</span>
-        — Explore the full terminal with demo books. Trades and settings are not saved to an account.
+        You&apos;re browsing as a guest — everything here uses sample data. Nothing you change will be saved.{" "}
+        <Link href="/signup?from=demo" className="font-semibold text-blue-700 underline-offset-2 hover:underline">
+          Create a free account to save your work
+        </Link>
+        .
       </p>
-      <Link
-        href="/signup?from=demo"
-        className="shrink-0 rounded-md bg-blue-600 px-3 py-1 font-medium text-white transition hover:bg-blue-600"
-      >
-        Create free account
-      </Link>
     </div>
   );
 }

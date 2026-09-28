@@ -25,9 +25,9 @@ export default function PortfolioPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="PORTFOLIO DESK"
-        title={data?.settings.name ?? "Institutional Book"}
-        subtitle="Live mark-to-market positions, cross-asset allocation, and factor risk from real exchange feeds. Hover the ℹ️ on any metric for its formula and methodology."
+        kicker="Portfolio"
+        title={data?.settings.name ?? "My portfolio"}
+        subtitle="Live prices, how your money is split, and where your risk sits. Hover any ⓘ to see how a number is worked out."
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
@@ -36,7 +36,7 @@ export default function PortfolioPage() {
             {data?.hasHoldings && data.positions.length > 0 ? (
               <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
             ) : (
-              <span className="text-blue-600 font-semibold">Clean Book (0 Active Positions)</span>
+              <span className="font-semibold text-foreground">Your portfolio is empty — let&apos;s fix that.</span>
             )}
           </p>
           {data ? (
@@ -71,7 +71,7 @@ export default function PortfolioPage() {
               </button>
             ) : null}
             <BrokerImportDialog onImport={importHoldings} />
-            <AddHoldingDialog onAdd={addHolding} />
+            <AddHoldingDialog onAdd={addHolding} triggerLabel="Add holding" />
           </div>
         )}
       </div>
@@ -112,7 +112,11 @@ export default function PortfolioPage() {
               <h3 className="font-heading text-sm font-semibold">Holdings</h3>
               <p className="text-sm text-muted-foreground">Live marks · your book · INR</p>
             </div>
-            <HoldingsList positions={data.positions} onRemove={removeHolding} />
+            <HoldingsList
+              positions={data.positions}
+              onRemove={removeHolding}
+              emptyAction={locked ? null : <AddHoldingDialog onAdd={addHolding} triggerLabel="Add your first holding" />}
+            />
           </div>
 
           <div>

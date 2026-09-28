@@ -1,6 +1,6 @@
 import { HelpGuide } from "@/components/help/help-guide";
 import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
-import { CRONS, MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
+import { MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
 
 export const metadata = {
   title: "Help · Setup guide · Market Intelligence",
@@ -26,7 +26,6 @@ export default function HelpPage() {
           sitemapSectionCount={helpSitemapSections().length}
           accountTools={MCP_ACCOUNT_TOOLS}
           portalOnly={PORTAL_ONLY_UI}
-          crons={[...CRONS]}
         />
       </div>
     </main>

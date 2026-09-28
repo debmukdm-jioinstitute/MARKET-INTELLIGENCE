@@ -1,16 +1,22 @@
 "use client";
 
-import { PageHeader } from "@/components/layout/page-header";
+import { EconomicCalendarSection } from "@/components/dashboard/economic-calendar-section";
 import { IndiaMacroCard } from "@/components/dashboard/india-macro-card";
 import { IndiaMacro } from "@/components/dashboard/india-macro";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
+import { PageHeader } from "@/components/layout/page-header";
+import { ScrollToUrlSection } from "@/components/routing/scroll-to-url-section";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { Suspense } from "react";
 
 export default function IndiaMacroPage() {
   const { data, loading, error } = useIndiaDashboard(45_000);
 
   return (
     <div className="portal-page pb-10">
+      <Suspense fallback={null}>
+        <ScrollToUrlSection />
+      </Suspense>
       <PageHeader
         kicker="Sovereign Macro"
         title="India Macroeconomic Intelligence Desk"
@@ -27,6 +33,10 @@ export default function IndiaMacroPage() {
       </div>
 
       {data ? <IndiaMacro data={data} /> : null}
+
+      <div className="mt-10">
+        <EconomicCalendarSection />
+      </div>
     </div>
   );
 }

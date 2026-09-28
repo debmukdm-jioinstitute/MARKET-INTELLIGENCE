@@ -15,7 +15,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) => Promise<unknown> }) {
+export function AddHoldingDialog({
+  onAdd,
+  triggerLabel = "Add holding",
+}: {
+  onAdd: (input: AddHoldingInput) => Promise<unknown>;
+  triggerLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [market, setMarket] = useState<"IN" | "US">("IN");
   const [query, setQuery] = useState("");
@@ -78,7 +84,7 @@ export function AddHoldingDialog({ onAdd }: { onAdd: (input: AddHoldingInput) =>
       <DialogTrigger asChild>
         <Button type="button" variant="default" size="lg" className="font-semibold">
           <Plus data-icon="inline-start" />
-          Add Position
+          {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent>

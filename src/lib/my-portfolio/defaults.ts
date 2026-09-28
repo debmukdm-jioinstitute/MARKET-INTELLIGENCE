@@ -1,7 +1,7 @@
 import type { Holding, PortfolioSettings } from "@/lib/my-portfolio/types";
 
 export const DEFAULT_PORTFOLIO_SETTINGS: PortfolioSettings = {
-  name: "MI Institutional Book",
+  name: "My portfolio",
   benchmark: "NIFTY50",
   baseCurrency: "INR",
 };
