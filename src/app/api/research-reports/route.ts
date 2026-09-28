@@ -14,6 +14,7 @@ export async function GET(req: Request) {
   const hasPdf = searchParams.get("hasPdf") === "1" || searchParams.get("hasPdf") === "true";
   const sort = searchParams.get("sort") || "freshness";
   const limit = Math.min(Number(searchParams.get("limit") ?? 100) || 100, 300);
+  const sync = searchParams.get("sync") === "1" || searchParams.get("refresh") === "1";
 
   if (!hasDatabase()) {
     // In-memory fallback when database is not configured
@@ -126,8 +127,8 @@ export async function GET(req: Request) {
     db`SELECT MAX(scraped_at) AS last FROM research_reports`,
   ]);
 
-  // If DB currently has 0 rows, trigger initial scrape immediately and return fallback
-  if (rows.length === 0 && (statsRow[0]?.total ?? 0) === 0) {
+  // If DB currently has 0 rows, 0 PDFs, or sync was requested, trigger scrape immediately
+  if (sync || (rows.length === 0 && (statsRow[0]?.total ?? 0) === 0) || Number(statsRow[0]?.pdfs ?? 0) === 0) {
     try {
       await scrapeAllResearchSources();
       const freshRows = await db`
@@ -135,23 +136,40 @@ export async function GET(req: Request) {
           id, source, broker, title, url, pdf_url, symbol, recommendation,
           target_price, cmp, upside_pct, report_type, summary, published_at, scraped_at
         FROM research_reports
-        ORDER BY COALESCE(published_at, scraped_at) DESC
+        WHERE
+          (${broker}::text IS NULL OR broker ILIKE ${`%${broker ?? ""}%`})
+          AND (${reco}::text IS NULL OR recommendation = ${reco ?? ""})
+          AND (${hasPdf ? true : false} = false OR pdf_url IS NOT NULL)
+          AND (
+            ${q ? true : false} = false
+            OR (
+              title ILIKE ${`%${q ?? ""}%`}
+              OR broker ILIKE ${`%${q ?? ""}%`}
+              OR symbol ILIKE ${`%${q ?? ""}%`}
+              OR summary ILIKE ${`%${q ?? ""}%`}
+            )
+          )
+        ${sort === "oldest" ? db`ORDER BY COALESCE(published_at, scraped_at) ASC` : sort === "upside" ? db`ORDER BY COALESCE(upside_pct, 0) DESC, COALESCE(published_at, scraped_at) DESC` : sort === "target" ? db`ORDER BY COALESCE(target_price, 0) DESC, COALESCE(published_at, scraped_at) DESC` : db`ORDER BY COALESCE(published_at, scraped_at) DESC`}
         LIMIT ${limit}
       `;
-      const freshBrokers = await db`
-        SELECT broker, COUNT(*)::int AS count
-        FROM research_reports
-        WHERE broker IS NOT NULL
-        GROUP BY broker
-        ORDER BY count DESC
-        LIMIT 30
-      `;
+      const [freshStats, freshBrokers, freshLast] = await Promise.all([
+        db`SELECT COUNT(*)::int AS total, COUNT(pdf_url)::int AS pdfs FROM research_reports`,
+        db`
+          SELECT broker, COUNT(*)::int AS count
+          FROM research_reports
+          WHERE broker IS NOT NULL
+          GROUP BY broker
+          ORDER BY count DESC
+          LIMIT 30
+        `,
+        db`SELECT MAX(scraped_at) AS last FROM research_reports`,
+      ]);
       return NextResponse.json({
         reports: freshRows,
-        totalCount: freshRows.length,
-        pdfCount: freshRows.filter((r) => Boolean(r.pdf_url)).length,
+        totalCount: freshStats[0]?.total ?? freshRows.length,
+        pdfCount: freshStats[0]?.pdfs ?? freshRows.filter((r) => Boolean(r.pdf_url)).length,
         brokers: freshBrokers,
-        lastScrapedAt: new Date().toISOString(),
+        lastScrapedAt: freshLast[0]?.last ?? new Date().toISOString(),
         dbConfigured: true,
       });
     } catch {}
