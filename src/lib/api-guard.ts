@@ -45,13 +45,14 @@ export async function rateLimited(key: string, max: number, windowSec: number): 
 }
 
 export async function isFeatureEnabled(flag: string): Promise<boolean> {
-  if (!hasDatabase()) return true;
+  const defaultVal = flag === "guided-tour" ? false : true;
+  if (!hasDatabase()) return defaultVal;
   try {
     await ensureSchema();
     const rows = (await sql()`SELECT enabled FROM feature_flags WHERE flag = ${flag}`) as unknown as { enabled: boolean }[];
-    return rows[0] ? rows[0].enabled : true;
+    return rows[0] ? rows[0].enabled : defaultVal;
   } catch {
-    return true;
+    return defaultVal;
   }
 }
 

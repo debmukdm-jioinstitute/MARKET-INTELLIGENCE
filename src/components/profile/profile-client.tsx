@@ -441,6 +441,7 @@ export function ProfileClient() {
             onClick={() => {
               try {
                 localStorage.removeItem("hasSeenTour");
+                sessionStorage.setItem("replayGuidedTour", "true");
               } catch {
                 /* ignore */
               }

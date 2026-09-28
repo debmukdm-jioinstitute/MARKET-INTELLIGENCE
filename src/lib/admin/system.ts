@@ -49,4 +49,5 @@ export const FLAGS = [
   { flag: "ai", label: "AI features (AI desk, options-flow AI, copilot)" },
   { flag: "broker-import", label: "Broker holdings import" },
   { flag: "scenario", label: "Scenario engine" },
+  { flag: "guided-tour", label: "Show guided tour to users (disabled by default)" },
 ] as const;

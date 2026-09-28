@@ -14,7 +14,7 @@ export async function GET() {
 
   const env = ENV_VARS.map((v) => ({ ...v, set: Boolean(process.env[v.key] || (v.key === "DATABASE_URL" && (process.env.POSTGRES_URL || process.env.DATABASE_URL_UNPOOLED)) || (v.key === "AUTH_SECRET" && process.env.SESSION_SECRET)) }));
   const db = hasDatabase();
-  let flags = FLAGS.map((f) => ({ ...f, enabled: true }));
+  let flags = FLAGS.map((f) => ({ ...f, enabled: f.flag === "guided-tour" ? false : true }));
   let stats: Record<string, number | null> = {};
   let scrapeLog: unknown[] = [];
   if (db) {
@@ -22,7 +22,7 @@ export async function GET() {
     const d = sql();
     try {
       const rows = (await d`SELECT flag, enabled FROM feature_flags`) as unknown as { flag: string; enabled: boolean }[];
-      flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? true }));
+      flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? (f.flag === "guided-tour" ? false : true) }));
     } catch {}
     const tables = ["users", "brief_subscriptions", "alert_rules", "alert_events", "push_subscriptions", "newsletter_subscribers", "research_reports", "scan_latest", "prowess_reports", "prowess_errors"];
     const results = await Promise.all(

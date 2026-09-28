@@ -17,25 +17,11 @@ const TOUR_SECTIONS = [
 export function GuidedTour() {
   const [showPrompt, setShowPrompt] = useState(false);
 
-  useEffect(() => {
-    // Only show if they haven't seen the tour
-    const hasSeenTour = localStorage.getItem("hasSeenTour");
-    if (!hasSeenTour) {
-      // Slight delay so the page loads first
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleSkip = () => {
-    localStorage.setItem("hasSeenTour", "true");
-    setShowPrompt(false);
-  };
-
   const startTour = () => {
-    localStorage.setItem("hasSeenTour", "true");
+    try {
+      localStorage.setItem("hasSeenTour", "true");
+      sessionStorage.removeItem("replayGuidedTour");
+    } catch {}
     setShowPrompt(false);
 
     const wide = window.matchMedia("(min-width: 1024px)").matches;
@@ -113,6 +99,64 @@ export function GuidedTour() {
 
     driverObj.drive();
   };
+
+  const handleSkip = () => {
+    try {
+      localStorage.setItem("hasSeenTour", "true");
+      sessionStorage.removeItem("replayGuidedTour");
+    } catch {}
+    setShowPrompt(false);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    // Check if user explicitly clicked Replay Tour in profile/settings
+    try {
+      if (sessionStorage.getItem("replayGuidedTour") === "true") {
+        timer = setTimeout(() => {
+          if (!cancelled) startTour();
+        }, 500);
+        return () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+        };
+      }
+    } catch {}
+
+    // By default, do NOT show the guided tour to users unless explicitly turned on by Admin in the portal
+    async function checkAdminFlag() {
+      try {
+        const res = await fetch("/api/features/guided-tour", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        // If disabled by admin (or default false), do not show
+        if (!data.enabled) return;
+
+        if (cancelled) return;
+        const hasSeenTour = localStorage.getItem("hasSeenTour");
+        if (!hasSeenTour) {
+          timer = setTimeout(() => {
+            if (!cancelled) setShowPrompt(true);
+          }, 1500);
+        }
+      } catch {
+        // Default: do not show
+      }
+    }
+
+    checkAdminFlag();
+
+    const onManualStart = () => startTour();
+    window.addEventListener("start-guided-tour", onManualStart);
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("start-guided-tour", onManualStart);
+    };
+  }, []);
 
   return (
     <AnimatePresence>

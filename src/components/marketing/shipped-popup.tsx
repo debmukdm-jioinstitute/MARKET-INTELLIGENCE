@@ -70,7 +70,7 @@ const SHIPPED: { emoji: string; title: string; text: string; href?: string; cta?
   },
 ];
 
-/** "What all we shipped in the last 2 days" — a one-time pop-up on the Home page, in the founder-note design language. */
+/** "What all we shipped in the last FEW WEEKS" — a one-time pop-up on the Home page, in the founder-note design language. */
 export function ShippedPopup() {
   const [open, setOpen] = useState(false);
 
@@ -82,19 +82,10 @@ export function ShippedPopup() {
     } catch {
       return; // storage blocked: never nag
     }
-    // Wait for the guided-tour prompt (first-time visitors) to be dealt with before showing this one.
-    const tryOpen = () => {
-      if (cancelled) return;
-      let tourPending = false;
-      try {
-        tourPending = !localStorage.getItem("hasSeenTour");
-      } catch {
-        /* ignore */
-      }
-      if (tourPending) timer = setTimeout(tryOpen, 1000);
-      else timer = setTimeout(() => !cancelled && setOpen(true), 700);
-    };
-    timer = setTimeout(tryOpen, 1800);
+    // Show the "What all we shipped in the last FEW WEEKS" note once after a short initial page load delay
+    timer = setTimeout(() => {
+      if (!cancelled) setOpen(true);
+    }, 1800);
     return () => {
       cancelled = true;
       clearTimeout(timer);
@@ -128,7 +119,7 @@ export function ShippedPopup() {
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-3 backdrop-blur-sm sm:p-6"
           role="dialog"
           aria-modal="true"
-          aria-label="What all we shipped in the last 2 days"
+          aria-label="What all we shipped in the last FEW WEEKS"
         >
           <motion.div
             initial={{ scale: 0.96, opacity: 0, y: 12 }}
@@ -147,12 +138,12 @@ export function ShippedPopup() {
 
             <div className="relative z-[1]">
               <div className="mx-auto mb-6 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">🚀</div>
-              <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">What all we shipped in the last 2 days</h2>
+              <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">What all we shipped in the last FEW WEEKS</h2>
 
               <div className="mx-auto mt-8 max-w-2xl space-y-5 text-[16px] leading-relaxed text-gray-700">
                 <p>Hey there,</p>
                 <p>
-                  Another two-day sprint. ☕🔥 Portfolio math got honest, Home got a map, mobile got less annoying. Here's what landed since the last note — receipts only. 🧾
+                  Another packed sprint over the last few weeks. ☕🔥 Portfolio math got honest, Home got a map, mobile got less annoying. Here's what landed over the last few weeks — receipts only. 🧾
                 </p>
 
                 <ul className="space-y-3">
