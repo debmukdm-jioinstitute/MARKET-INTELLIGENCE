@@ -5,7 +5,7 @@
 | Layer | State |
 | ----- | ----- |
 | Full in-repo clone of UI/logic | **Submodule** at `services/worldmonitor` (upstream [koala73/worldmonitor](https://github.com/koala73/worldmonitor)) |
-| Embedded in Market Intelligence | **`/intelligence/world-monitor`** + proxy **`/worldmonitor/*`** → www.worldmonitor.app (default global dashboard + layer query) |
+| Embedded in Market Intelligence | **`/intelligence/world-monitor`** — native panels from **free RSS + Yahoo + FRED CSV**; optional link to full map on worldmonitor.app |
 | Feature parity with worldmonitor.app | **Not merged into Next.js** — run upstream app separately for 100% panels/maps/desktop |
 
 Market Intelligence remains India-first; World Monitor adds global situational awareness (news, maps, CII, finance variant).

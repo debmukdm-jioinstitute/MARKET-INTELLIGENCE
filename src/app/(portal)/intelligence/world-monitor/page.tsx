@@ -1,16 +1,16 @@
-import { WorldMonitorFrame } from "@/components/worldmonitor/world-monitor-frame";
+import { WorldMonitorFreeDashboard } from "@/components/worldmonitor/world-monitor-free-dashboard";
 import { WorldMonitorPageShell } from "@/components/worldmonitor/world-monitor-page-shell";
 
 export const metadata = {
   title: "World Monitor · Global intelligence · Market Intelligence",
   description:
-    "World Monitor global intelligence dashboard — live map, CII, news, and geopolitical layers proxied from worldmonitor.app.",
+    "Global intelligence on Market Intelligence — free RSS news, world indices, macro, earnings, and liquidity from open feeds.",
 };
 
 export default function WorldMonitorPage() {
   return (
     <WorldMonitorPageShell>
-      <WorldMonitorFrame variant="global" />
+      <WorldMonitorFreeDashboard />
     </WorldMonitorPageShell>
   );
 }
