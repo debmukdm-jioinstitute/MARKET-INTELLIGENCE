@@ -1,6 +1,9 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { isBenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 import {
   nudgesForSkill,
   pickDidYouKnow,
@@ -214,6 +217,20 @@ function GoogleFlipText({
   );
 }
 
+function logAssistantAction(tool: string, params: Record<string, unknown>, summary: string, ok: boolean) {
+  void fetch("/api/site-assistant/audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tool, params, summary, ok }),
+  }).catch(() => {
+    /* audit log is best-effort; never block the action on it */
+  });
+}
+
+type PendingConfirm =
+  | { toolCallId: string; kind: "remove_holding"; input: { id: string; symbol: string } }
+  | { toolCallId: string; kind: "update_settings"; input: { name?: string; benchmark?: string } };
+
 function messageText(message: UIMessage): string {
   return (
     message.parts
@@ -235,9 +252,13 @@ function SiteAssistantChat({
   const pathname = usePathname();
   const router = useRouter();
   const { setOpen: setPaletteOpen } = useCommandPalette();
+  const { isGuest } = useAuth();
+  const { data: portfolioData, addHolding, removeHolding, updateBenchmark } = useMyPortfolio();
+  const currentBenchmark = portfolioData?.settings?.benchmark ?? "NIFTY50";
   const [draft, setDraft] = useState("");
   const [mcqOpen, setMcqOpen] = useState(false);
   const [triviaSeed, setTriviaSeed] = useState(0);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm[]>([]);
   const suggestions = useMemo(
     () => suggestionsForSkill(skillLevel ?? "beginner"),
     [skillLevel],
@@ -297,9 +318,139 @@ function SiteAssistantChat({
           toolCallId: toolCall.toolCallId,
           output: { ok: true },
         });
+        return;
+      }
+
+      if (toolCall.toolName === "add_holding") {
+        const input = toolCall.input as {
+          market: "IN" | "US";
+          symbol: string;
+          name: string;
+          currency: "INR" | "USD";
+          shares: number;
+          avgCost: number;
+          sector?: string;
+        };
+        if (isGuest) {
+          const summary = "Guest mode does not save a portfolio — create a free account to add holdings.";
+          submit({ tool: "add_holding", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary, upsell: "/signup" } });
+          return;
+        }
+        try {
+          await addHolding({ ...input, sector: input.sector ?? null });
+          const summary = `Added ${input.shares.toLocaleString("en-IN")} shares of ${input.symbol} at ${input.currency === "INR" ? "₹" : "$"}${input.avgCost.toLocaleString("en-IN")}.`;
+          logAssistantAction("add_holding", input, summary, true);
+          submit({ tool: "add_holding", toolCallId: toolCall.toolCallId, output: { ok: true, summary } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not add that holding.";
+          logAssistantAction("add_holding", input, summary, false);
+          submit({ tool: "add_holding", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary } });
+        }
+        return;
+      }
+
+      if (toolCall.toolName === "create_alert") {
+        const input = toolCall.input as {
+          name: string;
+          conditions: { metric: string; op: "gt" | "gte" | "lt" | "lte" | "eq"; value: number }[];
+          combinator: "all" | "any";
+          channels: ("push" | "email")[];
+        };
+        if (isGuest) {
+          const summary = "Guest mode does not save alerts — create a free account to set one up.";
+          submit({ tool: "create_alert", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary, upsell: "/signup" } });
+          return;
+        }
+        try {
+          const res = await fetch("/api/alerts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...input, cooldownHours: 12 }),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+          const rule = json.rule as { conditions?: { metric: string; op: string; value: number }[] } | undefined;
+          const cond = (rule?.conditions ?? input.conditions).map((c) => `${c.metric} ${c.op} ${c.value}`).join(input.combinator === "any" ? " OR " : " AND ");
+          const summary = `Created alert "${input.name}": ${cond}.`;
+          logAssistantAction("create_alert", input, summary, true);
+          submit({ tool: "create_alert", toolCallId: toolCall.toolCallId, output: { ok: true, summary, rule: json.rule } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not create that alert.";
+          logAssistantAction("create_alert", input, summary, false);
+          submit({ tool: "create_alert", toolCallId: toolCall.toolCallId, output: { ok: false, error: summary } });
+        }
+        return;
+      }
+
+      // remove_holding and update_settings are destructive/state-changing enough to need an
+      // explicit click — render a confirmation card instead of submitting a tool output yet.
+      if (toolCall.toolName === "remove_holding") {
+        const input = toolCall.input as { id: string; symbol: string };
+        setPendingConfirm((p) => [...p, { toolCallId: toolCall.toolCallId, kind: "remove_holding", input }]);
+        return;
+      }
+
+      if (toolCall.toolName === "update_settings") {
+        const input = toolCall.input as { name?: string; benchmark?: string };
+        setPendingConfirm((p) => [...p, { toolCallId: toolCall.toolCallId, kind: "update_settings", input }]);
+        return;
       }
     },
   });
+
+  const resolveConfirm = useCallback(
+    async (item: PendingConfirm, confirmed: boolean) => {
+      const submit = addToolOutputRef.current;
+      setPendingConfirm((p) => p.filter((x) => x.toolCallId !== item.toolCallId));
+      if (!submit) return;
+
+      if (!confirmed) {
+        submit({ tool: item.kind, toolCallId: item.toolCallId, output: { ok: false, cancelled: true } });
+        return;
+      }
+
+      if (isGuest) {
+        const summary = "Guest mode has nothing to save — create a free account first.";
+        submit({ tool: item.kind, toolCallId: item.toolCallId, output: { ok: false, error: summary, upsell: "/signup" } });
+        return;
+      }
+
+      if (item.kind === "remove_holding") {
+        try {
+          await removeHolding(item.input.id);
+          const summary = `Removed ${item.input.symbol} from your portfolio.`;
+          logAssistantAction("remove_holding", item.input, summary, true);
+          submit({ tool: "remove_holding", toolCallId: item.toolCallId, output: { ok: true, summary } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not remove that holding.";
+          logAssistantAction("remove_holding", item.input, summary, false);
+          submit({ tool: "remove_holding", toolCallId: item.toolCallId, output: { ok: false, error: summary } });
+        }
+        return;
+      }
+
+      if (item.kind === "update_settings") {
+        try {
+          if (item.input.benchmark && !isBenchmarkId(item.input.benchmark)) {
+            throw new Error(`"${item.input.benchmark}" is not a valid benchmark id.`);
+          }
+          await updateBenchmark(
+            (item.input.benchmark as Parameters<typeof updateBenchmark>[0]) ?? (currentBenchmark as Parameters<typeof updateBenchmark>[0]),
+            item.input.name,
+          );
+          const parts = [item.input.name ? `name to "${item.input.name}"` : null, item.input.benchmark ? `benchmark to ${item.input.benchmark}` : null].filter(Boolean);
+          const summary = `Updated portfolio ${parts.join(" and ")}.`;
+          logAssistantAction("update_settings", item.input, summary, true);
+          submit({ tool: "update_settings", toolCallId: item.toolCallId, output: { ok: true, summary } });
+        } catch (e) {
+          const summary = e instanceof Error ? e.message : "Could not update settings.";
+          logAssistantAction("update_settings", item.input, summary, false);
+          submit({ tool: "update_settings", toolCallId: item.toolCallId, output: { ok: false, error: summary } });
+        }
+      }
+    },
+    [isGuest, removeHolding, updateBenchmark, currentBenchmark],
+  );
 
   useEffect(() => {
     addToolOutputRef.current = addToolOutput;
@@ -464,6 +615,35 @@ function SiteAssistantChat({
               <p className="text-sm leading-relaxed">{messageText(m)}</p>
             )}
           </motion.div>
+        ))}
+        {pendingConfirm.map((item) => (
+          <div
+            key={item.toolCallId}
+            className="rounded-xl border border-amber-500/40 bg-amber-500/5 px-3 py-2.5 text-sm"
+          >
+            <p className="font-medium text-foreground">
+              {item.kind === "remove_holding"
+                ? `Remove ${item.input.symbol} from your portfolio?`
+                : `Update portfolio ${[item.input.name ? `name to "${item.input.name}"` : null, item.input.benchmark ? `benchmark to ${item.input.benchmark}` : null].filter(Boolean).join(" and ")}?`}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Deb waits for your confirmation before changing anything.</p>
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={() => void resolveConfirm(item, true)}
+                className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                onClick={() => void resolveConfirm(item, false)}
+                className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         ))}
         {error ? (
           <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">

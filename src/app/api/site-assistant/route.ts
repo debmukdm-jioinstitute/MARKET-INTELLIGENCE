@@ -5,8 +5,12 @@ import { selectSiteAssistantTier } from "@/lib/site-assistant/select-tier";
 import { ragContextForQuestion } from "@/lib/site-assistant/rag-context";
 import { checkSiteAssistantRateLimit } from "@/lib/site-assistant/rate-limit";
 import {
+  clientAddHoldingTool,
+  clientCreateAlertTool,
   clientNavigateTool,
   clientOpenPaletteTool,
+  clientRemoveHoldingTool,
+  clientUpdateSettingsTool,
   createServerSiteAssistantTools,
 } from "@/lib/site-assistant/tools";
 import { logAnalyticsEvent } from "@/lib/analytics/log-event";
@@ -79,9 +83,13 @@ export async function POST(req: Request) {
       system,
       messages: await convertToModelMessages(messages),
       tools: {
-        ...createServerSiteAssistantTools(),
+        ...createServerSiteAssistantTools(user),
         navigate: clientNavigateTool,
         open_command_palette: clientOpenPaletteTool,
+        add_holding: clientAddHoldingTool,
+        remove_holding: clientRemoveHoldingTool,
+        create_alert: clientCreateAlertTool,
+        update_settings: clientUpdateSettingsTool,
       },
       stopWhen: stepCountIs(6),
     });
