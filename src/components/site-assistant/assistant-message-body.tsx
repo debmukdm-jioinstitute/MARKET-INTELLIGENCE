@@ -1,30 +1,34 @@
 "use client";
 
-import { isAllowedHref } from "@/lib/site-assistant/site-map";
+import { usePortalPages } from "@/components/providers/portal-page-provider";
+import { isAllowedHref, PORTAL_PATH_IN_TEXT } from "@/lib/site-assistant/site-map";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useCallback, type ReactNode } from "react";
 
 type Block =
   | { type: "heading"; text: string }
   | { type: "paragraph"; text: string }
   | { type: "list"; items: string[]; ordered?: boolean };
 
-const PATH_IN_TEXT = /(\/[a-zA-Z0-9/_-]+)/g;
-
-function extractPrimaryPath(text: string): string | null {
-  const matches = text.match(PATH_IN_TEXT);
+function extractPrimaryPath(text: string, canNavigate: (href: string) => boolean): string | null {
+  const matches = text.match(PORTAL_PATH_IN_TEXT);
   if (!matches) return null;
   for (const m of matches) {
-    if (isAllowedHref(m)) return m;
+    if (canNavigate(m)) return m;
   }
   return null;
 }
 
-function renderInline(text: string, onNavigate: (href: string) => void): ReactNode[] {
+function renderInline(
+  text: string,
+  onNavigate: (href: string) => void,
+  canNavigate: (href: string) => boolean,
+): ReactNode[] {
   const nodes: ReactNode[] = [];
-  const re = /(\*\*[^*]+\*\*|`[^`]+`|\/[a-zA-Z0-9/_-]+)/g;
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\/[a-zA-Z0-9/_-]+(?:\?[a-zA-Z0-9_=&%-]+)?)/g;
   let last = 0;
   let m: RegExpExecArray | null;
   let k = 0;
@@ -44,16 +48,19 @@ function renderInline(text: string, onNavigate: (href: string) => void): ReactNo
           {inner}
         </code>,
       );
-    } else if (token.startsWith("/") && isAllowedHref(token)) {
+    } else if (token.startsWith("/") && canNavigate(token)) {
       nodes.push(
-        <button
+        <Link
           key={k++}
-          type="button"
-          onClick={() => onNavigate(token)}
-          className="font-medium text-primary underline-offset-2 hover:underline"
+          href={token}
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate(token);
+          }}
+          className="font-semibold text-primary underline underline-offset-2 hover:text-primary/90"
         >
           {token}
-        </button>,
+        </Link>,
       );
     } else {
       nodes.push(token);
@@ -117,7 +124,12 @@ export function parseAssistantBlocks(raw: string): Block[] {
 
 export function AssistantMessageBody({ text }: { text: string }) {
   const router = useRouter();
+  const { hrefAllowed } = usePortalPages();
   const onNavigate = (href: string) => router.push(href);
+  const canNavigate = useCallback(
+    (href: string) => isAllowedHref(href) && hrefAllowed(href),
+    [hrefAllowed],
+  );
   const blocks = parseAssistantBlocks(text.trim());
 
   if (!blocks.length) return null;
@@ -135,7 +147,7 @@ export function AssistantMessageBody({ text }: { text: string }) {
         if (block.type === "paragraph") {
           return (
             <p key={i} className="text-sm leading-relaxed text-foreground/95">
-              {renderInline(block.text, onNavigate)}
+              {renderInline(block.text, onNavigate, canNavigate)}
             </p>
           );
         }
@@ -149,27 +161,30 @@ export function AssistantMessageBody({ text }: { text: string }) {
             )}
           >
             {block.items.map((item, j) => {
-              const path = extractPrimaryPath(item);
+              const path = extractPrimaryPath(item, canNavigate);
               const tileCls = cn(
                 "list-none w-full rounded-lg border border-border/75 bg-background/80 px-2.5 py-2.5 text-left shadow-sm transition touch-manipulation min-h-[44px]",
-                path && "cursor-pointer border-primary/15 bg-accent/20 hover:border-primary/35 hover:bg-accent/35 active:scale-[0.99]",
+                path && "border-primary/15 bg-accent/20 hover:border-primary/35 hover:bg-accent/35",
               );
               if (path) {
                 return (
                   <li key={j} className="list-none">
-                    <button type="button" onClick={() => onNavigate(path)} className={tileCls}>
-                      <div className="text-[13px] leading-snug">{renderInline(item, onNavigate)}</div>
-                      <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                    <Link
+                      href={path}
+                      className={cn(tileCls, "block text-inherit no-underline hover:no-underline active:scale-[0.99]")}
+                    >
+                      <div className="text-[13px] leading-snug">{renderInline(item, onNavigate, canNavigate)}</div>
+                      <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary underline-offset-2 group-hover:underline">
                         Open page
                         <ArrowRight className="size-3" aria-hidden />
                       </span>
-                    </button>
+                    </Link>
                   </li>
                 );
               }
               return (
                 <li key={j} className={tileCls}>
-                  <div className="text-[13px] leading-snug">{renderInline(item, onNavigate)}</div>
+                  <div className="text-[13px] leading-snug">{renderInline(item, onNavigate, canNavigate)}</div>
                 </li>
               );
             })}

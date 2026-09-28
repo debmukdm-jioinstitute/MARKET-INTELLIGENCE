@@ -1,19 +1,93 @@
 import { METRIC_COMMANDS, PAGE_COMMANDS, type PageCommand } from "@/lib/command-registry";
+import { NAV_SECTIONS } from "@/lib/nav-columns";
 
 export type PageSearchResult = Pick<PageCommand, "href" | "label" | "description">;
 
+/** Matches portal paths in assistant prose, including ?view= / ?tab= query strings. */
+export const PORTAL_PATH_IN_TEXT =
+  /(\/[a-zA-Z0-9/_-]+(?:\?[a-zA-Z0-9_=&%-]+)?)/g;
+
 const STATIC_HREFS = new Set(PAGE_COMMANDS.map((p) => p.href.toLowerCase()));
+
+const NAV_HREFS = new Set<string>();
+for (const section of NAV_SECTIONS) {
+  for (const group of section.groups) {
+    for (const item of group.items) {
+      if (item.external) continue;
+      NAV_HREFS.add(item.href.toLowerCase());
+      const pathOnly = item.href.split("?")[0]!.split("#")[0]!;
+      NAV_HREFS.add(pathOnly.toLowerCase());
+    }
+  }
+}
+
+const SAFE_SEARCH = /^\?[a-zA-Z0-9_=&%-]*$/;
+
+export function splitPortalHref(href: string): { path: string; search: string } {
+  const trimmed = href.trim();
+  const noHash = trimmed.split("#")[0]!;
+  const q = noHash.indexOf("?");
+  if (q === -1) return { path: noHash, search: "" };
+  return { path: noHash.slice(0, q), search: noHash.slice(q) };
+}
+
+function pathMatchesRegistry(pathLower: string): boolean {
+  if (STATIC_HREFS.has(pathLower)) return true;
+  if (NAV_HREFS.has(pathLower)) return true;
+  for (const allowed of STATIC_HREFS) {
+    const base = allowed.split("?")[0]!;
+    if (pathLower === base || (base.length > 1 && pathLower.startsWith(`${base}/`))) return true;
+  }
+  for (const allowed of NAV_HREFS) {
+    const base = allowed.split("?")[0]!;
+    if (pathLower === base || (base.length > 1 && pathLower.startsWith(`${base}/`))) return true;
+  }
+  return false;
+}
 
 /** Allowlist for client-side navigation tool validation. */
 export function isAllowedHref(href: string): boolean {
   const normalized = href.trim();
   if (!normalized.startsWith("/") || normalized.includes("://")) return false;
-  if (STATIC_HREFS.has(normalized.toLowerCase())) return true;
-  // Dynamic research paths
-  if (/^\/research\/[A-Za-z0-9.&-]+$/i.test(normalized)) return true;
-  if (/^\/research\/model\/[A-Za-z0-9.&-]+$/i.test(normalized)) return true;
+
+  const { path, search } = splitPortalHref(normalized);
+  if (search && !SAFE_SEARCH.test(search)) return false;
+
+  const fullLower = normalized.toLowerCase();
+  if (STATIC_HREFS.has(fullLower) || NAV_HREFS.has(fullLower)) return true;
+
+  const pathLower = path.toLowerCase();
+  if (pathMatchesRegistry(pathLower)) return true;
+
+  if (/^\/research\/[A-Za-z0-9.&-]+$/i.test(path)) return true;
+  if (/^\/research\/model\/[A-Za-z0-9.&-]+$/i.test(path)) return true;
+
   return false;
 }
+
+const NAV_SEARCH_PAGES: PageCommand[] = NAV_SECTIONS.flatMap((section) =>
+  section.groups.flatMap((group) =>
+    group.items
+      .filter((item) => !item.external)
+      .map((item) => ({
+        href: item.href,
+        label: item.label,
+        description: item.desc ?? group.desc,
+      })),
+  ),
+);
+
+const SEARCH_CATALOG: PageCommand[] = (() => {
+  const seen = new Set<string>();
+  const out: PageCommand[] = [];
+  for (const p of [...PAGE_COMMANDS, ...NAV_SEARCH_PAGES]) {
+    const key = p.href.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out;
+})();
 
 function scorePage(page: PageCommand, query: string): number {
   const q = query.toLowerCase();
@@ -30,8 +104,8 @@ function scorePage(page: PageCommand, query: string): number {
 
 export function searchPages(query: string, limit = 8): PageSearchResult[] {
   const q = query.trim();
-  if (!q) return PAGE_COMMANDS.slice(0, limit).map(({ href, label, description }) => ({ href, label, description }));
-  return PAGE_COMMANDS.map((page) => ({ page, score: scorePage(page, q) }))
+  if (!q) return SEARCH_CATALOG.slice(0, limit).map(({ href, label, description }) => ({ href, label, description }));
+  return SEARCH_CATALOG.map((page) => ({ page, score: scorePage(page, q) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
@@ -39,10 +113,10 @@ export function searchPages(query: string, limit = 8): PageSearchResult[] {
 }
 
 export function relatedPagesForPath(pathname: string, limit = 5): PageSearchResult[] {
-  const path = pathname.toLowerCase();
+  const path = pathname.toLowerCase().split("?")[0]!;
   const segment = path.split("/").filter(Boolean)[0] ?? "";
-  const scored = PAGE_COMMANDS.map((page) => {
-    const p = page.href.toLowerCase();
+  const scored = SEARCH_CATALOG.map((page) => {
+    const p = page.href.toLowerCase().split("?")[0]!;
     let score = 0;
     if (p === path) score += 100;
     if (path.startsWith(p) && p.length > 1) score += 60;
@@ -60,7 +134,7 @@ export function relatedPagesForPath(pathname: string, limit = 5): PageSearchResu
   const metricHits = METRIC_COMMANDS.filter((m) => m.href.toLowerCase() === path || m.href.toLowerCase().startsWith(path))
     .slice(0, 2)
     .flatMap((m) => {
-      const page = PAGE_COMMANDS.find((p) => p.href === m.href);
+      const page = SEARCH_CATALOG.find((p) => p.href.split("?")[0]!.toLowerCase() === m.href.toLowerCase());
       return page ? [{ href: page.href, label: page.label, description: page.description }] : [];
     });
 
@@ -72,5 +146,5 @@ export function relatedPagesForPath(pathname: string, limit = 5): PageSearchResu
 }
 
 export function compactSiteMapLines(): string[] {
-  return PAGE_COMMANDS.map((p) => `${p.href} — ${p.label}: ${p.description}`);
+  return SEARCH_CATALOG.map((p) => `${p.href} — ${p.label}: ${p.description}`);
 }
