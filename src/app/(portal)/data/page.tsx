@@ -110,9 +110,9 @@ export default function DataPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Data Observability"
-        title="Data Sources, Quality & Feed Freshness"
-        subtitle="Institutional telemetry monitoring upstream API health, latency, data completeness, and failover status across all market feeds."
+        kicker="Data"
+        title="Where our data comes from"
+        subtitle="A live status board for every data feed — what's working, what's slow, and when each one last updated."
       />
 
       {/* KPI Overview Grid */}

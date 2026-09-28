@@ -186,19 +186,19 @@ function Data360ExplorerInner() {
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Indicators</p>
             <p className="text-2xl font-bold tabular-nums">{status.indicators.toLocaleString()}</p>
-            <p className="text-muted-foreground">{status.indicatorsComplete} complete</p>
+            <p className="text-muted-foreground tabular-nums">{status.indicatorsComplete.toLocaleString()} complete</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Country sync progress</p>
             <p className="text-2xl font-bold tabular-nums">{progressPct}%</p>
-            <p className="text-muted-foreground">
-              {status.refCursorsComplete} / {status.refCursors} cursors
+            <p className="text-muted-foreground tabular-nums">
+              {status.refCursorsComplete.toLocaleString()} / {status.refCursors.toLocaleString()} countries
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Databases</p>
             <p className="text-2xl font-bold tabular-nums">{status.datasets}</p>
-            <p className="text-muted-foreground">{status.indicatorsPending} indicators pending</p>
+            <p className="text-muted-foreground tabular-nums">{status.indicatorsPending.toLocaleString()} indicators pending</p>
           </div>
         </div>
       ) : null}
@@ -291,7 +291,7 @@ function Data360ExplorerInner() {
             <>
               {seriesSource === "live" ? (
                 <p className="mb-2 text-xs text-amber-700 bg-amber-500/10 rounded-md px-2 py-1">
-                  Mirror empty — showing live World Bank Data360 for this series. Nightly cron fills local copy.
+                  We haven&apos;t saved this one yet, so we&apos;re showing it live from the World Bank. Our copy updates overnight.
                 </p>
               ) : null}
               <div className="mb-3 flex flex-wrap gap-2">

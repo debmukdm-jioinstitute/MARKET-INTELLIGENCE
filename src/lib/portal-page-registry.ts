@@ -11,8 +11,7 @@ export type PortalPageRegistryEntry = {
   appliesToChildren: boolean;
 };
 
-const DEFAULT_LOCK_MESSAGE =
-  "Our team is building this section. It will be back on the live site soon — thanks for your patience.";
+const DEFAULT_LOCK_MESSAGE = "We're still building this — check back soon.";
 
 export { DEFAULT_LOCK_MESSAGE };
 

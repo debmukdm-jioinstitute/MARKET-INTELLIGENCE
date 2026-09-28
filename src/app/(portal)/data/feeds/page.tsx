@@ -14,9 +14,9 @@ export default function FeedsPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Data Plane"
-        title="Live Market Feeds & Ingestion Health"
-        subtitle="Operational telemetry and health monitoring for all upstream market feeds — NSE, BSE, RBI, FRED, World Bank, IMF, OECD, MOSPI, and Upstox market data."
+        kicker="Feeds"
+        title="Market data feeds"
+        subtitle="Which feeds are up, which are slow, and when each last sent data: NSE, BSE, RBI, FRED, World Bank, IMF, OECD, MOSPI, and Upstox."
       />
 
       <div className="flex flex-wrap items-center gap-3">

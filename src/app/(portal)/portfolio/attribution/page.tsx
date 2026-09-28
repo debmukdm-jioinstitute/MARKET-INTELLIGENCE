@@ -27,12 +27,12 @@ export default function AttributionPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Performance attribution"
-        title="Return decomposition"
+        kicker="Attribution"
+        title="What made you money"
         subtitle={
           data?.hasHoldings
-            ? `Active return vs ${benchLabel}; sector table uses Brinson-Fachler vs ${benchLabel} constituent weights.`
-            : "Add holdings on Portfolio to attribute return to names and sectors."
+            ? `Which stocks and sectors drove your returns vs ${benchLabel}.`
+            : "Which stocks and sectors drove your returns. Add your holdings to break it down."
         }
       />
 

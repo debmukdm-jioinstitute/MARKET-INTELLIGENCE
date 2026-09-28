@@ -61,12 +61,12 @@ export default function RiskPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Risk management"
-        title="Active risk budget"
+        kicker="Risk"
+        title="What could go wrong"
         subtitle={
           data?.hasHoldings
-            ? `Live book vs ${bench} — vol, tail, drawdown, and name-level risk from your holdings and price history.`
-            : "Add holdings on Portfolio to compute risk from live marks and history."
+            ? `How much you could lose vs ${bench}, and where risk is concentrated in your holdings.`
+            : "How much you could lose, and where the risk is concentrated. Add your holdings to see it."
         }
       />
 
