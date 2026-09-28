@@ -59,6 +59,75 @@ type NseCorpRow = {
 const SEC_UA =
   process.env.FEED_USER_AGENT ?? "MarketIntelligence research@getmarketintelligence.vercel.app";
 
+export const SYMBOL_NEGATIVE_ALIASES: Record<string, string[]> = {
+  RELIANCE: [
+    "reliance power",
+    "reliance infra",
+    "reliance infrastructure",
+    "reliance capital",
+    "reliance comm",
+    "reliance home finance",
+    "reliance naval",
+    "rpower",
+    "rcom",
+    "anil ambani",
+  ],
+  TATAMOTORS: ["tata steel", "tata power", "tata consultancy", "tata chemicals", "tata elxsi", "tata consumer"],
+  TCS: ["tata motors", "tata steel", "tata power", "tata chemicals", "tata elxsi"],
+  TATASTEEL: ["tata motors", "tata power", "tata consultancy", "tcs"],
+  TATAPOWER: ["tata motors", "tata steel", "tata consultancy", "tcs"],
+  ADANIENT: ["adani power", "adani green", "adani ports", "adani total gas", "adani wilmar", "adani energy"],
+  ADANIPORTS: ["adani power", "adani green", "adani enterprise", "adani total gas", "adani wilmar", "adani energy"],
+  BAJFINANCE: ["bajaj auto", "bajaj electricals", "bajaj hindusthan"],
+  BAJAJFINSV: ["bajaj auto", "bajaj electricals", "bajaj hindusthan"],
+};
+
+export function isNewsArticleRelevantForSymbol(
+  title: string,
+  symbol: string,
+  companyName: string
+): boolean {
+  if (!title) return false;
+  const lower = title.toLowerCase();
+  const upper = symbol.toUpperCase();
+
+  // Negative alias check
+  const negs = SYMBOL_NEGATIVE_ALIASES[upper];
+  if (negs) {
+    for (const neg of negs) {
+      if (lower.includes(neg)) {
+        const exactPass =
+          upper === "RELIANCE"
+            ? lower.includes("reliance industries") || lower.includes("ril")
+            : false;
+        if (!exactPass) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // Exact symbol matching with word boundaries
+  const symRegex = new RegExp(`\\b${upper}\\b`, "i");
+  if (symRegex.test(title)) return true;
+
+  // Clean company name (strip Ltd, Limited, Industries, etc.)
+  const cleanName = companyName
+    .replace(/\b(limited|ltd|industries|ind|corporation|corp|inc|co|company|enterprises)\b/gi, "")
+    .trim()
+    .toLowerCase();
+
+  if (cleanName.length >= 4 && lower.includes(cleanName)) {
+    return true;
+  }
+
+  if (companyName.length >= 4 && lower.includes(companyName.toLowerCase())) {
+    return true;
+  }
+
+  return false;
+}
+
 let secTickerCache: Map<string, string> | null = null;
 
 async function secCik(symbol: string): Promise<string | undefined> {
@@ -459,10 +528,19 @@ export async function buildResearchIntelligence(input: {
 
   const corporateActions = [...nseCa, ...secCa];
 
-  const merged = dedupeNews([
+  const rawMerged = dedupeNews([
     ...upstoxNews.map((n) => ({ ...n, id: `upstox-${n.id}` })),
     ...googleNews,
   ]);
+
+  // P0 Trust Defect: strictly filter wrong-company headlines (e.g., Reliance Power for RELIANCE)
+  const strictlyFiltered = rawMerged.filter((n) =>
+    isNewsArticleRelevantForSymbol(n.title, symbol, name),
+  );
+  const merged =
+    strictlyFiltered.length > 0
+      ? strictlyFiltered
+      : rawMerged.filter((n) => n.id.startsWith("upstox-") || isNewsArticleRelevantForSymbol(n.title, symbol, name));
 
   const analyzedUpstox = analyzeNewsItems(
     merged.filter((n) => n.id.startsWith("upstox-")),
@@ -480,9 +558,13 @@ export async function buildResearchIntelligence(input: {
   const newsFeed = [...byId.values()].slice(0, 24);
   const newsSummary = summarizeNewsImpact(newsFeed);
 
+  const filteredAnalystRss = analystRss.filter((n) =>
+    isNewsArticleRelevantForSymbol(n.title, symbol, name),
+  );
+
   const brokerResearch: BrokerResearchItem[] = [
     ...brokerPortalLinks(symbol, name, market, isin),
-    ...analyzeNewsItems(analystRss, "Google News").map((n) => ({
+    ...analyzeNewsItems(filteredAnalystRss, "Google News").map((n) => ({
       id: `br-${n.id}`,
       title: n.title,
       url: n.link,

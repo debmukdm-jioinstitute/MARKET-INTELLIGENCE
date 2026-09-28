@@ -10,15 +10,22 @@ import { ProwessReportSections } from "@/components/research/prowess-report-sect
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
+import { ValuationPanel } from "@/components/research/valuation-panel";
+import { ScannerFlagsPanel } from "@/components/research/scanner-flags-panel";
+import { TrendPanel } from "@/components/research/trend-panel";
+import { OptionsSnapshotPanel } from "@/components/research/options-snapshot-panel";
+import { IpoPanel } from "@/components/research/ipo-panel";
+import { ResearchSectionNav, BackToTopButton, type NavSectionItem } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function ResearchSymbolPage() {
   const params = useParams();
@@ -56,134 +63,267 @@ export default function ResearchSymbolPage() {
 
   const q = data?.upstoxQuote;
   const us = data?.usDetail;
+  const isIndia = Boolean(q || (!us && symbol));
+  const isFno = useMemo(() => Boolean(findIndiaInstrument(symbol)), [symbol]);
+
+  // Dynamic Navigation anchors based on available sections (Handbook Page 3)
+  const navSections: NavSectionItem[] = useMemo(() => {
+    const list: NavSectionItem[] = [
+      { id: "overview", label: "Overview" },
+      { id: "valuation", label: "Valuation" },
+      { id: "radar", label: "Radar" },
+      { id: "trend", label: "Trend" },
+    ];
+    if (isIndia && isFno) {
+      list.push({ id: "options", label: "Options" });
+    }
+    if (data?.fundamentals) {
+      list.push({ id: "fundamentals", label: "Fundamentals" });
+    }
+    list.push({ id: "risk", label: "Risk & Events" });
+    if (data?.intelligence) {
+      list.push({ id: "news", label: "News & Filings" });
+    }
+    if (isIndia) {
+      list.push({ id: "ipo", label: "IPO History" });
+      list.push({ id: "financials", label: "Reported Statements" });
+    }
+    if (data?.sources?.length) {
+      list.push({ id: "sources", label: "Sources" });
+    }
+    return list;
+  }, [data, isIndia, isFno]);
 
   return (
-    <div className="portal-page">
+    <div className="portal-page pb-16">
+      {/* 1. Header & Search Bar */}
       <PageHeader
-        kicker="Investment research"
+        kicker="Company Research Dossier"
         title={data ? `${data.symbol} · ${data.name}` : symbol}
-        subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
+        subtitle="One dossier, every decision input: real-time quote, intrinsic DCF, scanner radar, technical trend, options positioning, risk metrics, and verified corporate disclosures."
       />
+
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
-      <div className="flex flex-wrap items-center justify-between gap-2">
+
+      {/* Action Header / Sub-bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <p className="text-sm text-muted-foreground">
           <Link href="/research" className="text-primary hover:underline">← Research home</Link>
-          {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
+          {data?.fetchedAt ? ` · Hub sync ${new Date(data.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : null}
         </p>
-        {symbol ? (
-          <Link
-            href={`/research/model/${encodeURIComponent(symbol)}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
-          >
-            Build financial model →
-          </Link>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {symbol ? (
+            <Link
+              href={`/research/model/${encodeURIComponent(symbol)}`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              Build financial model →
+            </Link>
+          ) : null}
+          {isIndia && isFno ? (
+            <Link
+              href={`/markets/derivatives?underlying=${encodeURIComponent(symbol)}`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-accent transition-colors"
+            >
+              Options chain →
+            </Link>
+          ) : null}
+        </div>
       </div>
 
-      {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-
-      {symbol ? (
-        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
-          <SecurityRiskPanel symbol={symbol} />
-        </Panel>
+      {loading ? (
+        <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">
+          Loading comprehensive dossier for {symbol}…
+        </div>
+      ) : null}
+      {error ? (
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-600">
+          {error}
+        </div>
       ) : null}
 
-      {data && q ? (
-        <>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">India · NSE</Badge>
-            <Badge className="bg-emerald-500/20 text-emerald-600">Upstox live</Badge>
-          </div>
-          <div className="grid gap-4 xl:grid-cols-3">
-            <Panel title="Quote & depth" className="xl:col-span-2">
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
-                    <MetricInfo
-                      id={symbol.toLowerCase()}
-                      name={`${data.name} (${symbol})`}
-                      provider="Upstox / NSE Official Tick Stream"
-                      sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
-                      asOf={q.asOf}
+      {/* Sticky Section Navigation Bar */}
+      {data && !loading ? <ResearchSectionNav sections={navSections} /> : null}
+
+      {/* SECTION 1: OVERVIEW & LIVE QUOTE */}
+      {data ? (
+        <section id="overview" className="scroll-mt-24 space-y-4">
+          {q ? (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">India · NSE</Badge>
+                <Badge className="bg-emerald-500/20 text-emerald-600">Upstox Live Feed</Badge>
+                {isFno ? <Badge variant="outline" className="border-blue-500 text-blue-600">F&O Eligible</Badge> : null}
+              </div>
+
+              <div className="grid gap-4 xl:grid-cols-3">
+                <Panel title="Live Quote & Order Book" className="xl:col-span-2">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-3xl tabular-nums font-bold text-foreground">{fmtInr(q.ltp)}</p>
+                        <MetricInfo
+                          id={symbol.toLowerCase()}
+                          name={`${data.name} (${symbol})`}
+                          provider="Upstox / NSE Official Tick Stream"
+                          sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
+                          asOf={q.asOf}
+                        />
+                      </div>
+                      <p
+                        className={cn(
+                          "text-sm font-semibold tabular-nums mt-0.5",
+                          q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
+                        )}
+                      >
+                        {q.netChange >= 0 ? "+" : ""}
+                        {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
+                      </p>
+                    </div>
+                    <DataInfo
+                      source={{
+                        provider: "Upstox",
+                        url: "https://upstox.com/developer/api-documentation/get-full-market-quote/",
+                        asOf: q.asOf,
+                      }}
+                      hubSyncedAt={data.fetchedAt}
                     />
                   </div>
-                  <p
-                    className={cn(
-                      "text-sm",
-                      q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
-                    )}
-                  >
-                    {q.netChange >= 0 ? "+" : ""}
-                    {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
-                  </p>
-                </div>
-                <DataInfo
-                  source={{
-                    provider: "Upstox",
-                    url: "https://upstox.com/developer/api-documentation/get-full-market-quote/",
-                    asOf: q.asOf,
-                  }}
-                  hubSyncedAt={data.fetchedAt}
-                />
+                  {/* P0 Suppress false zero depth book */}
+                  <MarketDepthLadder buy={q.depth?.buy ?? []} sell={q.depth?.sell ?? []} />
+                </Panel>
+
+                <Panel title="Session Statistics">
+                  <dl className="grid grid-cols-2 gap-2 text-sm">
+                    <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
+                    <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
+                    <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
+                    <Stat metricId="low52w" k="Low" v={fmtInr(q.ohlc.low)} />
+                    <Stat metricId="turnover" k="Volume" v={q.volume.toLocaleString("en-IN")} />
+                    <Stat metricId="vwap" k="VWAP" v={fmtInr(q.avgPrice)} />
+                  </dl>
+                </Panel>
               </div>
-              <MarketDepthLadder buy={q.depth.buy} sell={q.depth.sell} />
-            </Panel>
-            <Panel title="Session">
-              <dl className="grid grid-cols-2 gap-2 text-sm">
-                <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
-                <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
-                <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
-                <Stat metricId="low52w" k="Low" v={fmtInr(q.ohlc.low)} />
-                <Stat metricId="turnover" k="Volume" v={q.volume.toLocaleString("en-IN")} />
-                <Stat metricId="vwap" k="Avg" v={fmtInr(q.avgPrice)} />
-              </dl>
-            </Panel>
-          </div>
-          {data.candles.length > 1 ? (
-            <Panel title="Price history (1Y · Upstox daily)">
+            </>
+          ) : us ? (
+            <UsResearchPanels data={data} />
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* SECTION 2: VALUATION & INTRINSIC VALUE (Handbook Page 3 Order: Value right after Overview) */}
+      {symbol ? (
+        <section id="valuation" className="scroll-mt-24">
+          <ValuationPanel
+            symbol={symbol}
+            livePrice={q?.ltp ?? us?.quote?.price ?? null}
+            liveAsOf={q?.asOf ?? null}
+            currency={q ? "INR" : "USD"}
+          />
+        </section>
+      ) : null}
+
+      {/* SECTION 3: SCANNER RADAR & ACTIVE TRIGGERS */}
+      {symbol ? (
+        <section id="radar" className="scroll-mt-24">
+          <ScannerFlagsPanel symbol={symbol} />
+        </section>
+      ) : null}
+
+      {/* SECTION 4: PRICE HISTORY & TREND (Candlestick Chart + Technical Trend Indicators) */}
+      {data ? (
+        <section id="trend" className="scroll-mt-24 space-y-4">
+          {data.candles?.length > 1 ? (
+            <Panel title="Price History (1Y Daily Candles · Upstox)">
               <CandlestickChart candles={data.candles} />
             </Panel>
           ) : null}
-          {data.fundamentals ? (
-            <Panel title="Fundamentals (Upstox key ratios)">
-              <KeyRatiosPanel snapshot={data.fundamentals} />
-            </Panel>
+          {data.candles?.length ? (
+            <TrendPanel candles={data.candles} symbol={symbol} />
           ) : null}
-        </>
+        </section>
       ) : null}
 
-      {data ? <ProwessReportSections company={data.symbol} /> : null}
-
-      {data && !q && us ? (
-        <UsResearchPanels data={data} />
+      {/* SECTION 5: OPTIONS POSITIONING (F&O-Eligible Names Only) */}
+      {isIndia && isFno ? (
+        <section id="options" className="scroll-mt-24">
+          <OptionsSnapshotPanel symbol={symbol} />
+        </section>
       ) : null}
 
+      {/* SECTION 6: FUNDAMENTALS (Key Ratios vs Sector) */}
+      {data?.fundamentals ? (
+        <section id="fundamentals" className="scroll-mt-24">
+          <Panel title="Fundamentals (Key Financial Ratios)">
+            <KeyRatiosPanel snapshot={data.fundamentals} />
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* SECTION 7: RISK & EVENTS (Moved below fundamentals per Handbook IA) */}
+      {symbol ? (
+        <section id="risk" className="scroll-mt-24">
+          <Panel
+            title="Risk & Upcoming Events"
+            subtitle="Volatility, drawdown, historical beta, and expected sovereign/earnings events computed from historical trading series."
+          >
+            <SecurityRiskPanel symbol={symbol} />
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* SECTION 8: NEWS, DISCLOSURES & CORPORATE ACTIONS */}
       {data?.intelligence ? (
-        <ResearchIntelligencePanels
-          corporateActions={data.intelligence.corporateActions}
-          newsFeed={data.intelligence.newsFeed}
-          newsSummary={data.intelligence.newsSummary}
-          brokerResearch={data.intelligence.brokerResearch}
-        />
+        <section id="news" className="scroll-mt-24">
+          <ResearchIntelligencePanels
+            corporateActions={data.intelligence.corporateActions}
+            newsFeed={data.intelligence.newsFeed}
+            newsSummary={data.intelligence.newsSummary}
+            brokerResearch={data.intelligence.brokerResearch}
+          />
+        </section>
       ) : null}
 
-      {data?.sources.length ? (
-        <Panel title="Data sources">
-          <ul className="space-y-2 text-sm">
-            {data.sources.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">{s.label}</span>
-                <span className="text-muted-foreground">— {s.usedFor}</span>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm">
-                  Open
-                </a>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+      {/* SECTION 9: IPO & LISTING HISTORY (Conditional) */}
+      {isIndia ? (
+        <section id="ipo" className="scroll-mt-24">
+          <IpoPanel symbol={symbol} currentPrice={q?.ltp ?? null} />
+        </section>
       ) : null}
+
+      {/* SECTION 10: REPORTED STATEMENTS (CMIE Prowess) */}
+      {data && isIndia ? (
+        <section id="financials" className="scroll-mt-24">
+          <ProwessReportSections company={data.symbol} />
+        </section>
+      ) : null}
+
+      {/* SECTION 11: DATA SOURCES & PROVENANCE */}
+      {data?.sources?.length ? (
+        <section id="sources" className="scroll-mt-24">
+          <Panel title="Data Sources & Provenance">
+            <ul className="space-y-2 text-sm">
+              {data.sources.map((s) => (
+                <li key={s.id} className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-foreground">{s.label}</span>
+                  <span className="text-muted-foreground">— {s.usedFor}</span>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary text-xs hover:underline ml-auto"
+                  >
+                    Provider specification ↗
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* Back to top affordance */}
+      <BackToTopButton />
     </div>
   );
 }
@@ -194,28 +334,28 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <Badge variant="secondary">US</Badge>
+        <Badge variant="secondary">US Equity</Badge>
         <Badge variant="secondary">{us.quote.provider}</Badge>
       </div>
       <div className="grid gap-4 xl:grid-cols-3">
-        <Panel title="Price" className="xl:col-span-2">
+        <Panel title="Price History" className="xl:col-span-2">
           <div className="h-[280px]">
             <Lines data={chart} keys={[{ key: "px", color: "#1a73e8", name: data.symbol }]} />
           </div>
         </Panel>
         <Panel title="Snapshot">
           <dl className="space-y-3 text-sm">
-            <Row metricId="nav" k="Last" v={fmtNum(us.quote.price)} />
+            <Row metricId="nav" k="Last" v={`$${fmtNum(us.quote.price)}`} />
             <Row metricId="today_pnl" k="1D" v={formatPct(us.quote.changePct)} />
             {us.quote.pe != null ? <Row metricId="pe_ratio" k="P/E" v={us.quote.pe.toFixed(1)} /> : null}
             {us.quote.marketCap != null ? (
-              <Row metricId="nav" k="Mkt cap" v={`${(us.quote.marketCap / 1e9).toFixed(1)}B`} />
+              <Row metricId="nav" k="Mkt cap" v={`$${(us.quote.marketCap / 1e9).toFixed(1)}B`} />
             ) : null}
           </dl>
         </Panel>
       </div>
       {us.secFilingsUrl ? (
-        <Panel title="SEC filings">
+        <Panel title="SEC Filings">
           <a href={us.secFilingsUrl} className="text-sm text-primary hover:underline" target="_blank" rel="noreferrer">
             View EDGAR filings →
           </a>
@@ -228,11 +368,11 @@ function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
 function Stat({ metricId, k, v }: { metricId?: string; k: string; v: string }) {
   return (
     <div>
-      <dt className="text-muted-foreground flex items-center gap-1">
+      <dt className="text-muted-foreground flex items-center gap-1 text-xs">
         <span>{k}</span>
         {metricId ? <MetricInfo id={metricId} name={k} iconSize="xs" /> : null}
       </dt>
-      <dd className="font-medium">{v}</dd>
+      <dd className="font-semibold text-foreground mt-0.5">{v}</dd>
     </div>
   );
 }
@@ -244,7 +384,7 @@ function Row({ metricId, k, v }: { metricId?: string; k: string; v: string }) {
         <span>{k}</span>
         {metricId ? <MetricInfo id={metricId} name={k} iconSize="xs" /> : null}
       </dt>
-      <dd>{v}</dd>
+      <dd className="font-medium text-foreground">{v}</dd>
     </div>
   );
 }

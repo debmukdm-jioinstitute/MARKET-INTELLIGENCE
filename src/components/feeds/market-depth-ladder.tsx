@@ -3,10 +3,23 @@ import { cn } from "@/lib/utils";
 
 /** 5-level bid/ask depth ladder — proportional bars, not a chart, so hand-styled bars fit better than Recharts. */
 export function MarketDepthLadder({ buy, sell }: { buy: DepthLevel[]; sell: DepthLevel[] }) {
-  if (!buy.length && !sell.length) {
-    return <p className="text-sm text-muted-foreground">No depth data.</p>;
+  if (!buy?.length && !sell?.length) {
+    return <p className="text-sm text-muted-foreground">Market depth unavailable.</p>;
   }
-  const maxQty = Math.max(1, ...buy.map((b) => b.quantity), ...sell.map((s) => s.quantity));
+
+  const totalBuyQty = (buy ?? []).reduce((sum, b) => sum + (b?.quantity ?? 0), 0);
+  const totalSellQty = (sell ?? []).reduce((sum, s) => sum + (s?.quantity ?? 0), 0);
+  const hasValidPrice = (buy ?? []).some((b) => (b?.price ?? 0) > 0) || (sell ?? []).some((s) => (s?.price ?? 0) > 0);
+
+  if (totalBuyQty === 0 && totalSellQty === 0 && !hasValidPrice) {
+    return (
+      <div className="rounded border border-border/40 bg-muted/10 p-4 text-center">
+        <p className="text-sm text-muted-foreground">Market depth unavailable (market closed or queue unpopulated).</p>
+      </div>
+    );
+  }
+
+  const maxQty = Math.max(1, ...buy.map((b) => b?.quantity ?? 0), ...sell.map((s) => s?.quantity ?? 0));
   const rows = Math.max(buy.length, sell.length);
 
   return (

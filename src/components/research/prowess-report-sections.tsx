@@ -57,14 +57,8 @@ export function ProwessReportSections({ company }: { company: string }) {
   if (gate.state === "blocked") {
     return (
       <Panel title="Reported financials (CMIE)" subtitle="Source: CMIE Prowess">
-        <p className="text-sm text-muted-foreground leading-relaxed">{gate.message}</p>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          Use the Upstox fundamentals block above when available. For live CMIE data, set a valid{" "}
-          <code className="text-xs">PROWESS_API_KEY</code> with an active API subscription from{" "}
-          <a href="https://register.cmie.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-            CMIE
-          </a>
-          .
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Reported financial statements from CMIE Prowess are currently unavailable for this company. Please refer to Upstox fundamentals and official exchange filings above.
         </p>
       </Panel>
     );

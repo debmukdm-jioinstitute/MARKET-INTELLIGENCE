@@ -41,15 +41,12 @@ export function ProwessPanel({ company, report, title }: { company: string; repo
   return (
     <Panel title={title} subtitle="Source: CMIE Prowess">
       {!resp ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
-      {resp?.status === "not_configured" ? (
-        <p className="text-sm text-muted-foreground">CMIE Prowess is not configured on this server.</p>
-      ) : null}
-      {resp?.status === "missing_batch" ? (
-        <p className="text-sm text-muted-foreground">Add the batch file <code>prowess-batches/{resp.batch}</code> to enable this report.</p>
-      ) : null}
-      {resp?.status === "unavailable" ? <p className="text-sm text-muted-foreground">{resp.message}</p> : null}
-      {resp?.status === "error" ? (
-        <p className="text-sm text-muted-foreground">This report could not be loaded. Try again later or use cached fundamentals above.</p>
+      {resp && resp.status !== "ok" ? (
+        <p className="text-sm text-muted-foreground">
+          {resp.status === "unavailable" && resp.message
+            ? resp.message
+            : "Reported statements for this security are currently unavailable from CMIE Prowess. Refer to Upstox fundamentals above."}
+        </p>
       ) : null}
       {tables.map((t, i) => (
         <div key={i} className="overflow-x-auto">

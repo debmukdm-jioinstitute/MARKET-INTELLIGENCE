@@ -8,15 +8,20 @@ export const dynamic = "force-dynamic";
 const VALID_STATUSES: IpoStatus[] = ["open", "closed", "listed", "upcoming"];
 
 export async function GET(req: Request) {
-  const status = (new URL(req.url).searchParams.get("status") ?? "open") as IpoStatus;
+  const url = new URL(req.url);
+  const status = (url.searchParams.get("status") ?? "open") as IpoStatus;
+  const symbol = url.searchParams.get("symbol")?.trim().toUpperCase();
   if (!VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: `Invalid status: ${status}` }, { status: 400 });
   }
   try {
     const base = await fetchUpstoxIpoList(status);
     const ipos = await enrichIpoListWithGmp(base, status);
+    const filtered = symbol
+      ? ipos.filter((i) => i.symbol?.toUpperCase() === symbol || i.name?.toUpperCase().includes(symbol))
+      : ipos;
     return NextResponse.json(
-      { status, ipos },
+      { status, ipos: filtered, match: symbol ? filtered[0] ?? null : undefined },
       { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" } },
     );
   } catch (e) {
