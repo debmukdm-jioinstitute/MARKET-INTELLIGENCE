@@ -6,6 +6,9 @@ export const WORLDMONITOR_UPSTREAM_REPO = "https://github.com/koala73/worldmonit
 /** Same-origin proxy (see next.config rewrites) — avoids upstream iframe blocks. */
 export const WORLDMONITOR_PROXY_PREFIX = "/worldmonitor";
 
+/** Upstream World Monitor reads this on `document.documentElement.dataset.theme`. */
+export const WORLDMONITOR_THEME_STORAGE_KEY = "worldmonitor-theme";
+
 const custom = process.env.NEXT_PUBLIC_WORLDMONITOR_URL?.trim();
 
 /** Primary launch URL inside Market Intelligence (logged-in users). */

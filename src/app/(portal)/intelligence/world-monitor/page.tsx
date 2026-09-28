@@ -9,10 +9,8 @@ export const metadata = {
 
 export default function WorldMonitorPage() {
   return (
-    <div className="pb-10">
-      <WorldMonitorPageShell>
-        <WorldMonitorFrame variant="finance" />
-      </WorldMonitorPageShell>
-    </div>
+    <WorldMonitorPageShell>
+      <WorldMonitorFrame variant="finance" />
+    </WorldMonitorPageShell>
   );
 }
