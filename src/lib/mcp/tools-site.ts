@@ -32,7 +32,11 @@ import { ensureSchema, sql } from "@/lib/db";
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
 import { loadBacktest, loadScan, loadSignals } from "@/lib/scanner/store";
-import { WORLDMONITOR_PUBLIC_URL, WORLDMONITOR_UPSTREAM_REPO } from "@/lib/worldmonitor/public-url";
+import {
+  worldMonitorExternalUrl,
+  worldMonitorLaunchPath,
+  WORLDMONITOR_UPSTREAM_REPO,
+} from "@/lib/worldmonitor/public-url";
 import type { Tool } from "./tools";
 
 /**
@@ -417,9 +421,10 @@ export const SITE_TOOLS: Tool[] = [
     inputSchema: empty,
     run: async () => ({
       portalPath: "/intelligence/world-monitor",
-      embedUrl: WORLDMONITOR_PUBLIC_URL,
+      launchPath: worldMonitorLaunchPath(),
+      externalUrl: worldMonitorExternalUrl(),
       upstream: WORLDMONITOR_UPSTREAM_REPO,
-      note: "Full panel set runs from upstream World Monitor; MI embeds or self-host via NEXT_PUBLIC_WORLDMONITOR_URL.",
+      note: "MI proxies /worldmonitor/* to finance.worldmonitor.app for same-origin load; override with NEXT_PUBLIC_WORLDMONITOR_URL.",
     }),
   },
 
