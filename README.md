@@ -2,7 +2,7 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), a floating **Ask Deb** site assistant, **World Monitor** global headlines on the portal, and **Claude / MCP** connectors for read-only market tools. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
 
 ## Product capabilities (summary)
 
@@ -11,18 +11,18 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, Nifty algo) |
 | **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
-| **Portfolio** | `/portfolio/*` | Real holdings, live marks, full metrics catalog (Sharpe, Sortino, VaR, IRR, factors, drawdown); broker import (Zerodha / Dhan / Upstox API or CSV); simulated quant pages (allocation, optimizer, risk) on a seeded universe |
-| **Research** | `/research/*` | Symbol detail, integrated **DCF**, IPO calendar, **AI Desk** (three Groq multi-agent flows), **options-flow** screener (deterministic gate + LLM narrative) |
+| **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
+| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; integrated **DCF**, **AI Desk**, **options-flow** screener |
 | **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor** (RSS / global feeds) |
 | **Algo desk** | `/algo/*` | NIFTY F&O scanner, paper/live trades, backtest, replay, charts — proxied to Python **AI-trader** when `AI_TRADER_API_URL` is set ([docs/AI-TRADER.md](docs/AI-TRADER.md)) |
-| **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, open command palette, search pages ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
+| **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, palette, search; read portfolio, alerts, watchlist, brief, stress; add holdings, alerts, watchlist rows (confirmations + audit) ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
-| **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — no API key for read-only tools ([docs/MCP.md](docs/MCP.md)) |
-| **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections |
+| **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
+| **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections (listed in public sitemap) |
 | **Auth** | `/login`, `/signup` | Email/password sessions; **Continue with Google** when OAuth env is set ([docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md)) |
-| **Data & ops** | `/data/feeds`, `/data/export`, `/admin` | Live source health checks, Excel export, admin customers/briefs/RAG Q&A (Postgres FTS, not vectors) |
-| **Integrations** | `/api/mcp` | Read-only MCP tools; optional `MCP_API_KEYS` for higher limits; account tools use signed-in session |
-| **SEO** | `/robots.txt`, `/sitemap.xml` | Crawl rules and sitemap for marketing + help routes |
+| **Data & ops** | `/data`, `/data/feeds`, `/data/health`, `/data/data360`, `/data/export`, `/admin` | `/data` = illustrative provider table (banner points to live feeds); `/data/feeds` = real hub health; `/data/health` = collector freshness; **Data360 Explorer** = stored World Bank macro mirror; Excel export; admin ops + FTS RAG Q&A |
+| **Integrations** | `/api/mcp` | Read-only site tools + session-scoped portfolio/watchlist tools; `MCP_API_KEYS` for higher limits |
+| **SEO & errors** | `/robots.txt`, `/sitemap.xml`, branded 404 | Sitemap: `/`, `/help`, `/methodology`, legal, `/connect/claude`; unknown URLs get Market Intelligence 404 with Home + Help links |
 
 This document explains **how every page actually computes what it shows** — the formula, the algorithm, the data source, and (where one is used) the AI agent behind it. Where a panel is illustrative, static, or simulated rather than a live computation, that's stated plainly rather than left to look like more than it is — the app's own code comments follow the same rule, and this README just surfaces it.
 
@@ -398,7 +398,9 @@ GDP and CPI history are joined by calendar month (year fallback if months don't 
 
 ## 5. Portfolio & Quant Desk
 
-**Path:** `/portfolio` and its subpages `allocation`, `attribution`, `optimizer`, `quant`, `risk`
+**Path:** `/portfolio` (Overview), `/portfolio/watchlist`, and subpages `allocation`, `attribution`, `optimizer`, `quant`, `risk`
+
+Nav labels: **Holdings** → Overview + Watchlist + Allocation; **Risk & ideas** → risk, attribution, quant, optimizer (plain-language group copy in `src/lib/nav-columns.ts`).
 
 **Read this first:** the codebase runs **two separate engines** that both surface metrics named "Sharpe," "beta," "alpha," and "VaR," with different formulas and different risk-free-rate assumptions. They are not meant to be compared to each other.
 
@@ -485,10 +487,12 @@ A genuine textbook Brinson decomposition needs a real per-sector benchmark weigh
 
 ## 6. Research Desk
 
-**Path:** `/research`, `/research/[symbol]`, `/research/model/[symbol]`, `/research/ipo`
+**Path:** `/research`, `/research/[symbol]` (company dossier — **guest-readable**), `/research/model/[symbol]`, `/research/ipo`
 
-### Symbol detail page
-🟢 For an Indian ticker: live Upstox quote + 5-level depth, 1-year candles, and key ratios. For a US ticker (or if Upstox has no quote): a fallback waterfall through Massive → Yahoo → Stooq → Alpha Vantage → a last-resort simulated quote seeded from the instrument's static baseline price (explicitly labeled as simulated when it's used). Every field that renders also logs which source produced it, driving the "Data sources" panel at the bottom of the page.
+### Company dossier — `/research/[symbol]`
+🟢 Single-page research layout with **sticky section nav** (Overview, Valuation, Radar, Trend, Options when F&O-listed, Fundamentals, Risk, News, Scanner flags, IPO when relevant). Built from `/api/feeds/research/[symbol]` and related intelligence blocks — not a CMIE/Prowess embed.
+
+🟢 For an Indian ticker: live Upstox quote, **price history up to 5Y** candles (no separate bid/ask depth ladder on this page). For a US ticker (or if Upstox has no quote): fallback waterfall Massive → Yahoo → Stooq → Alpha Vantage → labeled simulated quote. Source attribution drives the data panel at the bottom.
 
 **News sentiment tagging is rule-based, not an LLM.** Every headline is run through roughly a dozen fixed regular expressions — buyback, dividend, bonus/split, rights issue, analyst upgrade/downgrade, earnings beat/miss, fraud/regulatory action, M&A, contract win, credit stress — each carrying a canned rationale. A negative match always wins over a positive one; no match leaves a headline "neutral" with the note *"No strong keyword signal — treat as general market news."* News comes from Upstox (India) and Google News RSS (both markets), deduplicated by a normalized title key.
 
@@ -639,8 +643,10 @@ For **in-app navigation and product help**, use the floating **site assistant** 
 
 **Paths:** `/data` and `/data/feeds` — these two pages look similar but are not the same thing.
 
-- **`/data`** ⚪ is a **static design mockup**: every provider row's latency, freshness score, and "ONLINE" status, and every headline KPI ("99.4% system health," "340ms avg latency"), is a hardcoded string in the component — none of it is measured.
-- **`/data/feeds`** 🟢 is the real one. Fifteen data sources (NSE, BSE, RBI, SEC, Upstox, Yahoo, Massive, Stooq, Alpha Vantage, FRED, World Bank, IMF, OECD, MOSPI, and one internal feed) are each actually fetched, timed, and evaluated against a per-source "is this response acceptable" rule (e.g., NSE/BSE/RBI/SEC count as healthy only if they returned a non-empty result; a source gated behind an optional API key counts as healthy if that key simply isn't configured, rather than being marked degraded for a choice you made). The result is a green "live" or amber "degraded" badge per source, with latency and an error message where relevant — a binary health check, not a historical uptime score.
+- **`/data`** ⚪ is a **static design mockup** with an on-page banner steering you to live telemetry — provider latency/freshness KPIs are hardcoded, not measured.
+- **`/data/feeds`** 🟢 Hub health: NSE, BSE, RBI, SEC, Upstox, Yahoo, FRED, World Bank, IMF, OECD, MOSPI, Data360 store, etc. — each source fetched, timed, and marked live/degraded per accept rule.
+- **`/data/health`** 🟢 Per-series collector freshness (fresh/stale/failing/pending) and provenance labels — counts match the table rows.
+- **`/data/data360`** 🟢 Browse stored World Bank Data360 observations (IND/USA); human-readable units and rounded values; overnight sync cron.
 
 ---
 
@@ -670,7 +676,7 @@ Either way, you get a preview before committing, with the choice to replace your
 
 | Feature | Path | How it works |
 |---|---|---|
-| **Data health** | `/data/health` | 🟢 Freshness (fresh/stale/failing) and source of every series the 3-hourly collector stores. |
+| **Data health** | `/data/health` | 🟢 Freshness and source for every series the collector stores (user-facing copy — not internal job names). |
 | **India Macro Stress Index** | `/macro/stress` | 🧮 Hand-weighted 0–100 heuristic over 10 inputs (India/US VIX, USD/INR, US10Y, DXY, Brent, FII flow, NIFTY move, breadth) grouped into 6 signal families. Not fitted or backtested. Snapshot stored every 3h. |
 | **Convergence alerts** | `/macro/stress` | 🧮 A family "fires" at ≥60; 3+ families = high, 4+ = critical. De-duplicated 12h, capped 4/day. |
 | **Daily brief** | `/intelligence/brief` | 🤖 Pre-market (08:15 IST) and post-close (16:00 IST). The LLM may only use a supplied fact sheet; items must cite fact ids and every number must match a fact, else the item is dropped. Falls back to a rules-based brief. Email is opt-in only. |
@@ -792,6 +798,19 @@ npx vercel --prod --yes
 ## Release history
 
 Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.5 — 29 Sep 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Research | Company dossier at `/research/[symbol]` — assembled blocks, sticky nav, guest access; CMIE Prowess removed site-wide |
+| Feature | Portfolio | Watchlist (`/portfolio/watchlist`) + Ask Deb watchlist tools |
+| Feature | UX | Branded `not-found`; `/methodology` in sitemap; hero headline rotator on landing |
+| Fix | Data trust | India LIVE when closed → last close; repo/derivatives/ethanol/depth/Data360 counts/currency charts; Upstox depth normalize |
+| Improvement | Copy | Portal spacing (`tabular-nums` on numbers only), user-facing Data360/health/feeds labels; My Portfolio nav → Overview / Risk & ideas |
+| Improvement | MCP | Protocol upgrade, composite tools, `outputSchema`, rate limits, resources/prompts; Claude `isError` on tool failures |
+| Improvement | Ask Deb | Read/act on portfolio, alerts, watchlist with confirmation + audit trail |
+| Fix | UI | Research symbol search dropdown no longer opens on redirect |
 
 ### 0.1.4 — 29 Sep 2026
 
