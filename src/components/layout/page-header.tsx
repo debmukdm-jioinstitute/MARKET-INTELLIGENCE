@@ -111,8 +111,8 @@ export function Panel({
   trust?: { source: string; asOf?: string | null; delayed?: string };
 }) {
   const path = usePathname();
-  const titleStr = typeof title === "string" ? title : String(title);
-  const subtitleStr = typeof subtitle === "string" ? subtitle : subtitle ? String(subtitle) : "";
+  const titleStr = typeof title === "string" ? title : "Panel";
+  const subtitleStr = typeof subtitle === "string" ? subtitle : "";
 
   const titleSlot = panelSlot(path, id, titleStr, "title");
   const subSlot = panelSlot(path, id, titleStr, "subtitle");
@@ -130,7 +130,7 @@ export function Panel({
             data-mi-label={`Panel: ${titleStr}`}
             className="font-heading text-base font-bold tracking-tight text-foreground normal-case [font-variant-ligatures:none]"
           >
-            {displayTitle}
+            {typeof title === "string" ? displayTitle : title}
           </h3>
           {(displaySubtitle || subtitle) ? (
             <div
@@ -139,7 +139,7 @@ export function Panel({
               data-mi-label={`Panel subtitle: ${titleStr}`}
               className="mt-0.5 text-sm leading-snug text-muted-foreground"
             >
-              {displaySubtitle || subtitle}
+              {typeof subtitle === "string" ? displaySubtitle || subtitle : subtitle}
             </div>
           ) : (
             <span

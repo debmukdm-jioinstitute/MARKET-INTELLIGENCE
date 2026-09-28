@@ -1,4 +1,3 @@
-import { getSessionUser } from "@/lib/session";
 import { loadOrBuildIndexModel } from "@/lib/scanner/fno-index-model";
 import { NextResponse } from "next/server";
 
@@ -7,9 +6,6 @@ export const maxDuration = 120;
 
 /** GET ?index=banknifty&horizon=1 — compute or load walk-forward ensemble index model for one F&O underlying. */
 export async function GET(req: Request) {
-  const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-
   const sp = new URL(req.url).searchParams;
   const indexId = sp.get("index") ?? "nifty50";
   const horizon = sp.get("horizon");

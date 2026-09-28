@@ -60,8 +60,9 @@ export default function IntelligencePage() {
         subtitle="Unifying continuous RSS exchange feeds, institutional flow shifts, corporate filings, and conversational portfolio diagnostics."
       />
 
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       {/* AI Copilot Terminal Section */}
-      <div className="rounded-xl border border-primary/40 bg-gradient-to-b from-primary/5 via-card to-card p-6 shadow-md space-y-4">
+      <div className="rounded-xl border border-primary/40 bg-gradient-to-b from-primary/5 via-card to-card p-6 shadow-md space-y-4 lg:col-span-1">
         <div className="flex items-center justify-between border-b border-border/60 pb-3">
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/20 text-primary">
@@ -133,20 +134,26 @@ export default function IntelligencePage() {
         </div>
       </div>
 
+      <div className="space-y-6 lg:col-span-1">
       {/* Regulatory & Exchange Headlines Section */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
           <div className="flex items-center gap-2">
             <Newspaper className="size-4 text-primary" />
             <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
-              REGULATORY & EXCHANGE HEADLINES
+              Regulatory headlines
+              {regulatoryHeadlines.length ? (
+                <span className="ml-2 font-semibold normal-case tracking-normal text-muted-foreground">
+                  · {regulatoryHeadlines.length} in feed
+                </span>
+              ) : null}
             </h3>
             <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-              LIVE RSS FEED
+              LIVE RSS
             </span>
           </div>
           <span className="text-xs text-muted-foreground">
-            Sourced continuously from RBI, SEBI, NSE, and BSE Official Feeds
+            RBI, NSE &amp; BSE RSS when configured (US SEC filings appear under their own source label)
           </span>
         </div>
         <div className="mb-3"><MonitorsBar /></div>
@@ -159,6 +166,8 @@ export default function IntelligencePage() {
 
       {/* Corporate Events Desk */}
       <CorporateEventsCard />
+      </div>
+      </div>
 
       {/* What Changed Module */}
       <WhatChangedModule />

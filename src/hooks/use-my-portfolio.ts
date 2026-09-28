@@ -1,7 +1,7 @@
 "use client";
 
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
-import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
+import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import type { Holding, PortfolioAnalysis, PortfolioSettings } from "@/lib/my-portfolio/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
@@ -352,6 +352,10 @@ export function useMyPortfolio(refreshMs = 60_000) {
     [reload, requireAccount],
   );
 
+  const trySampleHoldings = useCallback(async () => {
+    return importHoldings(REALISTIC_DEFAULT_HOLDINGS, "replace");
+  }, [importHoldings]);
+
   const updateBenchmark = useCallback(
     async (benchmark: BenchmarkId, name?: string) => {
       const next: PortfolioSettings = {
@@ -389,6 +393,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
     resetToDefault,
     clearHoldings,
     importHoldings,
+    trySampleHoldings,
     updateBenchmark,
   };
 }

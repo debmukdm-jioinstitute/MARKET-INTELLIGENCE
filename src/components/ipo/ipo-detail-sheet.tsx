@@ -21,7 +21,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const TIMELINE_LABELS: { key: string; label: string }[] = [
-  { key: "preApplyStartDate", label: "Pre-apply opens" },
+  { key: "preApplyStartDate", label: "Pre-apply opens (block UPI limit before bidding)" },
   { key: "applicationStartDate", label: "Bidding opens" },
   { key: "applicationEndDate", label: "Bidding closes" },
   { key: "allotmentDate", label: "Allotment" },
@@ -116,11 +116,8 @@ export function IpoDetailSheet({
                   {gmpLabel}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Unofficial OTC quote
-                  {detail.gmpSource
-                    ? ` · ${detail.gmpSource.provider}`
-                    : " · not published by NSE/BSE"}
-                  . Can change anytime — not a listing guarantee.
+                  Grey market premium — an unofficial price signal from OTC trading, not published by NSE/BSE
+                  {detail.gmpSource ? ` (${detail.gmpSource.provider})` : ""}. Can change anytime — not a listing guarantee.
                 </p>
               </div>
 

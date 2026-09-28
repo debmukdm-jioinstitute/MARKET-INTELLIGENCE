@@ -182,8 +182,8 @@ export function SymbolSearch({
         }}
           placeholder={
             variant === "hero"
-              ? "Search India & US symbols — Reliance, TCS, NVDA, SPY…"
-              : "Search India (NSE) or US ticker"
+              ? "Company name or ticker — e.g. Reliance or RELIANCE"
+              : "Company name or ticker — e.g. Reliance or RELIANCE"
           }
           className={cn(
             "border-0 bg-transparent uppercase shadow-none focus-visible:ring-0",

@@ -35,9 +35,20 @@ export function filterRegulatoryExchangeNews(items: NewsItem[]): NewsItem[] {
 export function formatNewsPublishedAt(raw: string | undefined): string {
   const ms = newsPublishedAtMs(raw);
   if (!ms) return raw?.trim() ?? "";
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  const d = new Date(ms);
+  const datePart = d.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
     timeZone: "Asia/Kolkata",
-  }).format(ms);
+  });
+  const timePart = d
+    .toLocaleString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Kolkata",
+    })
+    .replace(/\s/g, " ")
+    .toLowerCase();
+  return `${datePart}, ${timePart} IST`;
 }

@@ -25,7 +25,7 @@ const pct = (n: number, d = 1) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 const lean = { Bullish: "text-emerald-600", Bearish: "text-rose-600", Neutral: "text-muted-foreground" } as const;
 
 function horizonLabel(h: number) {
-  return h === 1 ? "next session" : `next ${h} sessions`;
+  return h === 1 ? "the next session" : `the next ${h} sessions`;
 }
 
 /** Edge over a baseline in percentage points, with a 2-standard-error threshold for a binomial rate. */
@@ -215,7 +215,9 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-muted-foreground">Most recent 15 predictions and outcomes over {horizon} session(s).</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Most recent 15 predictions and outcomes over {horizon === 1 ? "1 session" : `${horizon} sessions`}.
+            </p>
           </div>
         </div>
       </Panel>
@@ -244,6 +246,13 @@ export function AiSignals() {
   if (isAuthRequiredError(error)) {
     return <SignInRequiredBanner feature="AI signals" nextPath="/intelligence/ai-signals" />;
   }
+  if (error) {
+    return (
+      <p className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 text-sm text-muted-foreground">
+        Could not load signals: {error instanceof Error ? error.message : String(error)}
+      </p>
+    );
+  }
   if (!run) {
     return (
       <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
@@ -258,6 +267,17 @@ export function AiSignals() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-emerald-700">
+            Live
+          </span>
+          <span className="text-muted-foreground">Walk-forward run on NSE history — not a trade feed.</span>
+        </div>
+        <Link href="/intelligence/alerts" className="font-semibold text-primary hover:underline">
+          Set up alerts →
+        </Link>
+      </div>
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="min-w-[200px] flex-1 space-y-1.5">
           <label htmlFor="fno-index" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

@@ -3,14 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { formatIpoBidWindow } from "@/lib/feeds/ipo/format-dates";
 import type { IpoListing } from "@/lib/feeds/ipo/types";
 import { fmtInr } from "@/lib/format-india";
 
 function formatGmp(ipo: IpoListing): string {
-  if (ipo.gmpInr == null) return "GMP —";
+  if (ipo.gmpInr == null) return "Grey market premium —";
   const sign = ipo.gmpInr > 0 ? "+" : "";
   const pct = ipo.gmpPct != null ? ` (${sign}${ipo.gmpPct}%)` : "";
-  return `GMP ${sign}${fmtInr(ipo.gmpInr)}${pct}`;
+  return `Grey market premium ${sign}${fmtInr(ipo.gmpInr)}${pct}`;
 }
 
 export function IpoList({
@@ -46,10 +47,10 @@ export function IpoList({
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">{ipo.industry}</p>
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between gap-2 text-sm">
             <span>{fmtInr(ipo.minPrice)}–{fmtInr(ipo.maxPrice)}</span>
-            <span className="text-muted-foreground">
-              {ipo.biddingStartDate} → {ipo.biddingEndDate}
+            <span className="text-right text-muted-foreground">
+              {formatIpoBidWindow(ipo.biddingStartDate, ipo.biddingEndDate)}
             </span>
           </div>
           <p className="flex items-center gap-1 text-sm tabular-nums text-foreground">
@@ -64,6 +65,7 @@ export function IpoList({
               <MetricInfo id="ipo_subscription" name="Subscription Multiple" iconSize="xs" />
             </p>
           ) : null}
+          <p className="pt-1 text-sm font-semibold text-primary">View details →</p>
         </Card>
       ))}
     </div>

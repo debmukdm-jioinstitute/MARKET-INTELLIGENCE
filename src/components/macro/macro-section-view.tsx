@@ -82,7 +82,9 @@ export function MacroSectionView({
       <div>
         <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
         <h2 className="mt-2 font-heading text-2xl">{meta.title}</h2>
-        <p className="text-sm text-muted-foreground">{section.subtitle}</p>
+        <p className="text-sm text-muted-foreground">
+          {typeof section.subtitle === "string" ? section.subtitle : meta.subtitle}
+        </p>
         {section.highlights.length ? (
           <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
             {section.highlights.map((h) => (

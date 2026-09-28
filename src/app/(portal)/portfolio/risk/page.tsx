@@ -74,23 +74,44 @@ export default function RiskPage() {
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {!loading && data && !data.hasHoldings ? (
-        <div className="rounded-lg border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
-          {locked ? (
-            <>
-              <Link href="/login?next=/portfolio/risk" className="font-semibold text-blue-600 hover:underline">
-                Log in
-              </Link>{" "}
-              to import or add holdings, then return here for VaR and drawdown.
-            </>
-          ) : (
-            <>
-              No positions yet.{" "}
-              <Link href="/portfolio" className="font-semibold text-blue-600 hover:underline">
-                Open Portfolio
-              </Link>{" "}
-              to add names or import from your broker.
-            </>
-          )}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4 text-sm">
+          <p className="font-semibold text-foreground">What you will see here</p>
+          <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+            <li>
+              <span className="font-medium text-foreground">1-day 95% Value at Risk (VaR)</span> — a historical estimate of
+              how much your book might lose on a bad day (not a guarantee).
+            </li>
+            <li>
+              <span className="font-medium text-foreground">Worst historical fall (max drawdown)</span> — the largest peak-to-trough
+              drop in your tracked window.
+            </li>
+            <li>Risk contribution by stock — which names drive most of the volatility.</li>
+          </ul>
+          <div className="flex flex-wrap gap-3">
+            {locked ? (
+              <>
+                <Link
+                  href="/login?next=/portfolio/risk"
+                  className="inline-flex min-h-10 items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup?next=/portfolio/risk"
+                  className="inline-flex min-h-10 items-center rounded-md border border-border px-4 py-2 font-semibold hover:bg-accent"
+                >
+                  Create account
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/portfolio"
+                className="inline-flex min-h-10 items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
+              >
+                Add holdings on Portfolio →
+              </Link>
+            )}
+          </div>
         </div>
       ) : null}
 

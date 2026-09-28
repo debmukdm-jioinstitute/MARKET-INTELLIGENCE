@@ -18,8 +18,19 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function PortfolioPage() {
-  const { data, loading, error, locked, addHolding, removeHolding, clearHoldings, importHoldings, updateBenchmark } =
-    useMyPortfolio();
+  const {
+    data,
+    loading,
+    error,
+    locked,
+    addHolding,
+    removeHolding,
+    clearHoldings,
+    importHoldings,
+    trySampleHoldings,
+    updateBenchmark,
+  } = useMyPortfolio();
+  const hasBook = Boolean(data?.hasHoldings && data.positions.length > 0);
   const [benchBusy, setBenchBusy] = useState(false);
 
   return (
@@ -33,13 +44,13 @@ export default function PortfolioPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">
-            {data?.hasHoldings && data.positions.length > 0 ? (
-              <span className="font-bold text-blue-600">{data.positions.length} active positions</span>
+            {hasBook ? (
+              <span className="font-bold text-blue-600">{data!.positions.length} active positions</span>
             ) : (
-              <span className="font-semibold text-foreground">Your portfolio is empty — let&apos;s fix that.</span>
+              <span className="font-semibold text-foreground">Your portfolio is empty — add a holding or try the sample book.</span>
             )}
           </p>
-          {data ? (
+          {data && hasBook ? (
             <BenchmarkSelect
               value={data.settings.benchmark}
               disabled={locked || benchBusy}
@@ -51,35 +62,69 @@ export default function PortfolioPage() {
           ) : null}
         </div>
 
-        {locked ? (
-          <Link
-            href="/login?next=/portfolio"
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-bold text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
-          >
-            <Lock className="size-3.5" />
-            Log in to add or import holdings
-          </Link>
-        ) : (
+        {hasBook && !locked ? (
           <div className="flex flex-wrap items-center gap-2">
-            {data?.hasHoldings && data.positions.length > 0 ? (
-              <button
-                type="button"
-                onClick={clearHoldings}
-                className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
-              >
-                Clear Book
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={clearHoldings}
+              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
+            >
+              Clear Book
+            </button>
             <BrokerImportDialog onImport={importHoldings} />
             <AddHoldingDialog onAdd={addHolding} triggerLabel="Add holding" />
           </div>
-        )}
+        ) : null}
       </div>
+
+      {data && !hasBook ? (
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Once you add names, you get live marks, allocation, performance vs a benchmark, and risk metrics — without a wall of empty N/A cards.
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Track India and US tickers in one book (INR base).</li>
+            <li>See how much each name contributed to return.</li>
+            <li>Open Risk for VaR and drawdown on the same holdings.</li>
+          </ul>
+          <div className="flex flex-wrap gap-3">
+            {locked ? (
+              <>
+                <Link
+                  href="/login?next=/portfolio"
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
+                >
+                  <Lock className="size-3.5" />
+                  Add your first holding
+                </Link>
+                <Link
+                  href="/signup?next=/portfolio"
+                  className="inline-flex min-h-10 items-center rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-accent"
+                >
+                  Create account
+                </Link>
+              </>
+            ) : (
+              <>
+                <AddHoldingDialog onAdd={addHolding} triggerLabel="Add your first holding" />
+                <button
+                  type="button"
+                  onClick={() => void trySampleHoldings()}
+                  className="inline-flex min-h-10 items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
+                >
+                  Try sample holdings
+                </button>
+                <BrokerImportDialog onImport={importHoldings} />
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
-      {data ? (
+      {data && hasBook ? (
         <>
           <PortfolioOverview metrics={data.overview} />
 

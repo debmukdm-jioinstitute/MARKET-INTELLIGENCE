@@ -6,7 +6,7 @@ export function MacroTapeSkeleton({ count = 5 }: { count?: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <Panel key={i} title={<Skeleton className="h-4 w-32" />}>
+        <Panel key={i} title="Loading market data">
           <div className="flex flex-wrap items-center gap-3">
             <Skeleton className="h-9 w-28" />
             <Skeleton className="h-5 w-16" />

@@ -24,8 +24,8 @@ export default function MacroPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Macroeconomic intelligence"
-        title="India macro hub"
+        kicker="Macro"
+        title="Global macro board"
         subtitle="Regime-first view with nested growth, inflation, RBI liquidity, fiscal, consumer, corporate, external, jobs, and global tape — open data (MOSPI, RBI, World Bank, FRED, NSE)."
       />
 
@@ -51,15 +51,21 @@ export default function MacroPage() {
         <>
           <RegimeBanner regime={data.regime} />
           <Panel title="Growth vs inflation (regime drivers)">
-            <div className="h-[240px]">
-              <Lines
-                data={data.regime.growthInflationChart}
-                keys={[
-                  { key: "growth", color: "#3dd68c", name: "Growth % y/y" },
-                  { key: "inflation", color: "#f97316", name: "Inflation % y/y" },
-                ]}
-              />
-            </div>
+            {data.regime.growthInflationChart.length ? (
+              <div className="h-[240px]">
+                <Lines
+                  data={data.regime.growthInflationChart}
+                  keys={[
+                    { key: "growth", color: "#3dd68c", name: "Growth % y/y" },
+                    { key: "inflation", color: "#f97316", name: "Inflation % y/y" },
+                  ]}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                CPI and GDP history are not available from our sources right now — check back after the next MOSPI or World Bank update.
+              </p>
+            )}
             <p className="mt-2 text-sm text-muted-foreground">
               Updated {new Date(data.fetchedAt).toLocaleString()} · Quadrant labels in{" "}
               <Link href="/macro/regime" className="text-primary hover:underline">

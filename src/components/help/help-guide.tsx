@@ -6,6 +6,7 @@ import { ClaudeMcpSetupVisual } from "@/components/help/claude-mcp-setup-visual"
 import { ClaudeBrandIcon, CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 const ENDPOINT = MCP_ENDPOINT;
 
@@ -33,6 +34,34 @@ type Props = {
   accountTools: { name: string; label: string; note: string }[];
   portalOnly: { label: string; href: string; note: string }[];
 };
+
+const INVESTOR_TASKS = [
+  {
+    q: "Search a stock",
+    a: "Open Research, type a company name or NSE ticker (e.g. Reliance or RELIANCE), pick a match, then read quote, chart, and news.",
+    href: "/research",
+  },
+  {
+    q: "Read a chart",
+    a: "From any symbol page, use the price chart range buttons. Hover for exact time, price, and source freshness.",
+    href: "/markets/india",
+  },
+  {
+    q: "Set an alert",
+    a: "Signed-in users: Intelligence → Alerts. Choose symbol, condition, and delivery channel.",
+    href: "/intelligence/alerts",
+  },
+  {
+    q: "Understand data labels",
+    a: "Live, Delayed, Stale, and Unavailable badges explain feed age. Methodology page lists formulas and sources.",
+    href: "/methodology",
+  },
+  {
+    q: "Run a scanner",
+    a: "Intelligence → Scanner. Start with “Start here” scans, then open All scans for specialist filters.",
+    href: "/intelligence/scanner",
+  },
+];
 
 const TROUBLE = [
   {
@@ -62,20 +91,52 @@ const TROUBLE = [
 ];
 
 export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly }: Props) {
+  const [taskQuery, setTaskQuery] = useState("");
+  const filteredTasks = useMemo(() => {
+    const q = taskQuery.trim().toLowerCase();
+    if (!q) return INVESTOR_TASKS;
+    return INVESTOR_TASKS.filter((t) => t.q.toLowerCase().includes(q) || t.a.toLowerCase().includes(q));
+  }, [taskQuery]);
+
   return (
     <div className="space-y-8">
-      <p className="rounded-xl border border-blue-600/20 bg-blue-600/5 p-4 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">Quick paths:</span>{" "}
+      <section className="rounded-xl border-2 border-blue-600/25 bg-blue-600/5 p-5">
+        <h2 className="text-lg font-semibold text-foreground">Investor tasks</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Search or pick a task — no MCP required.</p>
+        <input
+          type="search"
+          value={taskQuery}
+          onChange={(e) => setTaskQuery(e.target.value)}
+          placeholder="Search help — e.g. alert, chart, scanner"
+          className="mt-4 w-full max-w-xl rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        />
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {filteredTasks.map((t) => (
+            <li key={t.q} className="rounded-lg border border-border bg-card p-4">
+              <Link href={t.href} className="font-semibold text-blue-600 hover:underline">
+                {t.q}
+              </Link>
+              <p className="mt-1 text-sm text-muted-foreground">{t.a}</p>
+            </li>
+          ))}
+        </ul>
+        {filteredTasks.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">No match — try “alert”, “research”, or open Troubleshooting below.</p>
+        ) : null}
+      </section>
+
+      <p className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+        <span className="font-semibold text-foreground">Connect your AI (optional):</span>{" "}
         <Link href="/connect/claude" className="font-semibold text-blue-600 hover:underline">
-          Claude setup page
+          Claude setup
         </Link>{" "}
-        · open <span className="font-semibold text-foreground">Let your AI assistant read market data</span> below · portfolio in AI needs{" "}
+        · accordion <span className="font-semibold text-foreground">Let your AI assistant read market data</span> below · portfolio in AI needs{" "}
         <span className="font-semibold text-foreground">mi_sign_in</span>, not the Claude Allow screen.
       </p>
 
-      <Accordion type="multiple" defaultValue={["mcp"]} className="rounded-xl border border-border px-4">
+      <Accordion type="multiple" defaultValue={["start", "website"]} className="rounded-xl border border-border px-4">
         <AccordionItem value="start">
-          <AccordionTrigger className="text-base font-semibold">New here? Start here</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold text-foreground">New here? Start here</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
             <p>
               <b>Market Intelligence</b> is a website for Indian markets: indices, macro, research, scanners, and AI signals.
@@ -131,7 +192,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="website">
-          <AccordionTrigger className="text-base font-semibold">Using the site</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold text-foreground">Using the site</AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <Steps
               items={[
@@ -157,8 +218,8 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="mcp">
-          <AccordionTrigger className="text-base font-semibold">
-            Let your AI assistant read market data
+          <AccordionTrigger className="text-base font-semibold text-muted-foreground">
+            Connect your AI — let your assistant read market data (MCP)
           </AccordionTrigger>
           <AccordionContent>
             <p className="mb-3 text-muted-foreground">
@@ -429,7 +490,7 @@ node $HOME\\.mi\\mi.mjs`}</Code>
         </AccordionItem>
 
         <AccordionItem value="trouble">
-          <AccordionTrigger className="text-base font-semibold">Something went wrong</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">Troubleshooting</AccordionTrigger>
           <AccordionContent>
             <ul className="space-y-4">
               {TROUBLE.map((t) => (
