@@ -7,6 +7,7 @@ import type { OnboardingFormModel } from "@/lib/onboarding/build-form-model";
 import { ONBOARDING_DISCLAIMERS } from "@/lib/onboarding/disclaimers";
 import type { ProfileDocument } from "@/lib/profile/documents";
 import type { ProfileData } from "@/lib/profile/load-profile";
+import type { AssistantActionRow } from "@/lib/site-assistant/audit";
 import { cn } from "@/lib/utils";
 import { Bug, FileText, LogOut, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
@@ -22,6 +23,21 @@ const fmtDate = (iso: string | null) => {
   } catch {
     return iso;
   }
+};
+
+const fmtDateTime = (iso: string) => {
+  try {
+    return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" }) + " IST";
+  } catch {
+    return iso;
+  }
+};
+
+const ASSISTANT_ACTION_LABELS: Record<string, string> = {
+  add_holding: "Added a holding",
+  remove_holding: "Removed a holding",
+  create_alert: "Created an alert",
+  update_settings: "Updated portfolio settings",
 };
 
 const btn = "inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-medium transition disabled:opacity-50";
@@ -63,6 +79,99 @@ function PrefRow({ title, desc, children }: { title: string; desc: string; child
       </div>
       {children}
     </div>
+  );
+}
+
+function AssistantActivitySection() {
+  const [actions, setActions] = useState<AssistantActionRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError("");
+    fetch("/api/site-assistant/audit")
+      .then(async (r) => {
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error ?? "Could not load Ask Deb activity");
+        return j.actions as AssistantActionRow[];
+      })
+      .then(setActions)
+      .catch((e) => setError(e instanceof Error ? e.message : "Could not load Ask Deb activity"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <Section
+      id="assistant-activity"
+      title="Ask Deb activity"
+      subtitle="Every change Ask Deb made to your account, on your instruction — what it did, when, and whether it worked."
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          Deb only acts on your own account, on your say-so, and asks before removing a holding or changing settings.
+        </p>
+        <button type="button" className={btnGhost} onClick={load} disabled={loading}>
+          {loading ? "Refreshing…" : "Refresh"}
+        </button>
+      </div>
+
+      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+
+      {!error && actions && actions.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Nothing yet. Ask Deb to add a holding, create an alert, or change a setting, and it shows up here.
+        </p>
+      ) : null}
+
+      {actions && actions.length > 0 ? (
+        <ul className="mt-3 divide-y divide-border">
+          {actions.map((a) => {
+            const isOpen = openId === a.id;
+            return (
+              <li key={a.id} className="py-3 first:pt-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-semibold",
+                          a.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700",
+                        )}
+                      >
+                        {a.ok ? "Done" : "Failed"}
+                      </span>
+                      <p className="text-sm font-medium text-foreground">{ASSISTANT_ACTION_LABELS[a.tool] ?? a.tool}</p>
+                    </div>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{a.summary}</p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="text-xs text-muted-foreground">{fmtDateTime(a.created_at)}</span>
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setOpenId(isOpen ? null : a.id)}
+                    >
+                      {isOpen ? "Hide details" : "Details"}
+                    </button>
+                  </div>
+                </div>
+                {isOpen ? (
+                  <pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
+                    {JSON.stringify(a.params, null, 2)}
+                  </pre>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </Section>
   );
 }
 
@@ -342,6 +451,9 @@ export function ProfileClient() {
           </button>
         </PrefRow>
       </Section>
+
+      {/* Ask Deb activity */}
+      <AssistantActivitySection />
 
       {/* Bug report */}
       <Section id="report" title="Found a bug? Email the founder" subtitle={`Your note goes straight to ${founder.name}, who reads every one. Reply to the email you get back and it reaches you directly.`}>
