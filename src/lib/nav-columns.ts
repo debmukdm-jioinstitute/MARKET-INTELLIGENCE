@@ -35,6 +35,12 @@ export const NAV_SECTIONS: NavSection[] = [
         items: [
           { label: "Daily Brief", href: "/intelligence/brief", desc: "Pre-market and post-close brief with cited sources.", badge: "AI" },
           { label: "Intelligence Feed", href: "/intelligence", desc: "News impact scored for sentiment and relevance.", badge: "AI" },
+          {
+            label: "World Monitor",
+            href: "/intelligence/world-monitor",
+            desc: "Global news, maps, country instability (CII), and finance radar (World Monitor integration).",
+            badge: "NEW",
+          },
           { label: "Economic Calendar", href: "/macro/calendar", desc: "Upcoming prints that can move the book." },
         ],
       },

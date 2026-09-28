@@ -10,6 +10,7 @@ const ASK: Partial<Record<string, string>> = {
   get_market_breadth: "What is market breadth today?",
   get_india_equity_quotes: "Show live large-cap quotes.",
   get_world_indices: "How are global markets?",
+  get_world_monitor: "Where is the World Monitor global dashboard in Market Intelligence?",
   get_market_holidays: "When is the next market holiday?",
   search_symbols: "Find the ticker for JP Power.",
   get_stress_index: "What's the India Macro Stress Index and what is driving it?",

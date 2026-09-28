@@ -99,6 +99,37 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="worldmonitor" id="worldmonitor">
+          <AccordionTrigger className="text-base font-semibold">World Monitor (global dashboard)</AccordionTrigger>
+          <AccordionContent className="space-y-3 text-muted-foreground">
+            <p>
+              <b>Not a full clone inside one app yet.</b> We ship upstream{" "}
+              <a
+                href="https://github.com/koala73/worldmonitor"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                World Monitor
+              </a>{" "}
+              as a git submodule and embed the finance variant at{" "}
+              <Link href="/intelligence/world-monitor" className="text-blue-600 hover:underline">
+                /intelligence/world-monitor
+              </Link>
+              .
+            </p>
+            <Steps
+              items={[
+                "Sign in to Market Intelligence → Today → World Monitor (or open the path above).",
+                "Use Open World Monitor full screen if the embed is blank (iframe blocked).",
+                "For your own host: clone submodule services/worldmonitor, npm run dev:finance, set NEXT_PUBLIC_WORLDMONITOR_URL, redeploy MI.",
+                "India portfolio, stress index, and scanners stay in other MI menus — World Monitor is global situational awareness.",
+              ]}
+            />
+            <p className="text-xs">AGPL-3.0 upstream — see docs/WORLDMONITOR.md in the repo for self-host notes.</p>
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="website">
           <AccordionTrigger className="text-base font-semibold">Using the website (browser)</AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
