@@ -424,7 +424,7 @@ export const SITE_TOOLS: Tool[] = [
       launchPath: worldMonitorLaunchPath(),
       externalUrl: worldMonitorExternalUrl(),
       upstream: WORLDMONITOR_UPSTREAM_REPO,
-      note: "MI proxies /worldmonitor/* to finance.worldmonitor.app for same-origin load; override with NEXT_PUBLIC_WORLDMONITOR_URL.",
+      note: "MI proxies /worldmonitor/* to www.worldmonitor.app; default launch includes global layer query. Override with NEXT_PUBLIC_WORLDMONITOR_URL.",
     }),
   },
 
