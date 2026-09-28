@@ -28,14 +28,26 @@ export function SymbolSearch({
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const hasUserTypedRef = useRef(false);
+  const isFocusedRef = useRef(false);
 
   const prominent = variant === "hero" || variant === "bar";
 
   useEffect(() => {
-    if (initialQuery) setQ(initialQuery);
+    setQ(initialQuery);
+    hasUserTypedRef.current = false;
+    setHits([]);
+    setOpen(false);
   }, [initialQuery]);
 
   useEffect(() => {
+    // Only search and show dropdown when the user has actively typed into this input
+    if (!hasUserTypedRef.current) {
+      setHits([]);
+      setOpen(false);
+      return;
+    }
+
     const trimmed = q.trim();
     if (trimmed.length < 1) {
       setHits([]);
@@ -47,8 +59,13 @@ export function SymbolSearch({
       try {
         const res = await fetch(`/api/feeds/search/symbols?q=${encodeURIComponent(trimmed)}`);
         const json = (await res.json()) as { hits?: SymbolSearchHit[] };
-        setHits(json.hits ?? []);
-        setOpen((json.hits?.length ?? 0) > 0);
+        const results = json.hits ?? [];
+        setHits(results);
+        if (hasUserTypedRef.current && isFocusedRef.current && results.length > 0) {
+          setOpen(true);
+        } else {
+          setOpen(false);
+        }
         setActive(0);
       } catch {
         setHits([]);
@@ -62,7 +79,10 @@ export function SymbolSearch({
 
   const pick = useCallback(
     (hit: SymbolSearchHit) => {
+      hasUserTypedRef.current = false;
+      isFocusedRef.current = false;
       setOpen(false);
+      setHits([]);
       router.push(`/research/${encodeURIComponent(hit.symbol)}`);
     },
     [router],
@@ -123,11 +143,26 @@ export function SymbolSearch({
         <Input
           autoFocus={autoFocus}
           value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onFocus={() => (hits.length ? setOpen(true) : setOpen(false))}
+          onChange={(e) => {
+            hasUserTypedRef.current = true;
+            setQ(e.target.value);
+          }}
+          onFocus={() => {
+            isFocusedRef.current = true;
+            if (hasUserTypedRef.current && hits.length > 0) {
+              setOpen(true);
+            }
+          }}
+          onBlur={() => {
+            isFocusedRef.current = false;
+          }}
           onKeyDown={(e) => {
           if (!open || !hits.length) {
             if (e.key === "Enter" && q.trim()) {
+              hasUserTypedRef.current = false;
+              isFocusedRef.current = false;
+              setOpen(false);
+              setHits([]);
               router.push(`/research/${encodeURIComponent(q.trim().toUpperCase())}`);
             }
             return;
