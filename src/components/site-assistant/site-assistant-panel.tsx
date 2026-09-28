@@ -505,14 +505,39 @@ function SiteAssistantChat({
 }
 
 function AssistantFab({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const [hover, setHover] = useState(false);
   return (
-    <div className="relative flex size-14 items-center justify-center">
+    <div
+      className="relative flex size-14 items-center justify-center"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onFocus={() => setHover(true)}
+      onBlur={() => setHover(false)}
+    >
       {!open ? (
         <>
           <span className="assistant-fab-ring absolute inset-0 rounded-full border border-primary/25" aria-hidden />
           <span className="assistant-fab-ring assistant-fab-ring-delay absolute inset-0 rounded-full border border-primary/15" aria-hidden />
         </>
       ) : null}
+      {/* Always-available hover/focus label — separate from the one-time dismissible hint bubble,
+          so a returning user who already dismissed that still learns what the FAB does on hover. */}
+      <AnimatePresence>
+        {hover && !open ? (
+          <motion.div
+            key="fab-tooltip"
+            role="tooltip"
+            initial={{ opacity: 0, y: 6, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: GOOGLE_FLIP_EASE }}
+            className="pointer-events-none absolute bottom-[calc(100%+0.6rem)] right-0 z-10 whitespace-nowrap rounded-full border border-border/90 bg-card px-3 py-1.5 shadow-[var(--shadow-lg)]"
+          >
+            <GoogleFlipText lines={FLIP_TAGLINES} intervalMs={2200} className="h-4" lineClassName="text-xs font-semibold leading-none" />
+            <span className="absolute -bottom-1 right-5 size-2 rotate-45 border-b border-r border-border/90 bg-card" aria-hidden />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <motion.button
         type="button"
         onClick={onToggle}
