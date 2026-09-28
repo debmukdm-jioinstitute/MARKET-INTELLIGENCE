@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     const scope = "mcp:tools";
     const expAccess = Date.now() + 60 * 60 * 1000;
-    const accessToken = issueAccessToken({ clientId, scope, exp: expAccess });
+    const accessToken = issueAccessToken({ clientId, scope, exp: expAccess, user: record.user });
 
     return tokenJson({
       access_token: accessToken,
@@ -73,11 +73,13 @@ export async function POST(req: Request) {
       clientId: record.clientId,
       scope: record.scope,
       exp: expAccess,
+      user: record.user,
     });
     const newRefresh = issueRefreshToken({
       clientId: record.clientId,
       scope: record.scope,
       exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
+      user: record.user,
     });
 
     return tokenJson({

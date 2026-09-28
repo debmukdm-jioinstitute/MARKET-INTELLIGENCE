@@ -1,4 +1,4 @@
-import { authErrorForTool, resolveMcpCallContext } from "@/lib/mcp/context";
+import { authErrorForTool, rememberSessionForIp, resolveMcpCallContext, sessionFromToken } from "@/lib/mcp/context";
 import { clientIp, mcpRateLimited, rateLimitCap, rateLimitKey } from "@/lib/mcp/rate-limit";
 import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
 import { authorizationServerMetadata } from "@/lib/mcp/oauth/metadata";
@@ -80,19 +80,51 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
     }
     case "tools/call": {
       const tool = TOOLS.find((t) => t.name === msg.params?.name);
-      if (!tool) return err(id, -32602, `Unknown tool: ${msg.params?.name}`);
+      if (!tool) {
+        return ok(id, {
+          isError: true,
+          content: [{ type: "text", text: `Unknown tool: ${msg.params?.name}` }],
+        });
+      }
 
       const ctx = resolveMcpCallContext(req);
+      const args = msg.params?.arguments ?? {};
+
+      // If AI passed sessionToken in arguments, authenticate the context
+      if (!ctx.user && typeof args.sessionToken === "string") {
+        const u = sessionFromToken(args.sessionToken.trim());
+        if (u) {
+          ctx.user = u;
+          rememberSessionForIp(clientIp(req), u);
+        }
+      }
+
       const access = tool.access ?? "public";
       const authErr = authErrorForTool(access, ctx);
-      if (authErr) return err(id, -32001, authErr);
+      if (authErr) {
+        return ok(id, {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `${authErr}\n\nPlease ask the user for their email and password and call the mi_sign_in tool to sign in. Once signed in, you can view the portfolio and account features.`,
+            },
+          ],
+        });
+      }
 
       const rlKey = rateLimitKey(req, ctx);
       if (mcpRateLimited(rlKey, rateLimitCap(ctx))) {
-        return err(id, -32002, "Rate limit exceeded — wait a minute or sign in with mi_sign_in for a higher cap.");
+        return ok(id, {
+          isError: true,
+          content: [{ type: "text", text: "Rate limit exceeded — wait a minute or sign in with mi_sign_in for a higher cap." }],
+        });
       }
       if (tool.name === "mi_sign_in" && mcpRateLimited(`signin:${clientIp(req)}`, 8)) {
-        return err(id, -32002, "Too many sign-in attempts — try again in a minute.");
+        return ok(id, {
+          isError: true,
+          content: [{ type: "text", text: "Too many sign-in attempts — try again in a minute." }],
+        });
       }
 
       const t0 = Date.now();
@@ -110,9 +142,12 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
 
       try {
         const out = await Promise.race([
-          tool.run(msg.params?.arguments ?? {}, ctx),
+          tool.run(args, ctx),
           timeoutPromise,
         ]);
+        if (tool.name === "mi_sign_in" && (out as Record<string, unknown>)?.ok && (out as Record<string, unknown>)?.user) {
+          rememberSessionForIp(clientIp(req), (out as Record<string, unknown>).user as any);
+        }
         const durationMs = Date.now() - t0;
         console.log(
           JSON.stringify({

@@ -1,6 +1,7 @@
 import { redirectUriMatchesRegistered } from "@/lib/mcp/oauth/constants";
 import { oauthConsentHtml } from "@/lib/mcp/oauth/consent-html";
 import { issueAuthCode, parseClientId } from "@/lib/mcp/oauth/crypto";
+import { sessionFromToken } from "@/lib/mcp/context";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -67,11 +68,16 @@ export async function POST(req: Request) {
   const err = validateAuthParams(p);
   if (err) return badRequest(err);
 
+  const cookieHeader = req.headers.get("cookie") ?? "";
+  const cookieMatch = cookieHeader.match(/mi_session=([^;]+)/);
+  const user = sessionFromToken(cookieMatch ? decodeURIComponent(cookieMatch[1]) : null);
+
   const code = issueAuthCode({
     clientId: p.clientId,
     redirectUri: p.redirectUri,
     codeChallenge: p.codeChallenge,
     exp: Date.now() + 10 * 60 * 1000,
+    user: user ?? undefined,
   });
 
   const dest = new URL(p.redirectUri);

@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { signSessionPayload, verifySessionToken } from "@/lib/auth-crypto";
+import type { SessionUser } from "@/lib/auth";
 
 const CLIENT_PREFIX = "mcp_oauth_client:";
 const CODE_PREFIX = "mcp_oauth_code:";
@@ -19,6 +20,7 @@ export type OAuthCodeRecord = {
   redirectUri: string;
   codeChallenge: string;
   exp: number;
+  user?: SessionUser;
 };
 
 export type OAuthAccessRecord = {
@@ -26,6 +28,7 @@ export type OAuthAccessRecord = {
   clientId: string;
   scope: string;
   exp: number;
+  user?: SessionUser;
 };
 
 export type OAuthRefreshRecord = {
@@ -33,6 +36,7 @@ export type OAuthRefreshRecord = {
   clientId: string;
   scope: string;
   exp: number;
+  user?: SessionUser;
 };
 
 function wrap<T extends Record<string, unknown>>(prefix: string, payload: T): string {

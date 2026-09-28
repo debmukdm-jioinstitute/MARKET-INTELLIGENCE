@@ -11,8 +11,22 @@ export type McpCallContext = {
   apiKey: string | null;
   /** Claude / MCP OAuth access token (public connector handshake). */
   oauthAccess: boolean;
+  clientIp?: string;
 };
 
+
+const ipSessionMap = new Map<string, { user: SessionUser; exp: number }>();
+
+export function rememberSessionForIp(ip: string, user: SessionUser) {
+  if (!ip || ip === "anon" || ip === "unknown") return;
+  if (ipSessionMap.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of ipSessionMap.entries()) {
+      if (v.exp < now) ipSessionMap.delete(k);
+    }
+  }
+  ipSessionMap.set(ip, { user, exp: Date.now() + 2 * 3600_000 });
+}
 const digest = (s: string) => createHash("sha256").update(s).digest();
 
 function mcpApiKeys(): string[] {
@@ -43,21 +57,37 @@ export function resolveMcpCallContext(req: Request): McpCallContext {
   const xKey = req.headers.get("x-api-key")?.trim() ?? "";
   const xSession = req.headers.get("x-mi-session")?.trim() ?? "";
   const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() ?? "";
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 
   let apiKey: string | null = null;
   let sessionToken = xSession;
-
   let oauthAccess = false;
+  let oauthUser: SessionUser | null = null;
 
   if (xKey && isMcpApiKey(xKey)) apiKey = xKey;
   if (bearer) {
-    if (isMcpApiKey(bearer)) apiKey = bearer;
-    else if (parseAccessToken(bearer)) oauthAccess = true;
-    else if (!sessionToken) sessionToken = bearer;
+    if (isMcpApiKey(bearer)) {
+      apiKey = bearer;
+    } else {
+      const oauthRec = parseAccessToken(bearer);
+      if (oauthRec) {
+        oauthAccess = true;
+        if (oauthRec.user) oauthUser = oauthRec.user;
+      } else if (!sessionToken) {
+        sessionToken = bearer;
+      }
+    }
   }
 
-  const user = sessionFromToken(sessionToken);
-  return { user, apiKey, oauthAccess };
+  let user = sessionFromToken(sessionToken) || oauthUser;
+  if (!user && ip && ip !== "unknown") {
+    const cached = ipSessionMap.get(ip);
+    if (cached && cached.exp > Date.now()) {
+      user = cached.user;
+    }
+  }
+
+  return { user, apiKey, oauthAccess, clientIp: ip };
 }
 
 export function authErrorForTool(_access: McpAccess, _ctx: McpCallContext): string | null {

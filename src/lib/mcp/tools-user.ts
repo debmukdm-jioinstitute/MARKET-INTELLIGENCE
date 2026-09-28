@@ -15,16 +15,20 @@ import { selectSiteAssistantTier } from "@/lib/site-assistant/select-tier";
 import { ragContextForQuestion } from "@/lib/site-assistant/rag-context";
 import { checkSiteAssistantRateLimit } from "@/lib/site-assistant/rate-limit";
 import { SiteAssistantConfigError } from "@/lib/ai/omniroute";
-import type { McpCallContext } from "@/lib/mcp/context";
+import { sessionFromToken, type McpCallContext } from "@/lib/mcp/context";
 import type { Tool } from "@/lib/mcp/tools";
 import { mcpSignIn } from "@/lib/mcp/sign-in";
 import { z } from "zod";
 
 const empty = { type: "object", properties: {}, additionalProperties: false };
 
-function requireUser(ctx: McpCallContext) {
-  if (!ctx.user) throw new Error("Sign in required");
-  return ctx.user;
+function requireUser(ctx: McpCallContext, args?: Record<string, unknown>) {
+  if (ctx.user) return ctx.user;
+  if (typeof args?.sessionToken === "string") {
+    const u = sessionFromToken(args.sessionToken.trim());
+    if (u) return u;
+  }
+  throw new Error("Sign in required: please call mi_sign_in with your email and password first.");
 }
 
 export const USER_TOOLS: Tool[] = [
@@ -62,13 +66,32 @@ export const USER_TOOLS: Tool[] = [
     name: "mi_session_status",
     title: "Session status",
     category: "Account",
-    access: "user",
-    description: "Who the current MCP session is and session validity window (requires session token from mi_sign_in).",
-    inputSchema: empty,
-    run: async (_args, ctx) => {
-      const user = requireUser(ctx);
+    access: "auth",
+    description: "Who the current MCP session is, active account profile, or instructions to sign in.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string", description: "Optional session token from mi_sign_in" },
+      },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      let user = ctx.user;
+      if (!user && typeof args?.sessionToken === "string") {
+        user = sessionFromToken(String(args.sessionToken).trim());
+      }
+      if (!user) {
+        return {
+          ok: false,
+          active: false,
+          authenticated: false,
+          message:
+            "Not signed in. To access your portfolio, alert rules, or account features, call the mi_sign_in tool with your email and password.",
+          user: null,
+        };
+      }
       const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
-      return { ok: true, active: true, expiresAt, user: { email: user.email, name: user.name, role: user.role } };
+      return { ok: true, active: true, authenticated: true, expiresAt, user: { email: user.email, name: user.name, role: user.role } };
     },
   },
   {
@@ -123,10 +146,16 @@ export const USER_TOOLS: Tool[] = [
     title: "My portfolio",
     category: "Account",
     access: "user",
-    description: "Holdings, settings, and computed NAV / risk metrics for the signed-in account.",
-    inputSchema: empty,
-    run: async (_args, ctx) => {
-      const user = requireUser(ctx);
+    description: "Holdings, settings, and computed NAV / risk metrics for the signed-in account. Pass sessionToken if headers cannot be sent.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string", description: "Optional sessionToken from mi_sign_in" },
+      },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
       const data = await loadPortfolioAnalysisForUser(user.email);
       if ("error" in data) return data;
       return {
@@ -141,10 +170,16 @@ export const USER_TOOLS: Tool[] = [
     title: "My alerts",
     category: "Account",
     access: "user",
-    description: "Alert metric catalog with live values, your rules, and recent fired events.",
-    inputSchema: empty,
-    run: async (_args, ctx) => {
-      const user = requireUser(ctx);
+    description: "Alert metric catalog with live values, your rules, and recent fired events. Pass sessionToken if headers cannot be sent.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string", description: "Optional sessionToken from mi_sign_in" },
+      },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
       const snap = await buildSnapshot().catch(() => null);
       const catalog = Object.entries(METRICS).map(([id, m]) => ({
         id,
