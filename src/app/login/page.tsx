@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Sign in | Market Intelligence",
   description: "Sign in to your saved watchlists, portfolio, and research desk.",
+  robots: { index: false, follow: false },
 };
 
 export default async function LoginPage({

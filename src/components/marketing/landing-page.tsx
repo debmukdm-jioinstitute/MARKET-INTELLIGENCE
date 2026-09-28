@@ -53,7 +53,7 @@ const _FEATURES = [
 
 const _STEPS = [
   { n: "1", title: "Create a free account", body: "No card, no waiting. Sign up with just an email." },
-  { n: "2", title: "Build your book", body: "Add your holdings, or start from a ready-made virtual portfolio." },
+  { n: "2", title: "Add your investments", body: "Add your holdings, or practise with a pretend portfolio of Indian and US stocks." },
   { n: "3", title: "See what matters", body: "Get instant insights on performance, risk, and where to look next." },
 ];
 
@@ -558,6 +558,26 @@ export function LandingPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">How it works</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">From sign-up to insight in three steps</h2>
+          </div>
+          <ol className="grid gap-5 md:grid-cols-3">
+            {[
+              { title: "Create your free account", body: "Sign up in seconds, or just look around as a guest. No brokerage account, no card needed." },
+              { title: "Add your investments", body: "Add your holdings, or practise with a pretend portfolio of Indian and US stocks." },
+              { title: "Learn before you invest", body: "Check your risk, test ideas on past data, and ask the AI desk — all without risking a single rupee." },
+            ].map((step, i) => (
+              <li key={step.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
+                <span className="grid size-9 place-items-center rounded-full bg-blue-600 text-sm font-semibold text-white">{i + 1}</span>
+                <h3 className="mt-4 text-lg font-semibold tracking-tight text-gray-900">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <ProductProof hasAccess={hasAccess} onOpenDemo={() => void enterGuest().then(() => router.push("/Home"))} />

@@ -17,6 +17,8 @@ import { PortalPageGuard } from "@/components/layout/portal-page-guard";
 import { PortalPageTransition } from "@/components/layout/portal-page-transition";
 import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { PortalDocumentTitle } from "@/components/layout/portal-document-title";
+import { Suspense } from "react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -42,6 +44,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <CommandPalette />
             <SiteAssistantWidget />
             <GuidedTour />
+            <Suspense fallback={null}>
+              <PortalDocumentTitle />
+            </Suspense>
             <PageviewTracker />
           </MobileNavProvider>
         </CommandPaletteProvider>

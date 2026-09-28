@@ -44,12 +44,12 @@ export default function AllocationPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Asset allocation"
-        title="Policy vs actual"
+        kicker="Allocation"
+        title="Where your money sits"
         subtitle={
           data?.hasHoldings
-            ? "Sleeves, sectors, and geography from your live book (INR mark-to-market)."
-            : "Add holdings on Portfolio to see how capital is split across markets and sectors."
+            ? "How your money is split across markets and sectors, from your live holdings."
+            : "See how your money is split across markets and sectors. Add your holdings to fill this in."
         }
       />
 

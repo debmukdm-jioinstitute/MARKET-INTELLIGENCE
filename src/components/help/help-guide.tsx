@@ -32,7 +32,6 @@ type Props = {
   sitemapSectionCount: number;
   accountTools: { name: string; label: string; note: string }[];
   portalOnly: { label: string; href: string; note: string }[];
-  crons: { path: string; schedule: string; source: string; what: string }[];
 };
 
 const TROUBLE = [
@@ -62,7 +61,7 @@ const TROUBLE = [
   },
 ];
 
-export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly, crons }: Props) {
+export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly }: Props) {
   return (
     <div className="space-y-8">
       <p className="rounded-xl border border-blue-600/20 bg-blue-600/5 p-4 text-sm text-muted-foreground">
@@ -70,13 +69,13 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         <Link href="/connect/claude" className="font-semibold text-blue-600 hover:underline">
           Claude setup page
         </Link>{" "}
-        · open <span className="font-semibold text-foreground">Connect your AI (MCP)</span> below · portfolio in AI needs{" "}
+        · open <span className="font-semibold text-foreground">Let your AI assistant read market data</span> below · portfolio in AI needs{" "}
         <span className="font-semibold text-foreground">mi_sign_in</span>, not the Claude Allow screen.
       </p>
 
       <Accordion type="multiple" defaultValue={["mcp"]} className="rounded-xl border border-border px-4">
         <AccordionItem value="start">
-          <AccordionTrigger className="text-base font-semibold">Start here — what is this?</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">New here? Start here</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
             <p>
               <b>Market Intelligence</b> is a website for Indian markets: indices, macro, research, scanners, and AI signals.
@@ -100,7 +99,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="worldmonitor">
-          <AccordionTrigger className="text-base font-semibold">World Monitor (global dashboard)</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">The world monitor</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
             <p id="worldmonitor">
               <b>Not a full clone inside one app yet.</b> We ship upstream{" "}
@@ -132,7 +131,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="website">
-          <AccordionTrigger className="text-base font-semibold">Using the website (browser)</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">Using the site</AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <Steps
               items={[
@@ -159,7 +158,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
 
         <AccordionItem value="mcp">
           <AccordionTrigger className="text-base font-semibold">
-            Connect your AI (MCP) — free market data
+            Let your AI assistant read market data
           </AccordionTrigger>
           <AccordionContent>
             <p className="mb-3 text-muted-foreground">
@@ -333,7 +332,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
 
         <AccordionItem value="account">
           <AccordionTrigger className="text-base font-semibold">
-            Portfolio & personal data in AI (sign in)
+            Using your portfolio with AI
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <p className="mb-3">
@@ -372,7 +371,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="terminal">
-          <AccordionTrigger className="text-base font-semibold">Terminal app (mi) — optional</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">The optional desktop app</AccordionTrigger>
           <AccordionContent>
             <Accordion type="single" collapsible>
               <AccordionItem value="mi-need">
@@ -445,7 +444,7 @@ node $HOME\\.mi\\mi.mjs`}</Code>
 
         <AccordionItem value="tools">
           <AccordionTrigger className="text-base font-semibold">
-            Full list of what AI can fetch ({tools.length} tools)
+            Everything your AI can look up ({tools.length} tools)
           </AccordionTrigger>
           <AccordionContent>
             <p className="mb-3 text-sm text-muted-foreground">
@@ -474,35 +473,6 @@ node $HOME\\.mi\\mi.mjs`}</Code>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="owner">
-          <AccordionTrigger className="text-base font-semibold">Advanced — site owner &amp; schedules</AccordionTrigger>
-          <AccordionContent className="text-muted-foreground">
-            <p className="mb-3">
-              Customers do not need MCP keys. Optional MCP_API_KEYS in Vercel only raises automation rate limits. Data
-              refreshes on a schedule:
-            </p>
-            <div className="max-h-64 overflow-auto rounded-lg border border-border text-xs">
-              <table className="w-full text-left">
-                <thead className="bg-muted/60">
-                  <tr>
-                    <th className="px-3 py-2">Job</th>
-                    <th className="px-3 py-2">When</th>
-                    <th className="px-3 py-2">What</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {crons.map((c) => (
-                    <tr key={c.path} className="border-t border-border">
-                      <td className="px-3 py-2 font-medium">{c.path.replace("/api/cron/", "")}</td>
-                      <td className="px-3 py-2">{c.schedule}</td>
-                      <td className="px-3 py-2">{c.what}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
       </Accordion>
 
       <p className="text-muted-foreground">

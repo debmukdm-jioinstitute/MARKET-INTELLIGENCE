@@ -9,7 +9,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/Home", label: "Dashboard", description: "India desk overview" },
   { href: "/portfolio", label: "Portfolios", description: "Portfolio management" },
   { href: "/research", label: "Research", description: "Security workbench" },
-  { href: "/portfolio/allocation", label: "Allocation", description: "Policy vs actual" },
+  { href: "/portfolio/allocation", label: "Allocation", description: "Where your money sits" },
   { href: "/portfolio/risk", label: "Risk", description: "Active risk budget" },
   { href: "/portfolio/attribution", label: "Attribution", description: "Brinson-Fachler performance attribution" },
   { href: "/portfolio/quant", label: "Quant", description: "Return distribution & active statistics" },

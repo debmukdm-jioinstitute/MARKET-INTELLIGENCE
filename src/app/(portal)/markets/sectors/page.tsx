@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { useUrlQueryEnum } from "@/lib/react/use-url-query-enum";
 import { MarketValuationCard } from "@/components/dashboard/market-valuation-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
@@ -210,10 +210,7 @@ export default function SectorsPage() {
 }
 
 function SectorsView() {
-  const tabParam = useSearchParams().get("tab") as SectorTab | null;
-  const [activeTab, setActiveTab] = useState<SectorTab>(
-    tabParam && SECTOR_TABS.includes(tabParam) ? tabParam : "performance",
-  );
+  const { value: activeTab, setValue: setActiveTab } = useUrlQueryEnum("tab", SECTOR_TABS, "performance");
 
   return (
     <div className="portal-page pb-10">
@@ -228,8 +225,11 @@ function SectorsView() {
         Performance, rotation, P/E and ROE in the sector matrix are static teaching numbers, not live NSE sector indices. Valuation tab uses live G-Sec plus NSE link for index multiples.
       </p>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-3 text-sm">
+      <div
+        role="tablist"
+        aria-label="Sector workbench views"
+        className="flex flex-wrap items-center gap-2 border-b border-border pb-3 text-sm"
+      >
         {[
           { id: "performance", label: "Performance Matrix" },
           { id: "rotation", label: "Rotation Quadrant" },
@@ -239,9 +239,13 @@ function SectorsView() {
           <button
             key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.id as any)}
+            role="tab"
+            id={`sectors-tab-${tab.id}`}
+            aria-selected={activeTab === tab.id}
+            aria-controls={`sectors-panel-${tab.id}`}
+            onClick={() => setActiveTab(tab.id as SectorTab)}
             className={cn(
-              "rounded-lg px-3 py-1.5 font-medium transition-colors",
+              "min-h-11 rounded-lg px-3 py-1.5 font-medium transition-colors touch-manipulation",
               activeTab === tab.id
                 ? "bg-primary text-primary-foreground font-bold"
                 : "bg-card text-muted-foreground hover:bg-accent hover:text-foreground border border-border/60",
@@ -252,9 +256,8 @@ function SectorsView() {
         ))}
       </div>
 
-      {/* Market-level valuation (merged from former /markets/valuation) */}
       {activeTab === "valuation" ? (
-        <div className="bento-grid-cols-2">
+        <div id="sectors-panel-valuation" role="tabpanel" aria-labelledby="sectors-tab-valuation" className="bento-grid-cols-2">
           <MarketValuationCard />
           <EquityRiskPremiumPanel />
         </div>
@@ -262,7 +265,7 @@ function SectorsView() {
 
       {/* Rotation Quadrant Summary */}
       {activeTab === "rotation" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        <div id="sectors-panel-rotation" role="tabpanel" aria-labelledby="sectors-tab-rotation" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
           {[
             {
               stage: "Leading",
@@ -308,8 +311,12 @@ function SectorsView() {
         </div>
       ) : null}
 
-      {/* Main Sector Table with MetricInfo on every column */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div
+        id={`sectors-panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`sectors-tab-${activeTab}`}
+        className="overflow-hidden rounded-xl border border-border bg-card shadow-sm min-h-[320px]"
+      >
         <Table>
           <TableHeader>
             <TableRow>

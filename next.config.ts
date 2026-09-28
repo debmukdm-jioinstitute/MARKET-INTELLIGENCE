@@ -71,10 +71,10 @@ const nextConfig: NextConfig = {
       { source: "/india-markets", destination: "/markets/india", permanent: true },
       { source: "/derivatives", destination: "/markets/derivatives", permanent: true },
       { source: "/markets/valuation", destination: "/markets/sectors?tab=valuation", permanent: true },
-      { source: "/markets/momentum", destination: "/markets/breadth#momentum", permanent: true },
+      { source: "/markets/momentum", destination: "/markets/breadth?view=momentum", permanent: true },
       { source: "/sectors", destination: "/markets/sectors", permanent: true },
       { source: "/feeds", destination: "/data/feeds", permanent: true },
-      { source: "/macro/calendar", destination: "/macro/india#calendar", permanent: true },
+      { source: "/macro/calendar", destination: "/macro/india?view=calendar", permanent: true },
     ];
   },
 };
