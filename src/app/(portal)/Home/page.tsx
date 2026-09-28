@@ -34,8 +34,8 @@ export default function DashboardPage() {
           className="mb-0 min-w-0 flex-1"
           titleAs="h1"
           kicker="INSTITUTIONAL COCKPIT"
-          title="Executive Market & Portfolio Intelligence"
-          subtitle="Five AI agents, full portal map, and live India macro + portfolio telemetry on one board."
+          title="Your markets and portfolio, at a glance."
+          subtitle="Five AI analysts, every section of the site, and live Indian market and portfolio data — all on one screen."
         />
 
         <div className="flex items-center gap-3">
