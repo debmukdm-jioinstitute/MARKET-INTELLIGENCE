@@ -424,8 +424,31 @@ export const SITE_TOOLS: Tool[] = [
       launchPath: worldMonitorLaunchPath(),
       externalUrl: worldMonitorExternalUrl(),
       upstream: WORLDMONITOR_UPSTREAM_REPO,
-      note: "MI proxies /worldmonitor/* to www.worldmonitor.app; default launch includes global layer query. Override with NEXT_PUBLIC_WORLDMONITOR_URL.",
+      note: "Portal page uses free RSS/Yahoo/FRED feeds; optional full map at externalUrl.",
     }),
+  },
+  {
+    name: "get_world_monitor_global_feeds",
+    title: "World Monitor global feeds (RSS + indices)",
+    category: "Research",
+    description: "Headlines and global indices from free open feeds on the World Monitor page.",
+    inputSchema: empty,
+    run: async () => {
+      const { buildFreeGlobalFeeds } = await import("@/lib/worldmonitor/free-global-feeds");
+      const payload = await buildFreeGlobalFeeds();
+      return {
+        fetchedAt: payload.fetchedAt,
+        news: payload.news.slice(0, 15),
+        indices: payload.indices.indices.slice(0, 12).map((i) => ({
+          label: i.label,
+          price: i.price,
+          changePct: i.changePct,
+        })),
+        macro: payload.macro,
+        earningsCount: payload.earnings.items.length,
+        sources: payload.sources,
+      };
+    },
   },
 
   // ---- Updates ----
