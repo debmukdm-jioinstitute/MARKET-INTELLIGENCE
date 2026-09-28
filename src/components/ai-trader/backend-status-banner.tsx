@@ -85,7 +85,13 @@ export function AlgoBackendStatusBanner({ nextPath = "/algo" }: { nextPath?: str
   if (mode === "auth") {
     return (
       <div className="mb-4">
-        <SignInRequiredBanner feature="NIFTY Algo Desk (Flask proxy)" nextPath={nextPath} />
+        <SignInRequiredBanner nextPath={nextPath}>
+          The Algo Desk needs an account —{" "}
+          <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="font-semibold text-blue-600 hover:underline">
+            sign in
+          </Link>{" "}
+          to connect it.
+        </SignInRequiredBanner>
       </div>
     );
   }

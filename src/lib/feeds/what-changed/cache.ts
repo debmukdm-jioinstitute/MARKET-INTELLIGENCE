@@ -31,8 +31,8 @@ async function persistShifts(payload: MarketShiftsPayload) {
   const day = payload.fetchedAt.slice(0, 10);
   await saveSeries({
     id: SERIES_ID,
-    label: "What changed panel",
-    unit: "json",
+    label: "Recent changes",
+    unit: "panel",
     category: "market",
     provider: "Market Intelligence",
     url: "/api/feeds/what-changed",

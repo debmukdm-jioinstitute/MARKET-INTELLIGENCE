@@ -68,8 +68,8 @@ export function PortalPageGuard({ children }: { children: ReactNode }) {
     return (
       <PageShell
         icon={HardHat}
-        title="Under construction"
-        body={access.lockMessage}
+        title="We're still building this"
+        body={access.lockMessage || "Check back soon — this section isn't ready yet."}
         tone="warn"
       />
     );

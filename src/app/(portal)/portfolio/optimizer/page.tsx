@@ -70,9 +70,13 @@ export default function OptimizerPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Portfolio optimization"
-        title="Mean-variance / risk parity"
-        subtitle="Re-weights your current names using ~1Y daily returns (Yahoo). Long-only teaching optimizer."
+        kicker="Optimizer"
+        title="A better mix?"
+        subtitle={
+          data?.hasHoldings
+            ? "Suggests how to split your money across the stocks you hold, based on the last year. A learning tool — not advice."
+            : "Suggests how to split your money across the stocks you hold, based on the last year. Add your holdings to try it. A learning tool — not advice."
+        }
       />
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading portfolio…</p> : null}
@@ -100,6 +104,7 @@ export default function OptimizerPage() {
 
       {data?.hasHoldings ? (
         <>
+          <p className="text-xs text-muted-foreground">Daily prices for the last year come from Yahoo Finance.</p>
           <div className="flex flex-wrap gap-2">
             {(
               [

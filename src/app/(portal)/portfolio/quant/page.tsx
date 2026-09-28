@@ -39,9 +39,13 @@ export default function QuantPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Quantitative analysis"
-        title="Return distribution & active statistics"
-        subtitle="Moments from your live NAV series and benchmark-aligned beta."
+        kicker="Quant"
+        title="The numbers behind your returns"
+        subtitle={
+          data?.hasHoldings
+            ? "How steady your returns are, and how you compare to the market."
+            : "How steady your returns are, and how you compare to the market. Add your holdings to calculate them."
+        }
       />
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading portfolio…</p> : null}
