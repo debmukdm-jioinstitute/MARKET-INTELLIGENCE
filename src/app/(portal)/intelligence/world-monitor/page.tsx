@@ -4,13 +4,13 @@ import { WorldMonitorPageShell } from "@/components/worldmonitor/world-monitor-p
 export const metadata = {
   title: "World Monitor · Global intelligence · Market Intelligence",
   description:
-    "World Monitor global intelligence dashboard — maps, CII, news, and finance radar on Market Intelligence.",
+    "World Monitor global intelligence dashboard — live map, CII, news, and geopolitical layers proxied from worldmonitor.app.",
 };
 
 export default function WorldMonitorPage() {
   return (
     <WorldMonitorPageShell>
-      <WorldMonitorFrame variant="finance" />
+      <WorldMonitorFrame variant="global" />
     </WorldMonitorPageShell>
   );
 }

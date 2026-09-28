@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import { worldMonitorApiRewrites } from "./src/lib/worldmonitor/api-proxy-rewrites";
 import { worldMonitorStaticRewrites } from "./src/lib/worldmonitor/static-proxy-rewrites";
 
-const WORLDMONITOR_UPSTREAM = process.env.WORLDMONITOR_UPSTREAM_ORIGIN?.trim() || "https://finance.worldmonitor.app";
+const WORLDMONITOR_UPSTREAM =
+  process.env.WORLDMONITOR_UPSTREAM_ORIGIN?.trim() || "https://www.worldmonitor.app";
 
 const nextConfig: NextConfig = {
   /* config options here */
