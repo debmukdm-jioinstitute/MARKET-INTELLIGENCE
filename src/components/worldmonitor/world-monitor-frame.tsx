@@ -16,9 +16,15 @@ type Props = {
   variant?: string;
 };
 
+const WM_MAP_PROVIDER_KEY = "wm-map-provider";
+const WM_MAP_THEME_PREFIX = "wm-map-theme:";
+
 function applyEmbeddedLightTheme() {
   try {
     localStorage.setItem(WORLDMONITOR_THEME_STORAGE_KEY, "light");
+    // Map basemap defaults to dark PMTiles; prefer OpenFreeMap positron when UI is light.
+    localStorage.setItem(WM_MAP_PROVIDER_KEY, "openfreemap");
+    localStorage.setItem(`${WM_MAP_THEME_PREFIX}openfreemap`, "positron");
   } catch {
     /* private mode / blocked storage */
   }
