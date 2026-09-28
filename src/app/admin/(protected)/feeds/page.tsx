@@ -12,8 +12,6 @@ type Data = {
   data360: { database_id: string | null; indicator_id: string | null; kind: string; ok: boolean; rows: number; error: string | null; ran_at: string }[];
   scanner: { id: string; run_at: string }[];
   research: { source: string; ok: boolean; items_found: number; error: string | null; ran_at: string }[];
-  prowess: { stored: number; failed: number };
-  prowessErrors: { symbol: string; report: string; error: string; failed_at: string }[];
   keys: { key: string; set: boolean }[];
 };
 
@@ -104,12 +102,6 @@ export default function AdminFeedsPage() {
           <ul className="space-y-1 text-sm text-gray-900">
             {data.scanner.map((s) => <li key={s.id}>{s.id} <span className="text-gray-500">({when(s.run_at)})</span></li>)}
             {data.scanner.length === 0 ? <li className="text-gray-500">No scans stored.</li> : null}
-          </ul>
-        </AdminCard>
-        <AdminCard title="CMIE Prowess" subtitle={`${data.prowess.stored} reports stored · ${data.prowess.failed} failed`}>
-          <ul className="space-y-1 text-sm text-red-700">
-            {data.prowessErrors.map((e, i) => <li key={i}>{e.symbol}/{e.report}: {e.error}</li>)}
-            {data.prowessErrors.length === 0 ? <li className="text-gray-500">No errors.</li> : null}
           </ul>
         </AdminCard>
       </div>

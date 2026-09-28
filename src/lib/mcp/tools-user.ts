@@ -272,7 +272,7 @@ export const USER_TOOLS: Tool[] = [
         auth: "Same session token as MCP (Cookie mi_session or X-MI-Session on the HTTP download request)",
         limit: "4 downloads per hour per account",
         includes:
-          "Macro tape, India hub, stress, transmission, scanners, signals summary, reference sheets — not private portfolio or licensed Prowess PDFs.",
+          "Macro tape, India hub, stress, transmission, scanners, signals summary, reference sheets — not private portfolio data.",
         terms: "Personal use only; accept terms on /data/export before download.",
       };
     },

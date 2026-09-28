@@ -37,7 +37,6 @@ const NOT_EXPORTED: BuilderLog[] = [
   { builder: "Sectors page", status: "skipped", sheets: [], ms: 0, message: "The Sectors page currently shows illustrative sample values, not live data, so it is not exported as market data." },
   { builder: "Economic Calendar page", status: "skipped", sheets: [], ms: 0, message: "The Economic Calendar page currently shows illustrative sample events, not a live feed, so it is not exported." },
   { builder: "Portfolio pages", status: "skipped", sheets: [], ms: 0, message: "Portfolio, risk, attribution and optimiser pages show each user's private holdings and are never included in an export." },
-  { builder: "CMIE Prowess company reports", status: "skipped", sheets: [], ms: 0, message: "Licensed third-party company financials (CMIE Prowess) are excluded until redistribution rights are confirmed." },
 ];
 
 const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>

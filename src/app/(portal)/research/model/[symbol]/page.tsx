@@ -17,7 +17,6 @@ import { AssumptionsEditor } from "@/components/models/assumptions-editor";
 import { ModelSummaryCards } from "@/components/models/model-summary-cards";
 import { ProjectionTable } from "@/components/models/projection-table";
 import { SensitivityGrid } from "@/components/models/sensitivity-grid";
-import { ProwessReportSections } from "@/components/research/prowess-report-sections";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { footballField, growthMarginGrid, reverseDcf, runMonteCarlo, runScenarios, runTornado, type MonteCarloResult } from "@/lib/models/analysis";
 import { applyOverrides, ASSUMPTION_SPECS, deriveAssumptions } from "@/lib/models/assumptions";
@@ -355,8 +354,6 @@ export default function FinancialModelPage() {
           </div>
         </>
       ) : null}
-
-      {symbol ? <ProwessReportSections company={symbol} /> : null}
     </div>
   );
 }

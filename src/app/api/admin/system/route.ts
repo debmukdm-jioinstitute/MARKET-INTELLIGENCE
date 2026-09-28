@@ -24,7 +24,7 @@ export async function GET() {
       const rows = (await d`SELECT flag, enabled FROM feature_flags`) as unknown as { flag: string; enabled: boolean }[];
       flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? (f.flag === "guided-tour" ? false : true) }));
     } catch {}
-    const tables = ["users", "brief_subscriptions", "alert_rules", "alert_events", "push_subscriptions", "newsletter_subscribers", "research_reports", "scan_latest", "prowess_reports", "prowess_errors"];
+    const tables = ["users", "brief_subscriptions", "alert_rules", "alert_events", "push_subscriptions", "newsletter_subscribers", "research_reports", "scan_latest"];
     const results = await Promise.all(
       tables.map(async (t) => {
         try {

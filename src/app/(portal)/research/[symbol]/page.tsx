@@ -2,11 +2,9 @@
 
 import { Lines } from "@/components/charts/terminal-charts";
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
-import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { ProwessReportSections } from "@/components/research/prowess-report-sections";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
@@ -86,7 +84,6 @@ export default function ResearchSymbolPage() {
     }
     if (isIndia) {
       list.push({ id: "ipo", label: "IPO History" });
-      list.push({ id: "financials", label: "Reported Statements" });
     }
     if (data?.sources?.length) {
       list.push({ id: "sources", label: "Sources" });
@@ -157,8 +154,8 @@ export default function ResearchSymbolPage() {
               </div>
 
               <div className="grid gap-4 xl:grid-cols-3">
-                <Panel title="Live Quote & Order Book" className="xl:col-span-2">
-                  <div className="mb-4 flex items-start justify-between">
+                <Panel title="Live Quote" className="xl:col-span-2">
+                  <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-3xl tabular-nums font-bold text-foreground">{fmtInr(q.ltp)}</p>
@@ -189,8 +186,6 @@ export default function ResearchSymbolPage() {
                       hubSyncedAt={data.fetchedAt}
                     />
                   </div>
-                  {/* P0 Suppress false zero depth book */}
-                  <MarketDepthLadder buy={q.depth?.buy ?? []} sell={q.depth?.sell ?? []} />
                 </Panel>
 
                 <Panel title="Session Statistics">
@@ -234,7 +229,7 @@ export default function ResearchSymbolPage() {
       {data ? (
         <section id="trend" className="scroll-mt-24 space-y-4">
           {data.candles?.length > 1 ? (
-            <Panel title="Price History (1Y Daily Candles · Upstox)">
+            <Panel title="Price History (5Y Daily Candles · Upstox)">
               <CandlestickChart candles={data.candles} />
             </Panel>
           ) : null}
@@ -291,14 +286,7 @@ export default function ResearchSymbolPage() {
         </section>
       ) : null}
 
-      {/* SECTION 10: REPORTED STATEMENTS (CMIE Prowess) */}
-      {data && isIndia ? (
-        <section id="financials" className="scroll-mt-24">
-          <ProwessReportSections company={data.symbol} />
-        </section>
-      ) : null}
-
-      {/* SECTION 11: DATA SOURCES & PROVENANCE */}
+      {/* SECTION 10: DATA SOURCES & PROVENANCE */}
       {data?.sources?.length ? (
         <section id="sources" className="scroll-mt-24">
           <Panel title="Data Sources & Provenance">

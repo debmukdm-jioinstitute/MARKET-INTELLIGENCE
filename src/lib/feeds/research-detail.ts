@@ -59,7 +59,7 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
 
     const to = new Date();
     const from = new Date();
-    from.setFullYear(from.getFullYear() - 1);
+    from.setFullYear(from.getFullYear() - 5);
     candles = await fetchUpstoxHistoricalCandles(
       resolved.instrumentKey,
       "days",

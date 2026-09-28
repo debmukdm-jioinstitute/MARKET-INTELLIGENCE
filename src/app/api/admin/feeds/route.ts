@@ -4,7 +4,6 @@ import { collectorStatus } from "@/lib/collector/store";
 import { ensureData360Schema } from "@/lib/data360/store";
 import { ensureDataGovSchema } from "@/lib/datagov/store";
 import { hasDatabase, sql } from "@/lib/db";
-import { coverage } from "@/lib/prowess/store";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -34,16 +33,14 @@ export async function GET() {
   await safe(ensureDataGovSchema(), undefined);
   await safe(ensureData360Schema(), undefined);
   const db = sql();
-  const [datagov, data360, scanner, research, prowessErrors, prowess] = await Promise.all([
+  const [datagov, data360, scanner, research] = await Promise.all([
     safe(db`SELECT dataset_id, kind, ok, rows, error, ran_at FROM datagov_sync_log ORDER BY ran_at DESC LIMIT 15`, []),
     safe(db`SELECT database_id, indicator_id, kind, ok, rows, error, ran_at FROM data360_sync_log ORDER BY ran_at DESC LIMIT 15`, []),
     safe(db`SELECT id, run_at FROM scan_latest ORDER BY run_at DESC`, []),
     safe(db`SELECT source, ok, items_found, error, ran_at FROM research_scrape_log ORDER BY ran_at DESC LIMIT 15`, []),
-    safe(db`SELECT symbol, report, error, failed_at FROM prowess_errors ORDER BY failed_at DESC LIMIT 15`, []),
-    safe(coverage(), { stored: 0, failed: 0 }),
   ]);
 
-  const keys = ["UPSTOX_ACCESS_TOKEN", "FRED_API_KEY", "DATA_GOV_IN_API_KEY", "PROWESS_API_KEY", "ALPHA_VANTAGE_API_KEY", "BLS_API_KEY", "MASSIVE_API_KEY", "POLYGON_API_KEY", "TRUEDATA_USERNAME"].map((k) => ({ key: k, set: Boolean(process.env[k]) }));
+  const keys = ["UPSTOX_ACCESS_TOKEN", "FRED_API_KEY", "DATA_GOV_IN_API_KEY", "ALPHA_VANTAGE_API_KEY", "BLS_API_KEY", "MASSIVE_API_KEY", "POLYGON_API_KEY", "TRUEDATA_USERNAME"].map((k) => ({ key: k, set: Boolean(process.env[k]) }));
 
-  return NextResponse.json({ counts, series, failures, datagov, data360, scanner, research, prowess, prowessErrors, keys });
+  return NextResponse.json({ counts, series, failures, datagov, data360, scanner, research, keys });
 }

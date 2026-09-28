@@ -86,7 +86,6 @@ const GROUPS: { title: string; blurb: string; sheets: [string, string][] }[] = [
 const NOT_INCLUDED = [
   ["Sectors and Economic Calendar pages", "They currently show illustrative sample values, not live data, so they are not exported as market data."],
   ["Portfolio pages", "They show each person's private holdings and are never exported."],
-  ["CMIE Prowess company reports", "Licensed third-party financials stay out until redistribution rights are confirmed."],
 ];
 
 type Phase = "idle" | "working" | "done" | "error";

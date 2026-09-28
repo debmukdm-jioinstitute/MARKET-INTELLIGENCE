@@ -143,7 +143,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
   return (
     <Panel
       title="Technical Trend & Momentum"
-      subtitle="Computed client-side across 1-year daily candles. No additional network latency."
+      subtitle="Computed client-side across 5-year daily candles. No additional network latency."
       action={
         <span className="text-xs text-muted-foreground">
           {lastDate ? `Session as of ${new Date(lastDate).toLocaleDateString()} (IST · UTC+05:30)` : ""}

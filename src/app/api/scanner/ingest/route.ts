@@ -6,7 +6,7 @@ import type { BacktestRun, ScanRun, SignalsRun } from "@/lib/scanner/types";
 export const dynamic = "force-dynamic";
 
 function authorized(req: Request): boolean {
-  const secret = process.env.PROWESS_INGEST_SECRET;
+  const secret = process.env.SCANNER_INGEST_SECRET || process.env.PROWESS_INGEST_SECRET;
   if (!secret) return false;
   const got = Buffer.from(req.headers.get("authorization") ?? "");
   const want = Buffer.from(`Bearer ${secret}`);
