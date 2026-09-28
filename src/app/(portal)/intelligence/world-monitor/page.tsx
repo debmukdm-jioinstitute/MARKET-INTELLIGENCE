@@ -13,7 +13,7 @@ export default function WorldMonitorPage() {
       <PageHeader
         kicker="Global intelligence"
         title="World Monitor"
-        subtitle="Real-time global news, maps, country instability (CII), and finance radar — integrated from koala73/worldmonitor. India macro and portfolio tools remain in Market Intelligence menus."
+        subtitle="Global news, maps, and finance radar — click Open World Monitor (loads on /worldmonitor/dashboard)."
       />
       <WorldMonitorFrame variant="finance" />
     </div>
