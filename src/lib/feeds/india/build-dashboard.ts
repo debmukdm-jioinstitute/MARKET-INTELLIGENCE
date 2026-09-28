@@ -746,6 +746,7 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
   }
   const rbiPoints = new Map((await latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"])).map((p) => [p.id, p.value]));
   const pct = (id: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : null);
+  const repoPct = pct("rbi_repo") ?? (repo.current != null ? `${repo.current.toFixed(2)}%` : null);
 
   return {
     fetchedAt: new Date().toISOString(),
@@ -762,22 +763,23 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     indiaMacro,
     rbiLiquidity: {
       corridor: {
-        repo: pct("rbi_repo"),
+        repo: repoPct,
         sdf: pct("rbi_sdf"),
         msf: pct("rbi_msf"),
         crr: pct("rbi_crr"),
         slr: pct("rbi_slr"),
         bankRate: pct("rbi_bank_rate"),
         reverseRepo: pct("rbi_reverse_repo"),
-        stance: pct("rbi_repo") ? "From RBI policy rates feed" : null,
+        stance: repoPct ? "From RBI policy rates feed" : null,
       },
       rows: [
         {
           label: "RBI Policy Repo Rate",
-          value: pct("rbi_repo"),
+          value: repoPct,
           source: {
             provider: "Reserve Bank of India (MPC)",
             url: "https://www.rbi.org.in/scripts/PolicyRates.aspx",
+            asOf: repo.source.asOf,
           },
         },
         {

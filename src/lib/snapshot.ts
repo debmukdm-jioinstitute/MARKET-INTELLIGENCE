@@ -1,6 +1,7 @@
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { computeStress, type StressResult } from "@/lib/stress/compute";
+import { hasDatabase, sql } from "@/lib/db";
 
 /** Metrics a user rule can reference. `unit` is what the threshold is expressed in. */
 export const METRICS = {
@@ -53,12 +54,76 @@ export function metricsFrom(d: IndiaDashboardPayload, s: StressResult): MetricVa
 }
 
 let cache: { at: number; value: Snapshot } | null = null;
+let inFlight: Promise<Snapshot> | null = null;
+
+async function getDbCachedSnapshot(): Promise<Snapshot | null> {
+  if (!hasDatabase()) return null;
+  try {
+    const db = sql();
+    const rows = await db`
+      SELECT value, extract(epoch from (now() - updated_at)) as age_sec
+      FROM app_cache
+      WHERE key = 'market_snapshot' AND updated_at > now() - interval '60 seconds'
+      LIMIT 1
+    `;
+    if (rows && rows.length > 0 && rows[0]?.value) {
+      return rows[0].value as Snapshot;
+    }
+  } catch {
+    // app_cache might not exist yet or connection error — non-fatal
+  }
+  return null;
+}
+
+async function setDbCachedSnapshot(value: Snapshot): Promise<void> {
+  if (!hasDatabase()) return;
+  try {
+    const db = sql();
+    await db`
+      CREATE TABLE IF NOT EXISTS app_cache (
+        key text PRIMARY KEY,
+        value jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `;
+    await db`
+      INSERT INTO app_cache (key, value, updated_at)
+      VALUES ('market_snapshot', ${JSON.stringify(value)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+  } catch {
+    // Non-fatal cache write failure
+  }
+}
 
 export async function buildSnapshot(): Promise<Snapshot> {
   if (cache && Date.now() - cache.at < 60_000) return cache.value;
-  const dashboard = await buildIndiaDashboard();
-  const stress = computeStress(dashboard);
-  const value = { asOf: dashboard.fetchedAt, dashboard, stress, metrics: metricsFrom(dashboard, stress) };
-  cache = { at: Date.now(), value };
-  return value;
+
+  if (inFlight) return inFlight;
+
+  inFlight = (async () => {
+    // Check shared database cache first (survives cold serverless instances)
+    const dbCached = await getDbCachedSnapshot();
+    if (dbCached) {
+      cache = { at: Date.now(), value: dbCached };
+      return dbCached;
+    }
+
+    const dashboard = await buildIndiaDashboard();
+    const stress = computeStress(dashboard);
+    const value: Snapshot = {
+      asOf: dashboard.fetchedAt,
+      dashboard,
+      stress,
+      metrics: metricsFrom(dashboard, stress),
+    };
+    cache = { at: Date.now(), value };
+    // Non-blocking write to database cache for other serverless instances
+    setDbCachedSnapshot(value).catch(() => {});
+    return value;
+  })().finally(() => {
+    inFlight = null;
+  });
+
+  return inFlight;
 }

@@ -116,17 +116,24 @@ export function Lines({
   data,
   keys,
   xKey = "date",
+  yTickFormatter,
 }: {
   data: Record<string, string | number>[];
   keys: { key: string; color: string; name: string }[];
   xKey?: string;
+  yTickFormatter?: (value: number) => string;
 }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data}>
         <CartesianGrid {...grid} vertical={false} />
         <XAxis dataKey={xKey} {...axis} minTickGap={40} />
-        <YAxis {...axis} width={48} domain={["auto", "auto"]} />
+        <YAxis
+          {...axis}
+          width={52}
+          domain={["auto", "auto"]}
+          tickFormatter={yTickFormatter ?? ((v) => Number(v).toLocaleString(undefined, { maximumFractionDigits: 4 }))}
+        />
         <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         {keys.map((k) => (

@@ -10,7 +10,7 @@ export function WorldMonitorPageShell({ children }: { children: ReactNode }) {
       <PageHeader
         kicker="Global intelligence"
         title="World Monitor"
-        subtitle="Wars, sanctions, protests and shipping — mapped, and linked to what they mean for markets. (Your Indian portfolio tools are still in the main menu.)"
+        subtitle="Wars, sanctions, protests, and shipping — mapped and linked to market impact. India portfolio tools stay in the main menu."
         titleAs="h1"
       />
       {children}

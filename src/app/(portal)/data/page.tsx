@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface DataSource {
@@ -112,8 +113,15 @@ export default function DataPage() {
       <PageHeader
         kicker="Data"
         title="Where our data comes from"
-        subtitle="A live status board for every data feed — what's working, what's slow, and when each one last updated."
+        subtitle="Illustrative provider overview (design mockup). For measured feed health — latency probes and degraded sources — use Feed health."
       />
+
+      <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
+        KPI tiles below are static placeholders, not live telemetry.{" "}
+        <Link href="/data/feeds" className="font-semibold text-primary hover:underline">
+          Open feed health →
+        </Link>
+      </p>
 
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -140,8 +148,8 @@ export default function DataPage() {
             <span className="text-sm text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
             <MetricInfo id="data_quality" name="Active Data Streams Telemetry" iconSize="xs" />
           </div>
-          <div className="text-2xl font-bold text-foreground">42 Feeds</div>
-          <span className="text-sm text-muted-foreground">0 outages reported today</span>
+          <div className="text-2xl font-bold text-foreground">Illustrative</div>
+          <span className="text-sm text-muted-foreground">See /data/feeds for live source status</span>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-1">

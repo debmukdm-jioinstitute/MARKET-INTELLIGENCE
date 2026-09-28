@@ -2,6 +2,7 @@
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { CheckCircle2, CircleDashed, Clock, XCircle } from "lucide-react";
+import { useMemo } from "react";
 import useSWR from "swr";
 
 type Status = "fresh" | "stale" | "failing" | "pending";
@@ -45,16 +46,23 @@ const ago = (iso: string | null) => {
   return h < 1 ? `${Math.max(1, Math.round(h * 60))}m ago` : h < 48 ? `${Math.round(h)}h ago` : `${Math.round(h / 24)}d ago`;
 };
 
+function countByStatus(series: SeriesRow[]): Record<Status, number> {
+  const counts: Record<Status, number> = { fresh: 0, stale: 0, failing: 0, pending: 0 };
+  for (const s of series) counts[s.status]++;
+  return counts;
+}
+
 export default function DataHealthPage() {
   const { data, error, isLoading } = useSWR("/api/collector", fetcher, { refreshInterval: 60_000 });
   const categories = data ? [...new Set(data.series.map((s) => s.category))].sort() : [];
+  const counts = useMemo(() => (data ? countByStatus(data.series) : null), [data]);
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <PageHeader
-        kicker="Data Plane"
-        title="Data Health & Provenance"
-        subtitle="Every series collected by the scheduled ingestion job (runs every 3 hours): its source, the date of its latest observation, and whether it is fresh, stale or failing. A failed run never overwrites the last good value."
+        kicker="Data centre"
+        title="Data health & provenance"
+        subtitle="Every stored macro and market series: where it comes from, the date of its latest observation, and whether it is fresh, stale, or failing. A failed fetch never overwrites the last good value."
       />
 
       {isLoading ? <p className="text-sm text-muted-foreground">Loading collector status…</p> : null}
@@ -70,7 +78,7 @@ export default function DataHealthPage() {
                   <div className={`flex items-center gap-1.5 text-sm font-semibold ${cls}`}>
                     <Icon className="size-4" /> {label}
                   </div>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{data.counts[k]}</p>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{counts?.[k] ?? 0}</p>
                 </div>
               );
             })}

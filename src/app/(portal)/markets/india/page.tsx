@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaEquities } from "@/hooks/use-india-equities";
 import { useFeedHub } from "@/hooks/use-feed-hub";
+import { useMarketStatus } from "@/hooks/use-market-status";
 import { INDIA_EQUITIES, type IndiaInstrument } from "@/lib/feeds/india/instruments";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -16,15 +17,17 @@ import { useState } from "react";
 export default function IndiaMarketsPage() {
   const { quotes, loading, error } = useIndiaEquities();
   const { data: feedData } = useFeedHub(30_000);
+  const { isOpen: nseOpen } = useMarketStatus();
   const [selected, setSelected] = useState<IndiaInstrument | null>(null);
   const live = new Map(quotes.map((q) => [q.symbol, q]));
+  const quoteLabel = nseOpen ? "Live" : "Last close";
 
   return (
     <div className="portal-page">
       <PageHeader
         kicker="India"
         title="Indian markets"
-        subtitle="Live NSE prices, via Upstox. Tap any row for the full quote, market depth, charts and fundamentals."
+        subtitle="NSE prices via Upstox — live during the session, last close when the market is shut. Tap a row for quote, depth, charts, and fundamentals."
         trust={{ source: "Upstox, NSE India", asOf: feedData?.fetchedAt, delayed: "Quotes may be delayed" }}
       />
       <MarketStatusBadge />
@@ -36,10 +39,10 @@ export default function IndiaMarketsPage() {
             <div className="flex items-center gap-2">
               <TrendingUp className="size-4 text-primary" />
               <h3 className="font-bold text-xs uppercase tracking-wider text-foreground">
-                INDIA BENCHMARKS (NSE / BSE LIVE QUOTES)
+                INDIA BENCHMARKS (NSE / BSE)
               </h3>
             </div>
-            <span className="text-xs text-muted-foreground font-sans">Live Quotes</span>
+            <span className="text-xs text-muted-foreground font-sans">{quoteLabel}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {feedData.indices.map((idx) => {
@@ -108,7 +111,16 @@ export default function IndiaMarketsPage() {
                 >
                   <TableCell className="font-medium flex items-center gap-1">
                     <span>{inst.symbol}</span>
-                    {q ? <span className="ml-1 text-xs uppercase text-emerald-600 font-bold">live</span> : null}
+                    {q ? (
+                      <span
+                        className={cn(
+                          "ml-1 text-xs uppercase font-bold",
+                          nseOpen ? "text-emerald-600" : "text-muted-foreground",
+                        )}
+                      >
+                        {quoteLabel}
+                      </span>
+                    ) : null}
                     <MetricInfo
                       id={inst.symbol.toLowerCase()}
                       name={`${inst.name} (${inst.symbol})`}

@@ -55,6 +55,7 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Look up any stock, read reports, track IPOs.",
         items: [
           { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and price history (Upstox/Yahoo when configured)." },
+          { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings and subscription tracking." },
         ],
@@ -117,7 +118,6 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Ideas & Backtests",
         desc: "Get AI trade ideas, then test them on history.",
         items: [
-          { label: "AI Desk", href: "/research/ai-desk", desc: "Alpha discovery and AI-assisted trade ideas.", badge: "AI" },
           { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K scanner equity curves vs Nifty 500 — signal hold horizons after each close.", badge: "NEW" },
         ],
       },
@@ -174,7 +174,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Sources & Status", href: "/data", desc: "Feed health, sources, and data freshness." },
           { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
           { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },
-          { label: "Data360 Explorer", href: "/data/data360", desc: "World Bank Data360 mirror — India and US macro series." },
+          { label: "Data360 Explorer", href: "/data/data360", desc: "World Bank macro series for India and the US." },
           { label: "Data Export", href: "/data/export", desc: "Download every dataset on the site as one structured Excel workbook.", badge: "NEW" },
         ],
       },

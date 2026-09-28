@@ -118,8 +118,9 @@ function DetailDrawer({ detail, onClose }: { detail: Detail | null; onClose: () 
             <>
               <p className="leading-snug">{detail.row.title}</p>
               {detail.row.publishedAt ? (
-                <p className="text-muted-foreground tabular-nums">
-                  Published {new Date(detail.row.publishedAt).toLocaleString()}
+                <p className="text-muted-foreground">
+                  Published{" "}
+                  <span className="tabular-nums">{new Date(detail.row.publishedAt).toLocaleString()}</span>
                 </p>
               ) : null}
               <SourceTag>RSS · delay varies by publisher</SourceTag>
@@ -236,7 +237,10 @@ export function WorldMonitorFreeDashboard() {
   }, []);
 
   const globalIndices = useMemo(
-    () => (data?.indices.indices ?? []).filter((i) => i.category !== "india").slice(0, 14),
+    () =>
+      (data?.indices.indices ?? [])
+        .filter((i) => i.category !== "india" && i.price != null && Number.isFinite(i.price))
+        .slice(0, 14),
     [data?.indices.indices],
   );
 
@@ -273,7 +277,7 @@ export function WorldMonitorFreeDashboard() {
 
       <div className="sticky top-0 z-20 -mx-1 flex flex-col gap-2 border-b border-border bg-background/95 px-1 py-2 backdrop-blur sm:static sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:border-0 sm:bg-transparent sm:p-0">
         <p className="text-sm leading-snug text-muted-foreground">
-          Free RSS & public feeds.{" "}
+          Free RSS and public feeds · Updated{" "}
           <span className="tabular-nums text-foreground">
             {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleString() : "…"}
           </span>

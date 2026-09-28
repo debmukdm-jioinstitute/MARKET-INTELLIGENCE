@@ -39,6 +39,14 @@ function changePctClass(pct: number | null) {
   return pct >= 0 ? "text-chart-2" : "text-destructive";
 }
 
+function derivedChangePct(hist: { date: string; v: number }[] | undefined): number | null {
+  if (!hist || hist.length < 2) return null;
+  const prev = hist[hist.length - 2]!.v;
+  const last = hist[hist.length - 1]!.v;
+  if (!Number.isFinite(prev) || !Number.isFinite(last) || prev === 0) return null;
+  return (last - prev) / prev;
+}
+
 function CurrencyCard({
   def,
   quote,
@@ -49,7 +57,7 @@ function CurrencyCard({
   hist?: { date: string; v: number }[];
 }) {
   const price = quote?.price ?? null;
-  const changePct = quote?.changePct ?? null;
+  const changePct = quote?.changePct ?? derivedChangePct(hist);
   const sourceUrl = quote?.source.url ?? `https://finance.yahoo.com/quote/${encodeURIComponent(def.sym)}`;
   const provider = quote?.source.provider ?? "Yahoo Finance";
 
@@ -67,7 +75,15 @@ function CurrencyCard({
       </div>
       {hist?.length ? (
         <div className="mt-4 h-[180px]">
-          <Lines data={hist} keys={[{ key: "v", color: "var(--primary)", name: def.label }]} />
+          <Lines
+            data={hist}
+            keys={[{ key: "v", color: "var(--primary)", name: def.label }]}
+            yTickFormatter={(v) =>
+              def.priceStyle === "inr"
+                ? Number(v).toFixed(def.decimals)
+                : Number(v).toFixed(Math.min(def.decimals, 4))
+            }
+          />
         </div>
       ) : price != null ? (
         <p className="mt-3 text-xs text-muted-foreground">6-month chart loading…</p>

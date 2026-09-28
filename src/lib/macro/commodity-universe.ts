@@ -52,7 +52,7 @@ export const COMMODITY_UNIVERSE: CommodityDef[] = [
   { id: "natgas", label: "Natural gas (Henry Hub)", sym: "NG=F", copyKey: "natgas", category: "energy", focus: G, kind: "future", decimals: 2, unit: "USD/MMBtu", priceStyle: "usd" },
   { id: "gasoline", label: "RBOB gasoline", sym: "RB=F", copyKey: "gasoline", category: "energy", focus: G, kind: "future", decimals: 2, unit: "USD/gal", priceStyle: "usd" },
   { id: "heating_oil", label: "Heating oil", sym: "HO=F", copyKey: "heating_oil", category: "energy", focus: G, kind: "future", decimals: 2, unit: "USD/gal", priceStyle: "usd" },
-  { id: "ethanol", label: "Ethanol", sym: "ETH=F", copyKey: "ethanol", category: "energy", focus: G, kind: "future", decimals: 0, unit: "USD/gal", priceStyle: "usd" },
+  { id: "ethanol", label: "Ethanol", sym: "EH=F", copyKey: "ethanol", category: "energy", focus: G, kind: "future", decimals: 2, unit: "USD/gal", priceStyle: "usd" },
   { id: "uranium", label: "Uranium (UxC)", sym: "UX=F", copyKey: "uranium", category: "energy", focus: G, kind: "future", decimals: 2, unit: "USD/lb U3O8", priceStyle: "usd" },
 
   // —— Precious ——
@@ -148,6 +148,9 @@ export function formatCommodityPrice(def: CommodityDef, price: number | null): s
       if (def.decimals === 0) {
         return `$${price.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
       }
-      return `$${price.toFixed(def.decimals)}`;
+      return `$${price.toLocaleString("en-US", {
+        minimumFractionDigits: def.decimals,
+        maximumFractionDigits: def.decimals,
+      })}`;
   }
 }

@@ -128,7 +128,7 @@ export function Panel({
             data-mi-slot={titleSlot}
             data-mi-field="title"
             data-mi-label={`Panel: ${titleStr}`}
-            className="font-heading text-base font-bold tracking-tight text-foreground"
+            className="font-heading text-base font-bold tracking-tight text-foreground normal-case [font-variant-ligatures:none]"
           >
             {displayTitle}
           </h3>

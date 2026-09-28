@@ -34,7 +34,7 @@ export const USER_TOOLS: Tool[] = [
     category: "Account",
     access: "auth",
     description:
-      "Email/password sign-in for MCP clients. Returns a sessionToken — pass it on later calls as X-MI-Session or Authorization: Bearer. Do not share the token.",
+      "Email/password sign-in for MCP clients. Security warning: Passing credentials in tool arguments sends your password through the AI provider's context window. Use a dedicated password or OAuth where available. Returns a sessionToken with 7-day validity — pass it on later calls as X-MI-Session or Authorization: Bearer.",
     inputSchema: {
       type: "object",
       properties: {
@@ -48,9 +48,11 @@ export const USER_TOOLS: Tool[] = [
       const { email, password } = z.object({ email: z.string().email(), password: z.string().min(1) }).parse(args);
       const res = await mcpSignIn(email, password);
       if (!res.ok) return res;
+      const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
       return {
         ok: true,
         sessionToken: res.sessionToken,
+        expiresAt,
         user: { email: res.user.email, name: res.user.name, role: res.user.role },
         hint: "Send header X-MI-Session: <sessionToken> (or Authorization: Bearer <sessionToken>) on user-scoped tools.",
       };
@@ -61,11 +63,12 @@ export const USER_TOOLS: Tool[] = [
     title: "Session status",
     category: "Account",
     access: "user",
-    description: "Who the current MCP session is (requires session token from mi_sign_in).",
+    description: "Who the current MCP session is and session validity window (requires session token from mi_sign_in).",
     inputSchema: empty,
     run: async (_args, ctx) => {
       const user = requireUser(ctx);
-      return { ok: true, user: { email: user.email, name: user.name, role: user.role } };
+      const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();
+      return { ok: true, active: true, expiresAt, user: { email: user.email, name: user.name, role: user.role } };
     },
   },
   {

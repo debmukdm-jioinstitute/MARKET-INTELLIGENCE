@@ -9,6 +9,7 @@ import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instruments";
 import { buildFeedHub } from "@/lib/feeds/hub";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
+import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
@@ -51,6 +52,9 @@ const SymbolArg = z.object({ symbol: z.string().regex(/^[A-Za-z0-9.&^-]{1,20}$/)
 const sym = { type: "string", description: "Ticker, e.g. TCS, RELIANCE, AAPL" };
 const empty = { type: "object", properties: {}, additionalProperties: false };
 
+
+let quotesCache: { data: Record<string, unknown>; timestamp: number } | null = null;
+let holidaysCache: { data: Record<string, unknown>; timestamp: number } | null = null;
 const underlyingKey = (label: string) => OPTION_UNDERLYINGS.find((u) => u.label.toUpperCase() === label.toUpperCase());
 
 export const SITE_TOOLS: Tool[] = [
@@ -95,9 +99,17 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_india_equity_quotes",
     title: "Large-cap quotes (live)",
     category: "Markets",
-    description: "Live quotes for the tracked India large-cap universe (price, change, volume).",
+    description: "Live quotes for the tracked India large-cap universe (price, change, volume). Cached 60s for low latency.",
     inputSchema: empty,
-    run: async () => ({ quotes: await fetchUpstoxQuotes(INDIA_EQUITIES.map((i) => ({ instrumentKey: i.instrumentKey, symbol: i.symbol }))) }),
+    run: async () => {
+      if (quotesCache && Date.now() - quotesCache.timestamp < 60_000) {
+        return quotesCache.data;
+      }
+      const quotes = await fetchUpstoxQuotes(INDIA_EQUITIES.map((i) => ({ instrumentKey: i.instrumentKey, symbol: i.symbol })));
+      const res = { quotes, cachedAt: new Date().toISOString() };
+      quotesCache = { data: res, timestamp: Date.now() };
+      return res;
+    },
   },
   {
     name: "get_world_indices",
@@ -111,11 +123,16 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_market_holidays",
     title: "Exchange holidays",
     category: "Markets",
-    description: "NSE/BSE trading holidays, whether today is a holiday and the next one.",
+    description: "NSE/BSE trading holidays, whether today is a holiday and the next one. Cached 6h.",
     inputSchema: empty,
     run: async () => {
+      if (holidaysCache && Date.now() - holidaysCache.timestamp < 6 * 3600_000) {
+        return holidaysCache.data;
+      }
       const holidays = await fetchUpstoxMarketHolidays();
-      return { holidays, todayHoliday: isMarketHolidayToday(holidays), nextHoliday: nextMarketHoliday(holidays) };
+      const res = { holidays, todayHoliday: isMarketHolidayToday(holidays), nextHoliday: nextMarketHoliday(holidays), cachedAt: new Date().toISOString() };
+      holidaysCache = { data: res, timestamp: Date.now() };
+      return res;
     },
   },
   {
@@ -155,12 +172,48 @@ export const SITE_TOOLS: Tool[] = [
 
   // ---- Research ----
   {
+    name: "get_research_pack",
+    title: "Stock research pack (composite)",
+    category: "Research",
+    description:
+      "One-call comprehensive stock dossier: quote, key stats, price history (6mo), fundamental ratios, and security risk (drawdown, vol, beta). Saves 4 round trips.",
+    inputSchema: {
+      type: "object",
+      properties: { symbol: sym },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol } = SymbolArg.parse(a);
+      const upper = symbol.toUpperCase();
+      const matchedEquity = INDIA_EQUITIES.find((e) => e.symbol.toUpperCase() === upper);
+      const isin = matchedEquity?.isin;
+
+      const [research, priceHistory, securityRisk, keyRatios] = await Promise.all([
+        buildResearchDetail(upper).catch(() => null),
+        fetchYahooHistory(upper, "6mo").catch(() => []),
+        buildSecurityRisk(upper).catch(() => null),
+        isin ? fetchUpstoxKeyRatios(isin).catch(() => null) : Promise.resolve(null),
+      ]);
+
+      return {
+        symbol: upper,
+        name: matchedEquity?.name ?? upper,
+        isin: isin ?? null,
+        research: research ?? { status: "unavailable", reason: "Research detail not available" },
+        priceHistory: { range: "6mo", pointsCount: priceHistory?.length ?? 0, points: priceHistory ?? [] },
+        securityRisk: securityRisk ?? { status: "unavailable", reason: "Risk metrics not available" },
+        keyRatios: keyRatios ?? { status: "unavailable", reason: isin ? "Key ratios not available" : "ISIN not found for fundamentals" },
+      };
+    },
+  },
+  {
     name: "get_stock_research",
     title: "Stock research detail",
     category: "Research",
     description: "Research detail for one stock: quote, price history summary, key stats and the site's research view.",
     inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
-    run: async (a) => (await buildResearchDetail(SymbolArg.parse(a).symbol)) ?? { error: "Unknown symbol" },
+    run: async (a) => (await buildResearchDetail(SymbolArg.parse(a).symbol)) ?? { status: "unavailable", reason: "Unknown symbol or no data" },
   },
   {
     name: "get_price_history",
@@ -201,7 +254,7 @@ export const SITE_TOOLS: Tool[] = [
     category: "Research",
     description: "Fundamental key ratios for an Indian stock by ISIN, e.g. INE002A01018.",
     inputSchema: { type: "object", properties: { isin: { type: "string", description: "ISIN, e.g. INE002A01018" } }, required: ["isin"], additionalProperties: false },
-    run: async (a) => (await fetchUpstoxKeyRatios(z.object({ isin: z.string().regex(/^[A-Z0-9]{12}$/) }).parse(a).isin)) ?? { error: "No fundamentals data" },
+    run: async (a) => (await fetchUpstoxKeyRatios(z.object({ isin: z.string().regex(/^[A-Z0-9]{12}$/) }).parse(a).isin)) ?? { status: "unavailable", reason: "No fundamentals data" },
   },
   {
     name: "get_earnings_calendar",
@@ -290,7 +343,7 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const { limit } = z.object({ limit: z.number().int().min(1).max(100).default(100) }).parse(a);
       const data = await buildAnalystCredibility(limit);
-      if (!data.dbConfigured) return { error: "Database not configured" };
+      if (!data.dbConfigured) return { status: "unavailable", reason: "Database not configured" };
       return {
         brokers: data.brokers.slice(0, 25).map((b) => ({
           broker: b.broker,
@@ -327,7 +380,7 @@ export const SITE_TOOLS: Tool[] = [
     inputSchema: { type: "object", properties: { underlying: { type: "string", description: "NIFTY, BANKNIFTY, FINNIFTY or stock symbol" } }, required: ["underlying"], additionalProperties: false },
     run: async (a) => {
       const u = underlyingKey(z.object({ underlying: z.string().max(20) }).parse(a).underlying);
-      if (!u) return { error: "Unknown underlying", known: OPTION_UNDERLYINGS.map((x) => x.label) };
+      if (!u) return { status: "unavailable", reason: "Unknown underlying", known: OPTION_UNDERLYINGS.map((x) => x.label) };
       return { underlying: u.label, expiries: await fetchUpstoxOptionExpiries(u.key) };
     },
   },
@@ -345,8 +398,8 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const { underlying, expiry } = z.object({ underlying: z.string().max(20), expiry: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(a);
       const u = underlyingKey(underlying);
-      if (!u) return { error: "Unknown underlying", known: OPTION_UNDERLYINGS.map((x) => x.label) };
-      return (await fetchUpstoxOptionChain(u.key, u.label, expiry)) ?? { error: "No option chain data" };
+      if (!u) return { status: "unavailable", reason: "Unknown underlying", known: OPTION_UNDERLYINGS.map((x) => x.label) };
+      return (await fetchUpstoxOptionChain(u.key, u.label, expiry)) ?? { status: "unavailable", reason: "No option chain data" };
     },
   },
   {
@@ -366,21 +419,34 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_scanner",
     title: "Stock scanners",
     category: "Scanners",
-    description: "Scanner catalogue with match counts. Pass scanner=<id> for that scanner's matches, or symbol=X to list every scanner flagging X.",
+    description: "Scanner catalogue with match counts. Pass scanner=<id> for that scanner's matches (capped at 25 by default), or symbol=X to list every scanner flagging X.",
     inputSchema: {
       type: "object",
-      properties: { scanner: { type: "string", description: "Scanner id (see catalogue)" }, symbol: { type: "string", description: "Symbol to look up" } },
+      properties: {
+        scanner: { type: "string", description: "Scanner id (see catalogue)" },
+        symbol: { type: "string", description: "Symbol to look up" },
+        limit: { type: "number", description: "Max matches when scanner is specified (default 25, max 100)" },
+      },
       additionalProperties: false,
     },
     run: async (a) => {
-      const { scanner, symbol } = z.object({ scanner: z.string().max(60).optional(), symbol: z.string().max(20).optional() }).parse(a);
+      const { scanner, symbol, limit } = z
+        .object({
+          scanner: z.string().max(60).optional(),
+          symbol: z.string().max(20).optional(),
+          limit: z.number().int().min(1).max(100).default(25),
+        })
+        .parse(a);
       const run = await loadScan().catch(() => null);
       const sy = symbol?.trim().toUpperCase();
+      const rawMatches = scanner ? (run?.scanners[scanner] ?? []) : undefined;
       return {
         run: run && { asOf: run.asOf, lastBar: run.lastBar, universe: run.universe, scanned: run.scanned, failed: run.failed },
         scanners: SCANNERS.map((s) => ({ id: s.id, label: s.label, description: s.description, bias: s.bias, matches: run?.scanners[s.id]?.length ?? 0 })),
         symbolHits: sy ? SCANNERS.flatMap((s) => (run?.scanners[s.id] ?? []).filter((r) => r.symbol === sy).map((r) => ({ scanner: s.id, label: s.label, bias: s.bias, ...r }))) : undefined,
-        results: scanner ? (run?.scanners[scanner] ?? []) : undefined,
+        results: rawMatches ? rawMatches.slice(0, limit) : undefined,
+        totalMatches: rawMatches ? rawMatches.length : undefined,
+        hasMore: rawMatches ? rawMatches.length > limit : undefined,
       };
     },
   },

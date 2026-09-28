@@ -47,8 +47,8 @@ export function WhatChangedModule() {
           <p className="mt-1 text-xs text-muted-foreground">
             {updatedAt ? (
               <>
-                Refreshes every 3 hours · Last updated {formatUpdated(updatedAt)} IST
-                {data?.slot != null ? ` · cycle ${data.slot}` : null}
+                Refreshes every 3 hours · Last updated{" "}
+                <span className="tabular-nums">{formatUpdated(updatedAt)}</span> IST
               </>
             ) : isLoading ? (
               "Loading live NSE, RBI, and market feeds…"

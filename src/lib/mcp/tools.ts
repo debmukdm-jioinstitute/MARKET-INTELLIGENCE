@@ -5,6 +5,7 @@ import { collectorStatus } from "@/lib/collector/store";
 import { hasDatabase } from "@/lib/db";
 import { latestBriefs } from "@/lib/brief/store";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
+import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { buildSnapshot, METRICS } from "@/lib/snapshot";
 import { getBacktest } from "@/lib/stress/backtest";
 import { getBetas } from "@/lib/transmission/betas";
@@ -24,6 +25,7 @@ export type Tool = {
   access?: McpAccess;
   description: string;
   inputSchema: Json;
+  outputSchema?: Json;
   run: (args: Json, ctx: McpCallContext) => Promise<unknown>;
 };
 
@@ -42,12 +44,43 @@ const empty = { type: "object", properties: {}, additionalProperties: false };
 /** All tools are READ-ONLY views of the site's own computed data. */
 const CORE_TOOLS: Tool[] = [
   {
-    name: "get_market_snapshot",
-    description: "Current values of the metrics used across the site: India/US VIX, NIFTY, USD/INR, Brent, US10Y, India 10Y, FII/DII flow, RBI net liquidity, stress and convergence scores. Units are in the metric catalog.",
+    name: "get_market_overview",
+    description: "Composite market overview in a single call: snapshot metrics, macro stress index, live market breadth (advancers/decliners), and latest market brief. Recommended primary call for market analysis agents.",
     inputSchema: empty,
     run: async () => {
+      const [s, breadth, briefs] = await Promise.all([
+        buildSnapshot(),
+        fetchLiveBreadth().catch(() => ({ status: "unavailable", reason: "Breadth feed unreachable" })),
+        hasDatabase() ? latestBriefs(1).catch(() => []) : [],
+      ]);
+      return {
+        asOf: s.asOf,
+        snapshot: s.metrics,
+        stress: {
+          score: s.stress.score,
+          band: s.stress.band,
+          convergence: s.stress.convergence,
+          families: s.stress.families.map((f) => ({ family: f.family, count: f.count, stressed: f.count > 0 })),
+        },
+        breadth,
+        brief: briefs[0] ?? { status: "unavailable", reason: "No brief stored yet" },
+      };
+    },
+  },
+  {
+    name: "get_market_snapshot",
+    description: "Current values of metrics used across the site: India/US VIX, NIFTY, USD/INR, Brent, US10Y, India 10Y, FII/DII flow, RBI net liquidity, stress and convergence scores. Pass includeCatalog=true to attach full metric definitions dictionary.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        includeCatalog: { type: "boolean", description: "Whether to include the full metric definitions catalog (default false to save tokens)" },
+      },
+      additionalProperties: false,
+    },
+    run: async (args) => {
       const s = await buildSnapshot();
-      return { asOf: s.asOf, metrics: s.metrics, catalog: METRICS };
+      const includeCatalog = Boolean(args?.includeCatalog);
+      return { asOf: s.asOf, metrics: s.metrics, ...(includeCatalog ? { catalog: METRICS } : {}) };
     },
   },
   {
@@ -75,7 +108,7 @@ const CORE_TOOLS: Tool[] = [
     name: "get_india_yield_curve",
     description: "India yield curve from RBI-published points: T-bill cut-offs and benchmark G-sec yields, plus call money range. No interpolation.",
     inputSchema: empty,
-    run: async () => (await getRbiHomeMarket()) ?? { error: "RBI source unreachable" },
+    run: async () => (await getRbiHomeMarket()) ?? { status: "unavailable", reason: "RBI source unreachable", source: "RBI Financial Markets" },
   },
   {
     name: "get_transmission_betas",
@@ -109,21 +142,24 @@ const CORE_TOOLS: Tool[] = [
     inputSchema: empty,
     run: async () => {
       const [b] = hasDatabase() ? await latestBriefs(1) : [];
-      return b ?? { error: "No brief stored yet" };
+      return b ?? { status: "unavailable", reason: "No brief stored yet", source: "Daily brief" };
     },
   },
   {
     name: "get_security_risk",
     description: "Risk & events for one symbol from 1y of daily bars: realized vol, ATR(14), max drawdown, beta vs NIFTY/S&P, 52-week position, next earnings (India), recent Form 4 filings (US). Not a rating.",
     inputSchema: { type: "object", properties: { symbol: { type: "string", description: "e.g. TCS, RELIANCE, AAPL" } }, required: ["symbol"], additionalProperties: false },
-    run: async (args) => (await buildSecurityRisk(SymbolArgs.parse(args).symbol)) ?? { error: "Not enough price history" },
+    run: async (args) => {
+      const sym = SymbolArgs.parse(args).symbol;
+      return (await buildSecurityRisk(sym)) ?? { status: "unavailable", reason: "Not enough price history", symbol: sym };
+    },
   },
   {
     name: "get_data_health",
     description: "Freshness (fresh/stale/failing/pending) and source of every series stored by the scheduled collector.",
     inputSchema: empty,
     run: async () => {
-      if (!hasDatabase()) return { error: "Collector database not configured" };
+      if (!hasDatabase()) return { status: "unavailable", reason: "Collector database not configured" };
       const rows = (await collectorStatus()) as unknown as { id: string; last_ok: string | null; last_error: string | null; latest_date: string | null; [k: string]: unknown }[];
       return rows.filter((r) => !r.id.startsWith("collector:")).map((r) => ({ ...r, status: classify(r) }));
     },
@@ -131,6 +167,7 @@ const CORE_TOOLS: Tool[] = [
 ];
 
 const CORE_META: Record<string, { title: string; category: string }> = {
+  get_market_overview: { title: "Market overview (composite)", category: "Markets" },
   get_market_snapshot: { title: "Market snapshot", category: "Markets" },
   get_stress_index: { title: "Macro Stress Index", category: "Macro" },
   get_stress_backtest: { title: "Stress index backtest", category: "Macro" },

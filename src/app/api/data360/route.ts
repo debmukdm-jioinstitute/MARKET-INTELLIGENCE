@@ -79,10 +79,15 @@ export async function GET(req: Request) {
           SELECT count(*)::int AS n FROM data360_indicators
           WHERE database_id = ${database} AND tracked
         `;
+    const refs = data360RefAreas();
     const rows = pattern
       ? await db`
           SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
-            i.obs_synced AS obs_stored
+            (
+              SELECT count(*)::int FROM data360_observations o
+              WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id
+                AND o.ref_area = ANY(${refs}::text[])
+            ) AS obs_stored
           FROM data360_indicators i
           WHERE i.database_id = ${database} AND i.tracked AND i.indicator_id ILIKE ${pattern}
           ORDER BY i.indicator_id
@@ -90,7 +95,11 @@ export async function GET(req: Request) {
         `
       : await db`
           SELECT i.indicator_id, i.complete, i.obs_synced, i.last_synced_at,
-            i.obs_synced AS obs_stored
+            (
+              SELECT count(*)::int FROM data360_observations o
+              WHERE o.database_id = i.database_id AND o.indicator_id = i.indicator_id
+                AND o.ref_area = ANY(${refs}::text[])
+            ) AS obs_stored
           FROM data360_indicators i
           WHERE i.database_id = ${database} AND i.tracked
           ORDER BY i.indicator_id

@@ -1,5 +1,6 @@
 import { feedFetch } from "@/lib/feeds/http";
 import { upstoxHeaders } from "@/lib/feeds/sources/upstox/client";
+import { normalizeMarketDepth } from "@/lib/feeds/sources/upstox/depth-normalize";
 import type { LiveQuote } from "@/lib/feeds/types";
 
 /**
@@ -164,10 +165,7 @@ export async function fetchUpstoxFullQuotes(
       upperCircuit: row.upper_circuit_limit ?? null,
       lowerCircuit: row.lower_circuit_limit ?? null,
       lastTradeTime: row.last_trade_time ?? null,
-      depth: {
-        buy: row.depth?.buy ?? [],
-        sell: row.depth?.sell ?? [],
-      },
+      depth: normalizeMarketDepth(row.depth),
       asOf,
     });
   }

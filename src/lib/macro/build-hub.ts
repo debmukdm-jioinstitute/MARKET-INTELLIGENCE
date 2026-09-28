@@ -615,15 +615,18 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
               history: [],
               source: dashboard.pulse.gsec10y.source,
             },
-        ...dashboard.rbiLiquidity.rows.map((r, i) => ({
-          id: `rbi_row_${i}`,
-          label: r.label,
-          value: r.value ? Number.parseFloat(r.value) : null,
-          unit: r.value?.includes("%") ? "%" : "—",
-          history: [],
-          source: r.source,
-          hint: r.value ?? undefined,
-        })),
+        ...dashboard.rbiLiquidity.rows.map((r, i) => {
+          const parsed = r.value ? Number.parseFloat(String(r.value).replace(/[^\d.-]/g, "")) : null;
+          return {
+            id: `rbi_row_${i}`,
+            label: r.label,
+            value: parsed != null && Number.isFinite(parsed) ? parsed : null,
+            unit: r.value?.includes("%") ? "%" : "—",
+            history: [],
+            source: r.source,
+            hint: r.value && (parsed == null || !Number.isFinite(parsed)) ? r.value : undefined,
+          };
+        }),
         {
           id: "liquidity_ops",
           label: "System liquidity & RBI operations",

@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { formatData360ObsValue, formatData360Unit } from "@/lib/data360/display";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 async function readJson<T>(res: Response): Promise<T> {
@@ -154,7 +155,7 @@ function Data360ExplorerInner() {
       <PageHeader
         kicker="Data Centre"
         title="World Bank Data360 Explorer"
-        subtitle="Browse mirrored macro series for India (IND) and United States (USA). Synced nightly from data360api.worldbank.org into our database."
+        subtitle="Browse stored World Bank macro series for India and the United States. Copies refresh overnight from the public Data360 API."
       />
 
       <p className="text-sm text-muted-foreground">
@@ -186,19 +187,26 @@ function Data360ExplorerInner() {
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Indicators</p>
             <p className="text-2xl font-bold tabular-nums">{status.indicators.toLocaleString()}</p>
-            <p className="text-muted-foreground tabular-nums">{status.indicatorsComplete.toLocaleString()} complete</p>
+            <p className="text-muted-foreground">
+              <span className="tabular-nums">{status.indicatorsComplete.toLocaleString()}</span> complete
+            </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Country sync progress</p>
             <p className="text-2xl font-bold tabular-nums">{progressPct}%</p>
-            <p className="text-muted-foreground tabular-nums">
-              {status.refCursorsComplete.toLocaleString()} / {status.refCursors.toLocaleString()} countries
+            <p className="text-muted-foreground">
+              <span className="tabular-nums">
+                {status.refCursorsComplete.toLocaleString()} / {status.refCursors.toLocaleString()}
+              </span>{" "}
+              countries
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase text-muted-foreground">Databases</p>
             <p className="text-2xl font-bold tabular-nums">{status.datasets}</p>
-            <p className="text-muted-foreground tabular-nums">{status.indicatorsPending.toLocaleString()} indicators pending</p>
+            <p className="text-muted-foreground">
+              <span className="tabular-nums">{status.indicatorsPending.toLocaleString()}</span> indicators pending
+            </p>
           </div>
         </div>
       ) : null}
@@ -244,7 +252,7 @@ function Data360ExplorerInner() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Filter id… e.g. GDP, CPI"
+              placeholder="Search indicators — e.g. GDP, CPI"
               className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -323,9 +331,15 @@ function Data360ExplorerInner() {
                       <TableRow key={`${r.ref_area}-${r.time_period}`}>
                         <TableCell className="tabular-nums">{r.time_period}</TableCell>
                         <TableCell className="text-right tabular-nums font-medium">
-                          {r.obs_value != null ? r.obs_value : "—"}
+                          {formatData360ObsValue(r.obs_value)}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{r.unit_measure ?? r.freq ?? "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatData360Unit(r.unit_measure) !== "—"
+                            ? formatData360Unit(r.unit_measure)
+                            : r.freq
+                              ? formatData360Unit(r.freq)
+                              : "—"}
+                        </TableCell>
                       </TableRow>
                     ))}
                     {!obs.length ? (

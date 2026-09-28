@@ -152,7 +152,7 @@ export async function buildMarketShifts(): Promise<MarketShiftsPayload> {
         : "NSE FII/DII API did not return a parseable row — retry on the next refresh cycle.",
     sourceName: "NSE FII/DII Daily Trading Activity Report",
     sourceUrl: "https://www.nseindia.com/reports/fii-dii",
-    methodology: "Gross buys minus gross sells from custodian-reported NSE fiidiiTradeReact endpoint.",
+    methodology: "Gross buys minus gross sells from NSE-published FII/DII daily cash-market figures.",
     relatedSecurities: [
       { symbol: "HDFCBANK", impact: `${pctLabel(q("HDFCBANK.NS")?.changePct)} session` },
       { symbol: "ICICIBANK", impact: `${pctLabel(q("ICICIBANK.NS")?.changePct)} session` },

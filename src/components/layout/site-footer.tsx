@@ -96,8 +96,9 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
               </Link>
             ))}
           </div>
-          <p className={cn("text-sm tabular-nums", marketing ? "text-gray-400" : "text-muted-foreground")}>
-            © {new Date().getFullYear()} Market Intelligence
+          <p className={cn("text-sm", marketing ? "text-gray-400" : "text-muted-foreground")}>
+            ©{" "}
+            <span className="tabular-nums">{new Date().getFullYear()}</span> Market Intelligence
           </p>
         </div>
       </div>

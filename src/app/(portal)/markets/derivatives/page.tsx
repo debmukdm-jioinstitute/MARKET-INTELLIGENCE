@@ -110,9 +110,26 @@ function Metric({ metricId, label, value }: { metricId?: string; label: string; 
   );
 }
 
-function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
+function foHasChainData(snap: FoSnapshot): boolean {
   return (
-    <Panel title={title} subtitle="NSE option chain indices API">
+    snap.topCallStrikes.length > 0 ||
+    snap.topPutStrikes.length > 0 ||
+    (snap.totalOi != null && snap.totalOi > 0) ||
+    snap.pcr != null
+  );
+}
+
+function FoPanel({ title, snap }: { title: string; snap: FoSnapshot }) {
+  const hasChain = foHasChainData(snap);
+  return (
+    <Panel
+      title={title}
+      subtitle={
+        hasChain
+          ? "NSE / Upstox option chain summary"
+          : "Chain unavailable — no live OI (market closed or feed blocked)"
+      }
+    >
       <dl className="grid grid-cols-2 gap-2 text-sm">
         <Row metricId="pcr" k="PCR" v={snap.pcr != null ? snap.pcr.toFixed(3) : "—"} />
         <Row metricId="openInterest" k="Total OI" v={snap.totalOi?.toLocaleString("en-IN") ?? "—"} />
@@ -155,7 +172,7 @@ function StrikeTable({ label, rows }: { label: string; rows: { strike: number; o
           ) : (
             <tr>
               <td colSpan={2} className="py-2 text-muted-foreground">
-                No chain data
+                No chain data — try during NSE F&amp;O hours or use the Upstox option chain above.
               </td>
             </tr>
           )}

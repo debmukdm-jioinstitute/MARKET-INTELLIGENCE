@@ -46,7 +46,15 @@ export default function DailyBriefPage() {
       {latest ? (
         <Panel
           title={latest.headline}
-          subtitle={`${latest.kind === "pre" ? "Pre-market" : "Post-close"} · ${new Date(latest.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST · ${latest.engine === "llm" ? "AI-assisted, grounded on the facts below" : "rules-based"}`}
+          subtitle={
+            <>
+              {latest.kind === "pre" ? "Pre-market" : "Post-close"} ·{" "}
+              <span className="tabular-nums">
+                {new Date(latest.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+              </span>{" "}
+              IST · {latest.engine === "llm" ? "AI-assisted, grounded on the facts below" : "rules-based"}
+            </>
+          }
         >
           <ul className="divide-y divide-border/50">
             {latest.items.map((i, idx) => (

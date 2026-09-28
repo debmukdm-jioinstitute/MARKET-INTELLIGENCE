@@ -214,7 +214,13 @@ function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean })
         />
       </div>
       <p className={cn("mt-1 tabular-nums text-foreground", large ? "text-3xl" : "text-2xl")}>
-        {metric.value != null ? metric.value.toFixed(2) : metric.hint ? "↗" : "—"}
+        {metric.value != null
+          ? metric.value.toFixed(2)
+          : metric.hint && /%/.test(metric.hint)
+            ? metric.hint
+            : metric.hint
+              ? "↗"
+              : "—"}
         <span className="ml-1 text-sm text-muted-foreground">{metric.unit}</span>
       </p>
       {metric.change != null ? (

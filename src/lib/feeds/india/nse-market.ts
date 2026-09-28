@@ -148,7 +148,7 @@ export async function fetchNseOptionChain(symbol: "NIFTY" | "BANKNIFTY"): Promis
       topCallStrikes: [],
       topPutStrikes: [],
       source: {
-        provider: "NSE India",
+        provider: "NSE India (chain unavailable)",
         url: `https://www.nseindia.com/option-chain`,
       },
     };

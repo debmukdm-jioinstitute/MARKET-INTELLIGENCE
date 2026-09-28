@@ -42,8 +42,9 @@ export default function FeedsPage() {
           <Panel
             title="Upstream Source Health & Latency"
             subtitle={
-              <span className="inline-flex items-center gap-1.5">
-                Last hub synchronization {new Date(data.fetchedAt).toLocaleString()}
+              <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                Last hub sync ·{" "}
+                <span className="tabular-nums">{new Date(data.fetchedAt).toLocaleString()}</span>
                 <DataInfo
                   source={{ provider: "Feed Hub", url: "/api/feeds/hub", asOf: data.fetchedAt }}
                   hubSyncedAt={data.fetchedAt}

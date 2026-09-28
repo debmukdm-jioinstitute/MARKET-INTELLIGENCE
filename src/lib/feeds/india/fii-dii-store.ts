@@ -51,7 +51,7 @@ export function fiiDiiRowsToSeries(rows: FiiDiiRow[]): SeriesResult[] {
   const base = {
     unit: "₹ cr net",
     category: "market" as const,
-    provider: "NSE India (fiidiiTradeReact)",
+    provider: "NSE India (FII/DII daily report)",
     url: NSE_FII_URL,
   };
   const batch: SeriesResult[] = [];

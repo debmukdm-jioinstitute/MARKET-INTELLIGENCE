@@ -14,6 +14,7 @@ export default function AiDeskPage() {
       />
 
       <Panel
+        id="trading-desk"
         title="1. Trading desk — run a live multi-agent debate"
         subtitle="Pick any India (NSE) or US ticker. Real quote, fundamentals, technicals and headlines go to five LLM agents (GPT-OSS 120B via Groq) that debate it."
       >
@@ -21,6 +22,7 @@ export default function AiDeskPage() {
       </Panel>
 
       <Panel
+        id="sentiment-portfolio"
         title="2. Sentiment portfolio tilt"
         subtitle="Scores real recent headlines for each of your My Portfolio holdings."
       >
@@ -28,6 +30,7 @@ export default function AiDeskPage() {
       </Panel>
 
       <Panel
+        id="alpha-discovery"
         title="3. Alpha factor discovery"
         subtitle="Pick 1-8 tickers. The LLM proposes candidate factors; this app backtests them on real historical prices."
       >

@@ -22,7 +22,7 @@ export function MarketStatusBadge() {
     <div className="mb-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-border px-3 py-1 text-sm">
       <span className={cn("size-1.5 rounded-full bg-muted-foreground")} />
       <span className="font-medium text-foreground">
-        The market is closed now — {reopen}.
+        Market closed · {reopen}.
       </span>
       {nextHoliday && !todayHoliday ? (
         <span className="text-muted-foreground">

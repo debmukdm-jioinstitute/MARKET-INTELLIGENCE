@@ -147,7 +147,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     health("worldbank", "World Bank (live API)", wb, (v) => Array.isArray(v) && v.length > 0),
     {
       id: "data360",
-      label: "World Bank Data360 mirror",
+      label: "World Bank Data360 (stored)",
       ok: Boolean(d360.value?.ok) && !d360.error,
       latencyMs: d360.latencyMs || Date.now() - d360Start,
       message: d360.value

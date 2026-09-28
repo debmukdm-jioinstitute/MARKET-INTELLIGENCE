@@ -23,6 +23,7 @@ import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
 import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
+import { HeroRotatingHeadline } from "@/components/marketing/hero-rotating-headline";
 import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -344,9 +345,7 @@ export function LandingPage() {
                 Free in beta · no card
               </span>
 
-              <h1 className="mx-auto mt-6 text-[clamp(2.2rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-tight text-gray-900">
-                See the market clearly, then test your ideas risk-free.
-              </h1>
+              <HeroRotatingHeadline />
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
               Research Indian and US stocks, monitor your portfolio and practise on a virtual book, with the source and time of every number shown.
             </p>

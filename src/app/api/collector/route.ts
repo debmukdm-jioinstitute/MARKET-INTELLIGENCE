@@ -17,8 +17,11 @@ export async function GET(req: Request) {
     const series = rows.filter((r) => !r.id.startsWith("collector:")).map((r) => ({ ...r, status: classify(r) }));
     const failures = rows.filter((r) => r.id.startsWith("collector:")).map((r) => ({ collector: r.id.slice(10), error: r.last_error, at: r.last_run }));
     const counts = { fresh: 0, stale: 0, failing: 0, pending: 0 };
-    for (const s of series) counts[s.status]++;
-    return NextResponse.json({ generatedAt: new Date().toISOString(), counts, series, failures }, { headers: { "Cache-Control": "public, max-age=60" } });
+    for (const s of series) counts[s.status as keyof typeof counts]++;
+    return NextResponse.json(
+      { generatedAt: new Date().toISOString(), counts, series, failures },
+      { headers: { "Cache-Control": "public, max-age=60" } },
+    );
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "failed" }, { status: 500 });
   }

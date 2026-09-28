@@ -23,6 +23,7 @@ import { useFundamentals } from "@/hooks/use-fundamentals";
 import { useUpstoxQuote } from "@/hooks/use-upstox-quote";
 import type { IndiaInstrument } from "@/lib/feeds/india/instruments";
 import type { CandleRange } from "@/lib/feeds/sources/upstox";
+import { depthLooksAvailable } from "@/lib/feeds/sources/upstox/depth-normalize";
 import { fmtChgPct, fmtInr } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -108,7 +109,13 @@ export function SecuritySheet({
                 <p className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
                   Market depth (5 level)
                 </p>
-                <MarketDepthLadder buy={quote.depth.buy} sell={quote.depth.sell} />
+                {depthLooksAvailable(quote.depth.buy, quote.depth.sell) ? (
+                  <MarketDepthLadder buy={quote.depth.buy} sell={quote.depth.sell} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Order book unavailable — Upstox does not publish meaningful depth when the market is closed or for this symbol right now.
+                  </p>
+                )}
               </div>
 
               <div>
