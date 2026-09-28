@@ -697,10 +697,16 @@ export function buildModel(dataset: FinancialDataset, baseAssumptions: Assumptio
   }
 
   const multiples = {
-    currentEvEbitda: iferror(() => (wacc.marketCap + netDebt) / (dataset.ttm?.ebitda != null ? dataset.ttm.ebitda / M : rows[L].ebitda)) || null,
+    currentEvEbitda: (() => {
+      const ebitdaVal = dataset.ttm?.ebitda != null ? dataset.ttm.ebitda / M : (rows[L].ebitda > 0 ? rows[L].ebitda : (rows[L].pretax_income > 0 ? rows[L].pretax_income : rows[L].operating_income));
+      if (!ebitdaVal || ebitdaVal <= 0) return null;
+      const effectiveEv = isRi ? wacc.marketCap : (wacc.marketCap + netDebt);
+      const val = effectiveEv / ebitdaVal;
+      return Number.isFinite(val) && val > 0 ? val : null;
+    })(),
     currentPe: iferror(() => wacc.marketCap / (dataset.ttm?.net_income != null ? dataset.ttm.net_income / M : rows[L].net_income)) || null,
     currentPb: iferror(() => wacc.marketCap / rows[L].total_equity) || null,
-    impliedEvEbitda: iferror(() => dcf.enterpriseValue / rows[L].ebitda) || null,
+    impliedEvEbitda: iferror(() => (isRi ? (dcf.impliedPrice * dataset.market.sharesOutstanding) / M : dcf.enterpriseValue) / (rows[L].ebitda > 0 ? rows[L].ebitda : rows[L].pretax_income)) || null,
   };
 
   const model: ModelResult = {

@@ -30,16 +30,19 @@ export function buildPeerRow(i: PeerInputs): PeerRow | null {
   const marketCap = i.price * i.shares;
   if (!(marketCap > 0) || !Number.isFinite(i.rawBeta)) return null;
   const leveredBeta = 0.67 * i.rawBeta + 0.33;
-  const de = Math.max(0, i.debt) / marketCap;
-  const unleveredBeta = leveredBeta / (1 + (1 - i.taxRate) * de);
-  const ev = marketCap + i.debt - i.cash;
+  const isBankOrLender = (i.debt / marketCap) > 3;
+  const de = isBankOrLender ? Math.min(1.5, Math.max(0, i.debt) / marketCap) : Math.max(0, i.debt) / marketCap;
+  const unleveredBeta = leveredBeta / (1 + (1 - i.taxRate) * (isBankOrLender ? 0.3 : de));
+  // For banks and financial lenders, customer deposits/borrowings are operating liabilities rather than enterprise debt.
+  const ev = isBankOrLender ? marketCap : marketCap + i.debt - i.cash;
   const pos = (n: number | null) => (n != null && n > 0 ? n : null);
+  const ebitdaVal = pos(i.ebitda);
   return {
     symbol: i.symbol,
     name: i.name,
     marketCap,
     enterpriseValue: ev,
-    evEbitda: pos(i.ebitda) ? ev / i.ebitda! : null,
+    evEbitda: ebitdaVal ? ev / ebitdaVal : null,
     evSales: pos(i.revenue) ? ev / i.revenue! : null,
     pe: pos(i.netIncome) ? marketCap / i.netIncome! : null,
     pb: pos(i.equity) ? marketCap / i.equity! : null,
@@ -70,8 +73,30 @@ export function summarizePeers(peers: PeerRow[], source: string): PeerSet | null
 type TsResult = { meta?: { type?: string[] }; [k: string]: unknown };
 
 async function fetchPeerFinancials(symbol: string) {
-  const annual = ["OrdinarySharesNumber", "TotalDebt", "CashCashEquivalentsAndShortTermInvestments", "StockholdersEquity", "TaxProvision", "PretaxIncome", "EBITDA", "TotalRevenue", "NetIncome"];
-  const trailing = ["EBITDA", "TotalRevenue", "NetIncome"];
+  const annual = [
+    "OrdinarySharesNumber",
+    "TotalDebt",
+    "CashCashEquivalentsAndShortTermInvestments",
+    "StockholdersEquity",
+    "TaxProvision",
+    "PretaxIncome",
+    "EBITDA",
+    "TotalRevenue",
+    "NetIncome",
+    "OperatingIncome",
+    "NormalizedEBITDA",
+    "EBIT",
+    "ReconciledDepreciation",
+  ];
+  const trailing = [
+    "EBITDA",
+    "TotalRevenue",
+    "NetIncome",
+    "OperatingIncome",
+    "NormalizedEBITDA",
+    "EBIT",
+    "PretaxIncome",
+  ];
   const now = Math.floor(Date.now() / 1000);
   const js = await getJson<{ timeseries?: { result?: TsResult[] } }>(
     `/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(symbol)}`,
@@ -139,6 +164,16 @@ async function fetchOnePeer(symbol: string, index: PriceSeries | null): Promise<
   const pretax = fin.g("annualPretaxIncome");
   const tax = fin.g("annualTaxProvision");
   const taxRate = pretax && pretax > 0 && tax != null ? Math.min(0.35, Math.max(0.1, tax / pretax)) : 0.25;
+  const rawEbitda =
+    fin.g("trailingEBITDA") ??
+    fin.g("annualEBITDA") ??
+    fin.g("trailingNormalizedEBITDA") ??
+    fin.g("annualNormalizedEBITDA") ??
+    fin.g("trailingOperatingIncome") ??
+    fin.g("annualOperatingIncome") ??
+    fin.g("trailingPretaxIncome") ??
+    fin.g("annualPretaxIncome");
+
   return buildPeerRow({
     symbol,
     name: chart.meta?.longName ?? chart.meta?.shortName ?? symbol,
@@ -146,7 +181,7 @@ async function fetchOnePeer(symbol: string, index: PriceSeries | null): Promise<
     shares,
     debt: fin.g("annualTotalDebt") ?? 0,
     cash: fin.g("annualCashCashEquivalentsAndShortTermInvestments") ?? 0,
-    ebitda: fin.g("trailingEBITDA") ?? fin.g("annualEBITDA"),
+    ebitda: rawEbitda,
     revenue: fin.g("trailingTotalRevenue") ?? fin.g("annualTotalRevenue"),
     netIncome: fin.g("trailingNetIncome") ?? fin.g("annualNetIncome"),
     equity: fin.g("annualStockholdersEquity"),
