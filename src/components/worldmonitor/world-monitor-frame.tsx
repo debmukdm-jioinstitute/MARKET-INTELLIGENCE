@@ -7,7 +7,7 @@ import {
 } from "@/lib/worldmonitor/public-url";
 import Link from "next/link";
 import { useState, useRef } from "react";
-import { ExternalLink, RefreshCw, Globe, ShieldCheck } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 
 type Props = {
   variant?: string;
@@ -25,70 +25,45 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
     setIframeKey((prev) => prev + 1);
   };
 
+  const btnGhost =
+    "inline-flex items-center gap-1.5 rounded-md border border-[#2a3a2a] bg-[#111411] px-3 py-1.5 text-xs font-semibold text-[#c8d0c8] transition-colors hover:border-[#39ff14]/40 hover:text-[#39ff14]";
+  const btnPrimary =
+    "inline-flex items-center gap-1.5 rounded-md border border-[#39ff14] bg-[#39ff14] px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-[#0a0d0a] shadow-[0_0_16px_rgba(57,255,20,0.35)] transition-opacity hover:opacity-90";
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
-            <Globe className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-foreground">World Monitor</h3>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Proxy
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Geopolitical news, radar & markets proxied at <code className="font-mono text-xs">{launchPath}</code>
-            </p>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#1a2e1a] bg-[#0c100c] px-4 py-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#6b7a6b]">Global situation</p>
+          <p className="mt-0.5 text-sm text-[#b0bab0]">
+            Endpoint{" "}
+            <span className="break-all font-medium text-[#39ff14] tabular-nums">{launchPath}</span>
+          </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleRefresh}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:bg-accent transition-colors"
-            title="Reload dashboard"
-          >
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={handleRefresh} className={btnGhost} title="Reload dashboard">
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </button>
-          
-          <a
-            href={launchPath}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-600/90 transition-colors"
-          >
-            Full Window
+          <a href={launchPath} target="_blank" rel="noopener noreferrer" className={btnPrimary}>
+            Mission view
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
-
-          <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          >
-            Upstream App
+          <a href={externalUrl} target="_blank" rel="noopener noreferrer" className={btnGhost}>
+            Upstream
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>
 
-      {/* Frame Container */}
-      <div className="relative min-h-[720px] h-[80vh] w-full rounded-xl border border-border bg-black/90 shadow-md overflow-hidden">
-        {isLoading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-            <p className="text-sm font-medium text-foreground">Loading World Monitor Dashboard...</p>
-            <p className="text-xs text-muted-foreground">Connecting to proxied global intelligence feeds</p>
+      <div className="relative min-h-[720px] h-[min(80vh,900px)] w-full overflow-hidden rounded-lg border border-[#1a2e1a] bg-black shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
+        {isLoading ? (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#070807]/95">
+            <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#39ff14]/30 border-t-[#39ff14]" />
+            <p className="text-sm font-semibold text-[#39ff14]">Preparing dashboard</p>
+            <p className="text-xs text-[#7a857a]">Map layers, panels, and signals loading…</p>
           </div>
-        )}
+        ) : null}
 
         <iframe
           key={iframeKey}
@@ -102,25 +77,20 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
         />
       </div>
 
-      {/* Attribution & Info */}
-      <div className="flex flex-wrap items-center justify-between text-xs text-muted-foreground px-1">
-        <p className="flex items-center gap-1.5">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-          Proxied reverse endpoint at <span className="font-medium text-foreground">{launchPath}</span>
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1a2e1a] pt-3 text-xs text-[#7a857a]">
+        <p>Proxied on Market Intelligence · read-only intelligence feeds</p>
         <p>
-          Source:{" "}
           <a
             href={WORLDMONITOR_UPSTREAM_REPO}
-            className="text-blue-600 hover:underline font-medium"
+            className="font-medium text-[#39ff14] hover:underline"
             target="_blank"
             rel="noopener noreferrer"
           >
             koala73/worldmonitor
           </a>{" "}
           (AGPL-3.0) ·{" "}
-          <Link href="/help#worldmonitor" className="text-blue-600 hover:underline">
-            Integration Docs
+          <Link href="/help#worldmonitor" className="text-[#39ff14] hover:underline">
+            Help
           </Link>
         </p>
       </div>
