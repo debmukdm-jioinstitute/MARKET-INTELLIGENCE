@@ -14,7 +14,7 @@ export function GuestBanner() {
         — Explore the full terminal with demo books. Trades and settings are not saved to an account.
       </p>
       <Link
-        href="/signup"
+        href="/signup?from=demo"
         className="shrink-0 rounded-md bg-blue-600 px-3 py-1 font-medium text-white transition hover:bg-blue-600"
       >
         Create free account
