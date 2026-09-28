@@ -155,26 +155,281 @@ async function fetchOnePeer(symbol: string, index: PriceSeries | null): Promise<
   });
 }
 
-/** Fetches up to 6 same-exchange "similar companies" and summarises beta + multiples. Returns null when none usable. */
-export async function fetchPeerSet(symbol: string, index: PriceSeries, _currency: string): Promise<PeerSet | null> {
+import { NIFTY_500 } from "@/lib/prowess/nifty500";
+
+export const SECTOR_PEER_CLUSTERS: Record<string, { name: string; symbols: string[] }> = {
+  BANKING: {
+    name: "Banking",
+    symbols: [
+      "HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK",
+      "BANKBARODA", "PNB", "INDUSINDBK", "CANBK", "IDFCFIRSTB",
+      "FEDERALBNK", "UNIONBANK", "INDIANB", "YESBANK", "AUBANK",
+      "BANDHANBNK", "RBLBANK", "CENTRALBK", "IOB", "UCOBANK",
+      "MAHABANK", "J&KBANK", "KARURVYSYA", "CUB",
+    ],
+  },
+  FINANCIAL_SERVICES: {
+    name: "NBFC & Financial Services",
+    symbols: [
+      "BAJFINANCE", "BAJAJFINSV", "CHOLAFIN", "SHRIRAMFIN", "MUTHOOTFIN",
+      "M&MFIN", "SUNDARMFIN", "POONAWALLA", "LICHSGFIN", "PNBHOUSING",
+      "AAVAS", "CANFINHOME", "HOMEFIRST", "APTUS", "ABCAPITAL", "JIOFIN",
+      "HDFCAMC", "NAM-INDIA", "UTIAMC", "CDSL", "BSE", "MCX", "ANGELONE",
+      "MOTILALOFS", "ANANDRATHI", "NUVAMA", "CRISIL", "CAMS", "KFINTECH",
+    ],
+  },
+  INSURANCE: {
+    name: "Insurance",
+    symbols: [
+      "LICI", "HDFCLIFE", "SBILIFE", "ICICIPRULI", "ICICIGI",
+      "GICRE", "NIACL", "STARHEALTH", "GODIGIT", "NIVABUPA",
+    ],
+  },
+  IT_SERVICES: {
+    name: "Information Technology",
+    symbols: [
+      "TCS", "INFY", "HCLTECH", "WIPRO", "TECHM", "LTIM", "LTM",
+      "PERSISTENT", "COFORGE", "MPHASIS", "KPITTECH", "OFSS", "CYIENT",
+      "TATAELXSI", "TATATECH", "BSOFT", "SONATSOFTW", "ZENSARTECH", "NEWGEN",
+      "NETWEB", "AFFLE", "MAPMYINDIA", "LATENTVIEW", "FSL", "ECLERX", "SAGILITY",
+    ],
+  },
+  OIL_GAS_ENERGY: {
+    name: "Oil, Gas & Energy",
+    symbols: [
+      "RELIANCE", "ONGC", "IOC", "BPCL", "HINDPETRO", "GAIL", "OIL",
+      "PETRONET", "MRPL", "ATGL", "MGL", "IGL", "GUJGASLTD", "CHENNPETRO",
+      "CASTROLIND", "AEGISLOG", "AEGISVOPAK",
+    ],
+  },
+  AUTOMOBILE: {
+    name: "Automobile & Auto Components",
+    symbols: [
+      "MARUTI", "TATAMOTORS", "TMCV", "TMPV", "M&M", "BAJAJ-AUTO", "EICHERMOT",
+      "HEROMOTOCO", "TVSMOTOR", "ASHOKLEY", "BHARATFORG", "BOSCHLTD", "MOTHERSON",
+      "MSUMI", "SONACOMS", "TIINDIA", "UNOMINDA", "BALKRISIND", "APOLLOTYRE",
+      "MRF", "CEATLTD", "JKTYRE", "EXIDEIND", "AMARAJA", "ARE&M", "ENDURANCE",
+      "CIEINDIA", "SCHAEFFLER", "TIMKEN", "CRAFTSMAN", "FORCEMOT", "HYUNDAI",
+      "OLAELEC", "OLECTRA", "JBMA",
+    ],
+  },
+  PHARMACEUTICALS: {
+    name: "Pharmaceuticals & Healthcare",
+    symbols: [
+      "SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "APOLLOHOSP", "LUPIN",
+      "AUROPHARMA", "TORNTPHARM", "ZYDUSLIFE", "MANKIND", "BIOCON", "ALKEM",
+      "MAXHEALTH", "FORTIS", "MEDANTA", "NH", "ASTERDM", "KIMS", "RAINBOW",
+      "GLENMARK", "IPCALAB", "AJANTPHARM", "PPLPHARMA", "GLAND", "LAURUSLABS",
+      "SYNGENE", "NEULANDLAB", "NATCOPHARM", "GRANULES", "ERIS", "CAPLIPOINT",
+      "LALPATHLAB", "VIJAYA", "COHANCE", "ANTHEM", "SAILIFE", "WOCKPHARMA",
+    ],
+  },
+  FMCG: {
+    name: "Fast Moving Consumer Goods",
+    symbols: [
+      "HINDUNILVR", "ITC", "NESTLEIND", "BRITANNIA", "TATACONSUM", "DABUR",
+      "MARICO", "GODREJCP", "COLPAL", "VBL", "PATANJALI", "EMAMILTD",
+      "ZYDUSWELL", "BIKAJI", "HONASA", "RADICO", "UNITDSPR", "UBL",
+      "GODFRYPHLP", "GILLETTE", "CCL", "LTFOODS", "BALRAMCHIN", "AWL",
+    ],
+  },
+  METALS_MINING: {
+    name: "Metals & Mining",
+    symbols: [
+      "TATASTEEL", "JSWSTEEL", "HINDALCO", "JINDALSTEL", "VEDL", "COALINDIA",
+      "NMDC", "NATIONALUM", "SAIL", "JSL", "HINDZINC", "HINDCOPPER", "GMDCLTD",
+      "GRAVITA", "LLOYDSME", "SHYAMMETL", "SARDAEN", "NSLNISP", "ADANIENT",
+    ],
+  },
+  CAPITAL_GOODS: {
+    name: "Capital Goods & Engineering",
+    symbols: [
+      "LT", "SIEMENS", "ABB", "BHEL", "BEL", "HAL", "CUMMINSIND", "THERMAX",
+      "SUZLON", "GVT&D", "MAZDOCK", "COCHINSHIP", "GRSE", "BDL", "AIAENG",
+      "APARINDS", "KEI", "POLYCAB", "RRKABEL", "FINCABLES", "CGPOWER", "KAYNES",
+      "SYRMA", "DATAPATTNS", "ZENTEC", "TITAGARH", "JWL", "BEML", "ASTRAL",
+      "SUPREMEIND", "CARBORUNIV", "KEC", "KPIL", "TRITURBINE", "ENRIN", "RHIM",
+    ],
+  },
+  CEMENT_MATERIALS: {
+    name: "Cement & Construction Materials",
+    symbols: [
+      "ULTRACEMCO", "GRASIM", "AMBUJACEM", "ACC", "SHREECEM", "DALBHARAT",
+      "JKCEMENT", "RAMCOCEM", "NUVOCO", "INDIACEM", "JSWCEMENT",
+    ],
+  },
+  POWER_ENERGY: {
+    name: "Power & Utilities",
+    symbols: [
+      "NTPC", "POWERGRID", "TATAPOWER", "ADANIGREEN", "ADANIPOWER", "ADANIENSOL",
+      "JSWENERGY", "NHPC", "SJVN", "TORNTPOWER", "CESC", "JPPOWER", "RPOWER",
+      "NLCINDIA", "WAAREEENER", "PREMIERENE", "ACMESOLAR", "NTPCGREEN", "NAVA",
+    ],
+  },
+  TELECOMMUNICATION: {
+    name: "Telecommunication",
+    symbols: [
+      "BHARTIARTL", "INDUSTOWER", "IDEA", "TATACOMM", "BHARTIHEXA", "HFCL",
+      "TEJASNET", "ITI", "RAILTEL", "TTML",
+    ],
+  },
+  CHEMICALS: {
+    name: "Chemicals",
+    symbols: [
+      "PIDILITIND", "SRF", "DEEPAKNTR", "AARTIIND", "TATACHEM", "PIIND", "UPL",
+      "FLUOROCHEM", "NAVINFLUOR", "CLEAN", "ATUL", "COROMANDEL", "CHAMBLFERT",
+      "DEEPAKFERT", "FACT", "SUMICHEM", "BAYERCROP", "HSCL", "PCBL", "SOLARINDS",
+      "ANURAS", "JUBLINGREA", "SWANCORP",
+    ],
+  },
+  REALTY: {
+    name: "Realty & Real Estate",
+    symbols: [
+      "DLF", "GODREJPROP", "LODHA", "OBEROIRLTY", "PRESTIGE", "PHOENIXLTD",
+      "BRIGADE", "SOBHA", "SIGNATURE", "ANANTRAJ", "ABREL",
+    ],
+  },
+  CONSUMER_RETAIL: {
+    name: "Consumer Durables & Retail",
+    symbols: [
+      "TITAN", "TRENT", "DMART", "HAVELLS", "VOLTAS", "DIXON", "CROMPTON",
+      "ASIANPAINT", "BERGEPAINT", "KALYANKJIL", "PAGEIND", "BATAINDIA",
+      "BLUESTARCO", "WHIRLPOOL", "AMBER", "PGEL", "ABFRL", "NYKAA", "SWIGGY",
+      "ETERNAL", "DEVYANI", "JUBLFOOD", "SAPPHIRE", "INDHOTEL", "EIHOTEL",
+      "LEMONTREE", "CHALET", "FIRSTCRY", "MEESHO", "VMM",
+    ],
+  },
+  INFRA_LOGISTICS: {
+    name: "Infrastructure & Logistics",
+    symbols: [
+      "ADANIPORTS", "CONCOR", "DELHIVERY", "BLUEDART", "INDIGO", "GESHIP",
+      "SCI", "JSWINFRA", "GMRAIRPORT", "IRCTC", "IRB", "IRCON", "RVNL", "RITES",
+      "NBCC", "NCC", "CEMPRO", "ENGINERSIN", "AFCONS",
+    ],
+  },
+};
+
+export const GLOBAL_PEER_CLUSTERS: Record<string, { name: string; symbols: string[] }> = {
+  US_BIG_TECH: {
+    name: "Big Tech & Software",
+    symbols: ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "META", "NVDA", "AVGO", "ADBE", "CRM", "ORCL", "CSCO", "IBM", "INTC", "AMD", "QCOM"],
+  },
+  US_BANKING: {
+    name: "Banking & Financial Services",
+    symbols: ["JPM", "BAC", "WFC", "C", "MS", "GS", "USB", "PNC", "TFC", "BLK", "SCHW", "AXP", "V", "MA", "COF"],
+  },
+  US_HEALTHCARE: {
+    name: "Healthcare & Pharmaceuticals",
+    symbols: ["JNJ", "PFE", "MRK", "ABBV", "LLY", "BMY", "AMGN", "GILD", "UNH", "CVS", "ELV", "TMO", "ABT", "DHR"],
+  },
+  US_ENERGY: {
+    name: "Energy & Oil",
+    symbols: ["XOM", "CVX", "COP", "SLB", "EOG", "OXY", "MPC", "PSX", "VLO", "HAL", "KMI", "WMB"],
+  },
+  US_AUTO: {
+    name: "Automotive",
+    symbols: ["TSLA", "F", "GM", "RIVN", "LCID", "TM", "HMC", "STLA", "RACE"],
+  },
+  US_RETAIL_CONSUMER: {
+    name: "Consumer & Retail",
+    symbols: ["WMT", "TGT", "COST", "HD", "LOW", "NKE", "MCD", "SBUX", "PG", "KO", "PEP", "PM", "MO"],
+  },
+  US_INDUSTRIALS_AERO: {
+    name: "Industrials & Aerospace",
+    symbols: ["CAT", "DE", "GE", "HON", "BA", "RTX", "LMT", "GD", "NOC", "EMR", "ETN", "ITW", "PH"],
+  },
+};
+
+export function getPeerCandidatesForSymbol(
+  symbol: string,
+  sectorInfo?: { sector: string | null; industry: string | null } | null,
+): { candidates: string[]; groupName: string } {
+  const hasDot = symbol.includes(".");
+  const explicitSuffix = hasDot ? "." + symbol.split(".").pop() : "";
+  const bare = symbol.replace(/\.[A-Za-z0-9_-]+$/, "").toUpperCase();
+
+  // 1. Check Indian curated sector clusters
+  for (const cluster of Object.values(SECTOR_PEER_CLUSTERS)) {
+    if (cluster.symbols.includes(bare)) {
+      const sfx = explicitSuffix || ".NS";
+      const candidates = cluster.symbols
+        .filter((s) => s !== bare)
+        .slice(0, 6)
+        .map((s) => `${s}${sfx}`);
+      return { candidates, groupName: cluster.name };
+    }
+  }
+
+  // 2. Check Global curated clusters
+  for (const cluster of Object.values(GLOBAL_PEER_CLUSTERS)) {
+    if (cluster.symbols.includes(bare)) {
+      const candidates = cluster.symbols
+        .filter((s) => s !== bare)
+        .slice(0, 6)
+        .map((s) => (explicitSuffix ? `${s}${explicitSuffix}` : s));
+      return { candidates, groupName: cluster.name };
+    }
+  }
+
+  // 3. Check NIFTY_500 classification for Indian stocks
+  const niftyEntry = NIFTY_500.find((row) => row[0].toUpperCase() === bare);
+  if (niftyEntry) {
+    const sector = niftyEntry[2];
+    const sfx = explicitSuffix || ".NS";
+    const sameSectorSymbols = NIFTY_500
+      .filter((row) => row[2] === sector && row[0].toUpperCase() !== bare)
+      .slice(0, 6)
+      .map((row) => `${row[0]}${sfx}`);
+    if (sameSectorSymbols.length > 0) {
+      return { candidates: sameSectorSymbols, groupName: sector };
+    }
+  }
+
+  // 4. Fallback to sectorInfo if available
+  const group = sectorInfo?.industry || sectorInfo?.sector || "Industry";
+  return { candidates: [], groupName: group };
+}
+
+/** Fetches up to 6 same-industry peers and summarises beta + multiples. */
+export async function fetchPeerSet(
+  symbol: string,
+  index: PriceSeries,
+  _currency: string,
+  sectorInfo?: { sector: string | null; industry: string | null } | null,
+): Promise<PeerSet | null> {
   void _currency;
-  const rec = await getJson<{ finance?: { result?: { recommendedSymbols?: { symbol: string }[] }[] } }>(
-    `/v6/finance/recommendationsbysymbol/${encodeURIComponent(symbol)}`,
-    {},
-    8_000,
-  );
   const suffix = suffixOf(symbol);
-  const all = (rec?.finance?.result?.[0]?.recommendedSymbols ?? []).map((r) => r.symbol).filter((s) => s && s !== symbol);
-  const same = all.filter((s) => suffixOf(s) === suffix);
-  // prefer same-exchange peers (same benchmark index); top up from other markets when fewer than 4 exist
-  const others = all.filter((s) => suffixOf(s) !== suffix);
-  const candidates = [...same, ...(same.length < 4 ? others : [])].slice(0, 6);
+
+  // 1. Resolve candidates using pure-industry clusters
+  const { candidates: directCandidates, groupName } = getPeerCandidatesForSymbol(symbol, sectorInfo);
+
+  let candidates = directCandidates;
+
+  // 2. Fallback to Yahoo similar companies only if no curated candidates exist
+  if (!candidates.length) {
+    try {
+      const rec = await getJson<{ finance?: { result?: { recommendedSymbols?: { symbol: string }[] }[] } }>(
+        `/v6/finance/recommendationsbysymbol/${encodeURIComponent(symbol)}`,
+        {},
+        8_000,
+      );
+      const all = (rec?.finance?.result?.[0]?.recommendedSymbols ?? []).map((r) => r.symbol).filter((s) => s && s !== symbol);
+      const same = all.filter((s) => suffixOf(s) === suffix);
+      const others = all.filter((s) => suffixOf(s) !== suffix);
+      candidates = [...same, ...(same.length < 4 ? others : [])].slice(0, 6);
+    } catch {
+      candidates = [];
+    }
+  }
+
   if (!candidates.length) return null;
+
   const settled = await Promise.allSettled(candidates.map((c) => fetchOnePeer(c, suffixOf(c) === suffix ? index : null)));
   const rows = settled.flatMap((r) => (r.status === "fulfilled" && r.value ? [r.value] : []));
-  const cross = candidates.some((c) => suffixOf(c) !== suffix);
+  if (!rows.length) return null;
+
   return summarizePeers(
     rows,
-    `Yahoo Finance similar-company list${cross ? " (same exchange first, topped up from other markets — each peer regressed against its own index)" : " (same exchange)"}, TTM multiples, Blume-adjusted & unlevered peer betas`,
+    `Industry peer set (${groupName}), TTM multiples, Blume-adjusted & unlevered peer betas`,
   );
 }

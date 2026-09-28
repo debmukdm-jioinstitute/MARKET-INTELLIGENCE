@@ -399,7 +399,7 @@ async function buildFinancialDataset(rawSymbol: string): Promise<FinancialDatase
   let peers: FinancialDataset["peers"] = null;
   try {
     peers = await Promise.race([
-      fetchPeerSet(symbol, indexRaw, currency),
+      fetchPeerSet(symbol, indexRaw, currency, sectorInfo),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 14_000)),
     ]);
   } catch {
