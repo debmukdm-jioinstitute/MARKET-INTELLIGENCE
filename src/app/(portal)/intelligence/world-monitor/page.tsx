@@ -13,7 +13,7 @@ export default function WorldMonitorPage() {
       <PageHeader
         kicker="Global intelligence"
         title="World Monitor"
-        subtitle="Global news, maps, and finance radar — click Open World Monitor (loads on /worldmonitor/dashboard)."
+        subtitle="Global geopolitical news, interactive map radar, and financial indicators proxied live on Market Intelligence."
       />
       <WorldMonitorFrame variant="finance" />
     </div>

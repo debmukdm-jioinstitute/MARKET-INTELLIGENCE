@@ -56,7 +56,12 @@ export function proxy(request: NextRequest) {
 
   const sessionRaw = request.cookies.get("mi_session")?.value;
   const session = parseSession(sessionRaw);
-  const isPublic = PUBLIC.has(realPathname);
+  const isWorldMonitorAsset =
+    realPathname.startsWith("/worldmonitor") ||
+    realPathname.startsWith("/assets/") ||
+    realPathname.startsWith("/favico/") ||
+    realPathname === "/manifest.webmanifest";
+  const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset;
   const staleSession = Boolean(sessionRaw && !session);
 
   if (!isPublic && !session) {

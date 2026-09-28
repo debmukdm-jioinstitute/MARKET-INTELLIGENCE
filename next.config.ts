@@ -14,6 +14,35 @@ const nextConfig: NextConfig = {
         source: "/worldmonitor/:path*",
         destination: `${WORLDMONITOR_UPSTREAM}/:path*`,
       },
+      {
+        source: "/assets/:path*",
+        destination: `${WORLDMONITOR_UPSTREAM}/assets/:path*`,
+      },
+      {
+        source: "/favico/:path*",
+        destination: `${WORLDMONITOR_UPSTREAM}/favico/:path*`,
+      },
+      {
+        source: "/manifest.webmanifest",
+        destination: `${WORLDMONITOR_UPSTREAM}/manifest.webmanifest`,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/worldmonitor/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://getmarketintelligence.in http://localhost:3000 http://localhost:3001 https://*.worldmonitor.app",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+        ],
+      },
     ];
   },
   async redirects() {
