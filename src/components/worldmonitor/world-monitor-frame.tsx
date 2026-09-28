@@ -1,14 +1,13 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { hideWorldMonitorEmbedChrome } from "@/lib/worldmonitor/embed-chrome";
 import {
   worldMonitorExternalUrl,
   worldMonitorLaunchPath,
   WORLDMONITOR_THEME_STORAGE_KEY,
-  WORLDMONITOR_UPSTREAM_REPO,
 } from "@/lib/worldmonitor/public-url";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 
@@ -57,8 +56,7 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
   return (
     <div className="flex flex-col gap-4 pb-10">
       <Panel
-        title="Dashboard"
-        subtitle={`Proxied endpoint ${launchPath}`}
+        title="Live map"
         action={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button type="button" onClick={handleRefresh} className={btnGhost} title="Reload dashboard">
@@ -67,10 +65,6 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
             </button>
             <a href={launchPath} target="_blank" rel="noopener noreferrer" className={btnPrimary}>
               Open full screen
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-            <a href={externalUrl} target="_blank" rel="noopener noreferrer" className={btnGhost}>
-              Upstream site
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -95,7 +89,10 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
               ref={iframeRef}
               title="World Monitor — Global Intelligence Dashboard"
               src={launchPath}
-              onLoad={() => setIsLoading(false)}
+              onLoad={(e) => {
+                hideWorldMonitorEmbedChrome(e.currentTarget);
+                setIsLoading(false);
+              }}
               className="h-full w-full border-0 bg-background"
               allow="fullscreen; autoplay; clipboard-write; encrypted-media; picture-in-picture"
               referrerPolicy="no-referrer-when-downgrade"
@@ -103,22 +100,6 @@ export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
           ) : null}
         </div>
       </Panel>
-
-      <p className="text-xs text-muted-foreground">
-        Proxied on Market Intelligence · read-only intelligence feeds · embedded light theme when same-origin proxy is active.{" "}
-        <a
-          href={WORLDMONITOR_UPSTREAM_REPO}
-          className="font-medium text-blue-600 hover:underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          koala73/worldmonitor
-        </a>{" "}
-        (AGPL-3.0) ·{" "}
-        <Link href="/help#worldmonitor" className="font-medium text-blue-600 hover:underline">
-          Help
-        </Link>
-      </p>
     </div>
   );
 }
