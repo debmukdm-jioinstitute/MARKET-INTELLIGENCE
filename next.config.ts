@@ -48,11 +48,17 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { 
-        source: "/:path*", 
-        has: [{ type: "host", value: "getmarketintelligence.vercel.app" }], 
-        destination: "https://getmarketintelligence.in/:path*", 
-        permanent: true 
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.getmarketintelligence.in" }],
+        destination: "https://getmarketintelligence.in/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "getmarketintelligence.vercel.app" }],
+        destination: "https://getmarketintelligence.in/:path*",
+        permanent: true,
       },
       { source: "/app", destination: "/dashboard", permanent: true },
       { source: "/allocation", destination: "/portfolio/allocation", permanent: true },

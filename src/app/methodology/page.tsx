@@ -1,13 +1,15 @@
 import { DATA_ISSUE_EMAIL, STALE_AFTER_MINUTES } from "@/lib/provenance";
+import { pageMetadata } from "@/lib/seo/metadata";
 import Link from "next/link";
 
 export const revalidate = 3600;
 
-export const metadata = {
-  title: "Methodology & data sources — Market Intelligence",
+export const metadata = pageMetadata({
+  title: "Our Data & Methodology",
   description:
-    "Data coverage, freshness rules, formulas and adjustments, AI methodology, corrections and privacy for Market Intelligence.",
-};
+    "Data coverage, freshness rules, formulas, AI methodology, corrections contact and privacy for Market Intelligence.",
+  path: "/methodology",
+});
 
 type Section = { id: string; title: string; body: string[] };
 

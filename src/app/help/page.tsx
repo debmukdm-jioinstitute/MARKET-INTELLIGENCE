@@ -1,15 +1,17 @@
 import { HelpGuide } from "@/components/help/help-guide";
 import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
 import { MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
+import { pageMetadata } from "@/lib/seo/metadata";
 
 /** Static guide content — refresh hourly; MCP tool list changes rarely. */
 export const revalidate = 3600;
 
-export const metadata = {
-  title: "Help · Setup guide · Market Intelligence",
+export const metadata = pageMetadata({
+  title: "Help Centre",
   description:
-    "Step-by-step help for the website, Claude custom connector (MCP OAuth), Cursor, terminal mi, portfolio in AI, and troubleshooting.",
-};
+    "Investor tasks first — search stocks, read charts, set alerts. Optional MCP setup for Cursor and Claude.",
+  path: "/help",
+});
 
 export default function HelpPage() {
   const tools = buildHelpMcpToolRows();

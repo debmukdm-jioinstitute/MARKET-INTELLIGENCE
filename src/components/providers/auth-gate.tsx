@@ -1,19 +1,27 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { useRouter } from "next/navigation";
+import { isGuestReadablePortalPath } from "@/lib/seo/public-routes";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, ready } = useAuth();
   const router = useRouter();
+  const pathname = usePathname() ?? "";
+  const isPublicPortal = isGuestReadablePortalPath(pathname);
 
   useEffect(() => {
+    if (isPublicPortal) return;
     if (ready && !user) {
       const next = encodeURIComponent(window.location.pathname + window.location.search);
       router.replace(`/login?next=${next}`);
     }
-  }, [ready, user, router]);
+  }, [ready, user, router, isPublicPortal]);
+
+  if (isPublicPortal) {
+    return <>{children}</>;
+  }
 
   if (!ready) {
     return (

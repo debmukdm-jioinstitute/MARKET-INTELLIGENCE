@@ -1,4 +1,5 @@
 import { verifySessionToken } from "@/lib/auth-crypto";
+import { isGuestReadablePortalPath } from "@/lib/seo/public-routes";
 import { isWorldMonitorProxiedApiPath } from "@/lib/worldmonitor/api-path-allowlist";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -79,9 +80,8 @@ export function proxy(request: NextRequest) {
     realPathname.startsWith("/favico/") ||
     realPathname === "/manifest.webmanifest" ||
     isWorldMonitorApiRoute(realPathname);
-  const isResearchPublic =
-    realPathname.startsWith("/research") || realPathname.startsWith("/research-reports");
-  const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset || isResearchPublic;
+  const isPortalPublic = isGuestReadablePortalPath(realPathname);
+  const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset || isPortalPublic;
   const staleSession = Boolean(sessionRaw && !session);
 
   if (!isPublic && !session) {
