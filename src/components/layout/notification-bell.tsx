@@ -13,16 +13,49 @@ const SEEN_KEY = "mi.notif.seen";
 const MUTE_KEY = "mi.notif.muted";
 const DAY = 24 * 3600_000;
 
-const CATEGORY_LABEL: Record<EventCategory, string> = { market: "Markets", macro: "Macro", scanner: "Scanner", ai: "AI", brief: "Briefs", data: "Site" };
-const TAB_CATEGORIES: EventCategory[] = ["market", "macro", "scanner", "ai"];
-const TAB_LABEL: Record<string, string> = { market: "Markets", macro: "Macro", scanner: "Scanner", ai: "AI" };
+const CATEGORY_LABEL: Record<EventCategory, string> = {
+  market: "Markets",
+  macro: "Macro",
+  broker: "Broker Intel",
+  promoter: "Promoters",
+  credit: "Credit Risk",
+  funds: "Mutual Funds",
+  scanner: "Scanner",
+  ai: "AI & Retail",
+  brief: "Briefs",
+  data: "Site",
+};
+const TAB_CATEGORIES: EventCategory[] = [
+  "market",
+  "macro",
+  "broker",
+  "promoter",
+  "credit",
+  "funds",
+  "scanner",
+  "ai",
+];
+const TAB_LABEL: Record<string, string> = {
+  market: "Markets",
+  macro: "Macro",
+  broker: "Broker Intel",
+  promoter: "Promoters",
+  credit: "Credit Risk",
+  funds: "Mutual Funds",
+  scanner: "Scanner",
+  ai: "AI & Retail",
+};
 const CATEGORY_HELP: Record<EventCategory, { label: string; help: string }> = {
-  market: { label: "Markets", help: "Nifty and VIX moves, FII/DII flows, big index swings" },
-  macro: { label: "Macro", help: "Currency, yields, commodities, RBI liquidity, the stress index" },
-  scanner: { label: "Scanner", help: "Daily stock scans — highs, lows, crossovers, chart patterns" },
-  ai: { label: "AI signals", help: "Model lean changes and new BTST/STBT candidates" },
-  brief: { label: "Briefs", help: "New pre-market and post-close briefs" },
-  data: { label: "Site updates", help: "Announcements about the site itself" },
+  market: { label: "Markets & Index Flows", help: "Nifty and VIX moves, FII/DII flows, big index swings" },
+  macro: { label: "Macro & System Rates", help: "Currency, yields, commodities, RBI liquidity, stress index" },
+  broker: { label: "Broker Research & Consensus", help: "Target price hikes/cuts from 11 top brokers, consensus upgrades" },
+  promoter: { label: "Promoter & Insider Actions", help: "Major promoter buying/selling, pledge changes, block deals" },
+  credit: { label: "Credit & Rating Actions", help: "CRISIL, ICRA, CARE rating upgrades/downgrades and debt watch alerts" },
+  funds: { label: "Mutual Fund Accumulation", help: "High-conviction smart money accumulation across domestic AMCs" },
+  scanner: { label: "Scanner Setups", help: "Daily stock scans — highs, lows, crossovers, chart patterns" },
+  ai: { label: "AI & Retail Signals", help: "Model lean changes, BTST picks, and Reddit sentiment surges" },
+  brief: { label: "Daily Briefings", help: "New pre-market and post-close executive briefings" },
+  data: { label: "Platform & Feed Updates", help: "Announcements about feed connectivity and data releases" },
 };
 const ALL_CATEGORIES = Object.keys(CATEGORY_HELP) as EventCategory[];
 const dot = { high: "bg-rose-500", medium: "bg-amber-500", info: "bg-blue-500" } as const;
@@ -142,7 +175,7 @@ export function NotificationBell() {
             <div>
               <p className="text-sm font-semibold">What's changed</p>
               <p className="text-xs text-muted-foreground">
-                {muted.length ? `${muted.length} categor${muted.length === 1 ? "y" : "ies"} muted` : "Markets, macro, scanners and AI signals"}
+                {muted.length ? `${muted.length} categor${muted.length === 1 ? "y" : "ies"} muted` : "Live feeds, broker intel, promoters & macro"}
               </p>
             </div>
           )}

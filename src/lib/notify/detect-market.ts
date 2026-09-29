@@ -38,8 +38,8 @@ const STEPS: { m: MetricId; step: number; severity: "medium" | "info"; unit: str
   { m: "usdinr", step: 1, severity: "medium", unit: "₹" },
   { m: "brent", step: 5, severity: "info", unit: "$" },
   { m: "nifty", step: 500, severity: "info", unit: "" },
-  { m: "us10y", step: 0.25, severity: "info", unit: "%" },
-  { m: "gsec10y", step: 0.1, severity: "info", unit: "%" },
+  { m: "us10y", step: 0.25, severity: "info", unit: "" },
+  { m: "gsec10y", step: 0.1, severity: "info", unit: "" },
 ];
 
 /** Thresholds for indicators where being above a level is the story (fear gauges). */

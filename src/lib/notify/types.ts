@@ -1,4 +1,4 @@
-export type EventCategory = "market" | "macro" | "scanner" | "ai" | "brief" | "data";
+export type EventCategory = "market" | "macro" | "scanner" | "ai" | "brief" | "data" | "broker" | "promoter" | "credit" | "funds";
 export type EventSeverity = "high" | "medium" | "info";
 
 /** A change in the site's data worth telling a visitor about. Events are global (the same for every visitor). */
