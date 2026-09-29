@@ -122,7 +122,7 @@ function GroupCard({ group, section, activeHref, accent, onNavigate, idPrefix }:
         onClick={onNavigate}
         className={cn("group -mx-1 flex flex-col gap-0.5 rounded-md px-1 py-0.5 transition-colors", accent.hoverBg)}
       >
-        <span className={cn("flex items-center gap-1.5 text-sm font-semibold", inGroup ? "text-primary" : "text-gray-900")}>
+        <span className={cn("flex items-center gap-1.5 text-sm font-semibold", inGroup ? "text-primary" : "text-foreground")}>
           {group.label}
           <BadgePill badge={group.badge} />
           {first.external ? <ExternalLink className="size-3 opacity-50" /> : null}
@@ -278,7 +278,7 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-background/95 dark:bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur lg:hidden"
       style={{ gridTemplateColumns: `repeat(${Math.min(sections.length, 5)}, minmax(0, 1fr))` }}
     >
       {sections.slice(0, 5).map((sec) => {
@@ -379,7 +379,7 @@ export function AppNav() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0, transition: { duration: 0.18, ease: "easeOut" } }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed inset-x-0 top-0 z-[61] flex max-h-[100dvh] flex-col overflow-hidden border-b border-border bg-white shadow-[var(--shadow-lg)] max-lg:bottom-14 max-lg:max-h-none"
+            className="fixed inset-x-0 top-0 z-[61] flex max-h-[100dvh] flex-col overflow-hidden border-b border-border bg-background dark:bg-card shadow-[var(--shadow-lg)] max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] max-lg:max-h-none"
           >
             <div className="mx-auto flex h-14 w-full max-w-7xl shrink-0 items-center justify-between px-4 sm:px-6">
               <Link href="/Home" onClick={close} className="flex items-center gap-2.5">
@@ -394,10 +394,10 @@ export function AppNav() {
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 {section === null ? (
                   <>
-                <p className="mb-2 text-sm font-semibold text-gray-900">New here? Pick what fits you</p>
+                <p className="mb-2 text-sm font-semibold text-foreground">New here? Pick what fits you</p>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {startHere.map((s) => (
-                    <Link key={s.href} href={s.href} onClick={close} className="flex min-h-14 flex-col justify-center rounded-xl border border-border bg-gray-50 px-3 py-2 transition-[colors,transform] duration-200 touch-manipulation active:scale-[0.98] hover:bg-accent">
+                    <Link key={s.href} href={s.href} onClick={close} className="flex min-h-14 flex-col justify-center rounded-xl border border-border bg-muted/50 dark:bg-muted/30 px-3 py-2 transition-[colors,transform] duration-200 touch-manipulation active:scale-[0.98] hover:bg-accent">
                       <span className="text-sm text-muted-foreground">{s.label}</span>
                       <span className="text-sm font-semibold text-primary">{s.cta} →</span>
                     </Link>

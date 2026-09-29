@@ -26,30 +26,30 @@ export function CreditDegradationSneakPeek() {
   const displayList = filterMode === "risk" ? riskActions : upgradeActions;
 
   return (
-    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
+    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
             <ShieldAlert className="size-4" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
               Credit Degradation & Solvency
             </p>
-            <h2 className="text-base sm:text-lg font-bold text-foreground">
+            <h2 className="text-sm sm:text-lg font-bold text-foreground">
               Rating Agency Actions Connected to Equity Prices
             </h2>
           </div>
         </div>
 
-        {/* Toggle */}
-        <div className="flex items-center gap-1 rounded-xl bg-muted/60 p-1 text-xs font-medium">
+        {/* Toggle - scrollable on mobile */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-xl bg-muted/60 p-1 text-xs font-medium max-w-full">
           <button
             type="button"
             onClick={() => setFilterMode("risk")}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
               filterMode === "risk"
                 ? "bg-card text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
@@ -62,7 +62,7 @@ export function CreditDegradationSneakPeek() {
             type="button"
             onClick={() => setFilterMode("upgrades")}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
               filterMode === "upgrades"
                 ? "bg-card text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
@@ -75,7 +75,7 @@ export function CreditDegradationSneakPeek() {
       </div>
 
       {/* Grid of actions */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {displayList.map((item) => {
           const isRisk = ["RATING_DOWNGRADE", "CREDIT_WATCH", "LIQUIDITY_CONCERN", "DEFAULT"].includes(item.action);
           return (
@@ -142,13 +142,13 @@ export function CreditDegradationSneakPeek() {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
         <span className="text-xs text-muted-foreground">
           Crawls CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork. Transmits credit shifts into valuation and cost of capital.
         </span>
         <Link
           href="/intelligence/credit"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
         >
           Open Credit & Solvency Radar <ArrowUpRight className="size-3.5" />
         </Link>

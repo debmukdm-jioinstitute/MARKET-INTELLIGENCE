@@ -70,11 +70,11 @@ export default function DashboardPage() {
   const [activeFilter, setActiveFilter] = useState<CockpitFilter>("all");
 
   return (
-    <div className="portal-page pb-12 space-y-6">
+    <div className="portal-page pb-12 space-y-4 sm:space-y-6">
       <ShippedPopup />
 
       {/* Top Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3 sm:pb-4">
         <PageHeader
           className="mb-0 min-w-0 flex-1"
           titleAs="h1"
@@ -83,20 +83,20 @@ export default function DashboardPage() {
           subtitle="Real-time sneak-peeks across Macro, Micro, Company Disclosures, Mutual Funds, Promoters, Credit Degradation, Primary Deals (IPO/NCD/Buybacks), and Social Sentiment."
         />
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-1.5 text-xs text-muted-foreground shadow-2xs">
+        <div className="flex items-center justify-between sm:justify-end gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg border border-border bg-card/60 px-2.5 py-1 text-xs text-muted-foreground shadow-2xs">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-semibold text-foreground">LIVE FEEDS</span>
-            <span>· NSE, BSE, RBI & AMFI</span>
+            <span className="hidden xs:inline">· NSE, BSE & AMFI</span>
           </div>
 
           <button
             type="button"
             onClick={() => reload()}
-            className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent transition-colors shadow-2xs active:scale-95"
+            className="flex min-h-[36px] items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs sm:text-sm font-medium text-foreground hover:bg-accent transition-colors shadow-2xs active:scale-95 touch-manipulation"
           >
             <RefreshCw className="size-3 text-muted-foreground" />
-            Refresh Feeds
+            Refresh
           </button>
         </div>
       </div>
@@ -130,9 +130,9 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
-      {/* Interactive Cockpit Filter Pill Bar */}
-      <div className="sticky top-14 z-20 -mx-2 px-2 py-2 backdrop-blur-md bg-background/80 border-b border-border/40">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      {/* Interactive Cockpit Filter Pill Bar - Sticky & Edge-to-Edge on Mobile */}
+      <div className="sticky top-0 sm:top-14 z-20 -mx-3 sm:-mx-2 px-3 sm:px-2 py-2 backdrop-blur-md bg-background/90 border-b border-border/40">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-scroll">
           {FILTER_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeFilter === tab.id;
@@ -142,7 +142,7 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => setActiveFilter(tab.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150",
+                  "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 touch-manipulation active:scale-95",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-xs scale-[1.02]"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"

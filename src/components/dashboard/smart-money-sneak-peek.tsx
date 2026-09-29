@@ -19,30 +19,30 @@ export function SmartMoneySneakPeek() {
   }, []);
 
   return (
-    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
+    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <Users className="size-4" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Smart Money & Ownership Radar
             </p>
-            <h2 className="text-base sm:text-lg font-bold text-foreground">
+            <h2 className="text-sm sm:text-lg font-bold text-foreground">
               Mutual Fund Accumulation & Promoter Activity
             </h2>
           </div>
         </div>
 
-        {/* Sub-tab switcher */}
-        <div className="flex items-center gap-1 rounded-xl bg-muted/60 p-1 text-xs font-medium">
+        {/* Sub-tab switcher - scrollable on mobile */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-xl bg-muted/60 p-1 text-xs font-medium max-w-full">
           <button
             type="button"
             onClick={() => setActiveSubTab("mf")}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
               activeSubTab === "mf"
                 ? "bg-card text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
@@ -55,7 +55,7 @@ export function SmartMoneySneakPeek() {
             type="button"
             onClick={() => setActiveSubTab("promoters")}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
               activeSubTab === "promoters"
                 ? "bg-card text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
@@ -70,14 +70,14 @@ export function SmartMoneySneakPeek() {
       {/* Main Content Area */}
       {activeSubTab === "mf" ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">
               Which stocks are being accumulated across India&apos;s mutual funds?
             </span>
             <span>Monthly AMC Disclosures Sync</span>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {accumulatedStocks.map((item) => (
               <div
                 key={item.symbol}
@@ -123,13 +123,13 @@ export function SmartMoneySneakPeek() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
             <span className="text-xs text-muted-foreground">
               Analyzes multi-fund holdings, sector exposure, overlap, and institutional manager buying across India.
             </span>
             <Link
               href="/funds"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
             >
               Open Mutual Fund X-Ray & Accumulation Radar <ArrowUpRight className="size-3.5" />
             </Link>
@@ -137,14 +137,14 @@ export function SmartMoneySneakPeek() {
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">
               Insider Disclosures, Controlling Stake Changes & Pledges
             </span>
             <span>SEBI PIT & SAST Regulatory Filings</span>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {promoterActions.map((act) => {
               const isBullish = act.riskImpact === "BULLISH_CONVICTION";
               return (
@@ -195,7 +195,7 @@ export function SmartMoneySneakPeek() {
                         {act.stakePctChange?.toFixed(2)}%
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1 italic">
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 italic">
                       {act.rationale}
                     </p>
                   </div>
@@ -204,13 +204,13 @@ export function SmartMoneySneakPeek() {
             })}
           </div>
 
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
             <span className="text-xs text-muted-foreground">
               Pledges and insider transactions feed directly into the portfolio risk engine.
             </span>
             <Link
               href="/intelligence/promoters"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
             >
               Open Promoter Activity Tracker & Block Deals <ArrowUpRight className="size-3.5" />
             </Link>

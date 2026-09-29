@@ -132,9 +132,9 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card/70 py-2.5 px-3 shadow-xs backdrop-blur-xs">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-        <div className="flex shrink-0 items-center gap-1.5 border-r border-border/70 pr-3 mr-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card/70 py-2 px-2.5 sm:px-3 shadow-xs backdrop-blur-xs">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth touch-scroll">
+        <div className="flex shrink-0 items-center gap-1.5 border-r border-border/70 pr-2 sm:pr-3 mr-0.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           <Activity className="size-3.5 text-emerald-500 animate-pulse" />
           <span>Live Pulse</span>
         </div>
@@ -143,17 +143,17 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
           <Link
             key={item.id}
             href={item.href}
-            className="group flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-background/60 px-2.5 py-1 text-xs transition-colors hover:border-primary/40 hover:bg-accent/50"
+            className="group flex min-h-[36px] shrink-0 items-center gap-1.5 sm:gap-2 rounded-lg border border-border/50 bg-background/60 px-2 sm:px-2.5 py-1 text-xs transition-colors hover:border-primary/40 hover:bg-accent/50 touch-manipulation active:scale-[0.98]"
           >
-            <span className="font-semibold text-muted-foreground group-hover:text-foreground">
+            <span className="font-semibold text-muted-foreground group-hover:text-foreground text-[11px] sm:text-xs">
               {item.name}
             </span>
-            <span className="font-medium text-foreground tabular-nums">
+            <span className="font-medium text-foreground tabular-nums text-[11px] sm:text-xs">
               {item.value}
             </span>
             <span
               className={cn(
-                "inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
+                "inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] sm:text-[11px] font-semibold tabular-nums",
                 item.neutral
                   ? "bg-muted text-muted-foreground"
                   : item.isUp

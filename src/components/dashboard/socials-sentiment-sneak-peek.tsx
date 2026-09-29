@@ -11,18 +11,18 @@ export function SocialsSentimentSneakPeek() {
   const companies = data.companies.slice(0, 4);
 
   return (
-    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
+    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400">
             <MessageSquare className="size-4" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
               Alternative Data & Socials
             </p>
-            <h2 className="text-base sm:text-lg font-bold text-foreground">
+            <h2 className="text-sm sm:text-lg font-bold text-foreground">
               Retail Sentiment Engine & Search-Trend Velocity
             </h2>
           </div>
@@ -36,7 +36,7 @@ export function SocialsSentimentSneakPeek() {
       </div>
 
       {/* Grid */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {companies.map((c) => {
           const isBullish = c.sentimentMomentum.includes("BULLISH");
           return (
@@ -97,21 +97,21 @@ export function SocialsSentimentSneakPeek() {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
         <span className="text-xs text-muted-foreground">
           Crawls r/IndianStreetBets, r/IndiaInvestments, and Google Search Trends to quantify retail sentiment and demand spikes.
         </span>
         <div className="flex items-center gap-3">
           <Link
             href="/intelligence/search-trends"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline touch-manipulation"
           >
             <Search className="size-3" />
             Search Trends
           </Link>
           <Link
             href="/intelligence/reddit"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
           >
             Open Retail Sentiment Engine <ArrowUpRight className="size-3.5" />
           </Link>

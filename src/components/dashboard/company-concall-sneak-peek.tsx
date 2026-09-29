@@ -17,32 +17,32 @@ export function CompanyConcallSneakPeek() {
   const timeline = profile?.timeline.slice(0, 3) ?? [];
 
   return (
-    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs">
+    <div className="bento-card-shell bento-card-stack rounded-2xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
             <Building2 className="size-4" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Micro & Corporate Intelligence
             </p>
-            <h2 className="text-base sm:text-lg font-bold text-foreground">
+            <h2 className="text-sm sm:text-lg font-bold text-foreground">
               Company Timelines, Concall Guidance & Valuation Sandbox
             </h2>
           </div>
         </div>
 
-        {/* Symbol selector pills */}
-        <div className="flex items-center gap-1 rounded-xl bg-muted/60 p-1 text-xs font-medium">
+        {/* Symbol selector pills - scrollable on mobile */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-xl bg-muted/60 p-1 text-xs font-medium max-w-full">
           {SYMBOLS.map((sym) => (
             <button
               key={sym}
               type="button"
               onClick={() => setSelectedSymbol(sym)}
               className={cn(
-                "rounded-lg px-2.5 py-1 transition-all",
+                "shrink-0 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
                 selectedSymbol === sym
                   ? "bg-card text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
@@ -59,14 +59,14 @@ export function CompanyConcallSneakPeek() {
         {/* Left Column (7 cols): Concall Intelligence & Guidance */}
         <div className="space-y-3 lg:col-span-7">
           <div className="rounded-xl border border-border/70 bg-card/60 p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2">
-                <Mic className="size-4 text-primary" />
+                <Mic className="size-4 text-primary shrink-0" />
                 <span className="text-xs font-bold text-foreground">
                   Latest Earnings Call: {concall?.quarter} ({concall?.date})
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 w-fit">
                 Confidence: {concall?.dimensions.managementConfidence.score}/100 ({concall?.dimensions.managementConfidence.stance})
               </span>
             </div>
@@ -75,7 +75,7 @@ export function CompanyConcallSneakPeek() {
               &quot;{concall?.headlineVerdict}&quot;
             </p>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-3 text-xs">
+            <div className="mt-3 grid gap-2 grid-cols-1 sm:grid-cols-3 text-xs">
               <div className="rounded-lg bg-background/80 border border-border/60 p-2">
                 <p className="text-[10px] uppercase font-bold text-muted-foreground">Revenue Target</p>
                 <p className="mt-0.5 font-bold text-foreground truncate">{concall?.dimensions.revenueOutlook.targetGrowthPct}</p>
@@ -98,11 +98,11 @@ export function CompanyConcallSneakPeek() {
             {/* Q&A Highlight */}
             {concall?.analystQA[0] && (
               <div className="mt-3 rounded-lg bg-muted/40 p-2.5 text-xs space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-muted-foreground gap-0.5">
                   <span className="font-semibold text-foreground">
                     Q: {concall.analystQA[0].analystName} ({concall.analystQA[0].firm})
                   </span>
-                  <span className="rounded bg-background px-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="rounded bg-background px-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 w-fit">
                     Tone: {concall.analystQA[0].tone}
                   </span>
                 </div>
@@ -154,11 +154,11 @@ export function CompanyConcallSneakPeek() {
             <p className="mt-1 text-xs text-muted-foreground">
               We provide clean valuation templates (DCF, Reverse DCF, EV/EBITDA multiples). You input your own growth, WACC, and margin assumptions — zero hardcoded numbers.
             </p>
-            <div className="mt-2.5 flex items-center justify-between pt-1 border-t border-border/60">
+            <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 pt-1 border-t border-border/60">
               <span className="text-[11px] font-semibold text-primary">Templates: DCF · Gordon Growth · SOTP</span>
               <Link
                 href={`/research/model/${selectedSymbol}`}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
               >
                 Launch Model <ArrowUpRight className="size-3.5" />
               </Link>
@@ -168,13 +168,13 @@ export function CompanyConcallSneakPeek() {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
         <span className="text-xs text-muted-foreground">
           Real-time crawler parses BSE/NSE regulatory filings, Investor Relations presentations, and official quarterly transcripts.
         </span>
         <Link
           href="/intelligence/company"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
         >
           Open Company Intelligence Desk & Timelines <ArrowUpRight className="size-3.5" />
         </Link>

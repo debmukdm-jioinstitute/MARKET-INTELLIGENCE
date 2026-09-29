@@ -494,3 +494,37 @@
   /* keep the popover clear of the fixed bottom tab bar */
   .driver-popover.guided-tour-theme { margin-bottom: 8px; }
 }
+
+/* Mobile Optimization & Responsive Utilities */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@media (max-width: 767px) {
+  /* Prevent iOS automatic viewport zoom on input focus */
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
