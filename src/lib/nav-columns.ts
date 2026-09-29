@@ -62,6 +62,29 @@ export const NAV_SECTIONS: NavSection[] = [
         ],
       },
       {
+        label: "Mutual Funds & Flows",
+        desc: "Institutional accumulation, portfolio X-ray, factor tilts & overlap.",
+        badge: "NEW",
+        items: [
+          {
+            label: "Mutual Fund Intelligence",
+            href: "/funds",
+            desc: "Stock accumulation radar, fund X-ray, overlap analysis & AMFI disclosures.",
+            badge: "NEW",
+          },
+          {
+            label: "Stock Accumulation Radar",
+            href: "/funds?tab=accumulation",
+            desc: "Which stocks are being accumulated across India's mutual funds?",
+          },
+          {
+            label: "Fund Overlap Analyzer",
+            href: "/funds?tab=overlap",
+            desc: "Calculate common holdings and duplicate risk between 2 funds.",
+          },
+        ],
+      },
+      {
         label: "Valuation & Sectors",
         desc: "Is the market cheap or expensive? Which sectors lead?",
         items: [

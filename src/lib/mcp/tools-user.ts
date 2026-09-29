@@ -542,7 +542,7 @@ export const USER_TOOLS: Tool[] = [
       const user = requireUser(ctx, args);
       const { holdings, mode } = z
         .object({
-          holdings: z.array(z.record(z.unknown())),
+          holdings: z.array(z.record(z.string(), z.unknown())),
           mode: z.enum(["replace", "append"]).default("replace"),
         })
         .parse(args);

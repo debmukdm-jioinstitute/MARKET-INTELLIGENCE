@@ -1,3 +1,8 @@
+import { buildSitemapSections } from "@/lib/nav-columns";
+
+export function helpSitemapSections() {
+  return buildSitemapSections();
+}
 /** Account-scoped MCP tools (after mi_sign_in + X-MI-Session). Help page mirrors this list; TOOLS registry is source of truth. */
 export const MCP_ACCOUNT_TOOLS: { name: string; label: string; note: string }[] = [
   { name: "mi_sign_in", label: "Sign in", note: "Email/password → sessionToken." },
