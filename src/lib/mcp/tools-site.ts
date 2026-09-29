@@ -1,3 +1,4 @@
+import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { z } from "zod";
 import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
@@ -17,6 +18,11 @@ import {
   compactIpoIntelligenceForMcp,
 } from "@/lib/feeds/ipo/build-intelligence";
 import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
+import { buildLegalRiskHub, compactLegalRiskForMcp } from "@/lib/legal-risk/build-hub";
+import {
+  buildInstitutionalIntelligence,
+  compactInstitutionalForMcp,
+} from "@/lib/institutional/build-hub";
 import type { OfferCategory } from "@/lib/feeds/offers/types";
 import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
@@ -372,6 +378,49 @@ export const SITE_TOOLS: Tool[] = [
       const intel = await buildIpoIntelligence(detail);
       return compactIpoIntelligenceForMcp(intel);
     },
+  },
+  {
+    name: "get_promoter_activity_tracker",
+    title: "Promoter & insider activity tracker",
+    category: "Research",
+    description:
+      "Track promoter buying, selling, pledge increase/decrease, insider transactions, large shareholder changes, and bulk/block deals.",
+    inputSchema: empty,
+    run: async () => {
+      const all = getAllPromoterActivities();
+      return {
+        totalTransactions: all.length,
+        transactions: all.slice(0, 15).map((a) => ({
+          symbol: a.symbol,
+          company: a.companyName,
+          category: a.category,
+          person: a.personName,
+          valueCr: a.transactionValueCr,
+          stakeChangePct: a.stakePctChange,
+          pledgePct: a.pledgePctOfPromoterHolding,
+          riskImpact: a.riskImpact,
+          date: a.transactionDate,
+        })),
+      };
+    },
+  },
+  {
+    name: "get_institutional_intelligence",
+    title: "Institutional investor intelligence",
+    category: "Macro",
+    description:
+      "FII/FPI and DII cash flows, mutual-fund smart-money score, ownership signals, and tracker coverage.",
+    inputSchema: empty,
+    run: async () => compactInstitutionalForMcp(await buildInstitutionalIntelligence()),
+  },
+  {
+    name: "get_legal_risk_monitor",
+    title: "Legal / insolvency risk monitor",
+    category: "Research",
+    description:
+      "Corporate risk chains: company → legal case → regulator (NCLT, courts, SEBI, CCI, ED, RBI) → exposure → impact.",
+    inputSchema: empty,
+    run: async () => compactLegalRiskForMcp(await buildLegalRiskHub()),
   },
   {
     name: "get_research_reports",

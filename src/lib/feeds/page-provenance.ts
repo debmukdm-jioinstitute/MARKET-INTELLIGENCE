@@ -76,6 +76,36 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/legal-risk",
+    match: {
+      summary: "Legal/insolvency headline classifier over feed hub — NCLT, courts, SEBI, CCI, ED, RBI chains.",
+      chips: [
+        {
+          kind: "api",
+          label: "Legal risk hub",
+          source: { provider: "MI legal risk", url: "/api/feeds/legal-risk" },
+          fetchMethod: "buildLegalRiskHub() — src/lib/legal-risk/build-hub.ts",
+        },
+        ...chips("nse", "bse", "rbi", "livemint", "moneycontrol"),
+      ],
+    },
+  },
+  {
+    prefix: "/intelligence/promoters",
+    match: {
+      summary: "Promoter activity tracker — buying, selling, pledge changes, insider trading, and block/bulk deals.",
+      chips: [
+        {
+          kind: "api",
+          label: "Promoter activity tracker",
+          source: { provider: "MI promoter radar", url: "/api/promoters" },
+          fetchMethod: "getAllPromoterActivities() — src/lib/promoters/database.ts",
+        },
+        ...chips("nse", "bse"),
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/institutional",
     match: {
       summary: "NSE FII/DII cash, AMFI mutual-fund accumulation, smart-money score, and exchange filing links.",

@@ -58,6 +58,12 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
+          {
+            label: "Legal & insolvency",
+            href: "/intelligence/legal-risk",
+            desc: "Corporate risk monitor — NCLT, courts, SEBI, CCI, ED, RBI enforcement chains.",
+            badge: "NEW",
+          },
           { label: "NCD · RI · BB · OFS", href: "/research/offers", desc: "Chittorgarh calendars for debentures, rights, buybacks, and OFS." },
         ],
       },
@@ -87,6 +93,24 @@ export const NAV_SECTIONS: NavSection[] = [
             label: "Fund Overlap Analyzer",
             href: "/funds?tab=overlap",
             desc: "Calculate common holdings and duplicate risk between 2 funds.",
+          },
+        ],
+      },
+      {
+        label: "Ownership & Insiders",
+        desc: "Promoter buying, pledge changes, insider trading & bulk/block deals.",
+        badge: "NEW",
+        items: [
+          {
+            label: "Promoter Activity Tracker",
+            href: "/intelligence/promoters",
+            desc: "Track promoter buying, selling, pledge changes, insider trades, and block deals.",
+            badge: "NEW",
+          },
+          {
+            label: "Pledge & Governance Risk",
+            href: "/portfolio/risk",
+            desc: "Feed promoter pledge, selling, and insider risks directly into portfolio risk.",
           },
         ],
       },

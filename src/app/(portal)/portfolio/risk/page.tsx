@@ -1,5 +1,7 @@
 "use client";
 
+import { PortfolioPromoterRiskPanel } from "@/components/promoters/portfolio-promoter-risk-panel";
+
 import { Bars } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { Progress } from "@/components/ui/progress";
@@ -176,6 +178,9 @@ export default function RiskPage() {
               </div>
             </Panel>
           </div>
+
+          {/* Promoter & Governance Risk Engine */}
+          <PortfolioPromoterRiskPanel positions={data.positions} />
         </>
       ) : null}
     </div>

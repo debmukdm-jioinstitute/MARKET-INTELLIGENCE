@@ -21,7 +21,7 @@ function SetupStep({
 }: {
   n: number;
   title: string;
-  body: string;
+  body?: string;
   code?: string;
   expect?: string;
 }) {
@@ -30,7 +30,7 @@ function SetupStep({
       <p className="text-sm font-bold text-foreground">
         Step {n}. {title}
       </p>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+      {body ? <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p> : null}
       {code ? <Code>{code}</Code> : null}
       {expect ? (
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
