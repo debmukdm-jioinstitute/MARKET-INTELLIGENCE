@@ -56,6 +56,10 @@ export default function ResearchPage() {
         ·{" "}
         <Link href="/research/ipo" className="font-medium text-primary hover:underline">
           IPO tracker
+        </Link>{" "}
+        ·{" "}
+        <Link href="/research/offers" className="font-medium text-primary hover:underline">
+          NCD · rights · buyback · OFS
         </Link>
       </p>
     </div>

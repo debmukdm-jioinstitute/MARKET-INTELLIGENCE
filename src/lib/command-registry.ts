@@ -20,6 +20,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/markets/derivatives", label: "Derivatives", description: "Option chain with live Greeks" },
   { href: "/markets/sectors", label: "Sectors", description: "Sector intelligence" },
   { href: "/research/ipo", label: "IPOs", description: "Mainboard & SME IPOs" },
+  { href: "/research/offers", label: "NCD · RI · BB · OFS", description: "Chittorgarh primary-market calendars" },
   { href: "/data/feeds", label: "Data feeds", description: "Live market feeds & source health" },
   { href: "/data/export", label: "Data export (Excel)", description: "Download every dataset as one structured workbook" },
   { href: "/portfolio/optimizer", label: "Optimizer", description: "Suggest a better mix (learning tool)" },

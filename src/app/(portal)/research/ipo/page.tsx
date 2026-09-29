@@ -25,7 +25,7 @@ export default function IpoPage() {
       <PageHeader
         kicker="Primary market"
         title="IPOs"
-        subtitle="Mainboard & SME IPOs — price band, timeline, registrar, and prospectus, via Upstox."
+        subtitle="Mainboard & SME IPOs — price band, timeline, GMP (Chittorgarh + IPO Watch), via Upstox."
       />
       <Tabs value={status} onValueChange={(v) => setStatus(v as IpoStatus)}>
         <TabsList>

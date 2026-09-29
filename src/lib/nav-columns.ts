@@ -57,7 +57,8 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and price history (Upstox/Yahoo when configured)." },
           { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
-          { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings and subscription tracking." },
+          { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
+          { label: "NCD · RI · BB · OFS", href: "/research/offers", desc: "Chittorgarh calendars for debentures, rights, buybacks, and OFS." },
         ],
       },
       {

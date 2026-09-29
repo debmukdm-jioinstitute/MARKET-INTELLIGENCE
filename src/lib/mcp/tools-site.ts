@@ -11,6 +11,8 @@ import { buildFeedHub } from "@/lib/feeds/hub";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
+import type { OfferCategory } from "@/lib/feeds/offers/types";
+import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
@@ -269,6 +271,46 @@ export const SITE_TOOLS: Tool[] = [
         if (r.status === "fulfilled" && r.value) rows.push({ symbol: INDIA_EQUITIES[i].symbol, name: INDIA_EQUITIES[i].name, date: r.value.date, isEstimate: r.value.isEstimate });
       });
       return { rows: rows.sort((x, y) => x.date.localeCompare(y.date)), source: "Yahoo Finance calendar events" };
+    },
+  },
+  {
+    name: "get_primary_offers",
+    title: "NCD · Rights · Buyback · OFS",
+    category: "Research",
+    description:
+      "Chittorgarh primary-market calendars: ncd, rights, buyback, ofs, ncd-subscription (live sub).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          enum: ["ncd", "rights", "buyback", "ofs", "ncd-subscription"],
+          description: "Default ncd",
+        },
+        year: { type: "number", description: "Calendar year, default current" },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const category = z
+        .enum(["ncd", "rights", "buyback", "ofs", "ncd-subscription"])
+        .default("ncd")
+        .parse(a.category) as OfferCategory;
+      const year =
+        a.year != null ? z.number().int().min(2015).max(2100).parse(a.year) : new Date().getFullYear();
+      const report = await fetchChittorgarhOfferReport(category, year);
+      return {
+        category: report.category,
+        title: report.title,
+        year: report.year,
+        source: report.source,
+        rows: report.rows.slice(0, 40).map((r) => ({
+          name: r.name,
+          statusHint: r.statusHint,
+          detailUrl: r.detailUrl,
+          ...r.fields,
+        })),
+      };
     },
   },
   {

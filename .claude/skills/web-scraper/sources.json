@@ -432,6 +432,26 @@
    "tos": "tolerated",
    "note": "Unofficial OTC quotes; fail-soft scrape joined to Upstox IPO calendar by name. Not NSE/BSE official.",
    "wired": true
+  },
+  {
+   "id": "chittorgarh-ipo-gmp",
+   "domain": "market",
+   "tier": "html",
+   "cover": "India IPO GMP via Chittorgarh dashboard + linked live GMP table (InvestorGain)",
+   "url": "https://www.chittorgarh.com/ipo/ipo_dashboard.asp",
+   "tos": "tolerated",
+   "note": "Merged with IPO Watch for /research/ipo GMP enrichment; OTC grey market, not exchange official.",
+   "wired": true
+  },
+  {
+   "id": "chittorgarh-report-api",
+   "domain": "market",
+   "tier": "api",
+   "cover": "NCD, rights issue, buyback, OFS, NCD subscription tables (Chittorgarh cloud report API)",
+   "url": "https://webnodejs.chittorgarh.com/cloud/report/data-read/",
+   "tos": "tolerated",
+   "note": "Public JSON used by chittorgarh.com report pages; /research/offers + MCP get_primary_offers.",
+   "wired": true
   }
  ]
 }

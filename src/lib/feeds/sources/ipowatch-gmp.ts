@@ -3,6 +3,8 @@ import { compactToken, normalizeSymbolQuery } from "@/lib/feeds/symbol-normalize
 
 export type IpoGmpQuote = {
   name: string;
+  /** Extra tokens from source slug (e.g. snapdeal → Acevector row). */
+  matchKeywords?: string[];
   gmpInr: number | null;
   priceBandInr: number | null;
   estListingInr: number | null;
@@ -131,15 +133,20 @@ export async function fetchIpoWatchGmp(): Promise<IpoGmpQuote[]> {
   }
 }
 
+/** Strip parentheticals so "Acevector (Snapdeal)" matches Upstox "Snapdeal". */
+export function ipoNameMatchKey(raw: string): string {
+  return compactToken(raw.replace(/\([^)]*\)/g, " "));
+}
+
 export function matchGmpToName(gmpRows: IpoGmpQuote[], name: string, symbol?: string): IpoGmpQuote | null {
-  const want = compactToken(name);
+  const want = ipoNameMatchKey(name);
   const wantSym = symbol ? compactToken(symbol) : "";
-  const wantSpaced = normalizeSymbolQuery(name);
+  const wantSpaced = normalizeSymbolQuery(name.replace(/\([^)]*\)/g, " "));
 
   let best: { row: IpoGmpQuote; score: number } | null = null;
   for (const row of gmpRows) {
-    const rowCompact = compactToken(row.name);
-    const rowSpaced = normalizeSymbolQuery(row.name);
+    const rowCompact = ipoNameMatchKey(row.name);
+    const rowSpaced = normalizeSymbolQuery(row.name.replace(/\([^)]*\)/g, " "));
     let score = 0;
     if (want && rowCompact === want) score = 100;
     else if (wantSym && rowCompact === wantSym) score = 95;
@@ -148,6 +155,13 @@ export function matchGmpToName(gmpRows: IpoGmpQuote[], name: string, symbol?: st
     else if (wantSpaced && rowSpaced.includes(wantSpaced)) score = 60;
     else if (wantSpaced && wantSpaced.includes(rowSpaced) && rowSpaced.length >= 8) score = 55;
     else if (want && rowCompact.includes(want) && want.length >= 6) score = 50;
+    for (const kw of row.matchKeywords ?? []) {
+      const k = compactToken(kw);
+      if (wantSym && k === wantSym) score = Math.max(score, 92);
+      else if (want && k === want) score = Math.max(score, 88);
+      else if (want && k.includes(want) && want.length >= 5) score = Math.max(score, 75);
+      else if (want && want.includes(k) && k.length >= 5) score = Math.max(score, 72);
+    }
     if (score > 0 && (!best || score > best.score)) best = { row, score };
   }
   return best && best.score >= 50 ? best.row : null;
