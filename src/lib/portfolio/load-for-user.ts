@@ -1,5 +1,6 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
+import { consolidateHoldings } from "@/lib/my-portfolio/merge-holding";
 import { computePortfolioAnalysis } from "@/lib/my-portfolio/metrics";
 import type { Holding, PortfolioSettings, TradeLogRow } from "@/lib/my-portfolio/types";
 
@@ -31,7 +32,8 @@ export async function loadPortfolioAnalysisForUser(email: string) {
     };
   }
 
-  holdings = holdingRows.map((r) => ({
+  holdings = consolidateHoldings(
+    holdingRows.map((r) => ({
     id: r.id as string,
     market: r.market as Holding["market"],
     symbol: r.symbol as string,
@@ -42,7 +44,8 @@ export async function loadPortfolioAnalysisForUser(email: string) {
     shares: Number(r.shares),
     avgCost: Number(r.avg_cost),
     addedAt: toDateString(r.added_at),
-  }));
+  })),
+  );
 
   tradeLog = tradeRows.map((r) => ({
     symbol: r.symbol as string,

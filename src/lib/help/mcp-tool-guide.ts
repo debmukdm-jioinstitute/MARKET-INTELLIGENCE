@@ -52,10 +52,26 @@ const ASK: Partial<Record<string, string>> = {
   get_algo_desk_snapshot: "What is the algo desk state right now?",
   ask_site_assistant: "How do I use AI Signals on the site?",
   get_data_export_info: "How do I download the full data Excel export?",
-  get_admin_system: "Show cron jobs and env status (admin).",
+  get_security_detail: "Full quote and history summary for INFY.",
+  list_portal_pages: "What pages exist on Market Intelligence?",
+  search_help: "How do I connect Claude to MCP?",
+  get_my_watchlist: "What's on my watchlist?",
+  add_holding: "Add 10 shares of RELIANCE at 2500 INR to my portfolio.",
+  remove_holding: "Remove holding id … from my portfolio.",
+  sell_holding: "Sell 5 shares of TCS at 4100.",
+  update_portfolio_settings: "Rename my portfolio to Core India book.",
+  parse_portfolio_statement: "Parse this broker CSV into holdings.",
+  import_portfolio_holdings: "Import these holdings replacing my book.",
+  get_my_portfolio_activity: "Show my trade log and realized P&L.",
+  get_my_portfolio_tax: "Estimate STCG/LTCG tax on my portfolio.",
+  add_to_watchlist: "Add HDFCBANK to my watchlist.",
+  remove_from_watchlist: "Remove watchlist item …",
+  create_alert: "Alert me when stress index is above 70.",
+  delete_alert: "Delete alert rule …",
+  set_alert_active: "Pause alert rule …",
 };
 
-const GROUP_ORDER = ["Markets", "Macro", "Intelligence", "Research", "Derivatives", "Scanners", "System", "Account"] as const;
+const GROUP_ORDER = ["Markets", "Macro", "Intelligence", "Research", "Derivatives", "Scanners", "Portfolio", "Watchlist", "Alerts", "System", "Account"] as const;
 
 /** Help table rows — always derived from the live MCP tool registry (`tools/list`). */
 export function buildHelpMcpToolRows(): HelpToolRow[] {

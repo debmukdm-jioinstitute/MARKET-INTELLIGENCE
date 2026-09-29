@@ -9,11 +9,14 @@ import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instruments";
 import { buildFeedHub } from "@/lib/feeds/hub";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
+import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
 import type { OfferCategory } from "@/lib/feeds/offers/types";
 import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
+import { searchHelpTopics } from "@/lib/help/help-search-index";
+import { listPortalOfferings } from "@/lib/site-assistant/education";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
 import {
@@ -555,6 +558,65 @@ export const SITE_TOOLS: Tool[] = [
         macro: payload.macro,
         earningsCount: payload.earnings.items.length,
         sources: payload.sources,
+      };
+    },
+  },
+
+  {
+    name: "get_security_detail",
+    title: "Security detail (quote)",
+    category: "Research",
+    description: "Full quote panel for one symbol: price, OHLC, fundamentals snippet, sources, and recent history summary.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => {
+      const symbol = SymbolArg.parse(a).symbol.toUpperCase();
+      const detail = await buildSecurityDetail(symbol);
+      return {
+        ...detail,
+        history: detail.history.slice(-30),
+      };
+    },
+  },
+  {
+    name: "list_portal_pages",
+    title: "Portal sitemap",
+    category: "System",
+    description: "All portal sections and pages (same map as Ask Deb / site assistant). Optional skillLevel for Start Here shortcuts.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        section: {
+          type: "string",
+          enum: ["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"],
+        },
+        skillLevel: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const section = z
+        .enum(["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"])
+        .default("all")
+        .parse(a.section ?? "all");
+      const skillLevel = z.enum(["beginner", "intermediate", "advanced"]).optional().parse(a.skillLevel);
+      return listPortalOfferings(section, skillLevel);
+    },
+  },
+  {
+    name: "search_help",
+    title: "Search help docs",
+    category: "System",
+    description: "Search site help for MCP setup, terminal, alerts, export, troubleshooting.",
+    inputSchema: {
+      type: "object",
+      properties: { query: { type: "string" } },
+      required: ["query"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const query = z.object({ query: z.string().min(1).max(200) }).parse(a).query;
+      return {
+        topics: searchHelpTopics(query, 5).map((t) => ({ title: t.title, blurb: t.blurb, href: t.href })),
       };
     },
   },

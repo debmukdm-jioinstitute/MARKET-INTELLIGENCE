@@ -6,9 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "npm run check:typography && npm run check:react-loops && eslint",
+    "lint": "npm run check:typography && npm run check:react-loops && npm run check:mcp-tools && eslint",
     "check:typography": "node scripts/check-typography.mjs",
     "check:react-loops": "node scripts/check-react-update-loops.mjs",
+    "check:mcp-tools": "vitest run src/lib/mcp/__tests__/tools-registry.test.ts",
     "db:migrate": "node scripts/migrate.mjs",
     "test": "vitest run"
   },

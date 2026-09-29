@@ -4,11 +4,21 @@ import { chainRowsFromSnapshot } from "@/lib/optionstrat/chain-from-snapshot";
 import { optionContextForFnoIndex, pickExpiryForTheta } from "@/lib/optionstrat/fno-index-options";
 import { recommendStrategies, type MarketBias, type RiskProfile } from "@/lib/optionstrat/strategy-recommender";
 import { fetchUpstoxOptionChain, fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox/option-chain";
-import { listRules, recentEvents } from "@/lib/alerts/store";
+import { loadPortfolioAnalysisForUser } from "@/lib/portfolio/load-for-user";
+import {
+  addHoldingForEmail,
+  importHoldingsForEmail,
+  removeHoldingForEmail,
+  sellHoldingForEmail,
+  updatePortfolioSettingsForEmail,
+} from "@/lib/portfolio/server-mutations";
+import { estimateIndiaPortfolioTax } from "@/lib/my-portfolio/india-tax-estimate";
+import { createRule, deleteRule, listRules, recentEvents, RuleInput, setRuleActive } from "@/lib/alerts/store";
+import { addToWatchlist, listWatchlist, removeFromWatchlist, WatchlistAddInput } from "@/lib/watchlist/store";
+import { parseStatementRows, textToRows } from "@/lib/brokers/universal-statement-parser";
 import { buildSnapshot, METRICS } from "@/lib/snapshot";
 import { hasDatabase, ensureSchema, sql } from "@/lib/db";
 import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
-import { loadPortfolioAnalysisForUser } from "@/lib/portfolio/load-for-user";
 import { getFnoIndex, type FnoIndexId } from "@/lib/scanner/fno-indices";
 import { buildSiteAssistantSystemPrompt } from "@/lib/site-assistant/prompt";
 import { selectSiteAssistantTier } from "@/lib/site-assistant/select-tier";
@@ -323,6 +333,342 @@ export const USER_TOOLS: Tool[] = [
       }
 
       return { db: true, crons: CRONS, env, flags, stats, cronSecretSet: Boolean(process.env.CRON_SECRET) };
+    },
+  },
+  {
+    name: "get_my_watchlist",
+    title: "My watchlist",
+    category: "Watchlist",
+    access: "user",
+    description: "Symbols you track without a position. Pass sessionToken if headers cannot be sent.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" } },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      if (!hasDatabase()) return { items: [], dbConfigured: false };
+      return { items: await listWatchlist(user.email), dbConfigured: true };
+    },
+  },
+  {
+    name: "add_to_watchlist",
+    title: "Add to watchlist",
+    category: "Watchlist",
+    access: "user",
+    description: "Track a symbol without a portfolio line. Resolve symbol with search_symbols first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        market: { type: "string", enum: ["IN", "US"] },
+        symbol: { type: "string" },
+        name: { type: "string" },
+        sector: { type: "string" },
+        note: { type: "string" },
+      },
+      required: ["market", "symbol", "name"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const input = WatchlistAddInput.parse(args);
+      const item = await addToWatchlist(user.email, input);
+      return { item };
+    },
+  },
+  {
+    name: "remove_from_watchlist",
+    title: "Remove from watchlist",
+    category: "Watchlist",
+    access: "user",
+    description: "Remove by watchlist item id from get_my_watchlist.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" }, id: { type: "string" } },
+      required: ["id"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const id = z.object({ id: z.string().min(1) }).parse(args).id;
+      await removeFromWatchlist(user.email, id);
+      return { ok: true };
+    },
+  },
+  {
+    name: "add_holding",
+    title: "Add portfolio holding",
+    category: "Portfolio",
+    access: "user",
+    description:
+      "Add or merge a holding (same market+symbol merges average cost). Requires DB-backed account. Use search_symbols first.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        market: { type: "string", enum: ["IN", "US"] },
+        symbol: { type: "string" },
+        name: { type: "string" },
+        currency: { type: "string", enum: ["INR", "USD"] },
+        shares: { type: "number" },
+        avgCost: { type: "number" },
+        sector: { type: "string" },
+        addedAt: { type: "string", description: "YYYY-MM-DD" },
+      },
+      required: ["market", "symbol", "name", "currency", "shares", "avgCost"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      return addHoldingForEmail(user.email, args);
+    },
+  },
+  {
+    name: "remove_holding",
+    title: "Remove portfolio holding",
+    category: "Portfolio",
+    access: "user",
+    description: "Remove entire position by holding id or symbol from get_my_portfolio.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" }, id: { type: "string" } },
+      required: ["id"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const id = z.object({ id: z.string().min(1) }).parse(args).id;
+      return removeHoldingForEmail(user.email, id);
+    },
+  },
+  {
+    name: "sell_holding",
+    title: "Sell / trim holding",
+    category: "Portfolio",
+    access: "user",
+    description: "Partial or full sell with price and optional trade date. Updates trade log and shares.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        id: { type: "string", description: "Holding uuid from get_my_portfolio" },
+        shares: { type: "number" },
+        price: { type: "number" },
+        tradeDate: { type: "string" },
+      },
+      required: ["id", "shares", "price"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const { id, ...rest } = z
+        .object({ id: z.string().min(1), shares: z.number(), price: z.number(), tradeDate: z.string().optional() })
+        .parse(args);
+      return sellHoldingForEmail(user.email, id, rest);
+    },
+  },
+  {
+    name: "update_portfolio_settings",
+    title: "Portfolio settings",
+    category: "Portfolio",
+    access: "user",
+    description: "Change portfolio display name and/or benchmark id (NIFTY50, SENSEX, …).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        name: { type: "string" },
+        benchmark: { type: "string" },
+        cashInr: { type: "number" },
+      },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      return updatePortfolioSettingsForEmail(user.email, args);
+    },
+  },
+  {
+    name: "parse_portfolio_statement",
+    title: "Parse broker statement",
+    category: "Portfolio",
+    access: "user",
+    description:
+      "Parse pasted CSV/statement text into holdings preview (any broker). Does not save — follow with import_portfolio_holdings.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        text: { type: "string" },
+        brokerHint: { type: "string" },
+        defaultMarket: { type: "string", enum: ["IN", "US"] },
+      },
+      required: ["text"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      requireUser(ctx, args);
+      const { text, brokerHint, defaultMarket } = z
+        .object({
+          text: z.string().min(10).max(500_000),
+          brokerHint: z.string().max(80).optional(),
+          defaultMarket: z.enum(["IN", "US"]).optional(),
+        })
+        .parse(args);
+      const rows = textToRows(text);
+      return parseStatementRows(rows, text.slice(0, 500), { brokerHint, defaultMarket });
+    },
+  },
+  {
+    name: "import_portfolio_holdings",
+    title: "Import holdings",
+    category: "Portfolio",
+    access: "user",
+    description:
+      "Commit holdings array (from parse_portfolio_statement). mode=replace clears DB book first; append merges duplicates.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        mode: { type: "string", enum: ["replace", "append"] },
+        holdings: { type: "array", items: { type: "object" } },
+      },
+      required: ["holdings"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const { holdings, mode } = z
+        .object({
+          holdings: z.array(z.record(z.unknown())),
+          mode: z.enum(["replace", "append"]).default("replace"),
+        })
+        .parse(args);
+      return importHoldingsForEmail(user.email, holdings, mode);
+    },
+  },
+  {
+    name: "get_my_portfolio_activity",
+    title: "Portfolio activity",
+    category: "Portfolio",
+    access: "user",
+    description: "Trade log and approximate realized P&L for the signed-in account.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" } },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const data = await loadPortfolioAnalysisForUser(user.email);
+      if ("error" in data) return data;
+      const avgCostBySymbol = new Map(data.holdings.map((h) => [h.symbol.toUpperCase(), h.avgCost]));
+      let realizedGainInr = 0;
+      for (const t of data.tradeLog.filter((x) => x.side === "SELL")) {
+        const basis = avgCostBySymbol.get(t.symbol.toUpperCase()) ?? t.price;
+        realizedGainInr += (t.price - basis) * t.shares;
+      }
+      return {
+        trades: [...data.tradeLog].reverse().slice(0, 100),
+        realizedGainInr,
+        unrealizedGainInr: data.analysis.positions.reduce((s, p) => s + p.pnlInr, 0),
+      };
+    },
+  },
+  {
+    name: "get_my_portfolio_tax",
+    title: "Portfolio tax estimate",
+    category: "Portfolio",
+    access: "user",
+    description: "Illustrative India STCG/LTCG estimate on your book — not tax advice.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" } },
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const data = await loadPortfolioAnalysisForUser(user.email);
+      if ("error" in data) return data;
+      const addedAtBySymbol = new Map(data.holdings.map((h) => [h.symbol.toUpperCase(), h.addedAt]));
+      const avgCostBySymbol = new Map(data.holdings.map((h) => [h.symbol.toUpperCase(), h.avgCost]));
+      return estimateIndiaPortfolioTax({
+        positions: data.analysis.positions,
+        tradeLog: data.tradeLog,
+        avgCostBySymbol,
+        addedAtBySymbol,
+        fxRate: 87,
+      });
+    },
+  },
+  {
+    name: "create_alert",
+    title: "Create alert rule",
+    category: "Alerts",
+    access: "user",
+    description: "Create alert from metrics in get_my_alerts catalog (metric ids, op, value).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        name: { type: "string" },
+        conditions: { type: "array", items: { type: "object" } },
+        combinator: { type: "string", enum: ["all", "any"] },
+        channels: { type: "array", items: { type: "string", enum: ["push", "email"] } },
+        cooldownHours: { type: "number" },
+      },
+      required: ["name", "conditions"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      if (!hasDatabase()) return { error: "No database configured" };
+      const input = RuleInput.parse(args);
+      return { rule: await createRule(user.email, input) };
+    },
+  },
+  {
+    name: "delete_alert",
+    title: "Delete alert rule",
+    category: "Alerts",
+    access: "user",
+    description: "Delete alert rule by id from get_my_alerts.",
+    inputSchema: {
+      type: "object",
+      properties: { sessionToken: { type: "string" }, id: { type: "string" } },
+      required: ["id"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const id = z.object({ id: z.string().min(1) }).parse(args).id;
+      await deleteRule(user.email, id);
+      return { ok: true };
+    },
+  },
+  {
+    name: "set_alert_active",
+    title: "Enable/disable alert",
+    category: "Alerts",
+    access: "user",
+    description: "Toggle alert rule active flag.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionToken: { type: "string" },
+        id: { type: "string" },
+        active: { type: "boolean" },
+      },
+      required: ["id", "active"],
+      additionalProperties: false,
+    },
+    run: async (args, ctx) => {
+      const user = requireUser(ctx, args);
+      const { id, active } = z.object({ id: z.string(), active: z.boolean() }).parse(args);
+      await setRuleActive(user.email, id, active);
+      return { ok: true };
     },
   },
 ];

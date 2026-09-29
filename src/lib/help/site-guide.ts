@@ -1,27 +1,33 @@
-import { CRONS } from "@/lib/admin/system";
-import { buildSitemapSections } from "@/lib/nav-columns";
-
-export { CRONS };
-
-/** Account-scoped MCP tools (after mi_sign_in + X-MI-Session). */
+/** Account-scoped MCP tools (after mi_sign_in + X-MI-Session). Help page mirrors this list; TOOLS registry is source of truth. */
 export const MCP_ACCOUNT_TOOLS: { name: string; label: string; note: string }[] = [
-  { name: "get_optionstrat_recommend", label: "Options strategy lab", note: "OptionStrat spreads — index, bias, risk." },
-  { name: "get_my_portfolio", label: "My portfolio", note: "Holdings + analysis." },
-  { name: "get_my_alerts", label: "Alerts", note: "Rules and recent events (read-only via MCP)." },
-  { name: "get_algo_desk_snapshot", label: "NIFTY Algo Desk", note: "Live/demo desk state." },
+  { name: "mi_sign_in", label: "Sign in", note: "Email/password → sessionToken." },
+  { name: "mi_session_status", label: "Session", note: "Who is signed in." },
+  { name: "get_my_portfolio", label: "Portfolio read", note: "Holdings + analysis." },
+  { name: "add_holding", label: "Add holding", note: "Merge duplicate symbols." },
+  { name: "remove_holding", label: "Remove holding", note: "Drop full line." },
+  { name: "sell_holding", label: "Sell / trim", note: "Partial sell + trade log." },
+  { name: "update_portfolio_settings", label: "Portfolio settings", note: "Name + benchmark." },
+  { name: "parse_portfolio_statement", label: "Parse statement", note: "Any broker CSV/text preview." },
+  { name: "import_portfolio_holdings", label: "Import holdings", note: "Commit parsed book." },
+  { name: "get_my_portfolio_activity", label: "Activity", note: "Trades + realized P&L." },
+  { name: "get_my_portfolio_tax", label: "Tax estimate", note: "India STCG/LTCG illustrative." },
+  { name: "get_my_watchlist", label: "Watchlist read", note: "" },
+  { name: "add_to_watchlist", label: "Watchlist add", note: "" },
+  { name: "remove_from_watchlist", label: "Watchlist remove", note: "" },
+  { name: "get_my_alerts", label: "Alerts read", note: "Rules + events." },
+  { name: "create_alert", label: "Create alert", note: "" },
+  { name: "delete_alert", label: "Delete alert", note: "" },
+  { name: "set_alert_active", label: "Toggle alert", note: "" },
+  { name: "get_optionstrat_recommend", label: "Options strategy lab", note: "Theta spreads." },
+  { name: "get_algo_desk_snapshot", label: "NIFTY Algo Desk", note: "Live/demo state." },
   { name: "ask_site_assistant", label: "Site assistant", note: "One-shot Q&A." },
-  { name: "get_data_export_info", label: "Data export", note: "Download path + limits; workbook via HTTP GET." },
-  { name: "get_admin_system", label: "Admin console", note: "Crons, env, flags — admin role only." },
+  { name: "get_data_export_info", label: "Data export", note: "Excel download path." },
+  { name: "get_admin_system", label: "Admin console", note: "Admin role only." },
 ];
 
-/** Still browser-first (create/edit flows, streaming UI, OAuth). */
+/** Still browser-first (streaming UI, OAuth, live order buttons). */
 export const PORTAL_ONLY_UI: { label: string; href: string; note: string }[] = [
-  { label: "Alert rule editor", href: "/intelligence/alerts", note: "Create/patch/delete rules in the UI; MCP lists rules only." },
-  { label: "Portfolio import", href: "/portfolio", note: "Broker CSV / Upstox import — not exposed on MCP." },
   { label: "Algo live execution", href: "/algo/live", note: "Paper/live trading controls stay in the portal." },
-  { label: "Google sign-in", href: "/login", note: "OAuth accounts: use website; MCP uses email/password via mi_sign_in." },
+  { label: "Google sign-in", href: "/login", note: "OAuth: use website; MCP uses mi_sign_in email/password." },
+  { label: "Streaming Ask Deb panel", href: "/Home", note: "Multi-turn chat UI; MCP has ask_site_assistant one-shot." },
 ];
-
-export function helpSitemapSections() {
-  return buildSitemapSections();
-}
