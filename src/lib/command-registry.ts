@@ -34,6 +34,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/macro/scenarios", label: "Scenarios", description: "What-if shocks on sectors and your portfolio" },
   { href: "/macro/rbi", label: "RBI & Liquidity", description: "Policy rates, system liquidity, yield curve" },
   { href: "/intelligence/brief", label: "Daily Brief", description: "Pre-market and post-close brief" },
+  { href: "/intelligence/search-trends", label: "Search-trend intelligence", description: "Google Trends Attention Index" },
   { href: "/intelligence/alerts", label: "Alert Rules", description: "Custom market alerts by push or email" },
   { href: "/data/health", label: "Data Health", description: "Freshness and provenance of collected data" },
   { href: "/help", label: "Help center", description: "Setup guides, MCP/Claude connector, terminal app, troubleshooting" },

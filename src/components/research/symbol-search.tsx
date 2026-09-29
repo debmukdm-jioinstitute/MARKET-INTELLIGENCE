@@ -5,6 +5,12 @@ import type { HelpTopic } from "@/lib/help/help-search-index";
 import type { UnifiedSearchResult } from "@/lib/search/unified-search";
 import { isNaturalLanguageQuery } from "@/lib/search/nl-intent";
 import { openSiteAssistant } from "@/lib/home/open-assistant";
+import {
+  RESEARCH_SEARCH_PLACEHOLDER_PREFIX,
+  RESEARCH_SEARCH_PLACEHOLDER_STATIC,
+  RESEARCH_SEARCH_TYPING_SAMPLES,
+} from "@/lib/research/search-typing-samples";
+import { useTypingPlaceholder } from "@/hooks/use-typing-placeholder";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Search, Sparkles } from "lucide-react";
@@ -55,12 +61,15 @@ export function SymbolSearch({
   className,
   variant = "default",
   showShortcut = true,
+  typingPlaceholder = false,
 }: {
   initialQuery?: string;
   autoFocus?: boolean;
   className?: string;
   /** `hero` = full-width focal search; `bar` = top bar strip */
   variant?: "default" | "hero" | "bar";
+  /** Cycle Nifty 50–style names in the placeholder (research hub). */
+  typingPlaceholder?: boolean;
   showShortcut?: boolean;
 }) {
   const router = useRouter();
@@ -71,10 +80,24 @@ export function SymbolSearch({
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const hasUserTypedRef = useRef(false);
-  const isFocusedRef = useRef(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const prominent = variant === "hero" || variant === "bar";
   const items = buildItems(result);
+
+  const typingActive = typingPlaceholder && !q.trim() && !hasUserTypedRef.current && !isFocused;
+  const animatedPlaceholder = useTypingPlaceholder({
+    enabled: typingActive,
+    prefix: RESEARCH_SEARCH_PLACEHOLDER_PREFIX,
+    samples: RESEARCH_SEARCH_TYPING_SAMPLES,
+  });
+
+  const placeholder =
+    variant === "hero"
+      ? typingPlaceholder
+        ? animatedPlaceholder
+        : RESEARCH_SEARCH_PLACEHOLDER_STATIC
+      : "Search India (NSE) or US ticker, or ask a question";
 
   useEffect(() => {
     setQ(initialQuery);
@@ -197,13 +220,13 @@ export function SymbolSearch({
             setQ(e.target.value);
           }}
           onFocus={() => {
-            isFocusedRef.current = true;
+            setIsFocused(true);
             if (hasUserTypedRef.current && items.length > 0) {
               setOpen(true);
             }
           }}
           onBlur={() => {
-            isFocusedRef.current = false;
+            setIsFocused(false);
           }}
           onKeyDown={(e) => {
             if (!open || !items.length) {
@@ -220,7 +243,7 @@ export function SymbolSearch({
               const trimmed = q.trim();
               if (e.key === "Enter" && trimmed && !isNaturalLanguageQuery(trimmed)) {
                 hasUserTypedRef.current = false;
-                isFocusedRef.current = false;
+                setIsFocused(false);
                 setOpen(false);
                 router.push(`/research/${encodeURIComponent(trimmed.toUpperCase())}`);
               }
@@ -239,11 +262,7 @@ export function SymbolSearch({
               setOpen(false);
             }
           }}
-          placeholder={
-            variant === "hero"
-              ? "Search India & US symbols, ask a question — Reliance, TCS, NVDA, “how to connect MCP to Claude”…"
-              : "Search India (NSE) or US ticker, or ask a question"
-          }
+          placeholder={placeholder}
           className={cn(
             "border-0 bg-transparent shadow-none focus-visible:ring-0",
             variant === "hero" ? "h-14 text-lg md:text-xl" : "h-9 text-sm",

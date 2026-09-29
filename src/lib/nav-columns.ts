@@ -54,7 +54,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Research Companies",
         desc: "Look up any stock, read reports, track IPOs.",
         items: [
-          { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and price history (Upstox/Yahoo when configured)." },
+          { label: "Broker Research & Consensus", href: "/research", desc: "11 brokers, target price consensus, model revisions, and Why Changed? synthesis." },
           { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
           {
@@ -70,6 +70,12 @@ export const NAV_SECTIONS: NavSection[] = [
             badge: "NEW",
           },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
+          {
+            label: "Search-trend intelligence",
+            href: "/intelligence/search-trends",
+            desc: "Google Trends Attention Index — company, IPO, sector, commodity, macro, policy, CEO, product.",
+            badge: "NEW",
+          },
           {
             label: "Legal & insolvency",
             href: "/intelligence/legal-risk",

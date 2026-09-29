@@ -7,7 +7,7 @@ import { Suspense } from "react";
 function ResearchSearch() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
-  return <SymbolSearch initialQuery={q} autoFocus variant="hero" className="w-full" />;
+  return <SymbolSearch initialQuery={q} autoFocus variant="hero" className="w-full" typingPlaceholder />;
 }
 
 export function ResearchHomeClient() {

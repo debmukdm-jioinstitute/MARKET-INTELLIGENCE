@@ -166,6 +166,20 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/search-trends",
+    match: {
+      summary: "Google Trends search interest (India) → Attention Index by topic category.",
+      chips: [
+        {
+          kind: "api",
+          label: "Search-trend hub",
+          source: { provider: "Google Trends", url: "https://trends.google.com" },
+          fetchMethod: "buildSearchTrendHub() — src/lib/search-trends/build-hub.ts · /api/feeds/search-trends",
+        },
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/world-monitor",
     match: {
       summary: "Free global RSS, Yahoo indices, FRED CSV, MI what-changed cache.",
@@ -279,8 +293,16 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/research",
     match: {
-      summary: "Research landing — symbol search and desk tools.",
-      chips: chips("nse", "upstox", "googlenews"),
+      summary: "Broker research aggregator across 11 institutional houses, consensus targets, financial model estimates, and AI Why Consensus Changed synthesis.",
+      chips: [
+        {
+          kind: "api",
+          label: "Broker consensus API",
+          source: { provider: "Institutional Broker Desks", url: "/api/broker-research/consensus" },
+          fetchMethod: "getCompanyConsensusIntelligence() — src/lib/broker-research/database.ts",
+        },
+        ...chips("nse", "upstox", "googlenews"),
+      ],
     },
   },
   {

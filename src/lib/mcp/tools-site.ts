@@ -1,3 +1,8 @@
+import {
+  getCompanyConsensusIntelligence,
+  getAllBrokerResearchReports,
+  INSTITUTIONAL_BROKER_SOURCES,
+} from "@/lib/broker-research/database";
 import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
 import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
@@ -26,6 +31,8 @@ import {
   buildInstitutionalIntelligence,
   compactInstitutionalForMcp,
 } from "@/lib/institutional/build-hub";
+import { buildSearchTrendHub, compactSearchTrendsForMcp } from "@/lib/search-trends/build-hub";
+import type { SearchTrendCategory } from "@/lib/search-trends/types";
 import type { OfferCategory } from "@/lib/feeds/offers/types";
 import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
@@ -438,7 +445,87 @@ export const SITE_TOOLS: Tool[] = [
       };
     },
   },
+    {
+    name: "get_consensus_intelligence",
+    title: "Broker consensus intelligence & why changed",
+    category: "Research",
+    description:
+      "Synthesize institutional consensus across 11 brokers (Motilal Oswal, Kotak, ICICI Sec, JM Financial, etc.) for a ticker, including target price spread, upside %, ratings matrix, and AI Consensus Changed — Why? revision drivers.",
+    inputSchema: {
+      type: "object",
+      properties: { symbol: sym },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol } = SymbolArg.parse(a);
+      const data = getCompanyConsensusIntelligence(symbol);
+      return {
+        symbol: data.symbol,
+        companyName: data.companyName,
+        sector: data.sector,
+        cmp: data.cmp,
+        consensusTargetPrice: data.consensusTargetPrice,
+        consensusUpsidePct: data.consensusUpsidePct,
+        targetPriceHigh: data.targetPriceHigh,
+        brokerHigh: data.brokerHigh,
+        targetPriceLow: data.targetPriceLow,
+        brokerLow: data.brokerLow,
+        buyRatioPct: data.buyRatioPct,
+        ratingsBreakdown: {
+          buy: data.buyCount,
+          accumulate: data.accumulateCount,
+          hold: data.holdCount,
+          sell: data.sellCount,
+        },
+        whyChanged: data.whyChanged,
+        brokerMatrix: data.brokerMatrix.map((b) => ({
+          broker: b.broker,
+          analyst: b.analyst,
+          rating: b.rating,
+          targetPrice: b.targetPrice,
+          previousTarget: b.previousTarget,
+          targetChangePct: b.targetChangePct,
+          thesis: b.thesis,
+          catalysts: b.catalysts,
+          keyRisks: b.keyRisks,
+          date: b.displayDate,
+        })),
+      };
+    },
+  },
   {
+    name: "get_broker_research_feed",
+    title: "Institutional broker research aggregator",
+    category: "Research",
+    description:
+      "Aggregated feed of equity research notes, quarterly estimates, and ratings from 11 leading Indian institutional desks.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "Optional ticker filter, e.g. RELIANCE, TATAMOTORS" },
+        broker: { type: "string", description: "Optional broker filter, e.g. Motilal Oswal, Kotak Securities" },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const symbol = typeof a.symbol === "string" && a.symbol.trim() ? a.symbol.trim().toUpperCase() : undefined;
+      const broker = typeof a.broker === "string" && a.broker.trim() ? a.broker.trim().toLowerCase() : undefined;
+      let reports = getAllBrokerResearchReports();
+      if (symbol) {
+        reports = reports.filter((r) => r.symbol.toUpperCase() === symbol);
+      }
+      if (broker) {
+        reports = reports.filter((r) => r.broker.toLowerCase().includes(broker));
+      }
+      return {
+        totalReports: reports.length,
+        monitoredDesksCount: INSTITUTIONAL_BROKER_SOURCES.length,
+        reports: reports.slice(0, 30),
+      };
+    },
+  },
+{
     name: "get_company_intelligence_timeline",
     title: "Company disclosure timeline & delta",
     category: "Research",
@@ -580,6 +667,47 @@ export const SITE_TOOLS: Tool[] = [
       "Corporate risk chains: company → legal case → regulator (NCLT, courts, SEBI, CCI, ED, RBI) → exposure → impact.",
     inputSchema: empty,
     run: async () => compactLegalRiskForMcp(await buildLegalRiskHub()),
+  },
+  {
+    name: "get_search_trend_attention",
+    title: "Search-trend Attention Index",
+    category: "Research",
+    description:
+      "Google Trends search interest (India geo) → Attention Index for companies, IPOs, sectors, commodities, macro, policy, CEOs, products.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description:
+            "Optional filter: company | ipo | sector | commodity | economic_indicator | policy | ceo | product",
+        },
+        keyword: { type: "string", description: "Optional custom Trends query or label filter" },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { category, keyword } = z
+        .object({
+          category: z
+            .enum([
+              "company",
+              "ipo",
+              "sector",
+              "commodity",
+              "economic_indicator",
+              "policy",
+              "ceo",
+              "product",
+            ])
+            .optional(),
+          keyword: z.string().max(120).optional(),
+        })
+        .parse(a);
+      return compactSearchTrendsForMcp(
+        await buildSearchTrendHub({ category: category as SearchTrendCategory | undefined, keyword }),
+      );
+    },
   },
   {
     name: "get_research_reports",
