@@ -47,6 +47,13 @@ export const updateSettingsSchema = z.object({
   name: z.string().min(1, "Portfolio name cannot be empty").max(60, "Portfolio name is too long").trim().optional(),
   benchmark: z.enum(BENCHMARK_IDS).optional(),
   baseCurrency: z.literal("INR").optional(),
+  cashInr: z.number().finite().min(0).max(1_000_000_000_000).optional(),
+});
+
+export const sellHoldingSchema = z.object({
+  shares: z.number().positive().max(1_000_000_000),
+  price: z.number().positive().max(100_000_000),
+  tradeDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;

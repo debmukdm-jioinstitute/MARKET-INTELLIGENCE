@@ -1,7 +1,9 @@
 "use client";
 
 import type { AddHoldingInput } from "@/hooks/use-my-portfolio";
+import { useInstrumentCmp } from "@/hooks/use-instrument-cmp";
 import { useInstrumentSearch, type InstrumentSearchResult } from "@/hooks/use-instrument-search";
+import { formatPct } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,6 +35,14 @@ export function AddHoldingDialog({
   const [error, setError] = useState<string | null>(null);
 
   const { results, loading } = useInstrumentSearch(market, selected ? "" : query);
+  const cmp = useInstrumentCmp(selected?.market ?? null, selected?.symbol ?? null, Boolean(selected));
+
+  function formatCmpPrice(price: number, currency: "INR" | "USD") {
+    if (currency === "INR") {
+      return `₹${price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
 
   function reset() {
     setQuery("");
@@ -132,14 +142,56 @@ export function AddHoldingDialog({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                <div>
-                  <p className="text-sm font-medium">{selected.symbol}</p>
-                  <p className="text-sm text-muted-foreground">{selected.name}</p>
+              <div className="rounded-md border border-border px-3 py-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">{selected.symbol}</p>
+                    <p className="text-sm text-muted-foreground">{selected.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="shrink-0 text-sm text-muted-foreground underline"
+                  >
+                    Change
+                  </button>
                 </div>
-                <button type="button" onClick={() => setSelected(null)} className="text-sm text-muted-foreground underline">
-                  Change
-                </button>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-border pt-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">CMP</span>
+                  {cmp.loading ? (
+                    <span className="text-sm text-muted-foreground">Loading…</span>
+                  ) : cmp.price != null ? (
+                    <>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {formatCmpPrice(cmp.price, selected.currency)}
+                      </span>
+                      {cmp.changePct != null ? (
+                        <span
+                          className={
+                            cmp.changePct >= 0
+                              ? "text-sm tabular-nums text-emerald-600"
+                              : "text-sm tabular-nums text-rose-600"
+                          }
+                        >
+                          {formatPct(cmp.changePct)}
+                        </span>
+                      ) : null}
+                      {!avgCost && cmp.price != null ? (
+                        <button
+                          type="button"
+                          className="text-sm font-semibold text-blue-600 hover:underline"
+                          onClick={() => setAvgCost(String(cmp.price))}
+                        >
+                          Use as avg cost
+                        </button>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      {cmp.error ? "Quote unavailable" : "—"}
+                    </span>
+                  )}
+                </div>
               </div>
               <Input
                 type="number"

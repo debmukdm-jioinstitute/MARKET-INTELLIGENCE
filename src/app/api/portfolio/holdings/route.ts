@@ -1,5 +1,6 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { getSessionEmail, isGuestSession } from "@/lib/session";
+import { consolidateHoldings, mergeAvgCost } from "@/lib/my-portfolio/merge-holding";
 import type { Holding } from "@/lib/my-portfolio/types";
 import { addHoldingSchema } from "@/lib/validations/portfolio";
 import { NextResponse } from "next/server";
@@ -46,7 +47,8 @@ export async function GET() {
           FROM portfolio_holdings WHERE user_email = ${email} ORDER BY created_at ASC
         `) as unknown as Row[];
         if (rows.length > 0) {
-          return NextResponse.json({ holdings: rows.map(toHolding) });
+          const holdings = consolidateHoldings(rows.map(toHolding));
+          return NextResponse.json({ holdings });
         }
       } catch (err) {
         console.warn("DB holdings query failed, using realistic defaults:", err);
@@ -92,16 +94,47 @@ export async function POST(req: Request) {
       await ensureSchema();
       const email = await getSessionEmail();
       const db = sql();
-      const rows = (await db`
-        INSERT INTO portfolio_holdings (user_email, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at)
-        VALUES (${email}, ${body.market}, ${body.symbol.toUpperCase()}, ${body.instrumentKey ?? null}, ${body.name}, ${body.sector ?? null}, ${body.currency}, ${body.shares}, ${body.avgCost}, ${addedAt})
-        RETURNING id, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at
+      const symbolUp = body.symbol.toUpperCase();
+      const existingRows = (await db`
+        SELECT id, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at
+        FROM portfolio_holdings
+        WHERE user_email = ${email} AND market = ${body.market} AND symbol = ${symbolUp}
+        LIMIT 1
       `) as unknown as Row[];
+
+      let outRows: Row[];
+      if (existingRows[0]) {
+        const prev = existingRows[0];
+        const prevShares = Number(prev.shares);
+        const prevCost = Number(prev.avg_cost);
+        const newShares = prevShares + body.shares;
+        const newAvg = mergeAvgCost(prevShares, prevCost, body.shares, body.avgCost);
+        const earliestAdded =
+          toDateString(prev.added_at) <= addedAt ? toDateString(prev.added_at) : addedAt;
+        outRows = (await db`
+          UPDATE portfolio_holdings
+          SET shares = ${newShares},
+              avg_cost = ${newAvg},
+              added_at = ${earliestAdded},
+              name = ${body.name},
+              sector = COALESCE(${body.sector ?? null}, sector),
+              instrument_key = COALESCE(${body.instrumentKey ?? null}, instrument_key)
+          WHERE id = ${prev.id} AND user_email = ${email}
+          RETURNING id, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at
+        `) as unknown as Row[];
+      } else {
+        outRows = (await db`
+          INSERT INTO portfolio_holdings (user_email, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at)
+          VALUES (${email}, ${body.market}, ${symbolUp}, ${body.instrumentKey ?? null}, ${body.name}, ${body.sector ?? null}, ${body.currency}, ${body.shares}, ${body.avgCost}, ${addedAt})
+          RETURNING id, market, symbol, instrument_key, name, sector, currency, shares, avg_cost, added_at
+        `) as unknown as Row[];
+      }
+
       await db`
         INSERT INTO portfolio_trade_log (user_email, symbol, side, shares, price, trade_date)
-        VALUES (${email}, ${body.symbol.toUpperCase()}, 'BUY', ${body.shares}, ${body.avgCost}, ${addedAt})
+        VALUES (${email}, ${symbolUp}, 'BUY', ${body.shares}, ${body.avgCost}, ${addedAt})
       `;
-      return NextResponse.json({ holding: toHolding(rows[0]!) }, { status: 201 });
+      return NextResponse.json({ holding: toHolding(outRows[0]!) }, { status: 201 });
     }
     return NextResponse.json({ holding: fallbackHolding }, { status: 201 });
   } catch (e) {

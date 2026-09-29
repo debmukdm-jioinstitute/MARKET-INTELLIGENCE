@@ -2,10 +2,11 @@
 
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
+import { consolidateHoldings, holdingMatchKey, mergeHoldingIntoList } from "@/lib/my-portfolio/merge-holding";
 import type { Holding, PortfolioAnalysis, PortfolioSettings } from "@/lib/my-portfolio/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mi_user_holdings_v2";
 const SETTINGS_KEY = "mi_portfolio_settings_v1";
@@ -104,6 +105,7 @@ function getLocalSettings(): PortfolioSettings {
       name: parsed.name ?? DEFAULT_PORTFOLIO_SETTINGS.name,
       benchmark: parsed.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
       baseCurrency: "INR",
+      cashInr: typeof parsed.cashInr === "number" && parsed.cashInr >= 0 ? parsed.cashInr : 0,
     };
     return cachedSettings;
   } catch {
@@ -169,16 +171,19 @@ type PortfolioAnalysisKey = readonly [
   boolean,
   PortfolioSettings["benchmark"],
   string,
+  number,
 ];
 
-function fetchPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name]: PortfolioAnalysisKey) {
+function fetchPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name, cashInr]: PortfolioAnalysisKey) {
   const holdings = holdingsRaw ? getLocalHoldings() : null;
-  return fetcher([
-    url,
-    holdings,
-    guest,
-    { ...DEFAULT_PORTFOLIO_SETTINGS, benchmark, name, baseCurrency: "INR" },
-  ]);
+  const settings: PortfolioSettings = {
+    ...getLocalSettings(),
+    benchmark,
+    name,
+    baseCurrency: "INR",
+    cashInr,
+  };
+  return fetcher([url, holdings, guest, settings]);
 }
 
 export function useMyPortfolio(refreshMs = 60_000) {
@@ -207,6 +212,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
           isGuest,
           localSettings.benchmark,
           localSettings.name,
+          localSettings.cashInr ?? 0,
         ] as const)
       : null,
     fetchPortfolioAnalysis,
@@ -214,6 +220,49 @@ export function useMyPortfolio(refreshMs = 60_000) {
   );
 
   const reload = useCallback(() => mutate(), [mutate]);
+
+  const syncedFromServerRef = useRef(false);
+  useEffect(() => {
+    if (!ready || isGuest || syncedFromServerRef.current) return;
+    syncedFromServerRef.current = true;
+    void (async () => {
+      if (getLocalHoldings()?.length) return;
+      try {
+        const res = await fetch("/api/portfolio/holdings");
+        if (!res.ok) return;
+        const json = (await res.json()) as { holdings?: Holding[] };
+        if (json.holdings?.length) {
+          setLocalHoldings(consolidateHoldings(json.holdings));
+          await mutate();
+        }
+      } catch {
+        /* optional cloud seed */
+      }
+    })();
+  }, [ready, isGuest, mutate]);
+
+  const syncFromAccount = useCallback(async () => {
+    requireAccount();
+    const [hRes, sRes] = await Promise.all([
+      fetch("/api/portfolio/holdings"),
+      fetch("/api/portfolio/settings"),
+    ]);
+    if (hRes.ok) {
+      const json = (await hRes.json()) as { holdings?: Holding[] };
+      if (json.holdings) setLocalHoldings(consolidateHoldings(json.holdings));
+    }
+    if (sRes.ok) {
+      const s = (await sRes.json()) as Partial<PortfolioSettings>;
+      setLocalSettings({
+        ...getLocalSettings(),
+        name: s.name ?? getLocalSettings().name,
+        benchmark: s.benchmark ?? getLocalSettings().benchmark,
+        baseCurrency: "INR",
+        cashInr: getLocalSettings().cashInr ?? 0,
+      });
+    }
+    await reload();
+  }, [reload, requireAccount]);
 
   const addHolding = useCallback(
     async (input: AddHoldingInput) => {
@@ -231,22 +280,61 @@ export function useMyPortfolio(refreshMs = 60_000) {
         addedAt: input.addedAt ?? new Date().toISOString().slice(0, 10),
       };
 
-      const current = getLocalHoldings() ?? [];
-      const updated = [...current, newHolding];
+      const current = consolidateHoldings(getLocalHoldings() ?? []);
+      const { list: updated, result } = mergeHoldingIntoList(current, newHolding);
       setLocalHoldings(updated);
 
       try {
-        await fetch("/api/portfolio/holdings", {
+        const res = await fetch("/api/portfolio/holdings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(input),
         });
+        if (res.ok) {
+          const json = (await res.json()) as { holding?: Holding };
+          if (json.holding) {
+            const key = holdingMatchKey(json.holding);
+            const synced = updated.map((h) => (holdingMatchKey(h) === key ? json.holding! : h));
+            setLocalHoldings(synced);
+          }
+        }
       } catch (e) {
         console.warn("Backend holding sync skipped:", e);
       }
 
       await reload();
-      return newHolding;
+      return result;
+    },
+    [reload, requireAccount],
+  );
+
+  const sellHolding = useCallback(
+    async (id: string, input: { shares: number; price: number; tradeDate?: string }) => {
+      requireAccount();
+      const current = getLocalHoldings() ?? [];
+      const h = current.find((x) => x.id === id);
+      if (!h) throw new Error("Holding not found");
+      if (input.shares <= 0 || input.shares > h.shares) throw new Error("Invalid sell quantity");
+
+      const updated =
+        input.shares >= h.shares
+          ? current.filter((x) => x.id !== id)
+          : current.map((x) =>
+              x.id === id ? { ...x, shares: x.shares - input.shares } : x,
+            );
+      setLocalHoldings(updated);
+
+      try {
+        await fetch(`/api/portfolio/holdings/${id}/sell`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      } catch (e) {
+        console.warn("Backend sell sync skipped:", e);
+      }
+
+      await reload();
     },
     [reload, requireAccount],
   );
@@ -255,6 +343,8 @@ export function useMyPortfolio(refreshMs = 60_000) {
     async (id: string) => {
       requireAccount();
       const current = getLocalHoldings() ?? [];
+      const h = current.find((x) => x.id === id);
+      if (h && !window.confirm(`Remove ${h.symbol} from your book?`)) return;
       const updated = current.filter((h) => h.id !== id && h.symbol !== id);
       setLocalHoldings(updated);
 
@@ -305,6 +395,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
   }, [reload]);
 
   const clearHoldings = useCallback(async () => {
+    if (!window.confirm("Clear all holdings? This cannot be undone from this screen.")) return;
     setLocalHoldings([]);
     await reload();
   }, [reload]);
@@ -314,11 +405,9 @@ export function useMyPortfolio(refreshMs = 60_000) {
       requireAccount();
       let updated: Holding[];
       if (mode === "replace") {
-        updated = [...imported];
+        updated = consolidateHoldings(imported);
       } else {
-        const current = getLocalHoldings() ?? [];
-        const existingSymbols = new Set(imported.map((h) => h.symbol.toUpperCase()));
-        updated = [...current.filter((h) => !existingSymbols.has(h.symbol.toUpperCase())), ...imported];
+        updated = consolidateHoldings([...(getLocalHoldings() ?? []), ...imported]);
       }
       setLocalHoldings(updated);
 
@@ -356,6 +445,39 @@ export function useMyPortfolio(refreshMs = 60_000) {
     return importHoldings(REALISTIC_DEFAULT_HOLDINGS, "replace");
   }, [importHoldings]);
 
+  const updatePortfolioName = useCallback(
+    async (name: string) => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      const next: PortfolioSettings = { ...getLocalSettings(), name: trimmed, baseCurrency: "INR" };
+      setLocalSettings(next);
+      try {
+        await fetch("/api/portfolio/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: trimmed, benchmark: next.benchmark }),
+        });
+      } catch (e) {
+        console.warn("Name saved locally; server sync skipped:", e);
+      }
+      await reload();
+    },
+    [reload],
+  );
+
+  const updateCashInr = useCallback(
+    async (cashInr: number) => {
+      const next: PortfolioSettings = {
+        ...getLocalSettings(),
+        cashInr: Math.max(0, cashInr),
+        baseCurrency: "INR",
+      };
+      setLocalSettings(next);
+      await reload();
+    },
+    [reload],
+  );
+
   const updateBenchmark = useCallback(
     async (benchmark: BenchmarkId, name?: string) => {
       const next: PortfolioSettings = {
@@ -363,6 +485,7 @@ export function useMyPortfolio(refreshMs = 60_000) {
         benchmark,
         name: name ?? getLocalSettings().name,
         baseCurrency: "INR",
+        cashInr: getLocalSettings().cashInr ?? 0,
       };
       setLocalSettings(next);
       try {
@@ -395,5 +518,9 @@ export function useMyPortfolio(refreshMs = 60_000) {
     importHoldings,
     trySampleHoldings,
     updateBenchmark,
+    sellHolding,
+    updatePortfolioName,
+    updateCashInr,
+    syncFromAccount,
   };
 }

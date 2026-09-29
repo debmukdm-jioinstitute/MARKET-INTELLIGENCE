@@ -96,6 +96,7 @@ export async function POST(req: Request) {
           name: body.settings.name ?? DEFAULT_PORTFOLIO_SETTINGS.name,
           benchmark: body.settings.benchmark ?? DEFAULT_PORTFOLIO_SETTINGS.benchmark,
           baseCurrency: "INR",
+          cashInr: body.settings.cashInr ?? 0,
         }
       : DEFAULT_PORTFOLIO_SETTINGS;
 
