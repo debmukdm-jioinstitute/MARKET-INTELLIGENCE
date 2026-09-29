@@ -1,4 +1,4 @@
-import { FLAGS } from "@/lib/admin/system";
+import { catalogFlags, defaultFlagEnabled, FLAGS } from "@/lib/admin/system";
 import { NAV_SECTIONS, type NavLink } from "@/lib/nav-columns";
 import { buildPortalPageRegistry } from "@/lib/portal-page-registry";
 
@@ -91,10 +91,10 @@ export function listSubscribedServices(_features: CatalogFeature[]): SubscribedS
 }
 
 export function listPlatformCapabilities(enabledFlags: Record<string, boolean>) {
-  return FLAGS.map((f) => ({
+  return catalogFlags().map((f) => ({
     flag: f.flag,
     label: f.label,
-    enabled: enabledFlags[f.flag] ?? true,
+    enabled: enabledFlags[f.flag] ?? defaultFlagEnabled(f.flag),
   }));
 }
 

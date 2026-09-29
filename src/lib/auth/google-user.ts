@@ -40,7 +40,8 @@ export async function sessionResponseForGoogleUser(
 
     if (row) {
       await db`
-        UPDATE users SET google_sub = ${sub}, name = ${name}, last_login_at = now()
+        UPDATE users SET google_sub = ${sub}, name = ${name}, last_login_at = now(),
+          email_verified_at = coalesce(email_verified_at, now())
         WHERE email = ${email}
       `;
     } else {
@@ -53,8 +54,8 @@ export async function sessionResponseForGoogleUser(
       const role = isBootstrapAdmin(email) ? "admin" : "user";
       const passwordHash = googleOnlyPasswordPlaceholder(sub);
       await db`
-        INSERT INTO users (email, name, password_hash, role, google_sub, last_login_at, privacy_accepted_at)
-        VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now())
+        INSERT INTO users (email, name, password_hash, role, google_sub, last_login_at, privacy_accepted_at, email_verified_at)
+        VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now(), now())
       `;
       row = { email, name, password_hash: passwordHash, role, google_sub: sub };
       const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };

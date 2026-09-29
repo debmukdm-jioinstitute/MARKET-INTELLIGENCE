@@ -1,3 +1,4 @@
+import { defaultFlagEnabled } from "@/lib/admin/system";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { NextResponse } from "next/server";
@@ -45,7 +46,7 @@ export async function rateLimited(key: string, max: number, windowSec: number): 
 }
 
 export async function isFeatureEnabled(flag: string): Promise<boolean> {
-  const defaultVal = flag === "guided-tour" ? false : true;
+  const defaultVal = defaultFlagEnabled(flag);
   if (!hasDatabase()) return defaultVal;
   try {
     await ensureSchema();

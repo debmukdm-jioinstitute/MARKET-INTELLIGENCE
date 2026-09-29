@@ -37,7 +37,15 @@ const SAMPLES = [
   },
 ] as const;
 
-export function ProductProof({ onOpenDemo, hasAccess }: { onOpenDemo: () => void; hasAccess: boolean }) {
+export function ProductProof({
+  onOpenDemo,
+  hasAccess,
+  guestAllowed,
+}: {
+  onOpenDemo: () => void;
+  hasAccess: boolean;
+  guestAllowed: boolean;
+}) {
   const [id, setId] = useState<(typeof SAMPLES)[number]["id"]>("RELIANCE");
   const sample = SAMPLES.find((s) => s.id === id) ?? SAMPLES[0];
   const min = Math.min(...sample.series);
@@ -93,8 +101,10 @@ export function ProductProof({ onOpenDemo, hasAccess }: { onOpenDemo: () => void
           Illustrative sample, not live data or a recommendation. The live terminal shows real prices with the source and time of each figure.{" "}
           {hasAccess ? (
             <Link href="/Home" className="font-medium text-blue-600 hover:underline">Open terminal →</Link>
-          ) : (
+          ) : guestAllowed ? (
             <button type="button" onClick={onOpenDemo} className="font-medium text-blue-600 hover:underline">Open the live demo →</button>
+          ) : (
+            <Link href="/signup" className="font-medium text-blue-600 hover:underline">Create a free account →</Link>
           )}
         </p>
       </div>

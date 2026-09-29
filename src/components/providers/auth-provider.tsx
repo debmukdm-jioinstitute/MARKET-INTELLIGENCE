@@ -7,7 +7,11 @@ type AuthCtx = {
   user: SessionUser | null;
   ready: boolean;
   isGuest: boolean;
-  signup: (input: { name: string; email: string; password: string; acceptPrivacy: boolean }) => Promise<void>;
+  requireAccount: boolean;
+  guestAllowed: boolean;
+  signup: (input: { name: string; email: string; password: string; acceptPrivacy: boolean }) => Promise<{ pending: boolean }>;
+  verifySignup: (input: { email: string; code: string }) => Promise<void>;
+  resendSignupOtp: (email: string) => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
   enterGuest: () => Promise<void>;
   logout: () => Promise<void>;
@@ -29,6 +33,7 @@ async function postJson(url: string, body: unknown) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [requireAccount, setRequireAccount] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((json) => {
         if (!cancelled) {
           setUser(json.user ?? null);
+          setRequireAccount(Boolean(json.requireAccount));
           // A guest never owns a book: clear anything left in this browser by a previous session.
           if (isGuestUser(json.user ?? null)) {
             try {
@@ -62,13 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       ready,
       isGuest: isGuestUser(user),
+      requireAccount,
+      guestAllowed: !requireAccount,
       async enterGuest() {
         const json = await postJson("/api/auth/session", { guest: true });
         setUser(json.user);
       },
       async signup({ name, email, password, acceptPrivacy }) {
         const json = await postJson("/api/auth/signup", { name, email, password, acceptPrivacy });
+        if (json.pending) return { pending: true };
         setUser(json.user);
+        return { pending: false };
+      },
+      async verifySignup({ email, code }) {
+        const json = await postJson("/api/auth/signup/verify", { email, code });
+        setUser(json.user);
+      },
+      async resendSignupOtp(email) {
+        await postJson("/api/auth/signup/resend", { email });
       },
       async login({ email, password }) {
         const json = await postJson("/api/auth/login", { email, password });
@@ -79,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       },
     }),
-    [user, ready],
+    [user, ready, requireAccount],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -102,8 +102,8 @@ const COMPARISON_FEATURES = [
 
 export function LandingPage() {
   const router = useRouter();
-  const { user, ready, enterGuest, isGuest } = useAuth();
-  const hasAccess = ready && Boolean(user);
+  const { user, ready, enterGuest, isGuest, guestAllowed } = useAuth();
+  const hasAccess = ready && Boolean(user) && (guestAllowed || !isGuest);
   const container = useRef<HTMLDivElement>(null);
 
   // Live metrics simulation
@@ -315,13 +315,22 @@ export function LandingPage() {
                   >
                     Sign in
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => void enterGuest().then(() => router.push("/Home"))}
-                    className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
-                  >
-                    Open demo
-                  </button>
+                  {ready && guestAllowed ? (
+                    <button
+                      type="button"
+                      onClick={() => void enterGuest().then(() => router.push("/Home"))}
+                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                    >
+                      Open demo
+                    </button>
+                  ) : ready ? (
+                    <Link
+                      href="/signup"
+                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                    >
+                      Create account
+                    </Link>
+                  ) : null}
                 </>
               )}
               <MobileNav />
@@ -357,7 +366,7 @@ export function LandingPage() {
                 >
                   Open terminal →
                 </Link>
-              ) : (
+              ) : !ready ? null : guestAllowed ? (
                 <>
                   <button
                     type="button"
@@ -373,9 +382,28 @@ export function LandingPage() {
                     Create free account
                   </Link>
                 </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+                  >
+                    Create free account →
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                  >
+                    Sign in
+                  </Link>
+                </>
               )}
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">See live markets in seconds — no sign-up, no card. Create an account later to save your watchlist and portfolio.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              {guestAllowed
+                ? "See live markets in seconds — no sign-up, no card. Create an account later to save your watchlist and portfolio."
+                : "Create a free account to open the terminal — no card."}
+            </p>
           </div>
 
           {/* Glass dashboard mockup */}
@@ -566,7 +594,7 @@ export function LandingPage() {
           </div>
           <ol className="grid gap-5 md:grid-cols-3">
             {[
-              { title: "Create your free account", body: "Sign up in seconds, or just look around as a guest. No brokerage account, no card needed." },
+              { title: "Create your free account", body: guestAllowed ? "Sign up in seconds, or just look around as a guest. No brokerage account, no card needed." : "Sign up in seconds. No brokerage account, no card needed." },
               { title: "Add your investments", body: "Add your holdings, or practise with a pretend portfolio of Indian and US stocks." },
               { title: "Learn before you invest", body: "Check your risk, test ideas on past data, and ask the AI desk — all without risking a single rupee." },
             ].map((step, i) => (
@@ -579,7 +607,11 @@ export function LandingPage() {
           </ol>
         </section>
 
-        <ProductProof hasAccess={hasAccess} onOpenDemo={() => void enterGuest().then(() => router.push("/Home"))} />
+        <ProductProof
+          hasAccess={hasAccess}
+          guestAllowed={guestAllowed}
+          onOpenDemo={() => void enterGuest().then(() => router.push("/Home"))}
+        />
 
         {/* FEATURE SECTIONS */}
         <section id="features" className="mx-auto mt-24 max-w-6xl scroll-mt-20 px-5 md:mt-32">

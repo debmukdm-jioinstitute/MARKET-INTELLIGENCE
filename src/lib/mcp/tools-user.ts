@@ -7,7 +7,7 @@ import { fetchUpstoxOptionChain, fetchUpstoxOptionExpiries } from "@/lib/feeds/s
 import { listRules, recentEvents } from "@/lib/alerts/store";
 import { buildSnapshot, METRICS } from "@/lib/snapshot";
 import { hasDatabase, ensureSchema, sql } from "@/lib/db";
-import { CRONS, ENV_VARS, FLAGS } from "@/lib/admin/system";
+import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { loadPortfolioAnalysisForUser } from "@/lib/portfolio/load-for-user";
 import { getFnoIndex, type FnoIndexId } from "@/lib/scanner/fno-indices";
 import { buildSiteAssistantSystemPrompt } from "@/lib/site-assistant/prompt";
@@ -303,10 +303,10 @@ export const USER_TOOLS: Tool[] = [
 
       await ensureSchema();
       const d = sql();
-      let flags = FLAGS.map((f) => ({ ...f, enabled: true }));
+      let flags = FLAGS.map((f) => ({ ...f, enabled: defaultFlagEnabled(f.flag) }));
       try {
         const rows = (await d`SELECT flag, enabled FROM feature_flags`) as unknown as { flag: string; enabled: boolean }[];
-        flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? true }));
+        flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? defaultFlagEnabled(f.flag) }));
       } catch {
         /* optional table */
       }
