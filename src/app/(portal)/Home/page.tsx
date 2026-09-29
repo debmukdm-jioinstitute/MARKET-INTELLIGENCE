@@ -55,6 +55,14 @@ export default function DashboardPage() {
         source={[data?.pulse.nifty.source.provider, data?.pulse.usdInr.source.provider].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ") || "NSE India, Upstox"}
         asOf={data?.fetchedAt}
         delayed="Quotes may be delayed"
+        fieldSource={{
+          provider: "India dashboard composite",
+          url: "/api/feeds/india-dashboard",
+          asOf: data?.fetchedAt,
+          fetchMethod:
+            "buildIndiaDashboard() — Upstox, NSE breadth, RBI liquidity — src/lib/feeds/india/build-dashboard.ts",
+        }}
+        hubSyncedAt={data?.fetchedAt}
       />
       <FetchingBanner active={loadingFull} />
       {error ? (

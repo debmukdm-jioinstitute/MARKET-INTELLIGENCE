@@ -277,7 +277,7 @@ function emptyAnalysis(settings: PortfolioSettings): PortfolioAnalysis {
     settings,
     hasHoldings: false,
     navInr: 0,
-    cashInr: 0,
+    cashInr: settings.cashInr ?? 0,
     todayPnlInr: 0,
     positions: [],
     overview: OVERVIEW_METRICS.map((id) => NA(id, "Add a holding to see this metric.")),
@@ -320,7 +320,7 @@ export async function computePortfolioAnalysis(
     const marketValueInr = s.holding.shares * toInr(s.holding, s.last);
     return { s, marketValueInr };
   });
-  const navInr = positionsRaw.reduce((sum, r) => sum + r.marketValueInr, 0);
+  const navInr = positionsRaw.reduce((sum, r) => sum + r.marketValueInr, 0) + (settings.cashInr ?? 0);
   const todayPnlInr = positionsRaw.reduce(
     (sum, r) => sum + r.s.holding.shares * toInr(r.s.holding, r.s.change),
     0,
@@ -932,7 +932,7 @@ export async function computePortfolioAnalysis(
     settings,
     hasHoldings: true,
     navInr,
-    cashInr: 0,
+    cashInr: settings.cashInr ?? 0,
     todayPnlInr,
     positions: positions.sort((a, b2) => b2.marketValueInr - a.marketValueInr),
     overview,

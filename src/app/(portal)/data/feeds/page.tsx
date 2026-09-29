@@ -52,7 +52,7 @@ export default function FeedsPage() {
               </span>
             }
           >
-            <SourceHealthGrid rows={data.health} />
+            <SourceHealthGrid rows={data.health} hubSyncedAt={data.fetchedAt} />
           </Panel>
 
           {/* Feed Consumers & Routing Architecture */}

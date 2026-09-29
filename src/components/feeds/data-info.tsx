@@ -12,12 +12,18 @@ export function DataInfo({
   note,
   name,
   className,
+  itemUrl,
+  fetchPath,
 }: {
   source: FieldSource;
   hubSyncedAt?: string;
   note?: string;
   name?: string;
   className?: string;
+  /** Link to the specific row (headline, filing, quote field). */
+  itemUrl?: string;
+  /** Server-side fetch path / module (shown when no itemUrl). */
+  fetchPath?: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const marketTime = source.asOf ? new Date(source.asOf).toLocaleString() : null;
@@ -132,6 +138,26 @@ export function DataInfo({
                 </div>
               ) : null}
             </div>
+          ) : null}
+
+          {fetchPath ?? source.fetchMethod ? (
+            <div className="rounded-xl border border-border/50 bg-background/50 p-2.5 text-[10.5px] text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">How we fetch: </span>
+              {fetchPath ?? source.fetchMethod}
+            </div>
+          ) : null}
+
+          {itemUrl ? (
+            <a
+              href={itemUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-muted/30 px-3 py-2 text-[11px] font-medium text-foreground hover:border-primary/40 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="truncate">Open this headline / record</span>
+              <ExternalLink className="size-3 shrink-0" />
+            </a>
           ) : null}
 
           {/* Note / Details */}

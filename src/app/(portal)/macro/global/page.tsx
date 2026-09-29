@@ -3,11 +3,17 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { GlobalMacroCard } from "@/components/dashboard/global-macro-card";
 import { GlobalRadar } from "@/components/dashboard/global-radar";
+import { MacroHistoryGrid } from "@/components/macro/macro-history-grid";
+import { MacroSectionFreshness } from "@/components/macro/macro-section-freshness";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { useMacroHub } from "@/hooks/use-macro-hub";
+import { metricsWithHistory, sectionMetrics } from "@/lib/macro/metric-tree";
 import Link from "next/link";
 
 export default function GlobalMacroPage() {
   const { data, loading, error } = useIndiaDashboard(45_000);
+  const hub = useMacroHub(120_000);
+  const globalSection = hub.data?.sections.global;
 
   return (
     <div className="portal-page pb-10">
@@ -33,6 +39,18 @@ export default function GlobalMacroPage() {
         <GlobalMacroCard data={data} />
         {data ? <GlobalRadar data={data} /> : null}
       </div>
+
+      {hub.data && globalSection ? (
+        <div className="mt-8 space-y-4">
+          <MacroSectionFreshness section={globalSection} hubFetchedAt={hub.data.fetchedAt} />
+          <MacroHistoryGrid
+            metrics={metricsWithHistory(sectionMetrics(globalSection), 2)}
+            title="Global macro — FRED & live tape history"
+          />
+        </div>
+      ) : hub.loading ? (
+        <p className="mt-6 text-sm text-muted-foreground">Loading macro hub series…</p>
+      ) : null}
     </div>
   );
 }

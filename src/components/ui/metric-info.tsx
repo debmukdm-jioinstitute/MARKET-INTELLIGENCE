@@ -80,6 +80,7 @@ export function MetricInfo({
   const effectiveProvider = propProvider ?? sourceOverride?.provider ?? def.provider;
   const effectiveUrl = propUrl ?? sourceOverride?.url ?? def.defaultUrl;
   const effectiveAsOf = propAsOf ?? sourceOverride?.asOf;
+  const effectiveFetchMethod = sourceOverride?.fetchMethod;
   const effectiveExplanation = propLayman ?? hint ?? details ?? def.laymanExplanation;
   const effectiveCalculation = propCalculation ?? def.calculation;
   const effectiveUtility = propUtility ?? def.utility;
@@ -235,6 +236,12 @@ export function MetricInfo({
                 </span>
                 <ExternalLink className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
+            ) : null}
+            {effectiveFetchMethod ? (
+              <p className="text-[10.5px] text-muted-foreground leading-relaxed pt-1">
+                <span className="font-semibold text-foreground">How we fetch: </span>
+                {effectiveFetchMethod}
+              </p>
             ) : null}
           </div>
 

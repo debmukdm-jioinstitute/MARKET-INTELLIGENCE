@@ -19,6 +19,13 @@ export type PortfolioSettings = {
   name: string;
   benchmark: BenchmarkId;
   baseCurrency: "INR";
+  /** Idle cash included in NAV and allocation denominators. */
+  cashInr?: number;
+};
+
+export type PortfolioTradeActivity = {
+  trades: TradeLogRow[];
+  realizedGainInr: number;
 };
 
 export type TradeLogRow = {

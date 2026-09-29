@@ -14,7 +14,10 @@ interface ValuationPanelProps {
   symbol: string;
   livePrice?: number | null;
   liveAsOf?: string | null;
+  /** Listing currency from live quote desk (INR for NSE, USD for US). */
   currency?: string;
+  /** When true, model must align to NSE INR (not ADR). */
+  indiaListing?: boolean;
 }
 
 type ValuationState =
@@ -29,6 +32,7 @@ export function ValuationPanel({
   livePrice,
   liveAsOf,
   currency = "INR",
+  indiaListing = false,
 }: ValuationPanelProps) {
   const [state, setState] = useState<ValuationState>({ status: "loading" });
 
@@ -127,16 +131,26 @@ export function ValuationPanel({
   }
 
   const { model, scenarios, dataset } = state;
-  const ccy = dataset.profile.currency ?? currency;
+  const modelCcy = dataset.profile.currency;
+  const listingCcy = currency;
+  const displayCcy = indiaListing ? "INR" : listingCcy || modelCcy;
   const modelRefPrice = model.dcf?.currentPrice ?? dataset.market.price;
   const canonicalPrice = livePrice != null && livePrice > 0 ? livePrice : modelRefPrice;
   const impliedPrice = scenarios.expectedPrice;
-  const upside = (impliedPrice / canonicalPrice - 1) * 100;
+  const upside = canonicalPrice > 0 ? (impliedPrice / canonicalPrice - 1) * 100 : 0;
   const isUp = upside >= 0;
+
+  const currencyMismatch =
+    indiaListing &&
+    modelCcy !== "INR" &&
+    livePrice != null &&
+    livePrice > 0;
 
   // P0 Valuation quote reconciliation: check divergence between live quote and model dataset price
   const priceDiffPct =
-    livePrice != null && modelRefPrice > 0
+    !currencyMismatch &&
+    livePrice != null &&
+    modelRefPrice > 0
       ? Math.abs((livePrice - modelRefPrice) / modelRefPrice) * 100
       : 0;
 
@@ -158,7 +172,7 @@ export function ValuationPanel({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
           <div>
             <span className="text-xs uppercase tracking-wide text-muted-foreground">Implied Value (DCF)</span>
-            <p className="text-2xl font-bold tabular-nums text-foreground mt-0.5">{px(impliedPrice, ccy)}</p>
+            <p className="text-2xl font-bold tabular-nums text-foreground mt-0.5">{px(impliedPrice, modelCcy)}</p>
             <span className="text-xs text-muted-foreground">Probability-weighted scenario</span>
           </div>
 
@@ -175,7 +189,7 @@ export function ValuationPanel({
           <div>
             <span className="text-xs uppercase tracking-wide text-muted-foreground">Base Case Value</span>
             <p className="text-2xl font-bold tabular-nums text-foreground mt-0.5">
-              {px(scenarios.scenarios.find((s) => s.name === "Base")?.price ?? model.dcf?.impliedPrice ?? impliedPrice, ccy)}
+              {px(scenarios.scenarios.find((s) => s.name === "Base")?.price ?? model.dcf?.impliedPrice ?? impliedPrice, modelCcy)}
             </p>
             <span className="text-xs text-muted-foreground">WACC {formatByFmt(model.wacc.wacc, "pct2")}</span>
           </div>
@@ -188,10 +202,16 @@ export function ValuationPanel({
         </div>
 
         {/* P0 Quote reconciliation banner if timestamps or providers diverge */}
+        {currencyMismatch ? (
+          <div className="rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-800 dark:text-rose-200">
+            <strong>Currency mismatch:</strong> Live NSE quote is in INR ({px(livePrice!, "INR")}) but the financial model loaded in {modelCcy}. Refresh after deploy or open the full model — India names should use Yahoo <code className="text-[11px]">{symbol}.NS</code>, not the US ADR ticker.
+          </div>
+        ) : null}
+
         {priceDiffPct > 1.5 && livePrice != null ? (
           <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
             <span>
-              <strong>Quote timing note:</strong> Live price is {px(livePrice, ccy)} (Upstox{liveAsOf ? ` as of ${liveAsOf}` : ""}), while financial model statements reference {px(modelRefPrice, ccy)} ({priceDiffPct.toFixed(1)}% delta). Implied upside is calculated against the live quote.
+              <strong>Quote timing note:</strong> Live price is {px(livePrice, displayCcy)} (Upstox{liveAsOf ? ` as of ${liveAsOf}` : ""}), while financial model statements reference {px(modelRefPrice, modelCcy)} ({priceDiffPct.toFixed(1)}% delta). Implied upside is calculated against the live quote.
             </span>
           </div>
         ) : null}
@@ -209,7 +229,7 @@ export function ValuationPanel({
                     <span className="text-xs font-semibold uppercase text-muted-foreground">{s.name} Case</span>
                     <span className="text-xs font-medium text-muted-foreground">{(s.probability * 100).toFixed(0)}% prob</span>
                   </div>
-                  <p className="text-xl font-bold tabular-nums text-foreground mt-1">{px(s.price, ccy)}</p>
+                  <p className="text-xl font-bold tabular-nums text-foreground mt-1">{px(s.price, modelCcy)}</p>
                   <p className={cn("text-xs font-medium tabular-nums mt-0.5", sUp ? "text-emerald-600" : "text-rose-600")}>
                     {sUp ? "+" : ""}{sUpside.toFixed(1)}% vs price
                   </p>

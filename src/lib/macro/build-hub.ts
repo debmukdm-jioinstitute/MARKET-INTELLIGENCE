@@ -12,6 +12,7 @@ import {
   staticCpiBasket,
 } from "@/lib/macro/data-fetch";
 import { buildRegimeBlock } from "@/lib/macro/regime";
+import { applyCollectorMetric, loadCollectorMacroMap } from "@/lib/macro/from-collector";
 import { MACRO_SECTIONS } from "@/lib/macro/sections-meta";
 import type { IndiaMacroHubPayload, MacroMetric, MacroSectionId, MacroSectionPayload } from "@/lib/macro/types";
 
@@ -32,6 +33,17 @@ function section(
 
 export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
   const dashboard = await buildIndiaDashboard();
+  const collector = await loadCollectorMacroMap([
+    "in_gst_monthly_cr",
+    "in_upi_monthly_lc",
+    "in_epfo_payroll_lakh",
+    "in_naukri_jobspeak",
+    "in_fx_reserves_usd_bn",
+    "in_nifty50_yoy_pct",
+    "rbi_repo",
+    "rbi_net_liquidity",
+    "india_fx_reserves_ex_gold",
+  ]);
   const cpiIndex = await fetchCpiIndexSeries();
   const cpiGroups = await fetchCpiGroupBreakdown();
   const momentum = inflationMomentum(cpiIndex.length ? cpiIndex : []);
@@ -575,7 +587,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
     "rates-liquidity": section(
       "rates-liquidity",
       [
-        {
+        applyCollectorMetric(collector, "rbi_repo", {
           id: "rbi_repo",
           label: "Policy repo rate",
           value: 5.25,
@@ -602,7 +614,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
             asOf: "2026-08-05",
           },
           hint: "Neutral monetary policy stance (MPC August resolution)",
-        },
+        }),
         gsec
           ? metricFromRow(gsec)
           : {
@@ -627,7 +639,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
             hint: r.value && (parsed == null || !Number.isFinite(parsed)) ? r.value : undefined,
           };
         }),
-        {
+        applyCollectorMetric(collector, "rbi_net_liquidity", {
           id: "liquidity_ops",
           label: "System liquidity & RBI operations",
           value: 142000,
@@ -647,7 +659,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
             { id: "liq_msf", label: "Marginal Standing Facility (MSF)", value: 5.50, unit: "%", history: [], source: { provider: "RBI", url: "https://www.rbi.org.in/" } },
             { id: "liq_crr", label: "Cash Reserve Ratio (CRR)", value: 3.00, unit: "%", history: [], source: { provider: "RBI", url: "https://www.rbi.org.in/" } },
           ],
-        },
+        }),
         {
           id: "money_agg",
           label: "Monetary aggregates",
@@ -692,7 +704,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
     fiscal: section(
       "fiscal",
       [
-        {
+        applyCollectorMetric(collector, "in_gst_monthly_cr", {
           id: "gst_monthly",
           label: "GST collections (Monthly)",
           value: 187300,
@@ -715,7 +727,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           ],
           source: { provider: "Ministry of Finance / GSTN", url: "https://www.gst.gov.in/" },
           hint: "Consistent ₹1.80L+ Cr monthly baseline",
-        },
+        }),
         {
           id: "fiscal_deficit",
           label: "Fiscal deficit (FY Target)",
@@ -774,7 +786,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
     consumer: section(
       "consumer",
       [
-        {
+        applyCollectorMetric(collector, "in_upi_monthly_lc", {
           id: "upi_volume",
           label: "UPI monthly transaction value",
           value: 20.64,
@@ -797,7 +809,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           ],
           source: { provider: "National Payments Corporation of India (NPCI)", url: "https://www.npci.org.in/" },
           hint: "Digital retail consumer velocity · Open →",
-        },
+        }),
         {
           id: "auto_sales",
           label: "Automobile sales (PV + 2W)",
@@ -858,7 +870,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
     corporate: section(
       "corporate",
       [
-        {
+        applyCollectorMetric(collector, "in_nifty50_yoy_pct", {
           id: "nifty_earnings",
           label: "Nifty 50 EPS earnings growth",
           value: 13.50,
@@ -867,8 +879,8 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           change: 0.70,
           history: [],
           source: { provider: "NSE / Brokerage Consensus", url: "https://www.nseindia.com/" },
-          hint: "Driven by BFSI, Auto, Capital Goods, and Pharma",
-        },
+          hint: "Live 1Y index return from NSE when collector runs; EPS consensus otherwise",
+        }),
         {
           id: "operating_margins",
           label: "Operating margin trend (India Inc)",
@@ -925,7 +937,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           history: [],
           source: dashboard.pulse.usdInr.source,
         },
-        {
+        applyCollectorMetric(collector, "in_fx_reserves_usd_bn", {
           id: "fx_reserves",
           label: "Foreign exchange reserves",
           value: 704.88,
@@ -948,7 +960,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           ],
           source: { provider: "Reserve Bank of India (Weekly Statistical Supplement)", url: "https://www.rbi.org.in/" },
           hint: "Provides ~11+ months of import cover",
-        },
+        }),
         {
           id: "merch_exports",
           label: "Merchandise exports",
@@ -1029,7 +1041,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           history: lfpr.history12m,
           source: { provider: "MoSPI PLFS Annual Report", url: "https://www.mospi.gov.in/" },
         },
-        {
+        applyCollectorMetric(collector, "in_epfo_payroll_lakh", {
           id: "epfo_payroll",
           label: "EPFO monthly net payroll additions",
           value: 14.80,
@@ -1039,8 +1051,8 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           history: [],
           source: { provider: "Employees' Provident Fund Organisation (EPFO)", url: "https://www.epfindia.gov.in/" },
           hint: "Formal sector employment generation momentum",
-        },
-        {
+        }),
+        applyCollectorMetric(collector, "in_naukri_jobspeak", {
           id: "naukri_index",
           label: "Naukri JobSpeak hiring index",
           value: 2840,
@@ -1050,7 +1062,7 @@ export async function buildIndiaMacroHub(): Promise<IndiaMacroHubPayload> {
           history: [],
           source: { provider: "Info Edge / Naukri.com", url: "https://www.naukri.com/job-speak" },
           hint: "White-collar hiring activity lead indicator",
-        },
+        }),
       ],
       ["All-India unemployment moderated to 4.2% with rising female labour force participation.", "EPFO net additions demonstrate healthy formal sector job creation above 14.8 Lakh/month."],
     ),

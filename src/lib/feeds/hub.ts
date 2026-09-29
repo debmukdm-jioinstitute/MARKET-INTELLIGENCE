@@ -3,11 +3,14 @@ import { fetchAlphaVantageQuote } from "@/lib/feeds/sources/alphavantage";
 import { fetchBiquoteIndices } from "@/lib/feeds/sources/biquote";
 import { fetchBseNews } from "@/lib/feeds/sources/bse";
 import { fetchFredMacro } from "@/lib/feeds/sources/fred";
+import { fetchGoogleNewsIndiaMacro } from "@/lib/feeds/sources/google-news-india";
 import { fetchImfMacro } from "@/lib/feeds/sources/imf";
 import { fetchMospiMacro } from "@/lib/feeds/sources/mospi";
 import { fetchNseNews } from "@/lib/feeds/sources/nse";
 import { fetchOecdMacro } from "@/lib/feeds/sources/oecd";
+import { fetchOpenPublisherRss } from "@/lib/feeds/sources/open-news-rss";
 import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
+import { fetchRedditCommunityNews } from "@/lib/feeds/sources/reddit";
 import { fetchSecFilings } from "@/lib/feeds/sources/sec";
 import { fetchStooqQuotes } from "@/lib/feeds/sources/stooq";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
@@ -16,6 +19,7 @@ import { data360MirrorHealth } from "@/lib/data360/read-macro";
 import { fetchWorldBankMacro } from "@/lib/feeds/sources/worldbank";
 import { fetchMassiveUsQuotes, hasMassiveApiKey } from "@/lib/feeds/sources/massive";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { openCommunityNewsEnabled } from "@/lib/feeds/open-news-config";
 import { sortNewsByFreshness } from "@/lib/feeds/news-sort";
 import type { FeedHealth, FeedHubPayload, LiveQuote } from "@/lib/feeds/types";
 import { UNIVERSE } from "@/lib/universe";
@@ -68,7 +72,8 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   }));
 
   const d360Start = Date.now();
-  const [nse, bse, rbi, sec, upstoxNews, upstoxQuotes, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote, d360] =
+  const openNewsOn = openCommunityNewsEnabled();
+  const [nse, bse, rbi, sec, upstoxNews, upstoxQuotes, yahoo, massive, stooq, av, fred, wb, imf, oecd, mospi, biquote, d360, openRss, reddit, googleMacro] =
     await Promise.all([
       timed(() => fetchNseNews()),
       timed(() => fetchBseNews()),
@@ -87,6 +92,9 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       timed(() => fetchMospiMacro()),
       timed(() => fetchBiquoteIndices()),
       timed(() => data360MirrorHealth()),
+      timed(() => (openNewsOn ? fetchOpenPublisherRss() : Promise.resolve([]))),
+      timed(() => (openNewsOn ? fetchRedditCommunityNews() : Promise.resolve([]))),
+      timed(() => (openNewsOn ? fetchGoogleNewsIndiaMacro() : Promise.resolve([]))),
     ]);
 
   const yahooQuotes = yahoo.value ?? [];
@@ -101,7 +109,10 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     ...(rbi.value ?? []),
     ...(sec.value ?? []),
     ...(upstoxNews.value ?? []),
-  ]);
+    ...(openRss.value ?? []),
+    ...(reddit.value ?? []),
+    ...(googleMacro.value ?? []),
+  ]).slice(0, 120);
 
   const macro = [
     ...(fred.value ?? []),
@@ -163,6 +174,34 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
       "India live quotes (Upstox/Yahoo/TrueData)",
       biquote,
       (v) => Array.isArray(v) && v.length > 0,
+    ),
+    health(
+      "reddit",
+      "Reddit (community)",
+      reddit,
+      (v) => !openNewsOn || (Array.isArray(v) && v.length > 0),
+    ),
+    health(
+      "livemint",
+      "LiveMint RSS",
+      { value: openRss.value?.filter((n) => n.source === "livemint"), latencyMs: openRss.latencyMs, error: openRss.error },
+      (v) => !openNewsOn || (Array.isArray(v) && v.length > 0),
+    ),
+    health(
+      "moneycontrol",
+      "Moneycontrol RSS",
+      {
+        value: openRss.value?.filter((n) => n.source === "moneycontrol"),
+        latencyMs: openRss.latencyMs,
+        error: openRss.error,
+      },
+      (v) => !openNewsOn || (Array.isArray(v) && v.length > 0),
+    ),
+    health(
+      "googlenews",
+      "Google News (India macro)",
+      googleMacro,
+      (v) => !openNewsOn || (Array.isArray(v) && v.length > 0),
     ),
   ];
 

@@ -1,4 +1,5 @@
 import { feedFetch } from "@/lib/feeds/http";
+import { indiaBenchmarkUpstoxMap } from "@/lib/feeds/india/indices";
 import { upstoxHeaders } from "@/lib/feeds/sources/upstox/client";
 import { normalizeMarketDepth } from "@/lib/feeds/sources/upstox/depth-normalize";
 import type { LiveQuote } from "@/lib/feeds/types";
@@ -15,13 +16,9 @@ import type { LiveQuote } from "@/lib/feeds/types";
 const LTP_URL = "https://api.upstox.com/v3/market-quote/ltp";
 const FULL_QUOTE_URL = "https://api.upstox.com/v2/market-quote/quotes";
 
-/** Yahoo-style ticker -> Upstox instrument_key, for the India names this app tracks. */
+/** Yahoo-style ticker -> Upstox instrument_key (indices + curated equities). */
 export const INDIA_INSTRUMENT_KEYS: Record<string, string> = {
-  "^NSEI": "NSE_INDEX|Nifty 50",
-  "^NSEBANK": "NSE_INDEX|Nifty Bank",
-  "^BSESN": "BSE_INDEX|SENSEX",
-  "^INDIAVIX": "NSE_INDEX|India VIX",
-  "^NIFTYGS10Y": "NSE_INDEX|Nifty GS 10Yr",
+  ...indiaBenchmarkUpstoxMap(),
   "RELIANCE.NS": "NSE_EQ|INE002A01018",
   "HDFCBANK.NS": "NSE_EQ|INE040A01034",
   "INFY.NS": "NSE_EQ|INE009A01021",

@@ -24,6 +24,8 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/data/feeds", label: "Data feeds", description: "Live market feeds & source health" },
   { href: "/data/export", label: "Data export (Excel)", description: "Download every dataset as one structured workbook" },
   { href: "/portfolio/optimizer", label: "Optimizer", description: "Suggest a better mix (learning tool)" },
+  { href: "/portfolio/activity", label: "Activity", description: "Trade ledger and realized P&L" },
+  { href: "/portfolio/tax", label: "Tax", description: "India STCG/LTCG estimates" },
   { href: "/research/ai-desk", label: "AI Desk", description: "AI-assisted trading desk" },
   { href: "/algo", label: "NIFTY Algo Desk", description: "AI-trader: live scanner, backtests, ML models" },
   { href: "/algo/live", label: "Algo live", description: "Intraday options suggestions and paper trading" },

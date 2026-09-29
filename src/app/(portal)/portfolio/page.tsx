@@ -11,6 +11,8 @@ import { PortfolioOverview } from "@/components/my-portfolio/portfolio-overview"
 import { RiskExposurePanel } from "@/components/my-portfolio/risk-exposure-panel";
 import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
 import { BenchmarkSelect } from "@/components/my-portfolio/benchmark-select";
+import { PortfolioHubExtras } from "@/components/my-portfolio/portfolio-hub-extras";
+import { PortfolioSummaryBar } from "@/components/my-portfolio/portfolio-summary-bar";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { Lock } from "lucide-react";
@@ -29,6 +31,11 @@ export default function PortfolioPage() {
     importHoldings,
     trySampleHoldings,
     updateBenchmark,
+    editHolding,
+    sellHolding,
+    updatePortfolioName,
+    updateCashInr,
+    syncFromAccount,
   } = useMyPortfolio();
   const hasBook = Boolean(data?.hasHoldings && data.positions.length > 0);
   const [benchBusy, setBenchBusy] = useState(false);
@@ -126,6 +133,13 @@ export default function PortfolioPage() {
 
       {data && hasBook ? (
         <>
+          <PortfolioSummaryBar
+            data={data}
+            locked={locked}
+            onRename={updatePortfolioName}
+            onCashChange={updateCashInr}
+            onSync={syncFromAccount}
+          />
           <PortfolioOverview metrics={data.overview} />
 
           <div className="grid gap-4 xl:grid-cols-3">
@@ -152,6 +166,8 @@ export default function PortfolioPage() {
             </Panel>
           </div>
 
+          <PortfolioHubExtras data={data} />
+
           <div className="overflow-hidden rounded-lg border border-border bg-card">
             <div className="border-b border-border px-4 py-3">
               <h3 className="font-heading text-sm font-semibold">Holdings</h3>
@@ -160,6 +176,9 @@ export default function PortfolioPage() {
             <HoldingsList
               positions={data.positions}
               onRemove={removeHolding}
+              onEdit={editHolding}
+              onSell={sellHolding}
+              readOnly={locked}
               emptyAction={locked ? null : <AddHoldingDialog onAdd={addHolding} triggerLabel="Add your first holding" />}
             />
           </div>

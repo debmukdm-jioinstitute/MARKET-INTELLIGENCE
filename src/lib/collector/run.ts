@@ -7,11 +7,12 @@ import { cftc } from "./sources/cftc";
 import { damodaran } from "./sources/damodaran";
 import { ecb } from "./sources/ecb";
 import { fredReserves } from "./sources/fred-reserves";
+import { indiaMacro } from "./sources/india-macro";
 import { rbi } from "./sources/rbi";
 import { rbiMarket } from "./sources/rbi-market";
 import { nseFiidii } from "./sources/nse-fiidii";
 
-export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran];
+export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro];
 
 export type RunReport = { collector: string; ok: boolean; series: number; points: number; error?: string; ms: number; sample?: unknown };
 

@@ -10,7 +10,7 @@ const TOUR_SECTIONS = [
   { title: "Today", heading: "Today: what's happening now", text: "Your daily starting point. Check the market snapshot (indices, rupee, oil, gold) and read the AI Daily Brief — a 2-minute summary with sources." },
   { title: "Invest", heading: "Invest: for the long term", text: "Research a company, check if the market is cheap or expensive, and see how the economy (RBI, inflation, global trends) could affect your stocks." },
   { title: "Trade", heading: "Trade: short-term and intraday", text: "Scan Nifty 500 for breakouts, follow AI signals and unusual options activity, then backtest an idea on history before you risk money." },
-  { title: "My Portfolio", heading: "My Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, and how you could rebalance. Import holdings from Zerodha, Upstox or Dhan." },
+  { title: "My Portfolio", heading: "My Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, and how you could rebalance. Import holdings or statements from your brokerage house." },
   { title: "Data & Tools", heading: "Data & Tools: sources and downloads", text: "See where every number comes from and how fresh it is, or download all the data as one Excel workbook." },
 ] as const;
 

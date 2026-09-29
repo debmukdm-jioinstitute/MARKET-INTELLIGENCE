@@ -68,6 +68,15 @@ export default function WatchlistPage() {
               { key: "note", label: "Note", value: (r) => r.note ?? "", render: (r) => <span className="text-muted-foreground">{r.note ?? "—"}</span> },
               { key: "added", label: "Added", value: (r) => r.addedAt, render: (r) => fmtAddedIst(r.addedAt) },
               {
+                key: "portfolio",
+                label: "",
+                render: (r) => (
+                  <Link href="/portfolio" className="text-sm font-semibold text-blue-600 hover:underline">
+                    Add to portfolio
+                  </Link>
+                ),
+              },
+              {
                 key: "remove",
                 label: "",
                 render: (r) => (

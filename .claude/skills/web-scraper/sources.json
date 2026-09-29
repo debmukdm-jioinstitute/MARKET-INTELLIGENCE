@@ -189,8 +189,8 @@
    "tier": "html",
    "cover": "monthly GST collections (PIB release)",
    "url": "https://pib.gov.in/allRel.aspx",
-   "wired": false,
-   "note": "link-out today"
+   "wired": true,
+   "note": "Collector india-macro: PIB GST scrape + seeded history in Neon"
   },
   {
    "id": "cga-fiscal",
@@ -207,8 +207,8 @@
    "tier": "html",
    "cover": "UPI volumes/values monthly",
    "url": "https://www.npci.org.in/what-we-do/upi/product-statistics",
-   "wired": false,
-   "note": "link-out today"
+   "wired": true,
+   "note": "Collector india-macro: RBI/NPCI bulletin parse + seeded monthly history"
   },
   {
    "id": "ppac",

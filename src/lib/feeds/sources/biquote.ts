@@ -1,43 +1,62 @@
+import {
+  INDIA_BENCHMARK_YAHOO_SYMBOLS,
+  indiaBenchmarkDef,
+  indiaBenchmarkTrueDataMap,
+} from "@/lib/feeds/india/indices";
 import { fetchTrueDataQuotes } from "@/lib/feeds/sources/truedata";
 import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
 import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
 import type { LiveQuote } from "@/lib/feeds/types";
 
-/** India benchmarks — Upstox (exchange-licensed) primary, Yahoo fallback, TrueData last resort. */
-const INDIA_SYMBOLS = ["^NSEI", "^BSESN", "RELIANCE.NS", "HDFCBANK.NS", "INFY.NS"];
+export { INDIA_BENCHMARK_YAHOO_SYMBOLS } from "@/lib/feeds/india/indices";
 
-/** Yahoo ticker -> TrueData symbol, used only to look up the last-resort fallback. */
-const TRUEDATA_SYMBOL: Record<string, string> = {
-  "^NSEI": "NIFTY 50",
-  "^BSESN": "SENSEX",
-  "RELIANCE.NS": "RELIANCE",
-  "HDFCBANK.NS": "HDFCBANK",
-  "INFY.NS": "INFY",
-};
+const TRUEDATA = indiaBenchmarkTrueDataMap();
 
 export async function fetchBiquoteIndices(): Promise<LiveQuote[]> {
+  const symbols = INDIA_BENCHMARK_YAHOO_SYMBOLS;
   const rows = new Map<string, LiveQuote>();
 
-  const upstoxRows = await fetchUpstoxIndiaQuotes(INDIA_SYMBOLS).catch(() => []);
+  const upstoxRows = await fetchUpstoxIndiaQuotes(symbols).catch(() => []);
   for (const r of upstoxRows) rows.set(r.symbol, r);
 
-  const missingAfterUpstox = INDIA_SYMBOLS.filter((s) => !rows.has(s));
+  const missingAfterUpstox = symbols.filter((s) => !rows.has(s));
   if (missingAfterUpstox.length) {
     const yahooRows = await fetchYahooQuotes(missingAfterUpstox).catch(() => []);
     for (const r of yahooRows) rows.set(r.symbol, r);
   }
 
-  const missingAfterYahoo = INDIA_SYMBOLS.filter((s) => !rows.has(s));
+  const missingAfterYahoo = symbols.filter((s) => !rows.has(s));
   if (missingAfterYahoo.length) {
-    const trueDataToYahoo = new Map(missingAfterYahoo.map((s) => [TRUEDATA_SYMBOL[s], s]));
-    const tdRows = await fetchTrueDataQuotes(
-      [...trueDataToYahoo.keys()].filter((s): s is string => Boolean(s)),
-    ).catch(() => []);
-    for (const r of tdRows) {
-      const yahooSymbol = trueDataToYahoo.get(r.symbol);
-      if (yahooSymbol) rows.set(yahooSymbol, r);
+    const trueDataToYahoo = new Map<string, string>();
+    for (const y of missingAfterYahoo) {
+      const td = TRUEDATA[y];
+      if (td) trueDataToYahoo.set(td, y);
+    }
+    if (trueDataToYahoo.size) {
+      const tdRows = await fetchTrueDataQuotes([...trueDataToYahoo.keys()]).catch(() => []);
+      for (const r of tdRows) {
+        const yahooSymbol = trueDataToYahoo.get(r.symbol);
+        if (yahooSymbol) rows.set(yahooSymbol, r);
+      }
     }
   }
 
-  return [...rows.values()].map((r) => ({ ...r, symbol: r.symbol.replace("^", "") }));
+  const out: LiveQuote[] = [];
+  for (const yahooSym of symbols) {
+    const r = rows.get(yahooSym);
+    if (!r) continue;
+    const meta = indiaBenchmarkDef(yahooSym);
+    if (!meta) continue;
+    out.push({
+      symbol: meta.label,
+      name: meta.name,
+      price: r.price,
+      change: r.change,
+      changePct: r.changePct,
+      currency: "INR",
+      asOf: r.asOf,
+      provider: r.provider,
+    });
+  }
+  return out;
 }

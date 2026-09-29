@@ -1,6 +1,7 @@
 import { feedFetch } from "@/lib/feeds/http";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { parseRss } from "@/lib/feeds/rss";
+import { scoreHeadlineLexicon } from "@/lib/feeds/sentiment-lexicon";
 import type { NewsItem } from "@/lib/feeds/types";
 
 export type NewsImpact = "positive" | "neutral" | "negative";
@@ -243,7 +244,7 @@ export async function fetchSymbolGoogleNews(
     const res = await feedFetch(url, { timeoutMs: 18_000 });
     if (!res.ok) return [];
     const xml = await res.text();
-    return parseRss(xml, "yahoo", limit).map((n) => ({
+    return parseRss(xml, "googlenews", limit).map((n) => ({
       ...n,
       id: `gn-${n.id}`,
       source: n.source,
@@ -372,6 +373,17 @@ export function analyzeNewsHeadline(title: string, body = ""): {
       rationales.push(rule.rationale);
       if (rule.impact === "negative") impact = "negative";
       else if (rule.impact === "positive" && impact !== "negative") impact = "positive";
+    }
+  }
+
+  if (impact === "neutral") {
+    const lex = scoreHeadlineLexicon(title);
+    if (lex.label !== "neutral") {
+      impact = lex.label;
+      tags.push("lexicon");
+      rationales.push(
+        `Open lexicon scan (${lex.score > 0 ? "+" : ""}${lex.score})—lightweight signal, not investment advice.`,
+      );
     }
   }
 
