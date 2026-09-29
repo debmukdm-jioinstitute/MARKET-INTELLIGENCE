@@ -67,6 +67,12 @@ export const NAV_SECTIONS: NavSection[] = [
         badge: "NEW",
         items: [
           {
+            label: "Institutional intelligence",
+            href: "/intelligence/institutional",
+            desc: "FII/DII cash, MF smart-money score, ownership signals, and filing source map.",
+            badge: "NEW",
+          },
+          {
             label: "Mutual Fund Intelligence",
             href: "/funds",
             desc: "Stock accumulation radar, fund X-ray, overlap analysis & AMFI disclosures.",

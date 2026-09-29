@@ -1,32 +1,9 @@
-import { enrichIpoDetailWithGmp, enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
-import type { IpoDetail, IpoStatus } from "@/lib/feeds/ipo/types";
+import { enrichIpoDetailWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
+import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
 import { fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-
-async function detailFromGmpFallback(id: string): Promise<IpoDetail | null> {
-  if (!id.startsWith("gmp-")) return null;
-  for (const status of ["open", "upcoming"] as IpoStatus[]) {
-    const rows = await enrichIpoListWithGmp([], status);
-    const hit = rows.find((r) => r.id === id);
-    if (!hit) continue;
-    return {
-      ...hit,
-      faceValue: null,
-      lotSize: null,
-      minimumQuantity: null,
-      cutOffPrice: null,
-      listingPrice: null,
-      listingExchange: null,
-      rhpUrl: null,
-      drhpUrl: null,
-      timeline: {},
-      registrar: null,
-    };
-  }
-  return null;
-}
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -38,7 +15,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
       });
     }
-    const fallback = await detailFromGmpFallback(id);
+    const fallback = await resolveIpoDetail(id);
     if (fallback) {
       return NextResponse.json(fallback, {
         headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },

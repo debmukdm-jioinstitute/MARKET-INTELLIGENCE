@@ -3,6 +3,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { HelpToolRow } from "@/lib/help/mcp-tool-guide";
 import { ClaudeMcpSetupVisual } from "@/components/help/claude-mcp-setup-visual";
+import { TerminalSetupGuide } from "@/components/help/terminal-setup-guide";
 import { ClaudeBrandIcon, CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
@@ -95,6 +96,14 @@ const TROUBLE = [
   {
     problem: "Link redirects to login or empty response",
     fix: `Use exactly ${ENDPOINT} for MCP — not /help or an old vercel.app host.`,
+  },
+  {
+    problem: "Terminal: mi: command not found",
+    fix: "mi is not on your PATH yet. Open Help → Market Intelligence terminal → How to set up in terminal → your OS, and repeat the PATH step. On Windows you can always run: node %USERPROFILE%\\.mi\\mi.mjs",
+  },
+  {
+    problem: "Terminal: node: command not found",
+    fix: "Install Node.js 18+ from nodejs.org, close and reopen Terminal/PowerShell, then run node -v before installing mi.",
   },
   {
     problem: "Too many requests / rate limit",
@@ -440,7 +449,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             <p className="font-semibold text-foreground">Easiest: terminal</p>
             <Steps
               items={[
-                "Install mi (see Terminal section below) or use any MCP client.",
+                "Install mi — Help section Market Intelligence terminal → How to set up in terminal (Mac, Windows, or Linux).",
                 "Run: mi login YOUR_EMAIL YOUR_PASSWORD",
                 "Then: mi get_my_portfolio or ask Cursor after configuring session (advanced).",
               ]}
@@ -468,60 +477,9 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         </AccordionItem>
 
         <AccordionItem value="terminal" id="terminal">
-          <AccordionTrigger className="text-base font-semibold">The optional desktop app</AccordionTrigger>
+          <AccordionTrigger className="text-base font-semibold">Market Intelligence terminal (mi)</AccordionTrigger>
           <AccordionContent>
-            <Accordion type="single" collapsible>
-              <AccordionItem value="mi-need">
-                <AccordionTrigger className="text-sm font-semibold">What you need</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  <ul className="list-disc space-y-1 pl-5">
-                    <li>Node.js 18+ (check: node -v)</li>
-                    <li>Mac, Linux, or Windows</li>
-                    <li>No API key for market menus</li>
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="mi-mac">
-                <AccordionTrigger className="text-sm font-semibold">Install on Mac or Linux</AccordionTrigger>
-                <AccordionContent>
-                  <Code>{`mkdir -p ~/.local/bin
-curl -fsSL https://getmarketintelligence.in/cli/mi.mjs -o ~/.local/bin/mi
-chmod +x ~/.local/bin/mi
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
-mi`}</Code>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="mi-win">
-                <AccordionTrigger className="text-sm font-semibold">Install on Windows</AccordionTrigger>
-                <AccordionContent>
-                  <Code>{`mkdir $HOME\\.mi -Force
-curl.exe -fsSL https://getmarketintelligence.in/cli/mi.mjs -o $HOME\\.mi\\mi.mjs
-node $HOME\\.mi\\mi.mjs`}</Code>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="mi-use">
-                <AccordionTrigger className="text-sm font-semibold">How to use the menu</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  <p className="mb-2">Run mi and press Enter for snapshot, or use keys:</p>
-                  <ul className="grid gap-1 text-sm sm:grid-cols-2">
-                    {[
-                      ["S / Enter", "Market snapshot"],
-                      ["X", "Stress index"],
-                      ["B", "Daily brief"],
-                      ["M", "Browse all features"],
-                      ["F", "Find by name"],
-                    ].map(([k, d]) => (
-                      <li key={k}>
-                        <span className="font-semibold text-foreground">{k}</span> — {d}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-3">
-                    Portfolio: <b>mi login email password</b> then use menu or <b>mi get_my_portfolio</b>.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <TerminalSetupGuide />
           </AccordionContent>
         </AccordionItem>
 

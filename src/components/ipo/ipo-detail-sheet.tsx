@@ -16,6 +16,7 @@ import {
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useIpoDetail } from "@/hooks/use-ipo-list";
 import type { DrhpSummary } from "@/lib/feeds/ipo/drhp-summary";
+import { IpoIntelligencePanel } from "@/components/ipo/ipo-intelligence-panel";
 import { fmtInr } from "@/lib/format-india";
 import { Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -78,7 +79,7 @@ export function IpoDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle>{detail?.name ?? "IPO detail"}</SheetTitle>
           <SheetDescription>{detail?.industry}</SheetDescription>
@@ -167,6 +168,12 @@ export function IpoDetailSheet({
                     </AccordionContent>
                   </AccordionItem>
                 ) : null}
+                <AccordionItem value="ipo-intel">
+                  <AccordionTrigger>IPO intelligence</AccordionTrigger>
+                  <AccordionContent>
+                    {ipoId ? <IpoIntelligencePanel ipoId={ipoId} /> : null}
+                  </AccordionContent>
+                </AccordionItem>
                 <AccordionItem value="drhp-ai">
                   <AccordionTrigger>AI DRHP summary</AccordionTrigger>
                   <AccordionContent className="space-y-3 text-sm">

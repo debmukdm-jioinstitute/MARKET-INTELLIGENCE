@@ -1,9 +1,9 @@
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Upcoming IPOs in India — Dates, Price Band & GMP",
+  title: "IPO intelligence — DRHP, GMP, subscription & analyst view",
   description:
-    "Upcoming and ongoing IPOs in India — open/close dates, price band, lot size, grey market premium and DRHP links.",
+    "Indian IPO calendar with DRHP/RHP links, issue structure extract, grey market premium, subscription, listing performance, and on-demand equity research-style analysis.",
   path: "/research/ipo",
 });
 

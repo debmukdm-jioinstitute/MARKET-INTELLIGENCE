@@ -12,6 +12,11 @@ import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
+import {
+  buildIpoIntelligence,
+  compactIpoIntelligenceForMcp,
+} from "@/lib/feeds/ipo/build-intelligence";
+import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
 import type { OfferCategory } from "@/lib/feeds/offers/types";
 import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
@@ -346,6 +351,26 @@ export const SITE_TOOLS: Tool[] = [
           gmpProvider: ipo.gmpSource?.provider ?? null,
         })),
       };
+    },
+  },
+  {
+    name: "get_ipo_intelligence",
+    title: "IPO intelligence dossier",
+    category: "Research",
+    description:
+      "Structured IPO dossier for one issue: DRHP/RHP, issue size, fresh issue/OFS extract, risks, objects, GMP*, subscription, listing performance, source links.",
+    inputSchema: {
+      type: "object",
+      properties: { ipoId: { type: "string", description: "Upstox IPO id from get_ipos" } },
+      required: ["ipoId"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const ipoId = z.string().min(1).max(80).parse(a.ipoId);
+      const detail = await resolveIpoDetail(ipoId);
+      if (!detail) return { error: "IPO not found" };
+      const intel = await buildIpoIntelligence(detail);
+      return compactIpoIntelligenceForMcp(intel);
     },
   },
   {

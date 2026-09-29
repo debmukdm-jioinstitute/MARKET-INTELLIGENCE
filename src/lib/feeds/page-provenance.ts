@@ -76,6 +76,21 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/institutional",
+    match: {
+      summary: "NSE FII/DII cash, AMFI mutual-fund accumulation, smart-money score, and exchange filing links.",
+      chips: [
+        {
+          kind: "api",
+          label: "Institutional hub",
+          source: { provider: "MI institutional intelligence", url: "/api/feeds/institutional" },
+          fetchMethod: "buildInstitutionalIntelligence() — src/lib/institutional/build-hub.ts",
+        },
+        ...chips("nse"),
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/world-monitor",
     match: {
       summary: "Free global RSS, Yahoo indices, FRED CSV, MI what-changed cache.",
@@ -147,13 +162,19 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/research/ipo",
     match: {
-      summary: "IPO master, GMP, and subscription from public IPO feeds.",
+      summary: "Upstox IPO calendar, GMP enrich, DRHP/RHP text extract, intelligence dossier, analyst memo.",
       chips: [
         {
           kind: "api",
           label: "IPO feed",
           source: { provider: "IPO desk", url: "/api/feeds/ipo" },
-          fetchMethod: "IPO list + GMP enrich — src/lib/feeds/ipo/",
+          fetchMethod: "Upstox + GMP — src/lib/feeds/ipo/",
+        },
+        {
+          kind: "api",
+          label: "IPO intelligence",
+          source: { provider: "IPO intelligence", url: "/api/feeds/ipo/{id}/intelligence" },
+          fetchMethod: "buildIpoIntelligence() — src/lib/feeds/ipo/build-intelligence.ts",
         },
       ],
     },

@@ -32,6 +32,7 @@ const ASK: Partial<Record<string, string>> = {
   get_key_ratios: "Key ratios for ISIN INE467B01029.",
   get_earnings_calendar: "Who reports earnings soon?",
   get_ipos: "Which IPOs are open now, and what is their GMP?",
+  get_ipo_intelligence: "Build the full IPO intelligence dossier for this issue id (DRHP, risks, GMP, subscription).",
   get_primary_offers: "List open NCD and rights issues from Chittorgarh.",
   get_research_reports: "Latest broker reports on banks.",
   get_analyst_credibility: "Which brokers have the best recent hit rate?",

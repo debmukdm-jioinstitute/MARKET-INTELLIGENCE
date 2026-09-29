@@ -46,9 +46,9 @@ export const HELP_TOPICS: HelpTopic[] = [
   },
   {
     id: "terminal",
-    title: "The mi terminal app",
-    blurb: "Optional command-line menu built on the same MCP tools.",
-    keywords: ["terminal", "cli", "mi.mjs", "command line", "mi command"],
+    title: "Market Intelligence terminal (mi)",
+    blurb: "How to set up in terminal — step-by-step for Mac, Windows, and Linux (first-time, no files yet).",
+    keywords: ["terminal", "cli", "mi.mjs", "command line", "mi command", "setup", "install", "node", "path"],
     href: "/help#terminal",
   },
   {

@@ -24,9 +24,13 @@ export default function IpoPage() {
     <div className="portal-page">
       <PageHeader
         kicker="Primary market"
-        title="IPOs"
-        subtitle="Mainboard & SME IPOs — price band, timeline, GMP (Chittorgarh + IPO Watch), via Upstox."
+        title="IPO intelligence"
+        subtitle="Calendar from Upstox · GMP (Chittorgarh / IPO Watch) · DRHP/RHP extract · SEBI/NSE/BSE/registrar source map · equity-research-style analyst memo on demand."
       />
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+        Crawl targets: SEBI, NSE, BSE, exchange announcements, DRHP/RHP PDFs, registrar and lead-manager sites (company microsites via search until dedicated parsers ship).
+        Fields marked <span className="font-semibold">planned</span> have honest placeholders — no fabricated issue break-ups or peer tables.
+      </p>
       <Tabs value={status} onValueChange={(v) => setStatus(v as IpoStatus)}>
         <TabsList>
           {STATUSES.map((s) => (
