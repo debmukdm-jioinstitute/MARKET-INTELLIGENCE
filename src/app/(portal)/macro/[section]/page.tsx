@@ -30,7 +30,16 @@ export default function MacroSectionPage() {
 
   return (
     <div className="portal-page">
-      <PageHeader kicker="India macro" title={meta.title} subtitle={meta.subtitle} />
+      <PageHeader
+        kicker="India macro"
+        title={meta.title}
+        subtitle={meta.subtitle}
+        trust={
+          data
+            ? { source: "MoSPI · RBI · World Bank Data360 · FRED", asOf: data.fetchedAt }
+            : undefined
+        }
+      />
       {loading && !data ? <MacroTapeSkeleton count={4} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? <MacroSectionView sectionId={sectionId} data={data} /> : null}

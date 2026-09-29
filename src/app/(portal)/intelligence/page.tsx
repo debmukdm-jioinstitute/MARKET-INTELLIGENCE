@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { filterRegulatoryExchangeNews, sortNewsByFreshness } from "@/lib/feeds/news-sort";
+import { filterOpenCommunityNews, filterRegulatoryExchangeNews, sortNewsByFreshness } from "@/lib/feeds/news-sort";
 import { PageHeader } from "@/components/layout/page-header";
 import { WhatChangedModule } from "@/components/dashboard/what-changed-module";
 import { CorporateEventsCard } from "@/components/dashboard/corporate-events-card";
 import { MonitorsBar } from "@/components/feeds/monitors-bar";
 import { NewsStream } from "@/components/feeds/news-stream";
+import { DataInfo } from "@/components/feeds/data-info";
+import { FEED_HUB_FIELD_SOURCE } from "@/lib/feeds/feed-source-provenance";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useFeedHub } from "@/hooks/use-feed-hub";
 import { Sparkles, Send, Bot, Newspaper } from "lucide-react";
@@ -21,12 +23,17 @@ export default function IntelligencePage() {
     },
   ]);
   const [thinking, setThinking] = useState(false);
-  const { data: feedData } = useFeedHub(45_000);
+  const { data: feedData } = useFeedHub(30_000);
   const feedNews = feedData?.news;
 
   const regulatoryHeadlines = useMemo(() => {
     if (!feedNews?.length) return [];
     return sortNewsByFreshness(filterRegulatoryExchangeNews(feedNews));
+  }, [feedNews]);
+
+  const openPulseHeadlines = useMemo(() => {
+    if (!feedNews?.length) return [];
+    return sortNewsByFreshness(filterOpenCommunityNews(feedNews));
   }, [feedNews]);
 
   const handleSend = () => {
@@ -57,7 +64,7 @@ export default function IntelligencePage() {
       <PageHeader
         kicker="Intelligence Terminal"
         title="Market Intelligence & AI Copilot"
-        subtitle="Unifying continuous RSS exchange feeds, institutional flow shifts, corporate filings, and conversational portfolio diagnostics."
+        subtitle="Unifying exchange RSS, Reddit & publisher feeds, institutional flow shifts, and conversational portfolio diagnostics."
       />
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
@@ -77,7 +84,10 @@ export default function IntelligencePage() {
             <MetricInfo
               id="data_quality"
               name="Copilot Grounding & Ingestion Engine"
-              provider="NSE / BSE Filings & Market Feed Streams"
+              provider="Market Intelligence feed hub + exchange RSS"
+              sourceUrl="/api/feeds/hub"
+              asOf={feedData?.fetchedAt}
+              showInspectorButton={false}
               iconSize="xs"
             />
           </div>
@@ -151,6 +161,16 @@ export default function IntelligencePage() {
             <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
               LIVE RSS
             </span>
+            <DataInfo
+              name="Regulatory & exchange headlines"
+              source={{
+                provider: "NSE · BSE · RBI official RSS",
+                url: "https://www.nseindia.com/",
+                asOf: feedData?.fetchedAt,
+              }}
+              hubSyncedAt={feedData?.fetchedAt}
+              fetchPath="Merged in buildFeedHub() — src/lib/feeds/sources/nse.ts, bse.ts, rbi.ts"
+            />
           </div>
           <span className="text-xs text-muted-foreground">
             RBI, NSE &amp; BSE RSS when configured (US SEC filings appear under their own source label)
@@ -158,9 +178,42 @@ export default function IntelligencePage() {
         </div>
         <div className="mb-3"><MonitorsBar /></div>
         {feedData?.news ? (
-          <NewsStream items={regulatoryHeadlines} limit={24} />
+          <NewsStream items={regulatoryHeadlines} limit={24} hubSyncedAt={feedData.fetchedAt} />
         ) : (
           <p className="text-sm text-muted-foreground py-4">Loading live headlines…</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2">
+            <Newspaper className="size-4 text-primary" />
+            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
+              Open sources pulse
+              {openPulseHeadlines.length ? (
+                <span className="ml-2 font-semibold normal-case tracking-normal text-muted-foreground">
+                  · {openPulseHeadlines.length} in feed
+                </span>
+              ) : null}
+            </h3>
+            <span className="rounded bg-violet-500/10 px-2 py-0.5 text-xs font-semibold text-violet-700 dark:text-violet-300">
+              REDDIT · RSS · GOOGLE
+            </span>
+            <DataInfo
+              name="Open sources pulse"
+              source={{ ...FEED_HUB_FIELD_SOURCE, asOf: feedData?.fetchedAt }}
+              hubSyncedAt={feedData?.fetchedAt}
+              fetchPath="Reddit JSON, LiveMint/Moneycontrol/Business Standard RSS, Google News RSS — src/lib/feeds/hub.ts (FEED_OPEN_NEWS*)"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">
+            Env: FEED_OPEN_NEWS, FEED_REDDIT_SUBS, FEED_RSS_URLS, FEED_GOOGLE_NEWS_QUERIES
+          </span>
+        </div>
+        {feedData?.news ? (
+          <NewsStream items={openPulseHeadlines} limit={28} hubSyncedAt={feedData.fetchedAt} />
+        ) : (
+          <p className="text-sm text-muted-foreground py-4">Loading community &amp; media headlines…</p>
         )}
       </div>
 

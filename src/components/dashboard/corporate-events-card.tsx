@@ -6,6 +6,10 @@ import { ArrowUpRight, Calendar, ExternalLink, Sparkles, X, FileText, Radio } fr
 import { cn } from "@/lib/utils";
 import { useFeedHub } from "@/hooks/use-feed-hub";
 import { EditableCopy } from "@/components/site/editable-copy";
+import { DataInfo } from "@/components/feeds/data-info";
+import { FeedSourceInfo } from "@/components/feeds/feed-source-info";
+import { FEED_HUB_FIELD_SOURCE } from "@/lib/feeds/feed-source-provenance";
+import type { NewsItem } from "@/lib/feeds/types";
 import { MetricInfo } from "@/components/ui/metric-info";
 
 interface CorporateEvent {
@@ -15,6 +19,7 @@ interface CorporateEvent {
   title: string;
   category: "EARNINGS" | "DIVIDENDS" | "M&A" | "MANAGEMENT" | "REGULATORY" | "CORPORATE ACTION";
   source: string;
+  feedSourceId: NewsItem["source"];
   url: string;
   aiSummary: string;
   portfolioExposure: string;
@@ -65,6 +70,7 @@ export function CorporateEventsCard() {
         : isSec
         ? "SEC EDGAR Official Feed"
         : `${n.source.toUpperCase()} Regulatory Announcements`,
+      feedSourceId: n.source,
       url: n.link,
       aiSummary: `Official regulatory notification: "${n.title}". Ingested directly from exchange regulatory feed. Disclosed to ensure orderly market information symmetry under statutory guidelines.`,
       portfolioExposure: "Regulatory disclosure impact: Market sentiment & systematic macro channel.",
@@ -92,6 +98,12 @@ export function CorporateEventsCard() {
               </EditableCopy>
             </span>
             <MetricInfo metric="corporate_announcement" customTitle="Material Corporate Events & Filings" />
+            <DataInfo
+              name="Corporate events feed"
+              source={{ ...FEED_HUB_FIELD_SOURCE, asOf: hubData?.fetchedAt }}
+              hubSyncedAt={hubData?.fetchedAt}
+              fetchPath="Hub news slice — buildFeedHub() · NSE/BSE/RBI/SEC RSS"
+            />
             <span className="text-sm text-emerald-600 flex items-center gap-1">
               <Radio className="size-3 animate-pulse" />
               Live RSS Feed
@@ -204,8 +216,16 @@ export function CorporateEventsCard() {
                   <FileText className="size-3 text-primary" />
                   OFFICIAL FILING ENDPOINT
                 </span>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-foreground">{selectedEvent.source}</span>
+                <div className="flex items-center justify-between pt-1 gap-2">
+                  <span className="text-foreground flex items-center gap-1">
+                    {selectedEvent.source}
+                    <FeedSourceInfo
+                      sourceId={selectedEvent.feedSourceId}
+                      itemUrl={selectedEvent.url}
+                      hubSyncedAt={hubData?.fetchedAt}
+                      name={selectedEvent.source}
+                    />
+                  </span>
                   <a
                     href={selectedEvent.url}
                     target="_blank"

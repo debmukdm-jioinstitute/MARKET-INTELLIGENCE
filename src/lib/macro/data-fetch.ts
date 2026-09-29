@@ -109,7 +109,9 @@ export async function fetchFredMetric(
     source: {
       provider: "FRED",
       url: `https://fred.stlouisfed.org/series/${seriesId}`,
-      asOf: new Date().toISOString(),
+      asOf: history[history.length - 1]?.date
+        ? `${history[history.length - 1]!.date.length === 7 ? `${history[history.length - 1]!.date}-01` : history[history.length - 1]!.date}T00:00:00.000Z`
+        : new Date().toISOString(),
     },
   };
 }

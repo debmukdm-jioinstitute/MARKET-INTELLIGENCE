@@ -108,7 +108,7 @@ export function Panel({
   className?: string;
   id?: string;
   /** Renders a source / freshness / methodology / disclaimer line under the panel body. */
-  trust?: { source: string; asOf?: string | null; delayed?: string };
+  trust?: TrustProps;
 }) {
   const path = usePathname();
   const titleStr = typeof title === "string" ? title : "Panel";

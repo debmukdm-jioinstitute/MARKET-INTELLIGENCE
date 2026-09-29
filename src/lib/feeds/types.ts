@@ -14,7 +14,13 @@ export type FeedSourceId =
   | "mospi"
   | "biquote"
   | "upstox"
-  | "massive";
+  | "massive"
+  | "reddit"
+  | "livemint"
+  | "moneycontrol"
+  | "googlenews"
+  | "busstd"
+  | "rsswire";
 
 export type FeedHealth = {
   id: FeedSourceId;

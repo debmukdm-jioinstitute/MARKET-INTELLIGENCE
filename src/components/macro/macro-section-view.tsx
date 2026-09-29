@@ -1,9 +1,12 @@
 "use client";
 
 import { Bars, Donut, Lines } from "@/components/charts/terminal-charts";
+import { MacroHistoryGrid } from "@/components/macro/macro-history-grid";
+import { MacroSectionFreshness } from "@/components/macro/macro-section-freshness";
 import { Panel } from "@/components/layout/page-header";
 import { RegimeBanner } from "@/components/macro/regime-banner";
 import type { IndiaMacroHubPayload, MacroMetric, MacroSectionId } from "@/lib/macro/types";
+import { metricsWithHistory, sectionMetrics } from "@/lib/macro/metric-tree";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { sectionMeta } from "@/lib/macro/sections-meta";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -65,6 +68,7 @@ export function MacroSectionView({
   }
 
   const section = data.sections[sectionId];
+  const allSectionMetrics = sectionMetrics(section);
   const topMetrics = section.metrics.filter((m) => m.history.length > 0 || m.value != null).slice(0, 6);
   const pieData = sectionId === "inflation"
     ? (section.metrics.find((m) => m.id === "cpi_basket")?.children ?? [])
@@ -79,6 +83,7 @@ export function MacroSectionView({
 
   return (
     <div className="space-y-4">
+      <MacroSectionFreshness section={section} hubFetchedAt={data.fetchedAt} />
       <div>
         <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
         <h2 className="mt-2 font-heading text-2xl">{meta.title}</h2>
@@ -116,6 +121,8 @@ export function MacroSectionView({
           </div>
         </Panel>
       ) : null}
+
+      <MacroHistoryGrid metrics={metricsWithHistory(allSectionMetrics, 2)} />
 
       {section.metrics.map((m) => (
         <MetricBlock key={m.id} metric={m} depth={0} />
@@ -283,7 +290,7 @@ function MetricBlock({ metric, depth }: { metric: MacroMetric; depth: number }) 
             </div>
           }
         >
-          <MetricBody metric={metric} />
+          <MetricBody metric={metric} showChart />
           {hasChildren ? (
             <div className="mt-4 space-y-2">
               {metric.children!.map((c) => (
@@ -301,9 +308,10 @@ function MetricBlock({ metric, depth }: { metric: MacroMetric; depth: number }) 
   );
 }
 
-function MetricBody({ metric, compact }: { metric: MacroMetric; compact?: boolean }) {
+function MetricBody({ metric, compact, showChart }: { metric: MacroMetric; compact?: boolean; showChart?: boolean }) {
   return (
-    <div className={cn("flex flex-wrap items-center justify-between gap-2", compact && "text-sm")}>
+    <div className="space-y-3">
+      <div className={cn("flex flex-wrap items-center justify-between gap-2", compact && "text-sm")}>
       <span className={cn("flex items-center gap-1.5", compact ? "text-muted-foreground" : "font-medium")}>
         <span>{metric.label}</span>
         <MetricInfo
@@ -332,6 +340,15 @@ function MetricBody({ metric, compact }: { metric: MacroMetric; compact?: boolea
           </a>
         ) : null}
       </div>
+      </div>
+      {showChart && metric.history.length > 1 ? (
+        <div className="h-[140px]">
+          <Lines
+            data={metric.history.map((p) => ({ date: p.date, v: p.value }))}
+            keys={[{ key: "v", color: "#1a73e8", name: metric.label }]}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { DataInfo } from "@/components/feeds/data-info";
+import { FeedSourceInfo } from "@/components/feeds/feed-source-info";
 import type { FreeGlobalFeedsPayload } from "@/lib/worldmonitor/free-global-feeds";
 import { worldMonitorExternalUrl } from "@/lib/worldmonitor/public-url";
 import { cn } from "@/lib/utils";
@@ -53,7 +55,15 @@ function SourceTag({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DetailDrawer({ detail, onClose }: { detail: Detail | null; onClose: () => void }) {
+function DetailDrawer({
+  detail,
+  onClose,
+  hubSyncedAt,
+}: {
+  detail: Detail | null;
+  onClose: () => void;
+  hubSyncedAt?: string;
+}) {
   useEffect(() => {
     if (!detail) return;
     const onKey = (e: KeyboardEvent) => {
@@ -123,7 +133,13 @@ function DetailDrawer({ detail, onClose }: { detail: Detail | null; onClose: () 
                   <span className="tabular-nums">{new Date(detail.row.publishedAt).toLocaleString()}</span>
                 </p>
               ) : null}
-              <SourceTag>RSS · delay varies by publisher</SourceTag>
+              <FeedSourceInfo
+                sourceId={detail.row.source}
+                asOf={detail.row.publishedAt}
+                hubSyncedAt={hubSyncedAt}
+                itemUrl={detail.row.link}
+                name="Headline source"
+              />
               <a href={detail.row.link} className="inline-flex min-h-11 items-center font-semibold text-blue-600" target="_blank" rel="noreferrer">
                 Read source
               </a>
@@ -322,7 +338,18 @@ export function WorldMonitorFreeDashboard() {
 
       <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-2 lg:gap-6">
         {sections.has("news") ? (
-          <Panel title="Global intelligence news" subtitle="RSS — source & delay shown on each row">
+          <Panel
+            title="Global intelligence news"
+            subtitle="RSS — source & delay shown on each row"
+            action={
+              <DataInfo
+                name="Global news bundle"
+                source={{ provider: "World Monitor API", url: "/api/worldmonitor/global-feeds", asOf: data?.fetchedAt }}
+                hubSyncedAt={data?.fetchedAt}
+                fetchPath="BBC + Google News RSS — buildFreeGlobalFeeds()"
+              />
+            }
+          >
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading headlines…</p>
             ) : (
@@ -333,7 +360,13 @@ export function WorldMonitorFreeDashboard() {
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium leading-snug text-foreground">{n.title}</span>
                         <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <SourceTag>RSS</SourceTag>
+                          <FeedSourceInfo
+                            sourceId={n.source}
+                            asOf={n.publishedAt}
+                            hubSyncedAt={data?.fetchedAt}
+                            itemUrl={n.link}
+                            name="Headline"
+                          />
                           {n.publishedAt ? (
                             <time dateTime={n.publishedAt} className="tabular-nums">
                               {new Date(n.publishedAt).toLocaleString()}
@@ -353,7 +386,11 @@ export function WorldMonitorFreeDashboard() {
         ) : null}
 
         {sections.has("markets") ? (
-          <Panel title="Markets" subtitle="Yahoo Finance · global indices">
+          <Panel
+            title="Markets"
+            subtitle="Yahoo Finance · global indices"
+            action={<FeedSourceInfo sourceId="yahoo" name="Yahoo Finance indices" />}
+          >
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading quotes…</p>
             ) : (
@@ -376,7 +413,11 @@ export function WorldMonitorFreeDashboard() {
         ) : null}
 
         {sections.has("macro") ? (
-          <Panel title="Macro stress" subtitle="FRED public CSV · no API key">
+          <Panel
+            title="Macro stress"
+            subtitle="FRED public CSV · no API key"
+            action={<FeedSourceInfo sourceId="fred" name="FRED CSV series" />}
+          >
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading macro…</p>
             ) : (
@@ -398,7 +439,17 @@ export function WorldMonitorFreeDashboard() {
         ) : null}
 
         {sections.has("liquidity") ? (
-          <Panel title="Liquidity shifts" subtitle="MI feeds · India macro & flows">
+          <Panel
+            title="Liquidity shifts"
+            subtitle="MI feeds · India macro & flows"
+            action={
+              <DataInfo
+                name="What changed cache"
+                source={{ provider: "MI what-changed", url: "/api/feeds/what-changed" }}
+                fetchPath="getMarketShiftsCached() — NSE/RBI institutional deltas"
+              />
+            }
+          >
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading shifts…</p>
             ) : (
@@ -452,7 +503,7 @@ export function WorldMonitorFreeDashboard() {
         toggle={toggleSection}
         activeCount={sections.size}
       />
-      <DetailDrawer detail={detail} onClose={() => setDetail(null)} />
+      <DetailDrawer detail={detail} onClose={() => setDetail(null)} hubSyncedAt={data?.fetchedAt} />
     </div>
   );
 }

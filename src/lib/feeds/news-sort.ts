@@ -27,8 +27,22 @@ export function sortNewsByFreshness(items: NewsItem[]): NewsItem[] {
 
 export const REGULATORY_EXCHANGE_SOURCES: FeedSourceId[] = ["nse", "bse", "rbi"];
 
+export const OPEN_COMMUNITY_NEWS_SOURCES: FeedSourceId[] = [
+  "reddit",
+  "livemint",
+  "moneycontrol",
+  "googlenews",
+  "busstd",
+  "rsswire",
+];
+
 export function filterRegulatoryExchangeNews(items: NewsItem[]): NewsItem[] {
   const allowed = new Set(REGULATORY_EXCHANGE_SOURCES);
+  return items.filter((n) => allowed.has(n.source));
+}
+
+export function filterOpenCommunityNews(items: NewsItem[]): NewsItem[] {
+  const allowed = new Set(OPEN_COMMUNITY_NEWS_SOURCES);
   return items.filter((n) => allowed.has(n.source));
 }
 

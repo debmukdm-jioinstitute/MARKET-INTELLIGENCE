@@ -2,6 +2,8 @@ export type FieldSource = {
   provider: string;
   url: string;
   asOf?: string;
+  /** Optional ingestion path (module, RSS, API) for ⓘ popovers. */
+  fetchMethod?: string;
 };
 
 export type QuoteField = {

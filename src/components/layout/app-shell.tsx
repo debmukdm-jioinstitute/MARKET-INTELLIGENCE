@@ -15,6 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { GuidedTour } from "@/components/guided-tour";
 import { PortalPageGuard } from "@/components/layout/portal-page-guard";
 import { PortalPageTransition } from "@/components/layout/portal-page-transition";
+import { RouteProvenanceBar } from "@/components/feeds/route-provenance-bar";
 import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PortalDocumentTitle } from "@/components/layout/portal-document-title";
@@ -34,6 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <TopBar />
               <main className="portal-main flex-1 overflow-x-hidden px-3 pt-3 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-4 md:p-5 md:pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
                 <PortalWayfinding />
+                <RouteProvenanceBar />
                 <PortalPageGuard>
                   <PortalPageTransition>{children}</PortalPageTransition>
                 </PortalPageGuard>

@@ -1150,14 +1150,14 @@ cpi: {
     id: "data_quality",
     name: "Feed Integrity & Quality Score",
     category: "Market Internals",
-    provider: "Antigravity Telemetry Engine",
-    defaultUrl: "/data",
+    provider: "Market Intelligence feed hub",
+    defaultUrl: "/api/feeds/hub",
     calculation:
-      "Quality Score = 100 × (Valid Packets Received ÷ Total Expected Packets) − (Schema Validation Errors × 2).",
+      "Hub health = per-upstream ok flag from buildFeedHub() (NSE, BSE, RBI, FRED, Reddit, etc.). News capped and sorted by publishedAt.",
     laymanExplanation:
-      "A real-time health score showing whether live market data streams are 100% authentic, uninterrupted, and verified against official schemas.",
+      "Shows whether live headlines and quotes are arriving from official exchange RSS, licensed APIs, and configured open feeds.",
     utility:
-      "Guarantees that no fake or corrupted quotes enter the valuation engine or trade execution pipelines.",
+      "Click ⓘ on any headline or feed row to see the exact upstream agency, fetch path, and sync time.",
   },
   feed_latency: {
     id: "feed_latency",
