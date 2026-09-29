@@ -69,7 +69,7 @@ export function AuthForm({
   const [privacyError, setPrivacyError] = useState("");
   const [pending, setPending] = useState(false);
   const [guestPending, setGuestPending] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(true);
   const [otpEmail, setOtpEmail] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState("");
   const [resendIn, setResendIn] = useState(0);
