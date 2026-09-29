@@ -1,4 +1,5 @@
 import { feedFetch } from "@/lib/feeds/http";
+import { findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import {
   ALL_MODEL_FIELDS,
   FIELD_MAP,
@@ -252,19 +253,35 @@ async function fetchSector(symbol: string): Promise<{ sector: string | null; ind
   }
 }
 
-/** Resolves a bare symbol (e.g. "RELIANCE") to its Yahoo ticker, trying the NSE suffix as a fallback. */
+/** NSE-listed names: use `.NS` on Yahoo so statements, DCF, and Upstox quotes share INR (not US ADR). */
+export function preferredYahooTicker(rawSymbol: string): string {
+  const s = rawSymbol.trim().toUpperCase();
+  if (!s || s.includes(".") || s.startsWith("^") || s.includes("=")) return s;
+  if (findIndiaInstrument(s)) return `${s}.NS`;
+  return s;
+}
+
+/** Resolves a bare symbol (e.g. "RELIANCE") to its Yahoo ticker, preferring NSE for India names. */
 async function resolveSymbol(input: string): Promise<{ symbol: string; chart: YahooChartResult }> {
-  try {
-    const chart = await fetchChart(input, "1y", "1d");
-    return { symbol: input, chart };
-  } catch (e) {
-    // only fall back to the NSE suffix when Yahoo says the bare symbol does not exist — never mask rate limits / outages
-    if (input.includes(".") || input.startsWith("^") || input.includes("=")) throw e;
-    if (!(e instanceof ProviderError) || !/not found|no data/i.test(e.message)) throw e;
-    const withSuffix = `${input}.NS`;
-    const chart = await fetchChart(withSuffix, "1y", "1d");
-    return { symbol: withSuffix, chart };
+  const upper = input.trim().toUpperCase();
+  const candidates = [
+    preferredYahooTicker(input),
+    upper,
+    ...(upper.includes(".") || upper.startsWith("^") || upper.includes("=") ? [] : [`${upper}.NS`]),
+  ].filter((v, i, a) => a.indexOf(v) === i);
+
+  let lastErr: unknown;
+  for (const sym of candidates) {
+    try {
+      const chart = await fetchChart(sym, "1y", "1d");
+      return { symbol: sym, chart };
+    } catch (e) {
+      lastErr = e;
+      if (e instanceof ProviderError && /not found|no data/i.test(e.message)) continue;
+      throw e;
+    }
   }
+  throw lastErr instanceof Error ? lastErr : new ProviderError(`No Yahoo chart for ${input}`);
 }
 
 const RF_FLOOR = 0.025;
@@ -277,7 +294,7 @@ const datasetCache = new Map<string, { at: number; value: Promise<FinancialDatas
  * every recalculation would otherwise each fire ~25 Yahoo requests (statements, TTM, peers) and trip rate limits.
  */
 export function fetchFinancialDataset(rawSymbol: string): Promise<FinancialDataset> {
-  const key = rawSymbol.trim().toUpperCase();
+  const key = preferredYahooTicker(rawSymbol.trim()).toUpperCase();
   const hit = datasetCache.get(key);
   if (hit && Date.now() - hit.at < DATASET_TTL_MS) return hit.value;
   const value = buildFinancialDataset(rawSymbol);

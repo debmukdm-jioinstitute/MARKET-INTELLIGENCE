@@ -214,6 +214,7 @@ export function ResearchSymbolClient({
             livePrice={q?.ltp ?? us?.quote?.price ?? null}
             liveAsOf={q?.asOf ?? null}
             currency={q ? "INR" : "USD"}
+            indiaListing={Boolean(q)}
           />
         </section>
       ) : null}

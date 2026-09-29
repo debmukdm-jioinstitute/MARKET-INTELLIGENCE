@@ -4,7 +4,8 @@ const currencyFormatters = new Map<string, Intl.NumberFormat>();
 function currencyFormatter(currency: string) {
   let f = currencyFormatters.get(currency);
   if (!f) {
-    f = new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 });
+    const locale = currency === "INR" ? "en-IN" : "en-US";
+    f = new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 2 });
     currencyFormatters.set(currency, f);
   }
   return f;
