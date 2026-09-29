@@ -1,4 +1,5 @@
 import { verifySessionToken } from "@/lib/auth-crypto";
+import { isRequireAccountEnabled } from "@/lib/auth/require-account";
 import { isGuestReadablePortalPath } from "@/lib/seo/public-routes";
 import { isWorldMonitorProxiedApiPath } from "@/lib/worldmonitor/api-path-allowlist";
 import { NextResponse, type NextRequest } from "next/server";
@@ -26,7 +27,7 @@ function parseSession(raw: string | undefined) {
   return verifySessionToken<{ guest?: boolean; email?: string; role?: string }>(raw);
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const isAdminHost = host.startsWith("admin.") || host.startsWith("admin:");
   const realPathname = request.nextUrl.pathname;
@@ -80,13 +81,27 @@ export function proxy(request: NextRequest) {
     realPathname.startsWith("/favico/") ||
     realPathname === "/manifest.webmanifest" ||
     isWorldMonitorApiRoute(realPathname);
-  const isPortalPublic = isGuestReadablePortalPath(realPathname);
+  const requireAccount = !session || session.guest ? await isRequireAccountEnabled() : false;
+  const isPortalPublic = !requireAccount && isGuestReadablePortalPath(realPathname);
   const isPublic = PUBLIC.has(realPathname) || isWorldMonitorAsset || isPortalPublic;
   const staleSession = Boolean(sessionRaw && !session);
 
+  if (requireAccount && session?.guest) {
+    const res = isPublic
+      ? NextResponse.next()
+      : (() => {
+          const url = request.nextUrl.clone();
+          url.pathname = "/signup";
+          url.searchParams.set("next", realPathname);
+          return NextResponse.redirect(url);
+        })();
+    res.cookies.set("mi_session", "", { httpOnly: true, path: "/", maxAge: 0 });
+    return res;
+  }
+
   if (!isPublic && !session) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = requireAccount ? "/signup" : "/login";
     url.searchParams.set("next", realPathname);
     if (staleSession) {
       url.searchParams.set("expired", "1");

@@ -6,18 +6,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, ready } = useAuth();
+  const { user, ready, isGuest, requireAccount } = useAuth();
   const router = useRouter();
   const pathname = usePathname() ?? "";
-  const isPublicPortal = isGuestReadablePortalPath(pathname);
+  const isPublicPortal = !requireAccount && isGuestReadablePortalPath(pathname);
+  const allowed = Boolean(user) && !(requireAccount && isGuest);
 
   useEffect(() => {
     if (isPublicPortal) return;
-    if (ready && !user) {
+    if (ready && !allowed) {
       const next = encodeURIComponent(window.location.pathname + window.location.search);
-      router.replace(`/login?next=${next}`);
+      router.replace(requireAccount ? `/signup?next=${next}` : `/login?next=${next}`);
     }
-  }, [ready, user, router, isPublicPortal]);
+  }, [ready, allowed, router, isPublicPortal, requireAccount]);
 
   if (isPublicPortal) {
     return <>{children}</>;
@@ -31,7 +32,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) {
+  if (!allowed) {
     return (
       <div className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">
         Redirecting to sign in…

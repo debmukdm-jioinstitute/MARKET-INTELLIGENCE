@@ -7,6 +7,8 @@ type AuthCtx = {
   user: SessionUser | null;
   ready: boolean;
   isGuest: boolean;
+  requireAccount: boolean;
+  guestAllowed: boolean;
   signup: (input: { name: string; email: string; password: string; acceptPrivacy: boolean }) => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
   enterGuest: () => Promise<void>;
@@ -29,6 +31,7 @@ async function postJson(url: string, body: unknown) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [requireAccount, setRequireAccount] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((json) => {
         if (!cancelled) {
           setUser(json.user ?? null);
+          setRequireAccount(Boolean(json.requireAccount));
           // A guest never owns a book: clear anything left in this browser by a previous session.
           if (isGuestUser(json.user ?? null)) {
             try {
@@ -62,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       ready,
       isGuest: isGuestUser(user),
+      requireAccount,
+      guestAllowed: !requireAccount,
       async enterGuest() {
         const json = await postJson("/api/auth/session", { guest: true });
         setUser(json.user);
@@ -79,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       },
     }),
-    [user, ready],
+    [user, ready, requireAccount],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

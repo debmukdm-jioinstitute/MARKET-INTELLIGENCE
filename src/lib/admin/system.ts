@@ -47,5 +47,21 @@ export const FLAGS = [
   { flag: "ai", label: "AI features (AI desk, options-flow AI, copilot)" },
   { flag: "broker-import", label: "Broker holdings import" },
   { flag: "scenario", label: "Scenario engine" },
-  { flag: "guided-tour", label: "Show guided tour to users (disabled by default)" },
+  { flag: "guided-tour", label: "Show guided tour to users (disabled by default)", defaultEnabled: false },
+  {
+    flag: "require-account",
+    label: "Require accounts — hide guest/demo and force sign-up",
+    defaultEnabled: false,
+    catalog: false,
+  },
 ] as const;
+
+export function defaultFlagEnabled(flag: string): boolean {
+  const row = FLAGS.find((f) => f.flag === flag);
+  if (!row) return true;
+  return "defaultEnabled" in row ? row.defaultEnabled : true;
+}
+
+export function catalogFlags() {
+  return FLAGS.filter((f) => !("catalog" in f) || f.catalog !== false);
+}

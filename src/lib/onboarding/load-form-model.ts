@@ -1,4 +1,4 @@
-import { FLAGS } from "@/lib/admin/system";
+import { defaultFlagEnabled, FLAGS } from "@/lib/admin/system";
 import type { SessionUser } from "@/lib/auth";
 import { buildOnboardingFormModel } from "@/lib/onboarding/build-form-model";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -21,10 +21,10 @@ export async function loadOnboardingFormModelForUser(
     const flagRows = (await db`SELECT flag, enabled FROM feature_flags`) as { flag: string; enabled: boolean }[];
     for (const f of FLAGS) {
       const row = flagRows.find((r) => r.flag === f.flag);
-      enabledFlags[f.flag] = row?.enabled ?? true;
+      enabledFlags[f.flag] = row?.enabled ?? defaultFlagEnabled(f.flag);
     }
   } else {
-    for (const f of FLAGS) enabledFlags[f.flag] = true;
+    for (const f of FLAGS) enabledFlags[f.flag] = defaultFlagEnabled(f.flag);
   }
 
   return buildOnboardingFormModel(user, dbUser, enabledFlags, siteUrl);

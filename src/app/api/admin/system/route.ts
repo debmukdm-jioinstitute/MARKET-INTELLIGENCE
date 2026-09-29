@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
 import { getResendFromAddress, hasEmailConfigured } from "@/lib/admin/email";
-import { CRONS, ENV_VARS, FLAGS } from "@/lib/admin/system";
+import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
+import { invalidateRequireAccountCache } from "@/lib/auth/require-account";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { sendWelcomePackWithResult } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
@@ -14,7 +15,7 @@ export async function GET() {
 
   const env = ENV_VARS.map((v) => ({ ...v, set: Boolean(process.env[v.key] || (v.key === "DATABASE_URL" && (process.env.POSTGRES_URL || process.env.DATABASE_URL_UNPOOLED)) || (v.key === "AUTH_SECRET" && process.env.SESSION_SECRET)) }));
   const db = hasDatabase();
-  let flags = FLAGS.map((f) => ({ ...f, enabled: f.flag === "guided-tour" ? false : true }));
+  let flags = FLAGS.map((f) => ({ ...f, enabled: defaultFlagEnabled(f.flag) }));
   let stats: Record<string, number | null> = {};
   let scrapeLog: unknown[] = [];
   if (db) {
@@ -22,7 +23,7 @@ export async function GET() {
     const d = sql();
     try {
       const rows = (await d`SELECT flag, enabled FROM feature_flags`) as unknown as { flag: string; enabled: boolean }[];
-      flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? (f.flag === "guided-tour" ? false : true) }));
+      flags = FLAGS.map((f) => ({ ...f, enabled: rows.find((r) => r.flag === f.flag)?.enabled ?? defaultFlagEnabled(f.flag) }));
     } catch {}
     const tables = ["users", "brief_subscriptions", "alert_rules", "alert_events", "push_subscriptions", "newsletter_subscribers", "research_reports", "scan_latest"];
     const results = await Promise.all(
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
     if (!hasDatabase()) return NextResponse.json({ error: "No database configured" }, { status: 503 });
     await ensureSchema();
     await sql()`INSERT INTO feature_flags (flag, enabled, updated_at) VALUES (${body.flag!}, ${body.enabled}, now()) ON CONFLICT (flag) DO UPDATE SET enabled = ${body.enabled}, updated_at = now()`;
+    if (body.flag === "require-account") invalidateRequireAccountCache();
     return NextResponse.json({ ok: true });
   }
 

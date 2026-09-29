@@ -59,7 +59,7 @@ export function AuthForm({
   sessionExpired?: boolean;
   fromDemo?: boolean;
 }) {
-  const { login, signup, enterGuest, isGuest } = useAuth();
+  const { login, signup, enterGuest, isGuest, guestAllowed } = useAuth();
   const router = useRouter();
   const dest = next.startsWith("/") ? next : "/Home";
   const [email, setEmail] = useState("");
@@ -312,7 +312,7 @@ export function AuthForm({
         </button>
       </form>
 
-      {mode === "login" ? (
+      {mode === "login" && guestAllowed ? (
         <div className="mt-6 rounded-xl border-2 border-primary/15 bg-muted/40 p-4">
           <p className="text-sm font-semibold text-foreground">Just exploring?</p>
           <p className="mt-1 text-sm text-muted-foreground">Open the demo desk with sample books — no account required.</p>
