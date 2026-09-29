@@ -6,7 +6,23 @@ import { ClaudeMcpSetupVisual } from "@/components/help/claude-mcp-setup-visual"
 import { ClaudeBrandIcon, CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+/**
+ * Top-level accordion ids. Kept as a const list (not derived from JSX) so the
+ * hash-open effect below has a safe allowlist — never opens/scrolls to an
+ * arbitrary id from location.hash.
+ */
+const TOP_SECTIONS = [
+  "start",
+  "worldmonitor",
+  "website",
+  "mcp",
+  "account",
+  "terminal",
+  "trouble",
+  "tools",
+] as const;
 
 const ENDPOINT = MCP_ENDPOINT;
 
@@ -98,6 +114,21 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
     return INVESTOR_TASKS.filter((t) => t.q.toLowerCase().includes(q) || t.a.toLowerCase().includes(q));
   }, [taskQuery]);
 
+  // Controlled (not defaultValue) so a deep link like /help#mcp — from the
+  // unified search bar's NL-question routing, or CLAUDE_CONNECTOR.help — can
+  // open the right section after mount, not just on first paint.
+  const [openSections, setOpenSections] = useState<string[]>(["start", "website"]);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (!hash || !(TOP_SECTIONS as readonly string[]).includes(hash)) return;
+    setOpenSections((prev) => (prev.includes(hash) ? prev : [...prev, hash]));
+    const id = window.requestAnimationFrame(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, []);
+
   return (
     <div className="space-y-8">
       <section className="rounded-xl border-2 border-blue-600/25 bg-blue-600/5 p-5">
@@ -134,8 +165,13 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         <span className="font-semibold text-foreground">mi_sign_in</span>, not the Claude Allow screen.
       </p>
 
-      <Accordion type="multiple" defaultValue={["start", "website"]} className="rounded-xl border border-border px-4">
-        <AccordionItem value="start">
+      <Accordion
+        type="multiple"
+        value={openSections}
+        onValueChange={setOpenSections}
+        className="rounded-xl border border-border px-4"
+      >
+        <AccordionItem value="start" id="start">
           <AccordionTrigger className="text-base font-semibold text-foreground">New here? Start here</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
             <p>
@@ -159,10 +195,10 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="worldmonitor">
+        <AccordionItem value="worldmonitor" id="worldmonitor">
           <AccordionTrigger className="text-base font-semibold">The world monitor</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
-            <p id="worldmonitor">
+            <p>
               <b>Not a full clone inside one app yet.</b> We ship upstream{" "}
               <a
                 href="https://github.com/koala73/worldmonitor"
@@ -191,7 +227,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="website">
+        <AccordionItem value="website" id="website">
           <AccordionTrigger className="text-base font-semibold text-foreground">Using the site</AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <Steps
@@ -217,7 +253,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="mcp">
+        <AccordionItem value="mcp" id="mcp">
           <AccordionTrigger className="text-base font-semibold text-muted-foreground">
             Connect your AI — let your assistant read market data (MCP)
           </AccordionTrigger>
@@ -391,7 +427,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="account">
+        <AccordionItem value="account" id="account">
           <AccordionTrigger className="text-base font-semibold">
             Using your portfolio with AI
           </AccordionTrigger>
@@ -431,7 +467,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="terminal">
+        <AccordionItem value="terminal" id="terminal">
           <AccordionTrigger className="text-base font-semibold">The optional desktop app</AccordionTrigger>
           <AccordionContent>
             <Accordion type="single" collapsible>
@@ -489,8 +525,8 @@ node $HOME\\.mi\\mi.mjs`}</Code>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="trouble">
-          <AccordionTrigger className="text-base font-semibold">Troubleshooting</AccordionTrigger>
+        <AccordionItem value="trouble" id="trouble">
+          <AccordionTrigger className="text-base font-semibold">Something went wrong</AccordionTrigger>
           <AccordionContent>
             <ul className="space-y-4">
               {TROUBLE.map((t) => (
@@ -503,7 +539,7 @@ node $HOME\\.mi\\mi.mjs`}</Code>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="tools">
+        <AccordionItem value="tools" id="tools">
           <AccordionTrigger className="text-base font-semibold">
             Everything your AI can look up ({tools.length} tools)
           </AccordionTrigger>

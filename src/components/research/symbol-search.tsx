@@ -1,11 +1,53 @@
 "use client";
 
 import type { SymbolSearchHit } from "@/lib/feeds/symbol-search";
+import type { HelpTopic } from "@/lib/help/help-search-index";
+import type { UnifiedSearchResult } from "@/lib/search/unified-search";
+import { isNaturalLanguageQuery } from "@/lib/search/nl-intent";
+import { openSiteAssistant } from "@/lib/home/open-assistant";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+/**
+ * One entry in the merged, keyboard-navigable results list. This is the
+ * "unified" part of the unified search bar: a ticker, a portal page, a help
+ * topic, and the Ask Deb fallback all live in the same list with the same
+ * selection model — not three separate widgets glued together.
+ */
+type ResultItem =
+  | { kind: "symbol"; hit: SymbolSearchHit }
+  | { kind: "page"; href: string; label: string; description: string }
+  | { kind: "help"; topic: HelpTopic }
+  | { kind: "ask"; query: string };
+
+const EMPTY_RESULT: UnifiedSearchResult = {
+  query: "",
+  isQuestion: false,
+  symbols: [],
+  pages: [],
+  help: [],
+  suggestAsk: false,
+};
+
+function buildItems(result: UnifiedSearchResult): ResultItem[] {
+  const items: ResultItem[] = [];
+  items.push(...result.symbols.map((hit): ResultItem => ({ kind: "symbol", hit })));
+
+  // A detected question surfaces help content before generic pages (it's
+  // almost always what "how do I connect X" is looking for); a well-formed
+  // ticker/page query keeps pages first since that's the common case today.
+  const pageItems: ResultItem[] = result.pages.map((p) => ({ kind: "page", href: p.href, label: p.label, description: p.description }));
+  const helpItems: ResultItem[] = result.help.map((topic) => ({ kind: "help", topic }));
+  items.push(...(result.isQuestion ? [...helpItems, ...pageItems] : [...pageItems, ...helpItems]));
+
+  if (result.suggestAsk && result.query) {
+    items.push({ kind: "ask", query: result.query });
+  }
+  return items;
+}
 
 export function SymbolSearch({
   initialQuery = "",
@@ -23,7 +65,7 @@ export function SymbolSearch({
 }) {
   const router = useRouter();
   const [q, setQ] = useState(initialQuery);
-  const [hits, setHits] = useState<SymbolSearchHit[]>([]);
+  const [result, setResult] = useState<UnifiedSearchResult>(EMPTY_RESULT);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
@@ -32,43 +74,40 @@ export function SymbolSearch({
   const isFocusedRef = useRef(false);
 
   const prominent = variant === "hero" || variant === "bar";
+  const items = buildItems(result);
 
   useEffect(() => {
     setQ(initialQuery);
     hasUserTypedRef.current = false;
-    setHits([]);
+    setResult(EMPTY_RESULT);
     setOpen(false);
   }, [initialQuery]);
 
   useEffect(() => {
     // Only search and show dropdown when the user has actively typed into this input
     if (!hasUserTypedRef.current) {
-      setHits([]);
+      setResult(EMPTY_RESULT);
       setOpen(false);
       return;
     }
 
     const trimmed = q.trim();
     if (trimmed.length < 1) {
-      setHits([]);
+      setResult(EMPTY_RESULT);
       setOpen(false);
       return;
     }
     const id = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/feeds/search/symbols?q=${encodeURIComponent(trimmed)}`);
-        const json = (await res.json()) as { hits?: SymbolSearchHit[] };
-        const results = json.hits ?? [];
-        setHits(results);
-        if (hasUserTypedRef.current && isFocusedRef.current && results.length > 0) {
-          setOpen(true);
-        } else {
-          setOpen(false);
-        }
+        const res = await fetch(`/api/search/unified?q=${encodeURIComponent(trimmed)}`);
+        const json = (await res.json()) as UnifiedSearchResult;
+        setResult(json);
+        const hasAny = json.symbols.length > 0 || json.pages.length > 0 || json.help.length > 0 || json.suggestAsk;
+        setOpen(hasAny);
         setActive(0);
       } catch {
-        setHits([]);
+        setResult(EMPTY_RESULT);
         setOpen(false);
       } finally {
         setLoading(false);
@@ -77,13 +116,23 @@ export function SymbolSearch({
     return () => window.clearTimeout(id);
   }, [q]);
 
-  const pick = useCallback(
-    (hit: SymbolSearchHit) => {
-      hasUserTypedRef.current = false;
-      isFocusedRef.current = false;
+  const selectItem = useCallback(
+    (item: ResultItem) => {
+      if (item.kind === "symbol") {
+        setOpen(false);
+        router.push(`/research/${encodeURIComponent(item.hit.symbol)}`);
+        return;
+      }
+      if (item.kind === "page" || item.kind === "help") {
+        setOpen(false);
+        const href = item.kind === "page" ? item.href : item.topic.href;
+        router.push(href);
+        return;
+      }
+      // kind === "ask": hand the raw question to Ask Deb and let it actually
+      // answer (route + explain), instead of guessing a single static page.
       setOpen(false);
-      setHits([]);
-      router.push(`/research/${encodeURIComponent(hit.symbol)}`);
+      openSiteAssistant(item.query);
     },
     [router],
   );
@@ -149,7 +198,7 @@ export function SymbolSearch({
           }}
           onFocus={() => {
             isFocusedRef.current = true;
-            if (hasUserTypedRef.current && hits.length > 0) {
+            if (hasUserTypedRef.current && items.length > 0) {
               setOpen(true);
             }
           }}
@@ -157,41 +206,51 @@ export function SymbolSearch({
             isFocusedRef.current = false;
           }}
           onKeyDown={(e) => {
-          if (!open || !hits.length) {
-            if (e.key === "Enter" && q.trim()) {
-              hasUserTypedRef.current = false;
-              isFocusedRef.current = false;
-              setOpen(false);
-              setHits([]);
-              router.push(`/research/${encodeURIComponent(q.trim().toUpperCase())}`);
+            if (!open || !items.length) {
+              // The debounced fetch (200ms) may not have resolved yet — a
+              // fast typist can hit Enter before `items` populates. This is
+              // the pre-existing "go straight to a ticker page" fallback for
+              // that gap, but firing it unconditionally sent any sentence
+              // typed into the bar (e.g. the task's own MCP question) to
+              // `/research/<THE-WHOLE-SENTENCE>`, a nonexistent symbol page,
+              // instead of ever reaching the help/Ask Deb routing this bar
+              // exists to provide. Gate it on the same question-shape check
+              // the rest of the bar uses: a question never falls through to
+              // the raw ticker route, even mid-debounce.
+              const trimmed = q.trim();
+              if (e.key === "Enter" && trimmed && !isNaturalLanguageQuery(trimmed)) {
+                hasUserTypedRef.current = false;
+                isFocusedRef.current = false;
+                setOpen(false);
+                router.push(`/research/${encodeURIComponent(trimmed.toUpperCase())}`);
+              }
+              return;
             }
-            return;
-          }
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setActive((i) => Math.min(i + 1, hits.length - 1));
-          } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            setActive((i) => Math.max(i - 1, 0));
-          } else if (e.key === "Enter") {
-            e.preventDefault();
-            pick(hits[active]!);
-          } else if (e.key === "Escape") {
-            setOpen(false);
-          }
-        }}
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setActive((i) => Math.min(i + 1, items.length - 1));
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setActive((i) => Math.max(i - 1, 0));
+            } else if (e.key === "Enter") {
+              e.preventDefault();
+              selectItem(items[active]!);
+            } else if (e.key === "Escape") {
+              setOpen(false);
+            }
+          }}
           placeholder={
             variant === "hero"
-              ? "Company name or ticker — e.g. Reliance or RELIANCE"
-              : "Company name or ticker — e.g. Reliance or RELIANCE"
+              ? "Search India & US symbols, ask a question — Reliance, TCS, NVDA, “how to connect MCP to Claude”…"
+              : "Search India (NSE) or US ticker, or ask a question"
           }
           className={cn(
-            "border-0 bg-transparent uppercase shadow-none focus-visible:ring-0",
+            "border-0 bg-transparent shadow-none focus-visible:ring-0",
             variant === "hero" ? "h-14 text-lg md:text-xl" : "h-9 text-sm",
           )}
           aria-autocomplete="list"
           aria-expanded={open}
-          aria-label="Search symbols"
+          aria-label="Search symbols, pages, and help"
         />
         {showShortcut ? (
           <kbd
@@ -212,38 +271,89 @@ export function SymbolSearch({
           )}
           role="listbox"
         >
-          {loading && !hits.length ? (
+          {loading && !items.length ? (
             <li className="px-3 py-2 text-sm text-muted-foreground">Searching…</li>
           ) : null}
-          {hits.map((h, i) => (
-            <li
-              key={`${h.market}-${h.symbol}`}
-              className="animate-dropdown-item px-1.5"
-              style={{ animationDelay: `${Math.min(i, 8) * 22}ms` }}
-            >
-              <button
-                type="button"
-                role="option"
-                aria-selected={i === active}
-                className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#1a73e8]/10 hover:shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
-                  i === active && "-translate-y-0.5 bg-[#1a73e8]/10 shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
-                )}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => pick(h)}
-              >
-                <span>
-                  <span className="font-medium">{h.symbol}</span>
-                  <span className="ml-2 text-muted-foreground">{h.name}</span>
-                </span>
-                <span className="shrink-0 text-sm uppercase text-primary">
-                  {h.market === "IN" ? "India" : "US"}
-                </span>
-              </button>
-            </li>
+          {items.map((item, i) => (
+            <ResultRow
+              key={itemKey(item)}
+              item={item}
+              index={i}
+              active={i === active}
+              onHover={() => setActive(i)}
+              onSelect={() => selectItem(item)}
+            />
           ))}
         </ul>
       ) : null}
     </div>
+  );
+}
+
+function itemKey(item: ResultItem): string {
+  if (item.kind === "symbol") return `symbol-${item.hit.market}-${item.hit.symbol}`;
+  if (item.kind === "page") return `page-${item.href}`;
+  if (item.kind === "help") return `help-${item.topic.id}`;
+  return "ask";
+}
+
+function ResultRow({
+  item,
+  index,
+  active,
+  onHover,
+  onSelect,
+}: {
+  item: ResultItem;
+  index: number;
+  active: boolean;
+  onHover: () => void;
+  onSelect: () => void;
+}) {
+  const rowClass = cn(
+    "flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#1a73e8]/10 hover:shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
+    active && "-translate-y-0.5 bg-[#1a73e8]/10 shadow-[0_6px_16px_-4px_rgba(26, 115, 232,0.25)]",
+  );
+
+  return (
+    <li className="animate-dropdown-item px-1.5" style={{ animationDelay: `${Math.min(index, 8) * 22}ms` }}>
+      <button type="button" role="option" aria-selected={active} className={rowClass} onMouseEnter={onHover} onClick={onSelect}>
+        {item.kind === "symbol" ? (
+          <>
+            <span>
+              <span className="font-medium">{item.hit.symbol}</span>
+              <span className="ml-2 text-muted-foreground">{item.hit.name}</span>
+            </span>
+            <span className="shrink-0 text-sm uppercase text-primary">{item.hit.market === "IN" ? "India" : "US"}</span>
+          </>
+        ) : null}
+        {item.kind === "page" ? (
+          <>
+            <span>
+              <span className="font-medium">{item.label}</span>
+              <span className="ml-2 text-muted-foreground">{item.description}</span>
+            </span>
+            <span className="shrink-0 text-sm text-muted-foreground">Page</span>
+          </>
+        ) : null}
+        {item.kind === "help" ? (
+          <>
+            <span>
+              <span className="font-medium">{item.topic.title}</span>
+              <span className="ml-2 text-muted-foreground">{item.topic.blurb}</span>
+            </span>
+            <span className="shrink-0 text-sm text-muted-foreground">Help</span>
+          </>
+        ) : null}
+        {item.kind === "ask" ? (
+          <span className="flex w-full items-center gap-2 text-primary">
+            <Sparkles className="size-4 shrink-0" aria-hidden />
+            <span>
+              Ask Deb: <span className="font-medium">&ldquo;{item.query}&rdquo;</span>
+            </span>
+          </span>
+        ) : null}
+      </button>
+    </li>
   );
 }

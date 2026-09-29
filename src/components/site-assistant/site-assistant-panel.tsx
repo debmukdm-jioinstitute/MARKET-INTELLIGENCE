@@ -245,10 +245,17 @@ function SiteAssistantChat({
   skillLevel,
   onSkillLevel,
   onPickSuggestion,
+  pendingQuery,
 }: {
   skillLevel: SkillLevel | null;
   onSkillLevel: (level: SkillLevel) => void;
   onPickSuggestion: (text: string) => void;
+  /**
+   * A question handed in from outside (the unified search bar's "Ask Deb"
+   * fallback) to send as soon as this panel mounts. `nonce` changes on every
+   * open so re-asking the same question re-fires the effect below.
+   */
+  pendingQuery?: { text: string; nonce: number } | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -516,6 +523,26 @@ function SiteAssistantChat({
     },
     [busy, sendMessage],
   );
+
+  // Mirrors the latest sendText into a ref so the pendingQuery effect below
+  // can call it without needing sendText in its own deps (which would refire
+  // on every keystroke's `busy` flip, not just when a new query arrives).
+  const sendTextRef = useRef(sendText);
+  useEffect(() => {
+    sendTextRef.current = sendText;
+  }, [sendText]);
+
+  // This component mounts fresh each time the panel opens (it lives inside
+  // an `open ? … : null` in AnimatePresence), so a query handed in at open
+  // time is a plain "run once per mount" effect — no cross-component ref.
+  useEffect(() => {
+    if (!pendingQuery?.text) return;
+    const id = window.setTimeout(() => {
+      void sendTextRef.current(pendingQuery.text);
+    }, 60);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once per (mount, nonce), not on every sendText identity change
+  }, [pendingQuery?.nonce]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -814,6 +841,7 @@ export function SiteAssistantWidget() {
   const [open, setOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(false);
   const [skillLevel, setSkillLevel] = useState<SkillLevel | null>(null);
+  const [pendingQuery, setPendingQuery] = useState<{ text: string; nonce: number } | null>(null);
 
   useEffect(() => {
     setSkillLevel(loadStoredSkill());
@@ -860,9 +888,13 @@ export function SiteAssistantWidget() {
   };
 
   useEffect(() => {
-    const onOpen = () => {
+    const onOpen = (e: Event) => {
       setOpen(true);
       dismissHint();
+      const query = (e as CustomEvent<{ query?: string }>).detail?.query;
+      if (query) {
+        setPendingQuery((prev) => ({ text: query, nonce: (prev?.nonce ?? 0) + 1 }));
+      }
     };
     window.addEventListener(OPEN_SITE_ASSISTANT_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_SITE_ASSISTANT_EVENT, onOpen);
@@ -945,6 +977,7 @@ export function SiteAssistantWidget() {
               skillLevel={skillLevel}
               onSkillLevel={persistSkill}
               onPickSuggestion={() => dismissHint()}
+              pendingQuery={pendingQuery}
             />
           </motion.section>
         ) : null}

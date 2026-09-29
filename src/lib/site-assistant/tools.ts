@@ -6,6 +6,7 @@ import {
 } from "@/lib/site-assistant/education";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { searchSymbols } from "@/lib/feeds/symbol-search";
+import { searchHelpTopics } from "@/lib/help/help-search-index";
 import { isPortalHrefAllowed, type PortalPageControlRow } from "@/lib/portal-page-access";
 import { searchPages } from "@/lib/site-assistant/site-map";
 import type { SessionUser } from "@/lib/auth";
@@ -54,6 +55,17 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
           controls.length ? isPortalHrefAllowed(p.href, controls, false) : true,
         );
         return { pages: pages.slice(0, 8) };
+      },
+    }),
+    search_help: tool({
+      description:
+        "Look up this site's own curated setup/help answer for a how-to question (connecting Claude/Cursor over MCP, the mi terminal, data export, alerts, sign-in, troubleshooting). Deterministic keyword match against the same index the search bar uses, not a guess — call this before answering from general knowledge about how to use this site, and prefer its href over inventing one.",
+      inputSchema: z.object({
+        query: z.string().describe("The user's question, verbatim or paraphrased"),
+      }),
+      execute: async ({ query }) => {
+        const topics = searchHelpTopics(query, 3);
+        return { topics: topics.map((t) => ({ title: t.title, blurb: t.blurb, href: t.href })) };
       },
     }),
     search_symbols: tool({

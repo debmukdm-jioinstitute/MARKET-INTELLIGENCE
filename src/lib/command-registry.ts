@@ -37,6 +37,8 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/intelligence/brief", label: "Daily Brief", description: "Pre-market and post-close brief" },
   { href: "/intelligence/alerts", label: "Alert Rules", description: "Custom market alerts by push or email" },
   { href: "/data/health", label: "Data Health", description: "Freshness and provenance of collected data" },
+  { href: "/help", label: "Help center", description: "Setup guides, MCP/Claude connector, terminal app, troubleshooting" },
+  { href: "/connect/claude", label: "Connect Claude (MCP)", description: "Full walkthrough to connect Claude via the custom connector" },
 ];
 
 /** Live-metric shortcuts: id must match a key in src/lib/snapshot.ts METRICS (values come from /api/alerts). */

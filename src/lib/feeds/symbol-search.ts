@@ -97,10 +97,38 @@ export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
 
   const tokens = queryTokens(rawQuery);
   if (tokens.length) {
-    const nameTokens = new Set(queryTokens(hit.name));
-    const hitCount = tokens.filter((t) => nameTokens.has(t) || sym.includes(t)).length;
+    const nameTokenList = queryTokens(hit.name);
+    const nameTokens = new Set(nameTokenList);
+    // Exact-or-substring hit first; if that fails, allow one bounded-edit-
+    // distance typo per token (>=5 chars only, to avoid false positives on
+    // short/common tokens like "bank" vs "rank"). This is what lets a
+    // multi-word company name survive more than one misspelled word at once
+    // — e.g. "reliance indutries limited compnay" ("indutries" typo'd,
+    // "compnay" typo'd and not even part of the real name) still needs
+    // "indutries" ~ "industries" to register as a hit for RELIANCE to score
+    // at all; a single edit-distance check on the whole compacted string
+    // (the branches above) only ever catches a typo in a *single*-word
+    // query, not a typo buried inside a longer sentence.
+    const hitCount = tokens.filter((t) => {
+      if (nameTokens.has(t) || sym.includes(t)) return true;
+      if (t.length < 5) return false;
+      return nameTokenList.some(
+        (nt) => Math.abs(nt.length - t.length) <= 2 && editDistance(t, nt, 2) <= 1,
+      );
+    }).length;
     if (hitCount === tokens.length && tokens.length >= 2) return 420 + hitCount * 20;
     if (hitCount > 0 && hitCount >= Math.ceil(tokens.length * 0.6)) return 280 + hitCount * 25;
+    // Weak tier: a full sentence ("is it safe to invest in adani") carries
+    // mostly grammatical filler that will never appear in a company name, so
+    // the 60%-overlap bar above is nearly impossible to clear even when the
+    // one content word that matters (the company name) is spelled exactly
+    // right. Requirement 1/"done" bullet 2 forbid a bare empty dropdown for
+    // this shape of query; a low, last-place score (well below every branch
+    // above, and below a help/page match in the UI's own ordering — see
+    // symbol-search.tsx) surfaces the symbol as a low-confidence suggestion
+    // instead of nothing, without letting a single stray token outrank a
+    // real ticker/company match anywhere above.
+    if (hitCount > 0) return 60 + hitCount * 15;
   }
 
   // Light typo tolerance on compact symbol / primary name token (short queries only).
