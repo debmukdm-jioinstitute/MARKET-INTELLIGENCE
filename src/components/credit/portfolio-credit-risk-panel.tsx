@@ -15,6 +15,15 @@ import {
   Building2,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  CREDIT_RISK_PANEL_SOURCES,
+  creditEventVerificationLink,
+  nseCorporateFilingsUrl,
+} from "@/lib/intelligence/verification-links";
+import {
+  IntelligenceSourceStrip,
+  VerifyAtSourceLink,
+} from "@/components/ui/verify-at-source-link";
 
 interface PortfolioCreditRiskPanelProps {
   positions: PositionRow[];
@@ -85,6 +94,8 @@ export function PortfolioCreditRiskPanel({ positions }: PortfolioCreditRiskPanel
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
+
+      <IntelligenceSourceStrip sources={CREDIT_RISK_PANEL_SOURCES} />
 
       {/* Credit Risk Score & Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -200,6 +211,20 @@ export function PortfolioCreditRiskPanel({ positions }: PortfolioCreditRiskPanel
                   <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                     {h.advisoryNote}
                   </p>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-border/30">
+                    <VerifyAtSourceLink
+                      {...creditEventVerificationLink({
+                        symbol: h.symbol,
+                        agency: h.agency,
+                        sourceUrl: h.sourceUrl,
+                        actionDate: h.actionDate,
+                      })}
+                    />
+                    <VerifyAtSourceLink
+                      href={nseCorporateFilingsUrl(h.symbol)}
+                      label={`NSE filings · ${h.symbol}`}
+                    />
+                  </div>
                 </div>
               );
             })}

@@ -15,6 +15,11 @@ import {
   Info,
 } from "lucide-react";
 import Link from "next/link";
+import { PROMOTER_RISK_PANEL_SOURCES, promoterActivityVerificationLinks } from "@/lib/intelligence/verification-links";
+import {
+  IntelligenceSourceStrip,
+  VerifyAtSourceLink,
+} from "@/components/ui/verify-at-source-link";
 
 interface PortfolioPromoterRiskPanelProps {
   positions: PositionRow[];
@@ -85,6 +90,8 @@ export function PortfolioPromoterRiskPanel({ positions }: PortfolioPromoterRiskP
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
+
+      <IntelligenceSourceStrip sources={PROMOTER_RISK_PANEL_SOURCES} />
 
       {/* Risk Score & Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -200,6 +207,13 @@ export function PortfolioPromoterRiskPanel({ positions }: PortfolioPromoterRiskP
                   <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                     {h.advisoryNote}
                   </p>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-border/30">
+                    {promoterActivityVerificationLinks(h.symbol, h.activeActivities, h.highestRiskCategory).map(
+                      (link) => (
+                        <VerifyAtSourceLink key={`${link.href}-${link.label}`} {...link} />
+                      ),
+                    )}
+                  </div>
                 </div>
               );
             })}

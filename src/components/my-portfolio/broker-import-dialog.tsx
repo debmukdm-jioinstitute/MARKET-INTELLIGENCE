@@ -35,7 +35,7 @@ type Props = {
 };
 
 const BROKER_OPTIONS = [
-  { value: "auto", label: "Auto-Detect Brokerage (Recommended)" },
+  { value: "auto", label: "Auto-detect brokerage (recommended)" },
   { value: "Zerodha", label: "Zerodha (Console / Tradebook)" },
   { value: "Groww", label: "Groww (Holdings / Stock Orders)" },
   { value: "Angel One", label: "Angel One (Portfolio / Tradebook)" },
@@ -253,38 +253,42 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto rounded-2xl border-border bg-card font-sans text-foreground p-6 sm:p-7">
-        <DialogHeader className="border-b border-border/80 pr-7 pb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-600/10 px-2.5 py-0.5 text-xs font-bold text-blue-600 uppercase tracking-wider border border-blue-600/20">
-              <Sparkles className="h-3 w-3" /> Brokerage Import
-            </span>
-            <DialogTitle className="font-heading text-xl leading-snug font-bold tracking-tight text-foreground">
-              Import Holdings & Statements
-            </DialogTitle>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Upload holdings exports, tradebooks, or contract notes from any brokerage house (CSV, Excel XLSX, or direct paste) to run factor attribution, risk models, and stress tests.
+      <DialogContent className="flex max-h-[92vh] max-w-[min(100vw-2rem,42rem)] flex-col gap-0 overflow-y-auto rounded-2xl border-border bg-card p-0 font-sans text-foreground sm:max-w-2xl">
+        <DialogHeader className="space-y-3 border-b border-border/80 px-5 pb-5 pt-6 sm:px-7 sm:pt-7">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-blue-600/20 bg-blue-600/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            <Sparkles className="size-3.5 shrink-0" aria-hidden />
+            Brokerage import
+          </span>
+          <DialogTitle className="font-heading text-left text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl">
+            Import holdings & statements
+          </DialogTitle>
+          <p className="text-left text-sm leading-relaxed text-muted-foreground">
+            Upload holdings exports, tradebooks, or contract notes (CSV, Excel, or paste) to refresh your book for risk and attribution.
           </p>
 
-          {/* Supported Broker Badges Ribbon */}
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-1 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground/80 flex items-center gap-1 mr-1">
-              <Building className="h-3.5 w-3.5 text-blue-600" /> Works with:
-            </span>
-            {["Zerodha", "Groww", "Angel One", "ICICI Direct", "HDFC Sky", "Kotak", "Dhan", "Upstox", "Motilal Oswal", "Interactive Brokers", "& All Brokerages"].map((b) => (
-              <span
-                key={b}
-                className="rounded-md bg-secondary/50 px-2 py-0.5 font-medium text-foreground/90 border border-border/50 text-[11px]"
-              >
-                {b}
-              </span>
-            ))}
+          <div className="space-y-2 pt-1">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground/90">
+              <Building className="size-3.5 shrink-0 text-blue-600" aria-hidden />
+              Works with
+            </p>
+            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:thin]">
+              {["Zerodha", "Groww", "Angel One", "ICICI Direct", "HDFC Sky", "Kotak", "Dhan", "Upstox", "Motilal Oswal", "IBKR", "Others"].map(
+                (b) => (
+                  <span
+                    key={b}
+                    className="shrink-0 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground/90"
+                  >
+                    {b}
+                  </span>
+                ),
+              )}
+            </div>
           </div>
         </DialogHeader>
 
+        <div className="px-5 py-5 sm:px-7 sm:py-6">
         {error ? (
-          <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-sm text-rose-600 mt-2">
+          <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-600">
             <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
             <div className="space-y-0.5">
               <p className="font-semibold">Unable to import statement</p>
@@ -294,64 +298,72 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
         ) : null}
 
         {!previewHoldings ? (
-          <div className="space-y-4 pt-2">
-            {/* BROKER SOURCE SELECTION */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-border/70 bg-secondary/20 p-3">
-              <div className="text-xs">
-                <span className="font-bold text-foreground block">Brokerage Source</span>
-                <span className="text-muted-foreground">Auto-detects file format & headers automatically</span>
-              </div>
-              <div className="w-full sm:w-72">
-                <select
-                  value={brokerHint}
-                  onChange={(e) => setBrokerHint(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs text-foreground focus:border-blue-600 focus:outline-none"
-                >
-                  {BROKER_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div className="space-y-6">
+            <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-4">
+              <label htmlFor="broker-hint" className="block text-sm font-semibold text-foreground">
+                Brokerage source
+              </label>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Leave on auto-detect unless the parser mis-reads your export headers.
+              </p>
+              <select
+                id="broker-hint"
+                value={brokerHint}
+                onChange={(e) => setBrokerHint(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground focus-visible:border-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/25"
+              >
+                {BROKER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* MAIN UPLOAD METHOD TABS */}
-            <Tabs value={tab} onValueChange={(v) => setTab(v as "file" | "paste" | "guide")}>
-              <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-secondary/40 p-1 text-xs">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as "file" | "paste" | "guide")} className="gap-4">
+              <TabsList className="grid h-auto w-full grid-cols-1 gap-2 rounded-xl bg-muted/35 p-1.5 sm:grid-cols-3 sm:gap-1">
                 <TabsTrigger
                   value="file"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-2 font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+                  className="flex h-auto min-h-11 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2.5 text-center leading-snug whitespace-normal data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                 >
-                  <UploadCloud className="h-3.5 w-3.5 shrink-0" />
-                  <span>Upload File (CSV / XLSX)</span>
+                  <span className="flex items-center gap-1.5 text-sm font-semibold">
+                    <UploadCloud className="size-4 shrink-0" aria-hidden />
+                    Upload file
+                  </span>
+                  <span className="text-[10px] font-normal opacity-80">CSV, XLSX, XLS</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="paste"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-2 font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+                  className="flex h-auto min-h-11 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2.5 text-center leading-snug whitespace-normal data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                 >
-                  <FileText className="h-3.5 w-3.5 shrink-0" />
-                  <span>Paste Text / Table</span>
+                  <span className="flex items-center gap-1.5 text-sm font-semibold">
+                    <FileText className="size-4 shrink-0" aria-hidden />
+                    Paste table
+                  </span>
+                  <span className="text-[10px] font-normal opacity-80">From broker portal</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="guide"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-2 font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+                  className="flex h-auto min-h-11 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2.5 text-center leading-snug whitespace-normal data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                 >
-                  <HelpCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>Guide & Template</span>
+                  <span className="flex items-center gap-1.5 text-sm font-semibold">
+                    <HelpCircle className="size-4 shrink-0" aria-hidden />
+                    Guide
+                  </span>
+                  <span className="text-[10px] font-normal opacity-80">Export steps + template</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* FILE UPLOAD TAB */}
-              <TabsContent value="file" className="space-y-4 pt-3">
+              <TabsContent value="file" className="mt-4 space-y-4 focus-visible:outline-none">
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`cursor-pointer rounded-2xl border-2 border-dashed p-7 text-center transition-all ${
+                  className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors sm:p-10 ${
                     isDragging
-                      ? "border-blue-600 bg-blue-600/10 scale-[0.99]"
+                      ? "border-blue-600 bg-blue-600/10"
                       : selectedFile
                       ? "border-blue-600/60 bg-blue-600/5"
                       : "border-border hover:border-blue-600/50 hover:bg-secondary/30"
@@ -420,21 +432,21 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
                 <Button
                   onClick={handleParse}
                   disabled={loading || !selectedFile}
-                  className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-600/90 shadow-md shadow-blue-600/10"
+                  size="lg"
+                  className="h-11 w-full rounded-xl bg-blue-600 text-sm font-bold text-white hover:bg-blue-600/90"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Parsing Brokerage Statement & Computing Positions...
+                      <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                      Parsing statement…
                     </>
                   ) : (
-                    "Parse & Preview Holdings"
+                    "Parse and preview holdings"
                   )}
                 </Button>
               </TabsContent>
 
-              {/* PASTE TAB */}
-              <TabsContent value="paste" className="space-y-3 pt-3">
+              <TabsContent value="paste" className="mt-4 space-y-4 focus-visible:outline-none">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -449,11 +461,11 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
                     </button>
                   </div>
                   <textarea
-                    rows={7}
+                    rows={8}
                     value={pastedText}
                     onChange={(e) => setPastedText(e.target.value)}
                     placeholder={"Symbol, Quantity, Avg Cost\nRELIANCE, 50, 2850.50\nTCS, 20, 3800.00\nINFY, 100, 1450.25"}
-                    className="w-full rounded-xl border border-border bg-card p-3 font-sans tabular-nums text-xs text-foreground focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-xl border border-border bg-card p-3.5 font-sans text-sm tabular-nums text-foreground focus-visible:border-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/25"
                   />
                   <p className="text-[11px] text-muted-foreground">
                     Tip: You can copy tables directly from your broker&apos;s web portal (e.g. Zerodha Console, Groww, ICICI Direct) and paste them here.
@@ -463,21 +475,21 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
                 <Button
                   onClick={handleParse}
                   disabled={loading || !pastedText.trim()}
-                  className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-600/90 shadow-md shadow-blue-600/10"
+                  size="lg"
+                  className="h-11 w-full rounded-xl bg-blue-600 text-sm font-bold text-white hover:bg-blue-600/90"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Parsing Pasted Text...
+                      <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                      Parsing pasted text…
                     </>
                   ) : (
-                    "Parse & Preview Pasted Text"
+                    "Parse and preview pasted text"
                   )}
                 </Button>
               </TabsContent>
 
-              {/* GUIDE & TEMPLATE TAB */}
-              <TabsContent value="guide" className="space-y-4 pt-3 text-xs text-foreground">
+              <TabsContent value="guide" className="mt-4 space-y-4 text-sm text-foreground focus-visible:outline-none">
                 <div className="rounded-xl border border-border/80 bg-secondary/20 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
@@ -523,8 +535,7 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
             </Tabs>
           </div>
         ) : (
-          /* PREVIEW SCREEN */
-          <div className="space-y-4 pt-2">
+          <div className="space-y-5">
             {/* SUMMARY BAR */}
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-secondary/30 p-3.5 text-xs">
               <div className="flex flex-wrap items-center gap-2">
@@ -680,31 +691,33 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
               </div>
             </div>
 
-            <div className="flex gap-2.5 pt-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
               <Button
                 variant="outline"
                 onClick={resetState}
-                className="w-1/3 rounded-xl border-border text-xs font-semibold text-muted-foreground hover:bg-secondary"
+                className="min-h-11 flex-1 rounded-xl border-border text-sm font-semibold text-muted-foreground hover:bg-muted/40"
               >
-                Back to Upload
+                Back to upload
               </Button>
               <Button
                 onClick={handleConfirmImport}
                 disabled={committing || previewHoldings.length === 0}
-                className="w-2/3 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white hover:bg-blue-600/90 shadow-md shadow-blue-600/10"
+                size="lg"
+                className="min-h-11 flex-[1.4] rounded-xl bg-blue-600 text-sm font-bold text-white hover:bg-blue-600/90"
               >
                 {committing ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving Holdings & Calculating Desk Metrics...
+                    <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                    Saving to portfolio…
                   </>
                 ) : (
-                  `Confirm Import (${previewHoldings.length} Positions)`
+                  `Confirm import (${previewHoldings.length})`
                 )}
               </Button>
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );

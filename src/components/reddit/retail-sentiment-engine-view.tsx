@@ -1,18 +1,18 @@
 "use client";
 
 import { CompanyRetailSentiment, SentimentMomentum } from "@/lib/reddit-sentiment/types";
+import { subredditSymbolDiscussionUrl } from "@/lib/reddit-sentiment/reddit-links";
+import { DiscussionDistribution } from "@/components/reddit/discussion-distribution";
 import {
   TrendingUp,
   TrendingDown,
   Minus,
   MessageSquare,
-  Users,
-  Compass,
   ArrowUpRight,
-  Flame,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
+  ExternalLink,
 } from "lucide-react";
 
 interface Props {
@@ -168,44 +168,7 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
 
       {/* 4. Two-Column Layout: Community Distribution & Bull/Bear Debates */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Community Distribution */}
-        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-sm space-y-3.5">
-          <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <Users className="w-4 h-4 text-primary" />
-            <span>Discussion Distribution</span>
-          </h4>
-          <p className="text-xs text-muted-foreground">
-            Subreddit breakdown where retail traders and investors actively mention {sentiment.symbol}.
-          </p>
-
-          <div className="space-y-2.5 pt-1">
-            {sentiment.communityDistribution.map((c) => (
-              <div key={c.subreddit} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-foreground/90">{c.subreddit}</span>
-                  <span className="text-muted-foreground tabular-nums">
-                    {c.percentage}% ({c.postCount} posts)
-                  </span>
-                </div>
-                <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden">
-                  <div
-                    style={{ width: `${c.percentage}%` }}
-                    className="h-full bg-primary/70 rounded-full"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Historical Trend Note */}
-          <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">30-Day Momentum:</span>{" "}
-            Mentions expanded from <span className="tabular-nums">{sentiment.sentimentHistory30D[0]?.mentions}</span> to{" "}
-            <span className="tabular-nums text-primary font-semibold">
-              {sentiment.sentimentHistory30D[sentiment.sentimentHistory30D.length - 1]?.mentions}
-            </span> posts/week.
-          </div>
-        </div>
+        <DiscussionDistribution sentiment={sentiment} />
 
         {/* Right: Retail Bull vs Bear Community Debates */}
         <div className="lg:col-span-2 space-y-4">
@@ -229,9 +192,18 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
                   <h5 className="text-sm font-semibold text-foreground">
                     {d.topic}
                   </h5>
-                  <span className="text-[11px] font-medium text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">
+                  <a
+                    href={subredditSymbolDiscussionUrl(d.subreddit, sentiment.symbol, {
+                      companyName: sentiment.companyName,
+                      topic: d.topic,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded inline-flex items-center gap-1 hover:underline"
+                  >
                     Source: {d.subreddit}
-                  </span>
+                    <ExternalLink className="w-3 h-3" aria-hidden />
+                  </a>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">

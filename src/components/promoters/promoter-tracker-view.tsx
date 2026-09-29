@@ -24,6 +24,8 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { promoterActivityVerificationLinks, PROMOTER_RISK_PANEL_SOURCES } from "@/lib/intelligence/verification-links";
+import { IntelligenceSourceStrip, VerifyAtSourceLink } from "@/components/ui/verify-at-source-link";
 
 interface PromoterTrackerViewProps {
   activities: PromoterActivityRecord[];
@@ -220,6 +222,7 @@ export function PromoterTrackerView({ activities, summary }: PromoterTrackerView
               Real-time intelligence tracking promoter buying, secondary market selling, pledge creation & release,
               director transactions, marquee investor entries, and NSE/BSE bulk and block deals — linked directly into your portfolio risk engine.
             </p>
+            <IntelligenceSourceStrip sources={PROMOTER_RISK_PANEL_SOURCES} className="pt-1" />
           </div>
 
           <div className="flex flex-wrap lg:flex-nowrap gap-3 shrink-0">
@@ -520,6 +523,11 @@ export function PromoterTrackerView({ activities, summary }: PromoterTrackerView
                   <p className="text-muted-foreground leading-relaxed">
                     {act.rationale}
                   </p>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-border/40">
+                    {promoterActivityVerificationLinks(act.symbol, [act], act.category).map((link) => (
+                      <VerifyAtSourceLink key={`${link.href}-${link.label}`} {...link} />
+                    ))}
+                  </div>
                 </div>
               </div>
             );

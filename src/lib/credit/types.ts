@@ -85,6 +85,8 @@ export type FlaggedCreditHolding = {
   liquidityStatus: LiquidityCategory;
   advisoryNote: string;
   equityTransmission: EquityTransmissionType;
+  sourceUrl?: string;
+  actionDate?: string;
 };
 
 export type PortfolioCreditRiskAssessment = {

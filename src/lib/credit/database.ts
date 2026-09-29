@@ -552,6 +552,8 @@ export function assessPortfolioCreditRisk(
       liquidityStatus: latest.liquidityAssessment,
       advisoryNote: note,
       equityTransmission: latest.equityConnection.transmission,
+      sourceUrl: latest.sourceUrl,
+      actionDate: latest.actionDate,
     });
   }
 

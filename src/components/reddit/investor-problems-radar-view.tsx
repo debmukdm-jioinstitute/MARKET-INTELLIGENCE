@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RetailInvestorProblemInsight, InvestorProblemCategory } from "@/lib/reddit-sentiment/types";
+import { subredditSearchUrl } from "@/lib/reddit-sentiment/reddit-links";
 import {
   HelpCircle,
   TrendingUp,
@@ -13,6 +14,7 @@ import {
   MessageSquare,
   ThumbsUp,
   Compass,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -146,13 +148,21 @@ export function InvestorProblemsRadarView({ problems }: Props) {
                 Upvoted Community Queries & Discussions:
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {item.sampleCommunityQueries.map((q, idx) => (
-                  <div
+                {item.sampleCommunityQueries.map((q, idx) => {
+                  const threadSearch = subredditSearchUrl(q.subreddit, q.queryTitle, { time: "year" });
+                  return (
+                  <a
                     key={idx}
-                    className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-2 text-xs"
+                    href={threadSearch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-2 text-xs block hover:border-primary/40 hover:bg-primary/5 transition-colors"
                   >
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span className="font-semibold text-primary">{q.subreddit}</span>
+                      <span className="font-semibold text-primary inline-flex items-center gap-1">
+                        {q.subreddit}
+                        <ExternalLink className="w-3 h-3 opacity-70" aria-hidden />
+                      </span>
                       <span className="flex items-center gap-1 tabular-nums">
                         <ThumbsUp className="w-3 h-3 text-emerald-400" />
                         {q.upvotes} upvotes • {q.commentsCount} comments
@@ -160,14 +170,15 @@ export function InvestorProblemsRadarView({ problems }: Props) {
                     </div>
 
                     <h5 className="font-semibold text-foreground leading-snug">
-                      "{q.queryTitle}"
+                      &ldquo;{q.queryTitle}&rdquo;
                     </h5>
 
                     <p className="text-muted-foreground italic leading-relaxed">
-                      "{q.quoteExcerpt}"
+                      &ldquo;{q.quoteExcerpt}&rdquo;
                     </p>
-                  </div>
-                ))}
+                  </a>
+                  );
+                })}
               </div>
             </div>
 

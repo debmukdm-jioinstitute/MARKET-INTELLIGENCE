@@ -26,6 +26,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { CREDIT_RISK_PANEL_SOURCES } from "@/lib/intelligence/verification-links";
+import { IntelligenceSourceStrip } from "@/components/ui/verify-at-source-link";
 
 interface CreditTrackerViewProps {
   activities: CreditActivityRecord[];
@@ -231,6 +233,7 @@ export function CreditTrackerView({ activities, summary }: CreditTrackerViewProp
               Continuous monitoring across India&apos;s leading credit rating agencies — CRISIL, ICRA, CARE Ratings, India Ratings, Acuité, and Brickwork.
               Track rating upgrades, downgrades, outlook shifts, credit watch alerts, defaults, and debt restructurings — connected directly to equity stock prices.
             </p>
+            <IntelligenceSourceStrip sources={CREDIT_RISK_PANEL_SOURCES} className="pt-1" />
           </div>
 
           <div className="flex flex-wrap lg:flex-nowrap gap-3 shrink-0">
