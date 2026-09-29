@@ -2,6 +2,8 @@ import { feedFetch } from "@/lib/feeds/http";
 import { INDIA_INSTRUMENT_KEYS } from "@/lib/feeds/sources/upstox";
 import { isUsEquityTicker } from "@/lib/feeds/sources/massive";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
+import { resolveSymbol } from "@/lib/feeds/symbol-search";
+import { NIFTY_500 } from "@/lib/prowess/nifty500";
 
 /**
  * Per-security risk & events card. Everything is computed from ~1y of daily Yahoo bars:
@@ -84,13 +86,63 @@ async function form4(sym: string): Promise<InsiderFiling[] | null> {
 const logRet = (b: Bar[]) => b.slice(1).map((x, i) => Math.log(x.c / b[i].c));
 const sd = (a: number[]) => { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1)); };
 
+const NIFTY500_SYMBOLS = new Set(NIFTY_500.map(([s]) => s.toUpperCase()));
+
+/** NSE names like TMCV match US ticker regex but chart as `SYM.NS` on Yahoo. */
+export function shouldUseIndiaYahooChart(
+  rawSymbol: string,
+  resolved: { market: "IN" | "US" } | null,
+): boolean {
+  const sym = rawSymbol.toUpperCase().replace(/\.NS$/, "");
+  if (/\.NS$/i.test(rawSymbol)) return true;
+  if (resolved?.market === "IN") return true;
+  if (INDIA_INSTRUMENT_KEYS[sym] || INDIA_INSTRUMENT_KEYS[`${sym}.NS`]) return true;
+  if (NIFTY500_SYMBOLS.has(sym)) return true;
+  return false;
+}
+
+/** Bare US symbol sometimes collides with a penny stub (e.g. TMCV ≈ $0.0001). Prefer NSE series. */
+function looksLikeUsPennyStub(b: Bar[]): boolean {
+  if (b.length < 30) return false;
+  const closes = b.map((x) => x.c).filter((c) => c > 0);
+  if (closes.length < 30) return false;
+  const sorted = [...closes].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)]!;
+  return median < 0.05;
+}
+
 export async function buildSecurityRisk(symbol: string): Promise<SecurityRisk | null> {
   const sym = symbol.toUpperCase().replace(/\.NS$/, "");
-  // Market detection: known NSE names or an explicit .NS suffix are Indian; otherwise try the bare (US) symbol first, then NSE.
-  const knownIn = /\.NS$/i.test(symbol) || Boolean(INDIA_INSTRUMENT_KEYS[sym] || INDIA_INSTRUMENT_KEYS[`${sym}.NS`]);
-  let us = !knownIn && isUsEquityTicker(sym);
-  let b = await bars(us ? sym : `${sym}.NS`);
-  if (b.length < 30 && us) { us = false; b = await bars(`${sym}.NS`); }
+  const resolved = await resolveSymbol(sym).catch(() => null);
+  const preferIndia = shouldUseIndiaYahooChart(symbol, resolved);
+
+  let us = false;
+  let b: Bar[] = [];
+
+  if (preferIndia) {
+    b = await bars(`${sym}.NS`);
+  } else if (isUsEquityTicker(sym)) {
+    us = true;
+    b = await bars(sym);
+    if (b.length < 30 || looksLikeUsPennyStub(b)) {
+      const nse = await bars(`${sym}.NS`);
+      if (nse.length >= 30) {
+        b = nse;
+        us = false;
+      }
+    }
+  } else {
+    b = await bars(`${sym}.NS`);
+  }
+
+  if (b.length < 30 && !preferIndia) {
+    const nse = await bars(`${sym}.NS`);
+    if (nse.length >= 30) {
+      b = nse;
+      us = false;
+    }
+  }
+
   const market = us ? "US" : "IN";
   const [bench, earnings, insiders] = await Promise.all([
     bars(us ? "^GSPC" : "^NSEI"),
