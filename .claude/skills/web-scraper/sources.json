@@ -452,6 +452,16 @@
    "tos": "tolerated",
    "note": "Public JSON used by chittorgarh.com report pages; /research/offers + MCP get_primary_offers.",
    "wired": true
+  },
+  {
+   "id": "chittorgarh-ipo-reviews",
+   "domain": "research",
+   "tier": "html",
+   "cover": "IPO analyst Apply/May/Neutral/Avoid counts from Chittorgarh dashboard",
+   "url": "https://www.chittorgarh.com/ipo/ipo_dashboard.asp",
+   "tos": "tolerated",
+   "note": "Structured consensus in research_reports.extra; /research-reports desk + scrape pipeline.",
+   "wired": true
   }
  ]
 }

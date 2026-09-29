@@ -285,6 +285,7 @@ export async function ensureSchema(): Promise<void> {
       await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS cmp numeric`;
       await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS upside_pct numeric`;
       await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS report_type text`;
+      await db`ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS extra jsonb`;
       await db`CREATE INDEX IF NOT EXISTS idx_research_reports_published ON research_reports(published_at DESC NULLS LAST)`;
       await db`CREATE INDEX IF NOT EXISTS idx_research_reports_broker ON research_reports(broker)`;
       await db`CREATE INDEX IF NOT EXISTS idx_research_reports_symbol ON research_reports(symbol)`;

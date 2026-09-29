@@ -1,4 +1,5 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { normalizeScrapedReport } from "@/lib/research/normalize";
 import { RESEARCH_SOURCES } from "@/lib/research/sources";
 
 export type ScrapeRunResult = {
@@ -27,18 +28,19 @@ export async function scrapeAllResearchSources(): Promise<ScrapeRunResult[]> {
     for (const source of RESEARCH_SOURCES) {
       try {
         const items = await source.fetchReports();
-        for (const item of items) {
-          if (!item.url || !item.title) continue;
+        for (const raw of items) {
+          if (!raw.url || !raw.title) continue;
+          const item = normalizeScrapedReport(raw);
           await db`
             INSERT INTO research_reports (
               source, broker, title, url, pdf_url, symbol, recommendation,
-              target_price, cmp, upside_pct, report_type, summary, published_at
+              target_price, cmp, upside_pct, report_type, summary, published_at, extra
             )
             VALUES (
               ${source.key}, ${item.broker}, ${item.title}, ${item.url}, ${item.pdfUrl ?? null},
               ${item.symbol ?? null}, ${item.recommendation ?? null}, ${item.targetPrice ?? null},
               ${item.cmp ?? null}, ${item.upsidePct ?? null}, ${item.reportType ?? null},
-              ${item.summary}, ${item.publishedAt}
+              ${item.summary}, ${item.publishedAt}, ${item.extra ? JSON.stringify(item.extra) : null}::jsonb
             )
             ON CONFLICT (url) DO UPDATE SET
               broker = COALESCE(EXCLUDED.broker, research_reports.broker),
@@ -51,6 +53,7 @@ export async function scrapeAllResearchSources(): Promise<ScrapeRunResult[]> {
               report_type = COALESCE(EXCLUDED.report_type, research_reports.report_type),
               summary = COALESCE(EXCLUDED.summary, research_reports.summary),
               published_at = COALESCE(research_reports.published_at, EXCLUDED.published_at),
+              extra = COALESCE(EXCLUDED.extra, research_reports.extra),
               scraped_at = now()
           `;
         }

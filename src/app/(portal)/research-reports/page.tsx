@@ -2,6 +2,12 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { AnalystCredibilityPanel } from "@/components/research/analyst-credibility-panel";
+import {
+  ConsensusBar,
+  ResearchReportsTable,
+  type ResearchReportRow,
+} from "@/components/research/research-reports-table";
+import { RESEARCH_SOURCE_LABELS } from "@/lib/research/source-labels";
 import { cn } from "@/lib/utils";
 import {
   ArrowUpDown,
@@ -13,6 +19,8 @@ import {
   FileSearch,
   FileText,
   Filter,
+  LayoutGrid,
+  List,
   Radio,
   RefreshCw,
   Search,
@@ -23,35 +31,12 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-type Report = {
-  id: string;
-  source: string;
-  broker: string | null;
-  title: string;
-  url: string;
-  pdf_url?: string | null;
-  symbol?: string | null;
-  recommendation?: string | null;
-  target_price?: number | null;
-  cmp?: number | null;
-  upside_pct?: number | null;
-  report_type?: string | null;
-  summary: string | null;
-  published_at: string | null;
-  scraped_at: string;
-};
+type Report = ResearchReportRow;
 
 type BrokerCount = { broker: string; count: number };
+type SourceStat = { key: string; label: string; count: number };
 
-const SOURCE_LABELS: Record<string, string> = {
-  ventura_research: "Ventura Institutional",
-  axis_direct_research: "Axis Direct Research",
-  trendlyne_research: "Trendlyne Institutional",
-  et_recos: "Economic Times",
-  livemint_recos: "LiveMint",
-  apify_ingest: "Apify Automated Feed",
-  zapier_ingest: "Zapier Ingest",
-};
+const SOURCE_LABELS = RESEARCH_SOURCE_LABELS;
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "—";
@@ -89,6 +74,9 @@ export default function ResearchReportsPage() {
   const [dbConfigured, setDbConfigured] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [sourceStats, setSourceStats] = useState<SourceStat[]>([]);
+  const [activeSource, setActiveSource] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Filters
   const [filterTab, setFilterTab] = useState<"all" | "pdf" | "buy" | "upside">("all");
@@ -97,20 +85,23 @@ export default function ResearchReportsPage() {
   const [query, setQuery] = useState("");
   const [showIntegrations, setShowIntegrations] = useState(false);
 
-  const fetchReports = async () => {
+  const fetchReports = async (opts?: { sync?: boolean }) => {
     try {
       const params = new URLSearchParams();
       if (activeBroker) params.set("broker", activeBroker);
+      if (activeSource) params.set("source", activeSource);
       if (query.trim()) params.set("q", query.trim());
       if (filterTab === "pdf") params.set("hasPdf", "1");
       if (filterTab === "buy") params.set("reco", "BUY");
       params.set("sort", sortBy);
       params.set("limit", "150");
+      if (opts?.sync) params.set("sync", "1");
 
       const res = await fetch(`/api/research-reports?${params.toString()}`);
       const json = await res.json();
       setReports(json.reports ?? []);
       setBrokers(json.brokers ?? []);
+      setSourceStats(json.sourceStats ?? []);
       setTotalCount(json.totalCount ?? json.reports?.length ?? 0);
       setPdfCount(json.pdfCount ?? json.reports?.filter((r: Report) => Boolean(r.pdf_url)).length ?? 0);
       setLastScrapedAt(json.lastScrapedAt ?? null);
@@ -126,11 +117,11 @@ export default function ResearchReportsPage() {
   useEffect(() => {
     setLoading(true);
     fetchReports();
-  }, [activeBroker, query, filterTab, sortBy]);
+  }, [activeBroker, activeSource, query, filterTab, sortBy]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchReports();
+    fetchReports({ sync: true });
   };
 
   const filteredReports = useMemo(() => {
@@ -141,6 +132,10 @@ export default function ResearchReportsPage() {
   }, [reports, filterTab]);
 
   const topBrokers = useMemo(() => brokers.slice(0, 16), [brokers]);
+  const visibleSourceStats = useMemo(
+    () => sourceStats.filter((s) => s.count > 0).slice(0, 12),
+    [sourceStats],
+  );
 
   return (
     <div className="portal-page max-w-[1440px] pb-16 space-y-6">
@@ -349,6 +344,34 @@ export default function ResearchReportsPage() {
             </div>
 
             <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium",
+                  viewMode === "cards"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-accent",
+                )}
+                title="Card view"
+              >
+                <LayoutGrid className="size-3.5" />
+                Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium",
+                  viewMode === "table"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-accent",
+                )}
+                title="Table view"
+              >
+                <List className="size-3.5" />
+                Table
+              </button>
               <ArrowUpDown className="size-3.5 text-muted-foreground shrink-0" />
               <select
                 value={sortBy}
@@ -396,9 +419,46 @@ export default function ResearchReportsPage() {
             ))}
           </div>
         ) : null}
+
+        {visibleSourceStats.length > 0 ? (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <Filter className="size-3.5 shrink-0 text-muted-foreground" />
+            <button
+              type="button"
+              onClick={() => setActiveSource(null)}
+              className={cn(
+                "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                activeSource === null
+                  ? "bg-primary text-primary-foreground font-bold"
+                  : "bg-accent/30 text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              ALL SOURCES
+            </button>
+            {visibleSourceStats.map((s) => (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => setActiveSource(s.key === activeSource ? null : s.key)}
+                className={cn(
+                  "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  activeSource === s.key
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "bg-accent/30 text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                {s.label} <span className="opacity-60 text-[11px]">({s.count})</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      {/* REPORT CARDS GRID */}
+      {viewMode === "table" && !loading && filteredReports.length > 0 ? (
+        <ResearchReportsTable rows={filteredReports} />
+      ) : null}
+
+      {viewMode === "cards" ? (
       <div className="grid gap-3.5 md:grid-cols-2 lg:grid-cols-3">
         {loading && reports.length === 0 ? (
           <div className="col-span-full py-16 text-center text-sm text-muted-foreground animate-pulse">
@@ -508,6 +568,8 @@ export default function ResearchReportsPage() {
                     </div>
                   ) : null}
 
+                  {r.consensus ? <ConsensusBar consensus={r.consensus} /> : null}
+
                   {/* Summary / Highlights */}
                   {r.summary ? (
                     <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
@@ -557,6 +619,7 @@ export default function ResearchReportsPage() {
           })
         )}
       </div>
+      ) : null}
     </div>
   );
 }
