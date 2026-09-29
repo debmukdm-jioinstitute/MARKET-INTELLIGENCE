@@ -1,4 +1,16 @@
 import {
+  getAllMutualFunds,
+  getMutualFundById,
+  searchMutualFunds,
+  getFundsByCategory,
+} from "@/lib/funds/database";
+import {
+  computeInstitutionalAccumulation,
+  calculateFundOverlap,
+} from "@/lib/funds/analytics";
+import { getAllNfos } from "@/lib/funds/nfo-database";
+import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
+import {
   getCompanyConsensusIntelligence,
   getAllBrokerResearchReports,
   INSTITUTIONAL_BROKER_SOURCES,
@@ -994,6 +1006,131 @@ export const SITE_TOOLS: Tool[] = [
       await ensureSchema();
       const rows = await sql()`SELECT id, title, body, severity, created_at FROM app_updates WHERE published = true ORDER BY created_at DESC LIMIT 1`;
       return { update: rows[0] ?? null };
+    },
+  },
+  // ---- Mutual Funds & Smart Money ----
+  {
+    name: "get_mutual_fund_intelligence",
+    title: "Mutual fund intelligence",
+    category: "Funds",
+    description: "Search or retrieve Indian mutual funds: AUM, NAV, returns, factor exposures, and portfolio holdings. Filter by query, category, or fundId.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search term e.g. Parag Parikh, HDFC, SBI" },
+        category: { type: "string", description: "Category e.g. Flexi Cap, Large Cap" },
+        fundId: { type: "string", description: "Exact fund id e.g. ppfas-flexi-cap" },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const parsed = z.object({
+        query: z.string().optional(),
+        category: z.string().optional(),
+        fundId: z.string().optional(),
+      }).parse(a ?? {});
+
+      if (parsed.fundId) {
+        const f = getMutualFundById(parsed.fundId);
+        return f ? { fund: f } : { error: "Fund " + parsed.fundId + " not found" };
+      }
+      if (parsed.category) {
+        const funds = getFundsByCategory(parsed.category);
+        return { count: funds.length, category: parsed.category, funds };
+      }
+      if (parsed.query) {
+        const funds = searchMutualFunds(parsed.query);
+        return { count: funds.length, query: parsed.query, funds };
+      }
+      const all = getAllMutualFunds();
+      return {
+        totalFunds: all.length,
+        funds: all.map((f) => ({
+          id: f.id,
+          name: f.name,
+          amc: f.amc,
+          category: f.category,
+          nav: f.nav,
+          aumCr: f.aumCr,
+          expenseRatioPct: f.expenseRatioPct,
+          riskRating: f.riskRating,
+          topHoldings: f.holdings.slice(0, 5).map((h) => ({ symbol: h.symbol, weight: h.weightPct })),
+        })),
+      };
+    },
+  },
+  {
+    name: "get_stock_accumulation_radar",
+    title: "Smart money accumulation radar",
+    category: "Funds",
+    description: "Which stocks are being accumulated across India mutual funds? Aggregates buying across domestic AMCs from monthly disclosures.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "number", description: "Maximum stocks to return (default 10)" },
+      },
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const limit = typeof a?.limit === "number" ? a.limit : 10;
+      const accumulated = computeInstitutionalAccumulation();
+      return {
+        asOf: new Date().toISOString().split("T")[0],
+        totalStocksTracked: accumulated.length,
+        topAccumulated: accumulated.slice(0, limit),
+      };
+    },
+  },
+  {
+    name: "get_mutual_fund_overlap",
+    title: "Mutual fund overlap analyzer",
+    category: "Funds",
+    description: "Calculates portfolio overlap percentage, common stocks, and unique holdings between any two mutual fund schemes.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        fundIdA: { type: "string", description: "First fund ID, e.g. ppfas-flexi-cap" },
+        fundIdB: { type: "string", description: "Second fund ID, e.g. hdfc-top-100" },
+      },
+      required: ["fundIdA", "fundIdB"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const parsed = z.object({
+        fundIdA: z.string(),
+        fundIdB: z.string(),
+      }).parse(a);
+
+      const fA = getMutualFundById(parsed.fundIdA);
+      const fB = getMutualFundById(parsed.fundIdB);
+      if (!fA) return { error: "Fund " + parsed.fundIdA + " not found" };
+      if (!fB) return { error: "Fund " + parsed.fundIdB + " not found" };
+
+      return calculateFundOverlap(fA, fB);
+    },
+  },
+  {
+    name: "get_nfo_calendar",
+    title: "New Fund Offers (NFO) calendar",
+    category: "Funds",
+    description: "Active and upcoming Mutual Fund New Fund Offers (NFOs) in India: AMC, category, dates, benchmark, min investment.",
+    inputSchema: empty,
+    run: async () => {
+      const nfos = getAllNfos();
+      return {
+        count: nfos.length,
+        nfos,
+      };
+    },
+  },
+  {
+    name: "get_site_wide_brief",
+    title: "Site-wide executive intelligence brief",
+    category: "Intelligence",
+    description: "Comprehensive institutional daily briefing synthesizing broker revisions, promoter activity, credit risks, mutual funds, macro liquidity, and key catalysts.",
+    inputSchema: empty,
+    run: async () => {
+      return buildSiteWideExecutiveBrief();
     },
   },
 ];

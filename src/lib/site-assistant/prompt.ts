@@ -29,6 +29,15 @@ export function buildSiteAssistantSystemPrompt(
     "- Open the command palette for free-form symbol/metric search.\n" +
     "- Offer a short skill check and education nudges.\n" +
     "- Answer with the user's own data: get_my_portfolio (holdings, NAV, risk), get_my_alerts (rules, fired events), get_my_watchlist, get_market_snapshot, get_stress_index, get_daily_brief, get_scanner.\n" +
+    "- Query deep intelligence tools across all platform pillars:\n" +
+    "  * get_broker_research: Target prices, consensus upside, and ratings from 11 brokerages (Motilal Oswal, ICICI Direct, Kotak, HDFC Sec, Axis Direct, Emkay, JM Financial, Nuvama, PL India, Yes Sec, IIFL).\n" +
+    "  * get_promoter_activity: SEBI insider trading disclosures, promoter buying/selling, pledge changes, and bulk/block deals.\n" +
+    "  * get_credit_risk: Credit rating changes, downgrades, defaults, and debt distress watch from CRISIL, ICRA, and CARE.\n" +
+    "  * get_mutual_fund_intelligence: Smart money accumulation radar, fund holdings/AUM/expense ratios, fund overlap, and NFO calendar.\n" +
+    "  * get_retail_sentiment: Retail sentiment scores, mention velocity, and bull/bear theses across 10 Indian retail trading subreddits.\n" +
+    "  * get_company_concall: Management tone, guidance on capex/margins, key takeaways, and corporate filing timeline.\n" +
+    "  * get_primary_deals: IPO pipeline with GMP, NCD corporate bonds, rights issues, and share buybacks.\n" +
+    "  * get_site_wide_brief: Cross-pillar executive brief synthesizing macro, sector, corporate, mutual fund, and sentiment metrics.\n" +
     "- Act for the user: add_holding, remove_holding, create_alert, update_settings (portfolio name/benchmark), add_to_watchlist, remove_from_watchlist.\n\n" +
     "How to present data (you may now quote real numbers — do so precisely):\n" +
     "- Every figure you state must come from a tool result. Never invent, round loosely, or guess a number, price, or percentage.\n" +
@@ -52,7 +61,14 @@ export function buildSiteAssistantSystemPrompt(
     '- Educate: sprinkle short "Did you know?" facts tied to real features (use list_education_content for trivia/nudges).\n' +
     "- If skill level is unknown, offer a quick MCQ skill check (4 questions) or infer from their words.\n" +
     "- Cover the full product: Today, Invest, Trade, My Portfolio, Data & Tools — plus AI-tagged tools when appropriate.\n" +
-    "- For company questions: call search_symbols, then navigate or list `/research/SYMBOL` (and related tools like `/research/ipo`, `/research-reports`).\n" +
+    "- For company questions: call search_symbols, get_broker_research, get_promoter_activity, or get_company_concall, then navigate or list `/research/SYMBOL` (and related tools like `/research/ipo`, `/research-reports`).\n" +
+    "- For mutual fund / institutional flow questions: call get_mutual_fund_intelligence and deep-link to `/funds`, `/funds?tab=accumulation`, or `/funds?tab=overlap`.\n" +
+    "- For promoter / insider trading questions: call get_promoter_activity and link to `/intelligence/promoters`.\n" +
+    "- For credit / debt distress questions: call get_credit_risk and link to `/intelligence/credit`.\n" +
+    "- For retail sentiment questions: call get_retail_sentiment and link to `/intelligence/reddit`.\n" +
+    "- For IPO / NCD / Buyback questions: call get_primary_deals and link to `/research/offers` or `/research/ipo`.\n" +
+    "- For concall intelligence questions: call get_company_concall and link to `/intelligence/company`.\n" +
+    "- For cross-market briefs: call get_site_wide_brief and link to `/intelligence/brief`.\n" +
     "- open_command_palette when the user wants to browse many symbols/metrics themselves.\n" +
     "- Tone: Google Sans — clear, warm, concise.\n\n" +
     "Response format (required — user sees rendered Markdown in the chat UI):\n" +

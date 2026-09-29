@@ -1,4 +1,19 @@
 import {
+  getAllBrokerResearchReports,
+  getCompanyConsensusIntelligence,
+  INSTITUTIONAL_BROKER_SOURCES,
+} from "@/lib/broker-research/database";
+import { getAllPromoterActivities } from "@/lib/promoters/database";
+import { getAllCreditActivities } from "@/lib/credit/database";
+import { getAllMutualFunds, searchMutualFunds } from "@/lib/funds/database";
+import { computeInstitutionalAccumulation } from "@/lib/funds/analytics";
+import { getAllNfos } from "@/lib/funds/nfo-database";
+import { getCompanyRetailSentiment, getAllRetailSentimentData, TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/database";
+import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
+import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
+import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
+import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
+import {
   listPortalOfferings,
   nudgesForSkill,
   pickDidYouKnow,
@@ -189,9 +204,183 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
         return { items: await listWatchlist(user.email), dbConfigured: true };
       },
     }),
+
+    get_broker_research: tool({
+      description:
+        "Institutional Broker Research & Consensus: target price revisions, upside %, and ratings across 11 top Indian brokerage houses (Motilal Oswal, Kotak, ICICI Securities, JM Financial, etc.).",
+      inputSchema: z.object({
+        symbol: z.string().optional().describe("Ticker symbol (e.g. RELIANCE, TATAMOTORS) or omit for latest reports across the market"),
+      }),
+      execute: async ({ symbol }) => {
+        if (symbol) {
+          const clean = symbol.trim().toUpperCase();
+          const consensus = getCompanyConsensusIntelligence(clean);
+          const reports = getAllBrokerResearchReports().filter((r) => r.symbol.toUpperCase() === clean);
+          return { symbol: clean, consensus, recentReports: reports };
+        }
+        const all = getAllBrokerResearchReports();
+        return {
+          totalReports: all.length,
+          recentReports: all.slice(0, 6),
+          monitoredHouses: INSTITUTIONAL_BROKER_SOURCES.map((s) => s.broker),
+        };
+      },
+    }),
+    get_promoter_activity: tool({
+      description:
+        "Promoter Activity & Insider Tracker: major open-market promoter buying/selling, pledge increases/releases, and large block deals from SEBI filings.",
+      inputSchema: z.object({
+        symbol: z.string().optional().describe("Filter by stock ticker symbol e.g. TATAMOTORS, BHARTIARTL"),
+        category: z.enum(["BUYING", "SELLING", "PLEDGE", "BLOCK_DEAL", "ALL"]).optional().default("ALL"),
+      }),
+      execute: async ({ symbol, category }) => {
+        let acts = getAllPromoterActivities();
+        if (symbol) {
+          const s = symbol.trim().toUpperCase();
+          acts = acts.filter((a) => a.symbol.toUpperCase() === s);
+        }
+        if (category && category !== "ALL") {
+          if (category === "BUYING") acts = acts.filter((a) => a.category.includes("BUYING"));
+          else if (category === "SELLING") acts = acts.filter((a) => a.category.includes("SELLING"));
+          else if (category === "PLEDGE") acts = acts.filter((a) => a.category.includes("PLEDGE"));
+          else if (category === "BLOCK_DEAL") acts = acts.filter((a) => a.category.includes("BLOCK") || a.category.includes("BULK"));
+        }
+        return {
+          count: acts.length,
+          activities: acts.slice(0, 8),
+        };
+      },
+    }),
+    get_credit_risk: tool({
+      description:
+        "Credit & Solvency Radar: credit rating upgrades, downgrades, debt watch, default alerts, and liquidity strain from CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork.",
+      inputSchema: z.object({
+        symbol: z.string().optional().describe("Filter by stock ticker symbol"),
+        type: z.enum(["RISK", "UPGRADES", "ALL"]).optional().default("ALL"),
+      }),
+      execute: async ({ symbol, type }) => {
+        let acts = getAllCreditActivities();
+        if (symbol) {
+          const s = symbol.trim().toUpperCase();
+          acts = acts.filter((a) => a.symbol.toUpperCase() === s);
+        }
+        if (type === "RISK") {
+          acts = acts.filter((a) => ["RATING_DOWNGRADE", "CREDIT_WATCH", "LIQUIDITY_CONCERN", "DEFAULT"].includes(a.action));
+        } else if (type === "UPGRADES") {
+          acts = acts.filter((a) => ["RATING_UPGRADE", "DEBT_RESTRUCTURING"].includes(a.action));
+        }
+        return {
+          count: acts.length,
+          actions: acts.slice(0, 8),
+        };
+      },
+    }),
+    get_mutual_fund_intelligence: tool({
+      description:
+        "Mutual Fund X-Ray & Smart Money Radar: answers which stocks are mutual funds accumulating, fund holdings, factor exposures, and active NFOs.",
+      inputSchema: z.object({
+        action: z.enum(["accumulation", "search", "nfos"]).default("accumulation").describe("What fund intelligence to fetch"),
+        query: z.string().optional().describe("Search term if searching for funds"),
+      }),
+      execute: async ({ action, query }) => {
+        if (action === "accumulation") {
+          const accumulated = computeInstitutionalAccumulation();
+          return {
+            type: "smart_money_accumulation",
+            topAccumulated: accumulated.slice(0, 6),
+          };
+        }
+        if (action === "nfos") {
+          const nfos = getAllNfos();
+          return { type: "nfos", nfos };
+        }
+        const funds = query ? searchMutualFunds(query) : getAllMutualFunds();
+        return {
+          type: "funds_list",
+          count: funds.length,
+          funds: funds.slice(0, 6).map((f) => ({
+            id: f.id,
+            name: f.name,
+            category: f.category,
+            aumCr: f.aumCr,
+            nav: f.nav,
+            expenseRatioPct: f.expenseRatioPct,
+          })),
+        };
+      },
+    }),
+    get_retail_sentiment: tool({
+      description:
+        "Reddit Retail Sentiment Engine: discussion buzz, sentiment momentum, and retail vs institutional divergence across r/IndianStreetBets, r/IndiaInvestments, etc.",
+      inputSchema: z.object({
+        symbol: z.string().optional().describe("Company ticker symbol (e.g. RELIANCE, TATAMOTORS) or omit for all buzzing names"),
+      }),
+      execute: async ({ symbol }) => {
+        if (symbol) {
+          const data = getCompanyRetailSentiment(symbol.trim().toUpperCase());
+          return { sentiment: data };
+        }
+        const all = getAllRetailSentimentData();
+        return {
+          totalTrackedCommunities: TRACKED_SUBREDDITS.length,
+          buzzingCompanies: all.companies.slice(0, 6),
+        };
+      },
+    }),
+    get_company_concall: tool({
+      description:
+        "Company Intelligence & Concalls: official filing timelines, quarterly earnings call management tone (confidence 0-100), capex plans, and guidance.",
+      inputSchema: z.object({
+        symbol: z.string().describe("Company ticker symbol e.g. TATAMOTORS, RELIANCE, INFY"),
+      }),
+      execute: async ({ symbol }) => {
+        const clean = symbol.trim().toUpperCase();
+        const profile = getCompanyIntelligenceProfile(clean);
+        return {
+          symbol: clean,
+          companyName: profile.companyName,
+          latestConcall: profile.latestConcall,
+          timeline: profile.timeline.slice(0, 4),
+        };
+      },
+    }),
+    get_primary_deals: tool({
+      description:
+        "Primary Market Deals: active IPOs with Grey Market Premium (GMP), public NCD corporate bonds with coupon yields, and tender offer buybacks with premium %.",
+      inputSchema: z.object({
+        category: z.enum(["ipo", "ncd", "buyback", "nfo", "all"]).default("all"),
+      }),
+      execute: async ({ category }) => {
+        const res: Record<string, unknown> = {};
+        if (category === "ipo" || category === "all") {
+          const ipos = await fetchUpstoxIpoList("open").catch(() => []);
+          const upcoming = await fetchUpstoxIpoList("upcoming").catch(() => []);
+          res.ipos = [...ipos, ...upcoming].slice(0, 6);
+        }
+        if (category === "ncd" || category === "all") {
+          const ncd = await fetchChittorgarhOfferReport("ncd").catch(() => null);
+          res.ncds = ncd?.rows.slice(0, 5) ?? [];
+        }
+        if (category === "buyback" || category === "all") {
+          const bb = await fetchChittorgarhOfferReport("buyback").catch(() => null);
+          res.buybacks = bb?.rows.slice(0, 5) ?? [];
+        }
+        if (category === "nfo" || category === "all") {
+          res.nfos = getAllNfos().slice(0, 5);
+        }
+        return res;
+      },
+    }),
+    get_site_wide_brief: tool({
+      description:
+        "Comprehensive site-wide executive intelligence brief synthesizing broker revisions, promoter activity, credit risks, mutual funds, macro liquidity, and key catalysts.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        return buildSiteWideExecutiveBrief();
+      },
+    }),
   };
 }
-
 export const clientNavigateTool = tool({
   description:
     "Navigate the user to an allowed portal path. href must come from search_pages, search_symbols (researchPath), or the site map.",

@@ -112,6 +112,41 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
     href: "/portfolio",
     label: "Portfolio",
   },
+  {
+    fact: "Mutual Fund Intelligence tracks ₹52,000+ Cr AUM, pairwise fund overlap, and Smart Money accumulation across Indian equity schemes.",
+    href: "/funds",
+    label: "Mutual funds",
+  },
+  {
+    fact: "Promoter Tracker surfaces real-time insider buying, open-market sales, and pledge risk directly from SEBI & NSE disclosures.",
+    href: "/intelligence/promoters",
+    label: "Promoter tracker",
+  },
+  {
+    fact: "Credit Watch flags rating downgrades and negative credit outlooks from CRISIL, ICRA, and CARE across listed corporate debt.",
+    href: "/intelligence/credit",
+    label: "Credit risk",
+  },
+  {
+    fact: "Broker Research aggregates consensus targets and upside % across 11 top institutional brokerages including Motilal, ICICI, and Kotak.",
+    href: "/research",
+    label: "Broker research",
+  },
+  {
+    fact: "The Retail Sentiment Engine monitors 10 Indian retail investing communities to track social momentum, mention velocity, and thesis debates.",
+    href: "/intelligence/reddit",
+    label: "Retail sentiment",
+  },
+  {
+    fact: "Earnings Call Intelligence extracts management confidence inflection, margin guidance, and concall transcripts for covered companies.",
+    href: "/intelligence/company",
+    label: "Concall intel",
+  },
+  {
+    fact: "Primary Deals monitors upcoming IPOs with Grey Market Premiums (GMP), NCD corporate debt issues, and share buybacks in real time.",
+    href: "/research/offers",
+    label: "Primary deals",
+  },
 ];
 
 export function pickDidYouKnow(seed = 0): DidYouKnow {
@@ -141,6 +176,20 @@ const BEGINNER_NUDGES: Nudge[] = [
     href: "/research",
     cta: "Research",
   },
+  {
+    title: "Mutual Fund X-Ray",
+    body: "Compare equity funds, find portfolio overlap, and spot top holdings without clutter.",
+    href: "/funds",
+    cta: "Mutual Funds",
+    badge: "NEW",
+  },
+  {
+    title: "Primary Deals & IPOs",
+    body: "Track live IPOs, grey market premiums, NCD debentures, and buyback offers.",
+    href: "/research/offers",
+    cta: "Primary Deals",
+    badge: "NEW",
+  },
 ];
 
 const INTERMEDIATE_NUDGES: Nudge[] = [
@@ -161,6 +210,26 @@ const INTERMEDIATE_NUDGES: Nudge[] = [
     body: "Growth, inflation, RBI — tied to how stocks behave.",
     href: "/macro/india",
     cta: "India macro",
+  },
+  {
+    title: "Promoter Insider Actions",
+    body: "Monitor insider buying, open market selling, and promoter pledge risk before earnings.",
+    href: "/intelligence/promoters",
+    cta: "Promoter Tracker",
+    badge: "NEW",
+  },
+  {
+    title: "Broker Consensus Targets",
+    body: "Check consensus price targets and ratings across 11 institutional brokerages.",
+    href: "/research",
+    cta: "Broker Consensus",
+  },
+  {
+    title: "Credit Solvency Watch",
+    body: "Catch debt downgrades and rating watch alerts from CRISIL, ICRA, and CARE.",
+    href: "/intelligence/credit",
+    cta: "Credit Risk",
+    badge: "NEW",
   },
 ];
 
@@ -192,6 +261,27 @@ const ADVANCED_NUDGES: Nudge[] = [
     cta: "Open scanner",
     badge: "NEW",
   },
+  {
+    title: "Smart Money Accumulation",
+    body: "See which high-conviction stocks India's top fund managers are quietly buying.",
+    href: "/funds?tab=accumulation",
+    cta: "Accumulation Radar",
+    badge: "NEW",
+  },
+  {
+    title: "Earnings Call Management Tone",
+    body: "NLP score of executive confidence, capex guidance deltas, and filing timelines.",
+    href: "/intelligence/company",
+    cta: "Concall Intel",
+    badge: "NEW",
+  },
+  {
+    title: "Alternative Retail Sentiment",
+    body: "Detect social mention spikes and contrarian sentiment divergences across 10 subreddits.",
+    href: "/intelligence/reddit",
+    cta: "Reddit Sentiment",
+    badge: "NEW",
+  },
 ];
 
 export function nudgesForSkill(level: SkillLevel): Nudge[] {
@@ -205,12 +295,17 @@ export function suggestionsForSkill(level: SkillLevel): string[] {
     return [
       "I'm new — where should I start today?",
       "Explain the Daily Brief in simple terms",
+      "Which mutual funds are performing best?",
+      "What upcoming IPOs have high GMP?",
       "Take me to market overview",
       "What is this app for?",
     ];
   }
   if (level === "advanced") {
     return [
+      "Show mutual fund smart money accumulation radar",
+      "Analyze concall management tone for RELIANCE",
+      "What are retail investors discussing on Reddit?",
       "Open scanner and explain the setups",
       "Compare backtest vs out-of-sample results",
       "Show stress index and transmission map",
@@ -218,6 +313,9 @@ export function suggestionsForSkill(level: SkillLevel): string[] {
     ];
   }
   return [
+    "Show me promoter buying and pledge changes",
+    "Are there any credit rating downgrades today?",
+    "What is the broker consensus on Tata Motors?",
     "Take me to the Nifty scanner",
     "Is the market expensive right now?",
     "Open India macro dashboard",

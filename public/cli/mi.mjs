@@ -20,7 +20,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import readline from "node:readline";
 
-const VERSION = "2.3.0";
+const VERSION = "2.4.0";
 const SCRIPT_URL = process.env.MI_SCRIPT_URL || ENDPOINT_BASE() + "/cli/mi.mjs";
 function ENDPOINT_BASE() {
   return (process.env.MI_ENDPOINT || "https://getmarketintelligence.in/api/mcp").replace(/\/api\/mcp$/, "");
@@ -604,6 +604,11 @@ const FAVOURITES = [
   ["S", "Market snapshot", "get_market_snapshot"],
   ["X", "Macro Stress Index", "get_stress_index"],
   ["B", "Daily brief", "get_daily_brief"],
+  ["W", "Site-wide executive brief", "get_site_wide_brief"],
+  ["O", "Mutual fund intelligence & radar", "get_mutual_fund_intelligence"],
+  ["P", "Promoter activity tracker & pledges", "get_promoter_activity_tracker"],
+  ["D", "Credit rating degradation & watch", "get_credit_risk_intelligence"],
+  ["L", "Retail sentiment engine (Reddit)", "get_retail_sentiment_engine"],
   ["R", "RBI rates & liquidity", "get_rbi_rates"],
   ["Y", "India yield curve", "get_india_yield_curve"],
   ["T", "Transmission betas (sector sensitivities)", "get_transmission_betas"],
@@ -710,7 +715,7 @@ const HELP = `mi ${VERSION}: Market Intelligence terminal
   mi <tool> [key=value ...]   run any feature, e.g.
       mi get_option_chain underlying=NIFTY expiry=2026-10-06
       mi risk TCS        mi scenario brent=10 usdinr=2        mi ipos status=open
-  shortcuts: snapshot stress brief rbi yields health backtest betas risk scenario
+  shortcuts: snapshot stress brief sitebrief funds radar overlap nfo broker promoters credit concall reddit offers scanner signals rbi yields health backtest betas risk scenario
   flags: --json raw JSON   --all show every row
   mi update                   download the latest mi
   mi font [N|off|reset]       text size while mi runs (macOS Terminal.app), default 16
@@ -718,7 +723,35 @@ const HELP = `mi ${VERSION}: Market Intelligence terminal
 
 No API key needed. Account tools: mi login EMAIL PASS. Optional MI_API_KEY for higher limits. MI_ENDPOINT to override URL.`;
 
-const ALIASES = { snapshot: "get_market_snapshot", stress: "get_stress_index", brief: "get_daily_brief", rbi: "get_rbi_rates", yields: "get_india_yield_curve", health: "get_data_health", backtest: "get_stress_backtest", betas: "get_transmission_betas", risk: "get_security_risk", scenario: "run_scenario" };
+const ALIASES = {
+  snapshot: "get_market_snapshot",
+  stress: "get_stress_index",
+  brief: "get_daily_brief",
+  sitebrief: "get_site_wide_brief",
+  rbi: "get_rbi_rates",
+  yields: "get_india_yield_curve",
+  health: "get_data_health",
+  backtest: "get_stress_backtest",
+  betas: "get_transmission_betas",
+  risk: "get_security_risk",
+  scenario: "run_scenario",
+  funds: "get_mutual_fund_intelligence",
+  radar: "get_stock_accumulation_radar",
+  overlap: "get_mutual_fund_overlap",
+  nfo: "get_nfo_calendar",
+  broker: "get_consensus_intelligence",
+  consensus: "get_consensus_intelligence",
+  promoter: "get_promoter_activity_tracker",
+  promoters: "get_promoter_activity_tracker",
+  credit: "get_credit_risk_intelligence",
+  concall: "get_concall_intelligence",
+  reddit: "get_retail_sentiment_engine",
+  offers: "get_primary_offers",
+  ipos: "get_ipos",
+  scanner: "get_scanner",
+  signals: "get_ai_signals",
+  world: "get_world_monitor",
+};
 
 async function main() {
   const argv = process.argv.slice(2).filter((a) => !a.startsWith("--"));
