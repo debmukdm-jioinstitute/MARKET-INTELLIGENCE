@@ -1,3 +1,4 @@
+import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import { NextResponse } from "next/server";
 import { hasDatabase } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
@@ -10,7 +11,8 @@ export async function GET() {
   const user = await getSessionUser();
   const briefs = await latestBriefs(6);
   const subscription = hasDatabase() && user && !user.guest ? await getSubscription(user.email).catch(() => null) : null;
-  return NextResponse.json({ briefs, subscription, canSubscribe: Boolean(user && !user.guest), dbConfigured: hasDatabase() });
+  const siteWideBrief = buildSiteWideExecutiveBrief();
+  return NextResponse.json({ briefs, siteWideBrief, subscription, canSubscribe: Boolean(user && !user.guest), dbConfigured: hasDatabase() });
 }
 
 export async function POST(req: Request) {
