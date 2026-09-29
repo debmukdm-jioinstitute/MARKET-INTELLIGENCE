@@ -11,7 +11,6 @@ Market Intelligence embeds the [AI-trader](https://github.com/aaryansinha16/AI-t
 | `/algo/trades` | Trade history, P&L, strategy breakdown, journey charts |
 | `/algo/backtest` | Tick replay backtest runner + results |
 | `/algo/charts` | NIFTY candles, option chain, premium tick charts |
-| `/algo/ai` | Macro/micro/strategy models + RL exit agent status |
 | `/algo/settings` | LOW / MEDIUM / HIGH risk profiles + Zerodha connect |
 | `/algo/replay` | Historical day tick replay simulation |
 

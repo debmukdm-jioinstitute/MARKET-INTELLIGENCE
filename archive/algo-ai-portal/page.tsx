@@ -1,12 +1,23 @@
 "use client";
 
+/**
+ * ARCHIVED — not mounted in the Next.js app.
+ * Former route: /algo/ai
+ * See archive/algo-ai-portal/README.md
+ */
+
 import { useEffect, useState, useCallback } from "react";
 import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import { AlgoPageHeader } from "@/components/ai-trader/algo-desk-ui";
 import { Panel } from "@/components/layout/page-header";
-import { fetchJSON, type RLStatus } from "@/lib/ai-trader/api";
+import { fetchJSON } from "@/lib/ai-trader/api";
 import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
+
+interface RLStatus {
+  tabular?: { states: number; episodes: number; policy: Record<string, number> };
+  dqn?: { episodes: number; training_steps: number; epsilon: number; params: number };
+}
 
 function StatusDot({ ok }: { ok: boolean }) {
   return <span className={cn("algo-status-dot", ok ? "bg-chart-2" : "bg-destructive")} aria-hidden />;

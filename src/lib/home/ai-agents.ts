@@ -58,7 +58,7 @@ export const HOME_AI_AGENTS: HomeAiAgent[] = [
     role: "Nifty algo trader",
     desc: "Software that trades Nifty options during market hours — it handles entries and exits on its own.",
     cta: "See it in action",
-    href: "/algo/ai",
+    href: "/algo/live",
     badge: "AI",
     accent: "from-emerald-500/15 to-emerald-500/5 border-emerald-500/25",
   },

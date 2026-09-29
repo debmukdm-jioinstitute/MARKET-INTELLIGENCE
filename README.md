@@ -692,7 +692,8 @@ Either way, you get a preview before committing, with the choice to replace your
 
 ## 14. NIFTY Algo Desk
 
-**Paths:** `/algo`, `/algo/live`, `/algo/trades`, `/algo/backtest`, `/algo/replay`, `/algo/charts`, `/algo/ai`, `/algo/settings`  
+**Paths:** `/algo`, `/algo/live`, `/algo/trades`, `/algo/backtest`, `/algo/replay`, `/algo/charts`, `/algo/settings`  
+**Removed:** `/algo/ai` (301 → `/algo/live`; UI archived under `archive/algo-ai-portal/`)  
 **Docs:** [docs/AI-TRADER.md](docs/AI-TRADER.md), [docs/AI-TRADER-PRODUCTION.md](docs/AI-TRADER-PRODUCTION.md) · **Code:** `services/ai-trader/`, `src/app/(portal)/algo/*`, proxy `src/app/api/ai-trader/[...path]`
 
 Optional **NIFTY F&O algo** UI embedded in the portal. The Next.js app **proxies** authenticated calls to a separate **Flask + TimescaleDB** stack (TrueData ticks, XGBoost macro/micro/strategy models, RL exit agent, VWAP/mean-reversion strategies, paper or Zerodha execution). Vercel alone does **not** run the database or market-data websocket — you need a reachable `AI_TRADER_API_URL` (local tunnel, Fly.io, VPS, etc.).
