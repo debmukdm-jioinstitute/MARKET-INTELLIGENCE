@@ -1,7 +1,8 @@
 import { buildEnsembleFeatures, ENSEMBLE_N_FEATURES, meanReversionPUp, momentumPUp } from "./ensemble-features";
-import { ema, rsi } from "./indicators";
+import { atr, ema, rsi } from "./indicators";
 import { buildFeatures, predict } from "./lorentzian";
-import type { Bar, IndexSignalBlock, SignalBucket } from "./types";
+import { annualizedSharpe, maxDrawdownPct, tripleBarrierOutcome, wilsonInterval } from "./triple-barrier";
+import type { Bar, IndexSignalBlock, RegimeSlice, SignalBucket } from "./types";
 
 import { OOS_TRADING_DAYS, TUNE_TRADING_DAYS } from "./signals-backtest-config";
 const RIDGE_TRAIN = 420;
@@ -12,7 +13,7 @@ const day = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
 
 const sigmoid = (z: number) => 1 / (1 + Math.exp(-Math.max(-20, Math.min(20, z))));
 
-type Row = { t: number; p: number; ret: number };
+type Row = { t: number; p: number; ret: number; barrierRet: number; barrierExit: "upper" | "lower" | "vertical" };
 
 export type EnsembleWeights = { lorentzian: number; ridge: number; momentum: number; meanRev: number };
 
@@ -168,6 +169,17 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
   const r = rsi(close, 14);
   const e20 = ema(close, 20);
   const e50 = ema(close, 50);
+  const atrSeries = atr(bars, 14);
+
+  /**
+   * Triple-barrier outcome at `t` (see triple-barrier.ts), with a plain fixed-horizon fallback
+   * only when ATR isn't defined yet (first ~14 bars) — never silently drops the row.
+   */
+  const barrierAt = (t: number): { ret: number; barrierRet: number; barrierExit: "upper" | "lower" | "vertical" } => {
+    const fixedRet = bars[t + evalHorizon].c / bars[t].c - 1;
+    const tb = tripleBarrierOutcome(bars, atrSeries[t], t, evalHorizon);
+    return tb ? { ret: fixedRet, barrierRet: tb.ret, barrierExit: tb.exit } : { ret: fixedRet, barrierRet: fixedRet, barrierExit: "vertical" };
+  };
 
   const oosCap = Math.min(
     OOS_TRADING_DAYS,
@@ -206,7 +218,7 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
     const parts = partAt(t);
     const p = blend(parts.pL, parts.pR, parts.pM, parts.pMr, DEFAULT_WEIGHTS);
     if (p == null) continue;
-    tuneRows.push({ t, p, ret: bars[t + evalHorizon].c / bars[t].c - 1 });
+    tuneRows.push({ t, p, ...barrierAt(t) });
   }
 
   const weights = tuneWeights(tuneRows, (t) => partAt(t));
@@ -217,7 +229,7 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
     const parts = partAt(t);
     const p = blend(parts.pL, parts.pR, parts.pM, parts.pMr, weights);
     if (p == null) continue;
-    rows.push({ t, p, ret: bars[t + evalHorizon].c / bars[t].c - 1 });
+    rows.push({ t, p, ...barrierAt(t) });
   }
 
   const { bullish, bearish, leanHitRate, leanN } = calibrateLeanThresholds(rows);
@@ -225,6 +237,8 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
   const upDays = rows.filter((r0) => r0.ret > 0).length;
   const correct = rows.filter((r0) => (r0.p >= 0.5) === r0.ret > 0).length;
 
+  // Bucket hit rate / return now scored against the triple-barrier outcome (barrierRet), not
+  // the naive fixed-horizon close — see triple-barrier.ts for why that matters for honesty here.
   const bucketDef: { label: string; test: (p: number) => boolean; dir: 1 | -1 | 0 }[] = [
     { label: "Strong up lean (calibrated)", test: (p) => p >= bullish, dir: 1 },
     { label: "Mild up (55–calibrated high)", test: (p) => p >= 0.55 && p < bullish, dir: 1 },
@@ -235,23 +249,62 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
   const buckets: SignalBucket[] = bucketDef.map((b) => {
     const rs = rows.filter((x) => b.test(x.p));
     if (!rs.length) return { label: b.label, n: 0, hitRate: null, avgRet: null };
-    const dirRet = rs.map((x) => (b.dir === 0 ? x.ret : b.dir * x.ret) * 100);
+    const dirRet = rs.map((x) => (b.dir === 0 ? x.barrierRet : b.dir * x.barrierRet) * 100);
     const hit =
       b.dir === 0
-        ? rs.filter((x) => x.ret > 0).length
-        : rs.filter((x) => (b.dir === 1 ? x.ret > 0 : x.ret < 0)).length;
+        ? rs.filter((x) => x.barrierRet > 0).length
+        : rs.filter((x) => (b.dir === 1 ? x.barrierRet > 0 : x.barrierRet < 0)).length;
     return { label: b.label, n: rs.length, hitRate: (hit / rs.length) * 100, avgRet: dirRet.reduce((a, c) => a + c, 0) / rs.length };
   });
 
   let strat = 10_000;
   let hold = 10_000;
-  const equity = rows.map((row) => {
+  const stratDailyRet: number[] = [];
+  const equityFull: { d: string; strategy: number; buyHold: number }[] = [];
+  for (const row of rows) {
     const c0 = leanCall(row.p, bullish, bearish);
     const pos = c0 === "Bullish" ? 1 : c0 === "Bearish" ? -1 : 0;
-    strat *= 1 + pos * row.ret;
+    const stratRet = pos * row.barrierRet;
+    stratDailyRet.push(stratRet);
+    strat *= 1 + stratRet;
     hold *= 1 + row.ret;
-    return { d: day(bars[row.t + evalHorizon].t), strategy: Math.round(strat), buyHold: Math.round(hold) };
-  });
+    equityFull.push({ d: day(bars[row.t + evalHorizon].t), strategy: Math.round(strat), buyHold: Math.round(hold) });
+  }
+  const equity = equityFull;
+
+  // Annualize per-signal returns by trading days per year over the holding horizon (evalHorizon
+  // sessions per signal) — the standard way to make a 1-day and a 10-day strategy's Sharpe
+  // comparable rather than reporting a period Sharpe with no time basis.
+  const sharpe = annualizedSharpe(stratDailyRet, 252 / Math.max(evalHorizon, 1));
+  const maxDD = maxDrawdownPct(equityFull.map((e) => e.strategy));
+
+  const leanCI = wilsonInterval(Math.round((leanHitRate / 100) * leanN), leanN);
+
+  // Robustness across time: split the OOS window into 3 equal chronological slices and report
+  // the lean hit rate in each separately. A model that only "works" in one slice is telling you
+  // something a single blended OOS number hides completely — this is the closest a single
+  // instrument's own history can get to a stress test without synthetic data.
+  const regimeBreakdown: RegimeSlice[] = (() => {
+    if (rows.length < 60) return [];
+    const sliceSize = Math.floor(rows.length / 3);
+    const slices: RegimeSlice[] = [];
+    for (let s = 0; s < 3; s++) {
+      const start = s * sliceSize;
+      const end = s === 2 ? rows.length : start + sliceSize;
+      const slice = rows.slice(start, end);
+      const leanRows = slice.filter((x) => x.p >= bullish || x.p <= bearish);
+      const hit = leanRows.filter((x) => (x.p >= 0.5 ? x.barrierRet > 0 : x.barrierRet < 0)).length;
+      const buyHoldRet = slice.reduce((acc, x) => acc * (1 + x.ret), 1) - 1;
+      slices.push({
+        from: slice.length ? day(bars[slice[0].t].t) : "",
+        to: slice.length ? day(bars[slice[slice.length - 1].t + evalHorizon].t) : "",
+        n: leanRows.length,
+        leanHitRate: leanRows.length ? (hit / leanRows.length) * 100 : null,
+        buyHoldReturn: buyHoldRet * 100,
+      });
+    }
+    return slices;
+  })();
 
   const partsNow = partAt(n - 1);
   const pNow = blend(partsNow.pL, partsNow.pR, partsNow.pM, partsNow.pMr, weights);
@@ -280,6 +333,7 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
       alwaysUp: rows.length ? (upDays / rows.length) * 100 : 0,
       leanHitRate,
       leanN,
+      leanHitRateCI: leanCI,
       leanThresholds: { bullish, bearish },
       oosTargetDays: OOS_TRADING_DAYS,
       tuneDays: TUNE_TRADING_DAYS,
@@ -287,6 +341,9 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
       buckets,
       strategyReturn: (strat / 10_000 - 1) * 100,
       buyHoldReturn: (hold / 10_000 - 1) * 100,
+      sharpe,
+      maxDrawdownPct: maxDD,
+      regimeBreakdown,
       equity: equity.filter((_, i) => i % 3 === 0 || i === equity.length - 1),
       recent: rows.slice(-15).reverse().map((row) => {
         const lc = leanCall(row.p, bullish, bearish);
@@ -295,8 +352,9 @@ export function buildIndexSignalBlock(bars: Bar[], evalHorizon: number): IndexSi
           d: day(bars[row.t].t),
           pUp: row.p,
           call: callDir,
-          actual: row.ret > 0 ? "Up" : "Down",
-          retPct: row.ret * 100,
+          actual: row.barrierRet > 0 ? "Up" : "Down",
+          retPct: row.barrierRet * 100,
+          barrierExit: row.barrierExit,
         };
       }),
     },

@@ -144,17 +144,35 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
 
       <Panel
         title={`Walk-forward track record — ${indexLabel}`}
-        subtitle={`Each prediction uses only data available at that day's close; the outcome is the ${hText}. Strategy uses calibrated Bullish/Bearish bands; Neutral otherwise (gross of costs).`}
+        subtitle={`Each prediction uses only data available at that day's close. Outcome is scored against an ATR-scaled profit-target / stop-loss exit, or the ${hText} time limit if neither fires first (triple-barrier method). Strategy uses calibrated Bullish/Bearish bands; Neutral otherwise (gross of costs).`}
       >
         <div className="grid gap-3 md:grid-cols-4">
           <Stat k="Predictions scored" v={v.days.toLocaleString("en-IN")} />
           <Stat
             k="Lean precision"
             v={leanN ? `${leanRate.toFixed(1)}%` : `${v.accuracy.toFixed(1)}%`}
-            sub={leanN ? `${leanN} calibrated leans · all-day ${v.accuracy.toFixed(1)}%` : `always-up baseline ${v.alwaysUp.toFixed(1)}%`}
+            sub={
+              leanN
+                ? v.leanHitRateCI
+                  ? `95% CI ${v.leanHitRateCI.lo.toFixed(0)}–${v.leanHitRateCI.hi.toFixed(0)}% (n=${leanN})`
+                  : `${leanN} calibrated leans · all-day ${v.accuracy.toFixed(1)}%`
+                : `always-up baseline ${v.alwaysUp.toFixed(1)}%`
+            }
           />
-          <Stat k="Model strategy" v={pct(v.strategyReturn)} sub="₹10,000 compounded" />
+          <Stat k="Model strategy" v={pct(v.strategyReturn)} sub="₹10,000, triple-barrier exits" />
           <Stat k="Buy & hold" v={pct(v.buyHoldReturn)} sub="same period" />
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <Stat
+            k="Sharpe (annualized)"
+            v={v.sharpe == null ? "n/a — too few signals" : v.sharpe.toFixed(2)}
+            sub="Strategy returns, gross of costs"
+          />
+          <Stat
+            k="Max drawdown"
+            v={v.maxDrawdownPct == null ? "—" : `${v.maxDrawdownPct.toFixed(1)}%`}
+            sub="Peak-to-trough on the strategy equity curve"
+          />
         </div>
         <div className="mt-4 h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -168,6 +186,38 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
             </LineChart>
           </ResponsiveContainer>
         </div>
+        {v.regimeBreakdown?.length ? (
+          <div className="mt-4 overflow-x-auto">
+            <p className="mb-1 text-sm font-semibold">Stress test — same model, three separate time slices</p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              The OOS window split into three equal, non-overlapping chronological thirds. A model whose edge only shows up
+              in one slice has no demonstrated edge overall — this is the honest version of "how would it have done in
+              different conditions" using only this instrument's own real history (no synthetic regime labels).
+            </p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="px-2 py-1 font-medium">Period</th>
+                  <th className="px-2 py-1 font-medium">Range</th>
+                  <th className="px-2 py-1 text-right font-medium">Leans</th>
+                  <th className="px-2 py-1 text-right font-medium">Lean hit rate</th>
+                  <th className="px-2 py-1 text-right font-medium">Buy &amp; hold</th>
+                </tr>
+              </thead>
+              <tbody>
+                {v.regimeBreakdown.map((s, i) => (
+                  <tr key={s.from + s.to} className="border-t border-border/50">
+                    <td className="px-2 py-1.5">{i === 0 ? "Oldest third" : i === 1 ? "Middle third" : "Most recent third"}</td>
+                    <td className="px-2 py-1.5 tabular-nums text-muted-foreground">{s.from} → {s.to}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">{s.n}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">{s.leanHitRate == null ? "n/a" : `${s.leanHitRate.toFixed(1)}%`}</td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">{pct(s.buyHoldReturn, 1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -201,6 +251,7 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                   <th className="px-2 py-1 font-medium">Call</th>
                   <th className="px-2 py-1 font-medium">Actual</th>
                   <th className="px-2 py-1 text-right font-medium">Return</th>
+                  <th className="px-2 py-1 font-medium">Exit</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,12 +262,17 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                     <td className="px-2 py-1.5">{r.call}</td>
                     <td className={cn("px-2 py-1.5", r.call === r.actual ? "text-emerald-600" : "text-rose-600")}>{r.actual}{r.call === r.actual ? " ✓" : " ✗"}</td>
                     <td className="px-2 py-1.5 text-right tabular-nums">{pct(r.retPct, 2)}</td>
+                    <td className="px-2 py-1.5 text-muted-foreground">
+                      {r.barrierExit === "upper" ? "Profit target" : r.barrierExit === "lower" ? "Stop-loss" : "Time limit"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <p className="mt-2 text-xs text-muted-foreground">
-              Most recent 15 predictions and outcomes over {horizon === 1 ? "1 session" : `${horizon} sessions`}.
+              Most recent 15 predictions, scored against a triple-barrier exit (ATR-scaled profit target / stop-loss, or
+              the {horizon === 1 ? "1-session" : `${horizon}-session`} time limit if neither is touched first) rather than
+              only the fixed-horizon close — see Methodology.
             </p>
           </div>
         </div>

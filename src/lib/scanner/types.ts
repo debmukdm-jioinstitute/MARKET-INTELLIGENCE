@@ -120,6 +120,16 @@ export interface StockSignal {
   stop: number;
 }
 
+/** Lean hit rate over one chronological third of the OOS window — see regimeBreakdown below. */
+export interface RegimeSlice {
+  from: string;
+  to: string;
+  /** Bullish/Bearish-lean signals in this slice (Neutral excluded, matching leanHitRate's own definition). */
+  n: number;
+  leanHitRate: number | null;
+  buyHoldReturn: number;
+}
+
 export interface IndexSignalBlock {
   close: number;
   changePct: number;
@@ -138,6 +148,8 @@ export interface IndexSignalBlock {
     /** Walk-forward hit rate when lean is Bullish/Bearish (calibrated cutoffs), not Neutral. */
     leanHitRate?: number;
     leanN?: number;
+    /** Wilson score 95% CI on leanHitRate (Wilson, 1927) — reliable at the small n these lean samples often are, unlike a plain normal-approximation CI. */
+    leanHitRateCI?: { lo: number; hi: number };
     leanThresholds?: { bullish: number; bearish: number };
     oosTargetDays?: number;
     tuneDays?: number;
@@ -145,8 +157,13 @@ export interface IndexSignalBlock {
     buckets: SignalBucket[];
     strategyReturn: number;
     buyHoldReturn: number;
+    /** Annualized Sharpe of the OOS strategy equity curve (triple-barrier returns), null if too few signals to estimate. */
+    sharpe?: number | null;
+    maxDrawdownPct?: number;
+    /** Lean hit rate split into 3 chronological thirds of the OOS window — see RegimeSlice. */
+    regimeBreakdown?: RegimeSlice[];
     equity: { d: string; strategy: number; buyHold: number }[];
-    recent: { d: string; pUp: number; call: "Up" | "Down"; actual: "Up" | "Down"; retPct: number }[];
+    recent: { d: string; pUp: number; call: "Up" | "Down"; actual: "Up" | "Down"; retPct: number; barrierExit?: "upper" | "lower" | "vertical" }[];
   };
 }
 
