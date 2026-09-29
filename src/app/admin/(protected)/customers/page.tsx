@@ -7,11 +7,13 @@ type Customer = { email: string; name: string; role: "user" | "admin"; created_a
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<Customer[] | null>(null);
+  const [you, setYou] = useState("");
   const [error, setError] = useState("");
   const [resetTarget, setResetTarget] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   function load() {
     fetch("/api/admin/customers")
@@ -19,6 +21,7 @@ export default function AdminCustomersPage() {
         const json = await r.json();
         if (!r.ok) throw new Error(json.error ?? "Failed to load customers");
         setCustomers(json.customers);
+        setYou(typeof json.you === "string" ? json.you : "");
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load customers"));
   }
@@ -45,6 +48,29 @@ export default function AdminCustomersPage() {
     }
   }
 
+  async function deleteAccount(email: string) {
+    if (!confirm(`Delete account ${email}? This cannot be undone.`)) return;
+    setDeleting(email);
+    setError("");
+    setResetMessage("");
+    try {
+      const res = await fetch("/api/admin/customers", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to delete account");
+      setResetMessage(`Deleted ${email}.`);
+      setResetTarget((t) => (t === email ? null : t));
+      setCustomers((list) => (list ? list.filter((c) => c.email !== email) : list));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete account");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -60,7 +86,7 @@ export default function AdminCustomersPage() {
 
       <AdminCard title="All accounts">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] border-collapse text-sm">
+          <table className="w-full min-w-[820px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-left text-gray-500">
                 <th className="py-2 pr-3 font-medium">Email</th>
@@ -112,18 +138,32 @@ export default function AdminCustomersPage() {
                         >
                           Cancel
                         </button>
+                        <DeleteButton
+                          email={c.email}
+                          you={you}
+                          deleting={deleting}
+                          onDelete={deleteAccount}
+                        />
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setResetTarget(c.email);
-                          setResetMessage("");
-                        }}
-                        className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800"
-                      >
-                        Reset password
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResetTarget(c.email);
+                            setResetMessage("");
+                          }}
+                          className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                        >
+                          Reset password
+                        </button>
+                        <DeleteButton
+                          email={c.email}
+                          you={you}
+                          deleting={deleting}
+                          onDelete={deleteAccount}
+                        />
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -140,5 +180,31 @@ export default function AdminCustomersPage() {
         </div>
       </AdminCard>
     </div>
+  );
+}
+
+function DeleteButton({
+  email,
+  you,
+  deleting,
+  onDelete,
+}: {
+  email: string;
+  you: string;
+  deleting: string | null;
+  onDelete: (email: string) => void;
+}) {
+  if (you && email.toLowerCase() === you.toLowerCase()) {
+    return <span className="px-2 py-1 text-sm text-gray-400">You</span>;
+  }
+  return (
+    <button
+      type="button"
+      disabled={deleting === email}
+      onClick={() => onDelete(email)}
+      className="rounded px-2 py-1 text-sm text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+    >
+      {deleting === email ? "Deleting…" : "Delete"}
+    </button>
   );
 }
