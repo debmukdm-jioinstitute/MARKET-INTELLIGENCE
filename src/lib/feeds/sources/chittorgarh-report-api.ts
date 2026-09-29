@@ -38,18 +38,21 @@ export const CHITTORGARH_OFFER_REPORTS: Record<OfferCategory, ReportDef> = {
     title: "Buybacks",
     pagePath: "/report/latest-buyback-issues-in-india/80/tender-offer-buyback/",
     nameKeys: ["Company Name", "Company"],
+    detailPath: (slug, id) => `/buyback/${slug}/${id}/`,
   },
   ofs: {
     id: 157,
     title: "Offer for sale (OFS)",
     pagePath: "/report/offer-for-sale-in-india/157/",
     nameKeys: ["Company Name", "Company"],
+    detailPath: (slug, id) => `/ofs/${slug}/${id}/`,
   },
   "ncd-subscription": {
     id: 90,
     title: "NCD subscription (live)",
     pagePath: "/report/ncd-subscription-status-live-bidding-data-bse-nse/90/",
     nameKeys: ["Company Name", "Company"],
+    detailPath: (slug, id) => `/ncd/${slug}/${id}/`,
   },
 };
 
@@ -80,6 +83,14 @@ function normalizeFieldValue(value: unknown): string | number | null {
   return String(value);
 }
 
+function pickSlug(raw: Record<string, unknown>): string {
+  for (const [key, value] of Object.entries(raw)) {
+    if (key.toLowerCase() !== "~urlrewrite_folder_name") continue;
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
 export function parseChittorgarhReportPayload(
   category: OfferCategory,
   payload: unknown,
@@ -99,7 +110,7 @@ export function parseChittorgarhReportPayload(
   const rows: OfferRow[] = [];
   for (const raw of rawRows ?? []) {
     const recordId = raw["~id"];
-    const slug = typeof raw["~URLRewrite_Folder_Name"] === "string" ? raw["~URLRewrite_Folder_Name"] : "";
+    const slug = pickSlug(raw);
     const id =
       typeof recordId === "number" || typeof recordId === "string"
         ? String(recordId)
@@ -111,7 +122,7 @@ export function parseChittorgarhReportPayload(
       fields[key] = normalizeFieldValue(value);
     }
     const detailUrl =
-      def.detailPath && slug && recordId != null
+      def.detailPath && slug && recordId != null && Number.isFinite(Number(recordId))
         ? `${SITE}${def.detailPath(slug, Number(recordId))}`
         : null;
     rows.push({

@@ -90,26 +90,10 @@ async function fetchText(url: string, timeoutMs = 12_000): Promise<string> {
   }
 }
 
-export type ScrapedReport = {
-  broker: string | null;
-  title: string;
-  url: string;
-  pdfUrl?: string | null;
-  symbol?: string | null;
-  recommendation?: string | null;
-  targetPrice?: number | null;
-  cmp?: number | null;
-  upsidePct?: number | null;
-  reportType?: string | null;
-  summary: string | null;
-  publishedAt: string | null;
-};
+import { fetchChittorgarhIpoReviews } from "@/lib/research/sources/chittorgarh-ipo-reviews";
+import type { ResearchSource, ScrapedReport } from "@/lib/research/types";
 
-export type ResearchSource = {
-  key: string;
-  label: string;
-  fetchReports: () => Promise<ScrapedReport[]>;
-};
+export type { ScrapedReport, ResearchSource };
 
 /** Ventura Securities Research Reports (Direct Institutional PDFs & Notes). */
 async function fetchVenturaResearch(): Promise<ScrapedReport[]> {
@@ -416,9 +400,10 @@ function parseDateFromTitle(title: string, now: Date): string | null {
 }
 
 export const RESEARCH_SOURCES: ResearchSource[] = [
-  { key: "ventura_research", label: "Ventura Securities (Direct PDFs)", fetchReports: fetchVenturaResearch },
-  { key: "axis_direct_research", label: "Axis Direct Institutional Research (PDFs)", fetchReports: fetchAxisDirectResearch },
-  { key: "trendlyne_research", label: "Trendlyne Institutional Calls", fetchReports: fetchTrendlyneResearch },
-  { key: "et_recos", label: "Economic Times — Buy/Sell/Hold", fetchReports: fetchEtRecos },
-  { key: "livemint_recos", label: "LiveMint — Stock Recommendations", fetchReports: fetchLiveMintRecommendations },
+  { key: "ventura_research", label: "Ventura Securities (Direct PDFs)", tier: "pdf", fetchReports: fetchVenturaResearch },
+  { key: "axis_direct_research", label: "Axis Direct Institutional Research (PDFs)", tier: "pdf", fetchReports: fetchAxisDirectResearch },
+  { key: "trendlyne_research", label: "Trendlyne Institutional Calls", tier: "broker_call", fetchReports: fetchTrendlyneResearch },
+  { key: "chittorgarh_ipo_reviews", label: "Chittorgarh IPO analyst consensus", tier: "consensus", fetchReports: fetchChittorgarhIpoReviews },
+  { key: "et_recos", label: "Economic Times — Buy/Sell/Hold", tier: "media", fetchReports: fetchEtRecos },
+  { key: "livemint_recos", label: "LiveMint — Stock Recommendations", tier: "media", fetchReports: fetchLiveMintRecommendations },
 ];
