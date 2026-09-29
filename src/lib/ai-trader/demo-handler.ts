@@ -66,10 +66,15 @@ export function handleDemoDesk(req: Request, pathSegments: string[]): Response {
     return NextResponse.json(DEMO_CURVES);
   }
   if (method === "GET" && subpath === "api/risk/profiles") {
+    // Mirrors the real profiles in services/ai-trader/config/risk_profiles.py (RiskProfile shape:
+    // base_lot_size, lot_multiplier, sl_pct, tgt_pct, score_threshold, max_trades_day, max_premium,
+    // max_capital_per_trade). The old fixture here used a different, unrelated field set
+    // (max_loss_per_trade, max_daily_loss, position_size_pct), so every card on /algo/settings and
+    // /algo/backtest rendered undefined/NaN — this restores the actual shape the UI reads.
     return NextResponse.json({
-      low: { name: "low", max_loss_per_trade: 1500, max_daily_loss: 4000, position_size_pct: 0.5 },
-      medium: { name: "medium", max_loss_per_trade: 2500, max_daily_loss: 7000, position_size_pct: 1.0 },
-      high: { name: "high", max_loss_per_trade: 4000, max_daily_loss: 12000, position_size_pct: 1.5 },
+      low: { name: "Conservative", base_lot_size: 65, lot_multiplier: 1.0, sl_pct: 0.15, tgt_pct: 0.5, score_threshold: 0.7, max_trades_day: 3, max_premium: 200, max_capital_per_trade: 0.008 },
+      medium: { name: "Balanced", base_lot_size: 65, lot_multiplier: 1.0, sl_pct: 0.15, tgt_pct: 0.55, score_threshold: 0.6, max_trades_day: 5, max_premium: 250, max_capital_per_trade: 0.01 },
+      high: { name: "Aggressive", base_lot_size: 65, lot_multiplier: 1.0, sl_pct: 0.15, tgt_pct: 0.55, score_threshold: 0.6, max_trades_day: 5, max_premium: 250, max_capital_per_trade: 0.012 },
     });
   }
   if (method === "GET" && subpath === "api/backtest/progress") {
