@@ -1,35 +1,29 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
+import useSWR from "swr";
 import { AlgoDeskShell } from "@/components/ai-trader/algo-desk-shell";
 import { AlgoPageHeader, AlgoStatTile } from "@/components/ai-trader/algo-desk-ui";
 import { Panel } from "@/components/layout/page-header";
 import EquityChart from "@/components/ai-trader/EquityChart";
 import RiskProfileCard from "@/components/ai-trader/RiskProfileCard";
 import TradeTable from "@/components/ai-trader/TradeTable";
-import { fetchJSON, postJSON, type BacktestResults, type RiskProfile, type EquityCurvePoint } from "@/lib/ai-trader/api";
-import { pnlClass, pnlFmt, riskActiveBg, type AlgoRiskLevel } from "@/lib/ai-trader/algo-brand";
+import { LOCAL_RISK_PROFILES, type LocalRiskLevel } from "@/lib/algo-backtest/risk-profiles";
+import type { LocalBacktestProfile } from "@/lib/algo-backtest/strangle-backtest";
+import { pnlClass, pnlFmt, type AlgoRiskLevel } from "@/lib/ai-trader/algo-brand";
 import { cn } from "@/lib/utils";
-import { Play, RefreshCw, Terminal, Calendar } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 type RiskLevel = AlgoRiskLevel;
 
-interface BacktestProgress {
-  running: boolean;
-  risk: string | null;
-  status: string;
-  output_lines: string[];
-  started?: string;
-  finished?: string;
-  exit_code?: number;
-  start_date?: string | null;
-  end_date?: string | null;
-}
-
-interface AvailableDay {
-  day: string;
-  ticks: number;
-}
+type LocalBacktestResponse = {
+  asOf: string;
+  from: string;
+  to: string;
+  historyBars: number;
+  results: Record<LocalRiskLevel, LocalBacktestProfile>;
+  error?: string;
+};
 
 const riskLabelClass: Record<RiskLevel, string> = {
   low: "text-chart-1",
@@ -37,196 +31,96 @@ const riskLabelClass: Record<RiskLevel, string> = {
   high: "text-chart-2",
 };
 
+const fetcher = (url: string) =>
+  fetch(url, { cache: "no-store" }).then(async (r) => {
+    const j = (await r.json()) as LocalBacktestResponse;
+    if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+    return j;
+  });
+
 export default function BacktestPage() {
-  const [results, setResults] = useState<BacktestResults>({});
-  const [curves, setCurves] = useState<Record<string, EquityCurvePoint[]>>({});
-  const [profiles, setProfiles] = useState<Record<RiskLevel, RiskProfile> | null>(null);
   const [selectedRisk, setSelectedRisk] = useState<RiskLevel>("medium");
-  const [progress, setProgress] = useState<BacktestProgress | null>(null);
-  const termRef = useRef<HTMLDivElement>(null);
+  const { data, error, isLoading, mutate, isValidating } = useSWR<LocalBacktestResponse>(
+    "/api/algo/backtest-local",
+    fetcher,
+  );
+  const load = useCallback(() => mutate(), [mutate]);
 
-  const [availDays, setAvailDays] = useState<AvailableDay[]>([]);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  const datesInitRef = useRef(false);
-  const load = useCallback(async () => {
-    try {
-      const [r, c, p, days] = await Promise.all([
-        fetchJSON<BacktestResults>("/api/backtest/results").catch(() => ({})),
-        fetchJSON<Record<string, EquityCurvePoint[]>>("/api/equity/curve").catch(() => ({})),
-        fetchJSON<Record<RiskLevel, RiskProfile>>("/api/risk/profiles").catch(() => null),
-        fetchJSON<AvailableDay[]>("/api/days").catch(() => []),
-      ]);
-      setResults(r);
-      setCurves(c);
-      if (p) setProfiles(p as Record<RiskLevel, RiskProfile>);
-      if (days.length > 0) {
-        setAvailDays(days);
-        if (!datesInitRef.current) {
-          datesInitRef.current = true;
-          setStartDate(String(days[0].day));
-          setEndDate(String(days[days.length - 1].day));
-        }
-      }
-    } catch {
-      /* keep prior state */
+  const results = data?.results;
+  const curves: Record<string, { time: string; equity: number }[]> = {};
+  if (results) {
+    for (const r of ["low", "medium", "high"] as RiskLevel[]) {
+      const prof = results[r];
+      if (prof) curves[r] = prof.trade_list.map((t, i) => ({ time: t.exit_time.slice(0, 10), equity: prof.equity_curve[i] ?? 0 }));
     }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    const poll = async () => {
-      const p = await fetchJSON<BacktestProgress>("/api/backtest/progress").catch(() => null);
-      if (p) {
-        setProgress(p);
-        if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
-        if (!p.running && p.status === "done") load();
-      }
-    };
-    poll();
-    const id = setInterval(poll, 1000);
-    return () => clearInterval(id);
-  }, [load]);
-
-  const runBacktest = async (risk: RiskLevel) => {
-    try {
-      const body: Record<string, string> = { risk };
-      if (startDate) body.start_date = startDate;
-      if (endDate) body.end_date = endDate;
-      const res = await postJSON<{ status?: string; error?: string }>("/api/backtest/run", body);
-      if (res.error) {
-        setProgress((prev) =>
-          prev ? { ...prev, output_lines: [...(prev.output_lines || []), `ERROR: ${res.error}`] } : null,
-        );
-      }
-    } catch {
-      /* progress poll picks up */
-    }
-  };
-
-  const isRunning = progress?.running === true;
-  const p = results[selectedRisk];
-
-  const daysInRange = availDays.filter((d) => {
-    const ds = String(d.day);
-    return (!startDate || ds >= startDate) && (!endDate || ds <= endDate);
-  }).length;
+  }
+  const p = results?.[selectedRisk];
 
   return (
     <AlgoDeskShell>
       <AlgoPageHeader
         title="Backtest"
-        subtitle="Run and compare tick replay across risk profiles."
+        subtitle="Weekly short-strangle strategy on real NIFTY 50 daily history — computed here, no external service."
         action={
-          <button type="button" onClick={load} className="t-btn inline-flex items-center gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          <button type="button" onClick={load} disabled={isValidating} className="t-btn inline-flex items-center gap-1.5 disabled:opacity-50">
+            <RefreshCw className={cn("h-3.5 w-3.5", isValidating && "animate-spin")} /> Recompute
           </button>
         }
       />
 
-      <Panel title="Date range">
-        <div className="flex flex-wrap items-center gap-4">
-          <Calendar className="h-4 w-4 text-primary" aria-hidden />
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium uppercase text-muted-foreground">From</label>
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium uppercase text-muted-foreground">To</label>
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {daysInRange} tick-data days in range
-            {availDays.length > 0 ? ` / ${availDays.length} total` : ""}
-          </span>
-          {availDays.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => {
-                setStartDate(String(availDays[0].day));
-                setEndDate(String(availDays[availDays.length - 1].day));
-              }}
-              className="t-btn text-xs"
-            >
-              All dates
-            </button>
-          ) : null}
-        </div>
+      <Panel
+        title="Methodology — read this before the numbers below"
+        subtitle="This is not a claim of real trading performance. It is honest about what it is."
+      >
+        <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
+          <li>
+            <strong className="text-foreground">Real data, modeled options.</strong> The underlying (NIFTY 50 daily closes,{" "}
+            {data ? `${data.historyBars.toLocaleString("en-IN")} sessions, ${data.from} → ${data.to}` : "~5 years"}) is real, from
+            the same Yahoo Finance feed used elsewhere on this site. Option premiums are <em>not</em> real historical option
+            prices — none are available to this app — they're estimated with Black-Scholes from the index's own trailing
+            realized volatility. Treat every ₹ figure below as a model estimate, not a trade you could have actually made.
+          </li>
+          <li>
+            <strong className="text-foreground">Strategy.</strong> Once a week, sell one out-of-the-money call and one
+            out-of-the-money put (a short strangle), each sized in standard deviations of realized volatility from spot — a
+            wider distance for Conservative, closer (more premium, more risk) for Aggressive. Each leg exits independently at
+            its own profit-target, stop-loss, or Thursday expiry.
+          </li>
+          <li>
+            <strong className="text-foreground">No look-ahead, no tuning to a target.</strong> Every entry only uses
+            volatility computed from days before it. Nothing here was adjusted to hit a particular win rate — see the
+            Methodology note on the AI Signals page for why that would make the number meaningless.
+          </li>
+          <li>
+            <strong className="text-foreground">Stops are checked once a day, not intraday.</strong> A large single-day move
+            can carry a position past its stop-loss before this model ever sees a price in between — the exit still fires,
+            but the realized loss can exceed the stated stop. This is a real, known risk of short option strategies (gap
+            risk), shown honestly rather than assumed away with an intraday fill this model has no data to justify.
+          </li>
+        </ul>
       </Panel>
 
-      {profiles ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {(["low", "medium", "high"] as RiskLevel[]).map((r) => (
-            <div key={r} className="space-y-2">
-              <RiskProfileCard level={r} profile={profiles[r]} active={selectedRisk === r} onSelect={setSelectedRisk} />
-              <button
-                type="button"
-                onClick={() => runBacktest(r)}
-                disabled={isRunning}
-                className={cn(
-                  "flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide disabled:opacity-50",
-                  isRunning && progress?.risk === r ? "bg-muted text-muted-foreground" : riskActiveBg(r),
-                  !(isRunning && progress?.risk === r) && (r === "medium" ? "text-foreground" : "text-primary-foreground"),
-                  isRunning && progress?.risk !== r && "opacity-40",
-                )}
-              >
-                {isRunning && progress?.risk === r ? (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Running…
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-3.5 w-3.5" /> Run {r}
-                  </>
-                )}
-              </button>
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {(["low", "medium", "high"] as RiskLevel[]).map((r) => (
+          <RiskProfileCard
+            key={r}
+            level={r}
+            profile={LOCAL_RISK_PROFILES[r]}
+            active={selectedRisk === r}
+            onSelect={setSelectedRisk}
+          />
+        ))}
+      </div>
+
+      {isLoading ? (
+        <Panel title="Computing…" subtitle="Fetching 5 years of NIFTY history and running the strategy for all three profiles.">
+          <p className="text-sm text-muted-foreground">This runs in your request — usually a few seconds.</p>
+        </Panel>
       ) : null}
 
-      {progress && progress.status !== "idle" ? (
-        <Panel
-          title={
-            <span className="inline-flex items-center gap-2">
-              <Terminal className="h-3.5 w-3.5" />
-              Backtest {progress.risk?.toUpperCase()} — {progress.status}
-            </span>
-          }
-          subtitle={
-            <span className="text-xs">
-              {progress.started ? `Started ${progress.started}` : null}
-              {progress.finished ? ` · Finished ${progress.finished}` : null}
-            </span>
-          }
-        >
-          <div
-            ref={termRef}
-            className="algo-inset max-h-[200px] overflow-y-auto p-3 text-xs tabular-nums leading-relaxed"
-          >
-            {progress.output_lines.length === 0 ? (
-              <span className="text-muted-foreground">Waiting for output…</span>
-            ) : (
-              progress.output_lines.map((line, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    line.includes("ERROR") && "text-destructive",
-                    line.includes("WARN") && "text-chart-3",
-                    (line.includes("✓") || line.includes("done") || line.includes("Done")) && "text-chart-2",
-                    !line.includes("ERROR") && !line.includes("WARN") && !line.includes("✓") && "text-muted-foreground",
-                  )}
-                >
-                  <span className="mr-2 text-muted-foreground/70">{String(i + 1).padStart(3, " ")}</span>
-                  {line}
-                </div>
-              ))
-            )}
-          </div>
+      {error ? (
+        <Panel title="Could not compute a backtest">
+          <p className="text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</p>
         </Panel>
       ) : null}
 
@@ -251,58 +145,50 @@ export default function BacktestPage() {
             <EquityChart curves={curves} selected={selectedRisk} />
           </Panel>
 
-          {p.trade_list && p.trade_list.length > 0 ? (
-            <Panel title={`Trade list · ${selectedRisk}`} subtitle={`${p.trade_list.length} trades`}>
+          {p.trade_list.length > 0 ? (
+            <Panel
+              title={`Trade list · ${selectedRisk}`}
+              subtitle={`${p.trade_list.length} legs. "Score" column shows the annualized realized volatility used to price that leg (this engine has no ML, so it's not a confidence score). "Regime" shows the strike distance in standard deviations.`}
+            >
               <TradeTable trades={p.trade_list} />
             </Panel>
           ) : null}
         </>
-      ) : (
-        <Panel title="No results yet" subtitle={`Run a backtest for ${selectedRisk} risk to populate metrics.`}>
-          <p className="text-sm text-muted-foreground">Use the run buttons on the risk cards above.</p>
-        </Panel>
-      )}
+      ) : null}
 
-      <Panel title="All profiles — comparison">
-        <EquityChart curves={curves} selected="all" />
-        <div className="mt-4 overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                {["Profile", "Trades", "P&L", "Win rate", "R:R", "Max DD", "Avg/trade"].map((h) => (
-                  <th key={h}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(["low", "medium", "high"] as RiskLevel[]).map((r) => {
-                const rp = results[r];
-                if (!rp) {
+      {results ? (
+        <Panel title="All profiles — comparison">
+          <EquityChart curves={curves} selected="all" />
+          <div className="mt-4 overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  {["Profile", "Trades", "P&L", "Win rate", "R:R", "Max DD", "Avg/trade"].map((h) => (
+                    <th key={h}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(["low", "medium", "high"] as RiskLevel[]).map((r) => {
+                  const rp = results[r];
+                  if (!rp) return null;
                   return (
-                    <tr key={r}>
+                    <tr key={r} className={selectedRisk === r ? "bg-muted/60" : undefined}>
                       <td className={cn("font-semibold uppercase", riskLabelClass[r])}>{r}</td>
-                      <td colSpan={6} className="text-muted-foreground">
-                        No data
-                      </td>
+                      <td>{rp.trades}</td>
+                      <td className={cn("font-semibold tabular-nums", pnlClass(rp.pnl))}>{pnlFmt(rp.pnl)}</td>
+                      <td>{rp.win_rate}%</td>
+                      <td>{rp.rr}×</td>
+                      <td className="text-destructive tabular-nums">{pnlFmt(rp.max_dd)}</td>
+                      <td className="tabular-nums">{pnlFmt(rp.pnl / Math.max(rp.trades, 1))}</td>
                     </tr>
                   );
-                }
-                return (
-                  <tr key={r} className={selectedRisk === r ? "bg-muted/60" : undefined}>
-                    <td className={cn("font-semibold uppercase", riskLabelClass[r])}>{r}</td>
-                    <td>{rp.trades}</td>
-                    <td className={cn("font-semibold tabular-nums", pnlClass(rp.pnl))}>{pnlFmt(rp.pnl)}</td>
-                    <td>{rp.win_rate}%</td>
-                    <td>{rp.rr}×</td>
-                    <td className="text-destructive tabular-nums">{pnlFmt(rp.max_dd)}</td>
-                    <td className="tabular-nums">{pnlFmt(rp.pnl / Math.max(rp.trades, 1))}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      ) : null}
     </AlgoDeskShell>
   );
 }
