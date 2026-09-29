@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Google_Sans } from "next/font/google";
+import { McpClaudeLaunchBanner } from "@/components/layout/mcp-claude-launch-banner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${googleSans.variable} h-full antialiased`}>
       <body className="min-h-full font-sans bg-background text-foreground selection:bg-blue-600/20 selection:text-blue-700">
         <JsonLd data={orgJsonLd} />
+        <McpClaudeLaunchBanner />
         <AuthProvider>
           <MathInspectorProvider>{children}</MathInspectorProvider>
         </AuthProvider>

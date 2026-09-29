@@ -315,6 +315,21 @@ export function LandingPage() {
                   >
                     Sign in
                   </Link>
+                  {ready && !guestAllowed ? (
+                    <Link
+                      href="/signup"
+                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                    >
+                      Sign up
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/signup"
+                      className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
+                    >
+                      Sign up
+                    </Link>
+                  )}
                   {ready && guestAllowed ? (
                     <button
                       type="button"
@@ -323,13 +338,6 @@ export function LandingPage() {
                     >
                       Open demo
                     </button>
-                  ) : ready ? (
-                    <Link
-                      href="/signup"
-                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
-                    >
-                      Create account
-                    </Link>
                   ) : null}
                 </>
               )}
