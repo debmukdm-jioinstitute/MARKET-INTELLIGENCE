@@ -186,10 +186,10 @@ const ADVANCED_NUDGES: Nudge[] = [
     cta: "Quant",
   },
   {
-    title: "NIFTY Algo Desk",
-    body: "AI-trader integration: tick backtests, XGBoost/RL models, live paper trading, option chain charts.",
-    href: "/algo",
-    cta: "Algo desk",
+    title: "Scanner",
+    body: "Scheduled Nifty 500 scans — breakouts, volume spikes, and technical flags.",
+    href: "/intelligence/scanner",
+    cta: "Open scanner",
     badge: "NEW",
   },
 ];

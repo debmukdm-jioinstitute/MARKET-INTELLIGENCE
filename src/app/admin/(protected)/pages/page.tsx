@@ -112,23 +112,7 @@ export default function AdminPortalPagesPage() {
 
       <AdminCard title="Quick actions">
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={busy !== null}
-            onClick={() => bulkPrefix("/algo", { locked: true })}
-            className="rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100 disabled:opacity-50"
-          >
-            Lock all Algo desk
-          </button>
-          <button
-            type="button"
-            disabled={busy !== null}
-            onClick={() => bulkPrefix("/algo", { locked: false, enabled: true })}
-            className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
-          >
-            Unlock Algo desk
-          </button>
-          <button
+<button
             type="button"
             disabled={busy !== null}
             onClick={() => bulkPrefix("/macro", { enabled: true, locked: false })}

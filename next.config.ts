@@ -81,7 +81,8 @@ const nextConfig: NextConfig = {
       { source: "/sectors", destination: "/markets/sectors", permanent: true },
       { source: "/feeds", destination: "/data/feeds", permanent: true },
       { source: "/macro/calendar", destination: "/macro/india?view=calendar", permanent: true },
-      { source: "/algo/ai", destination: "/algo/live", permanent: true },
+      { source: "/algo/:path*", destination: "/intelligence/scanner", permanent: true },
+      { source: "/algo", destination: "/intelligence/scanner", permanent: true },
     ];
   },
 };

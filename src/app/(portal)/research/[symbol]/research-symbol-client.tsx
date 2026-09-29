@@ -7,6 +7,8 @@ import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { CompanyIntelligenceHub } from "@/components/company/company-intelligence-hub";
+import { RetailSentimentEngineView } from "@/components/reddit/retail-sentiment-engine-view";
+import { getCompanyRetailSentiment } from "@/lib/reddit-sentiment/database";
 import { getCompanyIntelligenceProfile, getFeaturedIntelligenceSymbols } from "@/lib/company-intelligence/database";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
@@ -90,6 +92,9 @@ export function ResearchSymbolClient({
     list.push({ id: "risk", label: "Risk & Events" });
     if (isIndia && symbol) {
       list.push({ id: "concall-timeline", label: "Timeline & Concall" });
+    }
+    if (isIndia && symbol) {
+      list.push({ id: "retail-sentiment", label: "Retail Sentiment" });
     }
     if (data?.intelligence) {
       list.push({ id: "news", label: "News & Filings" });
@@ -285,6 +290,22 @@ export function ResearchSymbolClient({
                 initialProfile={getCompanyIntelligenceProfile(symbol)}
                 featuredSymbols={getFeaturedIntelligenceSymbols()}
                 initialSymbol={symbol}
+              />
+            </div>
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* SECTION: REDDIT & RETAIL SENTIMENT ENGINE */}
+      {isIndia && symbol ? (
+        <section id="retail-sentiment" className="scroll-mt-24">
+          <Panel
+            title="Reddit Retail Sentiment Engine (Alternative Data)"
+            subtitle="Social NLP pulse across r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket — mention spikes, sentiment momentum, and bull/bear theses."
+          >
+            <div className="pt-2">
+              <RetailSentimentEngineView
+                sentiment={getCompanyRetailSentiment(symbol)}
               />
             </div>
           </Panel>

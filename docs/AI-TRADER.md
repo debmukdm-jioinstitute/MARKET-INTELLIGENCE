@@ -1,33 +1,35 @@
-# AI-trader integration (NIFTY F&O algo desk)
+# AI-trader (self-hosted backend)
 
-Market Intelligence embeds the [AI-trader](https://github.com/aaryansinha16/AI-trader) research platform under **`/algo`**. The Next.js portal proxies authenticated requests to the Python Flask backend; it does not run TimescaleDB or TrueData inside Vercel.
+> **Production site:** NIFTY Algo Desk portal UI and `/api/ai-trader` proxy were **removed** from getmarketintelligence.in (2026). Old `/algo/*` URLs **301 → `/intelligence/scanner`**. UI source lived under `src/app/(portal)/algo/` and `src/components/ai-trader/` — recover from git history before removal commit.
 
-## Portal routes (UI)
+The Python stack in **`services/ai-trader/`** remains for **self-hosting** the [AI-trader](https://github.com/aaryansinha16/AI-trader) research platform (Flask + TimescaleDB, TrueData ticks, ML models). It does not run inside Vercel.
 
-| Path | Feature |
-|------|---------|
-| `/algo` | Dashboard — equity curve, risk profiles, live status |
-| `/algo/live` | Live scanner, suggestions, auto/manual paper trades, SSE stream, broker status |
-| `/algo/trades` | Trade history, P&L, strategy breakdown, journey charts |
-| `/algo/backtest` | Tick replay backtest runner + results |
-| `/algo/charts` | NIFTY candles, option chain, premium tick charts |
-| `/algo/settings` | LOW / MEDIUM / HIGH risk profiles + Zerodha connect |
-| `/algo/replay` | Historical day tick replay simulation |
+## Former portal routes (removed)
 
-## Feature parity (upstream → portal)
+| Path | Was |
+|------|-----|
+| `/algo` | Dashboard |
+| `/algo/live` | Live scanner, SSE, paper trades |
+| `/algo/trades` | History |
+| `/algo/backtest` | Tick replay backtest |
+| `/algo/charts` | Candles + chain |
+| `/algo/settings` | Risk profiles |
+| `/algo/replay` | Day replay |
+| `/algo/ai` | Model status (removed earlier; see `archive/algo-ai-portal/`) |
 
-| Upstream (AI-trader) | In Market Intelligence |
-|----------------------|-------------------------|
+## Feature parity (upstream → former portal)
+
+| Upstream (AI-trader) | Was in Market Intelligence |
+|----------------------|----------------------------|
 | Dashboard | `/algo` |
 | Live + SSE + auto/manual + broker panel | `/algo/live` |
 | Trade history + journey charts | `/algo/trades` |
 | Tick replay backtest UI | `/algo/backtest` |
 | Replay simulation page | `/algo/replay` |
 | Charts + option chain | `/algo/charts` |
-| AI models status | `/algo/ai` |
 | Risk profiles + CLI reference | `/algo/settings` |
 | Vendored Python stack + scripts | `services/ai-trader/` |
-| Flask API (all routes) | Proxied at `/api/ai-trader/api/*` |
+| Flask API (all routes) | Was proxied at `/api/ai-trader/api/*` |
 
 ## Backend capabilities (Flask, port 5050)
 
@@ -69,14 +71,14 @@ Without Docker, Flask still starts (`db_connected: false`) but ticks/scanner nee
    python backend/app.py
    ```
 
-2. **Market Intelligence** (separate terminal):
+2. **Market Intelligence** (optional — only if you restore portal UI from git history):
 
    ```bash
    export AI_TRADER_API_URL=http://127.0.0.1:5050
    npm run dev
    ```
 
-3. Open [http://localhost:3000/algo/live](http://localhost:3000/algo/live) after signing in.
+3. Hit Flask directly at `http://127.0.0.1:5050/api/state` (portal `/algo/*` routes are no longer shipped on getmarketintelligence.in).
 
 ## Production (no laptop)
 

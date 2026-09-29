@@ -2,19 +2,18 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, optional **NIFTY Algo Desk** (paper/live F&O), a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
 
 ## Product capabilities (summary)
 
 | Area | Routes | What it does |
 |---|---|---|
-| **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, Nifty algo) |
+| **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner) |
 | **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
 | **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; integrated **DCF**, **AI Desk**, **options-flow** screener |
 | **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor** (RSS / global feeds) |
-| **Algo desk** | `/algo/*` | NIFTY F&O scanner, paper/live trades, backtest, replay, charts — proxied to Python **AI-trader** when `AI_TRADER_API_URL` is set ([docs/AI-TRADER.md](docs/AI-TRADER.md)) |
 | **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, palette, search; read portfolio, alerts, watchlist, brief, stress; add holdings, alerts, watchlist rows (confirmations + audit) ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
 | **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
@@ -228,23 +227,6 @@ flowchart LR
 ```
 
 **Logic:** Regulatory block **sorted by parsed datetime**, not string order. Brief LLM may only cite supplied **fact ids**. Alerts evaluated on cron against **16 metrics** snapshot.
-
----
-
-### NIFTY Algo Desk (optional backend)
-
-```mermaid
-flowchart LR
-  ALGO["/algo/* UI"] --> PX["/api/ai-trader/* proxy"]
-  PX --> AUTH[Session required]
-  AUTH --> FLASK[AI_TRADER_API_URL Flask :5050]
-  FLASK --> TD[TrueData ticks]
-  FLASK --> TS[(TimescaleDB)]
-  FLASK --> ML[XGBoost + RL exit]
-  FLASK --> Z[Zerodha optional]
-```
-
-**Logic:** Vercel **does not** host ticks or ML training. Portal only **reverse-proxies** authenticated SSE/REST to your Flask host. Without `AI_TRADER_API_URL`, UI shows unreachable state; rest of site unaffected.
 
 ---
 
@@ -690,26 +672,9 @@ Either way, you get a preview before committing, with the choice to replace your
 
 ---
 
-## 14. NIFTY Algo Desk
+## 14. NIFTY Algo Desk (removed from public site)
 
-**Paths:** `/algo`, `/algo/live`, `/algo/trades`, `/algo/backtest`, `/algo/replay`, `/algo/charts`, `/algo/settings`  
-**Removed:** `/algo/ai` (301 → `/algo/live`; UI archived under `archive/algo-ai-portal/`)  
-**Docs:** [docs/AI-TRADER.md](docs/AI-TRADER.md), [docs/AI-TRADER-PRODUCTION.md](docs/AI-TRADER-PRODUCTION.md) · **Code:** `services/ai-trader/`, `src/app/(portal)/algo/*`, proxy `src/app/api/ai-trader/[...path]`
-
-Optional **NIFTY F&O algo** UI embedded in the portal. The Next.js app **proxies** authenticated calls to a separate **Flask + TimescaleDB** stack (TrueData ticks, XGBoost macro/micro/strategy models, RL exit agent, VWAP/mean-reversion strategies, paper or Zerodha execution). Vercel alone does **not** run the database or market-data websocket — you need a reachable `AI_TRADER_API_URL` (local tunnel, Fly.io, VPS, etc.).
-
-| Route | Capability |
-|---|---|
-| `/algo` | Desk overview — equity curve, risk profile, connection status |
-| `/algo/live` | Live scanner, suggestions, SSE stream, auto/manual paper trades, broker panel |
-| `/algo/trades` | History, P&L, strategy breakdown |
-| `/algo/backtest` | Tick replay backtest runner |
-| `/algo/replay` | Historical day replay |
-| `/algo/charts` | NIFTY candles, option chain, premium charts |
-| `/algo/ai` | Model / RL agent status |
-| `/algo/settings` | Risk tiers (LOW/MEDIUM/HIGH), Zerodha connect |
-
-Without the backend, algo pages show connection/degraded states; the rest of Market Intelligence still works on Yahoo/Upstox/NSE feeds.
+**Status:** Portal UI and `/api/ai-trader` proxy **removed** from getmarketintelligence.in. `/algo` and `/algo/*` **301 → `/intelligence/scanner`**. Self-host **`services/ai-trader/`** only — see [docs/AI-TRADER.md](docs/AI-TRADER.md). Archived reference: `archive/algo-ai-portal/`; full desk UI recoverable from git history before removal.
 
 ---
 

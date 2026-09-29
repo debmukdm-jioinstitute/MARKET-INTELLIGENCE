@@ -25,10 +25,7 @@ export function SectionNav({ items, className }: { items: SectionNavItem[]; clas
       aria-label="Section pages"
     >
       {items.map((item) => {
-        const active =
-          item.href === "/algo"
-            ? path === "/algo"
-            : path === item.href || path.startsWith(`${item.href}/`);
+        const active = path === item.href || path.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}

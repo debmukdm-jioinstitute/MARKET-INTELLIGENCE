@@ -91,6 +91,21 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/reddit",
+    match: {
+      summary: "Retail sentiment engine & alternative data — Reddit discussion NLP across r/IndiaInvestments, r/IndianStreetBets, r/IndianStockMarket, and investor problems radar.",
+      chips: [
+        {
+          kind: "api",
+          label: "Reddit retail sentiment",
+          source: { provider: "MI social NLP engine", url: "/api/reddit/sentiment" },
+          fetchMethod: "getAllRetailSentimentData() — src/lib/reddit-sentiment/database.ts",
+        },
+        ...chips("nse", "bse"),
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/company",
     match: {
       summary: "Company-specific intelligence — IR disclosures crawler, continuous event timeline, AI 'What changed?', and concall management tone tracker.",
@@ -353,21 +368,6 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
           fetchMethod: "Local settings + /api/feeds/yahoo/history for marks",
         },
         ...chips("yahoo", "upstox"),
-      ],
-    },
-  },
-  {
-    prefix: "/algo",
-    match: {
-      summary: "Algo desk reads signals and backtest from MI cron pipelines.",
-      chips: [
-        {
-          kind: "api",
-          label: "Signals cron",
-          source: { provider: "MI signals", url: "/api/cron/signals" },
-          fetchMethod: "src/app/api/cron/signals · backtest cron",
-        },
-        ...chips("upstox", "yahoo"),
       ],
     },
   },

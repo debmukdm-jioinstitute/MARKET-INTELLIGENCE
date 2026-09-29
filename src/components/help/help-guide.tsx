@@ -443,7 +443,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           <AccordionContent className="text-muted-foreground">
             <p className="mb-3">
               Public market data needs no API key. Claude&apos;s <b>Allow access</b> step does <b>not</b> unlock your portfolio.
-              For <b>your</b> holdings, alerts, OptionStrat lab, algo desk snapshot, or site assistant via MCP, sign in with the
+              For <b>your</b> holdings, alerts, OptionStrat lab, or site assistant via MCP, sign in with the
               same email and password as the website using <b>mi_sign_in</b> or <b>mi login</b>.
             </p>
             <p className="font-semibold text-foreground">Easiest: terminal</p>

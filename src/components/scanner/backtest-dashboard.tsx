@@ -46,7 +46,7 @@ export function BacktestDashboard() {
   if (!run) {
     return (
       <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-        No scanner backtest yet — weekly job; first result after next scheduled run. (Tick replay lives under NIFTY Algo Desk → Tick backtest.)
+        No scanner backtest yet — weekly job; first result after next scheduled run.
       </p>
     );
   }

@@ -24,7 +24,6 @@ export const MCP_ACCOUNT_TOOLS: { name: string; label: string; note: string }[] 
   { name: "delete_alert", label: "Delete alert", note: "" },
   { name: "set_alert_active", label: "Toggle alert", note: "" },
   { name: "get_optionstrat_recommend", label: "Options strategy lab", note: "Theta spreads." },
-  { name: "get_algo_desk_snapshot", label: "NIFTY Algo Desk", note: "Live/demo state." },
   { name: "ask_site_assistant", label: "Site assistant", note: "One-shot Q&A." },
   { name: "get_data_export_info", label: "Data export", note: "Excel download path." },
   { name: "get_admin_system", label: "Admin console", note: "Admin role only." },
@@ -32,7 +31,6 @@ export const MCP_ACCOUNT_TOOLS: { name: string; label: string; note: string }[] 
 
 /** Still browser-first (streaming UI, OAuth, live order buttons). */
 export const PORTAL_ONLY_UI: { label: string; href: string; note: string }[] = [
-  { label: "Algo live execution", href: "/algo/live", note: "Paper/live trading controls stay in the portal." },
   { label: "Google sign-in", href: "/login", note: "OAuth: use website; MCP uses mi_sign_in email/password." },
   { label: "Streaming Ask Deb panel", href: "/Home", note: "Multi-turn chat UI; MCP has ask_site_assistant one-shot." },
 ];

@@ -1,5 +1,4 @@
 import { generateText } from "ai";
-import { demoModeEnabled, demoLiveState, DEMO_NOTE } from "@/lib/ai-trader/demo-fixtures";
 import { chainRowsFromSnapshot } from "@/lib/optionstrat/chain-from-snapshot";
 import { optionContextForFnoIndex, pickExpiryForTheta } from "@/lib/optionstrat/fno-index-options";
 import { recommendStrategies, type MarketBias, type RiskProfile } from "@/lib/optionstrat/strategy-recommender";
@@ -199,28 +198,6 @@ export const USER_TOOLS: Tool[] = [
       if (!hasDatabase()) return { catalog, rules: [], events: [], dbConfigured: false };
       const [rules, events] = await Promise.all([listRules(user.email), recentEvents(user.email)]);
       return { catalog, rules, events, dbConfigured: true };
-    },
-  },
-  {
-    name: "get_algo_desk_snapshot",
-    title: "NIFTY Algo Desk snapshot",
-    category: "Account",
-    access: "user",
-    description: "Live or demo algo desk state (equity, regime, open P&L summary). Full trading UI remains on /algo.",
-    inputSchema: empty,
-    run: async (_args, ctx) => {
-      requireUser(ctx);
-      if (demoModeEnabled()) {
-        return { mode: "demo", note: DEMO_NOTE, state: demoLiveState() };
-      }
-      const upstream = (process.env.AI_TRADER_API_URL || "http://127.0.0.1:5050").replace(/\/$/, "");
-      try {
-        const res = await fetch(`${upstream}/api/state`, { cache: "no-store", signal: AbortSignal.timeout(15_000) });
-        if (!res.ok) return { error: "Algo backend unreachable", status: res.status, hint: "Set AI_TRADER_API_URL or use demo mode." };
-        return { mode: "live", state: await res.json() };
-      } catch (e) {
-        return { error: e instanceof Error ? e.message : "Algo backend unreachable" };
-      }
     },
   },
   {

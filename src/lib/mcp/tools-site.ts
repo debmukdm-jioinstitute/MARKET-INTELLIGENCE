@@ -1,6 +1,7 @@
 import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
 import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
+import { getCompanyRetailSentiment, getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
 import { z } from "zod";
 import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
@@ -379,6 +380,62 @@ export const SITE_TOOLS: Tool[] = [
       if (!detail) return { error: "IPO not found" };
       const intel = await buildIpoIntelligence(detail);
       return compactIpoIntelligenceForMcp(intel);
+    },
+  },
+  {
+    name: "get_retail_sentiment_engine",
+    title: "Reddit retail sentiment engine",
+    category: "Research",
+    description:
+      "Extract alternative retail sentiment from Reddit (r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket) including mention growth %, positive/negative/neutral breakdown, topics, and bull/bear debates for any symbol.",
+    inputSchema: {
+      type: "object",
+      properties: { symbol: sym },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol } = SymbolArg.parse(a);
+      const data = getCompanyRetailSentiment(symbol);
+      return {
+        symbol: data.symbol,
+        companyName: data.companyName,
+        totalMentions7D: data.totalMentions7D,
+        mentionChangePct7D: data.mentionChangePct7D,
+        positivePct: data.positivePct,
+        negativePct: data.negativePct,
+        neutralPct: data.neutralPct,
+        netSentimentScore: data.netSentimentScore,
+        sentimentMomentum: data.sentimentMomentum,
+        mostDiscussedTopics: data.mostDiscussedTopics,
+        communityDistribution: data.communityDistribution,
+        topRetailDebates: data.topRetailDebates,
+      };
+    },
+  },
+  {
+    name: "get_reddit_investor_problems",
+    title: "Reddit investor problems radar",
+    category: "Research",
+    description:
+      "Surface unconventional retail investor friction points from Reddit discussions across research, portfolio tracking, taxes, and data discovery.",
+    inputSchema: empty,
+    run: async () => {
+      const data = getAllRetailSentimentData();
+      return {
+        overallMarketSentiment: data.overallMarketSentiment,
+        trackedSubredditsCount: data.trackedSubreddits.length,
+        investorProblems: data.investorProblems.map((p) => ({
+          category: p.categoryLabel,
+          headline: p.headline,
+          growthPct: p.monthlyMentionGrowthPct,
+          problemDescription: p.problemDescription,
+          conventionalBlindspot: p.conventionalDatasetBlindspot,
+          sampleQuery: p.sampleCommunityQueries[0]?.queryTitle,
+          solutionFeature: p.miSolutionFeature.featureTitle,
+          solutionHref: p.miSolutionFeature.href,
+        })),
+      };
     },
   },
   {

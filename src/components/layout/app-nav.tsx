@@ -113,7 +113,7 @@ function GroupCard({ group, section, activeHref, accent, onNavigate, idPrefix }:
   const single = group.items.length === 1;
   const inGroup = group.items.some((i) => i.href === activeHref);
   return (
-    <div className={cn("rounded-lg px-3 py-2.5", inGroup ? "bg-accent" : "")}>
+    <div className={cn("flex h-full flex-col rounded-lg px-3 py-2.5", inGroup ? "bg-accent" : "")}>
       <Link
         id={idPrefix ? `nav-item-${slug(section)}-${slug(group.label)}` : undefined}
         href={first.href}
@@ -150,13 +150,20 @@ function GroupCard({ group, section, activeHref, accent, onNavigate, idPrefix }:
   );
 }
 
-/** Desktop-only hover menu in the TopBar: five sections, each showing 2–4 task cards. */
+function megaGridClass(groupCount: number): string {
+  if (groupCount <= 2) return "grid-cols-1 sm:grid-cols-2";
+  if (groupCount <= 4) return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
+  return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
+}
+
+/** Desktop-only hover menu in the TopBar: five sections, each showing task cards in a wide grid when many groups. */
 export function MegaNavBar() {
   const sections = useNavSections();
   const path = usePathname();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const current = findGroup(sections, path);
+  const activeSection = activeIdx !== null ? sections[activeIdx] : null;
 
   function openCol(i: number) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -178,42 +185,59 @@ export function MegaNavBar() {
   }, []);
 
   return (
-    <nav className="relative hidden items-center gap-0.5 lg:flex" onMouseLeave={scheduleClose} aria-label="Main">
-      {sections.map((sec, i) => {
-        const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
-        const active = activeIdx === i;
-        const here = current?.section.title === sec.title;
-        return (
-          <div key={sec.title} className="relative" onMouseEnter={() => openCol(i)}>
-            <Link
-              id={`nav-${slug(sec.title)}`}
-              href={sec.groups[0]?.items[0]?.href ?? "#"}
-              className={cn(
-                "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                active || here ? cn("bg-accent", accent.text) : "text-foreground hover:bg-accent",
-              )}
-            >
-              {sec.title}
-              <ChevronDown className={cn("size-3 transition-transform", active && "rotate-180")} />
-            </Link>
-            <div
-              className={cn(
-                "absolute left-0 top-full z-50 mt-2 w-[26rem] rounded-xl border border-border bg-white p-2 shadow-[var(--shadow-lg)] transition-all duration-150",
-                active ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0",
-              )}
-              onMouseEnter={() => openCol(i)}
-            >
-              {sec.tagline ? <p className="px-3 pb-1 pt-1.5 text-sm text-muted-foreground">{sec.tagline}</p> : null}
-              <div className="space-y-0.5">
-                {sec.groups.map((g) => (
-                  <GroupCard key={g.label} group={g} section={sec.title} activeHref={current?.href ?? null} accent={accent} onNavigate={() => setActiveIdx(null)} idPrefix />
-                ))}
-              </div>
+    <div className="relative hidden lg:block" onMouseLeave={scheduleClose}>
+      <nav className="flex items-center gap-0.5" aria-label="Main">
+        {sections.map((sec, i) => {
+          const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
+          const active = activeIdx === i;
+          const here = current?.section.title === sec.title;
+          return (
+            <div key={sec.title} className="relative" onMouseEnter={() => openCol(i)}>
+              <Link
+                id={`nav-${slug(sec.title)}`}
+                href={sec.groups[0]?.items[0]?.href ?? "#"}
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                  active || here ? cn("bg-accent", accent.text) : "text-foreground hover:bg-accent",
+                )}
+              >
+                {sec.title}
+                <ChevronDown className={cn("size-3 transition-transform", active && "rotate-180")} />
+              </Link>
+            </div>
+          );
+        })}
+      </nav>
+
+      <div
+        className={cn(
+          "fixed inset-x-0 top-14 z-50 border-b border-border bg-white shadow-[var(--shadow-lg)] transition-all duration-150",
+          activeSection ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
+        )}
+        onMouseEnter={() => activeIdx !== null && openCol(activeIdx)}
+      >
+        {activeSection ? (
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+            {activeSection.tagline ? (
+              <p className="mb-3 text-sm text-muted-foreground">{activeSection.tagline}</p>
+            ) : null}
+            <div className={cn("grid gap-2 sm:gap-3", megaGridClass(activeSection.groups.length))}>
+              {activeSection.groups.map((g) => (
+                <GroupCard
+                  key={g.label}
+                  group={g}
+                  section={activeSection.title}
+                  activeHref={current?.href ?? null}
+                  accent={ACCENTS[activeSection.title] ?? DEFAULT_ACCENT}
+                  onNavigate={() => setActiveIdx(null)}
+                  idPrefix
+                />
+              ))}
             </div>
           </div>
-        );
-      })}
-    </nav>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -414,7 +438,12 @@ export function AppNav() {
                         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
                       </button>
                       {isOpen ? (
-                        <div className="grid gap-1 border-t border-border p-2 sm:grid-cols-2">
+                        <div
+                          className={cn(
+                            "grid gap-2 border-t border-border p-2",
+                            megaGridClass(sec.groups.length),
+                          )}
+                        >
                           {sec.groups.map((g) => (
                             <GroupCard key={g.label} group={g} section={sec.title} activeHref={current?.href ?? null} accent={accent} onNavigate={close} />
                           ))}
@@ -425,8 +454,9 @@ export function AppNav() {
                 })}
               </div>
 
-              {/* Desktop: five columns */}
-              <div className="mx-auto mt-6 hidden max-w-7xl grid-cols-5 gap-x-4 border-t border-border px-6 pt-6 lg:grid">
+              {/* Desktop: five columns — each section uses a horizontal grid when expanded in menu */}
+              <div className="mx-auto mt-6 hidden max-w-7xl border-t border-border px-6 pt-6 lg:block">
+                <div className="grid grid-cols-5 gap-x-4">
                 {sections.map((sec) => {
                   const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
                   return (
@@ -444,6 +474,7 @@ export function AppNav() {
                     </div>
                   );
                 })}
+                </div>
               </div>
             </div>
 

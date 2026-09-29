@@ -63,6 +63,12 @@ export const NAV_SECTIONS: NavSection[] = [
             desc: "IR disclosures, timeline, AI 'What changed?', and concall tone tracker.",
             badge: "NEW",
           },
+          {
+            label: "Reddit Retail Sentiment",
+            href: "/intelligence/reddit",
+            desc: "Alternative social NLP, mention spikes, bull/bear theses, & investor problems.",
+            badge: "NEW",
+          },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
           {
             label: "Legal & insolvency",
@@ -99,6 +105,24 @@ export const NAV_SECTIONS: NavSection[] = [
             label: "Fund Overlap Analyzer",
             href: "/funds?tab=overlap",
             desc: "Calculate common holdings and duplicate risk between 2 funds.",
+          },
+        ],
+      },
+      {
+        label: "Alternative Data & Reddit",
+        desc: "Retail sentiment engine, hype momentum, and unaddressed investor problems.",
+        badge: "NEW",
+        items: [
+          {
+            label: "Retail Sentiment Engine",
+            href: "/intelligence/reddit",
+            desc: "Alternative sentiment across 10 subreddits, mention growth, and bull/bear debates.",
+            badge: "NEW",
+          },
+          {
+            label: "Investor Problems Radar",
+            href: "/intelligence/reddit",
+            desc: "Surfacing structural friction points in research, portfolio, taxes, and data discovery.",
           },
         ],
       },
@@ -215,20 +239,6 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Get AI trade ideas, then test them on history.",
         items: [
           { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K scanner equity curves vs Nifty 500 — signal hold horizons after each close.", badge: "NEW" },
-        ],
-      },
-      {
-        label: "NIFTY Algo Desk",
-        desc: "Intraday options research: ML signals, tick backtests, live paper trading.",
-        badge: "NEW",
-        items: [
-          { label: "Dashboard", href: "/algo", desc: "Equity curve, risk profiles, and system status.", badge: "NEW" },
-          { label: "Live trading", href: "/algo/live", desc: "Scanner, suggestions, auto/manual execution, open positions.", badge: "NEW" },
-          { label: "Trade history", href: "/algo/trades", desc: "Closed trades, P&L breakdown, premium journey charts." },
-          { label: "Tick backtest", href: "/algo/backtest", desc: "Replay engine on historical ticks (LOW/MEDIUM/HIGH risk)." },
-          { label: "Day replay", href: "/algo/replay", desc: "Fast-forward one historical session with ML + strategies.", badge: "NEW" },
-          { label: "Charts & chain", href: "/algo/charts", desc: "NIFTY candles, option chain, premium tick chart." },
-          { label: "Algo settings", href: "/algo/settings", desc: "Risk profile selector and execution thresholds." },
         ],
       },
     ],
