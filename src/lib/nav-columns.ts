@@ -97,6 +97,24 @@ export const NAV_SECTIONS: NavSection[] = [
         ],
       },
       {
+        label: "Credit & Solvency Radar",
+        desc: "Rating agency actions (CRISIL, ICRA, CARE) connected to equity prices.",
+        badge: "NEW",
+        items: [
+          {
+            label: "Credit / Risk Intelligence",
+            href: "/intelligence/credit",
+            desc: "Track upgrades, downgrades, credit watch, defaults, and liquidity across CRISIL, ICRA, CARE.",
+            badge: "NEW",
+          },
+          {
+            label: "Debt & Solvency Risk",
+            href: "/portfolio/risk",
+            desc: "Feed credit rating changes and debt distress directly into portfolio risk.",
+          },
+        ],
+      },
+      {
         label: "Ownership & Insiders",
         desc: "Promoter buying, pledge changes, insider trading & bulk/block deals.",
         badge: "NEW",

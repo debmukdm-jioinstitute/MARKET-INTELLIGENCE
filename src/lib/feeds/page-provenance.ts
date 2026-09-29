@@ -91,6 +91,21 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/credit",
+    match: {
+      summary: "Credit & risk intelligence — CRISIL, ICRA, CARE, India Ratings, Acuité, Brickwork rating actions connected to equity prices.",
+      chips: [
+        {
+          kind: "api",
+          label: "Credit intelligence desk",
+          source: { provider: "MI credit radar", url: "/api/credit" },
+          fetchMethod: "getAllCreditActivities() — src/lib/credit/database.ts",
+        },
+        ...chips("nse", "bse"),
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/promoters",
     match: {
       summary: "Promoter activity tracker — buying, selling, pledge changes, insider trading, and block/bulk deals.",

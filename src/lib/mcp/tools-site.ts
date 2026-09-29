@@ -1,4 +1,5 @@
 import { getAllPromoterActivities } from "@/lib/promoters/database";
+import { getAllCreditActivities } from "@/lib/credit/database";
 import { z } from "zod";
 import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
@@ -377,6 +378,32 @@ export const SITE_TOOLS: Tool[] = [
       if (!detail) return { error: "IPO not found" };
       const intel = await buildIpoIntelligence(detail);
       return compactIpoIntelligenceForMcp(intel);
+    },
+  },
+  {
+    name: "get_credit_risk_intelligence",
+    title: "Credit & debt risk intelligence",
+    category: "Research",
+    description:
+      "Monitor CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork for upgrades, downgrades, credit watch, defaults, and liquidity concerns connected to equity prices.",
+    inputSchema: empty,
+    run: async () => {
+      const all = getAllCreditActivities();
+      return {
+        totalActions: all.length,
+        actions: all.slice(0, 15).map((a) => ({
+          symbol: a.symbol,
+          company: a.companyName,
+          agency: a.agency,
+          action: a.action,
+          rating: `${a.ratingBefore} -> ${a.ratingAfter} (${a.outlookAfter})`,
+          ratedDebtCr: a.ratedDebtAmountCr,
+          liquidity: a.liquidityAssessment,
+          equityReturnPct: a.equityConnection.equityReturnSinceActionPct,
+          equityTransmission: a.equityConnection.transmission,
+          date: a.actionDate,
+        })),
+      };
     },
   },
   {

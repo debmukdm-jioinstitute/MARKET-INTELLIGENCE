@@ -1,6 +1,7 @@
 "use client";
 
 import { PortfolioPromoterRiskPanel } from "@/components/promoters/portfolio-promoter-risk-panel";
+import { PortfolioCreditRiskPanel } from "@/components/credit/portfolio-credit-risk-panel";
 
 import { Bars } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -181,6 +182,9 @@ export default function RiskPage() {
 
           {/* Promoter & Governance Risk Engine */}
           <PortfolioPromoterRiskPanel positions={data.positions} />
+
+          {/* Credit & Debt Rating Risk Radar */}
+          <PortfolioCreditRiskPanel positions={data.positions} />
         </>
       ) : null}
     </div>
