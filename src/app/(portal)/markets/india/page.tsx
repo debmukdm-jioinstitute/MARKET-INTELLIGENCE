@@ -40,11 +40,14 @@ export default function IndiaMarketsPage() {
               <TrendingUp className="size-4 text-primary" />
               <h3 className="font-bold text-xs uppercase tracking-wider text-foreground">
                 INDIA BENCHMARKS (NSE / BSE)
+                <span className="ml-2 font-semibold normal-case tracking-normal text-muted-foreground">
+                  · {feedData.indices.length} indices
+                </span>
               </h3>
             </div>
             <span className="text-xs text-muted-foreground font-sans">{quoteLabel}</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 max-h-[min(28rem,55vh)] overflow-y-auto pr-1">
             {feedData.indices.map((idx) => {
               const isPos = idx.changePct >= 0;
               return (
