@@ -118,6 +118,18 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub text`;
       await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_accepted_at timestamptz`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at timestamptz`;
+      await db`
+        CREATE TABLE IF NOT EXISTS signup_otps (
+          email text PRIMARY KEY,
+          name text NOT NULL,
+          password_hash text NOT NULL,
+          code_hash text NOT NULL,
+          attempts int NOT NULL DEFAULT 0,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          expires_at timestamptz NOT NULL
+        )
+      `;
       await db`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
         ON users (google_sub) WHERE google_sub IS NOT NULL

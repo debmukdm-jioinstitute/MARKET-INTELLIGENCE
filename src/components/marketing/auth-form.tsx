@@ -4,7 +4,7 @@ import { GoogleSignInButton } from "@/components/marketing/google-sign-in-button
 import { PrivacyAcceptanceField } from "@/components/marketing/privacy-acceptance-field";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 const inputClass =
@@ -59,7 +59,7 @@ export function AuthForm({
   sessionExpired?: boolean;
   fromDemo?: boolean;
 }) {
-  const { login, signup, enterGuest, isGuest, guestAllowed } = useAuth();
+  const { login, signup, enterGuest, isGuest, guestAllowed, verifySignup, resendSignupOtp } = useAuth();
   const router = useRouter();
   const dest = next.startsWith("/") ? next : "/Home";
   const [email, setEmail] = useState("");
@@ -70,10 +70,22 @@ export function AuthForm({
   const [pending, setPending] = useState(false);
   const [guestPending, setGuestPending] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [otpEmail, setOtpEmail] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [resendIn, setResendIn] = useState(0);
   const emailRef = useRef<HTMLInputElement>(null);
+  const otpRef = useRef<HTMLInputElement>(null);
+  const otpBusy = useRef(false);
   const privacyRef = useRef<HTMLInputElement>(null);
   const isSignup = mode === "signup";
   const showDemoMigration = isSignup && (fromDemo || isGuest);
+  const awaitingOtp = isSignup && Boolean(otpEmail);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [resendIn]);
 
   const oauthMessage = useMemo(
     () => (oauthError ? (OAUTH_ERRORS[oauthError] ?? "Sign-in error.") : ""),
@@ -112,12 +124,19 @@ export function AuthForm({
     const data = new FormData(event.currentTarget);
     try {
       if (mode === "signup") {
-        await signup({
+        const result = await signup({
           name: String(data.get("name") ?? name).trim() || "Investor",
           email: email.trim(),
           password: String(data.get("password") ?? ""),
           acceptPrivacy: true,
         });
+        if (result.pending) {
+          setOtpEmail(email.trim().toLowerCase());
+          setOtpCode("");
+          setResendIn(45);
+          setPending(false);
+          return;
+        }
       } else {
         await login({
           email: email.trim(),
@@ -158,6 +177,39 @@ export function AuthForm({
     privacyRef.current?.focus();
   }
 
+  async function submitOtp(code: string) {
+    if (!otpEmail || code.length !== 6 || pending || otpBusy.current) return;
+    otpBusy.current = true;
+    setPending(true);
+    setFormError("");
+    try {
+      await verifySignup({ email: otpEmail, code });
+      router.push(`/onboarding?next=${encodeURIComponent(dest)}&download=1`);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not verify that code.");
+      otpRef.current?.focus();
+    } finally {
+      otpBusy.current = false;
+      setPending(false);
+    }
+  }
+
+  async function onResendCode() {
+    if (!otpEmail || resendIn > 0 || pending) return;
+    setFormError("");
+    setPending(true);
+    try {
+      await resendSignupOtp(otpEmail);
+      setResendIn(45);
+      setOtpCode("");
+      otpRef.current?.focus();
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not resend the code.");
+    } finally {
+      setPending(false);
+    }
+  }
+
   const submitLabel = pending
     ? isSignup
       ? "Creating your account…"
@@ -182,15 +234,17 @@ export function AuthForm({
       ) : null}
 
       <h1 className="mt-8 text-[28px] leading-tight font-semibold text-foreground">
-        {mode === "signup" ? "Create a free account" : "Sign in"}
+        {awaitingOtp ? "Check your email" : mode === "signup" ? "Create a free account" : "Sign in"}
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        {mode === "signup"
-          ? "Open a virtual desk in seconds. No brokerage. No card."
-          : "Continue to your saved watchlists and research."}
+        {awaitingOtp
+          ? `Enter the 6-digit code we sent to ${otpEmail}.`
+          : mode === "signup"
+            ? "Open a virtual desk in seconds. No brokerage. No card."
+            : "Continue to your saved watchlists and research."}
       </p>
 
-      {showDemoMigration ? (
+      {showDemoMigration && !awaitingOtp ? (
         <div className="mt-4 rounded-lg border border-blue-600/20 bg-blue-600/5 px-4 py-3 text-sm text-foreground">
           <p className="font-semibold text-blue-700">Saving after demo</p>
           <p className="mt-1 text-muted-foreground">
@@ -199,6 +253,67 @@ export function AuthForm({
         </div>
       ) : null}
 
+      {awaitingOtp ? (
+        <form
+          className="mt-6 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submitOtp(otpCode);
+          }}
+        >
+          <AuthField id="auth-otp" label="Verification code" error={formError || undefined}>
+            <input
+              ref={otpRef}
+              id="auth-otp"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              maxLength={6}
+              value={otpCode}
+              onChange={(e) => {
+                const next = e.target.value.replace(/\D/g, "").slice(0, 6);
+                setOtpCode(next);
+                if (formError) setFormError("");
+                if (next.length === 6) void submitOtp(next);
+              }}
+              aria-invalid={Boolean(formError)}
+              className={`${inputClass} tracking-[0.4em] tabular-nums`}
+              placeholder="000000"
+            />
+          </AuthField>
+          <button
+            type="submit"
+            disabled={pending || otpCode.length !== 6}
+            aria-busy={pending}
+            className="h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-[var(--shadow-sm)] transition hover:bg-primary/90 hover:shadow-[var(--shadow-md)] disabled:opacity-50"
+          >
+            {pending ? "Verifying…" : "Verify email"}
+          </button>
+          <div className="flex flex-col items-center gap-2 pt-1 text-sm text-muted-foreground">
+            <button
+              type="button"
+              disabled={pending || resendIn > 0}
+              onClick={() => void onResendCode()}
+              className="font-semibold text-primary underline-offset-4 hover:underline disabled:text-muted-foreground disabled:no-underline"
+            >
+              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setOtpEmail(null);
+                setOtpCode("");
+                setFormError("");
+              }}
+              className="underline-offset-4 hover:underline"
+            >
+              Use a different email
+            </button>
+          </div>
+        </form>
+      ) : (
+        <>
       <div className={`space-y-3 ${isSignup ? "mt-6" : "mt-8"}`}>
         <GoogleSignInButton
           next={dest}
@@ -345,6 +460,8 @@ export function AuthForm({
           </>
         )}
       </p>
+        </>
+      )}
     </div>
   );
 }

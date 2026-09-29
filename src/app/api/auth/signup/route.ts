@@ -1,11 +1,16 @@
-import { hashPassword, isBootstrapAdmin } from "@/lib/admin/auth";
-import { setSessionCookie } from "@/lib/admin/session-cookie";
+import { hashPassword } from "@/lib/admin/auth";
+import { hasEmailConfigured } from "@/lib/admin/email";
+import { isFeatureEnabled, rateLimited } from "@/lib/api-guard";
+import { completeEmailSignup, hashSignupPassword } from "@/lib/auth/complete-signup";
+import { generateSignupOtp, hashSignupOtp, sendSignupOtpEmail, shouldChallengeSignupOtp, SIGNUP_OTP_TTL_MIN } from "@/lib/auth/signup-otp";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
-import { after } from "next/server";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+
+function clientIp(req: Request) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
+}
 
 export async function POST(req: Request) {
   if (!hasDatabase()) {
@@ -39,19 +44,40 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
   }
 
-  const passwordHash = await hashPassword(password);
-  const role = isBootstrapAdmin(email) ? "admin" : "user";
-  await db`
-    INSERT INTO users (email, name, password_hash, role, last_login_at, privacy_accepted_at)
-    VALUES (${email}, ${name}, ${passwordHash}, ${role}, now(), now())
-  `;
+  const otpOn = await isFeatureEnabled("signup-otp");
+  if (otpOn && !hasEmailConfigured() && process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Email verification is not configured on this deployment yet." }, { status: 503 });
+  }
 
-  const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };
-  const res = NextResponse.json({ ok: true, user: { email, name, role } });
-  const out = setSessionCookie(res, sessionUser);
-  const origin = new URL(req.url).origin;
-  after(() => {
-    void sendWelcomePackToUser(sessionUser, origin);
+  if (await shouldChallengeSignupOtp()) {
+    if (await rateLimited(`signup-otp:${email}:${clientIp(req)}`, 5, 3600)) {
+      return NextResponse.json({ error: "Too many codes. Try again later." }, { status: 429 });
+    }
+    const passwordHash = await hashSignupPassword(password);
+    const code = generateSignupOtp();
+    const codeHash = hashSignupOtp(email, code);
+    await db`
+      INSERT INTO signup_otps (email, name, password_hash, code_hash, attempts, created_at, expires_at)
+      VALUES (${email}, ${name}, ${passwordHash}, ${codeHash}, 0, now(), now() + make_interval(mins => ${SIGNUP_OTP_TTL_MIN}))
+      ON CONFLICT (email) DO UPDATE SET
+        name = EXCLUDED.name,
+        password_hash = EXCLUDED.password_hash,
+        code_hash = EXCLUDED.code_hash,
+        attempts = 0,
+        created_at = now(),
+        expires_at = EXCLUDED.expires_at
+    `;
+    const sent = await sendSignupOtpEmail(email, code);
+    if (!sent.ok) {
+      return NextResponse.json({ error: sent.error ?? "Could not send the verification code." }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true, pending: true, email });
+  }
+
+  return completeEmailSignup({
+    email,
+    name,
+    passwordHash: await hashPassword(password),
+    origin: new URL(req.url).origin,
   });
-  return out;
 }
