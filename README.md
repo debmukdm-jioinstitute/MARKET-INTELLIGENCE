@@ -2,7 +2,7 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, **broker research aggregation**, **Google Trends Attention Index**, institutional and legal-risk monitors, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
 
 ## Product capabilities (summary)
 
@@ -12,8 +12,8 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
-| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; integrated **DCF**, **AI Desk**, **options-flow** screener |
-| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor** (RSS / global feeds) |
+| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; integrated **DCF**, **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder** |
+| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor**; **Search-trend Attention Index** ([Google Trends](https://trends.google.com)); institutional flows, legal-risk monitor, company/concall intel, credit & promoter trackers, Reddit retail sentiment |
 | **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, palette, search; read portfolio, alerts, watchlist, brief, stress; add holdings, alerts, watchlist rows (confirmations + audit) ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
 | **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
@@ -45,7 +45,7 @@ This document explains **how every page actually computes what it shows** — th
 11. [Data & Feeds transparency](#11-data--feeds-transparency)
 12. [Admin backend](#12-admin-backend)
 13. [Broker import](#13-broker-import)
-14. [NIFTY Algo Desk](#14-nifty-algo-desk)
+14. [NIFTY Algo Desk (removed)](#14-nifty-algo-desk-removed-from-public-site)
 15. [Site assistant](#15-site-assistant)
 16. [Data sources at a glance](#16-data-sources-at-a-glance)
 17. [Run locally & deploy](#17-run-locally--deploy)
@@ -75,7 +75,7 @@ flowchart LR
   subgraph External
     U[Upstox · NSE · Yahoo · FRED · WB…]
     G[Groq · OmniRoute]
-    F[AI-trader Flask<br/>optional]
+    F[AI-trader Flask<br/>self-host only]
   end
   PG[(Neon Postgres)]
   P --> R
@@ -471,6 +471,9 @@ A genuine textbook Brinson decomposition needs a real per-sector benchmark weigh
 
 **Path:** `/research`, `/research/[symbol]` (company dossier — **guest-readable**), `/research/model/[symbol]`, `/research/ipo`
 
+### Broker Research Aggregator & Consensus — `/research`
+🟢 **Institutional-style desk** on the research hub: curated **broker research** rows (Motilal Oswal, Kotak, ICICI Sec, HDFC Sec, and peers) with target prices, rating changes, and estimate revisions, plus **Consensus Changed — Why?** synthesis when multiple brokers move on the same name. APIs: `/api/broker-research`, `/api/broker-research/consensus`. Code: `src/lib/broker-research/*`, UI: `src/components/broker-research/*`. Distinct from the scraped headline feed at [`/research-reports`](#9-research-reports) (ET / LiveMint HTML scrape).
+
 ### Company dossier — `/research/[symbol]`
 🟢 Single-page research layout with **sticky section nav** (Overview, Valuation, Radar, Trend, Options when F&O-listed, Fundamentals, Risk, News, Scanner flags, IPO when relevant). Built from `/api/feeds/research/[symbol]` and related intelligence blocks — not a CMIE/Prowess embed.
 
@@ -606,16 +609,23 @@ Every scraped story is upserted keyed on its URL, so re-scraping the same story 
 
 ## 10. Intelligence
 
-**Path:** `/intelligence` and subpages (`/intelligence/brief`, `/intelligence/alerts`, `/intelligence/scanner`, …)
+**Paths:** `/intelligence` and subpages — brief, alerts, scanner, backtesting, world-monitor, institutional, legal-risk, company, credit, promoters, reddit, **search-trends**, …
 
-| Piece | How it works |
-|---|---|
-| **News stream** | 🟢 RSS / hub aggregation with freshness sorting |
-| **Regulatory & exchange headlines** | 🟢 Filtered to **NSE, BSE, RBI** sources; sorted by parsed publish time (newest first), not raw string order |
-| **Corporate events** | 🟢 Shared with dashboard "what changed" modules |
-| **Daily brief** | 🤖 Scheduled pre-market / post-close; fact-sheet-grounded LLM with citation ids ([§13b](#13b-stress-alerts-brief-transmission--scenarios)) |
-| **Alert rules** | 🧮 User-defined metric conditions, cron-evaluated |
-| **Legacy "Copilot Terminal" on Intelligence** | ⚪ Client-only keyword matcher with canned replies — **not** an LLM |
+| Piece | Path | How it works |
+|---|---|---|
+| **News stream** | `/intelligence` | 🟢 RSS / hub aggregation with freshness sorting |
+| **Regulatory & exchange headlines** | `/intelligence` | 🟢 Filtered to **NSE, BSE, RBI** sources; sorted by parsed publish time |
+| **Daily brief** | `/intelligence/brief` | 🤖 Scheduled pre-market / post-close; fact-sheet-grounded LLM ([§13b](#13b-stress-alerts-brief-transmission--scenarios)) |
+| **Alert rules** | `/intelligence/alerts` | 🧮 User-defined metric conditions, cron-evaluated |
+| **Scanner & AI signals** | `/intelligence/scanner`, `/intelligence/ai-signals` | 🧮 Scheduled Nifty 500 scans; walk-forward index models + BTST/STBT candidates |
+| **Search-trend Attention Index** | `/intelligence/search-trends` | 🟢/⚪ **Google Trends** interest (`IN`, ~3m window) for companies, IPOs, sectors, commodities, macro, policy, CEOs, products → composite **Attention Index** (interest + momentum). Live when Trends API reachable; deterministic fallback when blocked. API: `/api/feeds/search-trends` · MCP: `get_search_trend_attention` · Code: `src/lib/search-trends/*` |
+| **Institutional intelligence** | `/intelligence/institutional` | 🟢 FII/DII cash, MF smart-money signals, ownership map · MCP: `get_institutional_intelligence` |
+| **Legal & insolvency monitor** | `/intelligence/legal-risk` | 🟢 Enforcement headlines → company risk chains · MCP: `get_legal_risk_monitor` |
+| **Company / concall intel** | `/intelligence/company` | 🤖 IR timeline, disclosure deltas, concall tone (where configured) |
+| **Credit & promoters** | `/intelligence/credit`, `/intelligence/promoters` | 🟢 Rating-agency and promoter/insider activity feeds (demo + curated sources) |
+| **Reddit retail sentiment** | `/intelligence/reddit` | 🤖 Alternative social NLP — mention spikes, bull/bear theses |
+| **World Monitor** | `/intelligence/world-monitor` | 🟢 Global RSS / open feeds via same-origin proxy |
+| **Legacy "Copilot Terminal" on Intelligence** | — | ⚪ Client-only keyword matcher — **not** an LLM |
 
 For **in-app navigation and product help**, use the floating **site assistant** ([§15](#15-site-assistant)). For **ticker-level research agents**, use [AI Desk](#7-ai-desk-llm-research-agents).
 
@@ -765,6 +775,16 @@ npx vercel --prod --yes
 
 Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
 
+### 0.1.6 — 30 Sep 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Intelligence | **Search-trend Attention Index** at `/intelligence/search-trends` — Google Trends → Attention Index by topic category; MCP `get_search_trend_attention` |
+| Feature | Research | **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; user-driven DCF template (replaces automated intrinsic quote) |
+| Feature | Intelligence | Reddit retail sentiment, company/concall intel, institutional, legal-risk, credit & promoter hubs (nav + MCP where wired) |
+| Improvement | UX | Invest mega-menu **full-width grid**; `/research` hero search **typing Nifty-name placeholder** |
+| Removal | Algo | NIFTY Algo Desk portal UI removed; `/algo/*` **301 → `/intelligence/scanner`**; self-host `services/ai-trader/` only ([§14](#14-nifty-algo-desk-removed-from-public-site)) |
+
 ### 0.1.5 — 29 Sep 2026
 
 | Type | Area | Change |
@@ -784,7 +804,7 @@ Package version in `package.json` is **`0.1.0`**. The tables below track what sh
 |---|---|---|
 | Improvement | Cron | Single daily `52w-levels` run (~5m budget); stagger `options-flow` / `what-changed` away from scan cluster (14 Vercel crons, was 17) |
 | Improvement | Performance | ISR `revalidate = 3600` on `/`, `/help`, `/methodology`, legal pages, `/connect/claude`, research-reports layout shell |
-| Improvement | Copy | Home five AI agent cards — plain-language roles, descriptions, CTAs (Ask Deb, brief, signals, flow, algo) |
+| Improvement | Copy | Home five AI agent cards — plain-language roles, descriptions, CTAs (Ask Deb, brief, signals, flow, scanner) |
 | Improvement | Docs | README product summary + versioned release history tables |
 
 ### 0.1.3 — 28 Sep 2026 (PR #31–#32, follow-ups)
@@ -827,8 +847,8 @@ Package version in `package.json` is **`0.1.0`**. The tables below track what sh
 | Type | Area | Change |
 |---|---|---|
 | Feature | Core product | India desk, markets, macro hub, portfolio Engine A/B, research + DCF, AI Desk, options-flow pipeline |
-| Feature | Intelligence | Daily brief, alerts, scanner, regulatory news sort |
-| Feature | Algo | NIFTY Algo Desk UI proxied to optional Flask `AI-trader` stack |
+| Feature | Intelligence | Daily brief, alerts, scanner, regulatory news sort, search-trend Attention Index |
+| Feature | Algo | *(Removed from hosted site Sep 2026 — optional self-hosted Flask stack only)* |
 | Feature | Admin | Customers, briefs, newsletters, FTS RAG Q&A |
 | Feature | Data | Collector cron → Neon; `/data/feeds` live health vs static `/data` mock |
 
