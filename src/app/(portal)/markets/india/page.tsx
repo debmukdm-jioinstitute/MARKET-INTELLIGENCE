@@ -50,7 +50,9 @@ export default function IndiaMarketsPage() {
               return (
                 <div key={idx.symbol} className="rounded-lg border border-border/70 bg-card/40 p-3 space-y-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-bold text-foreground truncate">{idx.symbol}</span>
+                    <span className="text-xs font-bold text-foreground truncate" title={idx.name}>
+                      {idx.symbol}
+                    </span>
                     <span
                       className={cn(
                         "rounded px-1.5 py-0.5 text-[11px] font-bold",
