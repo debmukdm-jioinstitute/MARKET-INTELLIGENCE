@@ -6,6 +6,8 @@ import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
+import { CompanyIntelligenceHub } from "@/components/company/company-intelligence-hub";
+import { getCompanyIntelligenceProfile, getFeaturedIntelligenceSymbols } from "@/lib/company-intelligence/database";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { ValuationPanel } from "@/components/research/valuation-panel";
@@ -86,6 +88,9 @@ export function ResearchSymbolClient({
       list.push({ id: "fundamentals", label: "Fundamentals" });
     }
     list.push({ id: "risk", label: "Risk & Events" });
+    if (isIndia && symbol) {
+      list.push({ id: "concall-timeline", label: "Timeline & Concall" });
+    }
     if (data?.intelligence) {
       list.push({ id: "news", label: "News & Filings" });
     }
@@ -264,6 +269,24 @@ export function ResearchSymbolClient({
             subtitle="Volatility, drawdown, historical beta, and expected sovereign/earnings events computed from historical trading series."
           >
             <SecurityRiskPanel symbol={symbol} />
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* SECTION: COMPANY TIMELINE, WHAT CHANGED & CONCALL INTELLIGENCE */}
+      {isIndia && symbol ? (
+        <section id="concall-timeline" className="scroll-mt-24">
+          <Panel
+            title="Company Disclosure Timeline & Concall Intelligence"
+            subtitle="Automated IR crawl, continuous regulatory timeline, AI-synthesized 'What changed?', and multi-quarter management tone tracker."
+          >
+            <div className="pt-2">
+              <CompanyIntelligenceHub
+                initialProfile={getCompanyIntelligenceProfile(symbol)}
+                featuredSymbols={getFeaturedIntelligenceSymbols()}
+                initialSymbol={symbol}
+              />
+            </div>
           </Panel>
         </section>
       ) : null}

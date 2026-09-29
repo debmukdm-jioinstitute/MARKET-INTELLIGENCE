@@ -91,6 +91,21 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
+    prefix: "/intelligence/company",
+    match: {
+      summary: "Company-specific intelligence — IR disclosures crawler, continuous event timeline, AI 'What changed?', and concall management tone tracker.",
+      chips: [
+        {
+          kind: "api",
+          label: "Company intelligence desk",
+          source: { provider: "MI company IR crawler", url: "/api/company/intelligence" },
+          fetchMethod: "getCompanyIntelligenceProfile() — src/lib/company-intelligence/database.ts",
+        },
+        ...chips("nse", "bse"),
+      ],
+    },
+  },
+  {
     prefix: "/intelligence/credit",
     match: {
       summary: "Credit & risk intelligence — CRISIL, ICRA, CARE, India Ratings, Acuité, Brickwork rating actions connected to equity prices.",

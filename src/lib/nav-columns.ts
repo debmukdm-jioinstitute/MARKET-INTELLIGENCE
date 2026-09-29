@@ -57,6 +57,12 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Company Workbench", href: "/research", desc: "Snapshots, comparables, and price history (Upstox/Yahoo when configured)." },
           { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
           { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
+          {
+            label: "Company & Concall Intel",
+            href: "/intelligence/company",
+            desc: "IR disclosures, timeline, AI 'What changed?', and concall tone tracker.",
+            badge: "NEW",
+          },
           { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
           {
             label: "Legal & insolvency",
@@ -93,6 +99,24 @@ export const NAV_SECTIONS: NavSection[] = [
             label: "Fund Overlap Analyzer",
             href: "/funds?tab=overlap",
             desc: "Calculate common holdings and duplicate risk between 2 funds.",
+          },
+        ],
+      },
+      {
+        label: "Company Disclosures & Concalls",
+        desc: "Automated IR crawler, timeline stream, delta variance, and management tone.",
+        badge: "NEW",
+        items: [
+          {
+            label: "Company Intelligence Desk",
+            href: "/intelligence/company",
+            desc: "Explore full IR crawl, continuous timeline, and AI 'What changed?' delta.",
+            badge: "NEW",
+          },
+          {
+            label: "Concall Management Tone",
+            href: "/intelligence/company?symbol=TATAMOTORS",
+            desc: "Track quarterly management confidence inflection and institutional analyst Q&A.",
           },
         ],
       },

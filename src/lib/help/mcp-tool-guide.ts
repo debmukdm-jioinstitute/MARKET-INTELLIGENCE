@@ -33,6 +33,8 @@ const ASK: Partial<Record<string, string>> = {
   get_earnings_calendar: "Who reports earnings soon?",
   get_ipos: "Which IPOs are open now, and what is their GMP?",
   get_ipo_intelligence: "Build the full IPO intelligence dossier for this issue id (DRHP, risks, GMP, subscription).",
+  get_company_intelligence_timeline: "Show me the corporate disclosure timeline and what changed for TATAMOTORS.",
+  get_concall_intelligence: "What was management confidence and margin guidance in TATAMOTORS earnings concall?",
   get_credit_risk_intelligence: "Rating agency actions (CRISIL, ICRA, CARE) and how they impact equity prices?",
   get_promoter_activity_tracker: "Which promoters are buying or selling, whose pledges increased, and recent block/bulk deals?",
   get_institutional_intelligence: "Who is buying and selling India — FII, DII, MF smart money and ownership signals?",

@@ -1,5 +1,6 @@
 import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
+import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
 import { z } from "zod";
 import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
@@ -378,6 +379,80 @@ export const SITE_TOOLS: Tool[] = [
       if (!detail) return { error: "IPO not found" };
       const intel = await buildIpoIntelligence(detail);
       return compactIpoIntelligenceForMcp(intel);
+    },
+  },
+  {
+    name: "get_company_intelligence_timeline",
+    title: "Company disclosure timeline & delta",
+    category: "Research",
+    description:
+      "Crawl official IR disclosures, timeline events (filings, presentations, credit actions, M&A, production), and AI-generated 'What changed?' delta for any listed Indian company.",
+    inputSchema: {
+      type: "object",
+      properties: { symbol: sym },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol } = SymbolArg.parse(a);
+      const profile = getCompanyIntelligenceProfile(symbol);
+      return {
+        symbol: profile.symbol,
+        companyName: profile.companyName,
+        sector: profile.sector,
+        timelineCount: profile.timeline.length,
+        recentTimeline: profile.timeline.slice(0, 10).map((t) => ({
+          date: t.date,
+          displayDate: t.displayDate,
+          type: t.type,
+          headline: t.headline,
+          impact: t.impact,
+          summary: t.summary,
+        })),
+        whatChangedDelta: {
+          period: profile.whatChanged.period,
+          netDirection: profile.whatChanged.netDirection,
+          executiveSynthesis: profile.whatChanged.executiveSynthesis,
+          dimensions: profile.whatChanged.dimensions,
+          catalystsToWatch: profile.whatChanged.catalystsToWatch,
+        },
+      };
+    },
+  },
+  {
+    name: "get_concall_intelligence",
+    title: "Concall intelligence & management tone tracker",
+    category: "Research",
+    description:
+      "Extract earnings concall operational dimensions (management confidence score, revenue & margin guidance, capex, demand, pricing, analyst Q&A) and longitudinal Management Tone Tracker for any Indian company.",
+    inputSchema: {
+      type: "object",
+      properties: { symbol: sym },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol } = SymbolArg.parse(a);
+      const profile = getCompanyIntelligenceProfile(symbol);
+      return {
+        symbol: profile.symbol,
+        companyName: profile.companyName,
+        latestQuarter: profile.latestConcall.quarter,
+        callDate: profile.latestConcall.date,
+        managementConfidenceScore: profile.latestConcall.dimensions.managementConfidence.score,
+        managementConfidenceStance: profile.latestConcall.dimensions.managementConfidence.stance,
+        headlineVerdict: profile.latestConcall.headlineVerdict,
+        dimensions: profile.latestConcall.dimensions,
+        analystQA: profile.latestConcall.analystQA.map((q) => ({
+          analyst: `${q.analystName} (${q.firm})`,
+          question: q.question,
+          speaker: q.managementSpeaker,
+          answer: q.answerSummary,
+          verbatimExcerpt: q.verbatimExcerpt,
+          tone: q.tone,
+        })),
+        historicalToneTrajectory: profile.historicalToneTrajectory,
+      };
     },
   },
   {
