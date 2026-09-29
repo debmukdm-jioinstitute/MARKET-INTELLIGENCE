@@ -41,18 +41,22 @@ export async function fetchBiquoteIndices(): Promise<LiveQuote[]> {
     }
   }
 
-  return symbols
-    .map((yahooSym) => {
-      const r = rows.get(yahooSym);
-      if (!r) return null;
-      const meta = indiaBenchmarkDef(yahooSym);
-      if (!meta) return null;
-      return {
-        ...r,
-        symbol: meta.label,
-        name: meta.name,
-        currency: "INR" as const,
-      };
-    })
-    .filter((r): r is LiveQuote => r != null);
+  const out: LiveQuote[] = [];
+  for (const yahooSym of symbols) {
+    const r = rows.get(yahooSym);
+    if (!r) continue;
+    const meta = indiaBenchmarkDef(yahooSym);
+    if (!meta) continue;
+    out.push({
+      symbol: meta.label,
+      name: meta.name,
+      price: r.price,
+      change: r.change,
+      changePct: r.changePct,
+      currency: "INR",
+      asOf: r.asOf,
+      provider: r.provider,
+    });
+  }
+  return out;
 }

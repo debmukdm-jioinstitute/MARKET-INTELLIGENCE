@@ -1,4 +1,4 @@
-import type { Obs } from "../types";
+import type { Obs } from "@/lib/collector/types";
 
 /** Official MoF/PIB monthly gross GST (₹ crore) — baseline until PIB scrape appends newer months. */
 export const SEED_GST_MONTHLY_CR: Obs[] = [
