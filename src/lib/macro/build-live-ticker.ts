@@ -1,6 +1,7 @@
 import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import type { QuoteField } from "@/lib/feeds/india/types";
-import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
+import { getQuotes } from "@/lib/feeds/quotes";
+import { yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import { TICKER_INSTRUMENTS, type TickerInstrument } from "@/lib/macro/ticker-instruments";
 
 export type LiveTickerItem = {
@@ -90,11 +91,11 @@ function emptyItem(inst: TickerInstrument): LiveTickerItem {
 
 export async function buildLiveTicker(): Promise<LiveTickerPayload> {
   const symbols = TICKER_INSTRUMENTS.map((t) => t.symbol);
-  const [quotes, quick] = await Promise.all([
-    fetchYahooQuotes(symbols),
+  const [bundle, quick] = await Promise.all([
+    getQuotes(symbols),
     buildIndiaDashboardQuick().catch(() => null),
   ]);
-  const qmap = new Map(quotes.map((q) => [q.symbol, q]));
+  const qmap = new Map(bundle.quotes.map((r) => [r.quote.symbol, r.quote]));
 
   const items = TICKER_INSTRUMENTS.map((inst) => {
     const pulseKey = PULSE_SYMBOL[inst.symbol];
