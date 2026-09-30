@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllCreditActivities, filterCreditActivities } from "@/lib/credit/database";
+import { getAllCreditActivities, filterCreditActivities, getSmallcapFundsCreditProfiles } from "@/lib/credit/database";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get("action") || undefined;
     const sector = searchParams.get("sector") || undefined;
     const symbol = searchParams.get("symbol") || undefined;
+    const marketCap = searchParams.get("marketCap") || searchParams.get("cap") || undefined;
     const search = searchParams.get("search") || searchParams.get("q") || undefined;
 
     const all = getAllCreditActivities();
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
       action,
       sector,
       symbol,
+      marketCap,
       search,
     });
 
@@ -41,6 +43,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       activities: filtered,
+      smallcapFunds: getSmallcapFundsCreditProfiles(),
       totalCount: filtered.length,
       summary: {
         totalActionsTracked: all.length,

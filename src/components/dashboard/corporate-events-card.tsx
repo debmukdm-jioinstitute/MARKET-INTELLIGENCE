@@ -86,6 +86,22 @@ export function CorporateEventsCard() {
     return ev.category === activeFilter;
   });
 
+  function articleUrl(ev: CorporateEvent): string | null {
+    const u = ev.url?.trim();
+    if (!u) return null;
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    return null;
+  }
+
+  function openArticle(ev: CorporateEvent) {
+    const href = articleUrl(ev);
+    if (href) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    setSelectedEvent(ev);
+  }
+
   return (
     <div className="bento-card-shell bg-gradient-to-b from-card to-card/60">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
@@ -158,30 +174,67 @@ export function CorporateEventsCard() {
             No events found for this filter in current live RSS stream.
           </p>
         ) : (
-          filtered.slice(0, 7).map((ev, idx) => (
+          filtered.slice(0, 7).map((ev, idx) => {
+            const href = articleUrl(ev);
+            return (
             <div
               key={`${ev.id}-${idx}`}
-              onClick={() => setSelectedEvent(ev)}
-              className="flex items-center justify-between gap-3 py-2.5 px-2 rounded-md hover:bg-accent/40 cursor-pointer transition-colors"
+              role={href ? "link" : "button"}
+              tabIndex={0}
+              onClick={() => openArticle(ev)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openArticle(ev);
+                }
+              }}
+              className="flex items-center justify-between gap-3 py-2.5 px-2 rounded-md hover:bg-accent/40 cursor-pointer transition-colors group"
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="text-muted-foreground text-sm w-12 shrink-0">{ev.time}</span>
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="text-muted-foreground text-sm w-12 shrink-0 tabular-nums">{ev.time}</span>
                 <span className="font-bold text-foreground shrink-0 w-24 flex items-center gap-1">
                   {ev.symbol}
                   {ev.inPortfolio ? (
                     <span className="size-1.5 rounded-full bg-emerald-600" title="Relevant to portfolio" />
                   ) : null}
                 </span>
-                <span className="text-muted-foreground truncate text-sm">{ev.title}</span>
+                {href ? (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="min-w-0 truncate text-sm text-foreground group-hover:text-primary group-hover:underline underline-offset-2"
+                    title={ev.title}
+                  >
+                    {ev.title}
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground truncate text-sm">{ev.title}</span>
+                )}
               </div>
               <div className="shrink-0 flex items-center gap-2">
                 <span className="rounded bg-accent/50 px-1.5 py-0.5 text-sm font-semibold text-muted-foreground">
                   {ev.category}
                 </span>
-                <span className="text-primary text-sm hover:underline">Inspect →</span>
+                {href ? (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-0.5 text-primary text-sm font-semibold hover:underline"
+                  >
+                    Read
+                    <ExternalLink className="size-3" aria-hidden />
+                  </a>
+                ) : (
+                  <span className="text-primary text-sm font-semibold">Inspect →</span>
+                )}
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

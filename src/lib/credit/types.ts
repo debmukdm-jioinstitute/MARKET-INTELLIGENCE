@@ -1,3 +1,5 @@
+export type MarketCapCategory = "LARGE_CAP" | "MID_CAP" | "SMALL_CAP";
+
 export type CreditRatingAgency =
   | "CRISIL"
   | "ICRA"
@@ -57,6 +59,7 @@ export type CreditActivityRecord = {
   symbol: string;
   companyName: string;
   sector: string;
+  marketCapCategory?: MarketCapCategory;
   agency: CreditRatingAgency;
   action: CreditEventAction;
   actionDate: string; // YYYY-MM-DD
@@ -101,4 +104,32 @@ export type PortfolioCreditRiskAssessment = {
   capitalInUpgradedDebtCr: number;
   flaggedHoldings: FlaggedCreditHolding[];
   portfolioCreditSummary: string;
+};
+
+export type SmallcapFundFlaggedHolding = {
+  symbol: string;
+  companyName: string;
+  weightPct: number;
+  rating: string;
+  agency: CreditRatingAgency;
+  creditStatus: string;
+  issue: string;
+};
+
+export type SmallcapFundCreditProfile = {
+  id: string;
+  fundName: string;
+  amc: string;
+  aumCr: number;
+  category: "Small Cap Fund";
+  cashAndSovereignPct: number;
+  highGradeDebtPct: number;
+  moderateGradeDebtPct: number;
+  portfolioCreditScore: number;
+  creditHealthGrade: "AAA_PRUDENT" | "INVESTMENT_GRADE" | "WATCH_EXPOSURE" | "HIGH_CREDIT_DISTRESS";
+  liquidityStressDays20Pct: number;
+  liquidityStressDays50Pct: number;
+  flaggedHoldingsCount: number;
+  flaggedHoldings: SmallcapFundFlaggedHolding[];
+  creditRiskSummary: string;
 };
