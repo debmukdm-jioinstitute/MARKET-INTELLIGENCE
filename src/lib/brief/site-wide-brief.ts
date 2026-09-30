@@ -3,6 +3,15 @@ import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
 import { getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { getAllMutualFunds } from "@/lib/funds/database";
+import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
+import { buildLegalRiskHub } from "@/lib/legal-risk/build-hub";
+import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
+import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
+import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
+import { fetchNseNews } from "@/lib/feeds/sources/nse";
+import { fetchBseNews } from "@/lib/feeds/sources/bse";
+import { fetchNseOptionChain } from "@/lib/feeds/india/nse-market";
+import { sortNewsByFreshness } from "@/lib/feeds/news-sort";
 
 export interface IntelligencePillarSneakPeek {
   id: string;
@@ -60,11 +69,59 @@ export interface SiteWideExecutiveBrief {
   regulatorHeadlines: { title: string; source: string; link?: string; timeAgo: string }[];
 }
 
+function fmtChgPct(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(v)) return "—";
+  return `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+}
+
+function fmtIndexVal(v: number | null | undefined, decimals = 1): string {
+  if (v == null || !Number.isFinite(v)) return "—";
+  return v.toLocaleString("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function fmtCr(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(v)) return "—";
+  return `${v >= 0 ? "+" : ""}₹${Math.round(v).toLocaleString("en-IN")} Cr`;
+}
+
+function timeAgoFrom(iso: string | undefined): string {
+  if (!iso) return "recently";
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return "recently";
+  const hours = Math.floor(ms / 3_600_000);
+  if (hours < 1) return "under an hour ago";
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+const REGULATOR_FALLBACK = [
+  { title: "RBI: latest press releases and circulars", source: "Reserve Bank of India", link: "https://www.rbi.org.in/", timeAgo: "check source" },
+  { title: "NSE: latest corporate announcements and circulars", source: "National Stock Exchange", link: "https://www.nseindia.com/", timeAgo: "check source" },
+  { title: "SEBI: latest circulars and orders", source: "Securities and Exchange Board of India", link: "https://www.sebi.gov.in/", timeAgo: "check source" },
+];
+
 export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBrief> {
   const brokerReports = getAllBrokerResearchReports();
   const promoterActs = getAllPromoterActivities();
   const creditActs = getAllCreditActivities();
   const mutualFunds = getAllMutualFunds();
+
+  // Real live data: India market pulse, legal/regulatory risk, IPO grey-market premiums, and
+  // regulator headlines. Each is independently optional — a failure here degrades to an honest
+  // "—" / empty state for that slice, never a fabricated number.
+  const [dashboard, legalRisk, openIpos, rbiNews, nseNews, bseNews, niftyChain] = await Promise.all([
+    buildIndiaDashboardQuick().catch(() => null),
+    buildLegalRiskHub().catch(() => null),
+    fetchUpstoxIpoList("open")
+      .then((ipos) => enrichIpoListWithGmp(ipos, "open"))
+      .catch(() => []),
+    fetchRbiNews().catch(() => []),
+    fetchNseNews().catch(() => []),
+    fetchBseNews().catch(() => []),
+    fetchNseOptionChain("NIFTY").catch(() => null),
+  ]);
+  const regulatorNews = sortNewsByFreshness([...rbiNews, ...nseNews, ...bseNews]);
 
   // 1. Calculate Broker Highlights
   const relianceConsensus = getCompanyConsensusIntelligence("RELIANCE");
@@ -84,6 +141,18 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
   // 4. Retail Reddit Highlights — real live search across a fixed watchlist, not a fabricated hub.
   const liveReddit = await getWatchlistLiveSentiment();
   const topRedditSurge = liveReddit[0];
+
+  // Composite stance from real signals where available (index direction, VIX level, PCR, legal-risk
+  // flags) plus the curated broker buy-ratio/credit-upgrade-ratio inputs. 50 = neutral baseline.
+  let stanceScore = 50;
+  if (dashboard) stanceScore += (dashboard.pulse.nifty.changePct ?? 0) >= 0 ? 8 : -8;
+  if (dashboard) stanceScore += (dashboard.pulse.indiaVix.value ?? 20) < 15 ? 6 : (dashboard.pulse.indiaVix.value ?? 20) > 20 ? -6 : 0;
+  if (niftyChain?.pcr != null) stanceScore += niftyChain.pcr > 1.1 ? 6 : niftyChain.pcr < 0.9 ? -6 : 0;
+  if (legalRisk) stanceScore += legalRisk.corporateRiskMonitor.highImpactCount === 0 ? 5 : -8;
+  stanceScore += buyRatio >= 70 ? 8 : buyRatio < 50 ? -8 : 0;
+  stanceScore += downgrades.length > 0 ? (Number(upgradeRatio) >= 2 ? 5 : Number(upgradeRatio) < 1 ? -5 : 0) : upgrades.length > 0 ? 5 : 0;
+  stanceScore = Math.max(0, Math.min(100, Math.round(stanceScore)));
+  const stance: SiteWideExecutiveBrief["stance"] = stanceScore >= 60 ? "Bullish" : stanceScore <= 40 ? "Defensive" : "Neutral";
 
   const now = new Date();
   const istDate = now.toLocaleDateString("en-IN", {
@@ -332,33 +401,37 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "macro-liquidity",
       title: "Macro, Yields & RBI System Liquidity",
       category: "Macroeconomic Backdrop",
-      badge: "RBI Liquidity Surplus",
+      badge: dashboard?.rbiLiquidity.systemLiquidity.value ? "Live RBI/NSE tape" : "Data unavailable",
       badgeColor: "emerald",
-      headline: "Macro Stability: System Liquidity in ₹42,800 Cr Surplus, 10Y Yield Anchored at 6.84%",
-      summary: "Benign headline inflation expectations and softer crude prices support India's twin deficits. RBI overnight liquidity corridor remains fully orderly.",
+      headline: dashboard
+        ? `Macro Tape: System Liquidity ${dashboard.rbiLiquidity.systemLiquidity.value ?? "—"}, 10Y Yield ${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%`
+        : "Macro tape temporarily unavailable",
+      summary: "Live RBI system liquidity, 10Y G-Sec yield, and Brent crude — no fabricated inflation/deficit narrative, just the current tape.",
       metrics: [
-        { label: "Repo Policy Rate", value: "6.50% (Neutral)" },
-        { label: "System Liquidity", value: "+₹42,800 Cr", isPositive: true },
-        { label: "10Y G-Sec Yield", value: "6.84%", isPositive: true },
-        { label: "Brent Crude", value: "$72.40 / bbl", isPositive: true },
+        { label: "System Liquidity", value: dashboard?.rbiLiquidity.systemLiquidity.value ?? "—" },
+        { label: "Liquidity, 7D Change", value: dashboard?.rbiLiquidity.systemLiquidity.change7d ?? "—" },
+        { label: "10Y G-Sec Yield", value: dashboard ? `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%` : "—" },
+        { label: "Brent Crude", value: dashboard?.pulse.brent.value != null ? `$${fmtIndexVal(dashboard.pulse.brent.value, 2)} / bbl` : "—" },
       ],
-      featuredEntities: [
-        {
-          name: "RBI Liquidity Corridor",
-          keyFact: "Overnight interbank call money rate anchored at 6.45%, below the policy ceiling",
-          sentiment: "POSITIVE",
-        },
-        {
-          name: "USD / INR Exchange Rate",
-          keyFact: "Holding steady near ₹83.82 with RBI foreign exchange reserves at record $690B",
-          sentiment: "NEUTRAL",
-        },
-        {
-          name: "India VIX Volatility Index",
-          keyFact: "Reading 12.4 points, confirming historical complacency and low hedging cost",
-          sentiment: "POSITIVE",
-        },
-      ],
+      featuredEntities: dashboard
+        ? [
+            {
+              name: "10Y G-Sec Yield",
+              keyFact: `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}% (${fmtChgPct(dashboard.pulse.gsec10y.changePct != null ? dashboard.pulse.gsec10y.changePct * 100 : null)} today) — RBI/FRED`,
+              sentiment: "NEUTRAL",
+            },
+            {
+              name: "USD / INR",
+              keyFact: `₹${fmtIndexVal(dashboard.pulse.usdInr.value, 2)} (${fmtChgPct(dashboard.pulse.usdInr.changePct != null ? dashboard.pulse.usdInr.changePct * 100 : null)} today)`,
+              sentiment: (dashboard.pulse.usdInr.changePct ?? 0) < 0 ? "POSITIVE" : "NEUTRAL",
+            },
+            {
+              name: "India VIX",
+              keyFact: `${fmtIndexVal(dashboard.pulse.indiaVix.value, 2)} points (${fmtChgPct(dashboard.pulse.indiaVix.changePct != null ? dashboard.pulse.indiaVix.changePct * 100 : null)} today)`,
+              sentiment: (dashboard.pulse.indiaVix.changePct ?? 0) <= 0 ? "POSITIVE" : "NEGATIVE",
+            },
+          ]
+        : [{ name: "Macro tape unavailable right now", keyFact: "Live fetch failed — check /macro directly.", sentiment: "NEUTRAL" }],
       deepDiveUrl: "/macro",
       deepDiveLabel: "Explore Macro Dashboard & RBI Transmission",
     },
@@ -367,36 +440,34 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "options-derivatives",
       title: "Options Flow & F&O Derivative Regimes",
       category: "Derivatives Tape",
-      badge: "PCR 1.18",
+      badge: niftyChain?.pcr != null ? `PCR ${niftyChain.pcr.toFixed(2)}` : "Data unavailable",
       badgeColor: "violet",
-      headline: "Derivatives Sentiment: Put-Call Ratio at 1.18, Heavy Put Base Formed at 25,500",
-      summary: "Options open interest concentration shows robust put accumulation at 25,500 protecting the downside, while call writers defend 26,000 as immediate tactical resistance.",
+      headline: niftyChain?.pcr != null
+        ? `Derivatives Sentiment: NIFTY Put-Call Ratio at ${niftyChain.pcr.toFixed(2)}${niftyChain.maxPain != null ? `, Max Pain ${niftyChain.maxPain.toLocaleString("en-IN")}` : ""}`
+        : "Options chain temporarily unavailable — NSE feed unreachable",
+      summary: "Live NSE option-chain PCR and max pain for the current NIFTY expiry, computed from real open interest — not a fabricated regime call.",
       metrics: [
-        { label: "NIFTY Index PCR", value: "1.18 (Mild Bullish)", isPositive: true },
-        { label: "Max Pain Strike", value: "25,800 Points" },
-        { label: "Put Writing Support", value: "25,500 Strike" },
-        { label: "Call Writing Cap", value: "26,000 Strike" },
+        { label: "NIFTY Index PCR", value: niftyChain?.pcr != null ? niftyChain.pcr.toFixed(2) : "—" },
+        { label: "Max Pain Strike", value: niftyChain?.maxPain != null ? `${niftyChain.maxPain.toLocaleString("en-IN")} Points` : "—" },
+        { label: "Top Put OI Strike", value: niftyChain?.topPutStrikes[0] ? `${niftyChain.topPutStrikes[0].strike.toLocaleString("en-IN")}` : "—" },
+        { label: "Top Call OI Strike", value: niftyChain?.topCallStrikes[0] ? `${niftyChain.topCallStrikes[0].strike.toLocaleString("en-IN")}` : "—" },
       ],
-      featuredEntities: [
-        {
-          symbol: "NIFTY",
-          name: "Nifty 50 Index Options",
-          keyFact: "Net open interest addition of 4.2M contracts across near-the-money put strikes",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "BANKNIFTY",
-          name: "Bank Nifty Options",
-          keyFact: "PCR at 1.05 with private banks leading open interest rollover into next expiry",
-          sentiment: "POSITIVE",
-        },
-        {
-          symbol: "AUTO",
-          name: "Automotive F&O Basket",
-          keyFact: "Long build-up with volume expansion across passenger and commercial auto names",
-          sentiment: "BULLISH",
-        },
-      ],
+      featuredEntities: niftyChain?.pcr != null
+        ? [
+            {
+              symbol: "NIFTY",
+              name: "Nifty 50 Index Options",
+              keyFact: `PCR ${niftyChain.pcr.toFixed(2)}, total OI ${niftyChain.totalOi?.toLocaleString("en-IN") ?? "—"} — NSE option chain`,
+              sentiment: niftyChain.pcr > 1.1 ? "BULLISH" : niftyChain.pcr < 0.9 ? "BEARISH" : "NEUTRAL",
+            },
+            ...(niftyChain.topPutStrikes[0]
+              ? [{ name: `Top Put OI: ${niftyChain.topPutStrikes[0].strike}`, keyFact: `${niftyChain.topPutStrikes[0].oi.toLocaleString("en-IN")} contracts open interest`, sentiment: "POSITIVE" as const }]
+              : []),
+            ...(niftyChain.topCallStrikes[0]
+              ? [{ name: `Top Call OI: ${niftyChain.topCallStrikes[0].strike}`, keyFact: `${niftyChain.topCallStrikes[0].oi.toLocaleString("en-IN")} contracts open interest`, sentiment: "NEUTRAL" as const }]
+              : []),
+          ]
+        : [{ name: "NSE option chain unavailable right now", keyFact: "Live fetch failed — check /research/options-flow directly.", sentiment: "NEUTRAL" }],
       deepDiveUrl: "/research/options-flow",
       deepDiveLabel: "Analyze Real-Time Options Flow Flags",
     },
@@ -405,33 +476,35 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "ipo-pipeline",
       title: "Primary Market & IPO Pipeline",
       category: "Capital Issuance",
-      badge: "Avg GMP +38.5%",
+      badge: openIpos.length > 0 ? `${openIpos.length} open` : "No open issues",
       badgeColor: "blue",
-      headline: "Primary Market Velocity: 6 Issues Active with Substantial Grey Market Premiums",
-      summary: "Investor appetite for mainboard IPOs remains vibrant with anchor books heavily oversubscribed by domestic institutional mutual funds and sovereign wealth funds.",
+      headline: openIpos.length > 0
+        ? `Primary Market: ${openIpos.length} Issue${openIpos.length === 1 ? "" : "s"} Open, Live Grey-Market Premiums Tracked`
+        : "Primary Market: No mainboard/SME issues open right now",
+      summary: "Real open IPOs from the Upstox calendar with grey-market premium pulled live from Chittorgarh and IPO Watch — no invented subscription multiples.",
       metrics: [
-        { label: "Open / Upcoming IPOs", value: "6 Issues" },
-        { label: "Average GMP", value: "+38.5%", isPositive: true },
-        { label: "Anchor Allocation", value: "100% Filled", isPositive: true },
-        { label: "Retail Demand Index", value: "14.2x Avg" },
+        { label: "Open Issues", value: String(openIpos.length) },
+        {
+          label: "Average GMP",
+          value: (() => {
+            const withGmp = openIpos.filter((i) => i.gmpPct != null);
+            if (!withGmp.length) return "—";
+            const avg = withGmp.reduce((a, i) => a + (i.gmpPct ?? 0), 0) / withGmp.length;
+            return `${avg >= 0 ? "+" : ""}${avg.toFixed(1)}%`;
+          })(),
+          isPositive: true,
+        },
+        { label: "Issues with Live GMP", value: `${openIpos.filter((i) => i.gmpPct != null).length} / ${openIpos.length || 0}` },
       ],
-      featuredEntities: [
-        {
-          name: "Mainboard Industrial Issue",
-          keyFact: "GMP trading at +44% premium to upper price band; anchor book backed by top 5 AMCs",
-          sentiment: "BULLISH",
-        },
-        {
-          name: "Consumer Tech Listing",
-          keyFact: "QIB subscription multiple exceeded 32x on final day of bidding",
-          sentiment: "BULLISH",
-        },
-        {
-          name: "Corporate NCD Issue",
-          keyFact: "AA rated secured public debenture yielding 9.25% annual coupon",
-          sentiment: "NEUTRAL",
-        },
-      ],
+      featuredEntities: openIpos.length > 0
+        ? openIpos.slice(0, 3).map((ipo) => ({
+            name: ipo.name,
+            keyFact: ipo.gmpPct != null
+              ? `GMP ${ipo.gmpPct >= 0 ? "+" : ""}${ipo.gmpPct.toFixed(1)}% (₹${ipo.gmpInr ?? "—"}) · price band ₹${ipo.minPrice}-₹${ipo.maxPrice}`
+              : `Price band ₹${ipo.minPrice}-₹${ipo.maxPrice} · bidding until ${ipo.biddingEndDate}`,
+            sentiment: (ipo.gmpPct ?? 0) > 5 ? ("BULLISH" as const) : (ipo.gmpPct ?? 0) < -5 ? ("BEARISH" as const) : ("NEUTRAL" as const),
+          }))
+        : [{ name: "No open IPOs right now", keyFact: "Check /research/ipo for upcoming issues.", sentiment: "NEUTRAL" }],
       deepDiveUrl: "/research/ipo",
       deepDiveLabel: "Track Live IPO Pipeline & Grey Market Premiums",
     },
@@ -440,33 +513,24 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "legal-regulatory",
       title: "Legal, SEBI & Insolvency Risk Monitor",
       category: "Governance & Scrutiny",
-      badge: "Zero Systemic Risks",
+      badge: legalRisk ? `${legalRisk.corporateRiskMonitor.activeCaseCount} active cases` : "Data unavailable",
       badgeColor: "emerald",
-      headline: "Legal & Regulatory Watch: Zero Tier-1 Contagion; IBC Resolutions Progressing",
-      summary: "Routine corporate insolvency matters remain isolated to legacy stressed promoters. SEBI surveillance reports indicate standard market integrity compliance across brokers.",
+      headline: legalRisk?.corporateRiskMonitor.summary ?? "Legal risk monitor temporarily unavailable",
+      summary: "Real corporate legal/regulatory cases classified from live NSE, BSE, RBI and publisher news — not a static compliance narrative.",
       metrics: [
-        { label: "Tracked NCLT Cases", value: "42 Matters" },
-        { label: "SEBI Compliance Orders", value: "6 Directives" },
-        { label: "Systemic Risk Rating", value: "Low / Contained", isPositive: true },
-        { label: "Governance Flags", value: "Normal", isPositive: true },
+        { label: "Active Cases (tracked feeds)", value: legalRisk ? String(legalRisk.corporateRiskMonitor.activeCaseCount) : "—" },
+        { label: "High-Impact Flags", value: legalRisk ? String(legalRisk.corporateRiskMonitor.highImpactCount) : "—", isPositive: legalRisk ? legalRisk.corporateRiskMonitor.highImpactCount === 0 : undefined },
+        { label: "Monitors Covered", value: legalRisk ? `${legalRisk.monitors.length} Regulators` : "—" },
+        { label: "Systemic Risk Rating", value: legalRisk ? (legalRisk.corporateRiskMonitor.highImpactCount === 0 ? "Low / Contained" : "Elevated") : "—", isPositive: legalRisk ? legalRisk.corporateRiskMonitor.highImpactCount === 0 : undefined },
       ],
-      featuredEntities: [
-        {
-          name: "NCLT Corporate Insolvency",
-          keyFact: "Resolution plan approved for legacy manufacturing entity with 62% recovery",
-          sentiment: "NEUTRAL",
-        },
-        {
-          name: "SEBI Market Regulation",
-          keyFact: "New framework for index derivative volume transparency operationalized smoothly",
-          sentiment: "POSITIVE",
-        },
-        {
-          name: "Commercial Court Updates",
-          keyFact: "Appellate tribunal stays arbitrary state utility claims for renewable generator",
-          sentiment: "POSITIVE",
-        },
-      ],
+      featuredEntities: legalRisk && legalRisk.cases.length > 0
+        ? legalRisk.cases.slice(0, 3).map((c) => ({
+            symbol: c.company.symbol ?? undefined,
+            name: c.company.name ?? c.legalCase,
+            keyFact: `${c.legalCase} — ${c.regulator}: ${c.issue}`,
+            sentiment: c.potentialImpact === "high" ? ("NEGATIVE" as const) : c.potentialImpact === "medium" ? ("NEUTRAL" as const) : ("POSITIVE" as const),
+          }))
+        : [{ name: "No tracked legal/regulatory cases right now", keyFact: "Real-time feed found nothing flagged — check /intelligence/legal-risk directly.", sentiment: "NEUTRAL" }],
       deepDiveUrl: "/intelligence/legal-risk",
       deepDiveLabel: "Inspect Legal Risk & NCLT Insolvency Radar",
     },
@@ -477,95 +541,98 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
     generatedAt: now.toISOString(),
     displayDate: `${istDate} · ${istTime} IST`,
     marketSession: "LIVE_SESSION",
-    stance: "Bullish",
-    stanceScore: 78,
-    executiveHeadline: "Constructive Market Posture: Broad-Based Earnings Upgrades & Smart Money Accumulation",
-    executiveSummary: "India's broader market backdrop remains resilient, supported by net promoter equity buying (+₹1,420 Cr), positive institutional consensus reratings across 11 top brokerages (+8.4% mean target shift), and strong domestic mutual fund liquidity. RBI system liquidity surplus (+₹42,800 Cr) and moderate crude prices provide steady macroeconomic scaffolding against global volatility.",
-    macroPulse: {
-      nifty: { val: "25,840", chg: "+0.64%", up: true },
-      sensex: { val: "84,420", chg: "+0.58%", up: true },
-      indiaVix: { val: "12.40", chg: "-3.2%", elevated: false },
-      fiiNetCr: { val: "+₹1,120 Cr", netInflow: true },
-      diiNetCr: { val: "+₹2,480 Cr", netInflow: true },
-      brentCrude: { val: "$72.40", chg: "-1.8%" },
-      gsec10Y: { val: "6.84%" },
-      usdinr: { val: "₹83.82", chg: "+0.04%" },
-      rbiLiquidity: { val: "+₹42,800 Cr", status: "Surplus" },
-    },
+    stance,
+    stanceScore,
+    executiveHeadline: dashboard
+      ? `Market Tape: NIFTY ${fmtIndexVal(dashboard.pulse.nifty.value, 0)} (${fmtChgPct(dashboard.pulse.nifty.changePct != null ? dashboard.pulse.nifty.changePct * 100 : null)}), VIX ${fmtIndexVal(dashboard.pulse.indiaVix.value, 2)}`
+      : "Market tape temporarily unavailable",
+    executiveSummary: `Net promoter equity buying (${fmtCr(totalBuyValCr)}) and a ${buyRatio}% buy/accumulate ratio across ${brokerReports.length} tracked broker notes provide the institutional backdrop. RBI system liquidity is ${dashboard?.rbiLiquidity.systemLiquidity.value ?? "unavailable right now"}, with the 10Y G-Sec at ${dashboard ? `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%` : "—"} and Brent at ${dashboard?.pulse.brent.value != null ? `$${fmtIndexVal(dashboard.pulse.brent.value, 2)}` : "—"}.`,
+    macroPulse: dashboard
+      ? {
+          nifty: { val: fmtIndexVal(dashboard.pulse.nifty.value, 1), chg: fmtChgPct(dashboard.pulse.nifty.changePct != null ? dashboard.pulse.nifty.changePct * 100 : null), up: (dashboard.pulse.nifty.changePct ?? 0) >= 0 },
+          sensex: { val: fmtIndexVal(dashboard.pulse.sensex.value, 1), chg: fmtChgPct(dashboard.pulse.sensex.changePct != null ? dashboard.pulse.sensex.changePct * 100 : null), up: (dashboard.pulse.sensex.changePct ?? 0) >= 0 },
+          indiaVix: { val: fmtIndexVal(dashboard.pulse.indiaVix.value, 2), chg: fmtChgPct(dashboard.pulse.indiaVix.changePct != null ? dashboard.pulse.indiaVix.changePct * 100 : null), elevated: (dashboard.pulse.indiaVix.value ?? 0) >= 18 },
+          fiiNetCr: { val: fmtCr(dashboard.moneyFlow.fii.today), netInflow: (dashboard.moneyFlow.fii.today ?? 0) >= 0 },
+          diiNetCr: { val: fmtCr(dashboard.moneyFlow.dii.today), netInflow: (dashboard.moneyFlow.dii.today ?? 0) >= 0 },
+          brentCrude: { val: dashboard.pulse.brent.value != null ? `$${fmtIndexVal(dashboard.pulse.brent.value, 2)}` : "—", chg: fmtChgPct(dashboard.pulse.brent.changePct != null ? dashboard.pulse.brent.changePct * 100 : null) },
+          gsec10Y: { val: dashboard.pulse.gsec10y.value != null ? `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%` : "—" },
+          usdinr: { val: dashboard.pulse.usdInr.value != null ? `₹${fmtIndexVal(dashboard.pulse.usdInr.value, 2)}` : "—", chg: fmtChgPct(dashboard.pulse.usdInr.changePct != null ? dashboard.pulse.usdInr.changePct * 100 : null) },
+          rbiLiquidity: { val: dashboard.rbiLiquidity.systemLiquidity.value ?? "—", status: dashboard.rbiLiquidity.systemLiquidity.value ? (dashboard.rbiLiquidity.systemLiquidity.value.includes("surplus") || dashboard.rbiLiquidity.systemLiquidity.value.startsWith("−") || dashboard.rbiLiquidity.systemLiquidity.value.startsWith("-") ? "Surplus" : "Deficit") : "Unavailable" },
+        }
+      : {
+          nifty: { val: "—", chg: "—", up: false },
+          sensex: { val: "—", chg: "—", up: false },
+          indiaVix: { val: "—", chg: "—", elevated: false },
+          fiiNetCr: { val: "—", netInflow: false },
+          diiNetCr: { val: "—", netInflow: false },
+          brentCrude: { val: "—", chg: "—" },
+          gsec10Y: { val: "—" },
+          usdinr: { val: "—", chg: "—" },
+          rbiLiquidity: { val: "—", status: "Unavailable" },
+        },
     keyThemes: [
       {
         theme: "Institutional Broker Revisions",
-        stance: "Bullish",
+        stance: buyRatio >= 60 ? "Bullish" : buyRatio < 50 ? "Defensive" : "Neutral",
         headline: "Consensus Target Price Reratings across 11 Top Brokerages",
         bullets: [
-          "Motilal Oswal, ICICI Securities, and JM Financial raised price targets across Reliance Industries (Target ₹3,445) and Tata Motors (Target ₹1,180).",
-          "Consensus buy ratio stands at 78.5%, with operational catalysts centered around tariff increases, capex moderation, and domestic market share gains.",
+          `Reliance Industries consensus target ₹${relianceConsensus.consensusTargetPrice} (+${relianceConsensus.consensusUpsidePct.toFixed(1)}%), Tata Motors ₹${tataConsensus.consensusTargetPrice} (+${tataConsensus.consensusUpsidePct.toFixed(1)}%).`,
+          `Consensus buy/accumulate ratio stands at ${buyRatio}% across ${brokerReports.length} tracked broker notes.`,
         ],
         sourcePillar: "Broker Research Hub",
       },
       {
         theme: "Smart Money & Insider Signals",
-        stance: "Bullish",
+        stance: totalBuyValCr > 0 ? "Bullish" : "Neutral",
         headline: "Promoters & Mutual Funds Accumulate in High-Growth Segments",
         bullets: [
-          "Controlling promoters deployed ₹1,420 Cr into direct market purchases without any critical pledge increase.",
-          "Mutual funds maintained active buying in private banking (ICICI Bank, HDFC Bank) and high-ROCE consumer platforms (Zomato).",
+          `Controlling promoters deployed ${fmtCr(totalBuyValCr)} into direct market purchases across ${promoterBuys.length} tracked filings.`,
+          `${mutualFunds.length} tracked mutual fund schemes monitored for institutional positioning.`,
         ],
         sourcePillar: "Promoter Tracker & MF X-Ray",
       },
       {
         theme: "Macro & System Liquidity",
         stance: "Neutral",
-        headline: "Comfortable Liquidity Corridor & Anchored Sovereign Yields",
-        bullets: [
-          "Net system liquidity surplus stands at ₹42,800 Cr with overnight call money rate trading orderly at 6.45%.",
-          "India 10-year benchmark bond yield holds steady at 6.84%, reflecting benign domestic inflation expectations.",
-        ],
+        headline: dashboard ? "Live RBI System Liquidity & G-Sec Tape" : "Macro tape unavailable",
+        bullets: dashboard
+          ? [
+              `RBI system liquidity: ${dashboard.rbiLiquidity.systemLiquidity.value ?? "—"} (7D change: ${dashboard.rbiLiquidity.systemLiquidity.change7d ?? "—"}).`,
+              `India 10-year G-Sec yield at ${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%, USD/INR at ₹${fmtIndexVal(dashboard.pulse.usdInr.value, 2)}.`,
+            ]
+          : ["Live macro fetch failed this run — see /macro for the current tape."],
         sourcePillar: "Macro Transmission Hub",
       },
       {
         theme: "Credit & Solvency Radar",
-        stance: "Bullish",
+        stance: Number(upgradeRatio) >= 1.5 ? "Bullish" : Number(upgradeRatio) < 1 ? "Defensive" : "Neutral",
         headline: "Balance Sheet Health Drives Strong Upgrade-to-Downgrade Ratio",
         bullets: [
-          "CRISIL and ICRA upgrade-to-downgrade ratio stands at 4.2x, driven by robust corporate deleveraging in steel, autos, and power.",
-          "Zero systemic default risks identified across monitored listed corporate bond programs.",
+          `CRISIL/ICRA/India Ratings upgrade-to-downgrade ratio stands at ${upgradeRatio}x (${upgrades.length} upgrades vs ${downgrades.length} downgrades) across ${creditActs.length} tracked actions.`,
+          legalRisk ? `${legalRisk.corporateRiskMonitor.highImpactCount} high-impact legal/regulatory flags active right now.` : "Legal risk feed unavailable this run.",
         ],
         sourcePillar: "Credit Risk Intelligence",
       },
     ],
     watchToday: [
-      "F&O Open Interest expiry rollover concentration around 25,800 strike.",
+      niftyChain?.maxPain != null
+        ? `F&O open interest concentration around the ${niftyChain.maxPain.toLocaleString("en-IN")} max-pain strike.`
+        : "F&O open interest concentration — options chain unavailable this run.",
       "Reliance Industries and Tata Motors institutional delivery volumes.",
-      "RBI overnight reverse repo absorption levels for system liquidity trajectory.",
-      "Anchor book bidding on upcoming mainboard industrial IPO listings.",
+      dashboard?.rbiLiquidity.systemLiquidity.value
+        ? `RBI system liquidity trajectory (currently ${dashboard.rbiLiquidity.systemLiquidity.value}).`
+        : "RBI overnight reverse repo absorption levels for system liquidity trajectory.",
+      openIpos.length > 0 ? `Anchor book bidding on ${openIpos.length} open mainboard/SME IPO issue${openIpos.length === 1 ? "" : "s"}.` : "No open IPO issues to watch today.",
     ],
     pillars,
-    regulatorHeadlines: [
-      {
-        title: "RBI Statement on Systemic Liquidity Management & Open Market Operations",
-        source: "Reserve Bank of India",
-        link: "https://www.rbi.org.in/",
-        timeAgo: "2 hours ago",
-      },
-      {
-        title: "NSE Circular: Rebalancing of Sector Indices & Stock Inclusion Framework",
-        source: "National Stock Exchange",
-        link: "https://www.nseindia.com/",
-        timeAgo: "4 hours ago",
-      },
-      {
-        title: "BSE Notice: Filing Timelines for Quarterly Corporate Governance Disclosures",
-        source: "Bombay Stock Exchange",
-        link: "https://www.bseindia.com/",
-        timeAgo: "5 hours ago",
-      },
-      {
-        title: "SEBI Circular on Transparency Standards for Retail Algorithmic Orders",
-        source: "Securities and Exchange Board of India",
-        link: "https://www.sebi.gov.in/",
-        timeAgo: "1 day ago",
-      },
-    ],
+    regulatorHeadlines:
+      regulatorNews.length > 0
+        ? regulatorNews.slice(0, 6).map((n) => ({
+            title: n.title,
+            source: n.source === "rbi" ? "Reserve Bank of India" : n.source === "nse" ? "National Stock Exchange" : n.source === "bse" ? "Bombay Stock Exchange" : n.source,
+            link: n.link,
+            timeAgo: timeAgoFrom(n.publishedAt),
+          }))
+        : REGULATOR_FALLBACK,
   };
 }
