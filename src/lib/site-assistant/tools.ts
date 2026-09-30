@@ -8,7 +8,8 @@ import { getAllCreditActivities } from "@/lib/credit/database";
 import { getAllMutualFunds, searchMutualFunds } from "@/lib/funds/database";
 import { computeInstitutionalAccumulation } from "@/lib/funds/analytics";
 import { getAllNfos } from "@/lib/funds/nfo-database";
-import { getCompanyRetailSentiment, getAllRetailSentimentData, TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/database";
+import { TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/database";
+import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
 import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
 import { fetchChittorgarhOfferReport } from "@/lib/feeds/sources/chittorgarh-report-api";
@@ -317,13 +318,13 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
       }),
       execute: async ({ symbol }) => {
         if (symbol) {
-          const data = getCompanyRetailSentiment(symbol.trim().toUpperCase());
+          const data = await getLiveCompanySentimentCached(symbol.trim().toUpperCase());
           return { sentiment: data };
         }
-        const all = getAllRetailSentimentData();
+        const buzzingCompanies = await getWatchlistLiveSentiment();
         return {
           totalTrackedCommunities: TRACKED_SUBREDDITS.length,
-          buzzingCompanies: all.companies.slice(0, 6),
+          buzzingCompanies: buzzingCompanies.slice(0, 6),
         };
       },
     }),

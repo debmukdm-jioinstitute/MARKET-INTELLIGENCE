@@ -18,7 +18,8 @@ import {
 import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
 import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
-import { getCompanyRetailSentiment, getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
+import { getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
+import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { z } from "zod";
 import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
@@ -413,7 +414,7 @@ export const SITE_TOOLS: Tool[] = [
     title: "Reddit retail sentiment engine",
     category: "Research",
     description:
-      "Extract alternative retail sentiment from Reddit (r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket) including mention growth %, positive/negative/neutral breakdown, topics, and bull/bear debates for any symbol.",
+      "Real-time Reddit search (r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket, etc.) for one symbol — actual posts from the last 7 days, not fabricated per-company stats. Sentiment split is a keyword-based heuristic, not a trained classifier.",
     inputSchema: {
       type: "object",
       properties: { symbol: sym },
@@ -422,20 +423,19 @@ export const SITE_TOOLS: Tool[] = [
     },
     run: async (a) => {
       const { symbol } = SymbolArg.parse(a);
-      const data = getCompanyRetailSentiment(symbol);
+      const data = await getLiveCompanySentimentCached(symbol);
       return {
         symbol: data.symbol,
         companyName: data.companyName,
+        fetchIssue: data.fetchIssue,
+        noData: data.noData,
         totalMentions7D: data.totalMentions7D,
-        mentionChangePct7D: data.mentionChangePct7D,
         positivePct: data.positivePct,
         negativePct: data.negativePct,
         neutralPct: data.neutralPct,
         netSentimentScore: data.netSentimentScore,
-        sentimentMomentum: data.sentimentMomentum,
-        mostDiscussedTopics: data.mostDiscussedTopics,
         communityDistribution: data.communityDistribution,
-        topRetailDebates: data.topRetailDebates,
+        topPosts: data.topPosts.slice(0, 5).map((p) => ({ title: p.title, subreddit: p.subreddit, url: p.url, score: p.score })),
       };
     },
   },
@@ -444,17 +444,22 @@ export const SITE_TOOLS: Tool[] = [
     title: "Reddit investor problems radar",
     category: "Research",
     description:
-      "Surface unconventional retail investor friction points from Reddit discussions across research, portfolio tracking, taxes, and data discovery.",
+      "Known retail investor friction points (research, portfolio tracking, taxes, data discovery) this site addresses, plus real live Reddit buzz for a fixed watchlist. Friction-point copy is editorial, not derived from live stats — no growth %/euphoria score claims.",
     inputSchema: empty,
     run: async () => {
       const data = getAllRetailSentimentData();
+      const liveBuzz = await getWatchlistLiveSentiment();
       return {
-        overallMarketSentiment: data.overallMarketSentiment,
         trackedSubredditsCount: data.trackedSubreddits.length,
+        liveBuzzingNow: liveBuzz.slice(0, 6).map((s) => ({
+          symbol: s.symbol,
+          companyName: s.companyName,
+          totalMentions7D: s.totalMentions7D,
+          netSentimentScore: s.netSentimentScore,
+        })),
         investorProblems: data.investorProblems.map((p) => ({
           category: p.categoryLabel,
           headline: p.headline,
-          growthPct: p.monthlyMentionGrowthPct,
           problemDescription: p.problemDescription,
           conventionalBlindspot: p.conventionalDatasetBlindspot,
           sampleQuery: p.sampleCommunityQueries[0]?.queryTitle,

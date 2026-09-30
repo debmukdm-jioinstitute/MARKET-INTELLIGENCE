@@ -2,7 +2,7 @@ import { getAllBrokerResearchReports } from "../broker-research/database";
 import { getAllPromoterActivities } from "../promoters/database";
 import { getAllCreditActivities } from "../credit/database";
 import { getAllMutualFunds } from "../funds/database";
-import { getAllRetailSentimentData } from "../reddit-sentiment/database";
+import { getWatchlistLiveSentiment } from "../reddit-sentiment/live-cache";
 import type { NewEvent } from "./types";
 
 export async function detectFeedUpdates(): Promise<NewEvent[]> {
@@ -149,17 +149,18 @@ export async function detectFeedUpdates(): Promise<NewEvent[]> {
     console.error("Mutual fund feed notification detection error", e);
   }
 
-  // 5. Retail Sentiment Surges (Reddit)
+  // 5. Retail Sentiment Surges (Reddit) — real live search across a fixed watchlist, no
+  // fabricated week-over-week % (there is no honest baseline for that from a point-in-time fetch).
   try {
-    const reddit = getAllRetailSentimentData();
-    for (const c of reddit.companies) {
-      if (c.mentionChangePct7D >= 80) {
+    const reddit = await getWatchlistLiveSentiment();
+    for (const c of reddit) {
+      if (c.totalMentions7D >= 8) {
         events.push({
-          key: `reddit:${c.symbol}:${c.sentimentMomentum}`,
+          key: `reddit:${c.symbol}:${c.totalMentions7D}:${c.netSentimentScore}`,
           category: "ai",
-          severity: c.mentionChangePct7D >= 120 ? "high" : "medium",
-          title: `Retail mention surge: ${c.symbol} (+${c.mentionChangePct7D}% discussions)`,
-          body: `${c.totalMentions7D} Reddit mentions across r/IndianStreetBets and r/IndiaInvestments. Net sentiment: ${c.netSentimentScore > 0 ? "+" : ""}${c.netSentimentScore.toFixed(1)}.`,
+          severity: c.totalMentions7D >= 15 ? "high" : "medium",
+          title: `Retail Reddit activity: ${c.symbol} (${c.totalMentions7D} posts this week)`,
+          body: `${c.totalMentions7D} real Reddit mentions across tracked India communities. Net sentiment (keyword-based): ${c.netSentimentScore > 0 ? "+" : ""}${c.netSentimentScore}.`,
           href: "/intelligence/reddit",
         });
       }

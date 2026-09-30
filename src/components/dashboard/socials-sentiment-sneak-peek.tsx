@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, MessageSquare, Flame, Search, Loader2 } from "lucide-react";
 import { TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/tracked-subreddits";
+import { RETAIL_SENTIMENT_WATCHLIST } from "@/lib/reddit-sentiment/live-cache";
 import { capTierLabel, type Nifty500CapTier } from "@/lib/reddit-sentiment/nifty500-cap-tier";
 import type { LiveCompanySentiment } from "@/lib/reddit-sentiment/fetch-live";
 import { cn } from "@/lib/utils";
@@ -13,14 +14,6 @@ const CAP_FILTERS: { id: "ALL" | Nifty500CapTier; label: string }[] = [
   { id: "LARGE_CAP", label: "Large cap" },
   { id: "MID_CAP", label: "Mid cap" },
   { id: "SMALL_CAP", label: "Small cap" },
-];
-
-/** Small, liquid watchlist checked live on every dashboard load — not a claim about full Nifty
- * 500 coverage. A real-time Reddit sweep across 500 names isn't something a dashboard card can
- * honestly do; this trades breadth for every number here being real. */
-const WATCHLIST = [
-  "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "SBIN",
-  "TATAMOTORS", "ITC", "ZOMATO", "SUZLON", "ADANIENT", "BHARTIARTL",
 ];
 
 const PREVIEW_COUNT = 8;
@@ -34,7 +27,7 @@ export function SocialsSentimentSneakPeek() {
     let cancelled = false;
     (async () => {
       const settled = await Promise.allSettled(
-        WATCHLIST.map(async (symbol) => {
+        RETAIL_SENTIMENT_WATCHLIST.map(async (symbol) => {
           const res = await fetch(`/api/reddit/sentiment/${encodeURIComponent(symbol)}`);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const json = (await res.json()) as { sentiment: LiveCompanySentiment };
@@ -80,7 +73,7 @@ export function SocialsSentimentSneakPeek() {
 
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <span className="rounded-md bg-muted px-2 py-0.5 font-semibold text-foreground">
-            {WATCHLIST.length} tracked names
+            {RETAIL_SENTIMENT_WATCHLIST.length} tracked names
           </span>
           <span className="rounded-md bg-muted/60 px-2 py-0.5 font-semibold">
             {TRACKED_SUBREDDITS.length} communities
