@@ -1,63 +1,64 @@
 "use client";
 
-import { useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
-import { CreditTrackerView } from "@/components/credit/credit-tracker-view";
-import { getAllCreditActivities } from "@/lib/credit/database";
+import { CREDIT_RISK_PANEL_SOURCES } from "@/lib/intelligence/verification-links";
+import { IntelligenceSourceStrip } from "@/components/ui/verify-at-source-link";
+import { ShieldAlert, ExternalLink } from "lucide-react";
 
 export default function CreditIntelligencePage() {
-  const activities = useMemo(() => getAllCreditActivities(), []);
-
-  const summary = useMemo(() => {
-    let upgrades = 0;
-    let downgrades = 0;
-    let watches = 0;
-    let defaults = 0;
-    let liquidityAlerts = 0;
-    let totalRatedDebt = 0;
-
-    for (const item of activities) {
-      totalRatedDebt += item.ratedDebtAmountCr;
-      if (item.action === "RATING_UPGRADE") upgrades += 1;
-      else if (item.action === "RATING_DOWNGRADE") downgrades += 1;
-      else if (item.action === "CREDIT_WATCH") watches += 1;
-      else if (item.action === "DEFAULT") defaults += 1;
-      else if (item.action === "LIQUIDITY_CONCERN") liquidityAlerts += 1;
-    }
-
-    const migrationRatio = downgrades > 0 ? Number((upgrades / downgrades).toFixed(2)) : upgrades;
-    const netCreditStance =
-      upgrades > downgrades ? "CREDIT_UPGRADE_CYCLE" : downgrades > upgrades ? "CREDIT_STRESS" : "NEUTRAL";
-
-    return {
-      totalActionsTracked: activities.length,
-      upgradesCount: upgrades,
-      downgradesCount: downgrades,
-      creditWatchCount: watches,
-      defaultsCount: defaults,
-      liquidityConcernsCount: liquidityAlerts,
-      totalRatedDebtCr: Number(totalRatedDebt.toFixed(1)),
-      creditMigrationRatio: migrationRatio,
-      netCreditStance,
-      reportingPeriod: "September 2026 Disclosures",
-    };
-  }, [activities]);
-
   return (
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
         kicker="Fixed Income & Corporate Credit Surveillance"
         title="Credit / Risk Intelligence"
-        subtitle="Monitor CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork. Track upgrades, downgrades, outlook shifts, credit watch, defaults, and liquidity concerns connected directly to equity stock prices."
+        subtitle="Rating-agency actions from CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork will appear here once a verified live feed is connected."
         trust={{
-          source: "SEBI (Credit Rating Agencies) Regulations 1999 & External Credit Assessment Institutions (ECAI)",
-          asOf: "September 2026 Reporting Cycle",
-          methodology: "Direct ingestion of official credit rating rationales cross-referenced with equity market prices and implied credit spreads.",
+          source: "Agency press-release portals (manual verification links below)",
+          asOf: "Feed not connected",
+          methodology: "No automated agency feed exists yet, so no rating actions are shown. We show nothing rather than estimates.",
         }}
       />
 
-      <CreditTrackerView activities={activities} summary={summary} />
+      <div className="rounded-xl border border-border/60 bg-card p-8 space-y-5 text-center max-w-2xl mx-auto">
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            Feed Not Connected
+          </span>
+        </div>
+        <h2 className="text-lg font-bold text-foreground">
+          Credit rating actions aren't wired to a live agency feed yet
+        </h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Indian rating agencies publish rating actions as press releases on their own portals and offer
+          no free rating-action API or feed. Until a verified collector is built, this page shows no
+          upgrades, downgrades, or outlook changes — we show nothing rather than estimates or
+          illustrative data.
+        </p>
+        <div className="pt-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Verify rating actions directly at the source
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {CREDIT_RISK_PANEL_SOURCES.map((s) => (
+              <Link
+                key={s.href}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-border/60 bg-muted/40 text-foreground hover:bg-muted/70 transition-colors"
+              >
+                {s.label}
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <IntelligenceSourceStrip sources={CREDIT_RISK_PANEL_SOURCES} />
     </div>
   );
 }
