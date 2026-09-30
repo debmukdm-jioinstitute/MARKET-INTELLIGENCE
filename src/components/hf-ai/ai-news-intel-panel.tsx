@@ -14,6 +14,7 @@ type AggSentiment = {
   label: "positive" | "negative" | "neutral";
   confidence: number;
   breakdown: { positive: number; negative: number; neutral: number };
+  mode?: "finbert" | "lexicon";
 };
 
 type CategoryItem = {
@@ -28,6 +29,7 @@ type NewsIntelPayload = {
   categories: CategoryItem[];
   analyzedCount: number;
   asOf: string;
+  noNews?: boolean;
   error?: string;
 };
 
@@ -175,19 +177,34 @@ export function AiNewsIntelPanel({ compact = false }: { compact?: boolean }) {
     );
   }
 
+  if (data.noNews || data.analyzedCount === 0) {
+    return (
+      <div className="rounded-xl border border-border/50 bg-muted/10 p-4 text-center">
+        <p className="text-xs text-muted-foreground">
+          No headlines in the intelligence feed yet — sentiment updates when news loads.
+        </p>
+      </div>
+    );
+  }
+
   const asOf = new Date(data.asOf).toLocaleTimeString("en-IN", {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
   });
 
+  const poweredBy =
+    data.sentiment.mode === "finbert"
+      ? "ProsusAI/FinBERT"
+      : "Keyword lexicon (add HF_TOKEN for FinBERT)";
+
   if (compact) {
     return (
       <div className="space-y-3">
         <SentimentMeter sentiment={data.sentiment} />
-        {data.tldr && <TldrCard tldr={data.tldr} analyzedCount={data.analyzedCount} />}
-        <p className="text-[10px] text-muted-foreground text-right">
-          Powered by ProsusAI/FinBERT · Updated {asOf} IST
+        {data.tldr ? <TldrCard tldr={data.tldr} analyzedCount={data.analyzedCount} /> : null}
+        <p className="text-right text-[10px] text-muted-foreground">
+          Powered by {poweredBy} · Updated {asOf} IST
         </p>
       </div>
     );
@@ -196,10 +213,10 @@ export function AiNewsIntelPanel({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-4">
       <SentimentMeter sentiment={data.sentiment} />
-      {data.tldr && <TldrCard tldr={data.tldr} analyzedCount={data.analyzedCount} />}
+      {data.tldr ? <TldrCard tldr={data.tldr} analyzedCount={data.analyzedCount} /> : null}
       <CategoryTags categories={data.categories} />
-      <p className="text-[10px] text-muted-foreground text-right">
-        Sentiment: ProsusAI/FinBERT · Summary: facebook/BART-large-cnn · Categories: BART-large-mnli ·{" "}
+      <p className="text-right text-[10px] text-muted-foreground">
+        Sentiment: {poweredBy} · Summary: facebook/BART-large-cnn when HF_TOKEN set · Categories: BART-large-mnli ·{" "}
         {asOf} IST
       </p>
     </div>
