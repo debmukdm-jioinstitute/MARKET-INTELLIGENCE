@@ -71,7 +71,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requireAccount,
       guestAllowed: !requireAccount,
       async enterGuest() {
-        const json = await postJson("/api/auth/session", { guest: true });
+        const res = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guest: true }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (res.status === 403) setRequireAccount(true);
+          throw new Error(typeof json.error === "string" ? json.error : `Request failed (${res.status})`);
+        }
         setUser(json.user);
       },
       async signup({ name, email, password, acceptPrivacy }) {

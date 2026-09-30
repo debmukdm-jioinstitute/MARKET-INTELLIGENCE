@@ -8,18 +8,22 @@ export function invalidateRequireAccountCache() {
   cache = null;
 }
 
-/** True when the admin kill switch `require-account` is on. Defaults off. */
+/** True when guest login is disabled (admin `require-account` flag or MI_REQUIRE_ACCOUNT env). */
 export async function isRequireAccountEnabled(): Promise<boolean> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.value;
-  let value = false;
+  const envOn =
+    process.env.MI_REQUIRE_ACCOUNT === "1" ||
+    process.env.MI_REQUIRE_ACCOUNT === "true" ||
+    process.env.MI_REQUIRE_ACCOUNT === "yes";
+  let value = envOn;
   if (hasDatabase()) {
     try {
       const rows = (await sql()`SELECT enabled FROM feature_flags WHERE flag = 'require-account' LIMIT 1`) as {
         enabled: boolean;
       }[];
-      value = rows[0]?.enabled === true;
+      if (rows[0]?.enabled === true) value = true;
     } catch {
-      value = false;
+      /* keep env default */
     }
   }
   cache = { value, at: Date.now() };

@@ -41,6 +41,7 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "MCP_API_KEYS", required: false, note: "Optional — higher MCP rate limits for automation (public MCP is open without keys)" },
   { key: "ADMIN_SYNC_SECRET", required: false, note: "Manual instrument sync" },
   { key: "NEXT_PUBLIC_SITE_URL", required: false, note: "Absolute links in emails" },
+  { key: "MI_REQUIRE_ACCOUNT", required: false, note: "Set to 1 or true to disable guest login without DB toggle (admin flag still works)" },
 ];
 
 export const FLAGS = [
@@ -50,7 +51,7 @@ export const FLAGS = [
   { flag: "guided-tour", label: "Show guided tour to users (disabled by default)", defaultEnabled: false },
   {
     flag: "require-account",
-    label: "Require accounts — hide guest/demo and force sign-up",
+    label: "Require sign-up (disable guest login)",
     defaultEnabled: false,
     catalog: false,
   },

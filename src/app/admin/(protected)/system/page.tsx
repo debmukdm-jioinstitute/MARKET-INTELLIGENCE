@@ -115,6 +115,9 @@ export default function AdminSystemPage() {
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!data) return <p className="text-sm text-gray-500">Loading…</p>;
 
+  const requireAccountFlag = data.flags.find((f) => f.flag === "require-account");
+  const guestLoginEnabled = requireAccountFlag ? !requireAccountFlag.enabled : true;
+
   const missing = data.env.filter((e) => e.required && !e.set);
 
   return (
@@ -222,9 +225,35 @@ export default function AdminSystemPage() {
         </div>
       </AdminCard>
 
+      <AdminCard
+        title="Guest login"
+        subtitle="When off, demo / guest entry is blocked site-wide. Visitors must sign up or sign in. Active guest cookies clear on the next request."
+      >
+        {!data.db ? (
+          <p className="text-sm text-amber-800">
+            Database required to persist this switch. Or set <code className="text-xs">MI_REQUIRE_ACCOUNT=1</code> in env.
+          </p>
+        ) : (
+          <label className="flex items-center justify-between gap-4 text-sm text-gray-900">
+            <span>
+              <span className="font-medium">Allow guest / demo login</span>
+              <span className="mt-0.5 block text-gray-500">Login page, landing, and guest session API.</span>
+            </span>
+            <input
+              type="checkbox"
+              checked={guestLoginEnabled}
+              onChange={(e) => void toggle("require-account", !e.target.checked)}
+              className="h-4 w-4 shrink-0"
+            />
+          </label>
+        )}
+      </AdminCard>
+
       <AdminCard title="Feature switches" subtitle="Kill switch for costly or risky endpoints. Takes effect immediately.">
         <div className="space-y-2">
-          {data.flags.map((f) => (
+          {data.flags
+            .filter((f) => f.flag !== "require-account")
+            .map((f) => (
             <label key={f.flag} className="flex items-center justify-between gap-3 text-sm text-gray-900">
               <span>{f.label}</span>
               <input type="checkbox" checked={f.enabled} onChange={(e) => toggle(f.flag, e.target.checked)} className="h-4 w-4" />
