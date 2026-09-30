@@ -39,7 +39,9 @@ export async function GET() {
         portalUrl: "https://www.nseindia.com/market-data/bulk-deal-watch",
       }
     ],
-    status: "ACTIVE_STREAMING",
-    asOf: "September 2026",
+    status: "NOT_CONNECTED",
+    asOf: null,
+    message:
+      "No live promoter/insider disclosure feed is connected. Regulation references below are for manual verification only.",
   });
 }
