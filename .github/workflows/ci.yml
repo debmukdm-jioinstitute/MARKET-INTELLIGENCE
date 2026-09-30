@@ -1,0 +1,69 @@
+# Continuous integration: pull requests and pushes to main.
+#
+# Gate (all must pass):
+#   1. `npx tsc --noEmit` — full type check
+#   2. ESLint on CHANGED files only — the tree carries 117 pre-existing
+#      ESLint errors in untouched files; failing CI on those would block every
+#      PR for unrelated reasons. `scripts/ci-lint-changed.mjs` selects the
+#      changed TS/TSX targets. The pre-existing backlog is tracked separately
+#      and `npm run lint` remains the local full-repo check.
+#   3. check:typography and check:react-loops custom guards
+#   4. vitest, excluding two known network-dependent suites
+#      (src/lib/brief/__tests__/site-wide-brief.test.ts and
+#      src/lib/notify/__tests__/detect-feeds.test.ts) — they time out on live
+#      fetches and fail on the clean tree too, so CI excludes them by name.
+#   5. `npm run build` — production build must succeed
+#
+# Free-tier notes: node_modules cache keeps install fast; the whole gate is a
+# single job so it fits the GitHub free-minutes budget comfortably.
+
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: ESLint changed files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node scripts/ci-lint-changed.mjs "origin/${{ github.base_ref }}" HEAD
+          else
+            node scripts/ci-lint-changed.mjs "${{ github.event.before }}" "${{ github.sha }}"
+          fi
+
+      - name: Custom guards (typography + react loops)
+        run: npm run check:typography && npm run check:react-loops
+
+      - name: Unit tests (excluding known network-dependent suites)
+        run: >-
+          npx vitest run
+          --exclude 'src/lib/brief/__tests__/site-wide-brief.test.ts'
+          --exclude 'src/lib/notify/__tests__/detect-feeds.test.ts'
+
+      - name: Production build
+        run: npm run build

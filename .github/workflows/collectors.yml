@@ -1,0 +1,66 @@
+name: collectors-external
+
+# Phase 3: free Apify replacement.
+#
+# Runs the FETCH half of src/lib/collector collectors inside the GitHub Actions
+# runner (generous timeouts, full Node runtime — no 60s Vercel serverless limit)
+# and POSTs the results to POST /api/collector/ingest, which validates and
+# writes them to Postgres. The existing 3-hour Vercel cron (collect.yml →
+# /api/cron/collect) keeps running as the frequent refresher; writes are
+# idempotent upserts and failures are recorded per-collector in
+# collected_series, so the two paths complement rather than conflict.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   SITE_URL     production origin, e.g. https://getmarketintelligence.in
+#   CRON_SECRET  bearer token for /api/collector/ingest
+#                (must match the CRON_SECRET env var on the Vercel project)
+#
+# Schedule is staggered away from collect.yml's :00 3-hour ticks to smooth
+# upstream load. Manual runs: Actions → collectors-external → Run workflow,
+# optionally with a comma-separated collector subset (see COLLECTORS in
+# src/lib/collector/run.ts).
+
+on:
+  schedule:
+    - cron: "30 0 * * *" # 06:00 IST — daily pre-market refresh
+    - cron: "30 12 * * *" # 18:00 IST — daily post-market refresh
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated collector ids (default: all)"
+        required: false
+        default: ""
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check required secrets
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "${SITE_URL}" || { echo "::error::SITE_URL secret is not set (repo Settings → Secrets and variables → Actions)"; exit 1; }
+          test -n "${CRON_SECRET}" || { echo "::error::CRON_SECRET secret is not set (repo Settings → Secrets and variables → Actions)"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run collectors and push to ingest API
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -n "${{ inputs.only }}" ]; then
+            npx --yes tsx@4.20.5 scripts/collectors/run-collectors.ts --only="${{ inputs.only }}"
+          else
+            npx --yes tsx@4.20.5 scripts/collectors/run-collectors.ts
+          fi

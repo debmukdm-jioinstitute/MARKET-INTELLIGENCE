@@ -36,7 +36,6 @@ jobs:
           run_one "/api/cron/datagov"
           run_one "/api/cron/data360/catalog"
           run_one "/api/cron/data360"
-          run_one "/api/cron/prowess"
           run_one "/api/cron/scan"
           run_one "/api/cron/signals"
           run_one "/api/cron/52w-levels"
