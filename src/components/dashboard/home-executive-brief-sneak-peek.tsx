@@ -1,13 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Sparkles, Compass, ShieldCheck, AlertCircle, TrendingUp, CheckCircle2 } from "lucide-react";
-import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
-import { useMemo } from "react";
+import { ArrowUpRight, Sparkles, TrendingUp, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { SiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 
 export function HomeExecutiveBriefSneakPeek() {
-  const brief = useMemo(() => buildSiteWideExecutiveBrief(), []);
+  const [brief, setBrief] = useState<SiteWideExecutiveBrief | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/brief")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && json?.siteWideBrief) setBrief(json.siteWideBrief as SiteWideExecutiveBrief);
+      })
+      .catch(() => {
+        // Graceful degradation: card simply doesn't render below — no error dump, no broken page.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!brief) return null;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-card via-card/90 to-primary/5 p-3.5 sm:p-5 shadow-xs">

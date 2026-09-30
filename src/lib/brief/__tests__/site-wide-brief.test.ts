@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildSiteWideExecutiveBrief } from "../site-wide-brief";
 
 describe("Site-Wide Executive Briefing Engine", () => {
-  it("builds a comprehensive site-wide brief spanning all 10 intelligence pillars", () => {
-    const brief = buildSiteWideExecutiveBrief();
+  it("builds a comprehensive site-wide brief spanning all 10 intelligence pillars", async () => {
+    const brief = await buildSiteWideExecutiveBrief();
 
     expect(brief.briefId).toBeDefined();
     expect(brief.executiveHeadline).toBeDefined();

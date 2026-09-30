@@ -1,7 +1,7 @@
 import { getAllBrokerResearchReports, getCompanyConsensusIntelligence } from "@/lib/broker-research/database";
 import { getAllPromoterActivities } from "@/lib/promoters/database";
 import { getAllCreditActivities } from "@/lib/credit/database";
-import { getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
+import { getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { getAllMutualFunds } from "@/lib/funds/database";
 
 export interface IntelligencePillarSneakPeek {
@@ -60,11 +60,10 @@ export interface SiteWideExecutiveBrief {
   regulatorHeadlines: { title: string; source: string; link?: string; timeAgo: string }[];
 }
 
-export function buildSiteWideExecutiveBrief(): SiteWideExecutiveBrief {
+export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBrief> {
   const brokerReports = getAllBrokerResearchReports();
   const promoterActs = getAllPromoterActivities();
   const creditActs = getAllCreditActivities();
-  const redditData = getAllRetailSentimentData();
   const mutualFunds = getAllMutualFunds();
 
   // 1. Calculate Broker Highlights
@@ -82,9 +81,9 @@ export function buildSiteWideExecutiveBrief(): SiteWideExecutiveBrief {
   const downgrades = creditActs.filter((c) => c.action === "RATING_DOWNGRADE");
   const upgradeRatio = downgrades.length > 0 ? (upgrades.length / downgrades.length).toFixed(1) : `${upgrades.length}:0`;
 
-  // 4. Calculate Retail Reddit Highlights
-  const redditEntities = redditData.companies;
-  const topRedditSurge = redditEntities[0];
+  // 4. Retail Reddit Highlights — real live search across a fixed watchlist, not a fabricated hub.
+  const liveReddit = await getWatchlistLiveSentiment();
+  const topRedditSurge = liveReddit[0];
 
   const now = new Date();
   const istDate = now.toLocaleDateString("en-IN", {
@@ -294,36 +293,37 @@ export function buildSiteWideExecutiveBrief(): SiteWideExecutiveBrief {
       id: "retail-sentiment",
       title: "Retail & Alternative Sentiment (Reddit)",
       category: "Social Sentiment",
-      badge: "3.2M+ Community",
+      badge: "Live Reddit check",
       badgeColor: "amber",
-      headline: `Reddit Retail Sentiment: Mention Surge +${topRedditSurge?.mentionChangePct7D ?? 48}% in Turnaround Stocks`,
-      summary: "Alternative discussion tracking across r/IndianStreetBets and r/IndiaInvestments surfaces significant retail enthusiasm for clean energy and consumer retail expansion.",
+      headline: topRedditSurge
+        ? `Reddit Retail Sentiment: ${topRedditSurge.symbol} leads with ${topRedditSurge.totalMentions7D} real mentions this week`
+        : "Reddit Retail Sentiment: no significant live chatter on tracked names right now",
+      summary: "Real-time search across tracked India subreddits for a fixed watchlist — not a full-market survey. Sentiment split is a keyword-based heuristic, not a trained classifier.",
       metrics: [
         { label: "Tracked Subreddits", value: "10 Communities" },
-        { label: "Net Sentiment Score", value: "+28.4", isPositive: true },
-        { label: "Weekly Mention Growth", value: `+${topRedditSurge?.mentionChangePct7D ?? 48}%`, isPositive: true },
-        { label: "Trending Discussions", value: "Renewables / Capex" },
+        {
+          label: "Top Net Sentiment",
+          value: topRedditSurge ? `${topRedditSurge.netSentimentScore >= 0 ? "+" : ""}${topRedditSurge.netSentimentScore}` : "—",
+          isPositive: (topRedditSurge?.netSentimentScore ?? 0) >= 0,
+        },
+        { label: "Weekly Mentions (top name)", value: topRedditSurge ? String(topRedditSurge.totalMentions7D) : "0" },
+        { label: "Watchlist Checked", value: `${liveReddit.length} names with activity` },
       ],
-      featuredEntities: [
-        {
-          symbol: "SUZLON",
-          name: "Suzlon Energy",
-          keyFact: "Retail discussions up +142% WoW on balance sheet turnaround and institutional order wins",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "TRENT",
-          name: "Trent",
-          keyFact: "Active retail debate on Zudio expansion runway and operating profit margins",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "RELIANCE",
-          name: "Reliance Industries",
-          keyFact: "Broad retail attention on retail footfall momentum and 5G subscriber additions",
-          sentiment: "POSITIVE",
-        },
-      ],
+      featuredEntities:
+        liveReddit.length > 0
+          ? liveReddit.slice(0, 3).map((c) => ({
+              symbol: c.symbol,
+              name: c.companyName,
+              keyFact: `${c.totalMentions7D} real Reddit posts this week · net sentiment ${c.netSentimentScore >= 0 ? "+" : ""}${c.netSentimentScore}`,
+              sentiment: c.netSentimentScore > 15 ? ("BULLISH" as const) : c.netSentimentScore < -15 ? ("BEARISH" as const) : ("NEUTRAL" as const),
+            }))
+          : [
+              {
+                name: "No live chatter right now",
+                keyFact: "Reddit search across the tracked watchlist found no recent posts (or the communities were unreachable) — check the live desk for the current state.",
+                sentiment: "NEUTRAL" as const,
+              },
+            ],
       deepDiveUrl: "/intelligence/reddit",
       deepDiveLabel: "Open Retail Sentiment & Reddit Radar",
     },

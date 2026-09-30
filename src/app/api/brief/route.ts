@@ -11,7 +11,7 @@ export async function GET() {
   const user = await getSessionUser();
   const briefs = await latestBriefs(6);
   const subscription = hasDatabase() && user && !user.guest ? await getSubscription(user.email).catch(() => null) : null;
-  const siteWideBrief = buildSiteWideExecutiveBrief();
+  const siteWideBrief = await buildSiteWideExecutiveBrief();
   return NextResponse.json({ briefs, siteWideBrief, subscription, canSubscribe: Boolean(user && !user.guest), dbConfigured: hasDatabase() });
 }
 
