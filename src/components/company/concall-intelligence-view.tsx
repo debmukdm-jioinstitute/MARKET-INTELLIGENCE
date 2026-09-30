@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ConcallQuarterReport, HistoricalToneQuarter, ManagementTone } from "@/lib/company-intelligence/types";
+import { AiConcallToneSparkline } from "@/components/company/ai-concall-tone-sparkline";
 import {
   Headphones,
   TrendingUp,
@@ -159,6 +160,8 @@ export function ConcallIntelligenceView({ concall, historicalTone, companyName, 
           })}
         </div>
       </div>
+
+      <AiConcallToneSparkline symbol={symbol} />
 
       {/* 2. Current Call Executive Banner */}
       <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm space-y-4">

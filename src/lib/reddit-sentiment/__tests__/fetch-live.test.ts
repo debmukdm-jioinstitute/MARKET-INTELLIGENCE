@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchLiveCompanySentiment } from "../fetch-live";
+import { classifyFinancialSentiment } from "@/lib/hf/finbert";
+
+// FinBERT scoring is exercised separately below; every other test forces the lexicon fallback so
+// existing exact-percentage assertions stay deterministic and don't depend on network-mocked
+// fetch() call ordering between the Reddit search calls and the HF client's own fetch calls.
+vi.mock("@/lib/hf/finbert", () => ({ classifyFinancialSentiment: vi.fn() }));
+const mockClassify = vi.mocked(classifyFinancialSentiment);
 
 function redditListing(posts: { id: string; title: string; permalink: string; created_utc: number; score?: number; num_comments?: number; stickied?: boolean }[]) {
   return { data: { children: posts.map((p) => ({ data: p })) } };
@@ -18,9 +25,11 @@ function blockedHtml(): Response {
 describe("fetchLiveCompanySentiment", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    mockClassify.mockReset();
   });
 
   it("aggregates real posts returned by the (mocked) Reddit search API into honest totals", async () => {
+    mockClassify.mockRejectedValue(new Error("HF unavailable in test"));
     let call = 0;
     vi.stubGlobal(
       "fetch",
@@ -49,7 +58,37 @@ describe("fetchLiveCompanySentiment", () => {
     expect(result.topPosts[0]!.url).toContain("reddit.com/r/test/comments/");
     // One bullish-worded title, one neutral -> real, checkable percentages, not hash-seeded noise.
     expect(result.positivePct).toBe(50);
+    expect(result.sentimentSource).toBe("lexicon");
     expect(result.communityDistribution.reduce((a, c) => a + c.postCount, 0)).toBe(2);
+  });
+
+  it("uses FinBERT for sentiment when the HF call succeeds, in preference to the lexicon fallback", async () => {
+    let call = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        call++;
+        if (call === 1) {
+          return okJson(
+            redditListing([
+              { id: "abc123", title: "Great quarter, raising guidance", permalink: "/r/test/comments/abc123/x", created_utc: Date.now() / 1000, score: 42, num_comments: 10 },
+              { id: "def456", title: "Missed estimates, weak outlook", permalink: "/r/test/comments/def456/y", created_utc: Date.now() / 1000, score: 5, num_comments: 2 },
+            ]),
+          );
+        }
+        return okJson(redditListing([]));
+      }),
+    );
+    mockClassify.mockResolvedValue([
+      { label: "positive", score: 0.9, scores: [] },
+      { label: "negative", score: 0.8, scores: [] },
+    ]);
+
+    const result = await fetchLiveCompanySentiment("RELIANCE");
+    expect(result.sentimentSource).toBe("finbert");
+    expect(result.positivePct).toBe(50);
+    expect(result.negativePct).toBe(50);
+    expect(mockClassify).toHaveBeenCalled();
   });
 
   it("reports a verified noData (not fabricated activity) when every subreddit request succeeds and genuinely returns nothing", async () => {

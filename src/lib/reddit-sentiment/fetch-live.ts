@@ -4,6 +4,34 @@ import { getNifty500CapTier } from "./nifty500-cap-tier";
 import { tallySentiment } from "./lexicon-sentiment";
 import { TRACKED_SUBREDDITS } from "./tracked-subreddits";
 import type { TrackedSubredditId } from "./types";
+import { classifyFinancialSentiment } from "@/lib/hf/finbert";
+
+/** FinBERT-scored tally, batched (its own client caps at 5 texts/call). Falls back to the
+ * deterministic lexicon tally on any HF failure — never blocks or breaks the page. */
+async function tallyWithFinbert(titles: string[]): Promise<{ tally: ReturnType<typeof tallySentiment>; source: "finbert" | "lexicon" }> {
+  if (titles.length === 0) return { tally: tallySentiment(titles), source: "lexicon" };
+  try {
+    const capped = titles.slice(0, 12);
+    const results: Awaited<ReturnType<typeof classifyFinancialSentiment>> = [];
+    for (let i = 0; i < capped.length; i += 5) {
+      results.push(...(await classifyFinancialSentiment(capped.slice(i, i + 5))));
+    }
+    let pos = 0, neg = 0;
+    for (const r of results) {
+      if (r.label === "positive") pos++;
+      else if (r.label === "negative") neg++;
+    }
+    const n = results.length;
+    const positivePct = Math.round((pos / n) * 100);
+    const negativePct = Math.round((neg / n) * 100);
+    return {
+      tally: { positivePct, negativePct, neutralPct: Math.max(0, 100 - positivePct - negativePct), netSentimentScore: positivePct - negativePct },
+      source: "finbert",
+    };
+  } catch {
+    return { tally: tallySentiment(titles), source: "lexicon" };
+  }
+}
 
 /**
  * Real Reddit data collection for the Retail Sentiment Engine. Every number this module returns
@@ -97,6 +125,9 @@ export type LiveCompanySentiment = {
   /** Real posts, most recent first, capped for the UI. Every one links to the actual live thread. */
   topPosts: LiveRedditPost[];
   fetchedAt: string;
+  /** Which engine produced positivePct/negativePct/netSentimentScore: FinBERT (real classifier)
+   * when available, deterministic keyword lexicon as a fallback if the HF call fails. */
+  sentimentSource: "finbert" | "lexicon";
 };
 
 const INDIA_SUBREDDITS: TrackedSubredditId[] = TRACKED_SUBREDDITS.filter((s) => s.geoFocus === "India").map((s) => s.id);
@@ -131,7 +162,7 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
     .map(([subreddit, postCount]) => ({ subreddit, postCount, percentage: Math.round((postCount / posts.length) * 100) }))
     .sort((a, b) => b.postCount - a.postCount);
 
-  const tally = tallySentiment(posts.map((p) => p.title));
+  const { tally, source } = await tallyWithFinbert(posts.map((p) => p.title));
 
   return {
     symbol,
@@ -148,5 +179,6 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
     communityDistribution,
     topPosts: posts.slice(0, 12),
     fetchedAt: new Date().toISOString(),
+    sentimentSource: source,
   };
 }

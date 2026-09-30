@@ -112,8 +112,9 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
             <div style={{ width: `${sentiment.negativePct}%` }} className="bg-rose-500 h-full transition-all duration-500" />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Keyword-based scoring on real post titles (see Methodology) — not a trained sentiment model. Sarcasm, slang and
-            negation can flip this.
+            {sentiment.sentimentSource === "finbert"
+              ? "Scored by ProsusAI/FinBERT on real post titles — a trained financial-sentiment model, still imperfect on slang and sarcasm."
+              : "FinBERT was unavailable this run — falling back to keyword-based scoring on real post titles. Sarcasm, slang and negation can flip this."}
           </p>
         </div>
       </div>

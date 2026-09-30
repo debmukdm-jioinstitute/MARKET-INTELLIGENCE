@@ -16,11 +16,26 @@ type Payload = {
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<Payload>);
 const STANCE: Record<string, string> = { Bullish: "text-emerald-600", Defensive: "text-rose-600", Neutral: "text-muted-foreground" };
 
+type HindiPayload = { headline: string; items: string[]; watch: string[] };
+
+function useHindiBrief(lang: "en" | "hi", latest: (Brief & { id: number }) | undefined) {
+  const key =
+    lang === "hi" && latest
+      ? `/api/hf/translate-brief?briefId=${latest.id}&headline=${encodeURIComponent(latest.headline)}&items=${encodeURIComponent(
+          JSON.stringify(latest.items.map((i) => i.text)),
+        )}&watch=${encodeURIComponent(JSON.stringify(latest.watch))}`
+      : null;
+  const { data } = useSWR<HindiPayload>(key, (url: string) => fetch(url).then((r) => r.json()), { revalidateOnFocus: false });
+  return data;
+}
+
 export default function DailyBriefPage() {
   const { data, mutate } = useSWR("/api/brief", fetcher, { refreshInterval: 300_000 });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [lang, setLang] = useState<"en" | "hi">("en");
   const latest = data?.briefs[0];
+  const hindi = useHindiBrief(lang, latest);
 
   async function save(pre: boolean, post: boolean) {
     setBusy(true);
@@ -52,16 +67,33 @@ export default function DailyBriefPage() {
 
       {latest ? (
         <Panel
-          title={latest.headline}
+          title={lang === "hi" && hindi?.headline ? hindi.headline : latest.headline}
           subtitle={`${latest.kind === "pre" ? "Pre-market" : "Post-close"} · ${new Date(latest.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST · ${latest.engine === "llm" ? "AI-assisted, grounded on the facts below" : "rules-based"}`}
         >
+          <div className="mb-3 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold ${lang === "en" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("hi")}
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold ${lang === "hi" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
+            >
+              हिं
+            </button>
+            {lang === "hi" && !hindi ? <span className="text-xs text-muted-foreground">Translating…</span> : null}
+          </div>
           <ul className="divide-y divide-border/50">
             {latest.items.map((i, idx) => (
               <li key={idx} className="py-3">
                 <p className={`text-xs font-bold uppercase tracking-wider ${STANCE[i.stance]}`}>
                   {i.stance} · {i.theme}
                 </p>
-                <p className="mt-0.5 text-sm text-foreground">{i.text}</p>
+                <p className="mt-0.5 text-sm text-foreground">{lang === "hi" && hindi?.items[idx] ? hindi.items[idx] : i.text}</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {i.sources.map((s) => {
                     const f = latest.facts.find((x) => x.id === s);
@@ -75,7 +107,12 @@ export default function DailyBriefPage() {
               </li>
             ))}
           </ul>
-          {latest.watch.length ? <p className="mt-3 text-sm text-foreground"><span className="font-bold">Watch: </span>{latest.watch.join(" · ")}</p> : null}
+          {latest.watch.length ? (
+            <p className="mt-3 text-sm text-foreground">
+              <span className="font-bold">Watch: </span>
+              {(lang === "hi" && hindi?.watch.length ? hindi.watch : latest.watch).join(" · ")}
+            </p>
+          ) : null}
           {latest.headlines.length ? (
             <div className="mt-4 border-t border-border pt-3">
               <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Official headlines considered</p>
