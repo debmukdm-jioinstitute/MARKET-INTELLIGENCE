@@ -3,9 +3,11 @@ import type {
   FundHolding,
   OverlapResult,
   StockAccumulationSummary,
-  SectorExposure,
 } from "./types";
-import { MUTUAL_FUNDS_STORE } from "./database";
+
+// NOTE: analytics functions are pure math over explicitly supplied portfolios.
+// They intentionally have NO default dataset — there is no live mutual-fund
+// portfolio feed wired yet, so callers must pass real data explicitly.
 
 /**
  * Calculates portfolio overlap between two mutual funds.
@@ -112,7 +114,7 @@ export function calculateFundOverlap(
  * Answers: "Which stocks are being accumulated across India's mutual funds?"
  */
 export function computeInstitutionalAccumulation(
-  funds: MutualFund[] = MUTUAL_FUNDS_STORE
+  funds: MutualFund[]
 ): StockAccumulationSummary[] {
   type AccumulationTracker = {
     symbol: string;
@@ -337,7 +339,7 @@ export function filterAccumulationRadar(
 /**
  * Aggregates net institutional capital flow by sector across all mutual funds
  */
-export function getInstitutionalSectorFlows(funds: MutualFund[] = MUTUAL_FUNDS_STORE) {
+export function getInstitutionalSectorFlows(funds: MutualFund[]) {
   const accumulation = computeInstitutionalAccumulation(funds);
   const flows = new Map<string, { netInflowCr: number; buyingCount: number; sellingCount: number }>();
 

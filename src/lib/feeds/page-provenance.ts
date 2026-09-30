@@ -108,13 +108,13 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/company",
     match: {
-      summary: "Company-specific intelligence — IR disclosures crawler, continuous event timeline, AI 'What changed?', and concall management tone tracker.",
+      summary: "Company-specific intelligence — currently unavailable: no verified IR disclosure or concall transcript feed is connected.",
       chips: [
         {
           kind: "api",
           label: "Company intelligence desk",
-          source: { provider: "MI company IR crawler", url: "/api/company/intelligence" },
-          fetchMethod: "getCompanyIntelligenceProfile() — src/lib/company-intelligence/database.ts",
+          source: { provider: "Feed not connected", url: "/api/company/intelligence" },
+          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
         },
         ...chips("nse", "bse"),
       ],
@@ -123,13 +123,13 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/credit",
     match: {
-      summary: "Credit & risk intelligence — CRISIL, ICRA, CARE, India Ratings, Acuité, Brickwork rating actions connected to equity prices.",
+      summary: "Credit & risk intelligence — currently unavailable: no verified rating-agency feed is connected.",
       chips: [
         {
           kind: "api",
           label: "Credit intelligence desk",
-          source: { provider: "MI credit radar", url: "/api/credit" },
-          fetchMethod: "getAllCreditActivities() — src/lib/credit/database.ts",
+          source: { provider: "Feed not connected", url: "/api/credit" },
+          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
         },
         ...chips("nse", "bse"),
       ],
@@ -138,13 +138,13 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/promoters",
     match: {
-      summary: "Promoter activity tracker — buying, selling, pledge changes, insider trading, and block/bulk deals.",
+      summary: "Promoter activity tracker — currently unavailable: no verified SEBI PIT/SAST disclosure feed is connected.",
       chips: [
         {
           kind: "api",
           label: "Promoter activity tracker",
-          source: { provider: "MI promoter radar", url: "/api/promoters" },
-          fetchMethod: "getAllPromoterActivities() — src/lib/promoters/database.ts",
+          source: { provider: "Feed not connected", url: "/api/promoters" },
+          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
         },
         ...chips("nse", "bse"),
       ],
@@ -153,7 +153,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/institutional",
     match: {
-      summary: "NSE FII/DII cash, AMFI mutual-fund accumulation, smart-money score, and exchange filing links.",
+      summary: "NSE FII/DII cash flows, smart-money score, and exchange filing links. Mutual-fund accumulation is unavailable until AMC disclosures are ingested.",
       chips: [
         {
           kind: "api",
@@ -293,7 +293,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/research",
     match: {
-      summary: "Broker research aggregator across 11 institutional houses, consensus targets, financial model estimates, AI Why Consensus Changed synthesis, and Nifty 500 earnings calendar.",
+      summary: "Broker research notes aggregator: real collected notes from public desk publications, plus Nifty 500 earnings calendar.",
       chips: [
         {
           kind: "api",
@@ -303,9 +303,9 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
         },
         {
           kind: "api",
-          label: "Broker consensus API",
-          source: { provider: "Institutional Broker Desks", url: "/api/broker-research/consensus" },
-          fetchMethod: "getCompanyConsensusIntelligence() — src/lib/broker-research/database.ts",
+          label: "Research notes API",
+          source: { provider: "Ingested research_reports table", url: "/api/broker-research" },
+          fetchMethod: "Direct SQL on research_reports — src/app/api/broker-research/route.ts (real collected notes only; no estimates)",
         },
         ...chips("nse", "upstox", "googlenews"),
       ],

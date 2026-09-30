@@ -2,7 +2,7 @@ import { getRbiLiquidity } from "@/lib/collector/rbi-live";
 import { fetchFiiDii } from "@/lib/feeds/india/nse-market";
 import { fetchIndiaGsec10y } from "@/lib/feeds/india/india-macro";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
-import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { getQuotes } from "@/lib/feeds/quotes";
 import type { MarketShiftItem, MarketShiftsPayload } from "@/lib/feeds/what-changed/types";
 import { WHAT_CHANGED_REFRESH_MS } from "@/lib/feeds/what-changed/types";
 
@@ -88,7 +88,8 @@ async function buildSlotFour(slot: number): Promise<MarketShiftItem> {
       ],
     };
   }
-  const quotes = await fetchYahooQuotes(["INR=X", "^NSEBANK"]).catch(() => []);
+  const bundle = await getQuotes(["INR=X", "^NSEBANK"]).catch(() => null);
+  const quotes = (bundle?.quotes ?? []).map((r) => r.quote);
   const inr = quotes.find((q) => q.symbol === "INR=X");
   const bank = quotes.find((q) => q.symbol === "^NSEBANK");
   const weak = (inr?.changePct ?? 0) > 0.001;
@@ -113,14 +114,15 @@ async function buildSlotFour(slot: number): Promise<MarketShiftItem> {
 /** Live institutional + macro shifts; content rotates every REFRESH_MS via slot. */
 export async function buildMarketShifts(): Promise<MarketShiftsPayload> {
   const slot = Math.floor(Date.now() / WHAT_CHANGED_REFRESH_MS);
-  const [fiiRows, gsec, quotes, slotFour] = await Promise.all([
+  const [fiiRows, gsec, bundle, slotFour] = await Promise.all([
     fetchFiiDii().catch(() => []),
     fetchIndiaGsec10y().catch(() => null),
-    fetchYahooQuotes(["^NSEI", "^CNXIT", "BZ=F", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "TCS.NS", "WIPRO.NS", "BPCL.NS", "ONGC.NS", "ASIANPAINT.NS"]).catch(
-      () => [],
+    getQuotes(["^NSEI", "^CNXIT", "BZ=F", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "TCS.NS", "WIPRO.NS", "BPCL.NS", "ONGC.NS", "ASIANPAINT.NS"]).catch(
+      () => null,
     ),
     buildSlotFour(slot),
   ]);
+  const quotes = (bundle?.quotes ?? []).map((r) => r.quote);
 
   const q = (sym: string) => quotes.find((x) => x.symbol === sym || x.symbol === sym.replace(".NS", ""));
   const nifty = q("^NSEI");

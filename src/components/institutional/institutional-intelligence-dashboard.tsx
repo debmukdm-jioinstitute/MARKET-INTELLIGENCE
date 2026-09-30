@@ -107,6 +107,7 @@ function coveragePill(c: InstitutionalTracker["coverage"]) {
     live: "bg-emerald-500/15 text-emerald-700",
     partial: "bg-amber-500/15 text-amber-800",
     planned: "bg-muted text-muted-foreground",
+    unavailable: "bg-rose-500/10 text-rose-700",
   };
   return (
     <span className={cn("rounded px-2 py-0.5 text-[11px] font-bold uppercase", map[c])}>{c}</span>
@@ -196,10 +197,10 @@ export function InstitutionalIntelligenceDashboard() {
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Investor trackers</h2>
               <Link
-                href="/funds?tab=accumulation"
+                href="/funds"
                 className="text-xs font-semibold text-primary hover:underline"
               >
-                Open MF accumulation radar →
+                Open Mutual Fund Directory →
               </Link>
             </div>
             <div className="overflow-x-auto rounded-xl border border-border">
@@ -251,19 +252,15 @@ export function InstitutionalIntelligenceDashboard() {
                 <Building2 className="size-4 text-primary" />
                 <h3 className="text-xs font-bold uppercase tracking-wider">MF net buying (top)</h3>
               </div>
-              <ul className="mt-3 space-y-2">
-                {data.mutualFunds.topAccumulated.slice(0, 6).map((s) => (
-                  <li key={s.symbol} className="flex items-center justify-between text-sm">
-                    <Link href={`/research?symbol=${s.symbol}`} className="font-semibold text-foreground hover:text-primary">
-                      {s.symbol}
-                    </Link>
-                    <span className="tabular-nums text-emerald-600">{fmtCr(s.netValueBoughtCr)}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                {data.mutualFunds.disclosureMonth} · {data.mutualFunds.fundsTrackedCount} schemes · net{" "}
-                {fmtCr(data.mutualFunds.totalNetCapitalCr)}
+              <p className="mt-3 text-sm text-muted-foreground">
+                {data.mutualFunds.message}
+              </p>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Live scheme NAVs are available in the{" "}
+                <Link href="/funds" className="text-primary hover:underline">
+                  Mutual Fund Directory
+                </Link>
+                .
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">

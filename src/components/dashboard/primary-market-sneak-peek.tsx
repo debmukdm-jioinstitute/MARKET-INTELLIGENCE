@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Coins, FileCheck2, Tag, Landmark, Flame, Layers } from "lucide-react";
+import { ArrowUpRight, Coins, Tag, Landmark, Flame } from "lucide-react";
 import { useIpoList } from "@/hooks/use-ipo-list";
 import { useOffersReport } from "@/hooks/use-offers-report";
-import { getAllNfos } from "@/lib/funds/nfo-database";
 import { cn } from "@/lib/utils";
 
-type DealTab = "ipo" | "ncd" | "buyback" | "nfo";
+type DealTab = "ipo" | "ncd" | "buyback";
 
 export function PrimaryMarketSneakPeek() {
   const [activeTab, setActiveTab] = useState<DealTab>("ipo");
@@ -21,9 +20,6 @@ export function PrimaryMarketSneakPeek() {
   // Live Offers from Chittorgarh API
   const { report: ncdReport, loading: loadingNcd } = useOffersReport("ncd");
   const { report: buybackReport, loading: loadingBuyback } = useOffersReport("buyback");
-
-  // NFOs
-  const nfos = getAllNfos().slice(0, 4);
 
   const ncdRows = ncdReport?.rows?.slice(0, 4) ?? [];
   const buybackRows = buybackReport?.rows?.slice(0, 4) ?? [];
@@ -41,7 +37,7 @@ export function PrimaryMarketSneakPeek() {
               Primary Market & Special Deals
             </p>
             <h2 className="text-sm sm:text-lg font-bold text-foreground">
-              IPOs, NCD Corporate Bonds, Buybacks & NFOs
+              IPOs, NCD Corporate Bonds & Buybacks
             </h2>
           </div>
         </div>
@@ -86,19 +82,6 @@ export function PrimaryMarketSneakPeek() {
           >
             <Tag className="size-3.5 text-emerald-500" />
             Tender Buybacks
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("nfo")}
-            className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all touch-manipulation",
-              activeTab === "nfo"
-                ? "bg-card text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Layers className="size-3.5 text-purple-500" />
-            New NFOs
           </button>
         </div>
       </div>
@@ -321,69 +304,6 @@ export function PrimaryMarketSneakPeek() {
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
               >
                 View All Buybacks, Rights & OFS <ArrowUpRight className="size-3.5" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* NFO Tab */}
-        {activeTab === "nfo" && (
-          <div className="space-y-3">
-            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              {nfos.map((nfo) => (
-                <div
-                  key={nfo.id}
-                  className="group flex flex-col justify-between rounded-xl border border-border/70 bg-card/60 p-3.5 transition-all hover:border-primary/40 hover:bg-accent/30"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-1">
-                      <span className="rounded bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-bold text-purple-600 dark:text-purple-400">
-                        {nfo.categoryLabel.split("/")[0]}
-                      </span>
-                      <span
-                        className={cn(
-                          "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                          nfo.status === "OPEN"
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                            : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                        )}
-                      >
-                        {nfo.status}
-                      </span>
-                    </div>
-                    <h4 className="mt-2 text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary">
-                      {nfo.schemeName}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">{nfo.amcName}</p>
-                  </div>
-
-                  <div className="mt-3 space-y-1.5 border-t border-border/60 pt-2 text-xs">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Close Date</span>
-                      <span className="font-semibold text-foreground tabular-nums">
-                        {nfo.closeDate}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Benchmark</span>
-                      <span className="font-medium text-foreground truncate max-w-[130px]">
-                        {nfo.benchmark}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">
-                New Fund Offers launched by SEBI-registered Asset Management Companies (AMCs).
-              </span>
-              <Link
-                href="/funds"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
-              >
-                Open Mutual Fund Intelligence Hub <ArrowUpRight className="size-3.5" />
               </Link>
             </div>
           </div>
