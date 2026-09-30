@@ -103,7 +103,7 @@ export function Panel({
   id,
   trust,
   collapsible = true,
-  defaultOpen = false,
+  defaultOpen,
 }: {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -115,14 +115,14 @@ export function Panel({
   trust?: TrustProps;
   /** Click header to expand/collapse body. Default true sitewide. */
   collapsible?: boolean;
-  /** Initial open state when collapsible. Default false — click title to show content. */
+  /** Initial open state when collapsible. Default true — user can collapse. */
   defaultOpen?: boolean;
 }) {
   const path = usePathname();
   const titleStr = typeof title === "string" ? title : "Panel";
   const subtitleStr = typeof subtitle === "string" ? subtitle : "";
   const bodyId = useId();
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen ?? true);
 
   const titleSlot = panelSlot(path, id, titleStr, "title");
   const subSlot = panelSlot(path, id, titleStr, "subtitle");
