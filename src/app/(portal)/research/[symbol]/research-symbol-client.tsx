@@ -7,8 +7,7 @@ import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { CompanyIntelligenceHub } from "@/components/company/company-intelligence-hub";
-import { RetailSentimentEngineView } from "@/components/reddit/retail-sentiment-engine-view";
-import { getCompanyRetailSentiment } from "@/lib/reddit-sentiment/database";
+import { LiveSentimentPanel } from "@/components/reddit/live-sentiment-panel";
 import { getCompanyIntelligenceProfile, getFeaturedIntelligenceSymbols } from "@/lib/company-intelligence/database";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
@@ -301,12 +300,10 @@ export function ResearchSymbolClient({
         <section id="retail-sentiment" className="scroll-mt-24">
           <Panel
             title="Reddit Retail Sentiment Engine (Alternative Data)"
-            subtitle="Social NLP pulse across r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket — mention spikes, sentiment momentum, and bull/bear theses."
+            subtitle="Real posts fetched live from r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket and others — not a precomputed dataset."
           >
             <div className="pt-2">
-              <RetailSentimentEngineView
-                sentiment={getCompanyRetailSentiment(symbol)}
-              />
+              <LiveSentimentPanel symbol={symbol} />
             </div>
           </Panel>
         </section>
