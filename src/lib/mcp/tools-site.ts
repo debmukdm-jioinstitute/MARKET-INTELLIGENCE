@@ -4,20 +4,8 @@ import {
   searchMutualFunds,
   getFundsByCategory,
 } from "@/lib/funds/database";
-import {
-  computeInstitutionalAccumulation,
-  calculateFundOverlap,
-} from "@/lib/funds/analytics";
-import { getAllNfos } from "@/lib/funds/nfo-database";
+import { getLatestNavForFund } from "@/lib/funds/amfi-crawler";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
-import {
-  getCompanyConsensusIntelligence,
-  getAllBrokerResearchReports,
-  INSTITUTIONAL_BROKER_SOURCES,
-} from "@/lib/broker-research/database";
-import { getAllPromoterActivities } from "@/lib/promoters/database";
-import { getAllCreditActivities } from "@/lib/credit/database";
-import { getCompanyIntelligenceProfile } from "@/lib/company-intelligence/database";
 import { getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
 import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { z } from "zod";
@@ -30,6 +18,7 @@ import { getMarketShiftsCached } from "@/lib/feeds/what-changed/cache";
 import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instruments";
 import { buildFeedHub } from "@/lib/feeds/hub";
+import { getSourceHealth } from "@/lib/health/sources";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
@@ -95,6 +84,24 @@ const empty = { type: "object", properties: {}, additionalProperties: false };
 let quotesCache: { data: Record<string, unknown>; timestamp: number } | null = null;
 let holidaysCache: { data: Record<string, unknown>; timestamp: number } | null = null;
 const underlyingKey = (label: string) => OPTION_UNDERLYINGS.find((u) => u.label.toUpperCase() === label.toUpperCase());
+
+// Mutual funds: only scheme identity + live AMFI NAV are served. Holdings, AUM, factor exposures and
+// accumulation radar have no verified feed and are reported unavailable, never estimated.
+const withLiveNav = async (f: {
+  id: string; name: string; amc: string; category: string; benchmark: string; amfiCode: string;
+}) => {
+  const live = await getLatestNavForFund(f.amfiCode).catch(() => null);
+  return {
+    id: f.id,
+    name: f.name,
+    amc: f.amc,
+    category: f.category,
+    benchmark: f.benchmark,
+    nav: live?.nav ?? null,
+    navDate: live?.date ?? null,
+    navStatus: live ? "LIVE" : "UNAVAILABLE",
+  };
+};
 
 export const SITE_TOOLS: Tool[] = [
   // ---- Markets ----
@@ -207,6 +214,15 @@ export const SITE_TOOLS: Tool[] = [
     description: "Aggregated feed hub used by the site's data pages.",
     inputSchema: empty,
     run: () => buildFeedHub(),
+  },
+  {
+    name: "get_source_health",
+    title: "Source health",
+    category: "Macro",
+    description:
+      "Per-source health of every data feed and scheduled collector: last success, last error, consecutive failures, and honest status (healthy/degraded/failing/unknown). Use it to check whether a feed is down before trusting its data.",
+    inputSchema: empty,
+    run: () => getSourceHealth(),
   },
 
   // ---- Research ----
@@ -470,183 +486,17 @@ export const SITE_TOOLS: Tool[] = [
       };
     },
   },
-    {
-    name: "get_consensus_intelligence",
-    title: "Broker consensus intelligence & why changed",
-    category: "Research",
-    description:
-      "Synthesize institutional consensus across 11 brokers (Motilal Oswal, Kotak, ICICI Sec, JM Financial, etc.) for a ticker, including target price spread, upside %, ratings matrix, and AI Consensus Changed — Why? revision drivers.",
-    inputSchema: {
-      type: "object",
-      properties: { symbol: sym },
-      required: ["symbol"],
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const { symbol } = SymbolArg.parse(a);
-      const data = getCompanyConsensusIntelligence(symbol);
-      return {
-        symbol: data.symbol,
-        companyName: data.companyName,
-        sector: data.sector,
-        cmp: data.cmp,
-        consensusTargetPrice: data.consensusTargetPrice,
-        consensusUpsidePct: data.consensusUpsidePct,
-        targetPriceHigh: data.targetPriceHigh,
-        brokerHigh: data.brokerHigh,
-        targetPriceLow: data.targetPriceLow,
-        brokerLow: data.brokerLow,
-        buyRatioPct: data.buyRatioPct,
-        ratingsBreakdown: {
-          buy: data.buyCount,
-          accumulate: data.accumulateCount,
-          hold: data.holdCount,
-          sell: data.sellCount,
-        },
-        whyChanged: data.whyChanged,
-        brokerMatrix: data.brokerMatrix.map((b) => ({
-          broker: b.broker,
-          analyst: b.analyst,
-          rating: b.rating,
-          targetPrice: b.targetPrice,
-          previousTarget: b.previousTarget,
-          targetChangePct: b.targetChangePct,
-          thesis: b.thesis,
-          catalysts: b.catalysts,
-          keyRisks: b.keyRisks,
-          date: b.displayDate,
-        })),
-      };
-    },
-  },
-  {
-    name: "get_broker_research_feed",
-    title: "Institutional broker research aggregator",
-    category: "Research",
-    description:
-      "Aggregated feed of equity research notes, quarterly estimates, and ratings from 11 leading Indian institutional desks.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        symbol: { type: "string", description: "Optional ticker filter, e.g. RELIANCE, TATAMOTORS" },
-        broker: { type: "string", description: "Optional broker filter, e.g. Motilal Oswal, Kotak Securities" },
-      },
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const symbol = typeof a.symbol === "string" && a.symbol.trim() ? a.symbol.trim().toUpperCase() : undefined;
-      const broker = typeof a.broker === "string" && a.broker.trim() ? a.broker.trim().toLowerCase() : undefined;
-      let reports = getAllBrokerResearchReports();
-      if (symbol) {
-        reports = reports.filter((r) => r.symbol.toUpperCase() === symbol);
-      }
-      if (broker) {
-        reports = reports.filter((r) => r.broker.toLowerCase().includes(broker));
-      }
-      return {
-        totalReports: reports.length,
-        monitoredDesksCount: INSTITUTIONAL_BROKER_SOURCES.length,
-        reports: reports.slice(0, 30),
-      };
-    },
-  },
-{
-    name: "get_company_intelligence_timeline",
-    title: "Company disclosure timeline & delta",
-    category: "Research",
-    description:
-      "Crawl official IR disclosures, timeline events (filings, presentations, credit actions, M&A, production), and AI-generated 'What changed?' delta for any listed Indian company.",
-    inputSchema: {
-      type: "object",
-      properties: { symbol: sym },
-      required: ["symbol"],
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const { symbol } = SymbolArg.parse(a);
-      const profile = getCompanyIntelligenceProfile(symbol);
-      return {
-        symbol: profile.symbol,
-        companyName: profile.companyName,
-        sector: profile.sector,
-        timelineCount: profile.timeline.length,
-        recentTimeline: profile.timeline.slice(0, 10).map((t) => ({
-          date: t.date,
-          displayDate: t.displayDate,
-          type: t.type,
-          headline: t.headline,
-          impact: t.impact,
-          summary: t.summary,
-        })),
-        whatChangedDelta: {
-          period: profile.whatChanged.period,
-          netDirection: profile.whatChanged.netDirection,
-          executiveSynthesis: profile.whatChanged.executiveSynthesis,
-          dimensions: profile.whatChanged.dimensions,
-          catalystsToWatch: profile.whatChanged.catalystsToWatch,
-        },
-      };
-    },
-  },
-  {
-    name: "get_concall_intelligence",
-    title: "Concall intelligence & management tone tracker",
-    category: "Research",
-    description:
-      "Extract earnings concall operational dimensions (management confidence score, revenue & margin guidance, capex, demand, pricing, analyst Q&A) and longitudinal Management Tone Tracker for any Indian company.",
-    inputSchema: {
-      type: "object",
-      properties: { symbol: sym },
-      required: ["symbol"],
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const { symbol } = SymbolArg.parse(a);
-      const profile = getCompanyIntelligenceProfile(symbol);
-      return {
-        symbol: profile.symbol,
-        companyName: profile.companyName,
-        latestQuarter: profile.latestConcall.quarter,
-        callDate: profile.latestConcall.date,
-        managementConfidenceScore: profile.latestConcall.dimensions.managementConfidence.score,
-        managementConfidenceStance: profile.latestConcall.dimensions.managementConfidence.stance,
-        headlineVerdict: profile.latestConcall.headlineVerdict,
-        dimensions: profile.latestConcall.dimensions,
-        analystQA: profile.latestConcall.analystQA.map((q) => ({
-          analyst: `${q.analystName} (${q.firm})`,
-          question: q.question,
-          speaker: q.managementSpeaker,
-          answer: q.answerSummary,
-          verbatimExcerpt: q.verbatimExcerpt,
-          tone: q.tone,
-        })),
-        historicalToneTrajectory: profile.historicalToneTrajectory,
-      };
-    },
-  },
   {
     name: "get_credit_risk_intelligence",
     title: "Credit & debt risk intelligence",
     category: "Research",
     description:
-      "Monitor CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork for upgrades, downgrades, credit watch, defaults, and liquidity concerns connected to equity prices.",
+      "Credit rating actions from CRISIL, ICRA, CARE and others. No verified live feed is connected yet — this tool reports unavailable rather than estimates.",
     inputSchema: empty,
     run: async () => {
-      const all = getAllCreditActivities();
       return {
-        totalActions: all.length,
-        actions: all.slice(0, 15).map((a) => ({
-          symbol: a.symbol,
-          company: a.companyName,
-          agency: a.agency,
-          action: a.action,
-          rating: `${a.ratingBefore} -> ${a.ratingAfter} (${a.outlookAfter})`,
-          ratedDebtCr: a.ratedDebtAmountCr,
-          liquidity: a.liquidityAssessment,
-          equityReturnPct: a.equityConnection.equityReturnSinceActionPct,
-          equityTransmission: a.equityConnection.transmission,
-          date: a.actionDate,
-        })),
+        dataStatus: "UNAVAILABLE",
+        message: "No verified live feed for rating-agency actions is connected yet. Check agency press-release portals directly.",
       };
     },
   },
@@ -655,23 +505,12 @@ export const SITE_TOOLS: Tool[] = [
     title: "Promoter & insider activity tracker",
     category: "Research",
     description:
-      "Track promoter buying, selling, pledge increase/decrease, insider transactions, large shareholder changes, and bulk/block deals.",
+      "Promoter buying/selling, pledges, insider transactions and bulk/block deals. No verified live feed is connected yet — this tool reports unavailable rather than estimates.",
     inputSchema: empty,
     run: async () => {
-      const all = getAllPromoterActivities();
       return {
-        totalTransactions: all.length,
-        transactions: all.slice(0, 15).map((a) => ({
-          symbol: a.symbol,
-          company: a.companyName,
-          category: a.category,
-          person: a.personName,
-          valueCr: a.transactionValueCr,
-          stakeChangePct: a.stakePctChange,
-          pledgePct: a.pledgePctOfPromoterHolding,
-          riskImpact: a.riskImpact,
-          date: a.transactionDate,
-        })),
+        dataStatus: "UNAVAILABLE",
+        message: "No verified live feed for SEBI PIT/SAST disclosures is connected yet. Verify filings on NSE/BSE disclosure pages directly.",
       };
     },
   },
@@ -1025,13 +864,13 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_mutual_fund_intelligence",
     title: "Mutual fund intelligence",
     category: "Funds",
-    description: "Search or retrieve Indian mutual funds: AUM, NAV, returns, factor exposures, and portfolio holdings. Filter by query, category, or fundId.",
+    description: "Search Indian mutual funds: scheme identity plus live NAV from AMFI. Holdings, AUM, and factor exposures are not available — no verified feed is connected.",
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string", description: "Search term e.g. Parag Parikh, HDFC, SBI" },
         category: { type: "string", description: "Category e.g. Flexi Cap, Large Cap" },
-        fundId: { type: "string", description: "Exact fund id e.g. ppfas-flexi-cap" },
+        fundId: { type: "string", description: "Exact fund id e.g. parag-parikh-flexi-cap" },
       },
       additionalProperties: false,
     },
@@ -1044,30 +883,20 @@ export const SITE_TOOLS: Tool[] = [
 
       if (parsed.fundId) {
         const f = getMutualFundById(parsed.fundId);
-        return f ? { fund: f } : { error: "Fund " + parsed.fundId + " not found" };
+        return f ? { fund: await withLiveNav(f) } : { error: "Fund " + parsed.fundId + " not found" };
       }
       if (parsed.category) {
         const funds = getFundsByCategory(parsed.category);
-        return { count: funds.length, category: parsed.category, funds };
+        return { count: funds.length, category: parsed.category, funds: await Promise.all(funds.map(withLiveNav)) };
       }
       if (parsed.query) {
         const funds = searchMutualFunds(parsed.query);
-        return { count: funds.length, query: parsed.query, funds };
+        return { count: funds.length, query: parsed.query, funds: await Promise.all(funds.map(withLiveNav)) };
       }
       const all = getAllMutualFunds();
       return {
         totalFunds: all.length,
-        funds: all.map((f) => ({
-          id: f.id,
-          name: f.name,
-          amc: f.amc,
-          category: f.category,
-          nav: f.nav,
-          aumCr: f.aumCr,
-          expenseRatioPct: f.expenseRatioPct,
-          riskRating: f.riskRating,
-          topHoldings: f.holdings.slice(0, 5).map((h) => ({ symbol: h.symbol, weight: h.weightPct })),
-        })),
+        funds: await Promise.all(all.map(withLiveNav)),
       };
     },
   },
@@ -1075,7 +904,7 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_stock_accumulation_radar",
     title: "Smart money accumulation radar",
     category: "Funds",
-    description: "Which stocks are being accumulated across India mutual funds? Aggregates buying across domestic AMCs from monthly disclosures.",
+    description: "Which stocks are being accumulated across Indian mutual funds? No verified holdings feed is connected yet — this tool reports unavailable rather than estimates.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1083,13 +912,10 @@ export const SITE_TOOLS: Tool[] = [
       },
       additionalProperties: false,
     },
-    run: async (a) => {
-      const limit = typeof a?.limit === "number" ? a.limit : 10;
-      const accumulated = computeInstitutionalAccumulation();
+    run: async () => {
       return {
-        asOf: new Date().toISOString().split("T")[0],
-        totalStocksTracked: accumulated.length,
-        topAccumulated: accumulated.slice(0, limit),
+        dataStatus: "UNAVAILABLE",
+        message: "AMC monthly portfolio disclosures are not ingested yet. No accumulation data is estimated.",
       };
     },
   },
@@ -1097,41 +923,20 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_mutual_fund_overlap",
     title: "Mutual fund overlap analyzer",
     category: "Funds",
-    description: "Calculates portfolio overlap percentage, common stocks, and unique holdings between any two mutual fund schemes.",
+    description: "Portfolio overlap between two mutual fund schemes. No verified holdings feed is connected yet — this tool reports unavailable rather than estimates.",
     inputSchema: {
       type: "object",
       properties: {
-        fundIdA: { type: "string", description: "First fund ID, e.g. ppfas-flexi-cap" },
-        fundIdB: { type: "string", description: "Second fund ID, e.g. hdfc-top-100" },
+        fundIdA: { type: "string", description: "First fund ID" },
+        fundIdB: { type: "string", description: "Second fund ID" },
       },
       required: ["fundIdA", "fundIdB"],
       additionalProperties: false,
     },
-    run: async (a) => {
-      const parsed = z.object({
-        fundIdA: z.string(),
-        fundIdB: z.string(),
-      }).parse(a);
-
-      const fA = getMutualFundById(parsed.fundIdA);
-      const fB = getMutualFundById(parsed.fundIdB);
-      if (!fA) return { error: "Fund " + parsed.fundIdA + " not found" };
-      if (!fB) return { error: "Fund " + parsed.fundIdB + " not found" };
-
-      return calculateFundOverlap(fA, fB);
-    },
-  },
-  {
-    name: "get_nfo_calendar",
-    title: "New Fund Offers (NFO) calendar",
-    category: "Funds",
-    description: "Active and upcoming Mutual Fund New Fund Offers (NFOs) in India: AMC, category, dates, benchmark, min investment.",
-    inputSchema: empty,
     run: async () => {
-      const nfos = getAllNfos();
       return {
-        count: nfos.length,
-        nfos,
+        dataStatus: "UNAVAILABLE",
+        message: "AMC monthly portfolio disclosures are not ingested yet. Overlap cannot be computed.",
       };
     },
   },
@@ -1139,7 +944,7 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_site_wide_brief",
     title: "Site-wide executive intelligence brief",
     category: "Intelligence",
-    description: "Comprehensive institutional daily briefing synthesizing broker revisions, promoter activity, credit risks, mutual funds, macro liquidity, and key catalysts.",
+    description: "Daily briefing over the live market tape: index moves, macro liquidity, derivatives positioning, broker research notes, Reddit sentiment, and key catalysts. Promoter, credit, fund-holdings, and concall sections report unavailable until their feeds are connected.",
     inputSchema: empty,
     run: async () => {
       return buildSiteWideExecutiveBrief();

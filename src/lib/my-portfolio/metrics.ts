@@ -7,7 +7,7 @@ import {
   INDIA_INSTRUMENT_KEYS,
 } from "@/lib/feeds/sources/upstox";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
-import { fetchYahooHistory, fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
+import { fetchYahooHistory, fetchYahooQuoteDetails, type YahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
 import { computeBrinsonSectorAttribution } from "@/lib/my-portfolio/brinson-sectors";
 import { benchmarkSupportsActiveShare, isIndiaBenchmark } from "@/lib/my-portfolio/benchmark-constituents";
 import { fetchBenchmarkHistory, getBenchmarkStockWeights, getBenchmarkWeightsSnapshot } from "@/lib/my-portfolio/benchmarks";
@@ -91,7 +91,10 @@ type HoldingSeries = {
   dividendYield: number | null;
 };
 
-async function fetchHoldingSeries(h: Holding): Promise<HoldingSeries> {
+async function fetchHoldingSeries(
+  h: Holding,
+  yahooDetails: Map<string, YahooQuoteDetail>,
+): Promise<HoldingSeries> {
   let history: SeriesPoint[] = [];
   let last: number = h.avgCost;
   let change = 0;
@@ -157,11 +160,12 @@ async function fetchHoldingSeries(h: Holding): Promise<HoldingSeries> {
       }
     }
 
-    // 3. Enrich with Yahoo Quote Detail (live mark fallback if no Upstox, PE, marketCap, volume, book value)
+    // 3. Enrich with Yahoo Quote Detail (live mark fallback if no Upstox, PE, marketCap, volume, book value).
+    // Details are pre-fetched in ONE batched v7 request for all holdings (see
+    // caller) — never one request per holding.
     try {
-      const meta = await fetchYahooQuoteDetail(`${h.symbol}.NS`).catch(() =>
-        fetchYahooQuoteDetail(h.symbol).catch(() => null),
-      );
+      const meta =
+        yahooDetails.get(`${h.symbol}.NS`) ?? yahooDetails.get(h.symbol) ?? null;
       if (meta) {
         if (!hasUpstoxPrice && meta.regularMarketPrice != null && meta.regularMarketPrice > 0) {
           last = meta.regularMarketPrice;
@@ -297,8 +301,24 @@ export async function computePortfolioAnalysis(
 ): Promise<PortfolioAnalysis> {
   if (holdings.length === 0) return emptyAnalysis(settings);
 
+  // One batched Yahoo v7 request for every holding's quote detail (was: one v8
+  // request per holding). Indexed under both the .NS and raw symbol.
+  const yahooDetails = new Map<string, YahooQuoteDetail>();
+  try {
+    const rows = await fetchYahooQuoteDetails(
+      holdings.map((h) => (h.market === "IN" ? `${h.symbol}.NS` : h.symbol)),
+    );
+    for (const d of rows) {
+      yahooDetails.set(d.symbol, d);
+      const raw = d.symbol.replace(/\.NS$/, "");
+      if (!yahooDetails.has(raw)) yahooDetails.set(raw, d);
+    }
+  } catch {
+    /* holdings fall back to Upstox/avg-cost marks */
+  }
+
   const [seriesList, benchmarkHistory, fxHistory, benchWeights, benchSnapshot] = await Promise.all([
-    Promise.all(holdings.map(fetchHoldingSeries)),
+    Promise.all(holdings.map((h) => fetchHoldingSeries(h, yahooDetails))),
     fetchBenchmarkHistory(settings.benchmark),
     fetchYahooHistory("INR=X", "1y").catch(() => []),
     getBenchmarkStockWeights(settings.benchmark),
