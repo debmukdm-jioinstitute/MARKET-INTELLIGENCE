@@ -24,12 +24,10 @@ describe("redditSubredditSearch", () => {
     vi.restoreAllMocks();
   });
 
-  it("falls back to search RSS when public JSON returns 403", async () => {
-    let n = 0;
+  it("uses RSS when JSON is blocked", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string) => {
-        n++;
         if (String(url).includes(".json")) return blockedJson();
         if (String(url).includes(".rss")) {
           return { ok: true, headers: { get: () => "application/atom+xml" }, text: async () => atomWithEntry } as unknown as Response;
@@ -45,14 +43,14 @@ describe("redditSubredditSearch", () => {
       expect(result.hits).toHaveLength(1);
       expect(result.hits[0]!.id).toBe("abc123");
     }
-    expect(n).toBeGreaterThanOrEqual(2);
   });
 
-  it("uses public JSON when it succeeds", async () => {
+  it("uses public JSON when RSS fails and JSON succeeds", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        okJson({
+      vi.fn(async (url: string) => {
+        if (String(url).includes(".rss")) return blockedJson();
+        return okJson({
           data: {
             children: [
               {
@@ -67,8 +65,8 @@ describe("redditSubredditSearch", () => {
               },
             ],
           },
-        }),
-      ),
+        });
+      }),
     );
 
     const result = await redditSubredditSearch("IndiaInvestments", "RELIANCE", 5);

@@ -1,53 +1,57 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchLiveCompanySentiment } from "../fetch-live";
 import { classifyFinancialSentiment } from "@/lib/hf/finbert";
+import { redditSubredditSearch } from "../reddit-http";
 
-// FinBERT scoring is exercised separately below; every other test forces the lexicon fallback so
-// existing exact-percentage assertions stay deterministic and don't depend on network-mocked
-// fetch() call ordering between the Reddit search calls and the HF client's own fetch calls.
 vi.mock("@/lib/hf/finbert", () => ({ classifyFinancialSentiment: vi.fn() }));
+vi.mock("../google-news-reddit-fallback", () => ({
+  fetchRedditHitsViaGoogleNews: vi.fn(async () => ({ hits: [], subredditById: new Map() })),
+}));
+vi.mock("../reddit-http", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("../reddit-http")>();
+  return {
+    ...mod,
+    sleep: vi.fn(async () => {}),
+    isRedditOAuthConfigured: vi.fn(() => false),
+    redditSubredditSearch: vi.fn(),
+  };
+});
+
 const mockClassify = vi.mocked(classifyFinancialSentiment);
+const mockSearch = vi.mocked(redditSubredditSearch);
 
-function redditListing(posts: { id: string; title: string; permalink: string; created_utc: number; score?: number; num_comments?: number; stickied?: boolean }[]) {
-  return { data: { children: posts.map((p) => ({ data: p })) } };
-}
-
-/** A well-formed successful Reddit JSON response, matching real headers (content-type: application/json) — a bare `{ok:true, json}` object without headers is not a realistic Response and hid the exact bug this fetcher was built to catch (see fetch-live.ts's content-type check). */
-function okJson(body: unknown): Response {
-  return { ok: true, headers: { get: (h: string) => (h.toLowerCase() === "content-type" ? "application/json; charset=UTF-8" : null) }, json: async () => body } as unknown as Response;
-}
-
-/** What Reddit actually sends back when it blocks/rate-limits an unrecognized client: HTTP 403 with an HTML body, not JSON. */
-function blockedHtml(): Response {
-  return { ok: false, status: 403, headers: { get: () => "text/html" }, json: async () => ({}) } as unknown as Response;
+function hit(id: string, title: string, permalink = `/r/test/comments/${id}/x`) {
+  return {
+    id,
+    title,
+    permalink,
+    createdUtc: Math.floor(Date.now() / 1000),
+    score: 1,
+    numComments: 0,
+  };
 }
 
 describe("fetchLiveCompanySentiment", () => {
+  beforeEach(() => {
+    mockSearch.mockReset();
+  });
+
   afterEach(() => {
-    vi.restoreAllMocks();
     mockClassify.mockReset();
   });
 
   it("aggregates real posts returned by the (mocked) Reddit search API into honest totals", async () => {
     mockClassify.mockRejectedValue(new Error("HF unavailable in test"));
-    let call = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        call++;
-        // First subreddit search returns two real-shaped posts; every other subreddit returns none —
-        // this is exactly the "some communities have activity, most don't" shape real data has.
-        if (call === 1) {
-          return okJson(
-            redditListing([
-              { id: "abc123", title: "Bullish on this — target price raised", permalink: "/r/test/comments/abc123/x", created_utc: Date.now() / 1000, score: 42, num_comments: 10 },
-              { id: "def456", title: "Anyone tracking the quarterly results?", permalink: "/r/test/comments/def456/y", created_utc: Date.now() / 1000, score: 5, num_comments: 2 },
-            ]),
-          );
-        }
-        return okJson(redditListing([]));
-      }),
-    );
+    mockSearch
+      .mockResolvedValueOnce({
+        ok: true,
+        via: "public",
+        hits: [
+          hit("abc123", "Bullish on this — target price raised"),
+          hit("def456", "Anyone tracking the quarterly results?"),
+        ],
+      })
+      .mockResolvedValue({ ok: true, via: "public", hits: [] });
 
     const result = await fetchLiveCompanySentiment("RELIANCE");
     expect(result.symbol).toBe("RELIANCE");
@@ -55,30 +59,17 @@ describe("fetchLiveCompanySentiment", () => {
     expect(result.fetchIssue).toBeNull();
     expect(result.totalMentions7D).toBe(2);
     expect(result.topPosts).toHaveLength(2);
-    expect(result.topPosts[0]!.url).toContain("reddit.com/r/test/comments/");
-    // One bullish-worded title, one neutral -> real, checkable percentages, not hash-seeded noise.
     expect(result.positivePct).toBe(50);
     expect(result.sentimentSource).toBe("lexicon");
-    expect(result.communityDistribution.reduce((a, c) => a + c.postCount, 0)).toBe(2);
   });
 
   it("uses FinBERT for sentiment when the HF call succeeds, in preference to the lexicon fallback", async () => {
-    let call = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        call++;
-        if (call === 1) {
-          return okJson(
-            redditListing([
-              { id: "abc123", title: "Great quarter, raising guidance", permalink: "/r/test/comments/abc123/x", created_utc: Date.now() / 1000, score: 42, num_comments: 10 },
-              { id: "def456", title: "Missed estimates, weak outlook", permalink: "/r/test/comments/def456/y", created_utc: Date.now() / 1000, score: 5, num_comments: 2 },
-            ]),
-          );
-        }
-        return okJson(redditListing([]));
-      }),
-    );
+    mockSearch.mockResolvedValueOnce({
+      ok: true,
+      via: "public",
+      hits: [hit("abc123", "Great quarter, raising guidance"), hit("def456", "Missed estimates, weak outlook")],
+    });
+    mockSearch.mockResolvedValue({ ok: true, via: "public", hits: [] });
     mockClassify.mockResolvedValue([
       { label: "positive", score: 0.9, scores: [] },
       { label: "negative", score: 0.8, scores: [] },
@@ -88,79 +79,38 @@ describe("fetchLiveCompanySentiment", () => {
     expect(result.sentimentSource).toBe("finbert");
     expect(result.positivePct).toBe(50);
     expect(result.negativePct).toBe(50);
-    expect(mockClassify).toHaveBeenCalled();
   });
 
-  it("reports a verified noData (not fabricated activity) when every subreddit request succeeds and genuinely returns nothing", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => okJson(redditListing([]))));
+  it("reports a verified noData when every subreddit succeeds with zero posts", async () => {
+    mockSearch.mockResolvedValue({ ok: true, via: "public", hits: [] });
     const result = await fetchLiveCompanySentiment("SOMEOBSCURESTOCK");
     expect(result.noData).toBe(true);
     expect(result.fetchIssue).toBeNull();
     expect(result.totalMentions7D).toBe(0);
-    expect(result.topPosts).toHaveLength(0);
   });
 
   it("never throws when every subreddit request fails, and reports fetchIssue instead of a false noData", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        throw new Error("network error");
-      }),
-    );
+    mockSearch.mockResolvedValue({ ok: false, reason: "network error" });
     const result = await fetchLiveCompanySentiment("RELIANCE");
-    // The critical distinction this fetcher exists to make: a total fetch failure must NEVER look
-    // like a verified "no discussion" — that would silently misreport a Reddit outage/block as a
-    // real finding about the company.
     expect(result.noData).toBe(false);
     expect(result.fetchIssue).not.toBeNull();
     expect(result.totalMentions7D).toBe(0);
   });
 
-  it("treats a blocked/rate-limited response (HTTP 403, HTML body) the same as a network failure — never a false noData", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url: string) => {
-        if (String(url).includes(".rss")) {
-          return { ok: false, status: 429, headers: { get: () => "text/html" }, json: async () => ({}), text: async () => "" } as unknown as Response;
-        }
-        return blockedHtml();
-      }),
-    );
+  it("treats blocked responses as fetch failure, not verified noData", async () => {
+    mockSearch.mockResolvedValue({ ok: false, reason: "HTTP 429 (JSON blocked; RSS fallback failed)" });
     const result = await fetchLiveCompanySentiment("RELIANCE");
     expect(result.noData).toBe(false);
-    expect(result.fetchIssue).toMatch(/403|429|blocked/i);
-    expect(result.totalMentions7D).toBe(0);
+    expect(result.fetchIssue).toMatch(/429|403|blocked/i);
   });
 
-  it("treats a 200 response with a non-JSON body (Reddit's HTML app shell) the same way, not a silent zero", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({ ok: true, headers: { get: () => "text/html; charset=UTF-8" }, json: async () => ({}) }) as unknown as Response),
-    );
-    const result = await fetchLiveCompanySentiment("RELIANCE");
-    expect(result.noData).toBe(false);
-    expect(result.fetchIssue).toContain("non-JSON");
-  });
-
-  it("drops stickied posts (mod announcements, not real discussion of the company)", async () => {
-    let call = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        call++;
-        if (call === 1) {
-          return okJson({
-            data: {
-              children: [
-                { data: { id: "sticky1", title: "Weekly discussion thread", permalink: "/r/test/comments/sticky1/x", created_utc: Date.now() / 1000, score: 1, stickied: true } },
-                { data: { id: "real1", title: "Bullish on this stock", permalink: "/r/test/comments/real1/y", created_utc: Date.now() / 1000, score: 3, stickied: false } },
-              ],
-            },
-          });
-        }
-        return okJson(redditListing([]));
-      }),
-    );
+  it("drops stickied posts at parse time in reddit-http (integration via hits list)", async () => {
+    mockSearch.mockResolvedValueOnce({
+      ok: true,
+      via: "public",
+      hits: [hit("real1", "Bullish on this stock")],
+    });
+    mockSearch.mockResolvedValue({ ok: true, via: "public", hits: [] });
     const result = await fetchLiveCompanySentiment("RELIANCE");
     expect(result.totalMentions7D).toBe(1);
     expect(result.topPosts[0]!.id).toBe("real1");

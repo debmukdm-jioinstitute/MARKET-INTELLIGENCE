@@ -4,6 +4,7 @@ import { tallySentiment } from "./lexicon-sentiment";
 import { TRACKED_SUBREDDITS } from "./tracked-subreddits";
 import type { TrackedSubredditId } from "./types";
 import { classifyFinancialSentiment } from "@/lib/hf/finbert";
+import { fetchRedditHitsViaGoogleNews } from "./google-news-reddit-fallback";
 import { isRedditOAuthConfigured, redditSubredditSearch, sleep } from "./reddit-http";
 
 /** FinBERT-scored tally, batched (its own client caps at 5 texts/call). Falls back to the
@@ -110,25 +111,39 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
   const perSub: SubredditResult[] = [];
   for (let i = 0; i < INDIA_SUBREDDITS.length; i++) {
     perSub.push(await searchSubredditRecent(INDIA_SUBREDDITS[i]!, query));
-    if (i < INDIA_SUBREDDITS.length - 1) await sleep(450);
+    if (i < INDIA_SUBREDDITS.length - 1) await sleep(900);
   }
   const failures = perSub.filter((r): r is { ok: false; reason: string } => !r.ok);
-  const posts = perSub
+  let posts = perSub
     .filter((r): r is { ok: true; posts: LiveRedditPost[] } => r.ok)
     .flatMap((r) => r.posts)
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
-  // Only claim a verified "no discussion" when every subreddit was actually reachable. If even one
-  // failed, the honest state is "couldn't fully check" — never silently downgrade that to a clean
-  // zero, however few (or many) subreddits errored.
-  const fetchIssue =
-    failures.length > 0
+  if (posts.length === 0 && failures.length > 0) {
+    const { hits, subredditById } = await fetchRedditHitsViaGoogleNews(symbol, companyName, INDIA_SUBREDDITS);
+    if (hits.length > 0) {
+      posts = hits.map((h) => ({
+        id: h.id,
+        subreddit: subredditById.get(h.id) ?? INDIA_SUBREDDITS[0]!,
+        title: h.title,
+        url: h.permalink.startsWith("http") ? h.permalink : `${REDDIT_BASE}${h.permalink}`,
+        createdAt: new Date(h.createdUtc * 1000).toISOString(),
+        score: h.score,
+        numComments: h.numComments,
+      }));
+    }
+  }
+
+  let fetchIssue =
+    failures.length > 0 && posts.length === 0
       ? `${failures.length}/${INDIA_SUBREDDITS.length} communities could not be reached (${failures[0]!.reason})${
-          !isRedditOAuthConfigured() && failures.some((f) => f.reason.includes("403"))
-            ? ". Set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_REFRESH_TOKEN (or username/password) on the server — anonymous Reddit JSON is blocked from cloud hosts"
+          !isRedditOAuthConfigured() && failures.some((f) => f.reason.includes("403") || f.reason.includes("429"))
+            ? ". Add REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET + REDDIT_REFRESH_TOKEN on Vercel for reliable access"
             : ""
         }`
-      : null;
+      : failures.length > 0 && posts.length > 0
+        ? `${failures.length}/${INDIA_SUBREDDITS.length} communities unreachable — showing partial results`
+        : null;
 
   const bySub = new Map<TrackedSubredditId, number>();
   for (const p of posts) bySub.set(p.subreddit, (bySub.get(p.subreddit) ?? 0) + 1);

@@ -184,6 +184,22 @@ export async function redditSubredditSearch(
   }
 
   try {
+    const res = await feedFetch(`${REDDIT_WWW}${rssPath}`, {
+      timeoutMs: 12_000,
+      headers: { Accept: "application/atom+xml, application/xml, text/xml", "User-Agent": redditUserAgent() },
+    });
+    if (res.ok) {
+      const xml = await res.text();
+      return { ok: true, hits: hitsFromSearchRss(xml, limit), via: "rss" };
+    }
+    if (res.status !== 403 && res.status !== 429) {
+      return { ok: false, reason: `HTTP ${res.status}` };
+    }
+  } catch (e) {
+    return { ok: false, reason: e instanceof Error ? e.message : "request failed" };
+  }
+
+  try {
     const res = await feedFetch(`${REDDIT_WWW}${jsonPath}`, {
       timeoutMs: 12_000,
       headers: { Accept: "application/json", "User-Agent": redditUserAgent() },
@@ -203,17 +219,5 @@ export async function redditSubredditSearch(
     return { ok: false, reason: e instanceof Error ? e.message : "request failed" };
   }
 
-  try {
-    const res = await feedFetch(`${REDDIT_WWW}${rssPath}`, {
-      timeoutMs: 12_000,
-      headers: { Accept: "application/atom+xml, application/xml, text/xml", "User-Agent": redditUserAgent() },
-    });
-    if (res.ok) {
-      const xml = await res.text();
-      return { ok: true, hits: hitsFromSearchRss(xml, limit), via: "rss" };
-    }
-    return { ok: false, reason: `HTTP ${res.status} (JSON blocked; RSS fallback failed)` };
-  } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : "request failed" };
-  }
+  return { ok: false, reason: "HTTP 429 (JSON blocked; RSS fallback failed)" };
 }
