@@ -117,23 +117,25 @@ function toItem(row: EarningsRow, period: EarningsCalendarPeriod): EarningsCalen
     previousSurprise: snap?.previousSurprise ?? null,
     expectedResult: snap?.expectedResult ?? "Open research desk for estimates",
     portfolioWeight: NIFTY_WEIGHT[row.symbol] ?? null,
-    sourceUrl: "https://www.bseindia.com/corporates/ann.html",
+    sourceUrl: `https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(row.symbol)}`,
     isEstimate: row.isEstimate,
   };
 }
 
 export async function buildEarningsCalendarPanel() {
-  const { asOf, rows, failed } = await loadEarningsRows(false);
+  const { asOf, rows, failed, scanned } = await loadEarningsRows(false);
   const items: EarningsCalendarItem[] = [];
   for (const row of rows) {
     const period = earningsPeriod(row.date);
     if (!period) continue;
     items.push(toItem(row, period));
   }
+  items.sort((a, b) => a.date.localeCompare(b.date) || a.symbol.localeCompare(b.symbol));
   return {
     asOf,
     failed,
-    source: "Yahoo Finance calendarEvents (6h cache)",
+    scanned,
+    source: `Yahoo Finance calendarEvents · Nifty 500 universe (${scanned} names, 6h cache)`,
     priorQuarterNote: "Last Rev / EPS / Surprise = prior reported quarter where noted — not live consensus.",
     items,
   };

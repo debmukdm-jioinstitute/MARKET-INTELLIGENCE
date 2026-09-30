@@ -14,6 +14,7 @@ type Panel = {
   source: string;
   priorQuarterNote: string;
   failed?: number;
+  scanned?: number;
 };
 
 async function loadPanel(): Promise<Panel> {
@@ -35,7 +36,7 @@ function fmtAsOf(iso: string) {
 }
 
 export function EarningsCalendarCard() {
-  const { data, error, isLoading, mutate, isValidating } = useSWR("earnings-calendar-v1", loadPanel, {
+  const { data, error, isLoading, mutate, isValidating } = useSWR("earnings-calendar-v2-n500", loadPanel, {
     refreshInterval: 6 * 60 * 60 * 1000,
     revalidateOnFocus: true,
   });
@@ -62,13 +63,15 @@ export function EarningsCalendarCard() {
             label="Earnings title"
             className="text-base font-bold text-foreground mt-0.5"
           >
-            Upcoming results dates (large caps)
+            Upcoming results dates (Nifty 500)
           </EditableCopy>
           <p className="mt-1 text-xs text-muted-foreground">
             {data?.asOf
-              ? `Yahoo calendar · refreshed ${fmtAsOf(data.asOf)} IST · ${data.priorQuarterNote}`
+              ? `Yahoo calendar · ${data.scanned ?? 500} Nifty 500 names · refreshed ${fmtAsOf(data.asOf)} IST${
+                  data.failed ? ` · ${data.failed} fetch misses` : ""
+                } · ${data.priorQuarterNote}`
               : isLoading
-                ? "Loading earnings dates…"
+                ? "Scanning Nifty 500 earnings dates (first load may take a minute)…"
                 : error
                   ? "Could not refresh calendar."
                   : null}
@@ -98,7 +101,7 @@ export function EarningsCalendarCard() {
       <div className="mt-4 space-y-4">
         {items.length === 0 && !isLoading ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
-            No earnings in the next 14 days for tracked Nifty names — check{" "}
+            No earnings in the next 14 days across Nifty 500 — check{" "}
             <Link href="/research" className="text-primary underline">
               research desk
             </Link>
@@ -118,9 +121,10 @@ export function EarningsCalendarCard() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {bucket.map((item) => (
-                  <div
+                  <Link
                     key={item.id}
-                    className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2 hover:border-border transition-colors"
+                    href={`/research/${encodeURIComponent(item.symbol)}`}
+                    className="rounded-xl border border-border/70 bg-card/50 p-3.5 space-y-2 hover:border-primary/40 hover:bg-accent/20 transition-colors block"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5 min-w-0">
@@ -176,7 +180,7 @@ export function EarningsCalendarCard() {
                         <span className="font-semibold text-foreground truncate block">{item.expectedResult}</span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

@@ -224,9 +224,9 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
           {/* Featured Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             <span className="text-xs text-muted-foreground whitespace-nowrap mr-1">
-              Active Tickers:
+              Top buzz (Nifty 500):
             </span>
-            {initialData.companies.map((c) => {
+            {initialData.companies.slice(0, 20).map((c) => {
               const active = c.symbol === selectedSymbol;
               return (
                 <button

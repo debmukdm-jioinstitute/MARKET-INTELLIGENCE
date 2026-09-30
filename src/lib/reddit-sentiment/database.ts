@@ -4,6 +4,8 @@ import {
   RetailInvestorProblemInsight,
   RetailSentimentHubData,
 } from "./types";
+import { NIFTY_500 } from "@/lib/prowess/nifty500";
+import { getNifty500CapTier } from "./nifty500-cap-tier";
 
 export const TRACKED_SUBREDDITS: TrackedSubredditMeta[] = [
   {
@@ -443,7 +445,10 @@ export const RETAIL_INVESTOR_PROBLEMS: RetailInvestorProblemInsight[] = [
 /**
  * Algorithmic generator for any ticker so user entering any symbol gets a realistic retail sentiment pulse.
  */
-export function generateSyntheticRetailSentiment(symbol: string): CompanyRetailSentiment {
+export function generateSyntheticRetailSentiment(
+  symbol: string,
+  meta?: { companyName?: string; sector?: string },
+): CompanyRetailSentiment {
   const s = symbol.toUpperCase().trim();
   const hash = s.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   
@@ -459,8 +464,9 @@ export function generateSyntheticRetailSentiment(symbol: string): CompanyRetailS
 
   return {
     symbol: s,
-    companyName: `${s} Listed Equity`,
-    sector: "Indian Capital Markets",
+    companyName: meta?.companyName ?? `${s} Listed Equity`,
+    sector: meta?.sector ?? "Indian Capital Markets",
+    marketCapTier: getNifty500CapTier(s),
     totalMentions7D: mentions,
     mentionChangePct7D: mentionChg,
     positivePct: pos,
@@ -498,15 +504,43 @@ export function generateSyntheticRetailSentiment(symbol: string): CompanyRetailS
 export function getCompanyRetailSentiment(symbol: string): CompanyRetailSentiment {
   const s = symbol.toUpperCase().trim();
   if (COMPANY_RETAIL_SENTIMENT_DATA[s]) {
-    return COMPANY_RETAIL_SENTIMENT_DATA[s];
+    return {
+      ...COMPANY_RETAIL_SENTIMENT_DATA[s],
+      marketCapTier: COMPANY_RETAIL_SENTIMENT_DATA[s].marketCapTier ?? getNifty500CapTier(s),
+    };
   }
-  return generateSyntheticRetailSentiment(s);
+  const row = NIFTY_500.find(([sym]) => sym === s);
+  return generateSyntheticRetailSentiment(s, row ? { companyName: row[1], sector: row[2] } : undefined);
 }
 
+function buildNifty500SentimentUniverse(): CompanyRetailSentiment[] {
+  const companies: CompanyRetailSentiment[] = [];
+  for (const [symbol, name, industry] of NIFTY_500) {
+    const curated = COMPANY_RETAIL_SENTIMENT_DATA[symbol];
+    if (curated) {
+      companies.push({
+        ...curated,
+        marketCapTier: curated.marketCapTier ?? getNifty500CapTier(symbol),
+      });
+    } else {
+      companies.push(generateSyntheticRetailSentiment(symbol, { companyName: name, sector: industry }));
+    }
+  }
+  companies.sort(
+    (a, b) =>
+      b.mentionChangePct7D - a.mentionChangePct7D ||
+      b.totalMentions7D - a.totalMentions7D ||
+      a.symbol.localeCompare(b.symbol),
+  );
+  return companies;
+}
+
+let cachedUniverse: CompanyRetailSentiment[] | null = null;
+
 export function getAllRetailSentimentData(): RetailSentimentHubData {
-  const companies = Object.values(COMPANY_RETAIL_SENTIMENT_DATA);
+  if (!cachedUniverse) cachedUniverse = buildNifty500SentimentUniverse();
   return {
-    companies,
+    companies: cachedUniverse,
     trackedSubreddits: TRACKED_SUBREDDITS,
     overallMarketSentiment: {
       fiiDiiVsRetailDivergence: "FIIs are selective net sellers in large-cap banking while retail sentiment is heavily concentrated in high-beta green energy, quick commerce, and EV demerger plays.",

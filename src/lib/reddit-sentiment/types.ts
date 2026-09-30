@@ -45,6 +45,7 @@ export interface CompanyRetailSentiment {
   symbol: string;
   companyName: string;
   sector: string;
+  marketCapTier?: "LARGE_CAP" | "MID_CAP" | "SMALL_CAP";
   totalMentions7D: number;
   mentionChangePct7D: number; // e.g. +142%
   positivePct: number;        // e.g. 61%

@@ -51,7 +51,7 @@ import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { searchHelpTopics } from "@/lib/help/help-search-index";
 import { listPortalOfferings } from "@/lib/site-assistant/education";
 import { fetchYahooHistory } from "@/lib/feeds/sources/yahoo";
-import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
+import { buildEarningsCalendarPanel } from "@/lib/feeds/earnings/build-calendar";
 import {
   fetchUpstoxIpoList,
   fetchUpstoxKeyRatios,
@@ -298,15 +298,22 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_earnings_calendar",
     title: "Earnings calendar",
     category: "Research",
-    description: "Next earnings date for each tracked India large cap (dates on file only).",
+    description: "Upcoming earnings dates for Nifty 500 names (next 14 days, Yahoo calendar).",
     inputSchema: empty,
     run: async () => {
-      const results = await Promise.allSettled(INDIA_EQUITIES.map((i) => fetchYahooEarningsDate(i.symbol)));
-      const rows: { symbol: string; name: string; date: string; isEstimate: boolean }[] = [];
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled" && r.value) rows.push({ symbol: INDIA_EQUITIES[i].symbol, name: INDIA_EQUITIES[i].name, date: r.value.date, isEstimate: r.value.isEstimate });
-      });
-      return { rows: rows.sort((x, y) => x.date.localeCompare(y.date)), source: "Yahoo Finance calendar events" };
+      const panel = await buildEarningsCalendarPanel();
+      return {
+        asOf: panel.asOf,
+        scanned: panel.scanned,
+        items: panel.items.map((i) => ({
+          symbol: i.symbol,
+          company: i.company,
+          date: i.date,
+          period: i.period,
+          isEstimate: i.isEstimate,
+        })),
+        source: panel.source,
+      };
     },
   },
   {

@@ -76,7 +76,7 @@ describe("Reddit Retail Sentiment Engine & Alternative Data", () => {
 
   it("returns overall market sentiment with retail euphoria score and divergence insights", () => {
     const hub = getAllRetailSentimentData();
-    expect(hub.companies.length).toBeGreaterThanOrEqual(5);
+    expect(hub.companies.length).toBeGreaterThanOrEqual(500);
     expect(hub.overallMarketSentiment.retailEuphoriaScore).toBeGreaterThan(0);
     expect(hub.overallMarketSentiment.retailEuphoriaScore).toBeLessThanOrEqual(100);
     expect(hub.overallMarketSentiment.mostHypedTickers.length).toBeGreaterThan(0);

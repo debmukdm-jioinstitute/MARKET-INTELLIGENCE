@@ -1,30 +1,76 @@
-import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { fetchYahooEarningsDate } from "@/lib/feeds/sources/yahoo-calendar";
+import { NIFTY_500 } from "@/lib/prowess/nifty500";
 
 export type EarningsRow = { symbol: string; name: string; date: string; isEstimate: boolean };
 
 const TTL_MS = 6 * 60 * 60 * 1000;
-let cache: { at: number; rows: EarningsRow[]; failed: number } | null = null;
+const FETCH_CONCURRENCY = 18;
 
-export async function loadEarningsRows(force = false): Promise<{ asOf: string; rows: EarningsRow[]; failed: number }> {
-  if (!force && cache && Date.now() - cache.at < TTL_MS) {
-    return { asOf: new Date(cache.at).toISOString(), rows: cache.rows, failed: cache.failed };
+const EARNINGS_UNIVERSE = NIFTY_500.map(([symbol, name]) => ({ symbol, name }));
+
+let cache: { at: number; rows: EarningsRow[]; failed: number; scanned: number } | null = null;
+
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let cursor = 0;
+
+  async function worker() {
+    while (cursor < items.length) {
+      const index = cursor++;
+      out[index] = await fn(items[index]!, index);
+    }
   }
-  const results = await Promise.allSettled(INDIA_EQUITIES.map((i) => fetchYahooEarningsDate(i.symbol)));
-  const rows: EarningsRow[] = [];
-  let failed = 0;
-  results.forEach((r, idx) => {
-    if (r.status === "rejected") failed++;
-    else if (r.value) {
-      rows.push({
-        symbol: INDIA_EQUITIES[idx].symbol,
-        name: INDIA_EQUITIES[idx].name,
-        date: r.value.date,
-        isEstimate: r.value.isEstimate,
-      });
+
+  const workers = Math.min(concurrency, items.length);
+  await Promise.all(Array.from({ length: workers }, () => worker()));
+  return out;
+}
+
+export async function loadEarningsRows(force = false): Promise<{
+  asOf: string;
+  rows: EarningsRow[];
+  failed: number;
+  scanned: number;
+}> {
+  if (!force && cache && Date.now() - cache.at < TTL_MS) {
+    return {
+      asOf: new Date(cache.at).toISOString(),
+      rows: cache.rows,
+      failed: cache.failed,
+      scanned: cache.scanned,
+    };
+  }
+
+  const results = await mapWithConcurrency(EARNINGS_UNIVERSE, FETCH_CONCURRENCY, async (inst) => {
+    try {
+      const next = await fetchYahooEarningsDate(inst.symbol);
+      if (!next) return { ok: false as const, failed: false as const };
+      return {
+        ok: true as const,
+        row: {
+          symbol: inst.symbol,
+          name: inst.name,
+          date: next.date,
+          isEstimate: next.isEstimate,
+        },
+      };
+    } catch {
+      return { ok: false as const, failed: true as const };
     }
   });
-  rows.sort((a, b) => a.date.localeCompare(b.date));
-  cache = { at: Date.now(), rows, failed };
-  return { asOf: new Date(cache.at).toISOString(), rows, failed };
+
+  const rows: EarningsRow[] = [];
+  let failed = 0;
+  for (const r of results) {
+    if ("row" in r && r.ok) rows.push(r.row);
+    else if ("failed" in r && r.failed) failed += 1;
+  }
+  rows.sort((a, b) => a.date.localeCompare(b.date) || a.symbol.localeCompare(b.symbol));
+
+  cache = { at: Date.now(), rows, failed, scanned: EARNINGS_UNIVERSE.length };
+  return { asOf: new Date(cache.at).toISOString(), rows, failed, scanned: cache.scanned };
 }
