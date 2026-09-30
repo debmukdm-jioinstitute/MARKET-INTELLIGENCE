@@ -34,12 +34,15 @@ export async function summarizeText(text: string, maxWords = 80): Promise<string
   const cacheKey = `bart-cnn::${clipped.slice(0, 200)}::${maxTokens}`;
 
   const result = await hfInfer<
-    { inputs: string; parameters: Record<string, number> },
+    { inputs: string; parameters: { truncation: string; generate_parameters: { max_new_tokens: number; min_new_tokens: number } } },
     BartSummarizationResponse[]
   >(
     MODEL,
-    // HF summarization API expects the text directly as inputs
-    { inputs: clipped, parameters: { max_new_tokens: maxTokens, min_new_tokens: minTokens, truncation: 1 } } as unknown as { inputs: string; parameters: Record<string, number> },
+    // HF summarization API (Inference Providers / hf-inference) expects generation knobs nested
+    // under parameters.generate_parameters, not flat under parameters — a flat max_new_tokens/
+    // min_new_tokens/truncation:1 shape (the pre-migration api-inference.huggingface.co format)
+    // is rejected with a 400 "model_kwargs are not used by the model" error.
+    { inputs: clipped, parameters: { truncation: "longest_first", generate_parameters: { max_new_tokens: maxTokens, min_new_tokens: minTokens } } },
     { ttlMs: TTL_MS, cacheKey },
   );
 
