@@ -1,6 +1,7 @@
 import { hashPassword, isBootstrapAdmin } from "@/lib/admin/auth";
 import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { sql } from "@/lib/db";
+import { tagCustomerInKit } from "@/lib/kit";
 import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { after } from "next/server";
 import { NextResponse } from "next/server";
@@ -23,6 +24,19 @@ export async function completeEmailSignup(input: {
   const out = setSessionCookie(res, sessionUser);
   after(() => {
     void sendWelcomePackToUser(sessionUser, input.origin);
+    // Best-effort: tag the new customer in Kit so broadcasts reach them.
+    // kit_tagged_at lets the daily cron skip successes and retry misses.
+    void tagCustomerInKit(input.email, input.name).then(async (r) => {
+      if (r.ok) {
+        try {
+          await db`UPDATE users SET kit_tagged_at = now() WHERE email = ${input.email}`;
+        } catch {
+          /* non-fatal: the cron will retry */
+        }
+      } else if (!r.skipped) {
+        console.warn(`[kit] customer tag failed for ${input.email}: ${r.error}`);
+      }
+    });
   });
   return out;
 }

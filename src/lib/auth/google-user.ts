@@ -3,6 +3,7 @@ import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { ensureSchema, sql } from "@/lib/db";
 import type { SessionUser } from "@/lib/auth";
 import { googleOnlyPasswordPlaceholder, type GoogleUserInfo } from "@/lib/auth/google-oauth";
+import { tagCustomerInKit } from "@/lib/kit";
 import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { NextResponse } from "next/server";
 
@@ -61,6 +62,18 @@ export async function sessionResponseForGoogleUser(
       const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };
       void sendWelcomePackToUser(sessionUser, new URL(requestUrl).origin).catch((err) => {
         console.error("[welcome-pack]", email, err);
+      });
+      // Best-effort: tag the new customer in Kit so broadcasts reach them.
+      void tagCustomerInKit(email, name).then(async (r) => {
+        if (r.ok) {
+          try {
+            await db`UPDATE users SET kit_tagged_at = now() WHERE email = ${email}`;
+          } catch {
+            /* non-fatal: the daily cron will retry */
+          }
+        } else if (!r.skipped) {
+          console.error("[kit] customer tag failed", email, r.error);
+        }
       });
       const onboard = new URL("/onboarding", requestUrl);
       onboard.searchParams.set("next", redirectTo);
