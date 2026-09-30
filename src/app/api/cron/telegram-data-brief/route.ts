@@ -39,3 +39,8 @@ export async function GET(req: Request) {
   }));
   return NextResponse.json({ ok: true, ...report });
 }
+
+// The GitHub Actions collector script triggers the briefing with POST.
+export async function POST(req: Request) {
+  return GET(req);
+}
