@@ -6,9 +6,11 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Twice daily (06:30 + 18:30 IST, after the GitHub Actions collector runs):
+ * Twice daily (after the GitHub Actions collector runs at 06:00 + 18:00 IST):
  * broadcast ALL collected market data to the owner's Telegram chats as a
- * compact briefing. ?dry=1 reports what would be sent without sending.
+ * compact briefing. Triggered by scripts/collectors/run-collectors.ts (Vercel
+ * Hobby only allows once-daily crons, so this is NOT in vercel.json).
+ * ?dry=1 reports what would be sent without sending.
  * Auth: Bearer <CRON_SECRET> (same as other crons).
  */
 export async function GET(req: Request) {

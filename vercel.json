@@ -37,10 +37,6 @@
       "schedule": "15 3 * * *"
     },
     {
-      "path": "/api/cron/telegram-data-brief",
-      "schedule": "0 1,13 * * *"
-    },
-    {
       "path": "/api/cron/what-changed",
       "schedule": "15 4 * * *"
     },

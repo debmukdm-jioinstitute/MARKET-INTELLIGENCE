@@ -106,6 +106,29 @@ async function main() {
   console.log(JSON.stringify({ level: "info", msg: "ingest response", status: res.status, body: text.slice(0, 2000) }));
   if (!res.ok) process.exit(1);
 
+  // Twice-daily Telegram market-data briefing (06:00 + 18:00 IST, right after
+  // this collector run). Best-effort: a briefing failure must not fail the
+  // collector run. The endpoint dedups per AM/PM slot, so manual re-runs and
+  // --only subset runs never double-send. (Vercel Hobby only allows
+  // once-daily crons, so the briefing is triggered here on free GitHub
+  // Actions instead of vercel.json.)
+  try {
+    const briefRes = await feedFetch(`${site}/api/cron/telegram-data-brief`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}` },
+      timeoutMs: 60_000,
+      attempts: 2,
+    });
+    const briefText = await briefRes.text().catch(() => "");
+    console.log(
+      JSON.stringify({ level: "info", msg: "telegram briefing", status: briefRes.status, body: briefText.slice(0, 500) }),
+    );
+  } catch (e) {
+    console.log(
+      JSON.stringify({ level: "warn", msg: "telegram briefing failed (non-fatal)", error: e instanceof Error ? e.message : String(e) }),
+    );
+  }
+
   if (payload.ok.length === 0) {
     console.error(JSON.stringify({ level: "error", msg: "all collectors failed — nothing fresh delivered" }));
     process.exit(1);
