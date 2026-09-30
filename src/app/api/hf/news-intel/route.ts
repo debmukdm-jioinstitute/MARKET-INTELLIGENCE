@@ -19,7 +19,9 @@ import { getFeedHubCached } from "@/lib/feeds/hub-cache";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-export const revalidate = 600;
+// Live AI inference must never be prerendered at build time — the HF client's
+// internal cache still governs upstream calls.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -68,7 +70,7 @@ export async function GET() {
           }))
         : [];
 
-    let tldr =
+    const tldr =
       tldrResult.status === "fulfilled" && tldrResult.value.trim()
         ? tldrResult.value.trim()
         : buildFallbackTldr(headlines, sentiment.label);
