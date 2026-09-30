@@ -78,10 +78,6 @@ export type InvestorProblemCategory =
 export interface CommunityQueryQuote {
   subreddit: TrackedSubredditId;
   queryTitle: string;
-  quoteExcerpt: string;
-  upvotes: number;
-  commentsCount: number;
-  timestamp: string;
 }
 
 export interface RetailInvestorProblemInsight {
@@ -90,7 +86,6 @@ export interface RetailInvestorProblemInsight {
   categoryLabel: string;
   headline: string;
   problemDescription: string;
-  monthlyMentionGrowthPct: number; // e.g. +85%
   sampleCommunityQueries: CommunityQueryQuote[];
   conventionalDatasetBlindspot: string; // Why traditional Bloomberg / Reuters screeners miss this
   miSolutionFeature: {
@@ -101,14 +96,6 @@ export interface RetailInvestorProblemInsight {
 }
 
 export interface RetailSentimentHubData {
-  companies: CompanyRetailSentiment[];
   trackedSubreddits: TrackedSubredditMeta[];
-  overallMarketSentiment: {
-    fiiDiiVsRetailDivergence: string;
-    retailEuphoriaScore: number; // 0-100
-    mostHypedTickers: string[];
-    mostHatedTickers: string[];
-    asOf: string;
-  };
   investorProblems: RetailInvestorProblemInsight[];
 }
