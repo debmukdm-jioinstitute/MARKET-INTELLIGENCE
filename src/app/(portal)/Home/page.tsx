@@ -34,7 +34,6 @@ import { HomeAiFiveAgents } from "@/components/dashboard/home-ai-five-agents";
 import { HomeExploreHub } from "@/components/dashboard/home-explore-hub";
 import { TrustNote } from "@/components/ui/trust-note";
 import { ShippedPopup } from "@/components/marketing/shipped-popup";
-import { HomeTickerTape } from "@/components/dashboard/home-ticker-tape";
 import { HomeExecutiveBriefSneakPeek } from "@/components/dashboard/home-executive-brief-sneak-peek";
 import { PrimaryMarketSneakPeek } from "@/components/dashboard/primary-market-sneak-peek";
 import { SmartMoneySneakPeek } from "@/components/dashboard/smart-money-sneak-peek";
@@ -100,9 +99,6 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
-
-      {/* Live Cross-Asset Tape */}
-      <HomeTickerTape data={data} />
 
       {/* Executive Daily Briefing Sneak Peek */}
       <HomeExecutiveBriefSneakPeek />
