@@ -10,14 +10,8 @@ export function McpClaudeLaunchBanner() {
     >
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-2 px-4 py-2.5 text-center sm:flex-row sm:flex-wrap sm:gap-x-3 sm:py-3">
         <p className="text-sm leading-snug sm:text-[15px]">
-          <span className="font-bold tracking-tight">🚀 Major breakthrough</span>
-          <span className="mx-1.5 hidden opacity-80 sm:inline" aria-hidden>
-            ·
-          </span>
-          <span className="block sm:inline">
-            <span className="font-semibold">🤖 Market Intelligence MCP for Claude</span> is live — NSE/BSE data,
-            portfolio, screeners &amp; research inside Claude Desktop &amp; Claude Code.
-          </span>
+          <span className="font-semibold">🤖 Market Intelligence MCP for Claude</span> is live — NSE/BSE data,
+          portfolio, screeners &amp; research inside Claude Desktop &amp; Claude Code.
         </p>
         <Link
           href="/connect/claude"
