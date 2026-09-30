@@ -1,10 +1,10 @@
-import { feedFetch } from "@/lib/feeds/http";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { getNifty500CapTier } from "./nifty500-cap-tier";
 import { tallySentiment } from "./lexicon-sentiment";
 import { TRACKED_SUBREDDITS } from "./tracked-subreddits";
 import type { TrackedSubredditId } from "./types";
 import { classifyFinancialSentiment } from "@/lib/hf/finbert";
+import { isRedditOAuthConfigured, redditSubredditSearch, sleep } from "./reddit-http";
 
 /** FinBERT-scored tally, batched (its own client caps at 5 texts/call). Falls back to the
  * deterministic lexicon tally on any HF failure — never blocks or breaks the page. */
@@ -52,59 +52,22 @@ export type LiveRedditPost = {
   numComments: number;
 };
 
-type RedditSearchChild = {
-  data?: {
-    id?: string;
-    title?: string;
-    permalink?: string;
-    created_utc?: number;
-    score?: number;
-    num_comments?: number;
-    stickied?: boolean;
-  };
-};
-
-type RedditSearchListing = { data?: { children?: RedditSearchChild[] } };
-
 type SubredditResult = { ok: true; posts: LiveRedditPost[] } | { ok: false; reason: string };
 
-/**
- * One subreddit search for posts mentioning `query` in the last 7 days. Distinguishes "the request
- * itself failed" (non-2xx, timeout, or a non-JSON body — Reddit sometimes serves its HTML app
- * shell with a 200 to an unrecognized client instead of the JSON API) from "the request succeeded
- * and there genuinely were zero matching posts". Collapsing those two into one "zero results" was
- * the actual bug behind an earlier version of this fix: a blocked/rate-limited request silently
- * looked identical to an honestly empty result. Never throws.
- */
 async function searchSubredditRecent(subreddit: TrackedSubredditId, query: string, limit = 20): Promise<SubredditResult> {
   const slug = subreddit.replace(/^r\//, "");
-  const params = new URLSearchParams({ q: query, restrict_sr: "on", sort: "new", t: "week", limit: String(limit) });
-  const url = `${REDDIT_BASE}/r/${encodeURIComponent(slug)}/search.json?${params.toString()}`;
-  try {
-    const res = await feedFetch(url, { timeoutMs: 10_000 });
-    if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.includes("json")) return { ok: false, reason: "non-JSON response (likely blocked or rate-limited)" };
-    const json = (await res.json()) as RedditSearchListing;
-    const children = json.data?.children ?? [];
-    const posts: LiveRedditPost[] = [];
-    for (const child of children) {
-      const d = child.data;
-      if (!d?.title || !d.id || !d.permalink || d.stickied) continue;
-      posts.push({
-        id: d.id,
-        subreddit,
-        title: d.title,
-        url: `${REDDIT_BASE}${d.permalink}`,
-        createdAt: typeof d.created_utc === "number" ? new Date(d.created_utc * 1000).toISOString() : new Date().toISOString(),
-        score: d.score ?? 0,
-        numComments: d.num_comments ?? 0,
-      });
-    }
-    return { ok: true, posts };
-  } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : "request failed" };
-  }
+  const result = await redditSubredditSearch(slug, query, limit);
+  if (!result.ok) return { ok: false, reason: result.reason };
+  const posts: LiveRedditPost[] = result.hits.map((h) => ({
+    id: h.id,
+    subreddit,
+    title: h.title,
+    url: h.permalink.startsWith("http") ? h.permalink : `${REDDIT_BASE}${h.permalink}`,
+    createdAt: new Date(h.createdUtc * 1000).toISOString(),
+    score: h.score,
+    numComments: h.numComments,
+  }));
+  return { ok: true, posts };
 }
 
 export type LiveCompanySentiment = {
@@ -144,7 +107,11 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
   // curated Nifty 500 list.
   const query = row ? `"${companyName}" OR ${symbol}` : symbol;
 
-  const perSub = await Promise.all(INDIA_SUBREDDITS.map((sub) => searchSubredditRecent(sub, query)));
+  const perSub: SubredditResult[] = [];
+  for (let i = 0; i < INDIA_SUBREDDITS.length; i++) {
+    perSub.push(await searchSubredditRecent(INDIA_SUBREDDITS[i]!, query));
+    if (i < INDIA_SUBREDDITS.length - 1) await sleep(450);
+  }
   const failures = perSub.filter((r): r is { ok: false; reason: string } => !r.ok);
   const posts = perSub
     .filter((r): r is { ok: true; posts: LiveRedditPost[] } => r.ok)
@@ -154,7 +121,14 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
   // Only claim a verified "no discussion" when every subreddit was actually reachable. If even one
   // failed, the honest state is "couldn't fully check" — never silently downgrade that to a clean
   // zero, however few (or many) subreddits errored.
-  const fetchIssue = failures.length > 0 ? `${failures.length}/${INDIA_SUBREDDITS.length} communities could not be reached (${failures[0]!.reason})` : null;
+  const fetchIssue =
+    failures.length > 0
+      ? `${failures.length}/${INDIA_SUBREDDITS.length} communities could not be reached (${failures[0]!.reason})${
+          !isRedditOAuthConfigured() && failures.some((f) => f.reason.includes("403"))
+            ? ". Set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_REFRESH_TOKEN (or username/password) on the server — anonymous Reddit JSON is blocked from cloud hosts"
+            : ""
+        }`
+      : null;
 
   const bySub = new Map<TrackedSubredditId, number>();
   for (const p of posts) bySub.set(p.subreddit, (bySub.get(p.subreddit) ?? 0) + 1);

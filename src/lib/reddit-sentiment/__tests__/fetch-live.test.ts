@@ -117,10 +117,18 @@ describe("fetchLiveCompanySentiment", () => {
   });
 
   it("treats a blocked/rate-limited response (HTTP 403, HTML body) the same as a network failure — never a false noData", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => blockedHtml()));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes(".rss")) {
+          return { ok: false, status: 429, headers: { get: () => "text/html" }, json: async () => ({}), text: async () => "" } as unknown as Response;
+        }
+        return blockedHtml();
+      }),
+    );
     const result = await fetchLiveCompanySentiment("RELIANCE");
     expect(result.noData).toBe(false);
-    expect(result.fetchIssue).toContain("HTTP 403");
+    expect(result.fetchIssue).toMatch(/403|429|blocked/i);
     expect(result.totalMentions7D).toBe(0);
   });
 

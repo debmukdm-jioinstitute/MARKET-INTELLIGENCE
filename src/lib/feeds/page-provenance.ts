@@ -99,7 +99,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
           kind: "api",
           label: "Reddit retail sentiment",
           source: { provider: "MI social NLP engine", url: "/api/reddit/sentiment" },
-          fetchMethod: "getAllRetailSentimentData() — src/lib/reddit-sentiment/database.ts",
+          fetchMethod: "fetchLiveCompanySentiment() — OAuth/public JSON + RSS fallback — src/lib/reddit-sentiment/",
         },
         ...chips("nse", "bse"),
       ],

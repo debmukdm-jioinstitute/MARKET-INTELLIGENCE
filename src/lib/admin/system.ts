@@ -42,6 +42,13 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "ADMIN_SYNC_SECRET", required: false, note: "Manual instrument sync" },
   { key: "NEXT_PUBLIC_SITE_URL", required: false, note: "Absolute links in emails" },
   { key: "MI_REQUIRE_ACCOUNT", required: false, note: "Set to 1 or true to disable guest login without DB toggle (admin flag still works)" },
+  { key: "FEED_USER_AGENT", required: false, note: "User-Agent for RSS and other open feeds" },
+  { key: "REDDIT_CLIENT_ID", required: false, note: "Reddit app id — oauth.reddit.com (fixes retail sentiment 403 on Vercel)" },
+  { key: "REDDIT_CLIENT_SECRET", required: false, note: "Reddit app secret" },
+  { key: "REDDIT_REFRESH_TOKEN", required: false, note: "Long-lived OAuth refresh token (recommended)" },
+  { key: "REDDIT_USERNAME", required: false, note: "Script-app fallback with REDDIT_PASSWORD" },
+  { key: "REDDIT_PASSWORD", required: false, note: "Script-app fallback password" },
+  { key: "REDDIT_USER_AGENT", required: false, note: "Reddit API User-Agent (platform:appId:version)" },
 ];
 
 export const FLAGS = [
