@@ -33,10 +33,6 @@
       "schedule": "45 3 * * *"
     },
     {
-      "path": "/api/cron/collect",
-      "schedule": "15 3 * * *"
-    },
-    {
       "path": "/api/cron/what-changed",
       "schedule": "15 4 * * *"
     },
