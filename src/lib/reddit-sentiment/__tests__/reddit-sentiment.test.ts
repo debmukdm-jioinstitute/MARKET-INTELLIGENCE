@@ -3,6 +3,7 @@ import {
   getCompanyRetailSentiment,
   getAllRetailSentimentData,
   generateSyntheticRetailSentiment,
+  createHonestLowChatterProfile,
   TRACKED_SUBREDDITS,
   RETAIL_INVESTOR_PROBLEMS,
 } from "../database";
@@ -11,6 +12,7 @@ describe("Reddit Retail Sentiment Engine & Alternative Data", () => {
   it("tracks RELIANCE sentiment matching prompt specifications", () => {
     const data = getCompanyRetailSentiment("RELIANCE");
     expect(data.symbol).toBe("RELIANCE");
+    expect(data.dataStatus).toBe("VERIFIED_ACTIVE");
     expect(data.mentionChangePct7D).toBe(142); // Mentions: +142%
     expect(data.positivePct).toBe(61);        // Positive: 61%
     expect(data.negativePct).toBe(24);        // Negative: 24%
@@ -31,6 +33,38 @@ describe("Reddit Retail Sentiment Engine & Alternative Data", () => {
     expect(jioDebate?.bullThesis).toBeDefined();
     expect(jioDebate?.bearThesis).toBeDefined();
     expect(jioDebate?.consensusVerdict).toBeDefined();
+  });
+
+  it("handles quiet or institutional stocks honestly without fake debates or fabricated comments", () => {
+    // FLUOROCHEM is in NIFTY 500 but not a high-social-buzz retail favorite
+    const data = getCompanyRetailSentiment("FLUOROCHEM");
+    expect(data.symbol).toBe("FLUOROCHEM");
+    expect(data.dataStatus).toBe("LOW_CHATTER");
+    expect(data.totalMentions7D).toBe(0);
+    expect(data.positivePct).toBe(0);
+    expect(data.negativePct).toBe(0);
+    expect(data.neutralPct).toBe(0);
+    expect(data.topRetailDebates).toHaveLength(0); // Never invents fake debates
+    expect(data.statusNotice).toBeDefined();
+    expect(data.statusNotice).toContain("Minimal organic retail discussion");
+  });
+
+  it("provides verified active profiles for major Indian retail market darlings", () => {
+    const paytm = getCompanyRetailSentiment("PAYTM");
+    expect(paytm.dataStatus).toBe("VERIFIED_ACTIVE");
+    expect(paytm.topRetailDebates.length).toBeGreaterThan(0);
+
+    const zomato = getCompanyRetailSentiment("ZOMATO");
+    expect(zomato.dataStatus).toBe("VERIFIED_ACTIVE");
+    expect(zomato.mostDiscussedTopics).toContain("Blinkit GOV");
+
+    const trent = getCompanyRetailSentiment("TRENT");
+    expect(trent.dataStatus).toBe("VERIFIED_ACTIVE");
+    expect(trent.mostDiscussedTopics).toContain("Zudio Phenomenon");
+
+    const hal = getCompanyRetailSentiment("HAL");
+    expect(hal.dataStatus).toBe("VERIFIED_ACTIVE");
+    expect(hal.totalMentions7D).toBeGreaterThan(1000);
   });
 
   it("monitors all 10 requested financial communities across India and global markets", () => {
@@ -65,7 +99,7 @@ describe("Reddit Retail Sentiment Engine & Alternative Data", () => {
     }
   });
 
-  it("generates coherent sentiment metrics for arbitrary tickers", () => {
+  it("generates coherent sentiment metrics for arbitrary tickers in legacy generator", () => {
     const data = generateSyntheticRetailSentiment("VEDL");
     expect(data.symbol).toBe("VEDL");
     expect(data.totalMentions7D).toBeGreaterThan(0);

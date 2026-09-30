@@ -116,6 +116,7 @@ export async function buildFreeGlobalFeeds(): Promise<FreeGlobalFeedsPayload> {
     earnings: earnings.value ?? {
       asOf: fetchedAt,
       failed: 0,
+      scanned: 0,
       source: "Yahoo Finance",
       priorQuarterNote: "",
       items: [],

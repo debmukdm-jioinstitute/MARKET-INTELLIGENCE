@@ -10,9 +10,10 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
+    const name = searchParams.get("name") ?? undefined;
 
     if (symbol) {
-      const companySentiment = getCompanyRetailSentiment(symbol);
+      const companySentiment = getCompanyRetailSentiment(symbol, name);
       return NextResponse.json({
         success: true,
         companySentiment,

@@ -1,19 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { RetailSentimentHubData, CompanyRetailSentiment } from "@/lib/reddit-sentiment/types";
+import {
+  RetailSentimentHubData,
+  CompanyRetailSentiment,
+} from "@/lib/reddit-sentiment/types";
 import { RetailSentimentEngineView } from "./retail-sentiment-engine-view";
 import { InvestorProblemsRadarView } from "./investor-problems-radar-view";
+import { RedditStockSearch } from "./reddit-stock-search";
 import {
   Flame,
-  Search,
   ExternalLink,
   Users,
-  Compass,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Layers,
   HelpCircle,
   BarChart2,
 } from "lucide-react";
@@ -27,47 +25,83 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
   const [selectedSymbol, setSelectedSymbol] = useState<string>(
     initialSymbol?.toUpperCase() || "RELIANCE"
   );
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"sentiment" | "problems" | "communities">("sentiment");
-  const [currentSentiment, setCurrentSentiment] = useState<CompanyRetailSentiment>(
-    initialData.companies.find((c) => c.symbol === (initialSymbol?.toUpperCase() || "RELIANCE")) ||
-      initialData.companies[0]
-  );
+  const [activeTab, setActiveTab] = useState<
+    "sentiment" | "problems" | "communities"
+  >("sentiment");
+  const [currentSentiment, setCurrentSentiment] =
+    useState<CompanyRetailSentiment>(
+      initialData.companies.find(
+        (c) => c.symbol === (initialSymbol?.toUpperCase() || "RELIANCE")
+      ) || initialData.companies[0]
+    );
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSelectSymbol = async (sym: string) => {
+  const handleSelectSymbol = async (sym: string, companyName?: string) => {
     const s = sym.toUpperCase().trim();
     setSelectedSymbol(s);
-    setSearchQuery("");
 
-    // Check if in initial list
+    // Sync URL parameter without page reload
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("symbol", s);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    // Check if in initial list with verified active data
     const found = initialData.companies.find((c) => c.symbol === s);
-    if (found) {
+    if (found && found.dataStatus === "VERIFIED_ACTIVE") {
       setCurrentSentiment(found);
       return;
     }
 
-    // Otherwise fetch dynamic
+    // Fetch from API
     setLoading(true);
     try {
-      const res = await fetch(`/api/reddit/sentiment?symbol=${encodeURIComponent(s)}`);
+      const q = `/api/reddit/sentiment?symbol=${encodeURIComponent(s)}${
+        companyName ? `&name=${encodeURIComponent(companyName)}` : ""
+      }`;
+      const res = await fetch(q);
       const json = await res.json();
       if (json.companySentiment) {
         setCurrentSentiment(json.companySentiment);
+      } else if (found) {
+        setCurrentSentiment(found);
       }
     } catch (e) {
       console.error("Failed to load sentiment", e);
+      if (found) setCurrentSentiment(found);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      handleSelectSymbol(searchQuery.trim());
-    }
-  };
+  // Top buzzing equities to highlight in quick pills
+  const topBuzzSymbols = [
+    "RELIANCE",
+    "TATAMOTORS",
+    "SUZLON",
+    "ZOMATO",
+    "HDFCBANK",
+    "PAYTM",
+    "INFY",
+    "TCS",
+    "ITC",
+    "SBIN",
+    "IRFC",
+    "RVNL",
+    "IREDA",
+    "YESBANK",
+    "CDSL",
+    "ANGELONE",
+    "TRENT",
+    "ADANIENT",
+    "HAL",
+    "BEL",
+    "BSE",
+    "VEDL",
+    "TATAPOWER",
+    "JIOFIN",
+  ];
 
   return (
     <div className="space-y-6">
@@ -88,20 +122,26 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Monitoring 10 major Indian & global financial subreddits for retail retail positioning, hype cycles, and unmet investor problems.
+                Monitoring 10 major Indian & global financial subreddits for retail positioning, hype cycles, and unmet investor problems.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <span className="text-[11px] text-muted-foreground block">Retail Euphoria Meter</span>
+              <span className="text-[11px] text-muted-foreground block">
+                Retail Euphoria Meter
+              </span>
               <div className="flex items-center gap-1.5 justify-end">
                 <span className="text-base font-bold text-primary tabular-nums">
                   {initialData.overallMarketSentiment.retailEuphoriaScore}
-                  <span className="text-xs font-normal text-muted-foreground">/100</span>
+                  <span className="text-xs font-normal text-muted-foreground">
+                    /100
+                  </span>
                 </span>
-                <span className="text-xs font-medium text-emerald-400">Moderately Bullish</span>
+                <span className="text-xs font-medium text-emerald-400">
+                  Moderately Bullish
+                </span>
               </div>
             </div>
           </div>
@@ -110,7 +150,9 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
         {/* FII vs Retail Divergence & Most Hyped/Hated Chips */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
           <div className="md:col-span-2 p-3 rounded-lg bg-muted/20 border border-border/40">
-            <span className="font-semibold text-foreground mr-1.5">FII/DII vs Retail Divergence:</span>
+            <span className="font-semibold text-foreground mr-1.5">
+              FII/DII vs Retail Divergence:
+            </span>
             <span className="text-muted-foreground leading-relaxed">
               {initialData.overallMarketSentiment.fiiDiiVsRetailDivergence}
             </span>
@@ -118,37 +160,45 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
 
           <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-emerald-400">Most Hyped Tickers:</span>
-              <div className="flex gap-1">
-                {initialData.overallMarketSentiment.mostHypedTickers.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => {
-                      handleSelectSymbol(t);
-                      setActiveTab("sentiment");
-                    }}
-                    className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
-                  >
-                    {t}
-                  </button>
-                ))}
+              <span className="text-[11px] font-semibold text-emerald-400">
+                Top Social Buzz:
+              </span>
+              <div className="flex gap-1 text-muted-foreground">
+                {initialData.overallMarketSentiment.mostHypedTickers.map(
+                  (t) => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        handleSelectSymbol(t);
+                        setActiveTab("sentiment");
+                      }}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {t}
+                    </button>
+                  )
+                )}
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-rose-400">Retail Capitulation:</span>
+              <span className="text-[11px] font-semibold text-rose-400">
+                Retail Capitulation:
+              </span>
               <div className="flex gap-1 text-muted-foreground">
-                {initialData.overallMarketSentiment.mostHatedTickers.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => {
-                      handleSelectSymbol(t);
-                      setActiveTab("sentiment");
-                    }}
-                    className="hover:text-primary transition-colors cursor-pointer"
-                  >
-                    {t}
-                  </button>
-                ))}
+                {initialData.overallMarketSentiment.mostHatedTickers.map(
+                  (t) => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        handleSelectSymbol(t);
+                        setActiveTab("sentiment");
+                      }}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {t}
+                    </button>
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -158,7 +208,7 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
         <div className="flex items-center gap-2 pt-2 border-t border-border/40 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("sentiment")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeTab === "sentiment"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -173,7 +223,7 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
 
           <button
             onClick={() => setActiveTab("problems")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeTab === "problems"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -188,7 +238,7 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
 
           <button
             onClick={() => setActiveTab("communities")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
               activeTab === "communities"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -200,45 +250,45 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
         </div>
       </div>
 
-      {/* 2. Ticker Selector Bar (Visible on Sentiment tab) */}
+      {/* 2. Ticker Selector Bar with Upstox Dropdown (Visible on Sentiment tab) */}
       {activeTab === "sentiment" && (
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-xl bg-card border border-border/60 shadow-sm">
-          {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search ticker for Reddit sentiment (e.g. RELIANCE, TATAMOTORS, SUZLON)..."
-              className="w-full pl-9 pr-20 py-2 text-xs rounded-lg bg-muted/40 border border-border/60 focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground"
+        <div className="flex flex-col gap-3 p-4 rounded-xl bg-card border border-border/60 shadow-sm">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Integrated Upstox Stock Search Dropdown */}
+            <RedditStockSearch
+              selectedSymbol={selectedSymbol}
+              onSelectStock={handleSelectSymbol}
             />
-            <button
-              type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Analyze
-            </button>
-          </form>
 
-          {/* Featured Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-            <span className="text-xs text-muted-foreground whitespace-nowrap mr-1">
-              Top buzz (Nifty 500):
+            <div className="text-right shrink-0">
+              <span className="text-[11px] text-muted-foreground">
+                Currently Inspecting:
+              </span>
+              <div className="text-xs font-semibold text-foreground">
+                {currentSentiment.companyName} ({currentSentiment.symbol})
+              </div>
+            </div>
+          </div>
+
+          {/* Quick-select Buzz Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-border/30 scrollbar-none">
+            <span className="text-xs text-muted-foreground whitespace-nowrap mr-1 flex items-center gap-1">
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              High Retail Buzz:
             </span>
-            {initialData.companies.slice(0, 20).map((c) => {
-              const active = c.symbol === selectedSymbol;
+            {topBuzzSymbols.map((sym) => {
+              const active = sym === selectedSymbol;
               return (
                 <button
-                  key={c.symbol}
-                  onClick={() => handleSelectSymbol(c.symbol)}
-                  className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+                  key={sym}
+                  onClick={() => handleSelectSymbol(sym)}
+                  className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
                     active
                       ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                       : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
-                  {c.symbol}
+                  {sym}
                 </button>
               );
             })}
@@ -250,8 +300,9 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
       {activeTab === "sentiment" && (
         <div>
           {loading ? (
-            <div className="p-12 text-center text-sm text-muted-foreground rounded-xl bg-card border border-border/40">
-              Aggregating community sentiment for {selectedSymbol}...
+            <div className="p-12 text-center text-sm text-muted-foreground rounded-xl bg-card border border-border/40 flex flex-col items-center justify-center gap-2">
+              <span className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+              <span>Analyzing community sentiment for {selectedSymbol}...</span>
             </div>
           ) : (
             <RetailSentimentEngineView sentiment={currentSentiment} />

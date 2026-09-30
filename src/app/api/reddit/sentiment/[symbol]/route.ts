@@ -10,8 +10,10 @@ type Props = {
 export async function GET(req: Request, { params }: Props) {
   try {
     const { symbol: rawSymbol } = await params;
+    const { searchParams } = new URL(req.url);
+    const name = searchParams.get("name") ?? undefined;
     const symbol = decodeURIComponent(rawSymbol).toUpperCase();
-    const sentiment = getCompanyRetailSentiment(symbol);
+    const sentiment = getCompanyRetailSentiment(symbol, name);
 
     return NextResponse.json({
       success: true,

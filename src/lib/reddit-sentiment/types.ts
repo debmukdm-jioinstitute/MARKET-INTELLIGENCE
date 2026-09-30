@@ -41,11 +41,15 @@ export interface RetailDebateThesis {
   subreddit: TrackedSubredditId;
 }
 
+export type RetailDataStatus = "VERIFIED_ACTIVE" | "LOW_CHATTER" | "NOT_FOUND";
+
 export interface CompanyRetailSentiment {
   symbol: string;
   companyName: string;
   sector: string;
   marketCapTier?: "LARGE_CAP" | "MID_CAP" | "SMALL_CAP";
+  dataStatus?: RetailDataStatus;
+  statusNotice?: string;
   totalMentions7D: number;
   mentionChangePct7D: number; // e.g. +142%
   positivePct: number;        // e.g. 61%
