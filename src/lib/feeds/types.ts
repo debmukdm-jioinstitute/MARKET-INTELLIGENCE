@@ -48,6 +48,9 @@ export type LiveQuote = {
   currency?: string;
   asOf: string;
   provider: "yahoo" | "stooq" | "alphavantage" | "biquote" | "truedata" | "upstox" | "massive";
+  /** True when served from persisted last-good data because every live source
+   *  failed — the quote is real but delayed; `asOf` says when it was captured. */
+  stale?: boolean;
 };
 
 export type MacroPoint = {
