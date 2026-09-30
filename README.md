@@ -58,44 +58,116 @@ This document explains **how every page actually computes what it shows** — th
 
 ## Website architecture
 
-Every user-facing feature follows the same shape: **React page or widget** → **Next.js Route Handler** (`src/app/api/*`) → **builder/library** (`src/lib/*`) → **external APIs and/or Neon Postgres**. Scheduled jobs hit the same builders via **`/api/cron/*`** (Vercel Cron + `CRON_SECRET`). Auth runs in **`src/proxy.ts`**: signed `mi_session` cookie; portal routes redirect to `/login` except `/`, `/login`, `/signup`; `admin.*` host rewrites to `/admin/*` and requires `role=admin`.
+The platform is designed as an end-to-end, multi-layered quantitative and research engine. Every user request flows through a strict directional pipeline:
 
-### Platform overview
-
-```mermaid
-flowchart LR
-  subgraph Browser
-    P[Portal pages<br/>App Router]
-    W[SiteAssistantWidget]
-    K[Command palette ⌘K]
-  end
-  subgraph Vercel["Next.js 16 (Vercel)"]
-    R[Route handlers /api/*]
-    L[lib builders<br/>build-tape, build-hub, metrics…]
-  end
-  subgraph External
-    U[Upstox · NSE · Yahoo · FRED · WB…]
-    G[Groq · OmniRoute]
-    F[AI-trader Flask<br/>self-host only]
-  end
-  PG[(Neon Postgres)]
-  P --> R
-  W --> R
-  K --> P
-  R --> L
-  L --> U
-  L --> PG
-  R --> G
-  R --> F
+```
+[Browser Client / UI Pages] 
+        │
+        ▼
+[Next.js 16 Edge Proxy & App Router API Handlers]
+        │
+        ├──► [Hugging Face Open AI Models (FinBERT, BART, MiniLM, MNLI)]
+        ├──► [Groq Multi-Agent Reasoning Engine (TradingDesk, OptionsFlow, Brief)]
+        ├──► [Core Domain Math & Quantitative Specifications (src/lib/*)]
+        │
+        ▼
+[Neon Serverless Postgres & External Data Providers (Upstox, NSE, Yahoo, FRED)]
 ```
 
-| Layer | Role | Key paths |
+### Complete End-to-End System Architecture
+
+```mermaid
+flowchart TD
+  subgraph Client["1. Browser Client & UI Layer (Next.js 16 React App Router)"]
+    P_Home["/Home<br/>(India Desk & 5 AI Agent Cards)"]
+    P_Markets["/markets/*<br/>(Equities, Breadth, Derivatives, Sectors)"]
+    P_Macro["/macro/*<br/>(Regime, Yields, Commodities, FX, World Indices, Stress)"]
+    P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
+    P_Research["/research/*<br/>(Company Dossiers, DCF Model, AI Desk, Options Flow, IPO)"]
+    P_Intel["/intelligence/*<br/>(Brief, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
+    P_Widgets["Interactive Shell<br/>(Ask Deb Widget, Command Palette ⌘K, MetricInfo Popovers)"]
+  end
+
+  subgraph API["2. Next.js Serverless API Route Layer (src/app/api/*)"]
+    API_Feeds["/api/feeds/*<br/>(Quotes, Depth, Option Chain, Breadth, Trends)"]
+    API_Macro["/api/macro/*<br/>(Tape, World-Indices, Yields, Stress, Scenarios)"]
+    API_Portfolio["/api/portfolio/*<br/>(Holdings, Metrics Engine A, Broker Import)"]
+    API_HF["/api/hf/*<br/>(Sentiment, Summarize, Embeddings, Classify)"]
+    API_AI["/api/ai/*<br/>(TradingDesk, PortfolioTilt, AlphaDiscovery, OptionsFlow)"]
+    API_Assist["/api/site-assistant<br/>(Ask Deb + OmniRoute / Groq Gateway)"]
+    API_Intel["/api/brief · /api/reddit · /api/credit · /api/legal-risk"]
+    API_MCP["/api/mcp<br/>(Claude Connector & OAuth DCR Protocol)"]
+  end
+
+  subgraph AI_Engine["3. AI & Natural Language Processing Suite"]
+    subgraph HF_Models["Hugging Face Open AI Models (Server-Side + Caching + Fallbacks)"]
+      HF_FinBERT["ProsusAI/finbert<br/>(Social & News Financial Sentiment)"]
+      HF_BART["facebook/bart-large-cnn<br/>(Abstractive TL;DR Summarizer)"]
+      HF_MiniLM["all-MiniLM-L6-v2<br/>(384-dim Stock Vector Embeddings)"]
+      HF_MNLI["facebook/bart-large-mnli<br/>(Zero-Shot Event & News Classifier)"]
+    end
+    subgraph Groq_Agents["Groq LLM Multi-Agent Engines (gpt-oss-120b)"]
+      Groq_Debate["7-Role TradingDesk Debate<br/>(Analysts -> Bull/Bear -> Trader -> Risk)"]
+      Groq_Options["3-Agent Options Flow Pipeline<br/>(Data Gate -> Analysis -> Shortlist)"]
+      Groq_Brief["Fact-Grounded Daily Brief Engine"]
+      Groq_Omni["OmniRoute Site Assistant Engine"]
+    end
+  end
+
+  subgraph Domain["4. Domain Logic & Math Engines (src/lib/*)"]
+    ENG_Metrics["Engine A: Written Metrics Spec<br/>(Sharpe, Sortino, Jensen Alpha, VaR, CVaR, HHI)"]
+    ENG_Virtual["Engine B: Virtual Portfolio Simulation<br/>(Seeded 5-Factor Stochastic Walk)"]
+    ENG_DCF["Valuation Engine<br/>(Unlevered FCF DCF & Bank Residual Income)"]
+    ENG_Optimizer["Mean-Variance Optimizer<br/>(Gradient Descent Iterative Allocator)"]
+    ENG_Regime["Macro Regime Engine<br/>(GDP/CPI Quadrants & Transmission Matrix)"]
+    ENG_Collector["Collector Pipeline<br/>(RBI Scraper, Cboe VIX, CFTC COT, BLS, ECB)"]
+  end
+
+  subgraph External["5. External Data Feeds & External AI APIs"]
+    EXT_Upstox["Upstox Pro API<br/>(Live Quotes, Market Depth, Option Chains, Candles)"]
+    EXT_NSE["NSE India Official<br/>(FII/DII Flows, Breadth, SAST Corporate Actions)"]
+    EXT_Yahoo["Yahoo Finance v8<br/>(Global Quotes, FX, Commodities, World Indices)"]
+    EXT_Gov["FRED / World Bank Data360 / MOSPI / RBI"]
+    EXT_Trends["Google Trends API<br/>(Search-Trend Attention Index)"]
+    EXT_HF_API["Hugging Face Inference Hub API"]
+    EXT_Groq_API["Groq LLM Cloud API & OmniRoute Gateway"]
+  end
+
+  subgraph Storage["6. Persistence & Storage (Neon Serverless Postgres)"]
+    DB_Holdings[("portfolio_holdings & trade_log")]
+    DB_Collector[("collected_series & macro_obs")]
+    DB_Options[("options_flow_snapshots & flag_log")]
+    DB_RAG[("rag_documents (FTS Knowledge Base)")]
+    DB_Alerts[("alert_rules & notification_prefs")]
+  end
+
+  %% Relationships
+  Client --> API
+  API_Feeds --> EXT_Upstox & EXT_NSE & EXT_Yahoo & EXT_Trends
+  API_Macro --> ENG_Regime & EXT_Gov & EXT_Yahoo
+  API_Portfolio --> ENG_Metrics & ENG_Virtual & ENG_Optimizer & DB_Holdings
+  API_HF --> HF_Models
+  API_AI --> Groq_Agents
+  API_Assist --> Groq_Omni & DB_RAG
+  API_Intel --> HF_FinBERT & Groq_Brief & DB_Alerts
+  API_MCP --> API_Feeds & API_Portfolio & API_Macro
+
+  HF_Models --> EXT_HF_API
+  Groq_Agents --> EXT_Groq_API
+
+  ENG_Collector --> DB_Collector & EXT_Gov & EXT_NSE
+  ENG_Metrics --> EXT_Upstox & EXT_Yahoo
+  ENG_DCF --> EXT_Upstox & EXT_Yahoo
+```
+
+| Subsystem Layer | Role & Scope | Core Code Paths & Modules |
 |---|---|---|
-| **UI** | Client components, SWR hooks, charts | `src/app/(portal)/*`, `src/components/*`, `src/hooks/*` |
-| **API** | Auth check, caching, orchestration | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `ai/*`, `cron/*` |
-| **Domain logic** | Pure fetch + math | `src/lib/feeds/*`, `src/lib/macro/*`, `src/lib/my-portfolio/*`, `src/lib/options-flow/*` |
-| **Persistence** | Holdings, snapshots, admin RAG docs | Neon tables (`portfolio_holdings`, `collected_*`, `rag_documents`, options-flow history) |
-| **Edge** | Session gate, admin subdomain rewrite | `src/proxy.ts` |
+| **1. UI / Pages** | Client-side App Router views, interactive charts, metric popovers | `src/app/(portal)/*`, `src/components/*`, `src/hooks/*` |
+| **2. API Routes** | Session verification, caching, orchestration, rate limiting | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `hf/*`, `ai/*`, `mcp/*` |
+| **3. AI & ML Suite** | FinBERT sentiment, BART summarizer, MiniLM embeddings, Groq multi-agent debate | `src/lib/hf/*`, `src/lib/ai/*`, `src/lib/site-assistant/*` |
+| **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, DCF valuation, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/models/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
+| **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`) |
+| **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
 
 ---
 
