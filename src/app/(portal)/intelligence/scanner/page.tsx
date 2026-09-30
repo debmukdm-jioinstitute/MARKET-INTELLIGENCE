@@ -26,6 +26,15 @@ type Payload = {
 const fetcher = (url: string) => fetchJsonAuth<Payload>(url);
 const biasCls = { buy: "text-emerald-600", sell: "text-rose-600", watch: "text-blue-600" } as const;
 
+function useScanExplanation(scannerId: string | undefined, description: string | undefined) {
+  const { data } = useSWR<{ explanation: string | null }>(
+    scannerId && description ? `/api/hf/scan-explain?scanner=${scannerId}&description=${encodeURIComponent(description)}` : null,
+    (url: string) => fetch(url).then((r) => r.json()),
+    { revalidateOnFocus: false, dedupingInterval: 3_600_000 },
+  );
+  return data?.explanation ?? null;
+}
+
 export default function ScannerPage() {
   const [active, setActive] = useState("high52w");
   const [showAllScans, setShowAllScans] = useState(false);
@@ -50,6 +59,7 @@ export default function ScannerPage() {
   }, [data?.scanners, showAllScans, category]);
 
   const fallbacks = zeroResultSuggestions(active).map((id) => scannerById.get(id)).filter(Boolean);
+  const scanExplanation = useScanExplanation(current?.id, current?.description);
 
   return (
     <div className="space-y-6 max-w-[1200px] mx-auto pb-16">
@@ -159,6 +169,12 @@ export default function ScannerPage() {
       </div>
 
       <Panel title={current?.label ?? "Results"} subtitle={current?.description}>
+        {scanExplanation ? (
+          <p className="-mt-2 mb-3 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+            <span className="font-semibold text-primary">In plain English: </span>
+            {scanExplanation}
+          </p>
+        ) : null}
         {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
         {data?.results && data.results.length === 0 && data.run ? (
           <div className="space-y-2 text-sm text-muted-foreground">

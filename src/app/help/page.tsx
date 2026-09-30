@@ -2,6 +2,7 @@ import { HelpGuide } from "@/components/help/help-guide";
 import { buildHelpMcpToolRows } from "@/lib/help/mcp-tool-guide";
 import { MCP_ACCOUNT_TOOLS, PORTAL_ONLY_UI, helpSitemapSections } from "@/lib/help/site-guide";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { SemanticSearchBox } from "@/components/ui/semantic-search-box";
 import Link from "next/link";
 
 /** Static guide content — refresh hourly; MCP tool list changes rarely. */
@@ -29,6 +30,9 @@ export default function HelpPage() {
         , open <b className="font-semibold text-foreground">Market Intelligence terminal (mi)</b> →{" "}
         <b className="font-semibold text-foreground">How to set up in terminal</b> (Mac, Windows, or Linux).
       </p>
+      <div className="mt-6 max-w-xl">
+        <SemanticSearchBox corpus="help" placeholder="Search help topics (e.g. &quot;how do I connect Claude&quot;)" />
+      </div>
       <div className="mt-8">
         <HelpGuide
           tools={tools}

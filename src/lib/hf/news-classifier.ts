@@ -79,6 +79,41 @@ export async function classifyNewsHeadline(headline: string): Promise<Classified
   };
 }
 
+export interface LabelClassification {
+  text: string;
+  topLabel: string;
+  topScore: number;
+  allLabels: { label: string; score: number }[];
+}
+
+/**
+ * Zero-shot classify one text against a caller-supplied label set (e.g. ["hawkish", "dovish",
+ * "neutral"] for RBI policy stance). Same model and cache pattern as classifyNewsHeadline, just
+ * without the fixed NEWS_CATEGORIES list.
+ */
+export async function classifyWithLabels(text: string, labels: string[]): Promise<LabelClassification> {
+  const clipped = text.slice(0, 500);
+  const cacheKey = `zs-labels::${labels.join(",")}::${clipped}`;
+
+  const result = await hfInfer<
+    { inputs: string; parameters: { candidate_labels: string[]; multi_label: boolean } },
+    ZeroShotResponse
+  >(
+    MODEL,
+    { inputs: clipped, parameters: { candidate_labels: labels, multi_label: false } },
+    { ttlMs: TTL_MS, cacheKey },
+  );
+
+  const allLabels = result.labels.map((label, i) => ({ label, score: result.scores[i] ?? 0 }));
+
+  return {
+    text: result.sequence,
+    topLabel: allLabels[0]!.label,
+    topScore: allLabels[0]!.score,
+    allLabels,
+  };
+}
+
 /**
  * Classify multiple headlines in batch.
  * Batched to avoid hitting rate-limits on the free tier.

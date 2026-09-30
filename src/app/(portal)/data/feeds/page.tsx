@@ -5,6 +5,7 @@ import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useFeedHub } from "@/hooks/use-feed-hub";
+import { SemanticSearchBox } from "@/components/ui/semantic-search-box";
 import { ArrowRight, Newspaper, TrendingUp, Landmark } from "lucide-react";
 import Link from "next/link";
 
@@ -18,6 +19,10 @@ export default function FeedsPage() {
         title="Market data feeds"
         subtitle="Which feeds are up, which are slow, and when each last sent data: NSE, BSE, RBI, FRED, World Bank, IMF, OECD, MOSPI, and Upstox."
       />
+
+      <div className="max-w-xl">
+        <SemanticSearchBox corpus="feeds" placeholder="Search data providers (e.g. &quot;where does GDP data come from&quot;)" />
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button

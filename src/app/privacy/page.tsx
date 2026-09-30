@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TldrBox } from "@/components/ui/tldr-box";
+import { summarizeText } from "@/lib/hf/summarizer";
 
 export const revalidate = 3600;
 
@@ -6,12 +8,18 @@ export const metadata = {
   title: "Privacy Policy · Market Intelligence",
 };
 
-export default function PrivacyPage() {
+const PRIVACY_TEXT =
+  "Market Intelligence operates getmarketintelligence.in and collects your account email, display name, authentication identifiers, usage and analytics events, and any portfolio or settings data you choose to store. This is used to provide login, personalization, alerts, exports and support, to secure the service, and to understand aggregate product usage. We do not sell your personal information. We use infrastructure, email, and Google OAuth providers when you sign in with Google; their own policies apply to those services.";
+
+export default async function PrivacyPage() {
+  const tldr = await summarizeText(PRIVACY_TEXT, 45).catch(() => null);
+
   return (
     <main className="mx-auto max-w-2xl px-5 py-16 text-sm leading-relaxed text-foreground">
       <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
       <h1 className="mb-6 text-2xl font-semibold">Privacy Policy</h1>
       <p className="mb-4 text-muted-foreground">Last updated: September 2026</p>
+      <TldrBox text={tldr} />
       <section className="space-y-4">
         <p>
           Market Intelligence (“we”) operates getmarketintelligence.in. This policy describes how we handle

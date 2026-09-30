@@ -1,5 +1,7 @@
 import { DATA_ISSUE_EMAIL, STALE_AFTER_MINUTES } from "@/lib/provenance";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TldrBox } from "@/components/ui/tldr-box";
+import { summarizeText } from "@/lib/hf/summarizer";
 import Link from "next/link";
 
 export const revalidate = 3600;
@@ -92,12 +94,16 @@ const SECTIONS: Section[] = [
   },
 ];
 
-export default function MethodologyPage() {
+export default async function MethodologyPage() {
+  const tldrSource = SECTIONS.map((s) => s.body.join(" ")).join(" ");
+  const tldr = await summarizeText(tldrSource, 55).catch(() => null);
+
   return (
     <main className="mx-auto max-w-3xl px-5 py-16 text-foreground">
       <Link href="/" className="text-sm text-primary underline-offset-4 hover:underline">← Back</Link>
       <h1 className="mt-4 text-3xl font-semibold">Methodology &amp; data sources</h1>
       <p className="mt-2 text-sm text-muted-foreground">What the numbers are, where they come from, and their limits.</p>
+      <div className="mt-6"><TldrBox text={tldr} /></div>
       <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-sm">
         {SECTIONS.map((s) => (
           <a key={s.id} href={`#${s.id}`} className="text-primary underline-offset-4 hover:underline">{s.title}</a>

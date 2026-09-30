@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
+import { RbiStanceGauge } from "@/components/dashboard/rbi-stance-gauge";
 import { NewsStream } from "@/components/feeds/news-stream";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
@@ -29,6 +30,8 @@ export default function RbiPolicyPage() {
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading RBI dashboard…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+
+      <RbiStanceGauge />
 
       <div className="bento-grid-cols-2">
         {data ? <RbiLiquidity data={data} /> : null}

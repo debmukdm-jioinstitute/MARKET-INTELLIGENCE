@@ -1,6 +1,7 @@
 import { JsonLd } from "@/components/seo/json-ld";
 import { LEARN_ARTICLES } from "@/lib/learn/articles";
 import { absoluteUrl, pageMetadata } from "@/lib/seo/metadata";
+import { SemanticSearchBox } from "@/components/ui/semantic-search-box";
 import Link from "next/link";
 
 export const metadata = pageMetadata({
@@ -32,6 +33,9 @@ export default function LearnHubPage() {
       <p className="mt-2 text-sm text-muted-foreground">
         One question per guide — definitions, limits, and a link to the matching tool. Not investment advice.
       </p>
+      <div className="mt-6">
+        <SemanticSearchBox corpus="learn" placeholder="Search guides (e.g. &quot;how do IPOs get priced&quot;)" />
+      </div>
       <ul className="mt-8 space-y-4">
         {LEARN_ARTICLES.map((a) => (
           <li key={a.slug} className="rounded-lg border border-border bg-card p-4">

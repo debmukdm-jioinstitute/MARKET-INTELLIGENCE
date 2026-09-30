@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TldrBox } from "@/components/ui/tldr-box";
+import { summarizeText } from "@/lib/hf/summarizer";
 
 export const revalidate = 3600;
 
@@ -6,12 +8,18 @@ export const metadata = {
   title: "Terms of Service · Market Intelligence",
 };
 
-export default function TermsPage() {
+const TERMS_TEXT =
+  "By using Market Intelligence at getmarketintelligence.in you agree to these terms. The portal aggregates market and macro data for informational and educational purposes only. Nothing on the site is investment, tax, or legal advice, and nothing is an offer or solicitation to buy or sell any security. Data may be delayed, incomplete, or inaccurate — verify material facts with original sources before relying on them. Past performance and back-tested results do not predict future results. You are responsible for activity under your account and for keeping credentials secure.";
+
+export default async function TermsPage() {
+  const tldr = await summarizeText(TERMS_TEXT, 45).catch(() => null);
+
   return (
     <main className="mx-auto max-w-2xl px-5 py-16 text-sm leading-relaxed text-foreground">
       <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
       <h1 className="mb-6 text-2xl font-semibold">Terms of Service</h1>
       <p className="mb-4 text-muted-foreground">Last updated: September 2026</p>
+      <TldrBox text={tldr} />
       <section className="space-y-4">
         <p>
           By using Market Intelligence at getmarketintelligence.in you agree to these terms. If you do not agree, do not

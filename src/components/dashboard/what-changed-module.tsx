@@ -2,11 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, History, ExternalLink, ArrowUpRight, RefreshCw } from "lucide-react";
+import useSWR from "swr";
+import { ChevronDown, ChevronUp, History, ExternalLink, ArrowUpRight, RefreshCw, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useWhatChanged } from "@/hooks/use-what-changed";
 import type { MarketShiftItem } from "@/lib/feeds/what-changed/types";
+
+const summaryFetcher = (url: string) => fetch(url).then((r) => r.json());
+
+/** AI one-liner per card, optional overlay — cards render identically whether this is empty. */
+function useWhatChangedSummaries() {
+  const { data } = useSWR<{ summaries: Record<string, string> }>("/api/hf/what-changed-summary", summaryFetcher, {
+    refreshInterval: 21_600_000,
+    revalidateOnFocus: false,
+  });
+  return data?.summaries ?? {};
+}
 
 function formatUpdated(iso: string) {
   try {
@@ -23,6 +35,7 @@ function formatUpdated(iso: string) {
 export function WhatChangedModule() {
   const { data, error, isLoading, mutate, isValidating } = useWhatChanged();
   const [expandedId, setExpandedId] = useState<string | null>("item-1");
+  const summaries = useWhatChangedSummaries();
 
   const items: MarketShiftItem[] = data?.items ?? [];
   const updatedAt = data?.fetchedAt;
@@ -128,6 +141,13 @@ export function WhatChangedModule() {
                   )}
                 </div>
               </div>
+
+              {summaries[item.id] ? (
+                <p className="mt-1 pl-9 flex items-start gap-1 text-xs text-muted-foreground">
+                  <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
+                  {summaries[item.id]}
+                </p>
+              ) : null}
 
               {isExpanded ? (
                 <div className="mt-4 rounded-xl border border-border/80 bg-accent/20 p-4 space-y-4 text-sm animate-in fade-in duration-200">
