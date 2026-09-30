@@ -10,7 +10,9 @@ import { buildFeedHub } from "@/lib/feeds/hub";
 import { classifyWithLabels } from "@/lib/hf/news-classifier";
 
 export const runtime = "nodejs";
-export const revalidate = 1800;
+// Live AI inference must never be prerendered at build time — the HF client's
+// internal 30-min cache still governs upstream calls.
+export const dynamic = "force-dynamic";
 
 const LABELS = ["hawkish", "dovish", "neutral"];
 
