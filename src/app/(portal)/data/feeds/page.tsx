@@ -3,14 +3,29 @@
 import { DataInfo } from "@/components/feeds/data-info";
 import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { SourceHealthGrid } from "@/components/feeds/source-health";
+import { SourceHealthMonitor, type MonitoredSource } from "@/components/feeds/source-health-monitor";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useFeedHub } from "@/hooks/use-feed-hub";
 import { SemanticSearchBox } from "@/components/ui/semantic-search-box";
 import { ArrowRight, Newspaper, TrendingUp, Landmark } from "lucide-react";
 import Link from "next/link";
+import useSWR from "swr";
+
+const healthFetcher = async (url: string) => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? `Health HTTP ${res.status}`);
+  return json as { generatedAt: string; counts: Record<string, number> | null; sources: MonitoredSource[] };
+};
+
+function useSourceHealthMonitor() {
+  const { data } = useSWR("/api/health/sources", healthFetcher, { refreshInterval: 120_000 });
+  return data ?? null;
+}
 
 export default function FeedsPage() {
   const { data, loading, error, reload } = useFeedHub(45_000);
+  const monitor = useSourceHealthMonitor();
 
   return (
     <div className="portal-page">
@@ -58,6 +73,33 @@ export default function FeedsPage() {
             }
           >
             <SourceHealthGrid rows={data.health} hubSyncedAt={data.fetchedAt} />
+          </Panel>
+
+          {/* Persisted Source-Health Monitor (Phase 5) */}
+          <Panel
+            title="Source Health Monitor"
+            subtitle={
+              monitor ? (
+                <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                  Recorded runs only ·{" "}
+                  <span className="tabular-nums">{new Date(monitor.generatedAt).toLocaleString()}</span>
+                  {monitor.counts ? (
+                    <span>
+                      · {monitor.counts.healthy ?? 0} healthy · {monitor.counts.degraded ?? 0} degraded ·{" "}
+                      {monitor.counts.failing ?? 0} failing · {monitor.counts.unknown ?? 0} unknown
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                "Recorded runs only — collectors plus feed-hub sources"
+              )
+            }
+          >
+            {monitor ? (
+              <SourceHealthMonitor sources={monitor.sources} />
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading recorded source health…</p>
+            )}
           </Panel>
 
           {/* Feed Consumers & Routing Architecture */}

@@ -2,8 +2,8 @@ import { fetchFiiDii } from "@/lib/feeds/india/nse-market";
 import { fetchIndiaGsec10y } from "@/lib/feeds/india/india-macro";
 import { getRbiHomeMarket } from "@/lib/collector/rbi-live";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
-import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
-import { fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
+import { getQuotes } from "@/lib/feeds/quotes";
+import { yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import type { LiveQuote } from "@/lib/feeds/types";
 import { COMMODITY_UNIVERSE } from "@/lib/macro/commodity-universe";
@@ -106,16 +106,16 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
     "^CNXIT",
   ];
 
-  const [quotes, upstoxQuotes, gsec, fiiRows, ...usYields] = await Promise.all([
-    fetchYahooQuotes(symbols),
-    fetchUpstoxIndiaQuotes(["^NSEI"]).catch(() => []),
+  const [bundle, gsec, fiiRows, ...usYields] = await Promise.all([
+    getQuotes(symbols),
     fetchIndiaGsec10y(),
     fetchFiiDii().catch(() => []),
     ...US_FRED.map((u) => lastFredYield(u.series)),
   ]);
 
-  const qmap = new Map(quotes.map((q) => [q.symbol, q]));
-  for (const u of upstoxQuotes) qmap.set(u.symbol, u);
+  // Unified quote bundle already merges Upstox (official) > Massive > Yahoo >
+  // Stooq, so the separate Upstox overlay is redundant.
+  const qmap = new Map(bundle.quotes.map((r) => [r.quote.symbol, r.quote]));
 
   // India curve = real RBI-published points (T-bill cut-offs + benchmark G-sec yields from rbi.org.in), no interpolation
   // or assumed spreads. Tenor is remaining maturity rounded to years. Empty if RBI is unreachable.

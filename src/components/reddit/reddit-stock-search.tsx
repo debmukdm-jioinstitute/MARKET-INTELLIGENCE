@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, X, Flame, Building2, Zap, ArrowRight } from "lucide-react";
+import { Search, X, Building2, Zap, ArrowRight } from "lucide-react";
 import type { SymbolSearchHit } from "@/lib/feeds/symbol-search";
-import { COMPANY_RETAIL_SENTIMENT_DATA } from "@/lib/reddit-sentiment/database";
 
 interface RedditStockSearchProps {
   selectedSymbol: string;
@@ -214,9 +213,6 @@ export function RedditStockSearch({
               </div>
             ) : (
               hits.map((hit, idx) => {
-                const isCurated = Boolean(
-                  COMPANY_RETAIL_SENTIMENT_DATA[hit.symbol.toUpperCase()]
-                );
                 const isSelected = hit.symbol.toUpperCase() === selectedSymbol;
                 const isActive = idx === activeIndex;
 
@@ -246,12 +242,6 @@ export function RedditStockSearch({
                           <span className="text-[10px] px-1.5 py-0.2 rounded font-medium tabular-nums bg-muted text-muted-foreground border border-border/40">
                             {hit.exchange || "NSE"}
                           </span>
-                          {isCurated && (
-                            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
-                              <Flame className="w-2.5 h-2.5" />
-                              High Social Chatter
-                            </span>
-                          )}
                         </div>
                         <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                           {hit.name}

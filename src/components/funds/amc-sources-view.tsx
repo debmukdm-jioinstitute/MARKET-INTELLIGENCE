@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { AMC_DISCLOSURE_SOURCES } from "@/lib/funds/amfi-crawler";
 import {
   Database,
@@ -8,34 +7,11 @@ import {
   ShieldCheck,
   RefreshCw,
   FileText,
-  CheckCircle2,
   Calendar,
   Layers,
-  Sparkles,
 } from "lucide-react";
 
 export function AmcSourcesView() {
-  const [syncStatus, setSyncStatus] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSyncAmfi = async () => {
-    setIsSyncing(true);
-    setSyncStatus(null);
-    try {
-      const res = await fetch("/api/funds/sources", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        setSyncStatus(`Success: Direct AMFI NAV feed parsed. Received ${data.sampleNavs?.length || 5} sample active NAV records.`);
-      } else {
-        setSyncStatus("Failed to sync directly from AMFI feed.");
-      }
-    } catch (e) {
-      setSyncStatus("Network error syncing AMFI feed.");
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
@@ -54,22 +30,11 @@ export function AmcSourcesView() {
             </p>
           </div>
 
-          <button
-            onClick={handleSyncAmfi}
-            disabled={isSyncing}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
-            <span>{isSyncing ? "Connecting to AMFI..." : "Sync Live AMFI NAVs"}</span>
-          </button>
-        </div>
-
-        {syncStatus && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{syncStatus}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <RefreshCw className="w-4 h-4" />
+            <span>Live AMFI NAVs refresh automatically (15-min cache)</span>
           </div>
-        )}
+        </div>
 
         {/* Regulatory Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
