@@ -22,16 +22,25 @@ const DISCLAIMER =
 
 function rulesSummary(detail: IpoDetail, sourceUrl: string | null, extractChars: number, extractError?: string): DrhpSummary {
   const band = `${detail.minPrice}–${detail.maxPrice}`;
+  const exchange = detail.listingExchange ?? "NSE/BSE";
+  const bidding =
+    detail.biddingStartDate && detail.biddingEndDate
+      ? ` Bidding window ${detail.biddingStartDate} to ${detail.biddingEndDate}.`
+      : "";
+  const sub = detail.totalSubscription ? ` Latest subscription ${detail.totalSubscription}x.` : "";
+
   const findings = [
-    `Issue size about ₹${detail.issueSize} Cr; price band ₹${band}.`,
-    detail.industry ? `Industry stated as ${detail.industry}.` : "Industry not provided by the calendar feed.",
-    detail.lotSize != null ? `Lot size ${detail.lotSize.toLocaleString("en-IN")}.` : "Lot size not provided.",
+    `Issue size about ₹${detail.issueSize} Cr; price band ₹${band}; lot size ${detail.lotSize?.toLocaleString("en-IN") ?? "see prospectus"}.`,
+    detail.industry ? `Sector: ${detail.industry}.` : "Sector not listed on the calendar feed — confirm in the prospectus.",
     detail.gmpInr != null
-      ? `Unofficial GMP ≈ ₹${detail.gmpInr}${detail.gmpPct != null ? ` (~${detail.gmpPct}% implied)` : ""}.`
-      : "Grey market premium unavailable right now.",
+      ? `Unofficial grey-market premium ≈ ₹${detail.gmpInr}${detail.gmpPct != null ? ` (~${detail.gmpPct}% vs band mid)` : ""} — not exchange-traded.`
+      : "Grey market premium unavailable; do not treat social media GMP as official.",
+    sourceUrl
+      ? "Open the linked DRHP/RHP for audited financials, promoter table, and risk factors."
+      : "No prospectus URL on this card yet — use SEBI or exchange issue page.",
   ];
   return {
-    overview: `${detail.name} is ${detail.status} in the IPO calendar with a ₹${band} band and ₹${detail.issueSize} Cr issue size.`,
+    overview: `${detail.name} (${detail.symbol}) is ${detail.status.toLowerCase()} on the ${exchange} IPO calendar. Issue size ₹${detail.issueSize} Cr with band ₹${band}.${bidding}${sub} This summary uses calendar metadata${extractChars > 400 ? " plus a partial prospectus extract" : ""}; verify numbers in the official DRHP/RHP.`,
     fiveYearFinancials:
       extractChars > 400
         ? "Financial tables were present in the prospectus extract but could not be summarized without the AI key — open the DRHP for audited five-year figures."
@@ -57,7 +66,7 @@ Rules:
 - Use ONLY facts present in <ipo_meta> and <prospectus_extract>. Never invent financials, names, or forecasts.
 - If a section lacks evidence, say so briefly instead of guessing.
 - No buy/sell recommendation; decisionOverview should help the reader decide what to verify next.
-- Keep each prose field under 320 characters; keyFindings 3-6 short bullets.
+- Keep each prose field 2–4 complete sentences (roughly 400–700 characters max); keyFindings 4–6 short bullets ending with punctuation.
 Return JSON:
 {
   "overview": string,
@@ -126,15 +135,15 @@ export async function buildDrhpSummary(detail: IpoDetail): Promise<DrhpSummary> 
       : [];
 
     return {
-      overview: String(out.overview ?? "").slice(0, 400) || rulesSummary(detail, sourceUrl, extractChars).overview,
+      overview: String(out.overview ?? "").trim().slice(0, 720) || rulesSummary(detail, sourceUrl, extractChars).overview,
       fiveYearFinancials:
-        String(out.fiveYearFinancials ?? "").slice(0, 400) ||
+        String(out.fiveYearFinancials ?? "").trim().slice(0, 720) ||
         rulesSummary(detail, sourceUrl, extractChars).fiveYearFinancials,
-      management: String(out.management ?? "").slice(0, 400) || rulesSummary(detail, sourceUrl, extractChars).management,
-      outlook: String(out.outlook ?? "").slice(0, 400) || rulesSummary(detail, sourceUrl, extractChars).outlook,
+      management: String(out.management ?? "").trim().slice(0, 720) || rulesSummary(detail, sourceUrl, extractChars).management,
+      outlook: String(out.outlook ?? "").trim().slice(0, 720) || rulesSummary(detail, sourceUrl, extractChars).outlook,
       keyFindings: findings.length ? findings : rulesSummary(detail, sourceUrl, extractChars).keyFindings,
       decisionOverview:
-        String(out.decisionOverview ?? "").slice(0, 420) ||
+        String(out.decisionOverview ?? "").trim().slice(0, 720) ||
         rulesSummary(detail, sourceUrl, extractChars).decisionOverview,
       disclaimer: DISCLAIMER,
       sourceUrl,

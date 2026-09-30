@@ -175,46 +175,99 @@ export function IpoDetailSheet({
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="drhp-ai">
-                  <AccordionTrigger>AI DRHP summary</AccordionTrigger>
-                  <AccordionContent className="space-y-3 text-sm">
-                    {!summary ? (
+                  <AccordionTrigger className="items-center">
+                    <span className="flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+                      <span>Prospectus summary</span>
+                      {summary ? (
+                        <span
+                          className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                            summary.mode === "ai"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {summary.mode === "ai" ? "AI" : "Rules fallback"}
+                        </span>
+                      ) : null}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 text-sm">
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      Condensed DRHP/RHP view: issue context, financials to verify, management, outlook, and what to
+                      check before applying. Not a rating or advice.
+                    </p>
+
+                    {!summary && !summaryLoading ? (
                       <button
                         type="button"
                         onClick={() => void loadSummary()}
                         disabled={summaryLoading}
-                        className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-60"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5 text-xs font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-60 sm:w-auto"
                       >
-                        {summaryLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                        {summaryLoading ? "Summarizing…" : "Generate concise summary"}
+                        <Sparkles className="size-3.5" />
+                        Generate summary from DRHP/RHP
                       </button>
                     ) : null}
-                    {summaryError ? <p className="text-rose-600">{summaryError}</p> : null}
+
+                    {summaryLoading ? (
+                      <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-3 text-xs text-muted-foreground">
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                        Reading prospectus extract and building summary…
+                      </div>
+                    ) : null}
+
+                    {summaryError ? (
+                      <p className="rounded-lg border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-700">
+                        {summaryError}
+                      </p>
+                    ) : null}
+
                     {summary ? (
                       <div className="space-y-3">
+                        {(summary.extractError || summary.extractChars < 400) && (
+                          <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
+                            {summary.extractError
+                              ? `Prospectus text limited: ${summary.extractError}. Summary leans on IPO calendar metadata.`
+                              : "Short prospectus extract — open the PDF for full financial and risk sections."}
+                          </p>
+                        )}
+
                         <SummaryBlock title="Overview" body={summary.overview} />
                         <SummaryBlock title="Five-year financials" body={summary.fiveYearFinancials} />
                         <SummaryBlock title="Management" body={summary.management} />
                         <SummaryBlock title="Outlook" body={summary.outlook} />
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Key findings</p>
-                          <ul className="mt-1 list-disc space-y-1 pl-4">
+                        <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Key findings
+                          </p>
+                          <ul className="mt-2 list-disc space-y-1.5 pl-4 text-sm leading-relaxed text-foreground">
                             {summary.keyFindings.map((f) => (
                               <li key={f}>{f}</li>
                             ))}
                           </ul>
                         </div>
-                        <SummaryBlock title="Decision-oriented overview" body={summary.decisionOverview} />
-                        <p className="text-xs text-muted-foreground">{summary.disclaimer}</p>
-                        {summary.sourceUrl ? (
-                          <a
-                            href={summary.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-semibold text-primary hover:underline"
+                        <SummaryBlock title="What to verify before applying" body={summary.decisionOverview} />
+                        <p className="text-xs leading-relaxed text-muted-foreground">{summary.disclaimer}</p>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {summary.sourceUrl ? (
+                            <a
+                              href={summary.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-semibold text-primary hover:underline"
+                            >
+                              Open DRHP/RHP PDF →
+                            </a>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => void loadSummary()}
+                            disabled={summaryLoading}
+                            className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
                           >
-                            Open prospectus source →
-                          </a>
-                        ) : null}
+                            Regenerate
+                          </button>
+                        </div>
                       </div>
                     ) : null}
                   </AccordionContent>
@@ -229,10 +282,11 @@ export function IpoDetailSheet({
 }
 
 function SummaryBlock({ title, body }: { title: string; body: string }) {
+  if (!body.trim()) return null;
   return (
-    <div>
+    <div className="rounded-lg border border-border/60 bg-card px-3 py-2.5">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
-      <p className="mt-1 leading-relaxed text-foreground">{body}</p>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">{body}</p>
     </div>
   );
 }
