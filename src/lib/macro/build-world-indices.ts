@@ -1,6 +1,6 @@
 import type { FieldSource } from "@/lib/feeds/india/types";
 import {
-  fetchYahooQuoteDetail,
+  fetchYahooQuoteDetails,
   yahooFinanceUrl,
   type YahooQuoteDetail,
 } from "@/lib/feeds/sources/yahoo";
@@ -86,16 +86,14 @@ export type WorldIndicesPayload = {
 
 export async function buildWorldIndices(): Promise<WorldIndicesPayload> {
   const indices: WorldIndexQuote[] = [];
-  const batchSize = 10;
-  for (let i = 0; i < INDEX_UNIVERSE.length; i += batchSize) {
-    const chunk = INDEX_UNIVERSE.slice(i, i + batchSize);
-    const rows = await Promise.all(
-      chunk.map(async (def) => {
-        const detail = await fetchYahooQuoteDetail(def.sym);
-        return detailToRow(def, detail ?? undefined);
-      }),
-    );
-    indices.push(...rows);
+  // One batched v7 request for the whole index universe (was: one v8
+  // request per index, chunked 10 at a time).
+  const details = await fetchYahooQuoteDetails(INDEX_UNIVERSE.map((d) => d.sym)).catch(
+    () => [] as YahooQuoteDetail[],
+  );
+  const bySymbol = new Map(details.map((d) => [d.symbol, d]));
+  for (const def of INDEX_UNIVERSE) {
+    indices.push(detailToRow(def, bySymbol.get(def.sym)));
   }
 
   return {
