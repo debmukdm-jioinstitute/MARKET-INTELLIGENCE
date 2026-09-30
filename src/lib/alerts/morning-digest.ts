@@ -4,18 +4,17 @@
  * Runs as part of the existing alerts cron (see src/app/api/cron/alerts/route.ts); a failure here
  * never blocks rule evaluation itself.
  *
- * "Cache per user per day": an in-process TTL cache keyed by user email, since the alerts cron
- * already runs every 3h — this keeps each user to at most one digest per ~20h window without a
- * schema change. Resets on deploy/restart (known limitation of an in-memory cache, not a DB one).
+ * "One digest per user per IST day": persistent dedup in notify_state (survives deploys and
+ * serverless instance churn), since the alerts cron runs every 3h.
  */
 
 import { sql, hasDatabase } from "@/lib/db";
 import { summarizeItems } from "@/lib/hf/summarizer";
 import { sendNewsletter, hasEmailConfigured } from "@/lib/admin/email";
+import { getState, setState } from "@/lib/notify/store";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 
-const DIGEST_TTL_MS = 20 * 60 * 60 * 1000;
-const lastDigestedAt = new Map<string, number>();
+const istDay = () => new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
 
 type UserAlertRow = { user_email: string; message: string };
 
@@ -41,8 +40,10 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
   let eventsCompressed = 0;
 
   for (const [userEmail, messages] of byUser) {
-    const last = lastDigestedAt.get(userEmail);
-    if (last && Date.now() - last < DIGEST_TTL_MS) continue;
+    // Persistent once-per-IST-day dedup (was an in-process Map that reset on deploy).
+    const day = istDay();
+    const prev = await getState<{ day: string }>(`digest:${userEmail}`).catch(() => null);
+    if (prev?.day === day) continue;
     // A single overnight alert is already its own notification — nothing to compress.
     if (messages.length < 2) continue;
 
@@ -57,7 +58,7 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
           `</div>`,
         ).catch(() => ({ sent: 0 }));
       }
-      lastDigestedAt.set(userEmail, Date.now());
+      await setState(`digest:${userEmail}`, { day }).catch(() => {});
       usersDigested++;
       eventsCompressed += messages.length;
     } catch {
