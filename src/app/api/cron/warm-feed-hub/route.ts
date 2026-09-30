@@ -1,5 +1,6 @@
 import { cronUnauthorized } from "@/lib/api-guard";
 import { getFeedHubCached } from "@/lib/feeds/hub-cache";
+import { feedHealthToResults, recordSourceResults } from "@/lib/health/sources";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ export async function GET(req: Request) {
   if (denied) return denied;
   try {
     const payload = await getFeedHubCached(true);
+    // Persist per-source outcomes for the Phase 5 source-health monitor.
+    // Best-effort: a recording failure must not fail the warm itself.
+    await recordSourceResults(feedHealthToResults(payload.health)).catch(() => {});
     return NextResponse.json({
       ok: true,
       fetchedAt: payload.fetchedAt,
