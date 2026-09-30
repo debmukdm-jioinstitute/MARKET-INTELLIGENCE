@@ -1,5 +1,4 @@
 import type { FieldSource } from "@/lib/feeds/india/types";
-import type { StockAccumulationSummary } from "@/lib/funds/types";
 
 export type FlowDirection = "up" | "down" | "neutral" | "na";
 
@@ -12,7 +11,7 @@ export type InstitutionalSignal = {
   href?: string;
 };
 
-export type TrackerCoverage = "live" | "partial" | "planned";
+export type TrackerCoverage = "live" | "partial" | "planned" | "unavailable";
 
 export type InstitutionalTracker = {
   id: string;
@@ -47,14 +46,8 @@ export type InstitutionalIntelligencePayload = {
     dii: MoneyFlowLeg;
   };
   mutualFunds: {
-    disclosureMonth: string;
-    totalNetCapitalCr: number;
-    fundsTrackedCount: number;
-    accumulatedStocksCount: number;
-    trimmedStocksCount: number;
-    topAccumulated: StockAccumulationSummary[];
-    topTrimmed: StockAccumulationSummary[];
-    sectorFlows: { sector: string; netInflowCr: number; buyingCount: number; sellingCount: number }[];
+    dataStatus: "UNAVAILABLE";
+    message: string;
   };
   sourceCatalog: { id: string; label: string; url: string; role: string }[];
 };
