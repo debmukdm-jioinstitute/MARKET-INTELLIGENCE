@@ -27,23 +27,32 @@ interface BartSummarizationResponse {
 export async function summarizeText(text: string, maxWords = 80): Promise<string> {
   // BART works best with 100-1024 words; clip longer texts
   const clipped = text.split(/\s+/).slice(0, 900).join(" ");
+  if (!clipped.trim()) return "";
 
   const cacheKey = `bart-cnn::${clipped.slice(0, 200)}::${maxWords}`;
 
-  // The hf-inference provider's currently-deployed facebook/bart-large-cnn endpoint rejects any
-  // `parameters` object at all for this task ("model_kwargs are not used by the model: ['parameters']"),
-  // including the documented parameters.generate_parameters shape — tried and confirmed live. Bare
-  // `inputs` is the only request shape that works, so maxWords is enforced by truncating the
-  // model's own (untargeted) output below rather than by a generation parameter.
-  const result = await hfInfer<{ inputs: string }, BartSummarizationResponse[]>(
-    MODEL,
-    { inputs: clipped },
-    { ttlMs: TTL_MS, cacheKey },
-  );
+  try {
+    const result = await hfInfer<{ inputs: string }, BartSummarizationResponse[]>(
+      MODEL,
+      { inputs: clipped },
+      { ttlMs: TTL_MS, cacheKey },
+    );
 
-  const summary = result?.[0]?.summary_text ?? clipped.slice(0, 300);
-  const words = summary.trim().split(/\s+/);
-  return words.length > maxWords ? `${words.slice(0, maxWords).join(" ")}…` : summary;
+    const summary = result?.[0]?.summary_text ?? clipped.slice(0, 300);
+    const words = summary.trim().split(/\s+/);
+    return words.length > maxWords ? `${words.slice(0, maxWords).join(" ")}…` : summary;
+  } catch (err) {
+    console.warn("[BART Summarizer] API unavailable, using extractive fallback:", err instanceof Error ? err.message : err);
+  }
+
+  // Fallback: Return first 2-3 key sentences up to maxWords
+  const sentences = clipped.match(/[^.!?]+[.!?]+/g) || [clipped];
+  let fallback = "";
+  for (const s of sentences) {
+    if ((fallback + s).split(/\s+/).length > maxWords) break;
+    fallback += (fallback ? " " : "") + s.trim();
+  }
+  return fallback || clipped.split(/\s+/).slice(0, maxWords).join(" ") + "...";
 }
 
 /**
@@ -51,7 +60,7 @@ export async function summarizeText(text: string, maxWords = 80): Promise<string
  * Joins them with newlines so BART sees them as a single document.
  */
 export async function summarizeItems(items: string[], maxWords = 80): Promise<string> {
-  const combined = items.join("\n").trim();
+  const combined = items.filter(Boolean).join("\n").trim();
   if (!combined) return "";
   return summarizeText(combined, maxWords);
 }

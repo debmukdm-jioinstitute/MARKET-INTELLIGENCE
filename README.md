@@ -39,6 +39,7 @@ This document explains **how every page actually computes what it shows** — th
 5. [Portfolio & Quant Desk](#5-portfolio--quant-desk)
 6. [Research Desk](#6-research-desk)
 7. [AI Desk (LLM research agents)](#7-ai-desk-llm-research-agents)
+7b. [Hugging Face Open AI Models](#7b-hugging-face-open-ai-models)
 8. [Options Flow Screener](#8-options-flow-screener)
 9. [Research Reports](#9-research-reports)
 10. [Intelligence](#10-intelligence)
@@ -552,6 +553,28 @@ Factors are ranked by |IC|. Disclaimer: *"a research demo of the idea, not the p
 
 ---
 
+## 7b. Hugging Face Open AI Models
+
+**APIs:** `/api/hf/sentiment`, `/api/hf/summarize`, `/api/hf/similar-stocks`, `/api/hf/news-intel`, `/api/hf/classify`  
+**Code:** `src/lib/hf/client.ts`, `finbert.ts`, `summarizer.ts`, `embeddings.ts`, `news-classifier.ts`  
+**UI Components:** `HfSentimentBadge`, `HfSummaryCard`, `HfSimilarStocksCard`, `HfNewsIntelCard`
+
+Four open-source Hugging Face models are integrated across the platform for financial NLP, summarization, semantic similarity, and event classification. All model calls execute server-side; tokens are never exposed to the client, and every module includes robust, deterministic rule-based fallbacks so the app operates continuously with zero downtime even if the HF Inference API is rate-limited or offline.
+
+| Model | Task & Architecture | Primary Use-Cases & Integration Points | Fallback Mechanism |
+|---|---|---|---|
+| **`ProsusAI/finbert`** | Financial sentiment classification (positive / negative / neutral) | `/intelligence/reddit` social sentiment, `/api/reddit/sentiment`, `/api/hf/sentiment`, Research symbol sentiment badges | Rule-based lexicon matching (profit/growth vs. loss/risk keywords) |
+| **`facebook/bart-large-cnn`** | Abstractive 2–3 sentence financial TL;DR summarization | `/api/hf/summarize`, `/intelligence/brief` TL;DR blocks, Company research note summaries | Extractive sentence-ranker (first N key sentences up to token limit) |
+| **`sentence-transformers/all-MiniLM-L6-v2`** | 384-dimensional dense text embeddings | `/api/hf/similar-stocks`, `/research/[symbol]` "Stocks with similar business models" vector search | Deterministic character-ngram hash vector generator |
+| **`facebook/bart-large-mnli`** | Zero-shot news topic & market event classification | `/api/hf/news-intel`, `/api/hf/classify`, news stream auto-tagging into 13 market categories | Multi-category regex rule matcher |
+
+### Client Infrastructure — `src/lib/hf/client.ts`
+- **Caching**: 10-minute in-memory TTL cache (24h for embeddings) prevents redundant network round-trips across users.
+- **Retry Logic**: Automatic exponential back-off (2s, 4s, 8s) on 503 responses when Hugging Face models are cold-starting.
+- **Rate-limit Handling**: Optional `HF_TOKEN` environment variable unlocks higher API throughput; unauthenticated free tier is supported out of the box.
+
+---
+
 ## 8. Options Flow Screener
 
 **Path:** `/research/options-flow` · **Code:** `src/lib/options-flow/*`
@@ -737,6 +760,7 @@ npx vercel --prod --yes
 |---|---|
 | `UPSTOX_ACCESS_TOKEN` | India quotes, depth, options chain, fundamentals, corporate actions, IPO calendar |
 | `GROQ_API_KEY` | Every AI Desk agent and the Options Flow analysis/flagging agents |
+| `HF_TOKEN` | Optional; Hugging Face API token for higher rate limits on FinBERT, BART, MiniLM & MNLI models |
 | `OMNIROUTE_BASE_URL` | Portal site assistant — OpenAI-compatible gateway (see [docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | `OMNIROUTE_API_KEY` | Bearer key from the OmniRoute dashboard |
 | `OMNIROUTE_MODEL` | Optional; default `auto/fast` for the floating assistant |
@@ -774,6 +798,17 @@ npx vercel --prod --yes
 ## Release history
 
 Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.7 — 30 Sep 2026 (Hugging Face AI Upgrade & Platform Enhancements)
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | AI / NLP | **Hugging Face Open AI Models Suite**: integrated FinBERT (`ProsusAI/finbert`), BART Summarizer (`facebook/bart-large-cnn`), MiniLM Embeddings (`sentence-transformers/all-MiniLM-L6-v2`), and DistilBERT Zero-Shot (`facebook/bart-large-mnli`) with server-side caching and fallback execution |
+| Feature | Intelligence | **Reddit Social Sentiment (`/intelligence/reddit`)**: replaced mock dataset with live FinBERT sentiment analysis, keyword scoring, and Upstox stock ticker autocomplete integration |
+| Feature | Intelligence | **Credit Intelligence (`/intelligence/credit`)**: expanded coverage to Nifty 500 stocks and smallcap funds rating watch |
+| Improvement | Home | **Home Page Revamp (`/Home`)**: full macro/micro overview, company dossiers, mutual funds, corporate actions, credit watch, IPO/NFO/NCD/Buyback radar, and global market pulse |
+| Improvement | Mobile | Mobile navigation drawer, touch-friendly UI components, responsive layout pass across portal views |
+| Improvement | Ask Deb | **Site Assistant `/api/site-assistant`**: updated with comprehensive site sitemap, new feature routes, and dynamic navigation guidance |
 
 ### 0.1.6 — 30 Sep 2026
 

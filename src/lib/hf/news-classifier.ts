@@ -51,31 +51,71 @@ export async function classifyNewsHeadline(headline: string): Promise<Classified
   const clipped = headline.slice(0, 500);
   const cacheKey = `zs-news::${clipped}`;
 
-  const result = await hfInfer<
-    { inputs: string; parameters: { candidate_labels: string[]; multi_label: boolean } },
-    ZeroShotResponse
-  >(
-    MODEL,
-    {
-      inputs: clipped,
-      parameters: {
-        candidate_labels: NEWS_CATEGORIES as unknown as string[],
-        multi_label: false,
+  try {
+    const result = await hfInfer<
+      { inputs: string; parameters: { candidate_labels: string[]; multi_label: boolean } },
+      ZeroShotResponse
+    >(
+      MODEL,
+      {
+        inputs: clipped,
+        parameters: {
+          candidate_labels: NEWS_CATEGORIES as unknown as string[],
+          multi_label: false,
+        },
       },
-    },
-    { ttlMs: TTL_MS, cacheKey },
-  );
+      { ttlMs: TTL_MS, cacheKey },
+    );
 
-  const categorized = result.labels.map((label, i) => ({
-    category: label as NewsCategory,
-    score: result.scores[i] ?? 0,
-  }));
+    const categorized = result.labels.map((label, i) => ({
+      category: label as NewsCategory,
+      score: result.scores[i] ?? 0,
+    }));
+
+    return {
+      headline: result.sequence,
+      topCategory: categorized[0]!.category,
+      topScore: categorized[0]!.score,
+      allCategories: categorized,
+    };
+  } catch (err) {
+    console.warn("[News Classifier] API unavailable, using keyword fallback:", err instanceof Error ? err.message : err);
+    return fallbackNewsClassification(clipped);
+  }
+}
+
+function fallbackNewsClassification(headline: string): ClassifiedNews {
+  const lower = headline.toLowerCase();
+
+  const rules: { cat: NewsCategory; keywords: string[] }[] = [
+    { cat: "monetary-policy", keywords: ["rbi", "repo", "rate", "fed", "inflation", "central bank", "hawkish", "dovish"] },
+    { cat: "earnings", keywords: ["q1", "q2", "q3", "q4", "profit", "revenue", "results", "pat", "ebitda", "guidance"] },
+    { cat: "merger-acquisition", keywords: ["acquire", "merger", "buyout", "takeover", "stake", "acquisition"] },
+    { cat: "ipo", keywords: ["ipo", "listing", "gmp", "drhp", "rhp", "subscription", "allotment"] },
+    { cat: "regulatory", keywords: ["sebi", "sec", "notice", "penalty", "investigation", "compliance", "probe"] },
+    { cat: "credit-rating", keywords: ["downgrade", "upgrade", "crisil", "icra", "care", "rating", "default"] },
+    { cat: "commodity", keywords: ["crude", "gold", "silver", "oil", "brent", "metal", "copper", "steel"] },
+    { cat: "currency", keywords: ["rupee", "dollar", "inr", "usd", "forex", "dxy", "exchange rate"] },
+    { cat: "mutual-fund", keywords: ["nfo", "sip", "aum", "fund", "etf", "nav", "inflow"] },
+    { cat: "technical-analysis", keywords: ["breakout", "support", "resistance", "sma", "rsi", "candlestick"] },
+  ];
+
+  for (const r of rules) {
+    if (r.keywords.some((k) => lower.includes(k))) {
+      return {
+        headline,
+        topCategory: r.cat,
+        topScore: 0.85,
+        allCategories: NEWS_CATEGORIES.map((c) => ({ category: c, score: c === r.cat ? 0.85 : 0.02 })),
+      };
+    }
+  }
 
   return {
-    headline: result.sequence,
-    topCategory: categorized[0]!.category,
-    topScore: categorized[0]!.score,
-    allCategories: categorized,
+    headline,
+    topCategory: "macro-economy",
+    topScore: 0.6,
+    allCategories: NEWS_CATEGORIES.map((c) => ({ category: c, score: c === "macro-economy" ? 0.6 : 0.03 })),
   };
 }
 

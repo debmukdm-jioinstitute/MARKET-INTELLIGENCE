@@ -37,19 +37,69 @@ export async function classifyFinancialSentiment(texts: string[]): Promise<FinBe
   // Truncate to safe token budget (~400 words ≈ 512 sub-word tokens)
   const safe = texts.slice(0, 5).map((t) => t.split(/\s+/).slice(0, 400).join(" "));
 
-  const raw = await hfInfer<string[], HfClassResponse>(MODEL, safe, {
-    ttlMs: TTL_MS,
-    cacheKey: `finbert::${safe.join("|")}`,
-  });
+  try {
+    const raw = await hfInfer<string[], HfClassResponse>(MODEL, safe, {
+      ttlMs: TTL_MS,
+      cacheKey: `finbert::${safe.join("|")}`,
+    });
 
-  return raw.map((candidates) => {
-    const sorted = [...candidates].sort((a, b) => b.score - a.score) as { label: SentimentLabel; score: number }[];
+    return raw.map((candidates) => {
+      const sorted = [...candidates].sort((a, b) => b.score - a.score) as { label: SentimentLabel; score: number }[];
+      return {
+        label: sorted[0]!.label as SentimentLabel,
+        score: sorted[0]!.score,
+        scores: sorted,
+      };
+    });
+  } catch (err) {
+    console.warn("[FinBERT] API unavailable, using rule-based fallback:", err instanceof Error ? err.message : err);
+    return safe.map((text) => ruleBasedSentimentFallback(text));
+  }
+}
+
+function ruleBasedSentimentFallback(text: string): FinBertResult {
+  const lower = text.toLowerCase();
+  const posWords = ["profit", "gain", "surge", "growth", "beat", "record", "jump", "bullish", "buy", "up", "high", "positive", "expansion", "dividend"];
+  const negWords = ["loss", "fall", "drop", "decline", "miss", "plunge", "down", "bearish", "sell", "fraud", "downgrade", "negative", "debt", "risk", "warning"];
+
+  let posCount = 0;
+  let negCount = 0;
+  for (const w of posWords) if (lower.includes(w)) posCount++;
+  for (const w of negWords) if (lower.includes(w)) negCount++;
+
+  if (posCount > negCount) {
+    const score = Math.min(0.6 + posCount * 0.1, 0.95);
     return {
-      label: sorted[0]!.label as SentimentLabel,
-      score: sorted[0]!.score,
-      scores: sorted,
+      label: "positive",
+      score,
+      scores: [
+        { label: "positive", score },
+        { label: "neutral", score: (1 - score) * 0.7 },
+        { label: "negative", score: (1 - score) * 0.3 },
+      ],
     };
-  });
+  } else if (negCount > posCount) {
+    const score = Math.min(0.6 + negCount * 0.1, 0.95);
+    return {
+      label: "negative",
+      score,
+      scores: [
+        { label: "negative", score },
+        { label: "neutral", score: (1 - score) * 0.7 },
+        { label: "positive", score: (1 - score) * 0.3 },
+      ],
+    };
+  } else {
+    return {
+      label: "neutral",
+      score: 0.8,
+      scores: [
+        { label: "neutral", score: 0.8 },
+        { label: "positive", score: 0.1 },
+        { label: "negative", score: 0.1 },
+      ],
+    };
+  }
 }
 
 /**

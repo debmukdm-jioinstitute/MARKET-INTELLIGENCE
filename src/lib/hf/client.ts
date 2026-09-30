@@ -76,10 +76,15 @@ export async function hfInfer<TIn, TOut>(
       await new Promise((r) => setTimeout(r, Math.min(2 ** attempt * 1000, 16_000)));
     }
 
+    const bodyObj =
+      typeof inputs === "object" && inputs !== null && "inputs" in (inputs as Record<string, unknown>)
+        ? inputs
+        : { inputs };
+
     const res = await fetch(`${HF_INFERENCE_BASE}/${model}`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ inputs }),
+      body: JSON.stringify(bodyObj),
     });
 
     if (res.status === 503) {

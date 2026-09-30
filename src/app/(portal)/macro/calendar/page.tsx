@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
-export default function EconomicCalendarPage() {
-  redirect("/macro/india#calendar");
+/** Canonical calendar lives on India macro (`?view=calendar`). */
+export default function MacroCalendarRedirectPage() {
+  redirect("/macro/india?view=calendar");
 }

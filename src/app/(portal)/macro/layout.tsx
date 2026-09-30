@@ -1,20 +1,11 @@
-import { SectionNav } from "@/components/layout/section-nav";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-const ITEMS = [
-  { href: "/macro", label: "Global Board" },
-  { href: "/macro/india", label: "India Macro" },
-  { href: "/macro/global", label: "Global Data" },
-  { href: "/macro/stress", label: "Stress Index" },
-  { href: "/macro/transmission", label: "Transmission Map" },
-  { href: "/macro/scenarios", label: "Scenarios" },
-  { href: "/macro/rbi", label: "RBI & Liquidity" },
-];
+export const metadata = pageMetadata({
+  title: "India & Global Macro Dashboard",
+  description: "Growth, inflation, rates and cross-asset macro tape for India and global markets with source labels.",
+  path: "/macro",
+});
 
 export default function MacroLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div>
-      <SectionNav items={ITEMS} />
-      {children}
-    </div>
-  );
+  return children;
 }

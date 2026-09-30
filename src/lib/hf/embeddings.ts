@@ -27,12 +27,33 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (!texts.length) return [];
   const safe = texts.slice(0, 10).map((t) => t.slice(0, 512));
 
-  const result = await hfInfer<string[], EmbeddingResponse>(MODEL, safe, {
-    ttlMs: TTL_MS,
-    cacheKey: `miniLM::${safe.join("|").slice(0, 200)}`,
-  });
+  try {
+    const result = await hfInfer<string[], EmbeddingResponse>(MODEL, safe, {
+      ttlMs: TTL_MS,
+      cacheKey: `miniLM::${safe.join("|").slice(0, 200)}`,
+    });
 
-  return result;
+    return result;
+  } catch (err) {
+    console.warn("[MiniLM Embeddings] API unavailable, using hash fallback:", err instanceof Error ? err.message : err);
+    return safe.map((text) => fallbackEmbedding(text));
+  }
+}
+
+function fallbackEmbedding(text: string): number[] {
+  const vec = new Array(384).fill(0);
+  const words = text.toLowerCase().split(/\s+/);
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i]!;
+    for (let j = 0; j < w.length; j++) {
+      const charCode = w.charCodeAt(j);
+      const idx = (charCode * 31 + i * 17 + j) % 384;
+      vec[idx] = (vec[idx] || 0) + (charCode / 255.0);
+    }
+  }
+  // Normalize vector
+  const norm = Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0)) || 1;
+  return vec.map((v) => v / norm);
 }
 
 /** Cosine similarity between two equal-length vectors (returns -1..1) */
