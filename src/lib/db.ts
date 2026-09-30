@@ -363,6 +363,22 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_bug_reports_created ON bug_reports(created_at DESC)`;
 
+      // Persisted last-good quotes: when every live source fails, the quote
+      // service serves the most recent real quote with stale=true rather than
+      // inventing a price. Written by the quote service (throttled), read on
+      // live-source failure. Free-tier friendly: one row per symbol.
+      await db`
+        CREATE TABLE IF NOT EXISTS quote_last_good (
+          symbol text PRIMARY KEY,
+          price double precision NOT NULL,
+          change double precision NOT NULL DEFAULT 0,
+          change_pct double precision NOT NULL DEFAULT 0,
+          currency text,
+          provider text NOT NULL,
+          captured_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

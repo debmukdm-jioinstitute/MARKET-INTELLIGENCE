@@ -97,20 +97,10 @@ export const NAV_SECTIONS: NavSection[] = [
             badge: "NEW",
           },
           {
-            label: "Mutual Fund Intelligence",
+            label: "Mutual Fund Directory",
             href: "/funds",
-            desc: "Stock accumulation radar, fund X-ray, overlap analysis & AMFI disclosures.",
+            desc: "Scheme registry with live AMFI NAVs & AMC disclosure links.",
             badge: "NEW",
-          },
-          {
-            label: "Stock Accumulation Radar",
-            href: "/funds?tab=accumulation",
-            desc: "Which stocks are being accumulated across India's mutual funds?",
-          },
-          {
-            label: "Fund Overlap Analyzer",
-            href: "/funds?tab=overlap",
-            desc: "Calculate common holdings and duplicate risk between 2 funds.",
           },
         ],
       },

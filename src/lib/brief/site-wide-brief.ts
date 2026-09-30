@@ -1,8 +1,6 @@
-import { getAllBrokerResearchReports, getCompanyConsensusIntelligence } from "@/lib/broker-research/database";
-import { getAllPromoterActivities } from "@/lib/promoters/database";
-import { getAllCreditActivities } from "@/lib/credit/database";
+import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { mapResearchRow, type ApiResearchReport } from "@/lib/research/api-map";
 import { getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
-import { getAllMutualFunds } from "@/lib/funds/database";
 import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import { buildLegalRiskHub } from "@/lib/legal-risk/build-hub";
 import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
@@ -102,10 +100,6 @@ const REGULATOR_FALLBACK = [
 ];
 
 export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBrief> {
-  const brokerReports = getAllBrokerResearchReports();
-  const promoterActs = getAllPromoterActivities();
-  const creditActs = getAllCreditActivities();
-  const mutualFunds = getAllMutualFunds();
 
   // Real live data: India market pulse, legal/regulatory risk, IPO grey-market premiums, and
   // regulator headlines. Each is independently optional — a failure here degrades to an honest
@@ -123,34 +117,42 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
   ]);
   const regulatorNews = sortNewsByFreshness([...rbiNews, ...nseNews, ...bseNews]);
 
-  // 1. Calculate Broker Highlights
-  const relianceConsensus = getCompanyConsensusIntelligence("RELIANCE");
-  const tataConsensus = getCompanyConsensusIntelligence("TATAMOTORS");
-  const buyReports = brokerReports.filter((r) => r.rating === "BUY" || r.rating === "ACCUMULATE");
-  const buyRatio = brokerReports.length > 0 ? Math.round((buyReports.length / brokerReports.length) * 100) : 80;
+  // 1. Broker research notes — REAL collected notes only (research_reports table).
+  // Empty when nothing has been ingested; never synthesized.
+  let brokerReports: ApiResearchReport[] = [];
+  try {
+    if (hasDatabase()) {
+      await ensureSchema();
+      const db = sql();
+      const rows = await db`
+        SELECT
+          id, source, broker, title, url, pdf_url, symbol, recommendation,
+          target_price, cmp, upside_pct, report_type, summary, published_at, scraped_at, extra
+        FROM research_reports
+        ORDER BY COALESCE(published_at, scraped_at) DESC
+        LIMIT 20
+      `;
+      brokerReports = rows.map((r) => mapResearchRow(r as Record<string, unknown>));
+    }
+  } catch (e) {
+    console.error("Brief: failed to load research notes", e);
+  }
 
-  // 2. Calculate Promoter Highlights
-  const promoterBuys = promoterActs.filter((a) => a.category === "PROMOTER_BUYING" || a.category === "INSIDER_BUYING");
-  const totalBuyValCr = promoterBuys.reduce((acc, curr) => acc + (curr.transactionValueCr || 0), 0);
+  // NOTE: promoter/insider, credit-rating, mutual-fund holdings, and concall-tone inputs were
+  // removed — those modules served hardcoded data with no live feed. Their pillars below render
+  // explicit "unavailable" states until real feeds are wired.
 
-  // 3. Calculate Credit Highlights
-  const upgrades = creditActs.filter((c) => c.action === "RATING_UPGRADE");
-  const downgrades = creditActs.filter((c) => c.action === "RATING_DOWNGRADE");
-  const upgradeRatio = downgrades.length > 0 ? (upgrades.length / downgrades.length).toFixed(1) : `${upgrades.length}:0`;
-
-  // 4. Retail Reddit Highlights — real live search across a fixed watchlist, not a fabricated hub.
+  // 2. Retail Reddit Highlights — real live search across a fixed watchlist, not a fabricated hub.
   const liveReddit = await getWatchlistLiveSentiment();
   const topRedditSurge = liveReddit[0];
 
   // Composite stance from real signals where available (index direction, VIX level, PCR, legal-risk
-  // flags) plus the curated broker buy-ratio/credit-upgrade-ratio inputs. 50 = neutral baseline.
+  // flags). 50 = neutral baseline. Fabricated inputs are excluded.
   let stanceScore = 50;
   if (dashboard) stanceScore += (dashboard.pulse.nifty.changePct ?? 0) >= 0 ? 8 : -8;
   if (dashboard) stanceScore += (dashboard.pulse.indiaVix.value ?? 20) < 15 ? 6 : (dashboard.pulse.indiaVix.value ?? 20) > 20 ? -6 : 0;
   if (niftyChain?.pcr != null) stanceScore += niftyChain.pcr > 1.1 ? 6 : niftyChain.pcr < 0.9 ? -6 : 0;
   if (legalRisk) stanceScore += legalRisk.corporateRiskMonitor.highImpactCount === 0 ? 5 : -8;
-  stanceScore += buyRatio >= 70 ? 8 : buyRatio < 50 ? -8 : 0;
-  stanceScore += downgrades.length > 0 ? (Number(upgradeRatio) >= 2 ? 5 : Number(upgradeRatio) < 1 ? -5 : 0) : upgrades.length > 0 ? 5 : 0;
   stanceScore = Math.max(0, Math.min(100, Math.round(stanceScore)));
   const stance: SiteWideExecutiveBrief["stance"] = stanceScore >= 60 ? "Bullish" : stanceScore <= 40 ? "Defensive" : "Neutral";
 
@@ -167,79 +169,58 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
     minute: "2-digit",
   });
 
+  const brokerNotesCount = brokerReports.length;
+  const brokerFeatured = brokerReports.slice(0, 3).map((r) => ({
+    symbol: r.symbol ?? undefined,
+    name: r.broker ?? r.source,
+    keyFact: r.recommendation
+      ? `${r.recommendation}${r.target_price != null ? ` · Target ₹${Number(r.target_price).toLocaleString("en-IN")}` : ""} — ${r.title}`
+      : r.title,
+    sentiment: undefined as "POSITIVE" | "NEGATIVE" | "NEUTRAL" | "BULLISH" | "BEARISH" | undefined,
+  }));
+
   const pillars: IntelligencePillarSneakPeek[] = [
     {
-      id: "broker-consensus",
-      title: "Broker Research & Consensus Intelligence",
+      id: "broker-research",
+      title: "Broker Research Notes",
       category: "Institutional Coverage",
-      badge: "11 Brokers Tracked",
-      badgeColor: "emerald",
-      headline: `Consensus Target Upgrades: 11 Institutional Desks Monitored, Buy Ratio at ${buyRatio}%`,
-      summary: "Motilal Oswal, ICICI Securities, Kotak, and JM Financial adjusted forward models following corporate updates. Telecom ARPU hikes, capex moderation, and domestic margin resilience drive target price upgrades.",
+      badge: brokerNotesCount > 0 ? `${brokerNotesCount} Notes Collected` : "No Notes Yet",
+      badgeColor: brokerNotesCount > 0 ? "emerald" : "amber",
+      headline: brokerNotesCount > 0
+        ? `Latest research notes collected from public desk publications`
+        : "No broker research notes have been collected yet",
+      summary: brokerNotesCount > 0
+        ? "Target prices and recommendations exactly as published by the desks. Only notes actually collected are shown — nothing is estimated or simulated."
+        : "Broker research notes are collected from public publications of institutional desks. None have been ingested yet — check back later. We don't show sample or estimated notes.",
       metrics: [
-        { label: "Monitored Desks", value: "11 Top Houses" },
-        { label: "Institutional Notes", value: `${brokerReports.length} Reports` },
-        { label: "Mean Target Upside", value: "+15.8%", isPositive: true },
-        { label: "Buy / Accumulate Ratio", value: `${buyRatio}%` },
-      ],
-      featuredEntities: [
+        { label: "Notes Collected", value: `${brokerNotesCount}` },
         {
-          symbol: "RELIANCE",
-          name: "Reliance Industries",
-          keyFact: `Consensus target ₹${relianceConsensus.consensusTargetPrice} (+${relianceConsensus.consensusUpsidePct.toFixed(1)}% upside) · High: Motilal ₹3,650 vs Low: Kotak ₹3,050`,
-          sentiment: "BULLISH",
+          label: "Desks Represented",
+          value: `${new Set(brokerReports.map((r) => r.broker).filter(Boolean)).size}`,
         },
         {
-          symbol: "TATAMOTORS",
-          name: "Tata Motors",
-          keyFact: `Consensus target ₹${tataConsensus.consensusTargetPrice} (+${tataConsensus.consensusUpsidePct.toFixed(1)}% upside) · JLR order backlog & commercial turnaround`,
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "SUZLON",
-          name: "Suzlon Energy",
-          keyFact: "Target raised to ₹84 across 8 brokers following record 5.2 GW orderbook expansion",
-          sentiment: "BULLISH",
+          label: "With Target Price",
+          value: `${brokerReports.filter((r) => r.target_price != null).length}`,
         },
       ],
+      featuredEntities: brokerFeatured,
       deepDiveUrl: "/research",
-      deepDiveLabel: "Explore 11 Broker Consensus & Model Revisions",
+      deepDiveLabel: "Open Research Notes Feed",
     },
 
     {
       id: "promoter-insider",
       title: "Promoter & Insider Activity Tracker",
       category: "Ownership & Control",
-      badge: "Net Promoter Buying",
-      badgeColor: "blue",
-      headline: `Promoters Net Accumulators: ₹${Math.round(totalBuyValCr)} Cr Absorbed via Open Market & Block Deals`,
-      summary: "Founders and controlling promoter entities continue steady equity accumulation across infrastructure, chemicals, and retail without any high-risk pledge invocation.",
+      badge: "Feed Not Connected",
+      badgeColor: "amber",
+      headline: "Promoter and insider disclosures aren't wired to a live source yet",
+      summary: "SEBI PIT/SAST disclosures are published on NSE and BSE, whose feeds block automated access. Until a verified feed is built, we show nothing here rather than estimates. Verify filings directly on the exchange disclosure pages.",
       metrics: [
-        { label: "Net Promoter Inflow", value: `₹${Math.round(totalBuyValCr)} Cr`, isPositive: true },
-        { label: "Pledge Decreases", value: "6 Companies", isPositive: true },
-        { label: "Critical Pledge Alerts", value: "0 Invocations" },
-        { label: "High-Conviction Buys", value: `${promoterBuys.length} Filings` },
+        { label: "Live Records", value: "0" },
+        { label: "Status", value: "Unavailable" },
       ],
-      featuredEntities: [
-        {
-          symbol: "TATACONSUM",
-          name: "Tata Consumer Products",
-          keyFact: "Promoter Tata Sons purchased 450,000 shares in open market creeping acquisition",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "JSWENERGY",
-          name: "JSW Energy",
-          keyFact: "Controlling group de-pledged 4.2% of equity, improving governance leverage score",
-          sentiment: "POSITIVE",
-        },
-        {
-          symbol: "BAJFINANCE",
-          name: "Bajaj Finance",
-          keyFact: "Senior leadership insider purchases reported under SEBI PIT regulations",
-          sentiment: "POSITIVE",
-        },
-      ],
+      featuredEntities: [],
       deepDiveUrl: "/intelligence/promoters",
       deepDiveLabel: "Open Promoter & Insider Tracker",
     },
@@ -248,36 +229,15 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "credit-risk",
       title: "Credit & Rating Agency Intelligence",
       category: "Solvency & Debt",
-      badge: `${upgradeRatio}x Upgrade Ratio`,
-      badgeColor: "emerald",
-      headline: `CRISIL / ICRA Actions: ${upgrades.length} Upgrades vs ${downgrades.length} Downgrades as Balance Sheets Delever`,
-      summary: "Credit rating agencies cite strong domestic cash generation, lower debt-to-EBITDA ratios, and prudent refinancing cycles across large-cap and mid-cap issuers.",
+      badge: "Feed Not Connected",
+      badgeColor: "amber",
+      headline: "Rating-agency actions aren't wired to a live feed yet",
+      summary: "CRISIL, ICRA, CARE and other agencies publish rating actions on their own portals; no free live feed exists yet. Until one is verified, we show nothing here rather than estimates. Check the agency press-release pages directly.",
       metrics: [
-        { label: "Rating Agency Actions", value: `${creditActs.length} Actions` },
-        { label: "Upgrades vs Cuts", value: `${upgrades.length} / ${downgrades.length}`, isPositive: true },
-        { label: "CRISIL / ICRA Coverage", value: "6 Agencies" },
-        { label: "Debt Risk Status", value: "Benign", isPositive: true },
+        { label: "Live Actions", value: "0" },
+        { label: "Status", value: "Unavailable" },
       ],
-      featuredEntities: [
-        {
-          symbol: "TATASTEEL",
-          name: "Tata Steel",
-          keyFact: "CRISIL upgraded long-term debt rating to AA+ (Stable) on UK de-risking and net debt drop",
-          sentiment: "POSITIVE",
-        },
-        {
-          symbol: "SUZLON",
-          name: "Suzlon Energy",
-          keyFact: "India Ratings & CRISIL upgraded bank facilities to Investment Grade A (Positive)",
-          sentiment: "POSITIVE",
-        },
-        {
-          symbol: "RELIANCE",
-          name: "Reliance Industries",
-          keyFact: "CRISIL and CARE reaffirmed flagship AAA (Stable) across all NCD debenture programs",
-          sentiment: "NEUTRAL",
-        },
-      ],
+      featuredEntities: [],
       deepDiveUrl: "/intelligence/credit",
       deepDiveLabel: "View Credit Actions & Rating Changes",
     },
@@ -286,36 +246,15 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "company-concall",
       title: "Company Disclosures & Concall Intelligence",
       category: "Corporate Filings",
-      badge: "Concall Tone 82/100",
-      badgeColor: "violet",
-      headline: "Management Commentary: High Operating Confidence with Focused Capex Execution",
-      summary: "Quarterly concall tone analysis highlights strong capacity utilization in domestic power and automotive. Management guidance remains intact on FY26E volume growth.",
+      badge: "Feed Not Connected",
+      badgeColor: "amber",
+      headline: "Concall tone analysis isn't wired to verified transcripts yet",
+      summary: "Earnings concall transcripts have no free live feed yet. Until verified transcripts are ingested, no tone scores are shown.",
       metrics: [
-        { label: "Tone Sentiment Score", value: "82 / 100", isPositive: true },
-        { label: "Tracked IR Disclosures", value: "120+ Filings" },
-        { label: "Revenue Outlook", value: "Robust", isPositive: true },
-        { label: "Capex Discipline", value: "Confirmed" },
+        { label: "Tone Sentiment Score", value: "—" },
+        { label: "Status", value: "Unavailable" },
       ],
-      featuredEntities: [
-        {
-          symbol: "TATAMOTORS",
-          name: "Tata Motors",
-          keyFact: "Management highlighted resilient order book of 168,000 units in JLR and EV commercial scale",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "RELIANCE",
-          name: "Reliance Industries",
-          keyFact: "Confirmed green hydrogen & solar gigafactory commissioning schedule on track in Jamnagar",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "INFY",
-          name: "Infosys",
-          keyFact: "Concall flagged generative AI engagements and $3.2B large deal net wins",
-          sentiment: "NEUTRAL",
-        },
-      ],
+      featuredEntities: [],
       deepDiveUrl: "/intelligence/company",
       deepDiveLabel: "Explore Corporate Timelines & Concall Tone",
     },
@@ -324,38 +263,17 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       id: "mutual-funds",
       title: "Mutual Fund Smart Money Accumulation",
       category: "Institutional Funds",
-      badge: "38 Schemes Monitored",
-      badgeColor: "blue",
-      headline: "Domestic AMCs Accumulating Private Banks, Consumer Titans, and Green Industrials",
-      summary: "PPFAS, HDFC, Nippon, and SBI Mutual Funds deployed net monthly inflows into compounding cash-flow franchises, maintaining high concentration in top picks.",
+      badge: "Feed Not Connected",
+      badgeColor: "amber",
+      headline: "Fund portfolio disclosures aren't ingested yet",
+      summary: "AMC monthly portfolio disclosures are the verified source for fund holdings and flows; no ingestion pipeline exists yet. Live NAVs per scheme are available on the funds page. Nothing is estimated in the meantime.",
       metrics: [
-        { label: "Tracked Schemes", value: `${mutualFunds.length} Flagship Funds` },
-        { label: "Total AUM Sample", value: "₹4.8 Lakh Cr" },
-        { label: "Top Sector Inflow", value: "Private Banking", isPositive: true },
-        { label: "Cash Deployment", value: "Active", isPositive: true },
+        { label: "Live Holdings Records", value: "0" },
+        { label: "Status", value: "Unavailable" },
       ],
-      featuredEntities: [
-        {
-          symbol: "ICICIBANK",
-          name: "ICICI Bank",
-          keyFact: "Accumulated by 28 tracked schemes; net institutional buying +3.8M shares this month",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "ZOMATO",
-          name: "Zomato",
-          keyFact: "Mutual fund ownership expanded to 14.2% of free float on quick commerce profitability",
-          sentiment: "BULLISH",
-        },
-        {
-          symbol: "HDFCBANK",
-          name: "HDFC Bank",
-          keyFact: "Deposit growth acceleration supporting continued mutual fund overweight stances",
-          sentiment: "POSITIVE",
-        },
-      ],
+      featuredEntities: [],
       deepDiveUrl: "/funds",
-      deepDiveLabel: "Inspect Mutual Fund Holdings & Smart Money X-Ray",
+      deepDiveLabel: "Open Mutual Funds",
     },
 
     {
@@ -546,7 +464,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
     executiveHeadline: dashboard
       ? `Market Tape: NIFTY ${fmtIndexVal(dashboard.pulse.nifty.value, 0)} (${fmtChgPct(dashboard.pulse.nifty.changePct != null ? dashboard.pulse.nifty.changePct * 100 : null)}), VIX ${fmtIndexVal(dashboard.pulse.indiaVix.value, 2)}`
       : "Market tape temporarily unavailable",
-    executiveSummary: `Net promoter equity buying (${fmtCr(totalBuyValCr)}) and a ${buyRatio}% buy/accumulate ratio across ${brokerReports.length} tracked broker notes provide the institutional backdrop. RBI system liquidity is ${dashboard?.rbiLiquidity.systemLiquidity.value ?? "unavailable right now"}, with the 10Y G-Sec at ${dashboard ? `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%` : "—"} and Brent at ${dashboard?.pulse.brent.value != null ? `$${fmtIndexVal(dashboard.pulse.brent.value, 2)}` : "—"}.`,
+    executiveSummary: `${brokerNotesCount > 0 ? `${brokerNotesCount} broker research notes collected from public desk publications` : "No broker research notes collected yet"} provide the institutional backdrop. Promoter, credit-rating, and mutual-fund holdings feeds are not connected yet — those sections show unavailable rather than estimates. RBI system liquidity is ${dashboard?.rbiLiquidity.systemLiquidity.value ?? "unavailable right now"}, with the 10Y G-Sec at ${dashboard ? `${fmtIndexVal(dashboard.pulse.gsec10y.value, 2)}%` : "—"} and Brent at ${dashboard?.pulse.brent.value != null ? `$${fmtIndexVal(dashboard.pulse.brent.value, 2)}` : "—"}.`,
     macroPulse: dashboard
       ? {
           nifty: { val: fmtIndexVal(dashboard.pulse.nifty.value, 1), chg: fmtChgPct(dashboard.pulse.nifty.changePct != null ? dashboard.pulse.nifty.changePct * 100 : null), up: (dashboard.pulse.nifty.changePct ?? 0) >= 0 },
@@ -572,22 +490,28 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         },
     keyThemes: [
       {
-        theme: "Institutional Broker Revisions",
-        stance: buyRatio >= 60 ? "Bullish" : buyRatio < 50 ? "Defensive" : "Neutral",
-        headline: "Consensus Target Price Reratings across 11 Top Brokerages",
-        bullets: [
-          `Reliance Industries consensus target ₹${relianceConsensus.consensusTargetPrice} (+${relianceConsensus.consensusUpsidePct.toFixed(1)}%), Tata Motors ₹${tataConsensus.consensusTargetPrice} (+${tataConsensus.consensusUpsidePct.toFixed(1)}%).`,
-          `Consensus buy/accumulate ratio stands at ${buyRatio}% across ${brokerReports.length} tracked broker notes.`,
-        ],
+        theme: "Broker Research Notes",
+        stance: brokerNotesCount > 0 ? "Neutral" : "Neutral",
+        headline: brokerNotesCount > 0
+          ? `${brokerNotesCount} research notes collected from public desk publications`
+          : "No broker research notes collected yet",
+        bullets: brokerNotesCount > 0
+          ? brokerReports.slice(0, 3).map(
+              (r) => `${r.broker ?? r.source}${r.symbol ? ` on ${r.symbol}` : ""}: ${r.title}${r.recommendation ? ` (${r.recommendation})` : ""}.`
+            )
+          : [
+              "Broker research notes are collected from public publications of institutional desks — none ingested yet.",
+              "No target prices or ratings are estimated; only collected notes are shown.",
+            ],
         sourcePillar: "Broker Research Hub",
       },
       {
         theme: "Smart Money & Insider Signals",
-        stance: totalBuyValCr > 0 ? "Bullish" : "Neutral",
-        headline: "Promoters & Mutual Funds Accumulate in High-Growth Segments",
+        stance: "Neutral",
+        headline: "Promoter, credit, and fund-holdings feeds not connected yet",
         bullets: [
-          `Controlling promoters deployed ${fmtCr(totalBuyValCr)} into direct market purchases across ${promoterBuys.length} tracked filings.`,
-          `${mutualFunds.length} tracked mutual fund schemes monitored for institutional positioning.`,
+          "Promoter/insider disclosures, rating-agency actions, and AMC portfolio disclosures have no verified live feed — shown as unavailable, never estimated.",
+          "Verify filings directly on NSE/BSE disclosure pages and agency press-release portals.",
         ],
         sourcePillar: "Promoter Tracker & MF X-Ray",
       },
@@ -605,10 +529,10 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       },
       {
         theme: "Credit & Solvency Radar",
-        stance: Number(upgradeRatio) >= 1.5 ? "Bullish" : Number(upgradeRatio) < 1 ? "Defensive" : "Neutral",
-        headline: "Balance Sheet Health Drives Strong Upgrade-to-Downgrade Ratio",
+        stance: "Neutral",
+        headline: "Rating-agency feed not connected yet",
         bullets: [
-          `CRISIL/ICRA/India Ratings upgrade-to-downgrade ratio stands at ${upgradeRatio}x (${upgrades.length} upgrades vs ${downgrades.length} downgrades) across ${creditActs.length} tracked actions.`,
+          "No verified live feed for CRISIL/ICRA/CARE rating actions — shown as unavailable, never estimated.",
           legalRisk ? `${legalRisk.corporateRiskMonitor.highImpactCount} high-impact legal/regulatory flags active right now.` : "Legal risk feed unavailable this run.",
         ],
         sourcePillar: "Credit Risk Intelligence",
