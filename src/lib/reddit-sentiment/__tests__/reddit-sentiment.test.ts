@@ -3,7 +3,6 @@ import {
   getCompanyRetailSentiment,
   getAllRetailSentimentData,
   generateSyntheticRetailSentiment,
-  createHonestLowChatterProfile,
   TRACKED_SUBREDDITS,
   RETAIL_INVESTOR_PROBLEMS,
 } from "../database";
