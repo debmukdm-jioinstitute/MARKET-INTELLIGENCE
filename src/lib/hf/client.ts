@@ -90,8 +90,6 @@ export async function hfInfer<TIn, TOut>(
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      // TEMP DIAGNOSTIC — remove once HF calls are confirmed working in production.
-      console.error(`[hf-client] ${res.status} for ${model} (token set: ${Boolean(token)}, len: ${token?.length ?? 0}): ${body.slice(0, 500)}`);
       throw new HfApiError(res.status, `HF API ${res.status} for ${model}: ${body.slice(0, 300)}`);
     }
 
