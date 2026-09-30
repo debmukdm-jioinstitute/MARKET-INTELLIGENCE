@@ -4,8 +4,10 @@ import { useSiteContent } from "@/components/providers/site-content-provider";
 import { siteContentSlot } from "@/lib/site-content";
 import { TrustNote } from "@/components/ui/trust-note";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ComponentProps } from "react";
+import { useId, useState } from "react";
 
 type TrustProps = ComponentProps<typeof TrustNote>;
 
@@ -100,6 +102,8 @@ export function Panel({
   className,
   id,
   trust,
+  collapsible = true,
+  defaultOpen = false,
 }: {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -109,10 +113,16 @@ export function Panel({
   id?: string;
   /** Renders a source / freshness / methodology / disclaimer line under the panel body. */
   trust?: TrustProps;
+  /** Click header to expand/collapse body. Default true sitewide. */
+  collapsible?: boolean;
+  /** Initial open state when collapsible. Default false — click title to show content. */
+  defaultOpen?: boolean;
 }) {
   const path = usePathname();
   const titleStr = typeof title === "string" ? title : "Panel";
   const subtitleStr = typeof subtitle === "string" ? subtitle : "";
+  const bodyId = useId();
+  const [open, setOpen] = useState(defaultOpen);
 
   const titleSlot = panelSlot(path, id, titleStr, "title");
   const subSlot = panelSlot(path, id, titleStr, "subtitle");
@@ -120,41 +130,83 @@ export function Panel({
   const displayTitle = useSiteContent(titleSlot, titleStr);
   const displaySubtitle = useSiteContent(subSlot, subtitleStr);
 
-  return (
-    <section id={id} className={`portal-panel-enter rounded-xl border border-border bg-card shadow-[var(--shadow-sm)] ${className ?? ""}`}>
-      <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3.5">
-        <div>
-          <h3
-            data-mi-slot={titleSlot}
-            data-mi-field="title"
-            data-mi-label={`Panel: ${titleStr}`}
-            className="font-heading text-base font-bold tracking-tight text-foreground normal-case [font-variant-ligatures:none]"
+  const headerInner = (
+    <>
+      <div className="min-w-0 flex-1">
+        <h3
+          data-mi-slot={titleSlot}
+          data-mi-field="title"
+          data-mi-label={`Panel: ${titleStr}`}
+          className="font-heading text-base font-bold tracking-tight text-foreground normal-case [font-variant-ligatures:none]"
+        >
+          {typeof title === "string" ? displayTitle : title}
+        </h3>
+        {(displaySubtitle || subtitle) ? (
+          <div
+            data-mi-slot={subSlot}
+            data-mi-field="subtitle"
+            data-mi-label={`Panel subtitle: ${titleStr}`}
+            className="mt-0.5 text-sm leading-snug text-muted-foreground"
           >
-            {typeof title === "string" ? displayTitle : title}
-          </h3>
-          {(displaySubtitle || subtitle) ? (
-            <div
-              data-mi-slot={subSlot}
-              data-mi-field="subtitle"
-              data-mi-label={`Panel subtitle: ${titleStr}`}
-              className="mt-0.5 text-sm leading-snug text-muted-foreground"
-            >
-              {typeof subtitle === "string" ? displaySubtitle || subtitle : subtitle}
-            </div>
-          ) : (
-            <span
-              data-mi-slot={subSlot}
-              data-mi-field="subtitle"
-              data-mi-label={`Panel subtitle: ${titleStr}`}
-              className="hidden"
-              aria-hidden
-            />
-          )}
-        </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
+            {typeof subtitle === "string" ? displaySubtitle || subtitle : subtitle}
+          </div>
+        ) : (
+          <span
+            data-mi-slot={subSlot}
+            data-mi-field="subtitle"
+            data-mi-label={`Panel subtitle: ${titleStr}`}
+            className="hidden"
+            aria-hidden
+          />
+        )}
       </div>
-      <div className="p-4">{children}</div>
-      {trust ? <TrustNote {...trust} className="border-t border-border px-4 py-2.5" /> : null}
+      {collapsible ? (
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180",
+          )}
+          aria-hidden
+        />
+      ) : null}
+    </>
+  );
+
+  return (
+    <section id={id} className={cn("portal-panel-enter rounded-xl border border-border bg-card shadow-[var(--shadow-sm)]", className)}>
+      <div
+        className={cn(
+          "flex items-start justify-between gap-2 border-b border-border px-4 py-3.5",
+          !open && collapsible && "border-b-0",
+        )}
+      >
+        {collapsible ? (
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 cursor-pointer items-start justify-between gap-2 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            aria-expanded={open}
+            aria-controls={bodyId}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {headerInner}
+          </button>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-2">{headerInner}</div>
+        )}
+        {action ? (
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            {action}
+          </div>
+        ) : null}
+      </div>
+      {(!collapsible || open) && (
+        <>
+          <div id={bodyId} className="p-4">
+            {children}
+          </div>
+          {trust ? <TrustNote {...trust} className="border-t border-border px-4 py-2.5" /> : null}
+        </>
+      )}
     </section>
   );
 }
