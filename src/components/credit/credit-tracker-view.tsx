@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import type {
   CreditActivityRecord,
   CreditRatingAgency,
@@ -606,7 +606,8 @@ export function CreditTrackerView({
                     const isEqPositive = eq.equityReturnSinceActionPct >= 0;
 
                     return (
-                      <tr key={act.id} className="hover:bg-muted/20 transition-colors">
+                      <Fragment key={act.id}>
+                      <tr className="hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3.5">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1.5">
@@ -695,11 +696,22 @@ export function CreditTrackerView({
                             onClick={() => setExpandedId(isExpanded ? null : act.id)}
                             className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium px-2 py-1 rounded hover:bg-primary/10 transition-colors"
                           >
-                            <span>{isExpanded ? "Hide" : "Analysis"}</span>
+                            <span>{isExpanded ? "Hide" : "Rationale analysis"}</span>
                             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
                         </td>
                       </tr>
+                      {isExpanded ? (
+                        <tr className="bg-primary/5">
+                          <td
+                            colSpan={showEquityConnection ? 9 : 6}
+                            className="border-b border-primary/20 px-4 py-4"
+                          >
+                            <CreditRationalePanel act={act} onClose={() => setExpandedId(null)} />
+                          </td>
+                        </tr>
+                      ) : null}
+                      </Fragment>
                     );
                   })}
 
@@ -742,106 +754,6 @@ export function CreditTrackerView({
               </div>
             )}
           </div>
-
-          {/* Expanded Drawer */}
-          {expandedId && (
-            <div className="p-5 rounded-xl border border-primary/30 bg-primary/5 space-y-4">
-              {(() => {
-                const act = activities.find((a) => a.id === expandedId);
-                if (!act) return null;
-                const eq = act.equityConnection;
-
-                return (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-border/40 pb-2">
-                      <div className="space-y-0.5">
-                        <h4 className="text-base font-bold text-foreground flex items-center gap-2">
-                          <span>{act.companyName} ({act.symbol})</span>
-                          <span className="text-xs text-muted-foreground font-normal">• {act.sector}</span>
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          Action Date: {act.actionDate} • Rated by {act.agency} on ₹{act.ratedDebtAmountCr.toLocaleString()} Cr {act.instrument}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setExpandedId(null)}
-                        className="text-xs text-muted-foreground hover:text-foreground font-semibold px-2.5 py-1 rounded bg-card border border-border"
-                      >
-                        Close Analysis
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Agency Rationale & Key Drivers */}
-                      <div className="p-4 rounded-xl bg-card border border-border/60 space-y-3 text-xs">
-                        <div className="font-semibold text-foreground flex items-center gap-1.5">
-                          <Building2 className="w-4 h-4 text-primary" />
-                          <span>{act.agency} Rating Rationale & Liquidity Review</span>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed">
-                          {act.agencyRationale}
-                        </p>
-                        <div className="space-y-1.5 pt-2 border-t border-border/30">
-                          <span className="font-semibold text-foreground">Key Credit Drivers:</span>
-                          <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                            {act.keyDrivers.map((driver, i) => (
-                              <li key={i}>{driver}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
-                          <span>Liquidity Stance: <strong className="text-foreground">{act.liquidityAssessment}</strong></span>
-                          {act.sourceUrl && (
-                            <a
-                              href={act.sourceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center gap-1"
-                            >
-                              <span>Official Rating Document</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Equity Price Transmission Connection */}
-                      <div className="p-4 rounded-xl bg-card border border-border/60 space-y-3 text-xs">
-                        <div className="font-semibold text-foreground flex items-center gap-1.5">
-                          <DollarSign className="w-4 h-4 text-emerald-500" />
-                          <span>Connected Equity Price Transmission</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/40 border border-border/40 text-center">
-                          <div>
-                            <div className="text-[10px] text-muted-foreground">Price at Action</div>
-                            <div className="font-bold tabular-nums text-foreground mt-0.5">₹{eq.priceAtActionInr}</div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-muted-foreground">Current Price</div>
-                            <div className="font-bold tabular-nums text-foreground mt-0.5">₹{eq.currentPriceInr}</div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-muted-foreground">Return Since</div>
-                            <div className={`font-bold tabular-nums mt-0.5 ${eq.equityReturnSinceActionPct >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                              {eq.equityReturnSinceActionPct >= 0 ? "+" : ""}{eq.equityReturnSinceActionPct}%
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed">
-                          <strong>Financial Market Impact: </strong>
-                          {eq.equityImpactAnalysis}
-                        </p>
-                        <div className="pt-2 border-t border-border/30 text-[11px] text-muted-foreground flex justify-between">
-                          <span>Market Cap: ₹{eq.marketCapCr.toLocaleString()} Cr</span>
-                          <span>Implied Credit Spread: +{eq.impliedCreditSpreadBps} bps</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
         </>
       ) : (
         /* Smallcap Mutual Funds Credit Surveillance View */
@@ -1004,6 +916,112 @@ export function CreditTrackerView({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function CreditRationalePanel({
+  act,
+  onClose,
+}: {
+  act: CreditActivityRecord;
+  onClose: () => void;
+}) {
+  const eq = act.equityConnection;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border/40 pb-2">
+        <div className="space-y-0.5">
+          <h4 className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
+            <span className="tabular-nums">{act.symbol}</span>
+            <span className="font-semibold">{act.companyName}</span>
+            <span className="text-xs font-normal text-muted-foreground">• {act.sector}</span>
+          </h4>
+          <p className="text-xs text-muted-foreground">
+            {act.actionDate} • {act.agency} • ₹{act.ratedDebtAmountCr.toLocaleString("en-IN")} Cr {act.instrument}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-3 rounded-xl border border-border/60 bg-card p-4 text-xs">
+          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+            <Building2 className="h-4 w-4 text-primary" />
+            <span>{act.agency} rating rationale & liquidity review</span>
+          </div>
+          <p className="leading-relaxed text-muted-foreground">{act.agencyRationale}</p>
+          <div className="space-y-1.5 border-t border-border/30 pt-2">
+            <span className="font-semibold text-foreground">Key credit drivers</span>
+            <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+              {act.keyDrivers.map((driver, i) => (
+                <li key={i}>{driver}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
+            <span>
+              Liquidity stance: <strong className="text-foreground">{act.liquidityAssessment}</strong>
+            </span>
+            {act.sourceUrl ? (
+              <a
+                href={act.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-primary hover:underline"
+              >
+                <span>Official rating document</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-xl border border-border/60 bg-card p-4 text-xs">
+          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+            <DollarSign className="h-4 w-4 text-emerald-500" />
+            <span>Connected equity price transmission</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 rounded-lg border border-border/40 bg-muted/40 p-2.5 text-center">
+            <div>
+              <div className="text-[10px] text-muted-foreground">Price at action</div>
+              <div className="mt-0.5 font-bold tabular-nums text-foreground">₹{eq.priceAtActionInr}</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Current price</div>
+              <div className="mt-0.5 font-bold tabular-nums text-foreground">₹{eq.currentPriceInr}</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Return since</div>
+              <div
+                className={`mt-0.5 font-bold tabular-nums ${
+                  eq.equityReturnSinceActionPct >= 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400"
+                }`}
+              >
+                {eq.equityReturnSinceActionPct >= 0 ? "+" : ""}
+                {eq.equityReturnSinceActionPct}%
+              </div>
+            </div>
+          </div>
+          <p className="leading-relaxed text-muted-foreground">
+            <strong className="text-foreground">Financial market impact: </strong>
+            {eq.equityImpactAnalysis}
+          </p>
+          <div className="flex flex-wrap justify-between gap-2 border-t border-border/30 pt-2 text-[11px] text-muted-foreground">
+            <span>Market cap: ₹{eq.marketCapCr.toLocaleString("en-IN")} Cr</span>
+            <span>Implied credit spread: +{eq.impliedCreditSpreadBps} bps</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
