@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { AMC_DISCLOSURE_SOURCES, fetchAmfiNavs } from "@/lib/funds/amfi-crawler";
+import { NextResponse } from "next/server";
+import { AMC_DISCLOSURE_SOURCES } from "@/lib/funds/amfi-crawler";
 import { getAllMutualFunds } from "@/lib/funds/database";
 
 export async function GET() {
@@ -22,36 +22,14 @@ export async function GET() {
         name: f.shortName,
         amc: f.amc,
         disclosureUrl: f.disclosureUrl,
-        disclosureDate: f.disclosureDate,
       })),
-      crawler: {
+      navFeed: {
         amfiNavUrl: "https://www.amfiindia.com/spages/NAVAll.txt",
-        status: "ONLINE",
-        updateIntervalMinutes: 15,
+        note: "NAVs are fetched live on demand (15-minute cache) by /api/funds and /api/funds/[id]. This route does not persist data.",
       },
     });
   } catch (error) {
     console.error("API /api/funds/sources error:", error);
     return NextResponse.json({ error: "Failed to fetch disclosure sources" }, { status: 500 });
-  }
-}
-
-export async function POST() {
-  try {
-    const navs = await fetchAmfiNavs();
-    const count = Object.keys(navs).length;
-    return NextResponse.json({
-      success: true,
-      message: `Synced ${count} NAV records directly from AMFI`,
-      sampleNavs: Object.entries(navs).slice(0, 5).map(([code, val]) => ({
-        code,
-        name: val.name,
-        nav: val.nav,
-        date: val.date,
-      })),
-    });
-  } catch (error) {
-    console.error("POST /api/funds/sources sync error:", error);
-    return NextResponse.json({ error: "Failed to sync AMFI NAVs" }, { status: 500 });
   }
 }
