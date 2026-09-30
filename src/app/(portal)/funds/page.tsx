@@ -1,43 +1,101 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { FundSubnav, type FundTab } from "@/components/funds/fund-subnav";
-import { InstitutionalAccumulationView } from "@/components/funds/institutional-accumulation-view";
-import { FundXRayView } from "@/components/funds/fund-xray-view";
-import { FundOverlapView } from "@/components/funds/fund-overlap-view";
 import { AmcSourcesView } from "@/components/funds/amc-sources-view";
-import { MUTUAL_FUNDS_STORE, getAllMutualFunds, getMutualFundById } from "@/lib/funds/database";
-import {
-  computeInstitutionalAccumulation,
-  getInstitutionalSectorFlows,
-} from "@/lib/funds/analytics";
+
+type FundSummary = {
+  id: string;
+  amfiCode: string;
+  name: string;
+  shortName: string;
+  amc: string;
+  category: string;
+  benchmark: string;
+  inceptionDate: string;
+  disclosureUrl: string;
+  nav: number | null;
+  navDate: string | null;
+};
+
+function FundDirectory() {
+  const [funds, setFunds] = useState<FundSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/funds");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) setFunds(data.funds ?? []);
+      } catch {
+        if (!cancelled) setError("Could not load live NAVs right now.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-sm text-muted-foreground">Loading live NAVs from AMFI…</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-sm text-muted-foreground">{error}</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Scheme identity from our registry; NAV resolved live from AMFI NAVAll.txt. Portfolio
+        holdings, AUM and analytics are unavailable until AMC portfolio disclosures are
+        ingested from a verified source.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {funds.map((f) => (
+          <Link
+            key={f.id}
+            href={`/funds/${f.id}`}
+            className="rounded-xl border border-border/60 bg-card p-4 hover:border-primary/50 transition-colors"
+          >
+            <div className="text-sm font-semibold">{f.shortName}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {f.amc} · {f.category}
+            </div>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">NAV</span>
+              <span className="text-lg font-semibold">
+                {f.nav != null ? `₹${f.nav.toFixed(2)}` : "Unavailable"}
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              {f.navDate ? `as of ${f.navDate}` : "AMFI feed unreachable"}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function FundsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const tabParam = (searchParams.get("tab") as FundTab) || "accumulation";
-  const fundParam = searchParams.get("fund") || "parag-parikh-flexi-cap";
-  const compareParam = searchParams.get("compare") || "icici-pru-bluechip";
-
-  const [activeTab, setActiveTab] = useState<FundTab>(tabParam);
-  const [selectedFundId, setSelectedFundId] = useState<string>(fundParam);
-  const [comparisonFundId, setComparisonFundId] = useState<string>(compareParam);
-
-  // Sync state with URL params
-  useEffect(() => {
-    if (tabParam && ["accumulation", "xray", "overlap", "sources"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  useEffect(() => {
-    if (fundParam) {
-      setSelectedFundId(fundParam);
-    }
-  }, [fundParam]);
+  const tabParam = (searchParams.get("tab") as FundTab) || "directory";
+  const [activeTab, setActiveTab] = useState<FundTab>(
+    tabParam === "sources" ? "sources" : "directory"
+  );
 
   const handleTabChange = (tab: FundTab) => {
     setActiveTab(tab);
@@ -46,106 +104,24 @@ function FundsContent() {
     router.replace(`/funds?${params.toString()}`, { scroll: false });
   };
 
-  const handleSelectFund = (fundId: string) => {
-    setSelectedFundId(fundId);
-    setActiveTab("xray");
-    const params = new URLSearchParams(window.location.search);
-    params.set("tab", "xray");
-    params.set("fund", fundId);
-    router.replace(`/funds?${params.toString()}`, { scroll: false });
-  };
-
-  const handleNavigateToOverlap = (fundAId: string, fundBId?: string) => {
-    setSelectedFundId(fundAId);
-    if (fundBId) setComparisonFundId(fundBId);
-    setActiveTab("overlap");
-    const params = new URLSearchParams(window.location.search);
-    params.set("tab", "overlap");
-    params.set("fund", fundAId);
-    if (fundBId) params.set("compare", fundBId);
-    router.replace(`/funds?${params.toString()}`, { scroll: false });
-  };
-
-  const allFunds = useMemo(() => getAllMutualFunds(), []);
-  const currentFund = useMemo(() => getMutualFundById(selectedFundId) || allFunds[0], [allFunds, selectedFundId]);
-
-  const accumulationData = useMemo(() => {
-    const all = computeInstitutionalAccumulation(allFunds);
-    const flows = getInstitutionalSectorFlows(allFunds);
-    const topAcc = all.filter((s) => s.netValueBoughtCr > 0).slice(0, 5);
-    const topTrim = all.filter((s) => s.netValueBoughtCr < 0).slice(-5).reverse();
-    const fresh = all.filter((s) => s.trend === "FRESH_ENTRY");
-    const totalNetCapital = all.reduce((sum, s) => sum + s.netValueBoughtCr, 0);
-
-    return {
-      stocks: all,
-      topAccumulated: topAcc,
-      topTrimmed: topTrim,
-      freshEntries: fresh,
-      sectorFlows: flows,
-      summary: {
-        totalNetCapitalCr: Number(totalNetCapital.toFixed(1)),
-        fundsTrackedCount: allFunds.length,
-        accumulatedStocksCount: all.filter((s) => s.netValueBoughtCr > 0).length,
-        trimmedStocksCount: all.filter((s) => s.netValueBoughtCr < 0).length,
-        disclosureMonth: "September 2026",
-      },
-    };
-  }, [allFunds]);
-
   return (
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Invest & Institutional Flow Intelligence"
-        title="Mutual Fund Intelligence"
-        subtitle="Institutional accumulation radar, portfolio X-ray diagnostics, sector tilts, and overlap analysis across India's premier mutual funds."
+        kicker="Mutual Funds"
+        title="Mutual Fund Directory"
+        subtitle="Scheme registry with live AMFI NAVs. Portfolio-level analytics are unavailable until AMC disclosures are ingested from a verified source."
         trust={{
-          source: "AMFI Daily NAV Feed & AMC Monthly Portfolio Disclosures (SEBI Master Circular 2024)",
-          asOf: "September 2026 Reporting Cycle",
-          methodology: "Holdings aggregated at ISIN level; Overlap computed as sum of min(wA, wB); Accumulation reflects net capital additions across reporting periods.",
+          source: "AMFI NAVAll.txt (live) · AMC monthly portfolio disclosures (SEBI Master Circular 2024)",
+          asOf: "Live",
+          methodology: "NAVs fetched on demand from AMFI and cached 15 minutes. No figures are estimated or stored.",
         }}
       />
 
-      {/* Subnavigation Bar */}
-      <FundSubnav
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        selectedFundId={selectedFundId}
-      />
+      <FundSubnav activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Active Tab View */}
       <div className="min-h-[500px]">
-        {activeTab === "accumulation" && (
-          <InstitutionalAccumulationView
-            stocks={accumulationData.stocks}
-            topAccumulated={accumulationData.topAccumulated}
-            topTrimmed={accumulationData.topTrimmed}
-            freshEntries={accumulationData.freshEntries}
-            sectorFlows={accumulationData.sectorFlows}
-            summary={accumulationData.summary}
-            onSelectFund={handleSelectFund}
-          />
-        )}
-
-        {activeTab === "xray" && currentFund && (
-          <FundXRayView
-            fund={currentFund}
-            allFunds={allFunds}
-            onSelectFund={handleSelectFund}
-            onNavigateToOverlap={handleNavigateToOverlap}
-          />
-        )}
-
-        {activeTab === "overlap" && (
-          <FundOverlapView
-            allFunds={allFunds}
-            initialFundAId={selectedFundId}
-            initialFundBId={comparisonFundId}
-            onSelectFund={handleSelectFund}
-          />
-        )}
-
+        {activeTab === "directory" && <FundDirectory />}
         {activeTab === "sources" && <AmcSourcesView />}
       </div>
     </div>
@@ -154,7 +130,7 @@ function FundsContent() {
 
 export default function FundsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading Mutual Fund Intelligence...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading Mutual Fund Directory...</div>}>
       <FundsContent />
     </Suspense>
   );
