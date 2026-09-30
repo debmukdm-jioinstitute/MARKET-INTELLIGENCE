@@ -133,25 +133,29 @@ export function RedditStockSearch({
   };
 
   return (
-    <div ref={containerRef} className={`relative w-full max-w-xl ${className}`}>
-      <form onSubmit={handleSubmit} className="relative flex items-center">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            if (hits.length > 0) setIsOpen(true);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder="Search Upstox stock master (e.g. Reliance, Tata Motors, Suzlon, HDFC, Zomato)..."
-          className="w-full pl-10 pr-24 py-2.5 text-xs md:text-sm rounded-xl bg-card border border-border/80 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 text-foreground placeholder:text-muted-foreground transition-all shadow-sm"
-          autoComplete="off"
-        />
+    <div ref={containerRef} className={`relative w-full min-w-0 ${className}`}>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-2 sm:flex-row sm:items-center"
+      >
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => {
+              if (hits.length > 0) setIsOpen(true);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Search NSE symbol or company name…"
+            className="w-full min-w-0 rounded-xl border border-border/80 bg-card py-2.5 pl-10 pr-10 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
+            autoComplete="off"
+            aria-label="Search NSE equities"
+          />
+
           {query ? (
             <button
               type="button"
@@ -161,21 +165,22 @@ export function RedditStockSearch({
                 setIsOpen(false);
                 inputRef.current?.focus();
               }}
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
               title="Clear search"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="h-3.5 w-3.5" />
             </button>
           ) : null}
+        </div>
 
-          <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md bg-muted/60 text-muted-foreground border border-border/40">
-            <Zap className="w-3 h-3 text-amber-400" />
-            Upstox Live
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-lg border border-border/40 bg-muted/40 px-2 py-1.5 text-[10px] font-medium text-muted-foreground">
+            <Zap className="h-3 w-3 text-amber-500" aria-hidden />
+            Upstox NSE
           </span>
-
           <button
             type="submit"
-            className="px-3 py-1 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+            className="cursor-pointer rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-xs transition-all hover:bg-primary/90"
           >
             Analyze
           </button>
@@ -184,7 +189,7 @@ export function RedditStockSearch({
 
       {/* Upstox Dropdown Popover */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-xl bg-card/95 backdrop-blur-xl border border-border/80 shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border/80 bg-card/95 shadow-2xl backdrop-blur-xl animate-in fade-in-50 zoom-in-95 duration-150 sm:right-auto sm:min-w-full">
           <div className="px-3.5 py-2 border-b border-border/40 flex items-center justify-between text-[11px] text-muted-foreground bg-muted/20">
             <span className="font-semibold text-foreground flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-primary" />

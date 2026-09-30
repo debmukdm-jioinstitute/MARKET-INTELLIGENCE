@@ -158,134 +158,156 @@ export function RetailSentimentHub({ initialData, initialSymbol }: Props) {
             </span>
           </div>
 
-          <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-emerald-400">
-                Top Social Buzz:
+          <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3 text-xs">
+            <div>
+              <span className="mr-1.5 font-semibold text-[11px] text-emerald-600 dark:text-emerald-400">
+                Top Social Buzz
               </span>
-              <div className="flex gap-1 text-muted-foreground">
-                {initialData.overallMarketSentiment.mostHypedTickers.map(
-                  (t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        handleSelectSymbol(t);
-                        setActiveTab("sentiment");
-                      }}
-                      className="hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {t}
-                    </button>
-                  )
-                )}
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {initialData.overallMarketSentiment.mostHypedTickers.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      handleSelectSymbol(t);
+                      setActiveTab("sentiment");
+                    }}
+                    className="cursor-pointer rounded-md border border-border/50 bg-card px-2 py-0.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-rose-400">
-                Retail Capitulation:
+            <div>
+              <span className="mr-1.5 font-semibold text-[11px] text-rose-600 dark:text-rose-400">
+                Retail Capitulation
               </span>
-              <div className="flex gap-1 text-muted-foreground">
-                {initialData.overallMarketSentiment.mostHatedTickers.map(
-                  (t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        handleSelectSymbol(t);
-                        setActiveTab("sentiment");
-                      }}
-                      className="hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {t}
-                    </button>
-                  )
-                )}
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {initialData.overallMarketSentiment.mostHatedTickers.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      handleSelectSymbol(t);
+                      setActiveTab("sentiment");
+                    }}
+                    className="cursor-pointer rounded-md border border-border/50 bg-card px-2 py-0.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sub-Tab Selectors */}
-        <div className="flex items-center gap-2 pt-2 border-t border-border/40 overflow-x-auto scrollbar-none">
+        <div
+          className="mt-1 flex flex-wrap gap-1 border-t border-border/40 pt-3"
+          role="tablist"
+          aria-label="Reddit intelligence views"
+        >
+          <div className="flex flex-wrap gap-1 rounded-xl bg-muted/25 p-1">
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "sentiment"}
             onClick={() => setActiveTab("sentiment")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
               activeTab === "sentiment"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
             }`}
           >
-            <BarChart2 className="w-3.5 h-3.5" />
-            <span>Company Retail Sentiment Engine</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 text-inherit tabular-nums">
+            <BarChart2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Company sentiment</span>
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] tabular-nums ${
+                activeTab === "sentiment"
+                  ? "bg-primary/10 font-semibold text-primary"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
               {currentSentiment.symbol}
             </span>
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "problems"}
             onClick={() => setActiveTab("problems")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
               activeTab === "problems"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
             }`}
           >
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>Investor Problems Radar (Alternative Insights)</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-semibold">
-              {initialData.investorProblems.length} Themes
+            <HelpCircle className="h-3.5 w-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Problems radar</span>
+            <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+              {initialData.investorProblems.length}
             </span>
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "communities"}
             onClick={() => setActiveTab("communities")}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
               activeTab === "communities"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
-            <span>Monitored Communities (10 Subreddits)</span>
+            <Users className="h-3.5 w-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Communities</span>
+            <span className="text-[10px] text-muted-foreground tabular-nums">10</span>
           </button>
+          </div>
         </div>
       </div>
 
       {/* 2. Ticker Selector Bar with Upstox Dropdown (Visible on Sentiment tab) */}
       {activeTab === "sentiment" && (
-        <div className="flex flex-col gap-3 p-4 rounded-xl bg-card border border-border/60 shadow-sm">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            {/* Integrated Upstox Stock Search Dropdown */}
+        <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card p-4 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <RedditStockSearch
+              className="lg:max-w-2xl lg:flex-1"
               selectedSymbol={selectedSymbol}
               onSelectStock={handleSelectSymbol}
             />
 
-            <div className="text-right shrink-0">
-              <span className="text-[11px] text-muted-foreground">
-                Currently Inspecting:
+            <div className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2 lg:text-right">
+              <span className="block text-[11px] text-muted-foreground">
+                Currently inspecting
               </span>
-              <div className="text-xs font-semibold text-foreground">
-                {currentSentiment.companyName} ({currentSentiment.symbol})
+              <div className="text-sm font-semibold text-foreground">
+                {currentSentiment.companyName}
+              </div>
+              <div className="text-xs font-medium text-primary tabular-nums">
+                {currentSentiment.symbol}
               </div>
             </div>
           </div>
 
-          {/* Quick-select Buzz Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-border/30 scrollbar-none">
-            <span className="text-xs text-muted-foreground whitespace-nowrap mr-1 flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              High Retail Buzz:
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/30 pt-3">
+            <span className="mr-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <Flame className="h-3.5 w-3.5 text-orange-500" aria-hidden />
+              High retail buzz
             </span>
             {topBuzzSymbols.map((sym) => {
               const active = sym === selectedSymbol;
               return (
                 <button
                   key={sym}
+                  type="button"
                   onClick={() => handleSelectSymbol(sym)}
-                  className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
+                  className={`cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1 text-xs transition-colors ${
                     active
-                      ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                      : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                      : "border border-border/50 bg-muted/30 text-foreground hover:border-primary/30 hover:bg-muted/50"
                   }`}
                 >
                   {sym}
