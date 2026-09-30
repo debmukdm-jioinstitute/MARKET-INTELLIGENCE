@@ -4,8 +4,7 @@ import {
   indiaBenchmarkTrueDataMap,
 } from "@/lib/feeds/india/indices";
 import { fetchTrueDataQuotes } from "@/lib/feeds/sources/truedata";
-import { fetchUpstoxIndiaQuotes } from "@/lib/feeds/sources/upstox";
-import { fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { getQuotes } from "@/lib/feeds/quotes";
 import type { LiveQuote } from "@/lib/feeds/types";
 
 export { INDIA_BENCHMARK_YAHOO_SYMBOLS } from "@/lib/feeds/india/indices";
@@ -16,19 +15,15 @@ export async function fetchBiquoteIndices(): Promise<LiveQuote[]> {
   const symbols = INDIA_BENCHMARK_YAHOO_SYMBOLS;
   const rows = new Map<string, LiveQuote>();
 
-  const upstoxRows = await fetchUpstoxIndiaQuotes(symbols).catch(() => []);
-  for (const r of upstoxRows) rows.set(r.symbol, r);
+  // Unified quote bundle: Upstox (official) > Massive > Yahoo v7 batch > Stooq,
+  // all internally batched — replaces the old sequential Upstox-then-Yahoo.
+  const bundle = await getQuotes(symbols).catch(() => null);
+  for (const r of bundle?.quotes ?? []) rows.set(r.quote.symbol, r.quote);
 
-  const missingAfterUpstox = symbols.filter((s) => !rows.has(s));
-  if (missingAfterUpstox.length) {
-    const yahooRows = await fetchYahooQuotes(missingAfterUpstox).catch(() => []);
-    for (const r of yahooRows) rows.set(r.symbol, r);
-  }
-
-  const missingAfterYahoo = symbols.filter((s) => !rows.has(s));
-  if (missingAfterYahoo.length) {
+  const missingAfterBundle = symbols.filter((s) => !rows.has(s));
+  if (missingAfterBundle.length) {
     const trueDataToYahoo = new Map<string, string>();
-    for (const y of missingAfterYahoo) {
+    for (const y of missingAfterBundle) {
       const td = TRUEDATA[y];
       if (td) trueDataToYahoo.set(td, y);
     }
