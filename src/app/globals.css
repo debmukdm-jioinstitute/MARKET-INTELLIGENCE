@@ -225,7 +225,7 @@
 
   /** Compact KPI tile — hugs content; use in multi-column grids beside taller panels. */
   .bento-stat-tile {
-    @apply bento-card-shell gap-0 p-4 sm:p-4;
+    @apply relative w-full self-start overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out gap-0 p-4 sm:p-4;
   }
 
   .portal-skeleton > div {
