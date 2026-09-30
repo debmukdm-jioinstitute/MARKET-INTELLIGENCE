@@ -6,9 +6,11 @@ export type SignalInputs = {
   fiiYtd: number | null;
   diiToday: number | null;
   diiM1: number | null;
-  mfNetCapitalCr: number;
-  mfAccumulatingCount: number;
-  mfTrimmingCount: number;
+  // Mutual-fund portfolio leg: null until AMC portfolio disclosures are
+  // ingested from a verified source. Never substitute a fabricated figure.
+  mfNetCapitalCr: number | null;
+  mfAccumulatingCount: number | null;
+  mfTrimmingCount: number | null;
 };
 
 function dirFromDelta(
@@ -30,7 +32,8 @@ function clamp(n: number, min: number, max: number): number {
 export function deriveSmartMoneyScore(input: SignalInputs): number {
   const diiM1 = input.diiM1 ?? 0;
   const fiiM1 = input.fiiM1 ?? 0;
-  const mf = input.mfNetCapitalCr;
+  // MF leg excluded from the score until real disclosure data exists.
+  const mf = input.mfNetCapitalCr ?? 0;
 
   const domestic = clamp(diiM1 / 8000, -1, 1) * 45 + clamp(mf / 2500, -1, 1) * 35;
   const fiiDrag = clamp(-fiiM1 / 8000, -1, 1) * 20;
@@ -61,14 +64,17 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
   const smartDir: FlowDirection =
     score >= 20 ? "up" : score <= -20 ? "down" : "neutral";
 
-  const instOwnDir: FlowDirection =
-    input.mfNetCapitalCr > 400 && input.mfAccumulatingCount > input.mfTrimmingCount
+  const hasMfData = input.mfNetCapitalCr != null;
+
+  const instOwnDir: FlowDirection = !hasMfData
+    ? "na"
+    : input.mfNetCapitalCr! > 400 && input.mfAccumulatingCount! > input.mfTrimmingCount!
       ? "up"
-      : input.mfNetCapitalCr < -400
+      : input.mfNetCapitalCr! < -400
         ? "down"
         : "neutral";
 
-  const mfDir = dirFromDelta(input.mfNetCapitalCr, 150, -150);
+  const mfDir: FlowDirection = !hasMfData ? "na" : dirFromDelta(input.mfNetCapitalCr, 150, -150);
   const fiiOwnDir = dirFromDelta(input.fiiM1, 800, -800);
   if (input.fiiYtd != null && input.fiiYtd < -12000) {
     // sustained FII selling → ownership drift down even if last month flat
@@ -94,19 +100,21 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
       id: "institutional_ownership",
       label: "Institutional ownership",
       direction: instOwnDir,
-      headline:
-        instOwnDir === "up"
+      headline: !hasMfData
+        ? "MF accumulation data unavailable"
+        : instOwnDir === "up"
           ? "Broad MF accumulation"
           : instOwnDir === "down"
             ? "Net institutional trimming"
             : "Flat institutional footprint",
-      detail:
-        instOwnDir === "up"
+      detail: !hasMfData
+        ? "Mutual-fund portfolio disclosures are not yet ingested from a verified source — no accumulation figures are shown."
+        : instOwnDir === "up"
           ? `${input.mfAccumulatingCount} names saw net MF buying vs ${input.mfTrimmingCount} trimmed (AMFI portfolio cycle).`
           : instOwnDir === "down"
             ? "Cross-fund net capital flow is negative this disclosure cycle."
             : "Mutual-fund book changes net to roughly zero across the tracked universe.",
-      href: "/funds?tab=accumulation",
+      href: "/funds",
     },
     {
       id: "promoter_ownership",
@@ -121,14 +129,17 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
       id: "mf_ownership",
       label: "MF ownership",
       direction: mfDir,
-      headline:
-        mfDir === "up"
+      headline: !hasMfData
+        ? "MF ownership data unavailable"
+        : mfDir === "up"
           ? "MF books adding risk"
           : mfDir === "down"
             ? "MF books de-risking"
             : "MF ownership stable",
-      detail: `Net capital movement across tracked schemes: ₹${input.mfNetCapitalCr.toFixed(0)} cr (monthly portfolio disclosure).`,
-      href: "/funds?tab=accumulation",
+      detail: !hasMfData
+        ? "Net capital movement across schemes is unavailable until AMC portfolio disclosures are ingested from a verified source."
+        : `Net capital movement across tracked schemes: ₹${input.mfNetCapitalCr!.toFixed(0)} cr (monthly portfolio disclosure).`,
+      href: "/funds",
     },
     {
       id: "fii_ownership",

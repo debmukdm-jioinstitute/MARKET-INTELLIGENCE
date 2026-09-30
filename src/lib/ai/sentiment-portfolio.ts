@@ -1,7 +1,8 @@
 import { callLlmJson, untrustedBlock } from "@/lib/ai/llm";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { fetchUpstoxFullQuotes, fetchUpstoxNews } from "@/lib/feeds/sources/upstox";
-import { fetchYahooNews, fetchYahooQuotes } from "@/lib/feeds/sources/yahoo";
+import { fetchYahooNews } from "@/lib/feeds/sources/yahoo";
+import { getQuotes } from "@/lib/feeds/quotes";
 /**
  * A lighter, native re-implementation of the "read the news, then tilt the
  * portfolio" idea from HARLF (arXiv:2507.18560, github.com/franjgs/llm-rl-finance-trader):
@@ -69,12 +70,13 @@ export async function runSentimentPortfolio(
   const inRows = rows.filter((r) => r.market === "IN" && r.instrument_key);
   const usRows = rows.filter((r) => r.market === "US");
 
-  const [inQuotes, usQuotes] = await Promise.all([
+  const [inQuotes, usBundle] = await Promise.all([
     fetchUpstoxFullQuotes(inRows.map((r) => ({ instrumentKey: r.instrument_key!, symbol: r.symbol }))).catch(
       () => [],
     ),
-    fetchYahooQuotes(usRows.map((r) => r.symbol)).catch(() => []),
+    getQuotes(usRows.map((r) => r.symbol)).catch(() => null),
   ]);
+  const usQuotes = (usBundle?.quotes ?? []).map((r) => r.quote);
 
   const priceBySymbol = new Map<string, number>();
   for (const q of inQuotes) priceBySymbol.set(q.symbol, q.ltp);

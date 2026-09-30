@@ -105,8 +105,19 @@ export async function setState(key: string, value: unknown): Promise<void> {
   await writeJson("state.json", s);
 }
 
-/** Claim a throttled job: true for at most one caller per `minMs` window (so many visitors don't all run detection). */
-export async function claimRun(name: string, minMs: number): Promise<boolean> {
+/** Remove a state key (used to clear one-shot incident markers). */
+export async function deleteState(key: string): Promise<void> {
+  if (hasDatabase()) {
+    await ensureSchema();
+    await sql()`DELETE FROM notify_state WHERE key = ${key}`;
+    return;
+  }
+  const s = await readJson<Record<string, unknown>>("state.json", {});
+  delete s[key];
+  await writeJson("state.json", s);
+}
+
+/** Claim a throttled job: true for at most one caller per `minMs` window (so many visitors don't all run detection). */export async function claimRun(name: string, minMs: number): Promise<boolean> {
   if (hasDatabase()) {
     await ensureSchema();
     const secs = Math.max(1, Math.round(minMs / 1000));

@@ -1,11 +1,6 @@
 import { fetchFiiDii } from "@/lib/feeds/india/nse-market";
 import { persistFiiDiiRows, rollupFiiDiiFromStore } from "@/lib/feeds/india/fii-dii-store";
 import type { FieldSource } from "@/lib/feeds/india/types";
-import {
-  computeInstitutionalAccumulation,
-  getInstitutionalSectorFlows,
-} from "@/lib/funds/analytics";
-import { getAllMutualFunds } from "@/lib/funds/database";
 import type { InstitutionalIntelligencePayload, InstitutionalTracker } from "./types";
 import {
   deriveInstitutionalSignals,
@@ -16,7 +11,6 @@ import {
 
 const NSE_FII_API = "https://www.nseindia.com/api/fiidiiTradeReact";
 const NSE_FII_REPORT = "https://www.nseindia.com/reports/fii-dii";
-const DISCLOSURE_MONTH = "September 2026";
 
 type FiiDiiRow = { category: string; date?: string; netValue: string };
 
@@ -91,10 +85,10 @@ function buildTrackers(moneyFlow: InstitutionalIntelligencePayload["moneyFlow"])
     {
       id: "mutual_funds",
       label: "Mutual funds",
-      coverage: "live",
-      summary: "AMFI monthly portfolio diff — accumulation radar on /funds.",
+      coverage: "unavailable",
+      summary: "MF accumulation radar unavailable — AMC portfolio disclosures not yet ingested. Live scheme NAVs on /funds.",
       sources: [amfi, sebi],
-      href: "/funds?tab=accumulation",
+      href: "/funds",
     },
     {
       id: "insurance",
@@ -148,33 +142,19 @@ const SOURCE_CATALOG: InstitutionalIntelligencePayload["sourceCatalog"] = [
 
 export async function buildInstitutionalIntelligence(): Promise<InstitutionalIntelligencePayload> {
   const fiiDii = (await fetchFiiDii().catch(() => [])) as FiiDiiRow[];
-  const [moneyFlow, funds] = await Promise.all([
-    buildMoneyFlowLegs(fiiDii),
-    Promise.resolve(getAllMutualFunds()),
-  ]);
+  const moneyFlow = await buildMoneyFlowLegs(fiiDii);
 
-  const accumulation = computeInstitutionalAccumulation(funds);
-  const sectorFlows = getInstitutionalSectorFlows(funds);
-  const totalNetCapitalCr = Number(
-    accumulation.reduce((s, r) => s + r.netValueBoughtCr, 0).toFixed(1),
-  );
-  const accumulatedStocksCount = accumulation.filter((s) => s.netValueBoughtCr > 0).length;
-  const trimmedStocksCount = accumulation.filter((s) => s.netValueBoughtCr < 0).length;
-  const topAccumulated = accumulation.filter((s) => s.netValueBoughtCr > 0).slice(0, 8);
-  const topTrimmed = accumulation
-    .filter((s) => s.netValueBoughtCr < 0)
-    .slice(-8)
-    .reverse();
-
+  // Mutual-fund portfolio leg: no verified AMC disclosure feed is ingested yet,
+  // so all MF inputs are null. Never substitute fabricated figures.
   const signalInput: SignalInputs = {
     fiiToday: moneyFlow.fii.today,
     fiiM1: moneyFlow.fii.m1,
     fiiYtd: moneyFlow.fii.ytd,
     diiToday: moneyFlow.dii.today,
     diiM1: moneyFlow.dii.m1,
-    mfNetCapitalCr: totalNetCapitalCr,
-    mfAccumulatingCount: accumulatedStocksCount,
-    mfTrimmingCount: trimmedStocksCount,
+    mfNetCapitalCr: null,
+    mfAccumulatingCount: null,
+    mfTrimmingCount: null,
   };
 
   const score = deriveSmartMoneyScore(signalInput);
@@ -187,14 +167,9 @@ export async function buildInstitutionalIntelligence(): Promise<InstitutionalInt
     trackers: buildTrackers(moneyFlow),
     moneyFlow,
     mutualFunds: {
-      disclosureMonth: DISCLOSURE_MONTH,
-      totalNetCapitalCr,
-      fundsTrackedCount: funds.length,
-      accumulatedStocksCount,
-      trimmedStocksCount,
-      topAccumulated,
-      topTrimmed,
-      sectorFlows: sectorFlows.slice(0, 12),
+      dataStatus: "UNAVAILABLE",
+      message:
+        "Mutual-fund accumulation radar is unavailable — AMC portfolio disclosures are not yet ingested from a verified source.",
     },
     sourceCatalog: SOURCE_CATALOG,
   };
@@ -218,21 +193,7 @@ export function compactInstitutionalForMcp(payload: InstitutionalIntelligencePay
         ytd: payload.moneyFlow.dii.ytd,
       },
     },
-    mutualFunds: {
-      disclosureMonth: payload.mutualFunds.disclosureMonth,
-      totalNetCapitalCr: payload.mutualFunds.totalNetCapitalCr,
-      topAccumulated: payload.mutualFunds.topAccumulated.slice(0, 6).map((s) => ({
-        symbol: s.symbol,
-        netValueBoughtCr: s.netValueBoughtCr,
-        trend: s.trend,
-        fundsBuyingCount: s.fundsBuyingCount,
-      })),
-      topTrimmed: payload.mutualFunds.topTrimmed.slice(0, 5).map((s) => ({
-        symbol: s.symbol,
-        netValueBoughtCr: s.netValueBoughtCr,
-        trend: s.trend,
-      })),
-    },
+    mutualFunds: payload.mutualFunds,
     trackers: payload.trackers.map((t) => ({
       id: t.id,
       label: t.label,

@@ -1,26 +1,42 @@
 import { ResearchHomeClient } from "@/app/(portal)/research/research-home-client";
 import { BrokerResearchHub } from "@/components/broker-research/broker-research-hub";
 import { EarningsCalendarCard } from "@/components/dashboard/earnings-calendar-card";
-import {
-  getCompanyConsensusIntelligence,
-  getAllBrokerResearchReports,
-  INSTITUTIONAL_BROKER_SOURCES,
-} from "@/lib/broker-research/database";
+import { BROKER_SOURCES } from "@/lib/research/broker-sources";
+import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { mapResearchRow, type ApiResearchReport } from "@/lib/research/api-map";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { RESEARCH_HUB_SYMBOLS } from "@/lib/seo/popular-symbols";
 import Link from "next/link";
 
 export const metadata = pageMetadata({
-  title: "Broker Research Aggregator & Consensus Intelligence",
+  title: "Broker Research Notes Aggregator",
   description:
-    "Institutional equity research across 11 top brokers (Motilal Oswal, Kotak, ICICI Sec, HDFC Sec, etc.), target prices, financial estimates, and AI Consensus Changed — Why? synthesis.",
+    "Equity research notes collected from public publications of Indian institutional desks (Motilal Oswal, Kotak, ICICI Sec, HDFC Sec, etc.), with target prices and recommendations exactly as published.",
   path: "/research",
 });
 
-export default function ResearchPage() {
-  const initialConsensus = getCompanyConsensusIntelligence("RELIANCE");
-  const allReports = getAllBrokerResearchReports();
-  const sources = INSTITUTIONAL_BROKER_SOURCES;
+/** Real ingested research notes (research_reports table). Empty array when none ingested. */
+async function getInitialReports(): Promise<ApiResearchReport[]> {
+  if (!hasDatabase()) return [];
+  try {
+    await ensureSchema();
+    const db = sql();
+    const rows = await db`
+      SELECT
+        id, source, broker, title, url, pdf_url, symbol, recommendation,
+        target_price, cmp, upside_pct, report_type, summary, published_at, scraped_at, extra
+      FROM research_reports
+      ORDER BY COALESCE(published_at, scraped_at) DESC
+      LIMIT 100
+    `;
+    return rows.map((r) => mapResearchRow(r as Record<string, unknown>));
+  } catch {
+    return [];
+  }
+}
+
+export default async function ResearchPage() {
+  const initialReports = await getInitialReports();
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:py-12 space-y-12">
@@ -28,15 +44,15 @@ export default function ResearchPage() {
       <div className="space-y-6">
         <div className="text-center max-w-3xl mx-auto">
           <p className="text-xs uppercase tracking-[0.28em] font-semibold text-[#1a73e8]">
-            Institutional Research & Consensus
+            Institutional Research Notes
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
-            Broker Research Aggregator & Consensus Intelligence
+            Broker Research Notes Aggregator
           </h1>
           <p className="mx-auto mt-3 text-sm text-muted-foreground leading-relaxed">
-            Consensus target prices, financial model estimates (Revenue, EBITDA, EPS), and AI-synthesized{" "}
-            <span className="font-semibold text-foreground">&ldquo;Why Consensus Changed&rdquo;</span>{" "}
-            across 11 leading Indian institutional desks.
+            Research notes collected from public publications of Indian institutional
+            equities desks — with target prices and recommendations exactly as published.
+            Only notes actually collected are shown; nothing is estimated or simulated.
           </p>
         </div>
 
@@ -46,27 +62,26 @@ export default function ResearchPage() {
         </div>
       </div>
 
-      {/* 2. Broker Research & Consensus Intelligence Hub */}
-      <section aria-labelledby="consensus-heading" className="space-y-4">
+      {/* 2. Broker Research Notes Hub */}
+      <section aria-labelledby="research-notes-heading" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
           <div>
-            <h2 id="consensus-heading" className="text-lg font-bold tracking-tight text-foreground">
-              Consensus Intelligence Terminal
+            <h2 id="research-notes-heading" className="text-lg font-bold tracking-tight text-foreground">
+              Research Notes Feed
             </h2>
             <p className="text-xs text-muted-foreground">
-              Explore Motilal Oswal, Kotak, ICICI Sec, JM Financial, Nuvama & more with live model revisions.
+              Filter notes by company, or browse the latest notes from all desks.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>11 Desks Actively Synchronized</span>
+            <span>{initialReports.length} notes collected</span>
           </div>
         </div>
 
         <BrokerResearchHub
-          initialConsensus={initialConsensus}
-          allReports={allReports}
-          sources={sources}
+          initialReports={initialReports}
+          sources={BROKER_SOURCES}
           popularSymbols={RESEARCH_HUB_SYMBOLS}
         />
       </section>
@@ -114,14 +129,14 @@ export default function ResearchPage() {
       {/* 4. Footnotes & Guidelines */}
       <div className="rounded-xl bg-card border border-border/50 p-5 space-y-3">
         <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-          Coverage Methodology & Intelligence Notes
+          Coverage Methodology & Notes
         </h4>
         <ul className="grid gap-2 md:grid-cols-3 text-xs text-muted-foreground leading-relaxed">
           <li>
-            <strong className="text-foreground">Institutional Coverage:</strong> Research notes aggregated from SEBI-registered institutional equities desks. Reports include target prices, earnings revisions, and catalyst tracking.
+            <strong className="text-foreground">Collected notes:</strong> Research notes aggregated from public publications of SEBI-registered institutional equities desks. Reports show target prices and recommendations exactly as published.
           </li>
           <li>
-            <strong className="text-foreground">Consensus Intelligence:</strong> AI calculates variance drivers between bull and bear theses, isolating exact EBITDA and revenue inflection triggers behind rating upgrades.
+            <strong className="text-foreground">No estimates:</strong> We do not estimate, simulate, or impute target prices, ratings, or consensus figures. If no notes have been collected for a company, the feed says so explicitly.
           </li>
           <li>
             <strong className="text-foreground">Valuation Models:</strong> From any company page, access interactive Discounted Cash Flow (DCF), Reverse DCF, and peer multiple benchmarking models.

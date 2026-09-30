@@ -30,6 +30,8 @@ export function ensureCollectorSchema(): Promise<void> {
         PRIMARY KEY (series_id, obs_date)
       )
     `;
+    // Consecutive-failure counter for the Phase 5 source-health monitor.
+    await db`ALTER TABLE collected_series ADD COLUMN IF NOT EXISTS fail_streak int NOT NULL DEFAULT 0`;
   })().catch((e) => {
     ready = null;
     throw e;
@@ -42,10 +44,10 @@ export async function saveSeries(r: SeriesResult): Promise<number> {
   await ensureCollectorSchema();
   const db = sql();
   await db`
-    INSERT INTO collected_series (id, label, unit, category, provider, url, last_ok, last_error, last_run)
-    VALUES (${r.id}, ${r.label}, ${r.unit}, ${r.category}, ${r.provider}, ${r.url}, now(), NULL, now())
+    INSERT INTO collected_series (id, label, unit, category, provider, url, last_ok, last_error, last_run, fail_streak)
+    VALUES (${r.id}, ${r.label}, ${r.unit}, ${r.category}, ${r.provider}, ${r.url}, now(), NULL, now(), 0)
     ON CONFLICT (id) DO UPDATE SET label = EXCLUDED.label, unit = EXCLUDED.unit, url = EXCLUDED.url,
-      last_ok = now(), last_error = NULL, last_run = now()
+      last_ok = now(), last_error = NULL, last_run = now(), fail_streak = 0
   `;
   for (let i = 0; i < r.obs.length; i += 200) {
     const chunk = r.obs.slice(i, i + 200);
@@ -68,9 +70,10 @@ export async function clearFailure(collectorId: string) {
 export async function markFailure(id: string, provider: string, url: string, error: string) {
   await ensureCollectorSchema();
   await sql()`
-    INSERT INTO collected_series (id, label, unit, category, provider, url, last_error, last_run)
-    VALUES (${id}, ${id}, '', 'macro', ${provider}, ${url}, ${error.slice(0, 300)}, now())
-    ON CONFLICT (id) DO UPDATE SET last_error = EXCLUDED.last_error, last_run = now()
+    INSERT INTO collected_series (id, label, unit, category, provider, url, last_error, last_run, fail_streak)
+    VALUES (${id}, ${id}, '', 'macro', ${provider}, ${url}, ${error.slice(0, 300)}, now(), 1)
+    ON CONFLICT (id) DO UPDATE SET last_error = EXCLUDED.last_error, last_run = now(),
+      fail_streak = collected_series.fail_streak + 1
   `;
 }
 
@@ -131,7 +134,7 @@ export async function seriesHistory(id: string, limit = 500) {
 export async function collectorStatus() {
   await ensureCollectorSchema();
   return sql()`
-    SELECT s.id, s.label, s.unit, s.category, s.provider, s.url, s.last_ok, s.last_error, s.last_run,
+    SELECT s.id, s.label, s.unit, s.category, s.provider, s.url, s.last_ok, s.last_error, s.last_run, s.fail_streak,
       (SELECT count(*) FROM collected_obs o WHERE o.series_id = s.id)::int AS points,
       (SELECT max(obs_date) FROM collected_obs o WHERE o.series_id = s.id) AS latest_date
     FROM collected_series s ORDER BY s.category, s.id
