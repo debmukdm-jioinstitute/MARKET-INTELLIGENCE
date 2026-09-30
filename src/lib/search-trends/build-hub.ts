@@ -1,4 +1,5 @@
 import { computeAttentionMetrics } from "@/lib/search-trends/attention-index";
+import { ensureGoogleTrendsSession } from "@/lib/search-trends/google-trends-session";
 import { fetchGoogleTrendTimeline, trendsExploreUrl, trendsGeoLabel } from "@/lib/search-trends/google-trends";
 import type { SearchTrendCategory, SearchTrendHubPayload, SearchTrendSeries, SearchTrendWatchItem } from "@/lib/search-trends/types";
 import { SEARCH_TREND_CATEGORY_LABELS } from "@/lib/search-trends/types";
@@ -76,6 +77,7 @@ export async function buildSearchTrendHub(opts: BuildSearchTrendHubOptions = {})
   const limit = opts.limit ?? items.length;
   items = items.slice(0, Math.min(limit, 32));
 
+  await ensureGoogleTrendsSession();
   const series = await mapWithConcurrency(items, 2, 350, buildSeries);
   const liveCount = series.filter((s) => s.source.mode === "live").length;
   const fallbackCount = series.length - liveCount;

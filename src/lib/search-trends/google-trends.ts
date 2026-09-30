@@ -1,12 +1,13 @@
-import { feedFetch } from "@/lib/feeds/http";
+import { googleTrendsFetch } from "@/lib/search-trends/google-trends-session";
 import type { TrendPoint } from "@/lib/search-trends/types";
 
 const TRENDS_GEO = (process.env.GOOGLE_TRENDS_GEO ?? "IN").toUpperCase();
 const TRENDS_WINDOW = process.env.GOOGLE_TRENDS_WINDOW ?? "today 3-m";
 const TZ = Number(process.env.GOOGLE_TRENDS_TZ ?? "-330");
 
-function stripGoogleJsonPrefix(raw: string): string {
-  return raw.replace(/^\)\]\}'\,\n?/, "").trim();
+/** Removes Google's XSSI prefix before JSON.parse (comma optional — format changed ~2026). */
+export function stripGoogleTrendsJsonPrefix(raw: string): string {
+  return raw.replace(/^\)\]\}'\,?\n?/, "").trim();
 }
 
 function hashKeyword(keyword: string): number {
@@ -70,15 +71,9 @@ export async function fetchGoogleTrendTimeline(keyword: string): Promise<{ timel
   const exploreUrl = `https://trends.google.com/trends/api/explore?hl=en-US&tz=${TZ}&req=${encodeURIComponent(JSON.stringify(exploreReq))}`;
 
   try {
-    const exploreRes = await feedFetch(exploreUrl, {
-      timeoutMs: 12_000,
-      headers: {
-        Referer: "https://trends.google.com/trends/explore",
-        Accept: "application/json, text/plain, */*",
-      },
-    });
+    const exploreRes = await googleTrendsFetch(exploreUrl, { timeoutMs: 12_000 });
     if (!exploreRes.ok) throw new Error(`explore HTTP ${exploreRes.status}`);
-    const exploreJson = JSON.parse(stripGoogleJsonPrefix(await exploreRes.text())) as { widgets?: ExploreWidget[] };
+    const exploreJson = JSON.parse(stripGoogleTrendsJsonPrefix(await exploreRes.text())) as { widgets?: ExploreWidget[] };
     const widget =
       exploreJson.widgets?.find((w) => w.id === "TIMESERIES") ??
       exploreJson.widgets?.find((w) => String(w.id ?? "").includes("TIMESERIES"));
@@ -86,15 +81,9 @@ export async function fetchGoogleTrendTimeline(keyword: string): Promise<{ timel
 
     const dataReq = { ...widget.request };
     const dataUrl = `https://trends.google.com/trends/api/widgetdata/multiline?hl=en-US&tz=${TZ}&req=${encodeURIComponent(JSON.stringify(dataReq))}&token=${encodeURIComponent(widget.token)}`;
-    const dataRes = await feedFetch(dataUrl, {
-      timeoutMs: 12_000,
-      headers: {
-        Referer: "https://trends.google.com/trends/explore",
-        Accept: "application/json, text/plain, */*",
-      },
-    });
+    const dataRes = await googleTrendsFetch(dataUrl, { timeoutMs: 12_000 });
     if (!dataRes.ok) throw new Error(`multiline HTTP ${dataRes.status}`);
-    const dataJson = JSON.parse(stripGoogleJsonPrefix(await dataRes.text())) as { default?: { timelineData?: unknown } };
+    const dataJson = JSON.parse(stripGoogleTrendsJsonPrefix(await dataRes.text())) as { default?: { timelineData?: unknown } };
     const timeline = parseTimeline(dataJson.default ?? dataJson);
     if (timeline.length < 2) throw new Error("Empty timeline");
     return { timeline, mode: "live" };
