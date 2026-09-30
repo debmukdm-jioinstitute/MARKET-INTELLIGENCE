@@ -11,7 +11,9 @@ import { buildFeedHub } from "@/lib/feeds/hub";
 import { enrichFeedHeadlines } from "@/lib/hf/feed-enrichment";
 
 export const runtime = "nodejs";
-export const revalidate = 1800;
+// Live AI inference must never be prerendered at build time — the HF client's
+// internal 30-min cache still governs upstream calls.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
