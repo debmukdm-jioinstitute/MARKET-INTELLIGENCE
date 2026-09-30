@@ -9,23 +9,18 @@ export interface PortfolioPositionInput {
 }
 
 /**
- * Portfolio promoter / governance risk assessment.
+ * Portfolio promoter-risk assessment.
  *
- * There is currently NO live feed for India promoter/insider (SAST/PIT)
- * disclosures, so no pledge, insider-trading, or promoter activity signal can
- * be computed honestly. This function always returns an explicit UNAVAILABLE
- * result with zeroed scores instead of inventing risk flags.
- *
- * Do NOT reintroduce fallback constants (e.g. invented exposure values or
- * default pledge percentages) — fabricated risk scores must never be served.
+ * No live promoter/pledge/insider disclosure feed is connected, so this
+ * returns an explicit UNAVAILABLE assessment with zeroed figures instead of
+ * invented risk scores. Wire a real disclosure source before scoring.
  */
 export function assessPortfolioPromoterRisk(
   positions: PortfolioPositionInput[] = []
 ): PortfolioPromoterRiskAssessment {
-  const scanned = Array.isArray(positions) ? positions.length : 0;
   return {
     dataStatus: "UNAVAILABLE",
-    totalHeldPositionsScanned: scanned,
+    totalHeldPositionsScanned: positions.length,
     positionsWithFlagsCount: 0,
     overallGovernanceRiskScore: 0,
     governanceRiskGrade: "LOW",
@@ -37,6 +32,6 @@ export function assessPortfolioPromoterRisk(
     positiveSignalsCount: 0,
     flaggedHoldings: [],
     recommendationSummary:
-      "Promoter and insider disclosure data is not connected to a live source, so governance risk cannot be assessed. Verify promoter activity directly on the NSE/BSE disclosure pages.",
+      "Promoter disclosure feed is not connected — no promoter, pledge, or insider activity data is available, so risk figures are zeroed rather than estimated.",
   };
 }

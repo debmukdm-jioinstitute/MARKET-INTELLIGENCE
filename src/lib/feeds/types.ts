@@ -48,8 +48,7 @@ export type LiveQuote = {
   currency?: string;
   asOf: string;
   provider: "yahoo" | "stooq" | "alphavantage" | "biquote" | "truedata" | "upstox" | "massive";
-  /** True when served from persisted last-good data because every live source
-   *  failed — the quote is real but delayed; `asOf` says when it was captured. */
+  /** True when served from persisted last-good because all live sources failed (real delayed data). */
   stale?: boolean;
 };
 

@@ -46,6 +46,7 @@ export type InstitutionalIntelligencePayload = {
     dii: MoneyFlowLeg;
   };
   mutualFunds: {
+    /** "UNAVAILABLE" until AMC portfolio disclosures are ingested from a verified source. */
     dataStatus: "UNAVAILABLE";
     message: string;
   };
