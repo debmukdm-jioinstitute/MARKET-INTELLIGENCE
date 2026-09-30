@@ -10,7 +10,9 @@ import { getMarketShiftsCached } from "@/lib/feeds/what-changed/cache";
 import { summarizeText } from "@/lib/hf/summarizer";
 
 export const runtime = "nodejs";
-export const revalidate = 21600; // 6h
+// Live AI inference must never be prerendered at build time — the HF client's
+// internal cache still governs upstream calls.
+export const dynamic = "force-dynamic";
 
 const TTL_MS = 6 * 60 * 60 * 1000;
 const cache = new Map<string, { at: number; data: Record<string, string> }>();
