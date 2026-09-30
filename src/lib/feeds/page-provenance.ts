@@ -293,8 +293,14 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/research",
     match: {
-      summary: "Broker research aggregator across 11 institutional houses, consensus targets, financial model estimates, and AI Why Consensus Changed synthesis.",
+      summary: "Broker research aggregator across 11 institutional houses, consensus targets, financial model estimates, AI Why Consensus Changed synthesis, and Nifty 500 earnings calendar.",
       chips: [
+        {
+          kind: "api",
+          label: "Earnings calendar",
+          source: { provider: "Yahoo Finance", url: "/api/feeds/earnings-calendar" },
+          fetchMethod: "buildEarningsCalendarPanel() — src/lib/feeds/earnings/build-calendar.ts",
+        },
         {
           kind: "api",
           label: "Broker consensus API",

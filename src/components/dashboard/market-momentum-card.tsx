@@ -18,7 +18,7 @@ export function MarketMomentumCard() {
     v == null ? "text-muted-foreground" : v >= 0 ? "text-emerald-600" : "text-rose-600";
 
   return (
-    <div className="bento-card-shell bento-card-stack min-h-[220px] bg-gradient-to-b from-card to-card/60">
+    <div className="bento-card-shell bento-card-stack bg-gradient-to-b from-card to-card/60">
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">

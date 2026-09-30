@@ -193,12 +193,22 @@
     @apply grid grid-cols-1 items-start gap-3 sm:gap-4 md:grid-cols-2;
   }
 
+  .bento-grid-cols-3 {
+    @apply grid grid-cols-1 items-start gap-3 sm:gap-4 lg:grid-cols-3;
+  }
+
   .bento-grid-cols-12 {
     @apply grid grid-cols-1 items-start gap-3 sm:gap-4 lg:grid-cols-12;
   }
 
+  .bento-grid-cols-2 > *,
+  .bento-grid-cols-3 > *,
+  .bento-grid-cols-12 > * {
+    @apply w-full self-start;
+  }
+
   .bento-card-shell {
-    @apply relative overflow-hidden rounded-xl border border-border/90 bg-card p-4 shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out sm:p-5;
+    @apply relative w-full self-start overflow-hidden rounded-xl border border-border/90 bg-card p-3.5 shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out sm:p-4;
   }
 
   @media (min-width: 768px) {
@@ -210,7 +220,12 @@
   }
 
   .bento-card-stack {
-    @apply flex h-auto flex-col gap-3 self-start;
+    @apply flex h-auto w-full max-w-full flex-none flex-col gap-2.5 self-start;
+  }
+
+  /** Compact KPI tile — hugs content; use in multi-column grids beside taller panels. */
+  .bento-stat-tile {
+    @apply bento-card-shell gap-0 p-4 sm:p-4;
   }
 
   .portal-skeleton > div {

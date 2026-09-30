@@ -46,21 +46,21 @@ export default function StressIndexPage() {
 
       {cur && band ? (
         <>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm lg:col-span-1">
+          <div className="bento-grid-cols-3 gap-4">
+            <div className="bento-stat-tile lg:col-span-1">
               <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Stress score</p>
-              <p className={`mt-1 text-5xl font-bold tabular-nums ${band.text}`}>{cur.score ?? "—"}</p>
-              <p className={`text-sm font-semibold ${band.text}`}>{band.label}</p>
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <p className={`mt-1 text-4xl font-bold tabular-nums leading-none sm:text-5xl ${band.text}`}>{cur.score ?? "—"}</p>
+              <p className={`mt-1 text-sm font-semibold ${band.text}`}>{band.label}</p>
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div className={`h-full ${band.bar}`} style={{ width: `${cur.score ?? 0}%` }} />
               </div>
               <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
                 <span>0 calm</span><span>45 elevated</span><span>80+ extreme</span>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">As of {new Date(cur.asOf).toLocaleString()}</p>
+              <p className="mt-2 text-xs text-muted-foreground">As of {new Date(cur.asOf).toLocaleString()}</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm lg:col-span-2">
+            <div className="bento-card-shell bento-card-stack lg:col-span-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Signal families</p>
                 <p className="text-xs text-muted-foreground">A family fires at ≥ 60</p>

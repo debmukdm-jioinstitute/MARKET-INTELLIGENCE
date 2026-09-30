@@ -304,6 +304,7 @@ export const SITE_TOOLS: Tool[] = [
     run: async () => {
       const panel = await buildEarningsCalendarPanel();
       return {
+        portalPath: "/research#earnings-calendar",
         asOf: panel.asOf,
         scanned: panel.scanned,
         items: panel.items.map((i) => ({
@@ -941,7 +942,6 @@ export const SITE_TOOLS: Tool[] = [
           changePct: i.changePct,
         })),
         macro: payload.macro,
-        earningsCount: payload.earnings.items.length,
         sources: payload.sources,
       };
     },

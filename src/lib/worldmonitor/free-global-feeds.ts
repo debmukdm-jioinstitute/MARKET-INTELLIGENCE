@@ -1,5 +1,4 @@
 import { feedFetch, timed } from "@/lib/feeds/http";
-import { buildEarningsCalendarPanel } from "@/lib/feeds/earnings/build-calendar";
 import { parseRss } from "@/lib/feeds/rss";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { sortNewsByFreshness } from "@/lib/feeds/news-sort";
@@ -46,7 +45,6 @@ export type FreeGlobalFeedsPayload = {
   news: NewsItem[];
   indices: Awaited<ReturnType<typeof buildWorldIndices>>;
   macro: { id: string; name: string; unit: string; latest: number | null; date: string | null }[];
-  earnings: Awaited<ReturnType<typeof buildEarningsCalendarPanel>>;
   liquidity: Awaited<ReturnType<typeof getMarketShiftsCached>>;
   sources: { id: string; label: string; ok: boolean; detail?: string }[];
 };
@@ -54,10 +52,9 @@ export type FreeGlobalFeedsPayload = {
 export async function buildFreeGlobalFeeds(): Promise<FreeGlobalFeedsPayload> {
   const fetchedAt = new Date().toISOString();
 
-  const [rssBatches, indices, earnings, liquidity, ...fredResults] = await Promise.all([
+  const [rssBatches, indices, liquidity, ...fredResults] = await Promise.all([
     Promise.all(GLOBAL_RSS.map((f) => timed(() => fetchRss(f.url, f.topic)))),
     timed(() => buildWorldIndices()),
-    timed(() => buildEarningsCalendarPanel()),
     timed(() => getMarketShiftsCached(false)),
     ...FRED_CSV_SERIES.map((s) => timed(() => fetchFredSeriesCsv(s.id))),
   ]);
@@ -95,12 +92,6 @@ export async function buildFreeGlobalFeeds(): Promise<FreeGlobalFeedsPayload> {
       ok: macro.some((m) => m.latest != null),
     },
     {
-      id: "earnings",
-      label: "Yahoo earnings calendar (India watchlist)",
-      ok: (earnings.value?.items?.length ?? 0) > 0,
-      detail: earnings.error,
-    },
-    {
       id: "liquidity",
       label: "MI market shifts / liquidity",
       ok: (liquidity.value?.items?.length ?? 0) > 0,
@@ -113,14 +104,6 @@ export async function buildFreeGlobalFeeds(): Promise<FreeGlobalFeedsPayload> {
     news,
     indices: indices.value ?? { fetchedAt, indices: [] },
     macro,
-    earnings: earnings.value ?? {
-      asOf: fetchedAt,
-      failed: 0,
-      scanned: 0,
-      source: "Yahoo Finance",
-      priorQuarterNote: "",
-      items: [],
-    },
     liquidity: liquidity.value ?? { fetchedAt, slot: 0, items: [] },
     sources,
   };

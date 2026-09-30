@@ -4,7 +4,7 @@ import { WorldMonitorPageShell } from "@/components/worldmonitor/world-monitor-p
 export const metadata = {
   title: "World Monitor · Global intelligence · Market Intelligence",
   description:
-    "Global intelligence on Market Intelligence — free RSS news, world indices, macro, earnings, and liquidity from open feeds.",
+    "Global intelligence on Market Intelligence — free RSS news, world indices, macro, and liquidity from open feeds.",
 };
 
 export default function WorldMonitorPage() {

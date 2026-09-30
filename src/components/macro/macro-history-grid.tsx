@@ -27,13 +27,13 @@ export function MacroHistoryGrid({ metrics, title = "Historical trends" }: { met
 
   return (
     <Panel title={`${title} (${chartable.length})`}>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         {chartable.map((m) => {
           const points = historyToPoints(m.history);
           const first = points[0]?.ts ?? "";
           const last = points[points.length - 1]?.ts ?? "";
           return (
-            <div key={m.id} className="min-h-[220px]">
+            <div key={m.id} className="self-start">
               <AccessibleLineChart
                 title={`${m.label} · India macro`}
                 range={`${first} – ${last}`}

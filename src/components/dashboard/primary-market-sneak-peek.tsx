@@ -104,7 +104,7 @@ export function PrimaryMarketSneakPeek() {
       </div>
 
       {/* Content Area */}
-      <div className="min-h-[220px]">
+      <div className="min-h-0">
         {/* IPO Tab */}
         {activeTab === "ipo" && (
           <div className="space-y-3">

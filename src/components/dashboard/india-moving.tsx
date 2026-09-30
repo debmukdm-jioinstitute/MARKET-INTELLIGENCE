@@ -15,7 +15,7 @@ export function IndiaMoving({ data }: { data: IndiaDashboardPayload }) {
         <h2 className="font-heading text-xl font-semibold">What is moving India?</h2>
         <p className="text-sm text-muted-foreground">Indian market snapshot — live indices, volatility, breadth, F&amp;O.</p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="bento-grid-cols-3 gap-4">
         <IndexPanel snap={indiaMoving.nifty} hubSyncedAt={data.fetchedAt} />
         <IndexPanel snap={indiaMoving.bankNifty} hubSyncedAt={data.fetchedAt} />
         <VixPanel snap={indiaMoving.indiaVix} breadth={indiaMoving.breadth} hubSyncedAt={data.fetchedAt} />

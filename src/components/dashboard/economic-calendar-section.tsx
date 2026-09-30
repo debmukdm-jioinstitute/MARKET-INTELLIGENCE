@@ -68,7 +68,7 @@ export function EconomicCalendarSection() {
           Central bank decisions, inflation prints, and GDP releases that can move the book.
         </p>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm min-h-[280px]">
+      <div className="bento-card-shell overflow-hidden p-0 sm:p-0">
         <Table>
           <TableHeader>
             <TableRow>

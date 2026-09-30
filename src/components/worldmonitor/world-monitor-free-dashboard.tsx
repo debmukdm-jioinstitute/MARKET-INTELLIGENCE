@@ -7,7 +7,6 @@ import type { FreeGlobalFeedsPayload } from "@/lib/worldmonitor/free-global-feed
 import { worldMonitorExternalUrl } from "@/lib/worldmonitor/public-url";
 import { cn } from "@/lib/utils";
 import type { WorldIndexQuote } from "@/lib/macro/build-world-indices";
-import type { EarningsCalendarItem } from "@/lib/feeds/earnings/build-calendar";
 import type { MarketShiftItem } from "@/lib/feeds/what-changed/types";
 import type { NewsItem } from "@/lib/feeds/types";
 import Link from "next/link";
@@ -22,22 +21,20 @@ const TOUCH_ROW =
 const TOUCH_BTN =
   "inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 
-type SectionId = "news" | "markets" | "macro" | "earnings" | "liquidity";
+type SectionId = "news" | "markets" | "macro" | "liquidity";
 
 const SECTION_LABELS: Record<SectionId, string> = {
   news: "News",
   markets: "Markets",
   macro: "Macro",
-  earnings: "Earnings",
   liquidity: "Liquidity",
 };
 
-const DEFAULT_SECTIONS: SectionId[] = ["news", "markets", "macro", "liquidity", "earnings"];
+const DEFAULT_SECTIONS: SectionId[] = ["news", "markets", "macro", "liquidity"];
 
 type Detail =
   | { kind: "index"; row: WorldIndexQuote }
   | { kind: "news"; row: NewsItem }
-  | { kind: "earnings"; row: EarningsCalendarItem }
   | { kind: "liquidity"; row: MarketShiftItem }
   | { kind: "macro"; row: { id: string; name: string; unit: string; latest: number | null; date: string | null } };
 
@@ -93,7 +90,6 @@ function DetailDrawer({
           <h2 id="wm-detail-title" className="font-heading text-lg font-bold text-foreground">
             {detail.kind === "index" && detail.row.label}
             {detail.kind === "news" && "Headline"}
-            {detail.kind === "earnings" && `${detail.row.symbol} earnings`}
             {detail.kind === "liquidity" && detail.row.headline}
             {detail.kind === "macro" && detail.row.name}
           </h2>
@@ -142,18 +138,6 @@ function DetailDrawer({
               />
               <a href={detail.row.link} className="inline-flex min-h-11 items-center font-semibold text-blue-600" target="_blank" rel="noreferrer">
                 Read source
-              </a>
-            </>
-          )}
-          {detail.kind === "earnings" && (
-            <>
-              <p>{detail.row.company}</p>
-              <p className="text-muted-foreground tabular-nums">
-                {detail.row.period} · {detail.row.date} · {detail.row.timing}
-              </p>
-              <SourceTag>Yahoo Finance calendar</SourceTag>
-              <a href={detail.row.sourceUrl} className="inline-flex min-h-11 items-center font-semibold text-blue-600" target="_blank" rel="noreferrer">
-                Calendar detail
               </a>
             </>
           )}
@@ -468,32 +452,6 @@ export function WorldMonitorFreeDashboard() {
           </Panel>
         ) : null}
 
-        {sections.has("earnings") ? (
-          <Panel title="Earnings calendar" subtitle={data?.earnings.source ?? "Yahoo calendar"}>
-            {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading calendar…</p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {(data?.earnings.items ?? []).slice(0, 12).map((e) => (
-                  <li key={e.id}>
-                    <button type="button" className={cn(TOUCH_ROW, "py-2")} onClick={() => setDetail({ kind: "earnings", row: e })}>
-                      <span className="min-w-0 flex-1 text-left text-sm">
-                        <span className="font-medium text-blue-600">{e.symbol}</span>{" "}
-                        <span className="break-words text-muted-foreground">
-                          {e.company} · {e.period} · <span className="tabular-nums">{e.date}</span>
-                        </span>
-                      </span>
-                      <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-                    </button>
-                  </li>
-                ))}
-                {(data?.earnings.items.length ?? 0) === 0 ? (
-                  <li className="py-3 text-sm text-muted-foreground">No upcoming earnings in window.</li>
-                ) : null}
-              </ul>
-            )}
-          </Panel>
-        ) : null}
       </div>
 
       <FilterSheet

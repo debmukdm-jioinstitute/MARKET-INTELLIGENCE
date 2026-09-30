@@ -1,5 +1,6 @@
 import { ResearchHomeClient } from "@/app/(portal)/research/research-home-client";
 import { BrokerResearchHub } from "@/components/broker-research/broker-research-hub";
+import { EarningsCalendarCard } from "@/components/dashboard/earnings-calendar-card";
 import {
   getCompanyConsensusIntelligence,
   getAllBrokerResearchReports,
@@ -68,6 +69,18 @@ export default function ResearchPage() {
           sources={sources}
           popularSymbols={RESEARCH_HUB_SYMBOLS}
         />
+      </section>
+
+      <section id="earnings-calendar" aria-labelledby="earnings-calendar-heading" className="space-y-4">
+        <div className="border-b border-border/40 pb-3">
+          <h2 id="earnings-calendar-heading" className="text-lg font-bold tracking-tight text-foreground">
+            Nifty 500 earnings calendar
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Upcoming result dates from Yahoo Finance calendarEvents — same feed as Home, anchored on Research Desk.
+          </p>
+        </div>
+        <EarningsCalendarCard />
       </section>
 
       {/* 3. Popular Companies & Quick Navigation */}
