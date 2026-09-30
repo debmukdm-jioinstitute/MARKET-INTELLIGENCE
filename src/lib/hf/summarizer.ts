@@ -28,25 +28,22 @@ export async function summarizeText(text: string, maxWords = 80): Promise<string
   // BART works best with 100-1024 words; clip longer texts
   const clipped = text.split(/\s+/).slice(0, 900).join(" ");
 
-  const maxTokens = Math.round(maxWords * 1.4); // rough word→token ratio
-  const minTokens = Math.max(30, Math.round(maxTokens * 0.4));
+  const cacheKey = `bart-cnn::${clipped.slice(0, 200)}::${maxWords}`;
 
-  const cacheKey = `bart-cnn::${clipped.slice(0, 200)}::${maxTokens}`;
-
-  const result = await hfInfer<
-    { inputs: string; parameters: { truncation: string; generate_parameters: { max_new_tokens: number; min_new_tokens: number } } },
-    BartSummarizationResponse[]
-  >(
+  // The hf-inference provider's currently-deployed facebook/bart-large-cnn endpoint rejects any
+  // `parameters` object at all for this task ("model_kwargs are not used by the model: ['parameters']"),
+  // including the documented parameters.generate_parameters shape — tried and confirmed live. Bare
+  // `inputs` is the only request shape that works, so maxWords is enforced by truncating the
+  // model's own (untargeted) output below rather than by a generation parameter.
+  const result = await hfInfer<{ inputs: string }, BartSummarizationResponse[]>(
     MODEL,
-    // HF summarization API (Inference Providers / hf-inference) expects generation knobs nested
-    // under parameters.generate_parameters, not flat under parameters — a flat max_new_tokens/
-    // min_new_tokens/truncation:1 shape (the pre-migration api-inference.huggingface.co format)
-    // is rejected with a 400 "model_kwargs are not used by the model" error.
-    { inputs: clipped, parameters: { truncation: "longest_first", generate_parameters: { max_new_tokens: maxTokens, min_new_tokens: minTokens } } },
+    { inputs: clipped },
     { ttlMs: TTL_MS, cacheKey },
   );
 
-  return result?.[0]?.summary_text ?? clipped.slice(0, 300);
+  const summary = result?.[0]?.summary_text ?? clipped.slice(0, 300);
+  const words = summary.trim().split(/\s+/);
+  return words.length > maxWords ? `${words.slice(0, maxWords).join(" ")}…` : summary;
 }
 
 /**
