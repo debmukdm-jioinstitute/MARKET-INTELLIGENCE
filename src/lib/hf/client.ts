@@ -8,7 +8,11 @@
  * • Retry with exponential back-off on 503 (model loading) responses.
  */
 
-const HF_INFERENCE_BASE = "https://api-inference.huggingface.co/models";
+// HF retired api-inference.huggingface.co in favor of the "Inference Providers" router; the
+// hf-inference provider keeps the same classic pipeline request/response shape this file already
+// speaks, just under a new host + path prefix. A Bearer token is now required (no more anonymous
+// free tier), which is why every call here silently failed even with a valid HF_TOKEN unset.
+const HF_INFERENCE_BASE = "https://router.huggingface.co/hf-inference/models";
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
