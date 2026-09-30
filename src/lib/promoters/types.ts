@@ -66,6 +66,8 @@ export type FlaggedHoldingRisk = {
 };
 
 export type PortfolioPromoterRiskAssessment = {
+  /** "UNAVAILABLE" when no live disclosure feed is connected; scores are zeroed. */
+  dataStatus?: "AVAILABLE" | "UNAVAILABLE";
   totalHeldPositionsScanned: number;
   positionsWithFlagsCount: number;
   overallGovernanceRiskScore: number; // 0 (Prudently clean) to 100 (Severe governance / pledge hazard)
