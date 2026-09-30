@@ -224,6 +224,19 @@ export const SITE_TOOLS: Tool[] = [
     inputSchema: empty,
     run: () => getSourceHealth(),
   },
+  {
+    name: "get_market_data_brief",
+    title: "Market data brief (all collectors)",
+    category: "Macro",
+    description:
+      "Latest values from every scheduled collector series (RBI rates, FII/DII flows, fund NAVs, India macro, ECB/US macro, VIX, COT positioning, valuation), formatted as the twice-daily Telegram briefing. Stale or failing sources are labelled; series with no data are omitted, never invented.",
+    inputSchema: empty,
+    run: async () => {
+      const { buildDataBrief } = await import("@/lib/alerts/telegram-data-brief");
+      const brief = await buildDataBrief();
+      return { messages: brief.messages, series: brief.series, stale: brief.stale };
+    },
+  },
 
   // ---- Research ----
   {
