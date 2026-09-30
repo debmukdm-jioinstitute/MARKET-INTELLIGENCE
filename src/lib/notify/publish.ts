@@ -1,6 +1,7 @@
 import { hasDatabase, sql } from "../db";
 import { hasPushConfigured, sendPush } from "../admin/push";
 import { addEvents, deletePushSubscription, getState, listPushTargets, setState, type PushTarget } from "./store";
+import { broadcastTelegram, formatEventMessage, hasTelegramConfigured } from "./telegram";
 import type { NewEvent } from "./types";
 
 /** At most this many broadcast device alerts per IST day, whatever happens — a runaway detector must not spam everyone. */
@@ -39,7 +40,8 @@ async function broadcast(e: NewEvent): Promise<{ sent: number; failed: number }>
 }
 
 /**
- * Adds events to the feed and, for genuinely new "Important" ones, sends a device alert to all subscribers.
+ * Adds events to the feed and, for genuinely new "Important" ones, sends a device alert to all subscribers
+ * and (when the owner configured a Telegram bot) a Telegram message to the owner's chats.
  * Only events that were NEW to the feed are pushed, so a repeated detection can never re-notify anyone.
  */
 export async function publishEvents(events: NewEvent[]): Promise<number> {
@@ -55,6 +57,19 @@ export async function publishEvents(events: NewEvent[]): Promise<number> {
       await broadcast(e).catch(() => {});
     }
     await setState("push_count", { day, n });
+  }
+  // Free Zapier replacement: owner Telegram alerts for important site events. Same daily cap
+  // semantics as device push so a runaway detector cannot spam the owner's chats.
+  if (important.length && hasTelegramConfigured() && hasDatabase()) {
+    const day = ist();
+    const counter = await getState<{ day: string; n: number }>("telegram_count");
+    let n = counter?.day === day ? counter.n : 0;
+    for (const e of important) {
+      if (n >= DAILY_PUSH_CAP) break;
+      n++;
+      await broadcastTelegram(formatEventMessage(e)).catch(() => {});
+    }
+    await setState("telegram_count", { day, n });
   }
   return added.length;
 }
