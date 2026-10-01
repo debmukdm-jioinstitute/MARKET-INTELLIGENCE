@@ -1,6 +1,7 @@
 import type { SessionUser } from "@/lib/auth";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { buildCustomerId } from "@/lib/onboarding/build-form-model";
+import { getProEntitlement, isProUser } from "@/lib/payments/pro-entitlement";
 
 export type ProfileData = {
   name: string;
@@ -12,6 +13,9 @@ export type ProfileData = {
   privacyAcceptedAt: string | null;
   signInMethod: "google" | "password" | "unknown";
   newsletterSubscribed: boolean;
+  isPro: boolean;
+  proPlan: string | null;
+  proExpiresAt: string | null;
 };
 
 type Row = {
@@ -42,6 +46,7 @@ export async function loadProfile(user: SessionUser): Promise<ProfileData> {
       row = null;
     }
   }
+  const pro = await getProEntitlement(user.email);
   return {
     name: user.name,
     email: user.email,
@@ -52,5 +57,8 @@ export async function loadProfile(user: SessionUser): Promise<ProfileData> {
     privacyAcceptedAt: iso(row?.privacy_accepted_at),
     signInMethod: row ? (row.google ? "google" : "password") : "unknown",
     newsletterSubscribed: row ? !row.newsletter_opt_out : true,
+    isPro: isProUser(user, pro),
+    proPlan: pro.planId,
+    proExpiresAt: pro.expiresAt,
   };
 }

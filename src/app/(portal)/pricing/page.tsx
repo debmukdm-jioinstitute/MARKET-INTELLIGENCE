@@ -25,10 +25,23 @@ async function loadConfig(): Promise<ConfigResponse> {
   return res.json() as Promise<ConfigResponse>;
 }
 
+type BillingStatus = {
+  isPro: boolean;
+  pro: { active: boolean; planId: string | null; expiresAt: string | null };
+};
+
 export default function PricingPage() {
   const { user } = useAuth();
-  const { data, error, isLoading } = useSWR("/api/payments/razorpay/config", loadConfig);
+  const { data, error, isLoading, mutate } = useSWR("/api/payments/razorpay/config", loadConfig);
   const signedIn = Boolean(user && !user.guest);
+  const { data: billing, mutate: refreshBilling } = useSWR<BillingStatus>(
+    signedIn ? "/api/billing/status" : null,
+    async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(await res.text());
+      return res.json() as Promise<BillingStatus>;
+    },
+  );
 
   return (
     <div className="portal-page max-w-4xl space-y-8">
@@ -41,6 +54,16 @@ export default function PricingPage() {
           methodology: "Integration follows Razorpay Standard Checkout: create order → checkout.js → server-side HMAC verify.",
         }}
       />
+
+      {billing?.isPro ? (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
+          Pro active
+          {billing.pro.expiresAt
+            ? ` until ${new Date(billing.pro.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+            : ""}
+          .
+        </div>
+      ) : null}
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading plans…</p>
@@ -72,7 +95,15 @@ export default function PricingPage() {
                   to checkout.
                 </p>
               ) : (
-                <RazorpayCheckoutButton planId={plan.id} keyId={data.keyId} label={`Pay with Razorpay`} />
+                <RazorpayCheckoutButton
+                  planId={plan.id}
+                  keyId={data.keyId}
+                  label="Pay with Razorpay"
+                  onVerified={() => {
+                    void mutate();
+                    void refreshBilling();
+                  }}
+                />
               )}
             </article>
           ))}

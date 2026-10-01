@@ -1,3 +1,4 @@
+import { grantProSubscription, getRazorpayOrderMeta } from "@/lib/payments/pro-entitlement";
 import { markRazorpayOrderPaid } from "@/lib/payments/razorpay-store";
 import { verifyRazorpayPaymentSignature } from "@/lib/payments/razorpay";
 import { getSessionUser } from "@/lib/session";
@@ -35,10 +36,20 @@ export async function POST(req: Request) {
     paymentId: razorpay_payment_id,
   });
 
+  const meta = await getRazorpayOrderMeta(razorpay_order_id);
+  if (meta.userEmail && meta.userEmail !== user.email) {
+    return NextResponse.json({ error: "Order does not belong to this account" }, { status: 403 });
+  }
+
+  const pro = meta.planId ? await grantProSubscription(user.email, meta.planId) : null;
+
   return NextResponse.json({
     ok: true,
     orderId: razorpay_order_id,
     paymentId: razorpay_payment_id,
-    message: "Payment verified. Pro access will reflect on your account shortly.",
+    pro,
+    message: pro?.active
+      ? `Pro active until ${pro.expiresAt ? new Date(pro.expiresAt).toLocaleDateString("en-IN") : "—"}.`
+      : "Payment verified.",
   });
 }

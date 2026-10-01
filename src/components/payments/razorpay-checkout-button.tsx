@@ -25,12 +25,14 @@ export function RazorpayCheckoutButton({
   label,
   className,
   disabled,
+  onVerified,
 }: {
   planId: RazorpayPlanId;
   keyId: string;
   label: string;
   className?: string;
   disabled?: boolean;
+  onVerified?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
@@ -80,6 +82,7 @@ export function RazorpayCheckoutButton({
             return;
           }
           setStatus(verifyJson.message ?? "Payment successful");
+          onVerified?.();
         },
         modal: {
           ondismiss: () => setBusy(false),
@@ -91,7 +94,7 @@ export function RazorpayCheckoutButton({
     } finally {
       setBusy(false);
     }
-  }, [keyId, planId, scriptReady]);
+  }, [keyId, onVerified, planId, scriptReady]);
 
   return (
     <div className="space-y-2">

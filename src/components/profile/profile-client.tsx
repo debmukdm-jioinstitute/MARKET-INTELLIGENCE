@@ -318,6 +318,11 @@ export function ProfileClient() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="truncate text-2xl font-semibold text-foreground">{profile.name}</h1>
             {profile.role === "admin" ? <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Admin</span> : null}
+            {profile.isPro ? (
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                Pro{profile.proExpiresAt ? ` · until ${fmtDate(profile.proExpiresAt)}` : ""}
+              </span>
+            ) : null}
           </div>
           <p className="truncate text-sm text-muted-foreground">{profile.email}</p>
           <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">

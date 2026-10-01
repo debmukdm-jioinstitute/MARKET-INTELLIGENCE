@@ -120,6 +120,8 @@ export async function ensureSchema(): Promise<void> {
       await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_accepted_at timestamptz`;
       await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at timestamptz`;
       await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS kit_tagged_at timestamptz`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_plan text`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_expires_at timestamptz`;
       await db`
         CREATE TABLE IF NOT EXISTS signup_otps (
           email text PRIMARY KEY,
