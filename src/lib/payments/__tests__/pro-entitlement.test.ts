@@ -2,9 +2,16 @@ import { describe, expect, it } from "vitest";
 import { computeProExpiry, isProEntitlementActive, proDurationDays } from "@/lib/payments/pro-entitlement";
 
 describe("pro entitlement", () => {
-  it("computes monthly vs annual duration", () => {
+  it("computes plan durations", () => {
+    expect(proDurationDays("day_pass")).toBe(1);
     expect(proDurationDays("pro_monthly")).toBe(30);
     expect(proDurationDays("pro_annual")).toBe(365);
+  });
+
+  it("day pass is 24 hours from anchor", () => {
+    const base = new Date("2026-01-01T12:00:00.000Z");
+    const exp = computeProExpiry(base, "day_pass");
+    expect(exp.getTime() - base.getTime()).toBe(24 * 3_600_000);
   });
 
   it("extends expiry from anchor date", () => {

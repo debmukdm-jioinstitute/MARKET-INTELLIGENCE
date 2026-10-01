@@ -1,4 +1,4 @@
-import { formatInrFromPaise, getRazorpayPlans } from "@/lib/payments/plans";
+import { formatInrFromPaise, getRazorpayPlans, yearlySavingsCopy } from "@/lib/payments/plans";
 import { getRazorpayKeyId, isRazorpayConfigured } from "@/lib/payments/razorpay";
 import { NextResponse } from "next/server";
 
@@ -15,6 +15,7 @@ export async function GET() {
     enabled: isRazorpayConfigured(),
     keyId: getRazorpayKeyId(),
     plans,
+    yearlySavingsNote: yearlySavingsCopy(),
     checkoutScript: "https://checkout.razorpay.com/v1/checkout.js",
   });
 }

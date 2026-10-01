@@ -10,11 +10,18 @@ export type ProEntitlement = {
 
 const DAY_MS = 86_400_000;
 
+const HOUR_MS = 3_600_000;
+
 export function proDurationDays(planId: RazorpayPlanId): number {
-  return planId === "pro_annual" ? 365 : 30;
+  if (planId === "pro_annual") return 365;
+  if (planId === "day_pass") return 1;
+  return 30;
 }
 
 export function computeProExpiry(from: Date, planId: RazorpayPlanId): Date {
+  if (planId === "day_pass") {
+    return new Date(from.getTime() + 24 * HOUR_MS);
+  }
   return new Date(from.getTime() + proDurationDays(planId) * DAY_MS);
 }
 
@@ -62,8 +69,14 @@ export async function grantProSubscription(email: string, planId: RazorpayPlanId
 
   const existing = rows[0]?.pro_expires_at ? new Date(rows[0].pro_expires_at) : null;
   const now = new Date();
-  const base = existing && existing.getTime() > now.getTime() ? existing : now;
-  const expires = computeProExpiry(base, planId);
+  let expires: Date;
+  if (planId === "day_pass") {
+    const dayEnd = computeProExpiry(now, planId);
+    expires = existing && existing.getTime() > dayEnd.getTime() ? existing : dayEnd;
+  } else {
+    const base = existing && existing.getTime() > now.getTime() ? existing : now;
+    expires = computeProExpiry(base, planId);
+  }
 
   await sql()`
     UPDATE users
@@ -88,6 +101,7 @@ export async function getRazorpayOrderMeta(
   `) as { plan_id: string; user_email: string }[];
   const row = rows[0];
   const raw = row?.plan_id;
-  const planId = raw === "pro_monthly" || raw === "pro_annual" ? raw : null;
+  const planId =
+    raw === "day_pass" || raw === "pro_monthly" || raw === "pro_annual" ? (raw as RazorpayPlanId) : null;
   return { planId, userEmail: row?.user_email ?? null };
 }

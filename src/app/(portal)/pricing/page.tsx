@@ -10,12 +10,14 @@ import useSWR from "swr";
 type ConfigResponse = {
   enabled: boolean;
   keyId: string | null;
+  yearlySavingsNote?: string;
   plans: {
     id: RazorpayPlanId;
     name: string;
     description: string;
     displayAmount: string;
     intervalLabel: string;
+    worksOutLabel?: string;
   }[];
 };
 
@@ -29,6 +31,23 @@ type BillingStatus = {
   isPro: boolean;
   pro: { active: boolean; planId: string | null; expiresAt: string | null };
 };
+
+const COMPARE_ROWS: { feature: string; mi: string; tickertape: string; screener: string }[] = [
+  { feature: "Trial", mi: "₹9 day pass, full access", tickertape: "14-day free trial", screener: "Free tier, limited" },
+  { feature: "Monthly", mi: "₹199", tickertape: "₹249", screener: "—" },
+  { feature: "Yearly", mi: "₹1,499", tickertape: "₹2,399", screener: "₹4,999" },
+  { feature: "AI research summaries and sentiment", mi: "Yes", tickertape: "—", screener: "—" },
+  { feature: "Pre-market morning briefing", mi: "Yes (Yearly)", tickertape: "—", screener: "—" },
+  { feature: "Concall tone tracking", mi: "Yes", tickertape: "—", screener: "—" },
+  { feature: "Daily brief in Hindi", mi: "Yes", tickertape: "—", screener: "—" },
+  { feature: "Instant Telegram alerts", mi: "Yes", tickertape: "—", screener: "—" },
+];
+
+function checkoutLabel(planId: RazorpayPlanId): string {
+  if (planId === "day_pass") return "Get Day Pass";
+  if (planId === "pro_annual") return "Subscribe yearly";
+  return "Subscribe monthly";
+}
 
 export default function PricingPage() {
   const { user } = useAuth();
@@ -44,84 +63,134 @@ export default function PricingPage() {
     },
   );
 
+  const pricingDate = new Date().toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="portal-page max-w-4xl space-y-8">
+    <div className="portal-page max-w-5xl space-y-10">
       <PageHeader
-        kicker="Billing"
-        title="Pro plans"
-        subtitle="Razorpay Standard Checkout — secure UPI, cards, and netbanking. Orders are created server-side; payments are signature-verified before confirmation."
-        trust={{
-          source: "Razorpay Payment Gateway",
-          methodology: "Integration follows Razorpay Standard Checkout: create order → checkout.js → server-side HMAC verify.",
-        }}
+        kicker="Pricing plan"
+        title="Market Intelligence"
+        subtitle={`getmarketintelligence.in · ${pricingDate}. All prices are in INR and include all taxes.`}
       />
 
       {billing?.isPro ? (
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
-          Pro active
+          Full access active
           {billing.pro.expiresAt
-            ? ` until ${new Date(billing.pro.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+            ? ` until ${new Date(billing.pro.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}`
             : ""}
           .
         </div>
       ) : null}
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading plans…</p>
-      ) : error ? (
-        <p className="text-sm text-rose-600">Could not load billing config.</p>
-      ) : checkoutKeyId && data ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {data.plans.map((plan) => (
-            <article key={plan.id} className="bento-stat-tile flex flex-col justify-between gap-4 p-5">
-              <div>
-                <h2 className="text-lg font-bold text-foreground">{plan.name}</h2>
-                <p className="mt-2 text-3xl font-semibold tabular-nums">
-                  {plan.displayAmount}
-                  <span className="text-sm font-normal text-muted-foreground">{plan.intervalLabel}</span>
-                </p>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
-              </div>
-              {!signedIn ? (
-                <p className="text-sm text-muted-foreground">
-                  <Link href="/login" className="font-semibold text-primary hover:underline">
-                    Sign in
-                  </Link>{" "}
-                  to checkout.
-                </p>
-              ) : (
-                <RazorpayCheckoutButton
-                  planId={plan.id}
-                  keyId={checkoutKeyId}
-                  label="Pay with Razorpay"
-                  onVerified={() => {
-                    void mutate();
-                    void refreshBilling();
-                  }}
-                />
-              )}
-            </article>
-          ))}
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-foreground">The three plans</h2>
+
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading plans…</p>
+        ) : error ? (
+          <p className="text-sm text-rose-600">Could not load billing config.</p>
+        ) : checkoutKeyId && data ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
+              {data.plans.map((plan) => (
+                <article key={plan.id} className="bento-stat-tile flex flex-col justify-between gap-4 p-5">
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
+                    <p className="mt-2 text-3xl font-semibold tabular-nums">
+                      {plan.displayAmount}
+                      <span className="text-sm font-normal text-muted-foreground">{plan.intervalLabel}</span>
+                    </p>
+                    {plan.worksOutLabel ? (
+                      <p className="mt-1 text-xs font-medium text-primary">{plan.worksOutLabel}</p>
+                    ) : null}
+                    <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
+                  </div>
+                  {!signedIn ? (
+                    <p className="text-sm text-muted-foreground">
+                      <Link href="/login" className="font-semibold text-primary hover:underline">
+                        Sign in
+                      </Link>{" "}
+                      to checkout.
+                    </p>
+                  ) : (
+                    <RazorpayCheckoutButton
+                      planId={plan.id}
+                      keyId={checkoutKeyId}
+                      label={checkoutLabel(plan.id)}
+                      onVerified={() => {
+                        void mutate();
+                        void refreshBilling();
+                      }}
+                    />
+                  )}
+                </article>
+              ))}
+            </div>
+            {data.yearlySavingsNote ? (
+              <p className="text-sm text-muted-foreground leading-relaxed">{data.yearlySavingsNote}</p>
+            ) : null}
+          </>
+        ) : (
+          <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+            Razorpay keys not set on this environment. Add{" "}
+            <span className="font-medium text-foreground">NEXT_PUBLIC_RAZORPAY_KEY_ID</span> and{" "}
+            <span className="font-medium text-foreground">RAZORPAY_KEY_SECRET</span> in Vercel, then redeploy.
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold text-foreground">What each plan includes</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground">Free</span> gives you the full product with two limits: 5 AI
+          Desk and Options Flow analyses per month, and preview-only access to Company &amp; Concall Intel, Search-trend
+          intelligence, and Legal &amp; insolvency. Paid plans remove those limits and unlock full access for the plan
+          duration.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold text-foreground">How we compare</h2>
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full min-w-[32rem] text-left text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                <th className="px-4 py-3 font-semibold text-foreground" scope="col" />
+                <th className="px-4 py-3 font-semibold text-foreground" scope="col">
+                  Market Intelligence
+                </th>
+                <th className="px-4 py-3 font-semibold text-muted-foreground" scope="col">
+                  Tickertape Pro
+                </th>
+                <th className="px-4 py-3 font-semibold text-muted-foreground" scope="col">
+                  Screener
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE_ROWS.map((row) => (
+                <tr key={row.feature} className="border-b border-border last:border-0">
+                  <th className="px-4 py-2.5 font-medium text-foreground" scope="row">
+                    {row.feature}
+                  </th>
+                  <td className="px-4 py-2.5 text-foreground">{row.mi}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{row.tickertape}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{row.screener}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          Razorpay keys not set on this environment. Add{" "}
-          <span className="font-medium text-foreground">NEXT_PUBLIC_RAZORPAY_KEY_ID</span> and{" "}
-          <span className="font-medium text-foreground">RAZORPAY_KEY_SECRET</span> in Vercel, then redeploy.
-        </div>
-      )}
+      </section>
 
       <p className="text-xs text-muted-foreground">
-        Docs:{" "}
-        <a
-          href="https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline"
-        >
-          Razorpay Standard integration steps
-        </a>
-        . Test mode uses Dashboard test keys; live keys only after KYC activation.
+        Checkout via Razorpay (UPI, cards, netbanking). Orders created server-side; payments verified with HMAC before
+        access is granted.
       </p>
     </div>
   );

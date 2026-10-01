@@ -1,4 +1,4 @@
-import { getRazorpayPlan, type RazorpayPlanId } from "@/lib/payments/plans";
+import { getRazorpayPlan, PAID_PLAN_IDS, type RazorpayPlanId } from "@/lib/payments/plans";
 import { grantProSubscription, getRazorpayOrderMeta } from "@/lib/payments/pro-entitlement";
 import { createRazorpayOrder, isRazorpayConfigured, verifyRazorpayPaymentSignature } from "@/lib/payments/razorpay";
 import { markRazorpayOrderPaid, recordRazorpayOrderCreated } from "@/lib/payments/razorpay-store";
@@ -9,7 +9,7 @@ export const MIN_AMOUNT_PAISE = 100;
 
 export const createOrderBodySchema = z
   .object({
-    planId: z.enum(["pro_monthly", "pro_annual"]).optional(),
+    planId: z.enum(PAID_PLAN_IDS).optional(),
     amount: z.number().int().optional(),
     currency: z.string().default("INR"),
     receipt: z.string().max(40).optional(),
