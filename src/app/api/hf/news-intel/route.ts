@@ -1,12 +1,15 @@
 /**
  * GET /api/hf/news-intel
  *
- * Combines live news from the feeds hub with HF AI enrichment:
- * 1. FinBERT sentiment on recent headlines (lexicon fallback if HF unavailable)
- * 2. Transparent sentiment drivers attributing market impact (+ve, -ve, neutral) to specific news
- * 3. Clickable TL;DR headlines linking directly to authentic sources
- * 4. BART TL;DR summarization of top stories
- * 5. Zero-shot category tagging
+ * Multi-Pillar AI Market Intelligence Engine:
+ * 1. Domestic Equities (NIFTY 50, SENSEX, Midcap, Sector contagion, Market breadth, INDIA VIX)
+ * 2. Global Markets & Regional Disparity (US S&P/Nasdaq/Dow, Europe FTSE/DAX, Asia Nikkei/Hang Seng)
+ * 3. Commodities & Energy (Brent Crude, WTI, Gold safe-haven bid)
+ * 4. Currency & FX (USD/INR, DXY Dollar Index)
+ * 5. Newsflow & Corporate Intelligence (FinBERT / Lexicon on verified live news)
+ * 6. Clickable TL;DR headlines linking directly to verified sources
+ * 7. BART TL;DR summarization of top stories
+ * 8. Zero-shot category tagging
  */
 
 import { classifyFinancialSentiment, type SentimentLabel } from "@/lib/hf/finbert";
@@ -15,7 +18,7 @@ import { scoreHeadlineLexicon } from "@/lib/feeds/sentiment-lexicon";
 import {
   aggregateLexiconHeadlines,
   buildFallbackTldr,
-  buildMarketSentimentRationale,
+  computeMultiPillarSentiment,
   explainHeadlineSentiment,
   finbertToNewsIntel,
   formatNewsSource,
@@ -23,6 +26,8 @@ import {
 } from "@/lib/hf/news-intel-aggregate";
 import { summarizeItems } from "@/lib/hf/summarizer";
 import { getFeedHubCached } from "@/lib/feeds/hub-cache";
+import { buildLiveTicker } from "@/lib/macro/build-live-ticker";
+import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -32,7 +37,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const hub = await getFeedHubCached();
+    const [hub, liveTicker, dashboard] = await Promise.all([
+      getFeedHubCached(),
+      buildLiveTicker().catch(() => ({ fetchedAt: new Date().toISOString(), items: [] })),
+      buildIndiaDashboardQuick().catch(() => null),
+    ]);
+
     const rawNews = hub.news ?? [];
 
     // Prioritize Indian financial news sources: livemint, moneycontrol, rbi, nse, bse, busstd, googlenews
@@ -55,35 +65,18 @@ export async function GET() {
       if (news.length >= 10) break;
     }
 
-    if (news.length === 0) {
-      const emptySentiment = aggregateLexiconHeadlines([]);
-      return NextResponse.json({
-        sentiment: {
-          ...emptySentiment,
-          rationale: "No active news items available in the intelligence feed yet.",
-          drivers: { positive: [], negative: [], neutral: [] },
-        },
-        tldr: null,
-        items: [],
-        categories: [],
-        analyzedCount: 0,
-        asOf: new Date().toISOString(),
-        noNews: true,
-      });
-    }
-
     const headlines = news.map((n) => n.title.trim());
     const topHeadlines = headlines.slice(0, 6);
     const hasHfToken = Boolean(process.env.HF_TOKEN?.trim());
 
-    let rawSentiment = aggregateLexiconHeadlines(topHeadlines);
+    let rawNewsSentiment = aggregateLexiconHeadlines(topHeadlines);
     const itemSentiments: { label: SentimentLabel; score: number }[] = [];
 
-    if (hasHfToken) {
+    if (hasHfToken && topHeadlines.length > 0) {
       try {
         const finbert = await classifyFinancialSentiment(topHeadlines);
         if (finbert.length > 0) {
-          rawSentiment = finbertToNewsIntel(finbert);
+          rawNewsSentiment = finbertToNewsIntel(finbert);
           for (const f of finbert) {
             itemSentiments.push({ label: f.label, score: f.score });
           }
@@ -126,16 +119,17 @@ export async function GET() {
       };
     });
 
-    const { rationale, drivers } = buildMarketSentimentRationale(rawSentiment, items);
-    const sentiment = {
-      ...rawSentiment,
-      rationale,
-      drivers,
-    };
+    // Compute comprehensive 5-pillar market sentiment
+    const sentiment = computeMultiPillarSentiment({
+      tickerItems: liveTicker.items,
+      breadth: dashboard?.pulse?.breadth,
+      newsSentiment: rawNewsSentiment,
+      newsItems: items,
+    });
 
     const [classifiedResults, tldrResult] = await Promise.allSettled([
-      hasHfToken ? classifyNewsHeadlines(headlines.slice(0, 6)) : Promise.resolve([]),
-      hasHfToken ? summarizeItems(topHeadlines, 60) : Promise.resolve(""),
+      hasHfToken && headlines.length > 0 ? classifyNewsHeadlines(headlines.slice(0, 6)) : Promise.resolve([]),
+      hasHfToken && topHeadlines.length > 0 ? summarizeItems(topHeadlines, 60) : Promise.resolve(""),
     ]);
 
     const categories =
