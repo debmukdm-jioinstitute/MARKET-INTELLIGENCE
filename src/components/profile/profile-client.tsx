@@ -12,6 +12,7 @@ import type { ProfileData } from "@/lib/profile/load-profile";
 import type { AssistantActionRow } from "@/lib/site-assistant/audit";
 import { cn } from "@/lib/utils";
 import { ProfilePlanBilling } from "@/components/profile/profile-plan-billing";
+import { TelegramAlertsSetupPanel } from "@/components/telegram/telegram-alerts-setup-panel";
 import { Bug, FileText, LogOut, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -352,6 +353,14 @@ export function ProfileClient() {
           {note.text}
         </p>
       ) : null}
+
+      <Section
+        id="telegram"
+        title="Instant Telegram alerts"
+        subtitle="Connect @MarketIntelRadarBot in one tap — no chat ID or token paste. Included with your account; Yearly adds priority morning brief routing."
+      >
+        <TelegramAlertsSetupPanel compact />
+      </Section>
 
       <Section
         id="plans"
