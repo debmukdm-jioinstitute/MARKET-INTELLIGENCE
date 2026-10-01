@@ -59,7 +59,7 @@ type Props = {
 const INVESTOR_TASKS = [
   {
     q: "Set up Telegram Bot (1-Click)",
-    a: "Open Telegram setup, click the 1-click connect button to open @MarketIntelRadarBot, and tap /start for instant breaking catalyst alerts and morning briefs.",
+    a: "Open Telegram setup, click the 1-click connect button to open @market_intel_alerts_india_bot, and tap /start for instant breaking catalyst alerts and morning briefs.",
     href: "/help#telegram",
   },
   {
@@ -215,7 +215,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-bold text-sky-600 uppercase tracking-wider">
                     <Radio className="size-3.5 text-sky-500 animate-pulse" />
-                    <span>Official Verified Bot: @MarketIntelRadarBot</span>
+                    <span>Official Verified Bot: @market_intel_alerts_india_bot</span>
                   </div>
                   <h3 className="text-lg font-bold text-foreground">
                     1-Click Instant Activation
@@ -295,7 +295,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
                 For Trading Desks, Group Channels, and Custom Bots:
               </span>
               <p>
-                To broadcast alerts into a shared team channel or group: Add <span className="text-foreground font-semibold">@MarketIntelRadarBot</span> to your group or channel as an Administrator with &ldquo;Post Messages&rdquo; permissions. Send <span className="text-foreground font-semibold">/start</span> in the channel, and all members will receive verified institutional updates simultaneously.
+                To broadcast alerts into a shared team channel or group: Add <span className="text-foreground font-semibold">@market_intel_alerts_india_bot</span> to your group or channel as an Administrator with &ldquo;Post Messages&rdquo; permissions. Send <span className="text-foreground font-semibold">/start</span> in the channel, and all members will receive verified institutional updates simultaneously.
               </p>
             </div>
           </AccordionContent>

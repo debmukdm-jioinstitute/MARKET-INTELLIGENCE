@@ -357,7 +357,7 @@ export function ProfileClient() {
       <Section
         id="telegram"
         title="Instant Telegram alerts"
-        subtitle="Connect @MarketIntelRadarBot in one tap — no chat ID or token paste. Included with your account; Yearly adds priority morning brief routing."
+        subtitle="Connect @market_intel_alerts_india_bot in one tap — no chat ID or token paste. Included with your account; Yearly adds priority morning brief routing."
       >
         <TelegramAlertsSetupPanel compact />
       </Section>

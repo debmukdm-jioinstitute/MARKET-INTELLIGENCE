@@ -2,7 +2,7 @@
 
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
-import { parseActivePlanId } from "@/lib/payments/plans";
+import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
 import useSWR from "swr";
 
 type ConfigResponse = {

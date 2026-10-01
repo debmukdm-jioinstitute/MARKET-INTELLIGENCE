@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
-export const TELEGRAM_BOT_URL = "https://t.me/MarketIntelRadarBot?start=quick_connect";
+export const TELEGRAM_BOT_URL = "https://t.me/market_intel_alerts_india_bot?start=quick_connect";
 
 const ALERT_CHANNELS = [
   {
@@ -112,7 +112,7 @@ export function TelegramAlertsSetupPanel({
               <Radio className="size-3.5 shrink-0 text-sky-500" aria-hidden />
               Instant activation link
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">Connect @MarketIntelRadarBot</h3>
+            <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">Connect @market_intel_alerts_india_bot</h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
               Zero token configuration required. Tap the button below, press <span className="font-semibold text-foreground">START</span>
               , and notifications activate immediately.

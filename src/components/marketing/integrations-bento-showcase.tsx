@@ -49,10 +49,10 @@ const INTEGRATION_AGENTS: Record<string, IntegrationAgent> = {
     labelColor: "text-sky-600 bg-sky-50 border-sky-100",
     glowColor: "from-sky-500/5",
     confidence: "Dispatch: 14:12:08 IST · 240ms",
-    subtitle: "@MarketIntelRadarBot",
+    subtitle: "@market_intel_alerts_india_bot",
     points: [
       "📡 Radar Trigger: Upstream crude spike + NIFTY 50 sectoral divergence detected across NSE feeds.",
-      "Broadcast: Dispatched to @MarketIntelRadarBot subscribers (14,200 traders in 240ms).",
+      "Broadcast: Dispatched to @market_intel_alerts_india_bot subscribers (14,200 traders in 240ms).",
       "⚡ BREAKING: NIFTY 24,810 (-0.88%). Brent breaks $101.32. India VIX spikes +7.19% to 14.80.",
       "Bulk deal alert: Foreign institutions net sold ₹1,420 Cr; domestic funds absorbed ₹1,210 Cr.",
       "Interactive Actions: [📊 Open Live Chart] · [🤖 Query Claude Desk] · [📋 View 5-Pillar Score]",
@@ -82,7 +82,7 @@ const INTEGRATION_AGENTS: Record<string, IntegrationAgent> = {
     confidence: "Zero API Key Required",
     subtitle: "Free during beta",
     points: [
-      "Step 1: Tap \"Connect Telegram Bot in 1 Click\" below — opens @MarketIntelRadarBot in Telegram.",
+      "Step 1: Tap \"Connect Telegram Bot in 1 Click\" below — opens @market_intel_alerts_india_bot in Telegram.",
       "Step 2: Tap /start: Instant activation for breaking disclosures, macro shocks, and 08:30 AM briefs.",
       "Step 3: Connect Claude AI via MCP URL in Claude Desktop or claude.ai for natural language research.",
       "Live Guarantee: Every number shows origin exchange, timestamp, and mathematical formula.",
@@ -186,7 +186,7 @@ function IntegrationCard({
             <Send className="size-3" />
             <span>1-Click Setup Bot</span>
           </button>
-          <span className="text-[11px] text-muted-foreground font-medium">@MarketIntelRadarBot</span>
+          <span className="text-[11px] text-muted-foreground font-medium">@market_intel_alerts_india_bot</span>
         </div>
       ) : null}
 
@@ -406,7 +406,7 @@ export function IntegrationsBentoShowcase() {
                 Live integration feed — recorded stream
               </h3>
               <p className="text-sm font-medium text-gray-500 mt-1">
-                Claude Desktop MCP (port 3000) · @MarketIntelRadarBot · Live Execution
+                Claude Desktop MCP (port 3000) · @market_intel_alerts_india_bot · Live Execution
               </p>
             </div>
             <div className="flex items-center gap-3">
