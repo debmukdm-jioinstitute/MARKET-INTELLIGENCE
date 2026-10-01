@@ -1,3 +1,4 @@
+import Razorpay from "razorpay";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type RazorpayOrderResponse = {
@@ -6,6 +7,8 @@ export type RazorpayOrderResponse = {
   currency: string;
   receipt?: string;
 };
+
+let client: Razorpay | null = null;
 
 export function isRazorpayConfigured(): boolean {
   return Boolean(getRazorpayKeySecret() && getRazorpayKeyId());
@@ -24,42 +27,48 @@ export function getRazorpayKeySecret(): string | null {
   return process.env.RAZORPAY_KEY_SECRET?.trim() || null;
 }
 
-/** Step 1.1 — create Order via Razorpay API (server only). */
+function getRazorpayClient(): Razorpay {
+  const keyId = getRazorpayKeyId();
+  const keySecret = getRazorpayKeySecret();
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay keys not configured");
+  }
+  if (!client) {
+    client = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  }
+  return client;
+}
+
+/** Step 1 — create Order via Razorpay SDK (server only). */
 export async function createRazorpayOrder(input: {
   amountPaise: number;
   currency: string;
   receipt: string;
   notes?: Record<string, string>;
 }): Promise<RazorpayOrderResponse> {
-  const keyId = getRazorpayKeyId();
-  const keySecret = getRazorpayKeySecret();
-  if (!keyId || !keySecret) {
-    throw new Error("Razorpay keys not configured");
-  }
-
-  const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-  const res = await fetch("https://api.razorpay.com/v1/orders", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const rzp = getRazorpayClient();
+  try {
+    const order = await rzp.orders.create({
       amount: input.amountPaise,
       currency: input.currency,
       receipt: input.receipt.slice(0, 40),
       notes: input.notes,
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`Razorpay order API ${res.status}: ${await res.text()}`);
+    });
+    return {
+      id: order.id,
+      amount: Number(order.amount),
+      currency: order.currency,
+      receipt: order.receipt ?? undefined,
+    };
+  } catch (e: unknown) {
+    const err = e as { statusCode?: number; error?: { description?: string } };
+    const code = err.statusCode ?? 500;
+    const desc = err.error?.description ?? (e instanceof Error ? e.message : "Razorpay order failed");
+    throw new Error(`Razorpay order API ${code}: ${desc}`);
   }
-
-  return (await res.json()) as RazorpayOrderResponse;
 }
 
-/** Step 5 — verify payment signature (order_id|payment_id). */
+/** Step 3 — verify payment signature (order_id|payment_id). */
 export function verifyRazorpayPaymentSignature(
   orderId: string,
   paymentId: string,

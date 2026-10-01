@@ -11,7 +11,12 @@ type RazorpayHandlerResponse = {
   razorpay_signature: string;
 };
 
-type RazorpayConstructor = new (options: Record<string, unknown>) => { open: () => void };
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: "payment.failed", handler: (response: { error?: { description?: string } }) => void) => void;
+};
+
+type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
 
 declare global {
   interface Window {
@@ -46,7 +51,7 @@ export function RazorpayCheckoutButton({
     setBusy(true);
     setStatus(null);
     try {
-      const orderRes = await fetch("/api/payments/razorpay/create-order", {
+      const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planId }),
@@ -54,11 +59,13 @@ export function RazorpayCheckoutButton({
       const orderJson = (await orderRes.json()) as {
         error?: string;
         orderId?: string;
+        order_id?: string;
         amount?: number;
         currency?: string;
         planName?: string;
       };
-      if (!orderRes.ok || !orderJson.orderId) {
+      const orderId = orderJson.orderId ?? orderJson.order_id;
+      if (!orderRes.ok || !orderId) {
         throw new Error(orderJson.error ?? "Could not create order");
       }
 
@@ -68,10 +75,10 @@ export function RazorpayCheckoutButton({
         currency: orderJson.currency ?? "INR",
         name: "Market Intelligence",
         description: orderJson.planName ?? "Pro subscription",
-        order_id: orderJson.orderId,
+        order_id: orderId,
         theme: { color: "#1a73e8" },
         handler: async (response: RazorpayHandlerResponse) => {
-          const verifyRes = await fetch("/api/payments/razorpay/verify", {
+          const verifyRes = await fetch("/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(response),
@@ -85,8 +92,15 @@ export function RazorpayCheckoutButton({
           onVerified?.();
         },
         modal: {
-          ondismiss: () => setBusy(false),
+          ondismiss: () => {
+            setBusy(false);
+            setStatus("Payment cancelled.");
+          },
         },
+      });
+      rzp.on("payment.failed", (response: { error?: { description?: string } }) => {
+        setBusy(false);
+        setStatus(response.error?.description ?? "Payment failed. Try again.");
       });
       rzp.open();
     } catch (e) {

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+/** Razorpay Standard Checkout — POST /api/verify-payment (alias). */
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user || user.guest) {

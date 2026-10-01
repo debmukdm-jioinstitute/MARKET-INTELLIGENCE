@@ -34,9 +34,10 @@ export default function PricingPage() {
   const { user } = useAuth();
   const { data, error, isLoading, mutate } = useSWR("/api/payments/razorpay/config", loadConfig);
   const signedIn = Boolean(user && !user.guest);
+  const checkoutKeyId = data?.enabled && data.keyId != null ? data.keyId : null;
   const { data: billing, mutate: refreshBilling } = useSWR<BillingStatus>(
     signedIn ? "/api/billing/status" : null,
-    async (url) => {
+    async (url: string) => {
       const res = await fetch(url);
       if (!res.ok) throw new Error(await res.text());
       return res.json() as Promise<BillingStatus>;
@@ -69,13 +70,7 @@ export default function PricingPage() {
         <p className="text-sm text-muted-foreground">Loading plans…</p>
       ) : error ? (
         <p className="text-sm text-rose-600">Could not load billing config.</p>
-      ) : !data?.enabled || !data.keyId ? (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          Razorpay keys not set on this environment. Add{" "}
-          <span className="font-medium text-foreground">NEXT_PUBLIC_RAZORPAY_KEY_ID</span> and{" "}
-          <span className="font-medium text-foreground">RAZORPAY_KEY_SECRET</span> in Vercel, then redeploy.
-        </div>
-      ) : (
+      ) : checkoutKeyId && data ? (
         <div className="grid gap-4 md:grid-cols-2">
           {data.plans.map((plan) => (
             <article key={plan.id} className="bento-stat-tile flex flex-col justify-between gap-4 p-5">
@@ -97,7 +92,7 @@ export default function PricingPage() {
               ) : (
                 <RazorpayCheckoutButton
                   planId={plan.id}
-                  keyId={data.keyId}
+                  keyId={checkoutKeyId}
                   label="Pay with Razorpay"
                   onVerified={() => {
                     void mutate();
@@ -107,6 +102,12 @@ export default function PricingPage() {
               )}
             </article>
           ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          Razorpay keys not set on this environment. Add{" "}
+          <span className="font-medium text-foreground">NEXT_PUBLIC_RAZORPAY_KEY_ID</span> and{" "}
+          <span className="font-medium text-foreground">RAZORPAY_KEY_SECRET</span> in Vercel, then redeploy.
         </div>
       )}
 
