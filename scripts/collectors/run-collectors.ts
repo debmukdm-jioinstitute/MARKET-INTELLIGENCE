@@ -106,10 +106,10 @@ async function main() {
   console.log(JSON.stringify({ level: "info", msg: "ingest response", status: res.status, body: text.slice(0, 2000) }));
   if (!res.ok) process.exit(1);
 
-  // Twice-daily Telegram market-data briefing (06:00 + 18:00 IST, right after
-  // this collector run). Best-effort: a briefing failure must not fail the
-  // collector run. The endpoint dedups per AM/PM slot, so manual re-runs and
-  // --only subset runs never double-send. (Vercel Hobby only allows
+  // Twice-daily Telegram market-data briefing: triggered after the collector
+  // runs whose schedule falls in each slot (currently the 05:30 and 17:30 IST
+  // runs); the endpoint dedups per AM/PM slot, so the every-3-hour cadence
+  // and manual re-runs never double-send. (Vercel Hobby only allows
   // once-daily crons, so the briefing is triggered here on free GitHub
   // Actions instead of vercel.json.)
   try {

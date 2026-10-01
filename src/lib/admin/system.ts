@@ -1,27 +1,34 @@
 /** Static registry of scheduled jobs, required env vars and admin kill switches shown on /admin/system. */
+/* Note: scheduled computation moved OFF Vercel in Oct 2026 (Fluid Active CPU
+   was over the Hobby quota: 5h 40m / 4h). All heavy jobs now run on free
+   GitHub Actions runners and write straight to Neon — Vercel does ~0 scheduled
+   compute. The /api/cron/* routes below remain as manual/admin fallbacks only. */
 export const CRONS = [
-  { path: "/api/cron/collect", schedule: "15 3 * * * (Vercel) + every 3h (GitHub)", source: "Vercel + GitHub", what: "Macro/market series collector" },
-  { path: "/api/cron/what-changed", schedule: "15 4 * * *", source: "Vercel", what: "Home “What changed” institutional shifts panel" },
-  { path: "/api/cron/stress", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Stress-index history" },
-  { path: "/api/cron/alerts", schedule: "every 3h (GitHub)", source: "GitHub Actions", what: "Evaluate user alert rules" },
+  { path: "collectors.yml → POST /api/collector/ingest", schedule: "0 */3 * * * (GitHub)", source: "GitHub Actions", what: "Macro/market series collector — fetch half on the runner, then ingest" },
+  { path: "/api/cron/telegram-data-brief (triggered by collectors.yml)", schedule: "05:30 + 17:30 IST briefing slots", source: "GitHub Actions", what: "All-series market data briefing to Telegram (per-slot dedup)" },
+  { path: "/api/cron/warm-feed-hub", schedule: "0 */3 * * * (GitHub)", source: "GitHub Actions", what: "Unified feed hub refresh + per-source health into Postgres" },
+  { path: "/api/cron/stress", schedule: "0 */3 * * * (GitHub)", source: "GitHub Actions", what: "Stress-index history" },
+  { path: "/api/cron/alerts", schedule: "0 */3 * * * (GitHub)", source: "GitHub Actions", what: "Evaluate user alert rules" },
   { path: "/api/cron/betas", schedule: "0 1 * * * (GitHub)", source: "GitHub Actions", what: "Factor betas refresh" },
   { path: "/api/cron/brief", schedule: "45 2 & 30 10 weekdays (GitHub)", source: "GitHub Actions", what: "Daily brief + email delivery" },
-  { path: "/api/cron/scrape-research", schedule: "0 4 * * *", source: "Vercel", what: "Broker research report scraper" },
-  { path: "/api/cron/options-flow", schedule: "25 10 * * 1-5", source: "Vercel", what: "Options-flow snapshots" },
-  { path: "/api/cron/datagov", schedule: "30 2 * * *", source: "Vercel", what: "data.gov.in sync" },
-  { path: "/api/cron/data360/catalog", schedule: "0 2 * * 0", source: "Vercel", what: "World Bank Data360 indicator catalog" },
-  { path: "/api/cron/data360", schedule: "45 3 * * *", source: "Vercel", what: "World Bank Data360 observation sync (resumable)" },
-  { path: "/api/cron/scan", schedule: "30 11 * * 1-5", source: "Vercel", what: "Market scanner" },
-  { path: "/api/cron/signals", schedule: "45 11 * * 1-5", source: "Vercel", what: "AI signals" },
-  { path: "/api/cron/backtest", schedule: "0 12 * * 6", source: "Vercel", what: "Weekly backtest" },
-  { path: "/api/cron/52w-levels", schedule: "5 10 * * 1-5 (Vercel, ~5m budget)", source: "Vercel", what: "52-week high/low levels for breadth" },
-  { path: "/api/portfolio/instruments/cron-sync", schedule: "0 3 * * 1", source: "Vercel", what: "NSE instrument master sync" },
+  { path: "cron-scrape-research.yml → scripts/crons/run-scrape-research.ts", schedule: "0 4 * * * (GitHub)", source: "GitHub Actions", what: "Broker research report scraper" },
+  { path: "cron-options-flow.yml → scripts/crons/run-options-flow.ts", schedule: "25 10 * * 1-5 (GitHub)", source: "GitHub Actions", what: "Options-flow snapshots" },
+  { path: "cron-datagov.yml → scripts/crons/run-datagov.ts", schedule: "30 2 * * * (GitHub)", source: "GitHub Actions", what: "data.gov.in sync" },
+  { path: "cron-data360-catalog.yml → scripts/crons/run-data360-catalog.ts", schedule: "0 2 * * 0 (GitHub)", source: "GitHub Actions", what: "World Bank Data360 indicator catalog" },
+  { path: "cron-data360.yml → scripts/crons/run-data360.ts", schedule: "45 3 * * * (GitHub)", source: "GitHub Actions", what: "World Bank Data360 observation sync (resumable)" },
+  { path: "cron-scan.yml → scripts/crons/run-scan.ts", schedule: "30 11 * * 1-5 (GitHub)", source: "GitHub Actions", what: "Market scanner (Nifty 500, + Telegram digest)" },
+  { path: "cron-signals.yml → scripts/crons/run-signals.ts", schedule: "45 11 * * 1-5 (GitHub)", source: "GitHub Actions", what: "AI signals" },
+  { path: "cron-backtest.yml → scripts/crons/run-backtest.ts", schedule: "0 12 * * 6 (GitHub)", source: "GitHub Actions", what: "Weekly backtest" },
+  { path: "cron-52w-levels.yml → scripts/crons/run-52w-levels.ts", schedule: "5 10 * * 1-5 (GitHub, 20m budget)", source: "GitHub Actions", what: "52-week high/low levels for breadth" },
+  { path: "cron-instruments-sync.yml → scripts/crons/run-instruments-sync.ts", schedule: "0 3 * * 1 (GitHub)", source: "GitHub Actions", what: "NSE instrument master sync" },
   {
-    path: "/api/cron/benchmark-constituents",
-    schedule: "30 3 * * *",
-    source: "Vercel",
+    path: "cron-benchmark-constituents.yml → scripts/crons/run-benchmark-constituents.ts",
+    schedule: "30 3 * * * (GitHub)",
+    source: "GitHub Actions",
     what: "NSE index constituent lists + cap-weight proxy for portfolio Brinson/active share",
   },
+  { path: "cron-what-changed.yml → scripts/crons/run-what-changed.ts", schedule: "15 4 * * * (GitHub)", source: "GitHub Actions", what: "Home “What changed” institutional shifts panel rebuild" },
+  { path: "cron-kit-sync.yml → scripts/crons/run-kit-sync.ts", schedule: "30 5 * * * (GitHub)", source: "GitHub Actions", what: "Kit `customers` tag sync (backfill, idempotent)" },
 ] as const;
 
 export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
