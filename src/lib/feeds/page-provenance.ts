@@ -138,13 +138,13 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/promoters",
     match: {
-      summary: "Promoter activity tracker — currently unavailable: no verified SEBI PIT/SAST disclosure feed is connected.",
+      summary: "Promoter activity tracker — disclosure signals via Google News RSS with optional Firecrawl/Crawl4AI on NSE/BSE.",
       chips: [
         {
           kind: "api",
           label: "Promoter activity tracker",
-          source: { provider: "Feed not connected", url: "/api/promoters" },
-          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
+          source: { provider: "NSE / BSE indexed disclosures (RSS)", url: "/api/promoters" },
+          fetchMethod: "loadPromoterFeedSnapshot — src/lib/promoters/load-feed.ts",
         },
         ...chips("nse", "bse"),
       ],

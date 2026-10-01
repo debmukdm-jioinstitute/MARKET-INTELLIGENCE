@@ -1,34 +1,20 @@
+import { loadPromoterFeedSnapshot } from "@/lib/promoters/load-feed";
+import { PROMOTER_RISK_PANEL_SOURCES } from "@/lib/intelligence/verification-links";
 import { NextResponse } from "next/server";
 
-/**
- * GET /api/promoters
- *
- * No live promoter/insider disclosure feed is connected. Returns an explicit
- * UNAVAILABLE payload with verify-at-source links instead of fabricated
- * activity records.
- */
-export async function GET() {
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+/** GET /api/promoters — RSS-first promoter/insider disclosures; Firecrawl/Crawl4AI optional on cron. */
+export async function GET(req: Request) {
+  const deep = new URL(req.url).searchParams.get("deep") === "1";
+  const snapshot = await loadPromoterFeedSnapshot(deep ? { deep: true } : undefined);
+
   return NextResponse.json({
-    activities: [],
-    totalCount: 0,
-    summary: null,
-    dataStatus: "UNAVAILABLE",
-    message:
-      "Promoter and insider disclosures are not wired to a live source yet. No activity data is available.",
-    verifyLinks: [
-      {
-        label: "NSE insider / SAST",
-        href: "https://www.nseindia.com/companies-listing/corporate-filings-insider-trading",
-      },
-      {
-        label: "NSE pledge / SHP",
-        href: "https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern",
-      },
-      {
-        label: "BSE insider",
-        href: "https://www.bseindia.com/corporates/Insider_Trading.aspx",
-      },
-      { label: "SEBI", href: "https://www.sebi.gov.in/" },
-    ],
+    ...snapshot,
+    activities: snapshot.items,
+    totalCount: snapshot.items.length,
+    summary: snapshot.dataStatus === "AVAILABLE" ? snapshot.message : null,
+    verifyLinks: PROMOTER_RISK_PANEL_SOURCES,
   });
 }

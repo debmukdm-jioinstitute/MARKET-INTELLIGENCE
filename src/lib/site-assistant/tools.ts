@@ -237,10 +237,27 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
         symbol: z.string().optional().describe("Filter by stock ticker symbol e.g. TATAMOTORS, BHARTIARTL"),
         category: z.enum(["BUYING", "SELLING", "PLEDGE", "BLOCK_DEAL", "ALL"]).optional().default("ALL"),
       }),
-      execute: async () => {
+      execute: async ({ symbol }) => {
+        const { loadPromoterFeedSnapshot } = await import("@/lib/promoters/load-feed");
+        const snap = await loadPromoterFeedSnapshot();
+        if (snap.dataStatus !== "AVAILABLE" || !snap.items.length) {
+          return { dataStatus: "UNAVAILABLE", message: snap.message };
+        }
+        let items = snap.items;
+        if (symbol?.trim()) {
+          const s = symbol.trim().toUpperCase();
+          items = items.filter((i) => i.symbol?.toUpperCase() === s || i.title.toUpperCase().includes(s));
+        }
         return {
-          dataStatus: "UNAVAILABLE",
-          message: "No verified live feed for promoter/insider disclosures is connected yet. Verify filings on NSE/BSE disclosure pages directly.",
+          dataStatus: "AVAILABLE",
+          asOf: snap.asOf,
+          count: items.length,
+          items: items.slice(0, 12).map((i) => ({
+            title: i.title,
+            category: i.category,
+            date: i.transactionDate,
+            url: i.sourceUrl,
+          })),
         };
       },
     }),

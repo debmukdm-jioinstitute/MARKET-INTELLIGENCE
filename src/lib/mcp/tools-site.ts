@@ -567,12 +567,27 @@ export const SITE_TOOLS: Tool[] = [
     title: "Promoter & insider activity tracker",
     category: "Research",
     description:
-      "Promoter buying/selling, pledges, insider transactions and bulk/block deals. No verified live feed is connected yet — this tool reports unavailable rather than estimates.",
+      "Promoter buying/selling, pledges, insider transactions and bulk/block deals from RSS-indexed NSE/BSE disclosures.",
     inputSchema: empty,
     run: async () => {
+      const { loadPromoterFeedSnapshot } = await import("@/lib/promoters/load-feed");
+      const snap = await loadPromoterFeedSnapshot();
+      if (snap.dataStatus !== "AVAILABLE" || !snap.items.length) {
+        return { dataStatus: "UNAVAILABLE", message: snap.message };
+      }
       return {
-        dataStatus: "UNAVAILABLE",
-        message: "No verified live feed for SEBI PIT/SAST disclosures is connected yet. Verify filings on NSE/BSE disclosure pages directly.",
+        dataStatus: "AVAILABLE",
+        asOf: snap.asOf,
+        collectorsUsed: snap.collectorsUsed,
+        count: snap.items.length,
+        recent: snap.items.slice(0, 15).map((i) => ({
+          channel: i.channel,
+          title: i.title,
+          category: i.category,
+          symbol: i.symbol,
+          date: i.transactionDate,
+          url: i.sourceUrl,
+        })),
       };
     },
   },
