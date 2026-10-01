@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { RazorpayPlanId } from "@/lib/payments/plans";
+import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -57,6 +57,9 @@ export default function PricingPage() {
     },
   );
 
+  const activePlanId =
+    billing?.isPro && billing.pro.active ? parseActivePlanId(billing.pro.planId) : null;
+
   const pricingDate = new Date().toLocaleDateString("en-IN", {
     day: "numeric",
     month: "long",
@@ -94,6 +97,7 @@ export default function PricingPage() {
               plans={data.plans}
               keyId={checkoutKeyId}
               signedIn={signedIn}
+              activePlanId={activePlanId}
               yearlySavingsNote={data.yearlySavingsNote}
               onVerified={() => {
                 void mutate();

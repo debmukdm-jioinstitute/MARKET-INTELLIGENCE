@@ -1,6 +1,11 @@
 export const PAID_PLAN_IDS = ["day_pass", "pro_monthly", "pro_annual"] as const;
 export type RazorpayPlanId = (typeof PAID_PLAN_IDS)[number];
 
+export function parseActivePlanId(raw: string | null | undefined): RazorpayPlanId | null {
+  if (!raw) return null;
+  return PAID_PLAN_IDS.includes(raw as RazorpayPlanId) ? (raw as RazorpayPlanId) : null;
+}
+
 export type RazorpayPlan = {
   id: RazorpayPlanId;
   name: string;

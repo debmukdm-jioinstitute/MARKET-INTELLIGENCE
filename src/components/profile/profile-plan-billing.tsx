@@ -2,7 +2,7 @@
 
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { RazorpayPlanId } from "@/lib/payments/plans";
+import { parseActivePlanId } from "@/lib/payments/plans";
 import useSWR from "swr";
 
 type ConfigResponse = {
@@ -46,6 +46,8 @@ export function ProfilePlanBilling({ onUpgraded }: { onUpgraded?: () => void }) 
   const { data: billing, mutate: refreshBilling } = useSWR(signedIn ? "/api/billing/status" : null, loadBilling);
 
   const checkoutKeyId = config?.enabled && config.keyId != null ? config.keyId : null;
+  const activePlanId =
+    billing?.isPro && billing.pro.active ? parseActivePlanId(billing.pro.planId) : null;
 
   return (
     <div className="space-y-4">
@@ -77,6 +79,7 @@ export function ProfilePlanBilling({ onUpgraded }: { onUpgraded?: () => void }) 
           plans={config.plans}
           keyId={checkoutKeyId}
           signedIn={signedIn}
+          activePlanId={activePlanId}
           yearlySavingsNote={config.yearlySavingsNote}
           onVerified={() => {
             void refreshConfig();
