@@ -26,6 +26,9 @@ import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headlin
 import { HeroRotatingHeadline } from "@/components/marketing/hero-rotating-headline";
 import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { IntegrationsBentoShowcase } from "@/components/marketing/integrations-bento-showcase";
+import { TelegramOneClickButton } from "@/components/telegram/telegram-one-click-modal";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -294,6 +297,10 @@ export function LandingPage() {
             </Link>
             <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
               <MegaMenu />
+              <a href="#integrations" className="transition hover:text-gray-900 flex items-center gap-1.5 font-semibold text-sky-600 dark:text-sky-400">
+                <span className="size-1.5 rounded-full bg-sky-500 animate-pulse" />
+                Integrations
+              </a>
               <a href="#coverage" className="transition hover:text-gray-900">Data coverage</a>
               <a href="#pricing" className="transition hover:text-gray-900">Pricing</a>
               <Link href="/methodology" className="transition hover:text-gray-900">Methodology</Link>
@@ -412,6 +419,26 @@ export function LandingPage() {
                 ? "See live markets in seconds — no sign-up, no card. Create an account later to save your watchlist and portfolio."
                 : "Create a free account to open the terminal — no card."}
             </p>
+
+            {/* Quick Integration Chips */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <TelegramOneClickButton />
+              <Link
+                href="/connect/claude"
+                className="inline-flex items-center gap-2 rounded-full border border-amber-500/35 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 backdrop-blur-md transition-all hover:border-amber-500 hover:bg-amber-500/20 hover:scale-[1.02] shadow-sm"
+              >
+                <div className="relative size-4 shrink-0 overflow-hidden rounded">
+                  <Image
+                    src="/integrations/claude-logo.png"
+                    alt="Claude AI"
+                    width={16}
+                    height={16}
+                    className="object-contain"
+                  />
+                </div>
+                <span>Claude AI (MCP) · Connected</span>
+              </Link>
+            </div>
           </div>
 
           {/* Glass dashboard mockup */}
@@ -693,6 +720,9 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ECOSYSTEM INTEGRATIONS: CLAUDE AI & TELEGRAM BOT SHOWCASE */}
+        <IntegrationsBentoShowcase />
 
         {/* DATA METHODOLOGY */}
         <section id="coverage" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">

@@ -4,7 +4,10 @@ import { ErrorBanner, SetupBanner } from "@/components/ai-desk/setup-banner";
 import { TickerPicker, type InstrumentSearchResult } from "@/components/ai-desk/ticker-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAiAnalysisQuota } from "@/hooks/use-ai-analysis-quota";
+import { aiRunErrorMessage } from "@/lib/ai/run-response";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -29,6 +32,7 @@ type Result = {
 const MAX_TICKERS = 8;
 
 export function AlphaDiscoveryPanel() {
+  const { blocked, refreshQuota } = useAiAnalysisQuota();
   const [picked, setPicked] = useState<InstrumentSearchResult[]>([]);
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,11 +62,13 @@ export function AlphaDiscoveryPanel() {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (json.setupRequired) setSetupMessage(json.error);
-        else setError(json.error ?? `HTTP ${res.status}`);
+        const parsed = aiRunErrorMessage(json);
+        if (parsed.setupMessage) setSetupMessage(parsed.setupMessage);
+        else setError(parsed.error ?? `HTTP ${res.status}`);
         return;
       }
       setResult(json as Result);
+      void refreshQuota();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Run failed");
     } finally {
@@ -89,7 +95,7 @@ export function AlphaDiscoveryPanel() {
             ))}
             {picked.length === 0 ? <p className="text-sm text-muted-foreground">No tickers selected yet.</p> : null}
           </div>
-          <Button onClick={run} disabled={picked.length === 0 || loading} className="w-full">
+          <Button onClick={run} disabled={picked.length === 0 || loading || blocked} className="w-full">
             {loading ? "Proposing & backtesting…" : "Discover factors"}
           </Button>
         </div>

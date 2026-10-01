@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, HelpCircle, Search } from "lucide-react";
+import { useAiAnalysisQuota } from "@/hooks/use-ai-analysis-quota";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
+import { aiRunErrorMessage } from "@/lib/ai/run-response";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -82,6 +85,7 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 
 export function OptionsFlowPanel() {
   const router = useRouter();
+  const { blocked, refreshQuota } = useAiAnalysisQuota();
   const { holdings } = useMyPortfolio();
   const [universe, setUniverse] = useState<FoInstrument[]>([]);
   const [universeLoaded, setUniverseLoaded] = useState(false);
@@ -155,11 +159,13 @@ export function OptionsFlowPanel() {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (json.setupRequired) setSetupMessage(json.error);
-        else setError(json.error ?? `HTTP ${res.status}`);
+        const parsed = aiRunErrorMessage(json);
+        if (parsed.setupMessage) setSetupMessage(parsed.setupMessage);
+        else setError(parsed.error ?? `HTTP ${res.status}`);
         return;
       }
       setResult(json as Result);
+      void refreshQuota();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Run failed");
     } finally {
@@ -225,7 +231,7 @@ export function OptionsFlowPanel() {
             Data agent pulls price/volume and today&apos;s option chain live; the options-volume 30-day baseline builds up
             day by day via the daily cron, so early runs may show &quot;insufficient history&quot;.
           </p>
-          <Button onClick={run} disabled={selected.length === 0 || loading} className="w-full">
+          <Button onClick={run} disabled={selected.length === 0 || loading || blocked} className="w-full">
             {loading ? "Gathering, analyzing, flagging…" : "Run screener"}
           </Button>
         </div>

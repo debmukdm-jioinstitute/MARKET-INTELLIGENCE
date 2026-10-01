@@ -4,6 +4,7 @@ import { AlphaDiscoveryPanel } from "@/components/ai-desk/alpha-discovery-panel"
 import { SentimentPortfolioPanel } from "@/components/ai-desk/sentiment-portfolio-panel";
 import { TradingDeskPanel } from "@/components/ai-desk/trading-desk-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
+import { FreeTierAiQuotaBanner } from "@/components/payments/free-tier-ai-quota-banner";
 
 export default function AiDeskPage() {
   return (
@@ -12,6 +13,8 @@ export default function AiDeskPage() {
         kicker="AI Desk"
         title="Multi-agent research lab"
       />
+
+      <FreeTierAiQuotaBanner context="ai-desk" />
 
       <Panel
         id="trading-desk"

@@ -5,7 +5,10 @@ import { TickerPicker, type InstrumentSearchResult } from "@/components/ai-desk/
 import { AiOutputNote } from "@/components/ui/ai-output-note";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAiAnalysisQuota } from "@/hooks/use-ai-analysis-quota";
+import { aiRunErrorMessage } from "@/lib/ai/run-response";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { useState } from "react";
 
 type AnalystNote = {
@@ -46,6 +49,7 @@ function actionColor(action: "BUY" | "HOLD" | "SELL") {
 }
 
 export function TradingDeskPanel() {
+  const { blocked, refreshQuota } = useAiAnalysisQuota();
   const [selected, setSelected] = useState<InstrumentSearchResult | null>(null);
   const [result, setResult] = useState<TradingDeskResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -66,11 +70,13 @@ export function TradingDeskPanel() {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (json.setupRequired) setSetupMessage(json.error);
-        else setError(json.error ?? `HTTP ${res.status}`);
+        const parsed = aiRunErrorMessage(json);
+        if (parsed.setupMessage) setSetupMessage(parsed.setupMessage);
+        else setError(parsed.error ?? `HTTP ${res.status}`);
         return;
       }
       setResult(json as TradingDeskResult);
+      void refreshQuota();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Run failed");
     } finally {
@@ -96,11 +102,20 @@ export function TradingDeskPanel() {
             <TickerPicker onPick={setSelected} />
           )}
         </div>
-        <Button onClick={run} disabled={!selected || loading}>
-          {loading ? "Debating…" : "Run the desk"}
+        <Button onClick={run} disabled={!selected || loading || blocked}>
+          {loading ? "Debating…" : blocked ? "Upgrade to run" : "Run the desk"}
         </Button>
       </div>
 
+      {blocked ? (
+        <p className="text-sm text-muted-foreground">
+          Free monthly limit used.{" "}
+          <Link href="/pricing" className="font-semibold text-primary hover:underline">
+            Upgrade
+          </Link>{" "}
+          for unlimited runs.
+        </p>
+      ) : null}
       {setupMessage ? <SetupBanner message={setupMessage} /> : null}
       {error ? <ErrorBanner message={error} /> : null}
       {loading ? (

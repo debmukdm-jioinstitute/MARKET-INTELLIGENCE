@@ -3,6 +3,8 @@
 import { ErrorBanner, SetupBanner } from "@/components/ai-desk/setup-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAiAnalysisQuota } from "@/hooks/use-ai-analysis-quota";
+import { aiRunErrorMessage } from "@/lib/ai/run-response";
 import { cn } from "@/lib/utils";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import Link from "next/link";
@@ -31,6 +33,7 @@ function labelColor(label: SentimentHoldingRow["label"]) {
 }
 
 export function SentimentPortfolioPanel() {
+  const { blocked, refreshQuota } = useAiAnalysisQuota();
   const { holdings, locked } = useMyPortfolio();
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,11 +61,13 @@ export function SentimentPortfolioPanel() {
       });
       const json = await res.json();
       if (!res.ok) {
-        if (json.setupRequired) setSetupMessage(json.error);
-        else setError(json.error ?? `HTTP ${res.status}`);
+        const parsed = aiRunErrorMessage(json);
+        if (parsed.setupMessage) setSetupMessage(parsed.setupMessage);
+        else setError(parsed.error ?? `HTTP ${res.status}`);
         return;
       }
       setResult(json as Result);
+      void refreshQuota();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Run failed");
     } finally {
@@ -80,7 +85,7 @@ export function SentimentPortfolioPanel() {
           </Link>{" "}
           (local book + synced DB).
         </p>
-        <Button onClick={run} disabled={loading || locked || holdings.length === 0}>
+        <Button onClick={run} disabled={loading || locked || holdings.length === 0 || blocked}>
           {loading ? "Reading news…" : "Score my portfolio"}
         </Button>
       </div>

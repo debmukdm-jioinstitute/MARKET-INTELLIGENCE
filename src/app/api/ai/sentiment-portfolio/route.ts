@@ -1,7 +1,8 @@
 import { guardExpensive } from "@/lib/api-guard";
 import { AiKeyMissingError } from "@/lib/ai/llm";
 import { runSentimentPortfolio } from "@/lib/ai/sentiment-portfolio";
-import { getSessionEmail } from "@/lib/session";
+import { checkFreeAiQuota, recordFreeAiAnalysisUse } from "@/lib/payments/free-ai-quota";
+import { getSessionEmail, getSessionUser } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +11,13 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const blocked = await guardExpensive(req, { name: "ai-sentiment", flag: "ai", max: 10, windowSec: 3600 });
   if (blocked) return blocked;
+  const user = await getSessionUser();
+  const quotaBlock = await checkFreeAiQuota(user);
+  if (quotaBlock) return quotaBlock;
   try {
     const email = await getSessionEmail();
     const result = await runSentimentPortfolio(email);
+    await recordFreeAiAnalysisUse(user);
     return NextResponse.json(result);
   } catch (e) {
     if (e instanceof AiKeyMissingError) {
@@ -28,10 +33,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const blocked = await guardExpensive(req, { name: "ai-sentiment", flag: "ai", max: 10, windowSec: 3600 });
   if (blocked) return blocked;
+  const user = await getSessionUser();
+  const quotaBlock = await checkFreeAiQuota(user);
+  if (quotaBlock) return quotaBlock;
   try {
     const email = await getSessionEmail();
     const body = (await req.json().catch(() => ({}))) as { holdings?: import("@/lib/ai/sentiment-portfolio").HoldingRow[] };
     const result = await runSentimentPortfolio(email, Array.isArray(body?.holdings) ? body.holdings : undefined);
+    await recordFreeAiAnalysisUse(user);
     return NextResponse.json(result);
   } catch (e) {
     if (e instanceof AiKeyMissingError) {

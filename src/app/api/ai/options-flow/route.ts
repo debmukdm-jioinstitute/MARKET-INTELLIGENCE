@@ -2,6 +2,8 @@ import { guardExpensive } from "@/lib/api-guard";
 import { AiKeyMissingError } from "@/lib/ai/llm";
 import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { runOptionsFlowPipeline } from "@/lib/options-flow/run";
+import { checkFreeAiQuota, recordFreeAiAnalysisUse } from "@/lib/payments/free-ai-quota";
+import { getSessionUser } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +14,9 @@ const MAX_TICKERS = 20;
 export async function POST(req: Request) {
   const blocked = await guardExpensive(req, { name: "ai-options", flag: "ai", max: 6, windowSec: 3600 });
   if (blocked) return blocked;
+  const user = await getSessionUser();
+  const quotaBlock = await checkFreeAiQuota(user);
+  if (quotaBlock) return quotaBlock;
   const body = (await req.json().catch(() => ({}))) as { symbols?: string[] };
   const requested = Array.isArray(body.symbols) ? body.symbols : [];
   const universe = await listFoUniverse();
@@ -23,6 +28,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await runOptionsFlowPipeline(symbols);
+    await recordFreeAiAnalysisUse(user);
     return NextResponse.json(result);
   } catch (e) {
     if (e instanceof AiKeyMissingError) {

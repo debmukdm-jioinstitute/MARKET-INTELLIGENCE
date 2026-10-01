@@ -7,6 +7,9 @@ import { TerminalSetupGuide } from "@/components/help/terminal-setup-guide";
 import { ClaudeBrandIcon, CursorBrandIcon } from "@/components/help/mcp-brand-icons";
 import { CLAUDE_CONNECTOR, MCP_ENDPOINT } from "@/lib/mcp/connector-public";
 import Link from "next/link";
+import Image from "next/image";
+import { Radio } from "lucide-react";
+import { TelegramOneClickButton } from "@/components/telegram/telegram-one-click-modal";
 import { useEffect, useMemo, useState } from "react";
 
 /**
@@ -16,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
  */
 const TOP_SECTIONS = [
   "start",
+  "telegram",
   "worldmonitor",
   "website",
   "mcp",
@@ -53,6 +57,16 @@ type Props = {
 };
 
 const INVESTOR_TASKS = [
+  {
+    q: "Set up Telegram Bot (1-Click)",
+    a: "Open Telegram setup, click the 1-click connect button to open @MarketIntelRadarBot, and tap /start for instant breaking catalyst alerts and morning briefs.",
+    href: "/help#telegram",
+  },
+  {
+    q: "Connect Claude AI via MCP",
+    a: "Add Market Intelligence as a custom connector in claude.ai or Claude Desktop using our MCP URL. Query live NSE/BSE and macro data with zero API key.",
+    href: "/connect/claude",
+  },
   {
     q: "Search a stock",
     a: "Open Research, type a company name or NSE ticker (e.g. Reliance or RELIANCE), pick a match, then read quote, chart, and news.",
@@ -180,6 +194,113 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
         onValueChange={setOpenSections}
         className="rounded-xl border border-border px-4"
       >
+        <AccordionItem value="telegram" id="telegram">
+          <AccordionTrigger className="text-base font-semibold text-foreground">
+            <span className="flex items-center gap-2">
+              <span className="relative size-5 overflow-hidden rounded shrink-0">
+                <Image src="/integrations/telegram-logo.png" alt="Telegram" width={20} height={20} className="object-contain" />
+              </span>
+              <span>Telegram Bot — 1-click setup &amp; real-time alert stream</span>
+              <span className="ml-2 rounded-full bg-sky-500/10 text-sky-600 text-xs px-2 py-0.5 font-bold uppercase">1-Click</span>
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-6 pt-2">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Connect your Telegram account in 1 click to receive sub-second breaking market catalysts, options flow spikes, block trades, and automated 8:45 AM morning executive briefings directly to your phone or desktop.
+            </p>
+
+            {/* 1-Click Setup Hero Card */}
+            <div className="rounded-2xl border border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-card to-card p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-sky-600 uppercase tracking-wider">
+                    <Radio className="size-3.5 text-sky-500 animate-pulse" />
+                    <span>Official Verified Bot: @MarketIntelRadarBot</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    1-Click Instant Activation
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    No token or chat ID configuration required. Click below, press <b>START</b> in Telegram, and alerts activate instantly.
+                  </p>
+                </div>
+
+                <div className="shrink-0">
+                  <TelegramOneClickButton />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/50 text-xs">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-foreground">1. Tap Connect Button</span>
+                  <p className="text-muted-foreground">Opens the official Telegram bot on web, mobile, or desktop app.</p>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="font-bold text-foreground">2. Press /start</span>
+                  <p className="text-muted-foreground">Bot registers your unique session token securely with zero manual forms.</p>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="font-bold text-foreground">3. Stream Active</span>
+                  <p className="text-muted-foreground">Real-time breaking market moves streamed with zero delay.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bot Commands Reference Table */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold text-foreground">Bot Commands Reference</h4>
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
+                    <tr>
+                      <th className="p-3">Command</th>
+                      <th className="p-3">Function</th>
+                      <th className="p-3">Sample Response</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    <tr>
+                      <td className="p-3 font-bold text-sky-600">/start</td>
+                      <td className="p-3">Initialize alerts and authenticate your terminal stream</td>
+                      <td className="p-3 text-muted-foreground">Welcome to Market Intelligence Radar. Alert stream connected.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-sky-600">/brief</td>
+                      <td className="p-3">Request on-demand morning executive briefing</td>
+                      <td className="p-3 text-muted-foreground">Summary of NIFTY, global bourses, crude, USD/INR, and key catalysts.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-sky-600">/quote &lt;symbol&gt;</td>
+                      <td className="p-3">Fetch live price, 1D change, and day range for any stock</td>
+                      <td className="p-3 text-muted-foreground">RELIANCE: ₹1,167.70 (-1.62%) · High: ₹1,185.00 · Low: ₹1,164.00</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-sky-600">/sentiment</td>
+                      <td className="p-3">Get 5-pillar domestic, global, commodity, and FX sentiment</td>
+                      <td className="p-3 text-muted-foreground">Multi-Pillar Regime: NEGATIVE (-0.59) · High crude drag on OMCs.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-sky-600">/alerts</td>
+                      <td className="p-3">Manage alert channels &amp; sensitivity threshold</td>
+                      <td className="p-3 text-muted-foreground">Interactive keyboard to toggle Breaking, Options, and Morning Brief.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Advanced & Team Channels */}
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 text-xs space-y-2 text-muted-foreground">
+              <span className="font-bold text-foreground block">
+                For Trading Desks, Group Channels, and Custom Bots:
+              </span>
+              <p>
+                To broadcast alerts into a shared team channel or group: Add <span className="text-foreground font-semibold">@MarketIntelRadarBot</span> to your group or channel as an Administrator with &ldquo;Post Messages&rdquo; permissions. Send <span className="text-foreground font-semibold">/start</span> in the channel, and all members will receive verified institutional updates simultaneously.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="start" id="start">
           <AccordionTrigger className="text-base font-semibold text-foreground">New here? Start here</AccordionTrigger>
           <AccordionContent className="space-y-3 text-muted-foreground">
