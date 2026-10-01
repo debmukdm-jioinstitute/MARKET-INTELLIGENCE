@@ -6,14 +6,7 @@ import { AiOutputNote } from "@/components/ui/ai-output-note";
 import { ProductProof } from "@/components/marketing/product-proof";
 import { MobileNav } from "@/components/marketing/mobile-nav";
 import { NewsletterSubscribeForm } from "@/components/marketing/newsletter-subscribe-form";
-import {
-  BarChart3,
-  LineChart,
-  ShieldCheck,
-  Sparkles,
-  Check,
-  X,
-} from "lucide-react";
+import { BarChart3, LineChart, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -27,6 +20,12 @@ import { HeroRotatingHeadline } from "@/components/marketing/hero-rotating-headl
 import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { IntegrationsBentoShowcase } from "@/components/marketing/integrations-bento-showcase";
+import {
+  MARKETING_COMPARE_ROWS,
+  MARKETING_FREE_TIER,
+  MARKETING_PLAN_SAVINGS,
+  MARKETING_PLANS,
+} from "@/lib/marketing/pricing-marketing";
 import { TelegramOneClickButton } from "@/components/telegram/telegram-one-click-modal";
 import Image from "next/image";
 
@@ -62,45 +61,46 @@ const _STEPS = [
 ];
 
 const USE_CASES = [
-  { title: "Research", body: "Look up any Indian or US stock: price history, valuation, sector context and a sourced AI brief." },
-  { title: "Monitor", body: "Follow your holdings, scanner hits and macro moves in one place, with alerts when something changes." },
-  { title: "Practice", body: "Test ideas on a virtual book and run backtests before any real money is involved." },
+  {
+    title: "Research",
+    body: "Company intel, concall tone, credit ratings, promoter disclosures, IPO desk, and sourced AI briefs — India-first with US coverage where it matters.",
+  },
+  {
+    title: "Monitor",
+    body: "Scanner, macro tape, Telegram breaking alerts, and portfolio risk — every figure tagged with source and timestamp.",
+  },
+  {
+    title: "Act with context",
+    body: "Options Flow screener, AI Desk multi-agent debates, and backtests on a virtual book before you put real capital at risk.",
+  },
 ];
 
 const FEATURE_SECTIONS = [
-  { title: "Screeners", body: "The whole Nifty 500 scanned after every NSE close: 52-week breakouts, volume gainers, RSI, MACD and 25+ ready-made scans.", href: "/intelligence/scanner" },
-  { title: "Portfolio", body: "Import holdings or build a virtual book, then see performance, risk, Sharpe, beta and drawdown with formulas explained.", href: "/portfolio" },
-  { title: "Alerts", body: "Get notified about price, scanner and macro changes so you do not have to keep refreshing.", href: "/intelligence/alerts" },
-  { title: "AI Desk", body: "Fundamental, sentiment and technical agents debate a stock in front of you. You see the reasoning, not just a verdict.", href: "/research/ai-desk" },
+  { title: "AI Desk", body: "Five LLM agents debate any NSE or US ticker with evidence shown. Free tier: 5 runs/month shared with Options Flow.", href: "/research/ai-desk" },
+  { title: "Options Flow", body: "Three-agent screener for unusual F&O activity — data, analysis, and flagging without calling it a buy signal.", href: "/research/options-flow" },
+  { title: "Screeners", body: "Nifty 500 after every close: breakouts, volume, RSI, MACD, and 25+ scans with explainable outputs.", href: "/intelligence/scanner" },
+  { title: "Portfolio", body: "Import Zerodha, Upstox, or Dhan holdings — Sharpe, beta, VaR, and attribution with formulas spelled out.", href: "/portfolio" },
+  { title: "Telegram Radar", body: "1-click @MarketIntelRadarBot — breaking catalysts, morning brief (Yearly), and flow alerts on your phone.", href: "/profile#telegram" },
+  { title: "Macro & credit", body: "RBI transmission, stress tests, credit intelligence desk, and World Monitor geopolitical layers.", href: "/macro/india" },
 ];
 
 const FAQS = [
   {
-    q: "Is Market Intelligence a real trading platform?",
-    a: "No. Market Intelligence is a research, portfolio-tracking, and analytics platform. It is designed to help users track holdings, research stocks, understand portfolio risk, and analyse performance. It does not execute real trades through the platform.",
+    q: "Is Market Intelligence a brokerage or trading platform?",
+    a: "No. It is research, analytics, and monitoring only. We do not execute trades or hold your securities.",
   },
   {
-    q: "Do I need a credit card to use Market Intelligence?",
-    a: "No. platform is free to start and does not require a credit card. The listed plan includes the platform's available features without a time limit.",
+    q: "What does the free tier include?",
+    a: `${MARKETING_FREE_TIER} Upgrade anytime with a Day Pass (₹9), Monthly (₹199), or Yearly (₹1,499) — all prices include GST.`,
   },
   {
-    q: "Does Market Intelligence have AI-powered research?",
-    a: "Yes. The website features an AI Desk, described as a multi-agent research environment. It can run a live debate involving different AI analyst roles covering areas such as fundamentals, sentiment and technical analysis for a selected ticker.",
+    q: "How do paid plans work?",
+    a: "Checkout on /pricing via Razorpay (UPI, cards, netbanking). Day Pass is 24 hours full access; Monthly and Yearly remove AI limits and unlock full intel previews. Yearly adds exclusive briefings and priority Telegram routing.",
   },
   {
-    q: "Is the AI Desk giving investment recommendations?",
-    a: "The AI Desk presents analytical perspectives from different analyst agents, including fundamental, sentiment and technical perspectives. These outputs should be treated as research information rather than personalised investment advice or instructions to buy or sell securities.",
+    q: "Is AI Desk output investment advice?",
+    a: "No. Agents show reasoning and disagreement for education and research. Treat outputs as inputs to your own process, not buy or sell instructions.",
   },
-];
-
-const COMPARISON_FEATURES = [
-  { name: "Market Data & Research with source and timestamp", mi: true, traditional: false },
-  { name: "Advanced Portfolio Analytics (Sharpe, Beta, VaR)", mi: true, traditional: false },
-  { name: "Global Stocks Coverage (NSE & US)", mi: true, traditional: "Extra Add-on" },
-  { name: "Institutional Grade Flow & Sweeps", mi: true, traditional: "Expensive Tier" },
-  { name: "Automated Daily Macro Tape", mi: true, traditional: false },
-  { name: "Clean, Ad-free Terminal Experience", mi: true, traditional: false },
-  { name: "Cost", mi: "₹0 / Forever", traditional: "₹4,000-₹1,60,000 / month" },
 ];
 
 export function LandingPage() {
@@ -283,9 +283,9 @@ export function LandingPage() {
       <div className="relative z-10">
         <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
           <p className="text-sm text-muted-foreground">
-            Free while we're in beta. No card, no catch.{" "}
-            <Link href="/signup" className="font-medium text-blue-600 hover:underline underline-offset-4">
-              Start free →
+            Free to start · ₹9 Day Pass · from ₹199/mo ·{" "}
+            <Link href="/pricing" className="font-medium text-blue-600 hover:underline underline-offset-4">
+              See plans →
             </Link>
           </p>
         </div>
@@ -366,12 +366,12 @@ export function LandingPage() {
             <div className="mx-auto max-w-4xl text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
-                Free in beta · no card
+                Free tier · Razorpay checkout live
               </span>
 
               <HeroRotatingHeadline />
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
-              Research Indian and US stocks, monitor your portfolio and practise on a virtual book, with the source and time of every number shown.
+              Screeners, AI Desk, Options Flow, macro, credit intel, and Telegram alerts — built for Indian markets, with sources and timestamps on every number.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               {hasAccess ? (
@@ -396,6 +396,12 @@ export function LandingPage() {
                   >
                     Create free account
                   </Link>
+                  <Link
+                    href="/pricing"
+                    className="rounded-full border border-blue-600/30 bg-blue-600/10 px-6 py-3 text-[15px] font-medium text-blue-700 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-blue-600/15"
+                  >
+                    View plans
+                  </Link>
                 </>
               ) : (
                 <>
@@ -403,21 +409,21 @@ export function LandingPage() {
                     href="/signup"
                     className="rounded-full bg-blue-600 px-7 py-3 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
                   >
-                    Create free account →
+                    Start free →
                   </Link>
                   <Link
-                    href="/login"
+                    href="/pricing"
                     className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
                   >
-                    Sign in
+                    Plans from ₹9
                   </Link>
                 </>
               )}
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
               {guestAllowed
-                ? "See live markets in seconds — no sign-up, no card. Create an account later to save your watchlist and portfolio."
-                : "Create a free account to open the terminal — no card."}
+                ? "Explore live data as a guest, or sign in for 5 free AI analyses/month. Day Pass and subscriptions unlock unlimited runs."
+                : "Sign in free — 5 AI Desk + Options Flow runs/month. Upgrade on /pricing when you need more."}
             </p>
 
             {/* Quick Integration Chips */}
@@ -599,10 +605,10 @@ export function LandingPage() {
         {/* TRUST STRIP */}
         <section aria-label="At a glance" className="mx-auto mt-16 max-w-6xl px-5">
           <ul className="grid gap-3 rounded-2xl border border-white/70 bg-white/50 p-4 text-sm text-gray-700 shadow-[var(--shadow-sm)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
-            <li><span className="font-semibold text-gray-900">Free in beta.</span> No card, no trial countdown.</li>
-            <li><span className="font-semibold text-gray-900">Coverage.</span> NSE and BSE equities, F&amp;O, US stocks, RBI and global macro.</li>
-            <li><span className="font-semibold text-gray-900">Data freshness.</span> Every figure shows its source and update time; quotes may be delayed.</li>
-            <li><span className="font-semibold text-gray-900">Not advice.</span> Research and education only. <Link href="/methodology" className="text-blue-600 hover:underline">Methodology</Link></li>
+            <li><span className="font-semibold text-gray-900">Pricing.</span> Free tier, ₹9 Day Pass, ₹199/mo, ₹1,499/yr — <Link href="/pricing" className="text-blue-600 hover:underline">all plans</Link>.</li>
+            <li><span className="font-semibold text-gray-900">Coverage.</span> NSE/BSE, F&amp;O universe, US names, RBI macro, credit &amp; promoter intel.</li>
+            <li><span className="font-semibold text-gray-900">Integrations.</span> Claude MCP terminal, Telegram @MarketIntelRadarBot, Razorpay billing.</li>
+            <li><span className="font-semibold text-gray-900">Not advice.</span> Research only. <Link href="/methodology" className="text-blue-600 hover:underline">Methodology</Link></li>
           </ul>
         </section>
 
@@ -652,15 +658,15 @@ export function LandingPage() {
         <section id="features" className="mx-auto mt-24 max-w-6xl scroll-mt-20 px-5 md:mt-32">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">What is inside</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Screeners, portfolio, alerts and an AI desk</h2>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">AI Desk, flow, screeners, and macro in one terminal</h2>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURE_SECTIONS.map((f) => (
               <div key={f.title} className="rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl">
                 <h3 className="text-lg font-semibold tracking-tight text-gray-900">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600">{f.body}</p>
                 <Link href={hasAccess ? f.href : "/signup"} className="mt-4 inline-block text-sm font-medium text-blue-600 hover:underline">
-                  {hasAccess ? "Open →" : "Try it free →"}
+                  {hasAccess ? "Open →" : "Sign in free →"}
                 </Link>
               </div>
             ))}
@@ -679,7 +685,7 @@ export function LandingPage() {
                 Multi-agent research lab
               </h2>
               <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-                Pick any ticker in the terminal and five LLM agents argue it from fundamentals, sentiment and technicals, with each agent's evidence shown. The example below is a recorded sample.
+                Pick any ticker — five LLM agents argue fundamentals, sentiment, and technicals with citations. Free accounts share 5 runs/month with Options Flow; paid plans are unlimited.
               </p>
             </div>
 
@@ -710,12 +716,18 @@ export function LandingPage() {
 
             </div>
 
-            <div className="mt-16 text-center">
+            <div className="mt-16 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href={hasAccess ? "/Home" : "/signup"}
+                href={hasAccess ? "/research/ai-desk" : "/signup"}
                 className="inline-flex rounded-full bg-blue-600 px-8 py-4 text-[15px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
               >
-                {hasAccess ? "Run the AI Desk →" : "Try AI Desk for free →"}
+                {hasAccess ? "Open AI Desk →" : "Start free — 5 AI runs/mo →"}
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex rounded-full border border-white/80 bg-white/60 px-8 py-4 text-[15px] font-semibold text-gray-900 shadow-sm backdrop-blur-md transition hover:bg-white/90"
+              >
+                Unlimited from ₹199/mo
               </Link>
             </div>
           </div>
@@ -746,61 +758,94 @@ export function LandingPage() {
           <p className="mt-4 text-center text-sm"><Link href="/methodology" className="font-medium text-blue-600 hover:underline">Read the full methodology →</Link></p>
         </section>
 
-        {/* PRICING / COMPARISON */}
+        {/* PRICING */}
         <section id="pricing" className="mx-auto max-w-5xl px-5 py-24 md:py-32">
-          <div className="mb-12 text-center">
-            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Unmatched Value</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-              Professional data. Without the professional price.
-            </h2>
-            <p className="mt-4 text-[17px] text-muted-foreground">
-              See why Market Intelligence is the last financial terminal you'll ever need to open.
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold tracking-[0.2em] text-blue-600 uppercase">Plans &amp; billing</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">The three plans</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-[17px] text-muted-foreground leading-relaxed">
+              All prices in INR, GST included. Pay with Razorpay — UPI, cards, or netbanking.{" "}
+              <span className="text-foreground font-medium">{MARKETING_FREE_TIER.split(".")[0]}.</span>
             </p>
           </div>
 
-          <div className="pricing-table overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-xl">
-            <div className="grid grid-cols-[1fr_auto_auto] items-center border-b border-white/70 bg-white/40 p-4 sm:grid-cols-[1fr_200px_200px] sm:p-6">
-              <div className="font-medium text-gray-500">Feature</div>
-              <div className="text-center font-semibold text-gray-900">
-                <img src="/logo.png" alt="Market Intelligence" className="mx-auto h-6 w-auto sm:h-7 mix-blend-multiply dark:invert" />
-              </div>
-              <div className="text-center font-medium text-gray-500">Traditional Terminals</div>
-            </div>
-            
-            <div className="divide-y divide-white/70">
-              {COMPARISON_FEATURES.map((feature, idx) => (
-                <div key={idx} className="pricing-row grid grid-cols-[1fr_auto_auto] items-center p-4 transition-colors hover:bg-white/60 sm:grid-cols-[1fr_200px_200px] sm:p-6">
-                  <div className="text-sm font-medium text-gray-900 sm:text-[15px]">{feature.name}</div>
-                  <div className="flex justify-center w-[120px] sm:w-[200px]">
-                    {feature.mi === true ? (
-                      <span className="grid size-6 place-items-center rounded-full bg-emerald-100 text-emerald-700">
-                        <Check className="size-4" />
-                      </span>
-                    ) : (
-                      <span className="font-semibold text-emerald-700">{feature.mi}</span>
-                    )}
-                  </div>
-                  <div className="flex justify-center w-[120px] text-sm text-gray-500 sm:w-[200px]">
-                    {feature.traditional === false ? (
-                      <span className="grid size-6 place-items-center rounded-full bg-gray-100 text-gray-400">
-                        <X className="size-4" />
-                      </span>
-                    ) : (
-                      <span className="text-center text-gray-500">{feature.traditional}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="bg-gradient-to-r from-blue-600/5 via-violet-600/5 to-cyan-600/5 p-8 text-center sm:p-10">
-              <p className="text-lg font-medium text-gray-900">Ready to upgrade your workflow?</p>
-              <Link
-                href={hasAccess ? "/Home" : "/signup"}
-                className="mt-6 inline-flex rounded-full bg-blue-600 px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+          <div className="pricing-table grid gap-4 md:grid-cols-3">
+            {MARKETING_PLANS.map((plan) => (
+              <article
+                key={plan.id}
+                className="pricing-row flex flex-col justify-between gap-4 rounded-3xl border border-white/70 bg-white/50 p-6 shadow-[var(--shadow-sm)] backdrop-blur-xl"
               >
-                {hasAccess ? "Open terminal →" : "Get started for free →"}
-              </Link>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                  <p className="mt-2 text-3xl font-semibold tabular-nums text-gray-900">
+                    {plan.price}
+                    <span className="text-sm font-normal text-muted-foreground">{plan.interval}</span>
+                  </p>
+                  {plan.worksOut ? <p className="mt-1 text-xs font-semibold text-blue-600">{plan.worksOut}</p> : null}
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">{plan.description}</p>
+                </div>
+                <Link
+                  href={hasAccess ? "/pricing" : "/signup"}
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-600/90"
+                >
+                  {hasAccess ? plan.cta : "Sign in to checkout"}
+                </Link>
+              </article>
+            ))}
+          </div>
+
+          <p className="mt-6 text-center text-sm text-muted-foreground leading-relaxed">{MARKETING_PLAN_SAVINGS}</p>
+
+          <div className="pricing-table mt-10 overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-lg)] backdrop-blur-xl">
+            <div className="border-b border-white/70 bg-white/40 px-4 py-3 sm:px-6">
+              <p className="text-sm font-semibold text-gray-900">How we compare</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[32rem] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-white/70 text-muted-foreground">
+                    <th className="px-4 py-3 font-medium" scope="col" />
+                    <th className="px-4 py-3 font-semibold text-gray-900" scope="col">
+                      Market Intelligence
+                    </th>
+                    <th className="px-4 py-3 font-medium" scope="col">
+                      Tickertape Pro
+                    </th>
+                    <th className="px-4 py-3 font-medium" scope="col">
+                      Screener
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MARKETING_COMPARE_ROWS.map((row) => (
+                    <tr key={row.feature} className="pricing-row border-b border-white/60 last:border-0">
+                      <th className="px-4 py-2.5 font-medium text-gray-900" scope="row">
+                        {row.feature}
+                      </th>
+                      <td className="px-4 py-2.5 font-medium text-gray-900">{row.mi}</td>
+                      <td className="px-4 py-2.5 text-gray-600">{row.tickertape}</td>
+                      <td className="px-4 py-2.5 text-gray-600">{row.screener}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-gradient-to-r from-blue-600/5 via-violet-600/5 to-cyan-600/5 p-8 text-center sm:p-10">
+              <p className="text-lg font-medium text-gray-900">Checkout on pricing — access activates after payment verify</p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/pricing"
+                  className="inline-flex rounded-full bg-blue-600 px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition hover:scale-[1.03] hover:bg-blue-600/90"
+                >
+                  View plans &amp; pay →
+                </Link>
+                <Link
+                  href={hasAccess ? "/profile#plans" : "/signup"}
+                  className="inline-flex rounded-full border border-white/80 bg-white/70 px-8 py-3.5 text-[15px] font-medium text-gray-900 shadow-sm backdrop-blur-md transition hover:bg-white"
+                >
+                  {hasAccess ? "Manage billing in profile" : "Create free account"}
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -822,14 +867,14 @@ export function LandingPage() {
               👋
             </div>
             <h2 className="text-center text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-gray-900">
-              A note to our beta users
+              A note from the founder
             </h2>
             <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-gray-700 max-w-4xl mx-auto">
               <p>
-                I built Market Intelligence because financial tools felt cluttered, expensive and overwhelming. I wanted students, new investors and seasoned traders to see their money clearly, with the sources shown.
+                I built Market Intelligence because terminals felt cluttered, overpriced, and opaque. Students, first-time investors, and pros deserve the same sourced data — AI Desk, Options Flow, macro, and Telegram alerts without a Bloomberg bill.
               </p>
               <p>
-                It is a beta, so there will be bugs. If you find one, please mail me at <a href="mailto:Deb@getmarketintelligence.in" className="font-semibold text-blue-600 hover:underline">Deb@getmarketintelligence.in</a>.
+                We ship fast; you will hit rough edges. Mail me at <a href="mailto:Deb@getmarketintelligence.in" className="font-semibold text-blue-600 hover:underline">Deb@getmarketintelligence.in</a> or upgrade on <Link href="/pricing" className="font-semibold text-blue-600 hover:underline">/pricing</Link> when you outgrow the free tier.
               </p>
               <div className="pt-6">
                 <p className="font-medium text-gray-900">Warmly,</p>
@@ -854,15 +899,23 @@ export function LandingPage() {
               <h2 className="text-[clamp(2.2rem,4.5vw,3.8rem)] font-bold tracking-tight text-gray-900 leading-[1.05]">
                 Your money deserves better tools.
               </h2>
-              <p className="mt-5 text-[15px] sm:text-[17px] text-gray-600 leading-relaxed max-w-[320px]">
-                Join for free and see your portfolio the way professionals do.
+              <p className="mt-5 text-[15px] sm:text-[17px] text-gray-600 leading-relaxed max-w-[360px]">
+                Free tier today. Day Pass tomorrow. Yearly when you want every briefing and unlimited AI.
               </p>
-              <Link
-                href={hasAccess ? "/Home" : "/signup"}
-                className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-[15px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition-transform hover:scale-[1.03] hover:bg-blue-600/90"
-              >
-                Open terminal <span aria-hidden="true" className="ml-1 transition-transform group-hover:translate-x-1">→</span>
-              </Link>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Link
+                  href={hasAccess ? "/Home" : "/signup"}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-[15px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition-transform hover:scale-[1.03] hover:bg-blue-600/90"
+                >
+                  {hasAccess ? "Open terminal →" : "Start free →"}
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white/80 px-8 py-4 text-[15px] font-semibold text-gray-900 shadow-sm transition hover:bg-white"
+                >
+                  See pricing
+                </Link>
+              </div>
             </div>
 
             <div className="relative z-10 flex w-full flex-col items-center md:w-auto md:items-end">
@@ -909,7 +962,7 @@ export function LandingPage() {
             <div>
               <img src="/logo.png" alt="Market Intelligence" className="h-10 w-auto mix-blend-multiply dark:invert" />
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
-                A simple way to track, research, and understand your money — for everyone, not just professionals.
+                India-first market intelligence — screeners, AI Desk, Options Flow, macro, and Telegram alerts. Not investment advice.
               </p>
             </div>
             <div className="text-sm text-muted-foreground">
@@ -917,8 +970,9 @@ export function LandingPage() {
               <div className="mt-3 flex flex-col gap-2">
                 <Link href="/login" className="hover:text-gray-900">Sign in</Link>
                 <Link href="/signup" className="hover:text-gray-900">Create account</Link>
+                <Link href="/pricing" className="hover:text-gray-900">Plans &amp; billing</Link>
                 <Link href="/Home" className="hover:text-gray-900">Terminal</Link>
-                <Link href="/help" className="hover:text-gray-900">Help: connect your AI</Link>
+                <Link href="/help" className="hover:text-gray-900">Help &amp; integrations</Link>
               </div>
             </div>
             <div className="w-full max-w-sm text-sm text-muted-foreground">

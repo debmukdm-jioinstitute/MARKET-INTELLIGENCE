@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
+import { MARKETING_COMPARE_ROWS, MARKETING_FREE_TIER } from "@/lib/marketing/pricing-marketing";
 import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
 import Link from "next/link";
 import useSWR from "swr";
@@ -31,17 +32,6 @@ type BillingStatus = {
   isPro: boolean;
   pro: { active: boolean; planId: string | null; expiresAt: string | null };
 };
-
-const COMPARE_ROWS: { feature: string; mi: string; tickertape: string; screener: string }[] = [
-  { feature: "Trial", mi: "₹9 day pass, full access", tickertape: "14-day free trial", screener: "Free tier, limited" },
-  { feature: "Monthly", mi: "₹199", tickertape: "₹249", screener: "—" },
-  { feature: "Yearly", mi: "₹1,499", tickertape: "₹2,399", screener: "₹4,999" },
-  { feature: "AI research summaries and sentiment", mi: "Yes", tickertape: "—", screener: "—" },
-  { feature: "Pre-market morning briefing", mi: "Yes (Yearly)", tickertape: "—", screener: "—" },
-  { feature: "Concall tone tracking", mi: "Yes", tickertape: "—", screener: "—" },
-  { feature: "Daily brief in Hindi", mi: "Yes", tickertape: "—", screener: "—" },
-  { feature: "Instant Telegram alerts", mi: "Yes", tickertape: "—", screener: "—" },
-];
 
 export default function PricingPage() {
   const { user } = useAuth();
@@ -116,12 +106,7 @@ export default function PricingPage() {
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold text-foreground">What each plan includes</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Free</span> gives you the full product with two limits: 5 AI
-          Desk and Options Flow analyses per month, and preview-only access to Company &amp; Concall Intel, Search-trend
-          intelligence, and Legal &amp; insolvency. Paid plans remove those limits and unlock full access for the plan
-          duration.
-        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{MARKETING_FREE_TIER} Paid plans remove those limits for your plan duration.</p>
       </section>
 
       <section className="space-y-3">
@@ -143,7 +128,7 @@ export default function PricingPage() {
               </tr>
             </thead>
             <tbody>
-              {COMPARE_ROWS.map((row) => (
+              {MARKETING_COMPARE_ROWS.map((row) => (
                 <tr key={row.feature} className="border-b border-border last:border-0">
                   <th className="px-4 py-2.5 font-medium text-foreground" scope="row">
                     {row.feature}

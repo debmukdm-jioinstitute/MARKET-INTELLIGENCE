@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const LINES = [
-  "See the market clearly, then test your ideas risk-free.",
-  "Research with sources shown — practise with a virtual book.",
-  "India and US markets, macro, and portfolio tools in one place.",
+  "India-first market intelligence — research, flow, and macro with sources shown.",
+  "AI Desk debates any ticker; Options Flow flags unusual activity before the move.",
+  "Start free, try a ₹9 Day Pass, or go unlimited from ₹199 per month.",
 ] as const;
 
 export function HeroRotatingHeadline() {
