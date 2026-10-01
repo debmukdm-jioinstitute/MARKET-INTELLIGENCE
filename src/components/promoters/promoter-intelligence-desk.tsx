@@ -115,7 +115,7 @@ export function PromoterIntelligenceDesk({
   const [recencyFilter, setRecencyFilter] = useState<PromoterRecencyBucket | null>(null);
   const [actionFilter, setActionFilter] = useState<PromoterActionBucket | null>(null);
 
-  const items = snapshot?.items ?? [];
+  const items = useMemo(() => snapshot?.items ?? [], [snapshot?.items]);
   const recency = countPromoterRecency(items);
   const actions = countPromoterActionBuckets(items);
   const displayItems = useMemo(

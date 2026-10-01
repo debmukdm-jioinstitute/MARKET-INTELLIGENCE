@@ -1,4 +1,3 @@
-import type { PromoterActivityType } from "@/lib/promoters/types";
 import type { PromoterFeedCategory } from "@/lib/promoters/feed-types";
 
 const SYMBOL_RE = /\b([A-Z]{2,12})\b/;
