@@ -338,6 +338,20 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_promoter_disclosure_pub ON promoter_disclosure_feed(transaction_date DESC NULLS LAST)`;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS razorpay_orders (
+          id text PRIMARY KEY,
+          user_email text NOT NULL,
+          plan_id text NOT NULL,
+          amount_paise int NOT NULL,
+          status text NOT NULL DEFAULT 'created',
+          payment_id text,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          paid_at timestamptz
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_razorpay_orders_email ON razorpay_orders(user_email, created_at DESC)`;
+
       // -- Options flow screener (data/analysis/flagging 3-agent pipeline) --
       await db`
         CREATE TABLE IF NOT EXISTS options_flow_snapshots (

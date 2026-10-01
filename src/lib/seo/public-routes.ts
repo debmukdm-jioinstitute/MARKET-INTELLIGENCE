@@ -17,6 +17,7 @@ const GUEST_PORTAL_PREFIXES = [
   "/macro",
   "/intelligence",
   "/data",
+  "/pricing",
 ] as const;
 
 /** Guest-readable portal paths (Option A — public research & market hubs). */
@@ -38,6 +39,7 @@ export const PUBLIC_SITEMAP_STATIC: { path: string; changeFrequency: ChangeFrequ
   { path: "/macro", changeFrequency: "daily", priority: 0.85 },
   { path: "/intelligence", changeFrequency: "hourly", priority: 0.8 },
   { path: "/intelligence/scanner", changeFrequency: "daily", priority: 0.85 },
+  { path: "/pricing", changeFrequency: "weekly", priority: 0.75 },
   { path: "/intelligence/brief", changeFrequency: "daily", priority: 0.85 },
   { path: "/intelligence/ai-signals", changeFrequency: "daily", priority: 0.75 },
   { path: "/learn", changeFrequency: "weekly", priority: 0.8 },

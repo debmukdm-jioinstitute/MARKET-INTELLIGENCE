@@ -49,6 +49,10 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "REDDIT_USERNAME", required: false, note: "Script-app fallback with REDDIT_PASSWORD" },
   { key: "REDDIT_PASSWORD", required: false, note: "Script-app fallback password" },
   { key: "REDDIT_USER_AGENT", required: false, note: "Reddit API User-Agent (platform:appId:version)" },
+  { key: "NEXT_PUBLIC_RAZORPAY_KEY_ID", required: false, note: "Razorpay Standard Checkout — public key id (test or live)" },
+  { key: "RAZORPAY_KEY_SECRET", required: false, note: "Razorpay secret — server order + payment verify only" },
+  { key: "RAZORPAY_PRO_MONTHLY_PAISE", required: false, note: "Override Pro monthly amount in paise (default 49900)" },
+  { key: "RAZORPAY_PRO_ANNUAL_PAISE", required: false, note: "Override Pro annual amount in paise (default 499900)" },
 ];
 
 export const FLAGS = [

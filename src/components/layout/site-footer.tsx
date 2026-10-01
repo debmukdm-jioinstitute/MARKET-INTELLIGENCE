@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const LEGAL = [
+  { label: "Pricing & Pro", href: "/pricing" },
   { label: "Help & MCP", href: "/help" },
   { label: "Methodology & data sources", href: "/methodology" },
   { label: "AI methodology", href: "/methodology#ai" },
