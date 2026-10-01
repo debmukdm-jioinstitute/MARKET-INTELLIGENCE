@@ -21,6 +21,17 @@ const POSITIVE = new Set([
   "expansion",
   "dividend",
   "buyback",
+  "launch",
+  "win",
+  "deal",
+  "order",
+  "partnership",
+  "jump",
+  "soar",
+  "inflow",
+  "allotment",
+  "nfo",
+  "breakthrough",
 ]);
 
 const NEGATIVE = new Set([
@@ -40,6 +51,15 @@ const NEGATIVE = new Set([
   "penalty",
   "investigation",
   "underperform",
+  "slide",
+  "fall",
+  "drop",
+  "plunge",
+  "selloff",
+  "tumble",
+  "crisis",
+  "debt",
+  "warning",
 ]);
 
 export function scoreHeadlineLexicon(title: string): { score: number; label: LexiconSentiment } {

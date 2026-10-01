@@ -2,21 +2,13 @@
 
 import { PageHeader } from "@/components/layout/page-header";
 import { AnalystCredibilityPanel } from "@/components/research/analyst-credibility-panel";
-import {
-  ConsensusBar,
-  ResearchReportsTable,
-  type ResearchReportRow,
-} from "@/components/research/research-reports-table";
-import { RESEARCH_SOURCE_LABELS } from "@/lib/research/source-labels";
+import { ResearchReportsGroupedFeed } from "@/components/research/research-reports-grouped-feed";
+import type { ResearchReportRow } from "@/components/research/research-reports-table";
 import { cn } from "@/lib/utils";
 import {
   ArrowUpDown,
-  Calendar,
-  CheckCircle2,
   ChevronDown,
   Download,
-  ExternalLink,
-  FileSearch,
   FileText,
   Filter,
   LayoutGrid,
@@ -24,19 +16,15 @@ import {
   Radio,
   RefreshCw,
   Search,
-  Sparkles,
   TrendingUp,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type Report = ResearchReportRow;
 
 type BrokerCount = { broker: string; count: number };
 type SourceStat = { key: string; label: string; count: number };
-
-const SOURCE_LABELS = RESEARCH_SOURCE_LABELS;
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "—";
@@ -49,20 +37,6 @@ function timeAgo(iso: string | null): string {
   const days = Math.round(hours / 24);
   if (days < 30) return `${days}d ago`;
   return new Date(iso).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function fmtPrice(val: number | null | undefined): string {
-  if (val === null || val === undefined || !Number.isFinite(val)) return "—";
-  return `₹${val.toLocaleString("en-IN", { maximumFractionDigits: 1 })}`;
 }
 
 export default function ResearchReportsPage() {
@@ -454,172 +428,7 @@ export default function ResearchReportsPage() {
         ) : null}
       </div>
 
-      {viewMode === "table" && !loading && filteredReports.length > 0 ? (
-        <ResearchReportsTable rows={filteredReports} />
-      ) : null}
-
-      {viewMode === "cards" ? (
-      <div className="grid gap-3.5 md:grid-cols-2 lg:grid-cols-3">
-        {loading && reports.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-sm text-muted-foreground animate-pulse">
-            <RefreshCw className="size-6 animate-spin mx-auto text-primary mb-2" />
-            Ingesting latest institutional research & broker PDFs…
-          </div>
-        ) : filteredReports.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-sm text-muted-foreground">
-            No research reports match your current filter criteria. Try clearing search or selecting All Reports.
-          </div>
-        ) : (
-          filteredReports.map((r) => {
-            const reco = r.recommendation?.toUpperCase();
-            const hasDirectPdf = Boolean(r.pdf_url || r.url?.toLowerCase().endsWith(".pdf"));
-            const effectivePdfUrl = r.pdf_url || (r.url?.toLowerCase().endsWith(".pdf") ? r.url : null);
-            const upside =
-              r.upside_pct ??
-              (r.target_price && r.cmp ? ((r.target_price - r.cmp) / r.cmp) * 100 : null);
-
-            return (
-              <div
-                key={r.id || r.url}
-                className="group flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all duration-150 hover:border-primary/50 hover:shadow-md hover:bg-card"
-              >
-                <div className="space-y-3">
-                  {/* Card Header: Broker & Tags */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {r.broker ? (
-                        <span className="rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-xs font-bold text-primary">
-                          {r.broker}
-                        </span>
-                      ) : null}
-
-                      {r.report_type ? (
-                        <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                          {r.report_type}
-                        </span>
-                      ) : (
-                        <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                          {SOURCE_LABELS[r.source] ?? r.source}
-                        </span>
-                      )}
-
-                      {reco ? (
-                        <span
-                          className={cn(
-                            "rounded-md px-1.5 py-0.5 text-[11px] font-bold uppercase",
-                            reco === "BUY" && "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30",
-                            reco === "ACCUMULATE" && "bg-sky-500/15 text-sky-600 border border-sky-500/30",
-                            reco === "HOLD" && "bg-amber-500/15 text-amber-600 border border-amber-500/30",
-                            reco === "SELL" && "bg-rose-500/15 text-rose-600 border border-rose-500/30",
-                          )}
-                        >
-                          {reco}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums flex items-center gap-1" title={r.published_at ? fmtDate(r.published_at) : undefined}>
-                      <Calendar className="size-3 opacity-60" />
-                      {timeAgo(r.published_at ?? r.scraped_at)}
-                    </span>
-                  </div>
-
-                  {/* Title & Ticker Symbol */}
-                  <div>
-                    {r.symbol ? (
-                      <Link
-                        href={`/research/${encodeURIComponent(r.symbol)}`}
-                        className="inline-block mb-1 text-xs font-bold tracking-wider uppercase text-primary hover:underline"
-                      >
-                        {r.symbol} →
-                      </Link>
-                    ) : null}
-                    <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
-                      {r.title}
-                    </h3>
-                  </div>
-
-                  {/* Financial Targets Bar (Target Price & Upside) */}
-                  {(r.target_price || upside !== null) ? (
-                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/50 text-xs">
-                      {r.target_price ? (
-                        <div className="rounded bg-accent/40 px-2 py-1">
-                          <span className="text-muted-foreground">Target: </span>
-                          <span className="font-bold text-foreground tabular-nums">{fmtPrice(r.target_price)}</span>
-                        </div>
-                      ) : null}
-
-                      {r.cmp ? (
-                        <div className="rounded bg-accent/40 px-2 py-1">
-                          <span className="text-muted-foreground">CMP: </span>
-                          <span className="font-medium text-foreground tabular-nums">{fmtPrice(r.cmp)}</span>
-                        </div>
-                      ) : null}
-
-                      {upside !== null && Number.isFinite(upside) ? (
-                        <div className={cn(
-                          "rounded px-2 py-1 font-bold tabular-nums flex items-center gap-1",
-                          upside >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
-                        )}>
-                          <TrendingUp className="size-3" />
-                          {upside >= 0 ? "+" : ""}{upside.toFixed(1)}% Upside
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {r.consensus ? <ConsensusBar consensus={r.consensus} /> : null}
-
-                  {/* Summary / Highlights */}
-                  {r.summary ? (
-                    <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
-                      {r.summary}
-                    </p>
-                  ) : null}
-                </div>
-
-                {/* Bottom Actions Bar */}
-                <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                  {hasDirectPdf && effectivePdfUrl ? (
-                    <a
-                      href={effectivePdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
-                    >
-                      <Download className="size-3.5" />
-                      Download PDF
-                    </a>
-                  ) : (
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      Read note <ExternalLink className="size-3" />
-                    </a>
-                  )}
-
-                  {r.symbol ? (
-                    <Link
-                      href={`/research/${encodeURIComponent(r.symbol)}`}
-                      className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
-                    >
-                      Company dossier →
-                    </Link>
-                  ) : (
-                    <span className="text-[11px] text-muted-foreground">
-                      Source: {SOURCE_LABELS[r.source] ?? r.source}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-      ) : null}
+      <ResearchReportsGroupedFeed rows={filteredReports} loading={loading} viewMode={viewMode} />
     </div>
   );
 }
