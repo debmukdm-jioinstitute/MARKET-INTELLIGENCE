@@ -539,9 +539,26 @@ export const SITE_TOOLS: Tool[] = [
       "Credit rating actions from CRISIL, ICRA, CARE and others. No verified live feed is connected yet — this tool reports unavailable rather than estimates.",
     inputSchema: empty,
     run: async () => {
+      const { loadCreditFeedSnapshot } = await import("@/lib/credit/load-feed");
+      const snap = await loadCreditFeedSnapshot();
+      if (snap.dataStatus !== "AVAILABLE" || !snap.items.length) {
+        return {
+          dataStatus: "UNAVAILABLE",
+          message: snap.message,
+        };
+      }
       return {
-        dataStatus: "UNAVAILABLE",
-        message: "No verified live feed for rating-agency actions is connected yet. Check agency press-release portals directly.",
+        dataStatus: "AVAILABLE",
+        asOf: snap.asOf,
+        collectorsUsed: snap.collectorsUsed,
+        count: snap.items.length,
+        recent: snap.items.slice(0, 15).map((i) => ({
+          agency: i.agency,
+          title: i.title,
+          action: i.action,
+          date: i.actionDate,
+          url: i.sourceUrl,
+        })),
       };
     },
   },

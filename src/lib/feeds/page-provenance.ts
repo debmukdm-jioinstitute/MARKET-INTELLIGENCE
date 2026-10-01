@@ -123,13 +123,13 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/credit",
     match: {
-      summary: "Credit & risk intelligence — currently unavailable: no verified rating-agency feed is connected.",
+      summary: "Credit & risk intelligence — agency rating actions via Google News RSS with optional Firecrawl/Crawl4AI on cron.",
       chips: [
         {
           kind: "api",
           label: "Credit intelligence desk",
-          source: { provider: "Feed not connected", url: "/api/credit" },
-          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
+          source: { provider: "CRISIL / ICRA / CARE / India Ratings / Acuité / Brickwork (RSS)", url: "/api/credit" },
+          fetchMethod: "loadCreditFeedSnapshot — src/lib/credit/load-feed.ts (15m cache; cron deep scrape)",
         },
         ...chips("nse", "bse"),
       ],

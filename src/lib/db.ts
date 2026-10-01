@@ -303,6 +303,24 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_research_scrape_log_ran ON research_scrape_log(ran_at DESC)`;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS credit_rating_feed (
+          id text PRIMARY KEY,
+          agency text NOT NULL,
+          title text NOT NULL,
+          action text NOT NULL,
+          company_name text,
+          symbol text,
+          published_at date,
+          source_url text NOT NULL,
+          snippet text,
+          collector text NOT NULL,
+          scraped_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_credit_rating_feed_pub ON credit_rating_feed(published_at DESC NULLS LAST)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_credit_rating_feed_agency ON credit_rating_feed(agency)`;
+
       // -- Options flow screener (data/analysis/flagging 3-agent pipeline) --
       await db`
         CREATE TABLE IF NOT EXISTS options_flow_snapshots (

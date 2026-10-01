@@ -116,6 +116,30 @@ export type SmallcapFundFlaggedHolding = {
   issue: string;
 };
 
+export type CreditFeedCollector = "google-news" | "native" | "firecrawl" | "crawl4ai";
+
+/** Live rating-action row from agency portals (RSS + optional crawlers). No fabricated equity impact. */
+export type CreditFeedItem = {
+  id: string;
+  agency: CreditRatingAgency;
+  title: string;
+  companyName: string | null;
+  symbol: string | null;
+  action: CreditEventAction | "RATING_ACTION";
+  actionDate: string;
+  sourceUrl: string;
+  snippet: string | null;
+  collector: CreditFeedCollector;
+};
+
+export type CreditFeedSnapshot = {
+  items: CreditFeedItem[];
+  asOf: string;
+  collectorsUsed: CreditFeedCollector[];
+  dataStatus: "AVAILABLE" | "UNAVAILABLE";
+  message: string;
+};
+
 export type SmallcapFundCreditProfile = {
   id: string;
   fundName: string;

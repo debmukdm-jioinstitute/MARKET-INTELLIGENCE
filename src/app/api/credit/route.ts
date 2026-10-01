@@ -1,22 +1,22 @@
+import { loadCreditFeedSnapshot } from "@/lib/credit/load-feed";
 import { NextResponse } from "next/server";
-import { getCreditDataAvailability } from "@/lib/credit/database";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
- * GET /api/credit
- *
- * Honest unavailable state: there is currently no live credit-rating feed.
- * Indian rating agencies publish press releases on their own portals and
- * offer no free rating-action API/RSS, so this endpoint returns no rating
- * actions rather than fabricated ones.
+ * GET /api/credit — live Indian rating-agency actions (RSS-first; Firecrawl/Crawl4AI optional).
  */
-export async function GET() {
-  const availability = getCreditDataAvailability();
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const deep = url.searchParams.get("deep") === "1";
+  const snapshot = await loadCreditFeedSnapshot(deep ? { deep: true } : undefined);
+
   return NextResponse.json({
-    activities: [],
+    ...snapshot,
+    activities: snapshot.items,
+    totalCount: snapshot.items.length,
     smallcapFunds: [],
-    totalCount: 0,
-    dataStatus: availability.dataStatus,
-    message: availability.message,
-    summary: null,
+    summary: snapshot.dataStatus === "AVAILABLE" ? snapshot.message : null,
   });
 }

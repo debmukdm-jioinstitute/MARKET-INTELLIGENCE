@@ -1,3 +1,4 @@
+import { peekCreditFeedSnapshot } from "@/lib/credit/feed-cache";
 import type {
   CreditActivityRecord,
   PortfolioCreditRiskAssessment,
@@ -31,6 +32,13 @@ export type CreditDataAvailability = {
 };
 
 export function getCreditDataAvailability(): CreditDataAvailability {
+  const snap = peekCreditFeedSnapshot();
+  if (snap?.dataStatus === "AVAILABLE" && snap.items.length > 0) {
+    return {
+      dataStatus: "AVAILABLE",
+      message: snap.message,
+    };
+  }
   return {
     dataStatus: "UNAVAILABLE",
     message:
