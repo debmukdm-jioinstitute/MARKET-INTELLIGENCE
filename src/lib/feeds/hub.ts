@@ -24,6 +24,7 @@ import type { FeedHealth, FeedHubPayload } from "@/lib/feeds/types";
 import { UNIVERSE } from "@/lib/universe";
 
 const TAPE_SYMBOLS = UNIVERSE.map((u) => u.symbol);
+const INDIA_TAPE_SYMBOLS = INDIA_EQUITIES.map((i) => `${i.symbol}.NS`);
 
 function health(
   id: FeedHealth["id"],
@@ -49,7 +50,7 @@ function health(
 export async function buildFeedHub(): Promise<FeedHubPayload> {
   const fetchedAt = new Date().toISOString();
 
-  const tape = [...TAPE_SYMBOLS, "^VIX"];
+  const tape = [...TAPE_SYMBOLS, ...INDIA_TAPE_SYMBOLS, "^VIX"];
 
   const d360Start = Date.now();
   const openNewsOn = openCommunityNewsEnabled();
@@ -85,6 +86,14 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   // Stale quotes (served from persisted last-good when all live sources fail)
   // are real delayed data — keep them, labeled via quote.stale.
   const quoteMap = new Map(quoteResults.map((r) => [r.quote.symbol, r.quote]));
+  for (const r of quoteResults) {
+    if (r.quote.symbol.endsWith(".NS")) {
+      const bare = r.quote.symbol.replace(/\.NS$/, "");
+      if (!quoteMap.has(bare)) {
+        quoteMap.set(bare, { ...r.quote, symbol: bare });
+      }
+    }
+  }
   // Alpha Vantage SPY snapshot keeps its old slot: above Yahoo/Massive, below
   // Upstox (Upstox doesn't cover SPY, so this is a pure overlay).
   if (av.value) quoteMap.set(av.value.symbol, av.value);

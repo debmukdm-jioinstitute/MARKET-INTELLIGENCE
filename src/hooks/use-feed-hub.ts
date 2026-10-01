@@ -27,6 +27,15 @@ export function useFeedHub(refreshMs = 60_000) {
 export function quoteMap(data: FeedHubPayload | null) {
   const map = new Map<string, LiveQuote>();
   if (!data) return map;
-  for (const q of data.quotes) map.set(q.symbol, q);
+  for (const q of data.quotes) {
+    map.set(q.symbol, q);
+    if (q.symbol.endsWith(".NS")) {
+      const bare = q.symbol.replace(/\.NS$/, "");
+      if (!map.has(bare)) map.set(bare, q);
+    } else if (!q.symbol.startsWith("^") && !q.symbol.includes("=")) {
+      const ns = `${q.symbol}.NS`;
+      if (!map.has(ns)) map.set(ns, q);
+    }
+  }
   return map;
 }

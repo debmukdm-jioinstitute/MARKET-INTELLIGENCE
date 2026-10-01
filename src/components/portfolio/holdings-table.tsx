@@ -39,12 +39,13 @@ export function HoldingsTable() {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const enriched = rows.map((row) => {
-    const q = live.get(row.symbol);
+    const q = live.get(row.symbol) ?? live.get(`${row.symbol}.NS`) ?? live.get(row.symbol.replace(/\.NS$/, ""));
+    const isLive = Boolean(q && typeof q.price === "number" && q.price > 0 && !q.stale);
     const last = q?.price ?? row.last;
     const dayPct = q?.changePct ?? row.dayPct;
     const marketValue = row.shares * last;
     const pnl = (last - row.avgCost) * row.shares;
-    return { ...row, last, dayPct, marketValue, pnl, live: Boolean(q) };
+    return { ...row, last, dayPct, marketValue, pnl, live: isLive, isUnquoted: !q };
   });
 
   const detailPosition = enriched.find((r) => r.symbol === detailSymbol);
@@ -135,7 +136,11 @@ export function HoldingsTable() {
                   className="w-full px-4 py-2 text-left font-medium text-primary hover:underline"
                 >
                   {row.symbol}
-                  {row.live ? <span className="ml-1 text-sm text-emerald-600">●</span> : null}
+                  {row.live ? (
+                    <span className="ml-1 text-xs font-bold text-emerald-600">● LIVE</span>
+                  ) : (
+                    <span className="ml-1 text-[11px] text-muted-foreground/70">(sim)</span>
+                  )}
                 </button>
               </TableCell>
               <TableCell className="p-0">
