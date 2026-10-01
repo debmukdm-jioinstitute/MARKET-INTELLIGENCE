@@ -58,12 +58,12 @@ const fallbackHub: FeedHubPayload = {
 async function computeNewsIntel() {
   const hubPromise = peekFeedHubCache()
     ? Promise.resolve(peekFeedHubCache()!)
-    : withTimeout(getFeedHubCached(), 4000, fallbackHub);
+    : withTimeout(getFeedHubCached(), 18000, fallbackHub);
 
   const [hub, liveTicker, dashboard] = await Promise.all([
     hubPromise,
-    withTimeout(buildLiveTicker(), 4000, { fetchedAt: new Date().toISOString(), items: [] }),
-    withTimeout(buildIndiaDashboardQuick().catch(() => null), 3500, null),
+    withTimeout(buildLiveTicker(), 18000, { fetchedAt: new Date().toISOString(), items: [] }),
+    withTimeout(buildIndiaDashboardQuick().catch(() => null), 15000, null),
   ]);
 
   const rawNews = hub.news ?? [];
@@ -97,7 +97,7 @@ async function computeNewsIntel() {
 
   if (hasHfToken && topHeadlines.length > 0) {
     try {
-      const finbert = await withTimeout(classifyFinancialSentiment(topHeadlines), 4000, []);
+      const finbert = await withTimeout(classifyFinancialSentiment(topHeadlines), 10000, []);
       if (finbert.length > 0) {
         rawNewsSentiment = finbertToNewsIntel(finbert);
         for (const f of finbert) {
@@ -145,14 +145,15 @@ async function computeNewsIntel() {
   // Compute comprehensive 5-pillar market sentiment
   const sentiment = computeMultiPillarSentiment({
     tickerItems: liveTicker.items,
+    dashboardPulse: dashboard?.pulse,
     breadth: dashboard?.pulse?.breadth,
     newsSentiment: rawNewsSentiment,
     newsItems: items,
   });
 
   const [classifiedResults, tldrResult] = await Promise.allSettled([
-    hasHfToken && headlines.length > 0 ? withTimeout(classifyNewsHeadlines(headlines.slice(0, 6)), 4000, []) : Promise.resolve([]),
-    hasHfToken && topHeadlines.length > 0 ? withTimeout(summarizeItems(topHeadlines, 60), 4000, "") : Promise.resolve(""),
+    hasHfToken && headlines.length > 0 ? withTimeout(classifyNewsHeadlines(headlines.slice(0, 6)), 10000, []) : Promise.resolve([]),
+    hasHfToken && topHeadlines.length > 0 ? withTimeout(summarizeItems(topHeadlines, 60), 10000, "") : Promise.resolve(""),
   ]);
 
   const categories =

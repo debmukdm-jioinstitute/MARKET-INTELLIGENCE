@@ -162,11 +162,13 @@ export function explainHeadlineSentiment(
 
 export function computeMultiPillarSentiment(params: {
   tickerItems?: LiveTickerItem[];
+  dashboardPulse?: IndiaDashboardPayload["pulse"];
   breadth?: IndiaDashboardPayload["pulse"]["breadth"];
   newsSentiment: NewsIntelSentiment;
   newsItems: NewsIntelItem[];
 }): MultiPillarSentimentResult {
-  const { tickerItems = [], breadth, newsSentiment, newsItems } = params;
+  const { tickerItems = [], dashboardPulse, newsSentiment, newsItems } = params;
+  const breadth = params.breadth ?? dashboardPulse?.breadth;
   const findItem = (id: string) => tickerItems.find((i) => i.id === id);
 
   // 1. DOMESTIC EQUITIES PILLAR
@@ -183,10 +185,16 @@ export function computeMultiPillarSentiment(params: {
   const pharma = findItem("nifty_pharma");
   const energy = findItem("nifty_energy");
 
-  const niftyPct = (nifty?.changePct ?? 0) * 100;
-  const sensexPct = (sensex?.changePct ?? 0) * 100;
+  const niftyPrice = nifty?.price ?? dashboardPulse?.nifty?.value;
+  const niftyPct = (nifty?.changePct ?? dashboardPulse?.nifty?.changePct ?? 0) * 100;
+
+  const sensexPrice = sensex?.price ?? dashboardPulse?.sensex?.value;
+  const sensexPct = (sensex?.changePct ?? dashboardPulse?.sensex?.changePct ?? 0) * 100;
+
   const midcapPct = (midcap?.changePct ?? 0) * 100;
-  const vixPct = (vixIn?.changePct ?? 0) * 100;
+
+  const vixPrice = vixIn?.price ?? dashboardPulse?.indiaVix?.value;
+  const vixPct = (vixIn?.changePct ?? dashboardPulse?.indiaVix?.changePct ?? 0) * 100;
 
   // Weighted index momentum (1.5% drop = strong -1.0)
   const domesticIndexAvg = 0.45 * niftyPct + 0.35 * sensexPct + 0.20 * midcapPct;
@@ -241,15 +249,15 @@ export function computeMultiPillarSentiment(params: {
         : domesticLabel === "positive"
         ? `Bullish (+${Math.round(domesticScore * 100)}%)`
         : "Consolidating",
-    headline: `NIFTY ${formatPct(nifty?.changePct ?? 0)} · SENSEX ${formatPct(sensex?.changePct ?? 0)} · VIX ${formatPct(vixIn?.changePct ?? 0)}`,
+    headline: `NIFTY ${formatPct((niftyPct) / 100)} · SENSEX ${formatPct((sensexPct) / 100)} · VIX ${formatPct((vixPct) / 100)}`,
     details:
       totalTraded > 0
         ? `Market breadth heavily tilted with ${(declineRatio * 100).toFixed(0)}% declines (${dec.toLocaleString("en-IN")} vs ${adv.toLocaleString("en-IN")} advances). ${weakestSector.label} slumped ${weakestSector.chg.toFixed(2)}% while ${strongestSector.label} traded ${strongestSector.chg >= 0 ? "+" : ""}${strongestSector.chg.toFixed(2)}%.`
         : `Nifty 50 at ${nifty?.price?.toLocaleString("en-IN")} and Sensex at ${sensex?.price?.toLocaleString("en-IN")}. Volatility index is at ${vixIn?.price?.toFixed(2)}.`,
     metrics: [
-      { label: "NIFTY 50", value: nifty?.price ? nifty.price.toLocaleString("en-IN") : "—", changePct: nifty?.changePct, isPositive: (nifty?.changePct ?? 0) >= 0 },
-      { label: "SENSEX", value: sensex?.price ? sensex.price.toLocaleString("en-IN") : "—", changePct: sensex?.changePct, isPositive: (sensex?.changePct ?? 0) >= 0 },
-      { label: "INDIA VIX", value: vixIn?.price ? vixIn.price.toFixed(2) : "—", changePct: vixIn?.changePct, isPositive: (vixIn?.changePct ?? 0) <= 0 },
+      { label: "NIFTY 50", value: niftyPrice ? niftyPrice.toLocaleString("en-IN") : "—", changePct: niftyPct / 100, isPositive: niftyPct >= 0 },
+      { label: "SENSEX", value: sensexPrice ? sensexPrice.toLocaleString("en-IN") : "—", changePct: sensexPct / 100, isPositive: sensexPct >= 0 },
+      { label: "INDIA VIX", value: vixPrice ? vixPrice.toFixed(2) : "—", changePct: vixPct / 100, isPositive: vixPct <= 0 },
       { label: "Declines/Adv", value: totalTraded > 0 ? `${dec.toLocaleString("en-IN")} / ${adv.toLocaleString("en-IN")}` : "—", isPositive: declineRatio < 0.5 },
     ],
     href: "/markets/india",
@@ -326,8 +334,8 @@ export function computeMultiPillarSentiment(params: {
   const gold = findItem("gold");
   const silver = findItem("silver");
 
-  const brentPrice = brent?.price ?? 80;
-  const brentPct = (brent?.changePct ?? 0) * 100;
+  const brentPrice = brent?.price ?? dashboardPulse?.brent?.value ?? 80;
+  const brentPct = (brent?.changePct ?? dashboardPulse?.brent?.changePct ?? 0) * 100;
 
   // Economic logic for India:
   // Net crude oil importer (>85%). High crude or rapidly rising crude is NEGATIVE for Indian inflation & CAD.
@@ -352,13 +360,13 @@ export function computeMultiPillarSentiment(params: {
     label: commodityLabel,
     impact: commodityLabel === "positive" ? "+ve" : commodityLabel === "negative" ? "-ve" : "neutral",
     badge: brentPrice >= 95 ? "High Crude Drag" : brentPct > 1.5 ? "Energy Spike" : "Commodity Stable",
-    headline: `Brent Crude $${brentPrice.toFixed(2)} (${formatPct(brent?.changePct ?? 0)}) · Gold $${gold?.price?.toFixed(0) ?? "—"} (${formatPct(gold?.changePct ?? 0)})`,
+    headline: `Brent Crude ${brentPrice.toFixed(2)} (${formatPct(brentPct / 100)}) · Gold ${gold?.price?.toFixed(0) ?? "—"} (${formatPct(gold?.changePct ?? 0)})`,
     details:
       brentPrice >= 95 || brentPct > 1.0
         ? `Surging Brent Crude above $${brentPrice.toFixed(2)}/bbl (+${brentPct.toFixed(2)}%) directly escalates India's oil import bill, increases domestic transport costs, and threatens corporate profit margins.`
         : `Crude oil prices holding steady around $${brentPrice.toFixed(2)}/bbl, providing stable input cost conditions for Indian manufacturers.`,
     metrics: [
-      { label: "Brent Crude", value: `$${brentPrice.toFixed(2)}`, changePct: brent?.changePct, isPositive: (brent?.changePct ?? 0) <= 0 },
+      { label: "Brent Crude", value: `${brentPrice.toFixed(2)}`, changePct: brentPct / 100, isPositive: brentPct <= 0 },
       { label: "WTI Crude", value: wti?.price ? `$${wti.price.toFixed(2)}` : "—", changePct: wti?.changePct, isPositive: (wti?.changePct ?? 0) <= 0 },
       { label: "Gold (Safe Haven)", value: gold?.price ? `$${gold.price.toFixed(0)}` : "—", changePct: gold?.changePct, isPositive: true },
       { label: "Silver", value: silver?.price ? `$${silver.price.toFixed(2)}` : "—", changePct: silver?.changePct, isPositive: true },
@@ -371,8 +379,8 @@ export function computeMultiPillarSentiment(params: {
   const dxy = findItem("dxy");
   const eurInr = findItem("eur_inr");
 
-  const usdInrPrice = usdInr?.price ?? 83.5;
-  const usdInrPct = (usdInr?.changePct ?? 0) * 100;
+  const usdInrPrice = usdInr?.price ?? dashboardPulse?.usdInr?.value ?? 83.5;
+  const usdInrPct = (usdInr?.changePct ?? dashboardPulse?.usdInr?.changePct ?? 0) * 100;
   const dxyPrice = dxy?.price ?? 102;
   const dxyPct = (dxy?.changePct ?? 0) * 100;
 
@@ -398,13 +406,13 @@ export function computeMultiPillarSentiment(params: {
     label: currencyLabel,
     impact: currencyLabel === "positive" ? "+ve" : currencyLabel === "negative" ? "-ve" : "neutral",
     badge: usdInrPct > 0.25 ? "Rupee Weakness" : dxyPct > 0.3 ? "Strong Dollar" : "FX Stable",
-    headline: `USD/INR ₹${usdInrPrice.toFixed(2)} (${formatPct(usdInr?.changePct ?? 0)}) · DXY ${dxyPrice.toFixed(2)} (${formatPct(dxy?.changePct ?? 0)})`,
+    headline: `USD/INR ₹${usdInrPrice.toFixed(2)} (${formatPct(usdInrPct / 100)}) · DXY ${dxyPrice.toFixed(2)} (${formatPct(dxy?.changePct ?? 0)})`,
     details:
       usdInrPct > 0.25
         ? `The Indian Rupee weakened to ₹${usdInrPrice.toFixed(2)} (+${usdInrPct.toFixed(2)}%), compounding imported inflation pressure and reflecting foreign institutional capital outflows.`
         : `USD/INR trading at ₹${usdInrPrice.toFixed(2)}, maintaining manageable currency stability alongside the US Dollar Index at ${dxyPrice.toFixed(2)}.`,
     metrics: [
-      { label: "USD/INR", value: `₹${usdInrPrice.toFixed(2)}`, changePct: usdInr?.changePct, isPositive: (usdInr?.changePct ?? 0) <= 0 },
+      { label: "USD/INR", value: `₹${usdInrPrice.toFixed(2)}`, changePct: usdInrPct / 100, isPositive: usdInrPct <= 0 },
       { label: "Dollar Index (DXY)", value: dxyPrice.toFixed(2), changePct: dxy?.changePct, isPositive: (dxy?.changePct ?? 0) <= 0 },
       { label: "EUR/INR", value: eurInr?.price ? `₹${eurInr.price.toFixed(2)}` : "—", changePct: eurInr?.changePct, isPositive: (eurInr?.changePct ?? 0) <= 0 },
     ],
@@ -488,10 +496,10 @@ export function computeMultiPillarSentiment(params: {
   };
 
   // Add Macro / Market Drivers
-  if ((nifty?.changePct ?? 0) <= -0.004) {
+  if ((niftyPct / 100) <= -0.004) {
     drivers.negative.push({
       id: "driver-nifty-drop",
-      title: `NIFTY 50 slid ${formatPct(nifty?.changePct ?? 0)} (${nifty?.price?.toLocaleString("en-IN")}) with ${(declineRatio * 100).toFixed(0)}% breadth declines`,
+      title: `NIFTY 50 slid ${formatPct(niftyPct / 100)} (${niftyPrice?.toLocaleString("en-IN")}) with ${(declineRatio * 100).toFixed(0)}% breadth declines`,
       url: "/research/%5ENSEI",
       source: "nse",
       sourceLabel: "NSE India",
@@ -544,7 +552,7 @@ export function computeMultiPillarSentiment(params: {
   if (vixPct > 4) {
     drivers.negative.push({
       id: "driver-vix-spike",
-      title: `INDIA VIX spiked +${vixPct.toFixed(2)}% to ${vixIn?.price?.toFixed(2)}`,
+      title: `INDIA VIX spiked +${vixPct.toFixed(2)}% to ${vixPrice?.toFixed(2)}`,
       url: "/markets/india",
       source: "nse",
       sourceLabel: "NSE India",
