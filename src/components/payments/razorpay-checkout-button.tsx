@@ -1,8 +1,8 @@
 "use client";
 
+import { useRazorpayCheckoutReady } from "@/components/payments/razorpay-checkout-provider";
 import type { RazorpayPlanId } from "@/lib/payments/plans";
 import { cn } from "@/lib/utils";
-import Script from "next/script";
 import { useCallback, useState } from "react";
 
 type RazorpayHandlerResponse = {
@@ -40,7 +40,7 @@ export function RazorpayCheckoutButton({
   onVerified?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const [scriptReady, setScriptReady] = useState(false);
+  const scriptReady = useRazorpayCheckoutReady();
   const [status, setStatus] = useState<string | null>(null);
 
   const pay = useCallback(async () => {
@@ -89,6 +89,7 @@ export function RazorpayCheckoutButton({
             return;
           }
           setStatus(verifyJson.message ?? "Payment successful");
+          setBusy(false);
           onVerified?.();
         },
         modal: {
@@ -105,18 +106,12 @@ export function RazorpayCheckoutButton({
       rzp.open();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Checkout failed");
-    } finally {
       setBusy(false);
     }
   }, [keyId, onVerified, planId, scriptReady]);
 
   return (
     <div className="space-y-2">
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-        onReady={() => setScriptReady(true)}
-      />
       <button
         type="button"
         disabled={disabled || busy || !scriptReady}

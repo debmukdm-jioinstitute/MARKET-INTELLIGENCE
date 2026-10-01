@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { RazorpayCheckoutButton } from "@/components/payments/razorpay-checkout-button";
+import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
 import type { RazorpayPlanId } from "@/lib/payments/plans";
 import Link from "next/link";
@@ -42,12 +42,6 @@ const COMPARE_ROWS: { feature: string; mi: string; tickertape: string; screener:
   { feature: "Daily brief in Hindi", mi: "Yes", tickertape: "—", screener: "—" },
   { feature: "Instant Telegram alerts", mi: "Yes", tickertape: "—", screener: "—" },
 ];
-
-function checkoutLabel(planId: RazorpayPlanId): string {
-  if (planId === "day_pass") return "Get Day Pass";
-  if (planId === "pro_annual") return "Subscribe yearly";
-  return "Subscribe monthly";
-}
 
 export default function PricingPage() {
   const { user } = useAuth();
@@ -96,44 +90,16 @@ export default function PricingPage() {
           <p className="text-sm text-rose-600">Could not load billing config.</p>
         ) : checkoutKeyId && data ? (
           <>
-            <div className="grid gap-4 md:grid-cols-3">
-              {data.plans.map((plan) => (
-                <article key={plan.id} className="bento-stat-tile flex flex-col justify-between gap-4 p-5">
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
-                    <p className="mt-2 text-3xl font-semibold tabular-nums">
-                      {plan.displayAmount}
-                      <span className="text-sm font-normal text-muted-foreground">{plan.intervalLabel}</span>
-                    </p>
-                    {plan.worksOutLabel ? (
-                      <p className="mt-1 text-xs font-medium text-primary">{plan.worksOutLabel}</p>
-                    ) : null}
-                    <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
-                  </div>
-                  {!signedIn ? (
-                    <p className="text-sm text-muted-foreground">
-                      <Link href="/login" className="font-semibold text-primary hover:underline">
-                        Sign in
-                      </Link>{" "}
-                      to checkout.
-                    </p>
-                  ) : (
-                    <RazorpayCheckoutButton
-                      planId={plan.id}
-                      keyId={checkoutKeyId}
-                      label={checkoutLabel(plan.id)}
-                      onVerified={() => {
-                        void mutate();
-                        void refreshBilling();
-                      }}
-                    />
-                  )}
-                </article>
-              ))}
-            </div>
-            {data.yearlySavingsNote ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">{data.yearlySavingsNote}</p>
-            ) : null}
+            <PlanCheckoutGrid
+              plans={data.plans}
+              keyId={checkoutKeyId}
+              signedIn={signedIn}
+              yearlySavingsNote={data.yearlySavingsNote}
+              onVerified={() => {
+                void mutate();
+                void refreshBilling();
+              }}
+            />
           </>
         ) : (
           <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">

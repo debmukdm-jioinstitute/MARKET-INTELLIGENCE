@@ -11,6 +11,7 @@ import type { ProfileDocument } from "@/lib/profile/documents";
 import type { ProfileData } from "@/lib/profile/load-profile";
 import type { AssistantActionRow } from "@/lib/site-assistant/audit";
 import { cn } from "@/lib/utils";
+import { ProfilePlanBilling } from "@/components/profile/profile-plan-billing";
 import { Bug, FileText, LogOut, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -351,6 +352,23 @@ export function ProfileClient() {
           {note.text}
         </p>
       ) : null}
+
+      <Section
+        id="plans"
+        title="Plans & billing"
+        subtitle="Day Pass, Monthly, or Yearly — pay with Razorpay (UPI, cards, netbanking). Access activates after payment verification."
+      >
+        <ProfilePlanBilling
+          onUpgraded={() => {
+            void fetch("/api/profile")
+              .then(async (r) => {
+                const j = (await r.json()) as ApiProfile & { error?: string };
+                if (r.ok) setData(j);
+              })
+              .catch(() => undefined);
+          }}
+        />
+      </Section>
 
       {/* Documents */}
       <Section id="documents" title="My documents" subtitle="Everything we've given you or that governs your account. Available to every member, including those who joined before this page existed.">
