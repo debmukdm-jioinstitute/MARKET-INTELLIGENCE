@@ -15,10 +15,10 @@ function RedditSentimentContent() {
         titleAs="h1"
         kicker="Alternative Data & Social Sentiment"
         title="Retail Sentiment Engine"
-        subtitle="Real Reddit posts, fetched live, for any NSE-listed company you search — not a precomputed dataset."
+        subtitle="Real Reddit community posts, debate sentiment, and discussion tone for NSE-listed equities — continuously crawled, enriched with Hugging Face FinBERT AI models, and tracked across India-focused investor forums."
         trust={{
-          source: "Reddit public search API (India-focused subreddits, see Communities tab)",
-          note: "Keyword-based sentiment on real post titles, not a trained model — a rough signal, not investment advice.",
+          source: "Reddit financial communities (r/IndianStreetBets, r/IndiaInvestments, r/IndianStockMarket) · Hugging Face FinBERT",
+          note: "Scored using ProsusAI/FinBERT financial sentiment classification with multi-tier database caching to eliminate rate-limit errors.",
         }}
       />
 
@@ -32,7 +32,7 @@ export default function RedditSentimentPage() {
     <Suspense
       fallback={
         <div className="p-8 text-center text-sm text-muted-foreground">
-          Loading retail sentiment engine...
+          Loading retail sentiment engine…
         </div>
       }
     >

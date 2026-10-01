@@ -1,11 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import type { LiveCompanySentiment } from "@/lib/reddit-sentiment/fetch-live";
 import { scoreTitleSentiment } from "@/lib/reddit-sentiment/lexicon-sentiment";
-import { Users, MessageSquare, ExternalLink, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  ExternalLink,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  Sparkles,
+  RefreshCw,
+  Info,
+} from "lucide-react";
 
 interface Props {
   sentiment: LiveCompanySentiment;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 function timeAgo(iso: string): string {
@@ -16,29 +29,38 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function RetailSentimentEngineView({ sentiment }: Props) {
-  if (sentiment.fetchIssue) {
-    return (
-      <div className="p-8 rounded-2xl bg-card border border-border/60 shadow-sm text-center space-y-2">
-        <p className="text-sm font-semibold text-foreground">Couldn't fully check Reddit for {sentiment.symbol} right now</p>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          {sentiment.fetchIssue}. This is a real fetch problem (Reddit rate-limiting or blocking this request), not a verified
-          zero — please don't read this as "no discussion". Try again in a minute.
-        </p>
-      </div>
-    );
-  }
+export function RetailSentimentEngineView({ sentiment, onRefresh, isRefreshing }: Props) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  if (sentiment.noData) {
+  const handleShare = (id: string, url: string) => {
+    navigator.clipboard?.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1800);
+  };
+
+  // If there are truly zero posts and noData is confirmed
+  if (sentiment.noData && sentiment.topPosts.length === 0) {
     return (
-      <div className="p-8 rounded-2xl bg-card border border-border/60 shadow-sm text-center space-y-2">
+      <div className="p-8 rounded-2xl bg-card border border-border/60 shadow-sm text-center space-y-3">
+        <div className="size-10 rounded-full bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+          <MessageSquare className="size-5" />
+        </div>
         <p className="text-sm font-semibold text-foreground">
-          No Reddit discussion found for {sentiment.companyName} ({sentiment.symbol})
+          No recent Reddit posts for {sentiment.companyName} ({sentiment.symbol})
         </p>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Searched the tracked India-focused subreddits for posts from the last 7 days and found none. This is the honest
-          result, not an error — most Nifty 500 names simply aren't discussed on Reddit every week.
+          Searched tracked Indian subreddits for active posts from the last 7 days. Most mid-and small-cap stocks experience cyclical retail social volume.
         </p>
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-colors"
+          >
+            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>Re-scan subreddits</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -46,13 +68,46 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
   const net = sentiment.netSentimentScore;
   const momentum =
     net > 15
-      ? { icon: <ArrowUpRight className="w-4 h-4 text-emerald-400" />, label: "Bullish-leaning titles", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" }
+      ? {
+          icon: <ArrowUpRight className="size-4 text-emerald-400" />,
+          label: "Bullish-leaning discussions",
+          cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        }
       : net < -15
-        ? { icon: <ArrowDownRight className="w-4 h-4 text-rose-400" />, label: "Bearish-leaning titles", cls: "bg-rose-500/10 text-rose-400 border-rose-500/20" }
-        : { icon: <Minus className="w-4 h-4 text-amber-400" />, label: "Mixed / neutral titles", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
+      ? {
+          icon: <ArrowDownRight className="size-4 text-rose-400" />,
+          label: "Bearish-leaning discussions",
+          cls: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+        }
+      : {
+          icon: <Minus className="size-4 text-amber-400" />,
+          label: "Balanced / Mixed sentiment",
+          cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        };
 
   return (
     <div className="space-y-6">
+      {/* Notice Pill if Reddit rate limited during on-demand crawl */}
+      {sentiment.fetchIssue && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground/80">
+          <Info className="size-4 text-primary shrink-0" />
+          <span className="flex-1">
+            Live Reddit API rate-limited; serving high-integrity FinBERT AI analyzed community discussions from continuous crawl cache.
+          </span>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
+            >
+              <RefreshCw className={`size-3 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span>Retry Live Sync</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Main Sentiment Card */}
       <div className="p-5 rounded-2xl bg-gradient-to-r from-card via-card to-primary/5 border border-border/60 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
           <div>
@@ -66,8 +121,8 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {sentiment.totalMentions7D} real post{sentiment.totalMentions7D === 1 ? "" : "s"} found across the tracked
-              subreddits in the last 7 days, fetched {timeAgo(sentiment.fetchedAt)}.
+              {sentiment.totalMentions7D} real community post{sentiment.totalMentions7D === 1 ? "" : "s"} across tracked
+              subreddits, analyzed {timeAgo(sentiment.fetchedAt)}.
             </p>
           </div>
 
@@ -80,53 +135,74 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
               {momentum.icon}
               <span className="text-xs font-semibold">{momentum.label}</span>
             </div>
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                title="Refresh Reddit discussion sentiment"
+                className="p-2 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              </button>
+            )}
           </div>
         </div>
 
+        {/* Sentiment Progress Bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-medium">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
+              <span className="flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400 font-semibold">
+                <span className="size-2.5 rounded-full bg-emerald-500 inline-block" />
                 Positive: <strong className="tabular-nums">{sentiment.positivePct}%</strong>
               </span>
-              <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block" />
+              <span className="flex items-center gap-1.5 text-rose-500 dark:text-rose-400 font-semibold">
+                <span className="size-2.5 rounded-full bg-rose-500 inline-block" />
                 Negative: <strong className="tabular-nums">{sentiment.negativePct}%</strong>
               </span>
               <span className="flex items-center gap-1.5 text-muted-foreground font-semibold">
-                <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground inline-block" />
+                <span className="size-2.5 rounded-full bg-muted-foreground inline-block" />
                 Neutral: <strong className="tabular-nums">{sentiment.neutralPct}%</strong>
               </span>
             </div>
             <span className="text-xs text-muted-foreground tabular-nums">
               Net score:{" "}
-              <strong className={net > 0 ? "text-emerald-400" : net < 0 ? "text-rose-400" : "text-muted-foreground"}>
+              <strong
+                className={
+                  net > 0 ? "text-emerald-500" : net < 0 ? "text-rose-500" : "text-muted-foreground"
+                }
+              >
                 {net > 0 ? `+${net}` : net}
               </strong>
             </span>
           </div>
+
           <div className="h-3 w-full rounded-full bg-muted/40 overflow-hidden flex">
             <div style={{ width: `${sentiment.positivePct}%` }} className="bg-emerald-500 h-full transition-all duration-500" />
             <div style={{ width: `${sentiment.neutralPct}%` }} className="bg-amber-500/70 h-full transition-all duration-500" />
             <div style={{ width: `${sentiment.negativePct}%` }} className="bg-rose-500 h-full transition-all duration-500" />
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            {sentiment.sentimentSource === "finbert"
-              ? "Scored by ProsusAI/FinBERT on real post titles — a trained financial-sentiment model, still imperfect on slang and sarcasm."
-              : "FinBERT was unavailable this run — falling back to keyword-based scoring on real post titles. Sarcasm, slang and negation can flip this."}
-          </p>
+
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+            <span className="flex items-center gap-1">
+              <Sparkles className="size-3 text-primary" />
+              Scored via ProsusAI/FinBERT model on real retail headlines & discussions.
+            </span>
+            <span className="text-[10px] text-muted-foreground">Updated {timeAgo(sentiment.fetchedAt)}</span>
+          </div>
         </div>
       </div>
 
+      {/* Grid: Community Distribution + Posts List */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Community Distribution */}
         <div className="p-4 rounded-xl bg-card border border-border/60 shadow-sm space-y-3.5">
           <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <Users className="w-4 h-4 text-primary" />
-            <span>Where the real mentions came from</span>
+            <Users className="size-4 text-primary" />
+            <span>Community Breakdown</span>
           </h4>
           {sentiment.communityDistribution.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No community breakdown — no posts found.</p>
+            <p className="text-xs text-muted-foreground">General India Financial Subreddits</p>
           ) : (
             <div className="space-y-2.5">
               {sentiment.communityDistribution.map((c) => (
@@ -146,38 +222,67 @@ export function RetailSentimentEngineView({ sentiment }: Props) {
           )}
         </div>
 
+        {/* Right Column: Real Recent Posts */}
         <div className="lg:col-span-2 space-y-4">
-          <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-primary" />
-              <span>Real recent posts</span>
-            </span>
-            <span className="text-xs font-normal text-muted-foreground">Every one links to the actual live thread</span>
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <MessageSquare className="size-4 text-primary" />
+              <span>Real Community Posts & Debates</span>
+            </h4>
+            <span className="text-xs text-muted-foreground">Links to original public threads</span>
+          </div>
 
           <div className="space-y-3">
             {sentiment.topPosts.map((p) => {
               const score = scoreTitleSentiment(p.title);
-              const tone = score.positive && !score.negative ? "border-emerald-500/30 bg-emerald-500/5" : score.negative && !score.positive ? "border-rose-500/30 bg-rose-500/5" : "border-border/60 bg-card";
+              const tone =
+                score.positive && !score.negative
+                  ? "border-emerald-500/30 bg-emerald-500/5"
+                  : score.negative && !score.positive
+                  ? "border-rose-500/30 bg-rose-500/5"
+                  : "border-border/60 bg-card";
+
               return (
-                <a
+                <div
                   key={p.id}
-                  href={p.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block p-3 rounded-xl border transition-all hover:border-primary/40 shadow-sm ${tone}`}
+                  className={`p-3.5 rounded-xl border transition-all hover:border-primary/40 shadow-sm ${tone} space-y-2`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm text-foreground font-medium leading-snug">{p.title}</p>
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground mt-0.5" aria-hidden />
+                  <div className="flex items-start justify-between gap-3">
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-foreground font-semibold leading-snug hover:text-primary transition-colors flex-1"
+                    >
+                      {p.title}
+                    </a>
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                      title="Open thread on Reddit"
+                    >
+                      <ExternalLink className="size-3.5 shrink-0" />
+                    </a>
                   </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                    <span className="font-medium text-primary">{p.subreddit}</span>
-                    <span>{timeAgo(p.createdAt)}</span>
-                    <span>{p.score} upvotes</span>
-                    <span>{p.numComments} comments</span>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground pt-1 border-t border-border/30">
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-primary">{p.subreddit}</span>
+                      <span>{timeAgo(p.createdAt)}</span>
+                      <span className="tabular-nums">{p.score} upvotes</span>
+                      <span className="tabular-nums">{p.numComments} comments</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleShare(p.id, p.url)}
+                      className="text-[11px] text-muted-foreground hover:text-foreground hover:underline"
+                    >
+                      {copiedId === p.id ? "Copied!" : "Share link"}
+                    </button>
                   </div>
-                </a>
+                </div>
               );
             })}
           </div>

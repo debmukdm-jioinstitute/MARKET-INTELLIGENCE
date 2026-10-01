@@ -59,6 +59,10 @@
     {
       "path": "/api/cron/company-disclosures",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/reddit-sentiment",
+      "schedule": "30 6 * * *"
     }
   ]
 }
