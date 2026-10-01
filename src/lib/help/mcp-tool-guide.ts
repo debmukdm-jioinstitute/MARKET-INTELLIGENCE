@@ -26,6 +26,7 @@ const ASK: Partial<Record<string, string>> = {
   get_feed_hub: "Show the feed hub.",
   get_source_health: "Which data sources are failing right now?",
   get_market_data_brief: "Send me the latest market data brief from all collectors.",
+  get_company_disclosures: "Show the latest NSE company disclosures and concall filings.",
   get_daily_brief: "Summarise the latest daily brief.",
   get_security_risk: "Risk profile for RELIANCE.",
   get_stock_research: "Research summary for TCS.",
