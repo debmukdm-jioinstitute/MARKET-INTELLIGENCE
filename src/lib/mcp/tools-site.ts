@@ -238,6 +238,38 @@ export const SITE_TOOLS: Tool[] = [
     },
   },
 
+  // ---- Company disclosures (free NSE IR feed behind /intelligence/company) ----
+  {
+    name: "get_company_disclosures",
+    title: "Company disclosures (NSE filings)",
+    category: "Research",
+    description:
+      "Latest exchange-published company disclosures (NSE corporate announcements): concall schedules/transcripts, board outcomes, investor updates. Shown exactly as filed with original PDF links; empty when the collector has no rows — never invented.",
+    inputSchema: {
+      type: "object",
+      properties: { limit: { type: "integer", minimum: 1, maximum: 100, description: "Max filings to return (default 20)" } },
+      required: [],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { latestDisclosures } = await import("@/lib/disclosures/store");
+      const limit = typeof (a as { limit?: unknown }).limit === "number" ? (a as { limit: number }).limit : 20;
+      const rows = await latestDisclosures(Math.min(Math.max(limit, 1), 100));
+      return {
+        count: rows.length,
+        source: "NSE India corporate announcements (collected twice daily)",
+        disclosures: rows.map((d) => ({
+          company: d.companyName,
+          symbol: d.symbol,
+          category: d.category,
+          headline: d.headline,
+          announcedAt: d.announcedAt,
+          pdf: d.pdfUrl,
+        })),
+      };
+    },
+  },
+
   // ---- Research ----
   {
     name: "get_research_pack",
