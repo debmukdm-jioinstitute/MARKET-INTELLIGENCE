@@ -7,6 +7,7 @@ import {
   saveDisclosures,
 } from "@/lib/disclosures/store";
 import type { NseAnnouncement } from "@/lib/disclosures/nse";
+import { enrichDisclosuresWithAi } from "@/lib/disclosures/ai-enricher";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -80,7 +81,8 @@ export async function POST(req: Request) {
 
   try {
     await ensureDisclosuresSchema();
-    const saved = await saveDisclosures(items);
+    const enriched = await enrichDisclosuresWithAi(items);
+    const saved = await saveDisclosures(enriched);
     const pruned = await pruneDisclosures().catch(() => 0);
     await clearFailure("nse-disclosures").catch(() => {});
     return NextResponse.json({ ok: true, received: raw.length, saved, pruned });

@@ -88,15 +88,15 @@ export function AmcSourcesView() {
 
         <div className="divide-y divide-border/40">
           {AMC_DISCLOSURE_SOURCES.map((amc) => (
-            <div key={amc.amc} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+            <div key={amc.amcId} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
               <div className="space-y-1">
-                <div className="font-semibold text-sm text-foreground">{amc.amc}</div>
-                <div className="text-xs text-muted-foreground">AMC Portal: {amc.portalUrl}</div>
+                <div className="font-semibold text-sm text-foreground">{amc.amcName}</div>
+                <div className="text-xs text-muted-foreground">AMC Portal: {amc.websiteUrl}</div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <a
-                  href={amc.monthlyDisclosuresUrl}
+                  href={amc.portfolioDisclosureUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80 text-foreground transition-colors"
@@ -107,7 +107,7 @@ export function AmcSourcesView() {
                 </a>
 
                 <a
-                  href={amc.portalUrl}
+                  href={amc.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 text-foreground transition-colors"
