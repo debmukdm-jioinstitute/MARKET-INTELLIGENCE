@@ -61,6 +61,8 @@ export function ensureDisclosuresSchema(): Promise<void> {
     await db`ALTER TABLE company_disclosures ADD COLUMN IF NOT EXISTS ai_summary text`;
     await db`CREATE INDEX IF NOT EXISTS idx_disclosures_time ON company_disclosures (announced_at DESC)`;
     await db`CREATE INDEX IF NOT EXISTS idx_disclosures_symbol ON company_disclosures (symbol)`;
+    // Eradicate any legacy non-working mock disclosure IDs
+    await db`DELETE FROM company_disclosures WHERE seq_id IN ('106804450', '106804445', '106804440', '106804435', '106804430')`;
   })().catch((e) => {
     ready = null;
     throw e;
@@ -156,9 +158,13 @@ export async function latestDisclosures(limit = 40): Promise<DisclosureRow[]> {
         LIMIT ${Math.min(Math.max(limit, 1), 200)}
       `;
       if (rows.length > 0) {
-        const mapped = rows.map(rowToDisclosure);
-        memoryCache = { items: mapped, timestamp: Date.now() };
-        return mapped;
+        const legacyMockIds = new Set(['106804450', '106804445', '106804440', '106804435', '106804430']);
+        const validRows = rows.filter((r) => !legacyMockIds.has(String(r.seq_id)));
+        if (validRows.length > 0) {
+          const mapped = validRows.map(rowToDisclosure);
+          memoryCache = { items: mapped, timestamp: Date.now() };
+          return mapped;
+        }
       }
     } catch (e) {
       console.warn("[disclosures] DB query failed, falling back to live crawler:", e);

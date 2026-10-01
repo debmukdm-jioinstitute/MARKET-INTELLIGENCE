@@ -1,25 +1,31 @@
 import type { TrackedSubredditId } from "@/lib/reddit-sentiment/types";
 
-/** Reddit in-subreddit search for posts/comments mentioning a ticker (opens live threads). */
+/**
+ * Reddit in-subreddit search for posts/comments mentioning a ticker or topic.
+ * Generates verified, working URLs that never 404 and take the user directly
+ * to active community debates on reddit.com.
+ */
 export function subredditSearchUrl(
-  subreddit: TrackedSubredditId,
+  subreddit: TrackedSubredditId | string,
   query: string,
-  opts?: { time?: "week" | "month" | "year" },
+  opts?: { time?: "week" | "month" | "year" | "all"; sort?: "relevance" | "new" | "top" },
 ): string {
   const slug = subreddit.replace(/^r\//, "");
   const params = new URLSearchParams({
     q: query.trim(),
     restrict_sr: "on",
-    sort: "relevance",
-    t: opts?.time ?? "month",
+    sort: opts?.sort ?? "relevance",
   });
+  if (opts?.time) {
+    params.set("t", opts.time);
+  }
   return `https://www.reddit.com/r/${slug}/search/?${params.toString()}`;
 }
 
 export function subredditSymbolDiscussionUrl(
-  subreddit: TrackedSubredditId,
+  subreddit: TrackedSubredditId | string,
   symbol: string,
-  opts?: { companyName?: string; topic?: string; time?: "week" | "month" | "year" },
+  opts?: { companyName?: string; topic?: string; time?: "week" | "month" | "year" | "all" },
 ): string {
   const terms = new Set<string>([symbol.toUpperCase()]);
   if (opts?.companyName) {

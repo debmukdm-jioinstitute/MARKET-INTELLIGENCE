@@ -208,7 +208,16 @@ export function RetailSentimentEngineView({ sentiment, onRefresh, isRefreshing }
               {sentiment.communityDistribution.map((c) => (
                 <div key={c.subreddit} className="space-y-1">
                   <div className="flex items-center justify-between text-xs gap-2">
-                    <span className="font-semibold text-foreground/90">{c.subreddit}</span>
+                    <a
+                      href={`https://www.reddit.com/${c.subreddit.replace(/^r\//, "r/")}/search/?q=${encodeURIComponent(sentiment.symbol)}&restrict_sr=1&sort=new`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-foreground/90 hover:text-primary hover:underline inline-flex items-center gap-1 group"
+                      title={`Search ${sentiment.symbol} discussions on ${c.subreddit}`}
+                    >
+                      <span>{c.subreddit}</span>
+                      <ExternalLink className="size-2.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </a>
                     <span className="text-muted-foreground tabular-nums shrink-0">
                       {c.percentage}% ({c.postCount} post{c.postCount === 1 ? "" : "s"})
                     </span>
@@ -224,12 +233,24 @@ export function RetailSentimentEngineView({ sentiment, onRefresh, isRefreshing }
 
         {/* Right Column: Real Recent Posts */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2">
-              <MessageSquare className="size-4 text-primary" />
-              <span>Real Community Posts & Debates</span>
-            </h4>
-            <span className="text-xs text-muted-foreground">Links to original public threads</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-0.5">
+              <h4 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2">
+                <MessageSquare className="size-4 text-primary" />
+                <span>Real Community Posts & Debates</span>
+              </h4>
+              <span className="text-xs text-muted-foreground">Links directly to active discussions and verified search feeds</span>
+            </div>
+            <a
+              href={`https://www.reddit.com/r/IndianStreetBets/search/?q=${encodeURIComponent(sentiment.symbol)}&restrict_sr=1&sort=new`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
+              title={`Browse live ${sentiment.symbol} discussions on Reddit`}
+            >
+              <span>Live Reddit Feed</span>
+              <ExternalLink className="size-3" />
+            </a>
           </div>
 
           <div className="space-y-3">
@@ -269,7 +290,15 @@ export function RetailSentimentEngineView({ sentiment, onRefresh, isRefreshing }
 
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground pt-1 border-t border-border/30">
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-primary">{p.subreddit}</span>
+                      <a
+                        href={`https://www.reddit.com/${p.subreddit.replace(/^r\//, "r/")}/search/?q=${encodeURIComponent(sentiment.symbol)}&restrict_sr=1&sort=new`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-primary hover:underline"
+                        title={`View ${sentiment.symbol} threads in ${p.subreddit}`}
+                      >
+                        {p.subreddit}
+                      </a>
                       <span>{timeAgo(p.createdAt)}</span>
                       <span className="tabular-nums">{p.score} upvotes</span>
                       <span className="tabular-nums">{p.numComments} comments</span>

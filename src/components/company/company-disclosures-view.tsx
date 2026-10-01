@@ -488,8 +488,28 @@ PDF: ${d.pdfUrl}` : ""}`;
                           <ExternalLink className="size-3" />
                         </a>
                       ) : (
-                        <span className="text-muted-foreground">Exchange filing text disclosure</span>
+                        <a
+                          href={`https://www.nseindia.com/companies-listing/corporate-filings-announcements?symbol=${encodeURIComponent(d.symbol)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:underline"
+                        >
+                          <FileText className="size-3.5" />
+                          <span>View on NSE ({d.symbol})</span>
+                          <ExternalLink className="size-3" />
+                        </a>
                       )}
+
+                      <a
+                        href={`https://www.nseindia.com/companies-listing/corporate-filings-announcements?symbol=${encodeURIComponent(d.symbol)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground font-medium hidden md:inline-flex items-center gap-1"
+                        title="Verify filings on NSE India"
+                      >
+                        <span>NSE Filings</span>
+                        <ExternalLink className="size-2.5" />
+                      </a>
 
                       <Link
                         href={`/research/${encodeURIComponent(d.symbol)}`}

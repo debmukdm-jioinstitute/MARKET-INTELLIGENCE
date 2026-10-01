@@ -31,6 +31,8 @@ export function ensureRedditSchema(): Promise<void> {
       )
     `;
     await db`CREATE INDEX IF NOT EXISTS idx_reddit_sentiment_fetched ON reddit_sentiment_cache (fetched_at DESC)`;
+    // Invalidate any legacy rows in postgres that had fabricated /comments/ URLs
+    await db`DELETE FROM reddit_sentiment_cache WHERE top_posts::text LIKE '%comments/1%'`;
   })().catch((e) => {
     ready = null;
     throw e;
@@ -100,6 +102,17 @@ export async function getCachedSentiment(symbolRaw: string): Promise<LiveCompany
       `;
       if (rows.length > 0) {
         const r = rows[0] as Record<string, unknown>;
+        const rawTopPosts = Array.isArray(r.top_posts) ? (r.top_posts as { url?: string }[]) : [];
+        const hasFabricatedUrls = rawTopPosts.some(
+          (p) => typeof p.url === "string" && /comments\/1[a-z0-9]+/i.test(p.url)
+        );
+        if (hasFabricatedUrls && SEED_REDDIT_SENTIMENT[symbol]) {
+          const seed = SEED_REDDIT_SENTIMENT[symbol];
+          memoryCache.set(symbol, { at: Date.now(), data: seed });
+          saveCachedSentiment(seed).catch(() => {});
+          return seed;
+        }
+
         const data: LiveCompanySentiment = {
           symbol: String(r.symbol),
           companyName: String(r.company_name),
