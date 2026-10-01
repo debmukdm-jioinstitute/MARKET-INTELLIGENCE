@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -93,7 +95,12 @@ export function WhatChangedModule() {
 
       <div className="mt-3 divide-y divide-border/60">
         {items.length === 0 && isLoading ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">Building shift report…</p>
+          <GlassLoader
+            variant="card"
+            message="Building live market shift report..."
+            detail="Synthesizing macro catalysts, regulatory disclosures and institutional flows"
+            statusBadge="MARKET SHIFT ENGINE"
+          />
         ) : null}
         {items.map((item) => {
           const isExpanded = expandedId === item.id;

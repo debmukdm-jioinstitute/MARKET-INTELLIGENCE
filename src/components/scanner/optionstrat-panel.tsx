@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { Panel } from "@/components/layout/page-header";
 import { leanToBias, optionContextForFnoIndex } from "@/lib/optionstrat/fno-index-options";
 import type { StrategyLeg, StrategyRecommendation } from "@/lib/optionstrat/strategy-recommender";
@@ -184,7 +186,7 @@ export function OptionStratPanel({
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading option chain & strategies…</p>
+          <GlassLoader variant="card" message="Loading option chain & strategies..." detail="Calculating Greeks, implied volatility surfaces & payoff distribution" statusBadge="DERIVATIVES ENGINE ACTIVE" />
         ) : data && !data.ok ? (
           <p className="text-sm text-amber-600">{data.error ?? "Could not load strategies."}</p>
         ) : null}

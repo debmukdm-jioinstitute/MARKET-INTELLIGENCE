@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { useAuth } from "@/components/providers/auth-provider";
 import { isGuestReadablePortalPath } from "@/lib/seo/public-routes";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,9 +28,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="grid min-h-screen place-items-center bg-background text-sm tracking-widest text-muted-foreground">
-        OPENING TERMINAL…
-      </div>
+      <GlassLoader
+        variant="fullscreen"
+        message="Initializing Market Intelligence Terminal..."
+        detail="Validating authentication tokens & establishing encrypted data feeds"
+        statusBadge="SECURITY GATEWAY ACTIVE"
+      />
     );
   }
 

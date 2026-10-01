@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { useInstitutionalHub } from "@/hooks/use-institutional-hub";
@@ -145,7 +147,7 @@ export function InstitutionalIntelligenceDashboard() {
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {loading && !data ? (
-        <p className="text-sm text-muted-foreground">Loading institutional flows…</p>
+        <GlassLoader variant="card" message="Loading institutional flows & smart-money signals..." detail="Parsing NSE FII/DII cash books, bulk deals & AMFI mutual-fund accumulation" statusBadge="SMART MONEY RADAR" icon="chart" />
       ) : null}
 
       {data ? (

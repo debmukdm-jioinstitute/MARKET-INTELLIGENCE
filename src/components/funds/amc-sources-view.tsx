@@ -54,131 +54,70 @@ export function AmcSourcesView() {
           <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-1">
             <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>SEBI Master Circular 2024</span>
+              <span>AMFI Daily NAV Feed</span>
             </div>
             <div className="text-sm font-bold text-foreground">
-              100% Holdings Transparency
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              ISIN-level disclosures, sector classifications, and cash weights.
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-1">
-            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-              <FileText className="w-3.5 h-3.5 text-blue-500" />
-              <span>Live Ingestion Endpoint</span>
-            </div>
-            <div className="text-sm font-bold text-foreground truncate" title="https://www.amfiindia.com/spages/NAVAll.txt">
-              amfiindia.com/spages/NAVAll.txt
+              End-of-Day Publication (9:00 PM IST)
             </div>
             <div className="text-[11px] text-muted-foreground">
               Daily NAVs parsed across all registered mutual fund schemes.
             </div>
           </div>
+
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-1">
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+              <Layers className="w-3.5 h-3.5 text-blue-500" />
+              <span>Half-Yearly Portfolios</span>
+            </div>
+            <div className="text-sm font-bold text-foreground">
+              March 31 & September 30
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              Comprehensive complete disclosure of all underlying assets.
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* AMC Portals Directory Table */}
-      <div className="rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm">
+      {/* AMC Registry Table */}
+      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border/60 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              Official Asset Management Company (AMC) Disclosure Portals
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Verified statutory disclosure links for monthly portfolio Excel files, factsheets, and regulatory SID/KIM filings
-            </p>
-          </div>
-          <span className="text-xs text-muted-foreground font-semibold">
-            {AMC_DISCLOSURE_SOURCES.length} AMCs Indexed
-          </span>
+          <h2 className="text-sm font-bold text-foreground">Official AMC Portals & Disclosure Endpoints</h2>
+          <span className="text-xs text-muted-foreground">{AMC_DISCLOSURE_SOURCES.length} Fund Houses Tracked</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/40 text-xs text-muted-foreground uppercase tracking-wider border-b border-border/60">
-              <tr>
-                <th className="px-4 py-3">Fund House (AMC)</th>
-                <th className="px-4 py-3">Monthly Portfolio Disclosures</th>
-                <th className="px-4 py-3">Fund Factsheets</th>
-                <th className="px-4 py-3">Scheme Documents (SID / KIM)</th>
-                <th className="px-4 py-3">Formats</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/40">
-              {AMC_DISCLOSURE_SOURCES.map((amc) => (
-                <tr key={amc.amcId} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3.5">
-                    <div className="flex flex-col">
-                      <a
-                        href={amc.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-bold text-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-                      >
-                        <span>{amc.amcName}</span>
-                        <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                      </a>
-                      <span className="text-xs text-muted-foreground">
-                        {amc.monthlyDisclosureSchedule}
-                      </span>
-                    </div>
-                  </td>
+        <div className="divide-y divide-border/40">
+          {AMC_DISCLOSURE_SOURCES.map((amc) => (
+            <div key={amc.amc} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+              <div className="space-y-1">
+                <div className="font-semibold text-sm text-foreground">{amc.amc}</div>
+                <div className="text-xs text-muted-foreground">AMC Portal: {amc.portalUrl}</div>
+              </div>
 
-                  <td className="px-4 py-3.5">
-                    <a
-                      href={amc.portfolioDisclosureUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium px-2.5 py-1 rounded bg-primary/10 border border-primary/20 transition-colors"
-                    >
-                      <span>Portfolio Sheet</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </td>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={amc.monthlyDisclosuresUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Monthly Portfolios</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </a>
 
-                  <td className="px-4 py-3.5">
-                    <a
-                      href={amc.factsheetsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary font-medium px-2.5 py-1 rounded bg-muted border border-border/50 transition-colors"
-                    >
-                      <span>Monthly Factsheet</span>
-                      <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                    </a>
-                  </td>
-
-                  <td className="px-4 py-3.5">
-                    <a
-                      href={amc.schemeDocumentsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary font-medium px-2.5 py-1 rounded bg-muted border border-border/50 transition-colors"
-                    >
-                      <span>SID / KIM Filings</span>
-                      <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                    </a>
-                  </td>
-
-                  <td className="px-4 py-3.5">
-                    <div className="flex flex-wrap gap-1">
-                      {amc.supportedFormats.map((fmt) => (
-                        <span
-                          key={fmt}
-                          className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/40 font-medium"
-                        >
-                          {fmt}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                <a
+                  href={amc.portalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 text-foreground transition-colors"
+                >
+                  <span>AMC Portal</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { Lines } from "@/components/charts/terminal-charts";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -83,7 +85,14 @@ export function SecurityDetailDialog({ symbol, position, open, onOpenChange }: P
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           <div className="mx-auto max-w-6xl space-y-6">
-        {loading ? <p className="text-sm text-muted-foreground">Loading live security data…</p> : null}
+        {loading ? (
+          <GlassLoader
+            variant="card"
+            message="Loading live security telemetry..."
+            detail="Streaming realtime tick feeds, market depth & fundamental ratios"
+            statusBadge="MARKET DATA STREAM"
+          />
+        ) : null}
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
         {data && q ? (

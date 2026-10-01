@@ -543,3 +543,72 @@
     font-size: 16px !important;
   }
 }
+
+
+/* Glassmorphic 3D Loader Animations & Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@keyframes glass-orbit-slow {
+  0% {
+    transform: rotateX(65deg) rotateY(15deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(65deg) rotateY(15deg) rotateZ(360deg);
+  }
+}
+
+@keyframes glass-orbit-reverse {
+  0% {
+    transform: rotateX(-65deg) rotateY(-15deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateX(-65deg) rotateY(-15deg) rotateZ(0deg);
+  }
+}
+
+@keyframes glass-float {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(6deg) rotateY(-4deg);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes glass-shimmer {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}

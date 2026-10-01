@@ -9,6 +9,8 @@ const PRIVATE_PORTAL_PREFIXES = ["/portfolio", "/profile", "/algo", "/onboarding
 
 const GUEST_PORTAL_PREFIXES = [
   "/Home",
+  "/loader-preview",
+  "/funds",
   "/research",
   "/research-reports",
   "/markets",
@@ -30,6 +32,7 @@ export const PUBLIC_SITEMAP_STATIC: { path: string; changeFrequency: ChangeFrequ
   { path: "/research", changeFrequency: "daily", priority: 0.95 },
   { path: "/research/ipo", changeFrequency: "daily", priority: 0.9 },
   { path: "/research/offers", changeFrequency: "daily", priority: 0.85 },
+  { path: "/funds", changeFrequency: "daily", priority: 0.9 },
   { path: "/markets", changeFrequency: "hourly", priority: 0.9 },
   { path: "/markets/india", changeFrequency: "hourly", priority: 0.85 },
   { path: "/macro", changeFrequency: "daily", priority: 0.85 },

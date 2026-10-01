@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import type { BacktestRun } from "@/lib/scanner/types";
@@ -39,7 +41,7 @@ export function BacktestDashboard() {
     });
   }, [run, chartIds]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading backtest…</p>;
+  if (isLoading) return <div className="py-8 flex justify-center"><GlassLoader variant="card" message="Loading quantitative backtest..." detail="Evaluating rule performance and Sharpe metrics across historical data" statusBadge="QUANT BACKTEST ENGINE" /></div>;
   if (isAuthRequiredError(error)) {
     return <SignInRequiredBanner feature="scanner backtests" nextPath="/intelligence/backtesting" />;
   }

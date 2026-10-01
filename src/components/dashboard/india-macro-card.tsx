@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import Link from "next/link";
 import { ArrowUpRight, Globe2 } from "lucide-react";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
@@ -122,7 +124,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
         </div>
 
         {!data ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading India macro feed…</p>
+          <GlassLoader variant="card" message="Loading India macro feed..." detail="Monitoring RBI policy rates, GST collections & CPI inflation" statusBadge="INDIA MACRO ACTIVE" />
         ) : (
           <div className="mt-3 space-y-2.5 text-sm font-sans">
             {indicators.map((ind) => (

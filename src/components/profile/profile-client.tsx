@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import { useAuth } from "@/components/providers/auth-provider";
 import { usePushSubscription } from "@/components/layout/push-notifications-toggle";
 import { downloadOnboardingFormHtml } from "@/lib/onboarding/render-form-html";
@@ -299,7 +301,7 @@ export function ProfileClient() {
       </div>
     );
   }
-  if (!data) return <p className="py-16 text-center text-sm text-muted-foreground">Loading your profile…</p>;
+  if (!data) return <div className="py-12 flex justify-center"><GlassLoader variant="page" message="Loading your investor profile..." detail="Retrieving account settings, portfolio records & API permissions" statusBadge="ACCOUNT SECURITY VERIFIED" icon="shield" /></div>;
 
   const { profile, documents, founder } = data;
   const initial = (profile.name || profile.email).trim().charAt(0).toUpperCase();

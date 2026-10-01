@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import Link from "next/link";
 import { ArrowUpRight, Globe } from "lucide-react";
 import { formatPct } from "@/lib/format";
@@ -70,7 +72,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
         </div>
 
         {!data ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading global radar…</p>
+          <GlassLoader variant="card" message="Loading global macro radar..." detail="Tracking sovereign yields, commodities & currency crosses" statusBadge="GLOBAL RADAR" />
         ) : (
           <div className="mt-3 space-y-3 text-sm">
             <div className="space-y-1.5">

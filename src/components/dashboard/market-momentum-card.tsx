@@ -1,5 +1,7 @@
 "use client";
 
+import { GlassLoader } from "@/components/ui/glass-loader";
+
 import Link from "next/link";
 import { ArrowUpRight, Flame } from "lucide-react";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -37,7 +39,7 @@ export function MarketMomentumCard() {
           </Link>
         </div>
 
-        {loading ? <p className="mt-3 text-sm text-muted-foreground">Loading NIFTY trend data…</p> : null}
+        {loading ? <GlassLoader variant="card" message="Loading NIFTY trend data..." detail="Analyzing moving average regimes and price momentum" statusBadge="NIFTY TELEMETRY" /> : null}
         {error ? <p className="mt-3 text-sm text-rose-600">Trend data unavailable: {error}</p> : null}
 
         {momentum && !loading ? (

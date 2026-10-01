@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { FundSubnav, type FundTab } from "@/components/funds/fund-subnav";
 import { AmcSourcesView } from "@/components/funds/amc-sources-view";
+import { GlassLoader } from "@/components/ui/glass-loader";
 
 type FundSummary = {
   id: string;
@@ -47,7 +48,17 @@ function FundDirectory() {
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-center text-sm text-muted-foreground">Loading live NAVs from AMFI…</div>;
+    return (
+      <div className="py-8 flex justify-center">
+        <GlassLoader
+          variant="page"
+          message="Loading live NAVs from AMFI..."
+          detail="Ingesting official AMFI daily NAV feeds, AMC factsheets & institutional disclosures"
+          statusBadge="AMFI NAV CRAWLER ACTIVE"
+          icon="chart"
+        />
+      </div>
+    );
   }
 
   if (error) {
@@ -93,9 +104,13 @@ function FundsContent() {
   const router = useRouter();
 
   const tabParam = (searchParams.get("tab") as FundTab) || "directory";
-  const [activeTab, setActiveTab] = useState<FundTab>(
-    tabParam === "sources" ? "sources" : "directory"
-  );
+  const [activeTab, setActiveTab] = useState<FundTab>(tabParam);
+
+  useEffect(() => {
+    if (tabParam && ["directory", "sources"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const handleTabChange = (tab: FundTab) => {
     setActiveTab(tab);
@@ -108,13 +123,14 @@ function FundsContent() {
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Mutual Funds"
-        title="Mutual Fund Directory"
-        subtitle="Scheme registry with live AMFI NAVs. Portfolio-level analytics are unavailable until AMC disclosures are ingested from a verified source."
+        kicker="Invest & Institutional Flow Intelligence"
+        title="Mutual Fund Intelligence"
+        subtitle="Live daily NAVs directly from AMFI (NAVAll.txt) across India's premier mutual funds."
         trust={{
-          source: "AMFI NAVAll.txt (live) · AMC monthly portfolio disclosures (SEBI Master Circular 2024)",
-          asOf: "Live",
-          methodology: "NAVs fetched on demand from AMFI and cached 15 minutes. No figures are estimated or stored.",
+          source: "AMFI Daily NAV Feed (amfiindia.com/spages/NAVAll.txt)",
+          asOf: "Daily AMFI update (15-min cache)",
+          methodology:
+            "NAV values are fetched verbatim from AMFI's official text feed by scheme code. We do not publish portfolio holdings or analytics until a verified disclosure feed is connected.",
         }}
       />
 
@@ -130,7 +146,19 @@ function FundsContent() {
 
 export default function FundsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading Mutual Fund Directory...</div>}>
+    <Suspense
+      fallback={
+        <div className="py-8 flex justify-center">
+          <GlassLoader
+            variant="page"
+            message="Loading live NAVs from AMFI..."
+            detail="Ingesting official AMFI daily NAV feeds, AMC factsheets & institutional disclosures"
+            statusBadge="AMFI NAV CRAWLER ACTIVE"
+            icon="chart"
+          />
+        </div>
+      }
+    >
       <FundsContent />
     </Suspense>
   );
