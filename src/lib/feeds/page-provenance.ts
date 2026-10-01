@@ -108,15 +108,15 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
   {
     prefix: "/intelligence/company",
     match: {
-      summary: "Company-specific intelligence — currently unavailable: no verified IR disclosure or concall transcript feed is connected.",
+      summary: "Company-specific intelligence — live NSE corporate-announcement feed, collected twice daily; concall filings highlighted.",
       chips: [
         {
           kind: "api",
-          label: "Company intelligence desk",
-          source: { provider: "Feed not connected", url: "/api/company/intelligence" },
-          fetchMethod: "dataStatus: UNAVAILABLE — no verified feed",
+          label: "Company disclosures",
+          source: { provider: "NSE India", url: "/api/collector/disclosures-ingest" },
+          fetchMethod: "fetchNseAnnouncements() — NSE corporate-announcements API via nse-session cookie bootstrap — src/lib/disclosures/nse.ts",
         },
-        ...chips("nse", "bse"),
+        ...chips("nse"),
       ],
     },
   },
