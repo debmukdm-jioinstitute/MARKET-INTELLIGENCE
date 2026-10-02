@@ -438,6 +438,19 @@ export async function ensureSchema(): Promise<void> {
       // inventing a price. Written by the quote service (throttled), read on
       // live-source failure. Free-tier friendly: one row per symbol.
       await db`
+        CREATE TABLE IF NOT EXISTS retargeting_sends (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          template_id text NOT NULL,
+          recipient_email text NOT NULL,
+          subject text NOT NULL,
+          sent_at timestamptz NOT NULL DEFAULT now(),
+          sent_by text NOT NULL,
+          resend_id text
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_retargeting_sends_email ON retargeting_sends(recipient_email, sent_at DESC)`;
+
+      await db`
         CREATE TABLE IF NOT EXISTS quote_last_good (
           symbol text PRIMARY KEY,
           price double precision NOT NULL,

@@ -16,6 +16,7 @@ import {
   Mail,
   Megaphone,
   Sparkles,
+  Target,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,7 @@ import { usePathname, useRouter } from "next/navigation";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/retargeting", label: "Retargeting", icon: Target },
   { href: "/admin/tabs", label: "App Tabs", icon: LayoutList },
   { href: "/admin/pages", label: "Portal pages", icon: LayoutList },
   { href: "/admin/live-editor", label: "Live editor", icon: PencilLine },
