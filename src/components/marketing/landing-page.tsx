@@ -28,6 +28,7 @@ import {
 } from "@/lib/marketing/pricing-marketing";
 import { TelegramOneClickButton } from "@/components/telegram/telegram-one-click-modal";
 import Image from "next/image";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -301,9 +302,7 @@ export function LandingPage() {
         <header className="sticky top-0 z-30 border-b border-white/50 bg-white/70 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-4 md:gap-6">
-              <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-                <img src="/logo.png" alt="Market Intelligence" className="h-10 w-auto mix-blend-multiply sm:h-12" />
-              </Link>
+              <BrandLogo size="xl" priority invertOnDark={false} className="sm:h-12" />
               <span className="hidden items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500 sm:inline-flex">
                 <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Sourced data
@@ -996,7 +995,7 @@ export function LandingPage() {
         <footer className="border-t border-white/60 bg-white/40 px-5 py-14 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:justify-between">
             <div>
-              <img src="/logo.png" alt="Market Intelligence" className="h-10 w-auto mix-blend-multiply dark:invert" />
+              <BrandLogo size="lg" href="/" invertOnDark={false} />
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
                 India-first market intelligence — screeners, AI Desk, Options Flow, macro, and Telegram alerts. Not investment advice.
               </p>

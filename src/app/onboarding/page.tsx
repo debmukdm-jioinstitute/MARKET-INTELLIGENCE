@@ -1,5 +1,5 @@
 import { OnboardingFormClient } from "@/components/onboarding/onboarding-form-client";
-import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 export const metadata = {
   title: "Customer onboarding · Market Intelligence",
@@ -18,9 +18,7 @@ export default async function OnboardingPage({
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-muted px-5 py-16">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(26,115,232,0.06),transparent)]" />
       <div className="relative mx-auto w-full max-w-lg rounded-2xl border border-border bg-white p-8 shadow-[var(--shadow-lg)]">
-        <Link href="/" className="inline-block">
-          <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto" />
-        </Link>
+        <BrandLogo size="md" priority invertOnDark={false} />
         <h1 className="mt-6 text-2xl font-semibold text-foreground">Your onboarding form</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Auto-filled with your account details, every product feature on the site, subscribed services, and

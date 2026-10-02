@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Home, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -382,9 +383,7 @@ export function AppNav() {
             className="fixed inset-x-0 top-0 z-[61] flex max-h-[100dvh] flex-col overflow-hidden border-b border-border bg-background dark:bg-card shadow-[var(--shadow-lg)] max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] max-lg:max-h-none"
           >
             <div className="mx-auto flex h-14 w-full max-w-7xl shrink-0 items-center justify-between px-4 sm:px-6">
-              <Link href="/Home" onClick={close} className="flex items-center gap-2.5">
-                <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
-              </Link>
+              <BrandLogo size="sm" href="/Home" priority className="gap-2.5" onClick={close} />
               <button type="button" onClick={close} aria-label="Close navigation" className="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-accent hover:text-foreground">
                 <X className="size-5" />
               </button>

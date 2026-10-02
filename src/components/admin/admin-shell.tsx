@@ -19,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV = [
@@ -54,7 +55,7 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
       <div className="flex min-h-screen flex-col bg-white text-gray-900">
         <header className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Market Intelligence" className="h-5 w-auto dark:invert" />
+            <BrandLogo variant="mark" size="xs" href="/" invertOnDark={false} />
             <span className="text-sm font-semibold text-gray-600">Admin · Live editor</span>
           </div>
           <div className="flex items-center gap-3">
@@ -81,7 +82,7 @@ export function AdminShell({ user, children }: { user: SessionUser; children: Re
     <div className="flex min-h-screen bg-white text-gray-900">
       <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200">
         <div className="border-b border-gray-200 px-5 py-4">
-          <img src="/logo.png" alt="Market Intelligence" className="h-6 w-auto dark:invert" />
+          <BrandLogo size="sm" href="/" invertOnDark={false} />
           <h1 className="mt-2 text-sm font-semibold text-muted-foreground">Admin backend</h1>
         </div>
         <nav className="flex-1 space-y-0.5 px-2 py-3">

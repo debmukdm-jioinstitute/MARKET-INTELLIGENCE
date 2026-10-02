@@ -17,6 +17,10 @@ const googleSans = Google_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(absoluteUrl("/")),
+  icons: {
+    icon: [{ url: "/logo-mark-32.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/logo-mark-192.png", sizes: "192x192", type: "image/png" }],
+  },
   ...pageMetadata({
     title: "Free Indian Stock Market Research & Portfolio Tools",
     description:
@@ -41,12 +45,13 @@ const orgJsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      name: "Market Intelligence",
+      name: "Market intelligence",
       url: absoluteUrl("/"),
+      logo: absoluteUrl("/logo-mark-512.png"),
     },
     {
       "@type": "WebSite",
-      name: "Market Intelligence",
+      name: "Market intelligence",
       url: absoluteUrl("/"),
       potentialAction: {
         "@type": "SearchAction",

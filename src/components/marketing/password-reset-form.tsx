@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useState, type FormEvent } from "react";
 
 const inputClass =
@@ -40,9 +41,7 @@ export function PasswordResetForm({ token }: { token?: string }) {
 
   return (
     <div className="relative mx-auto w-full max-w-[420px] rounded-2xl border border-border bg-white p-8 shadow-[var(--shadow-lg)]">
-      <Link href="/" className="inline-block">
-        <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
-      </Link>
+      <BrandLogo size="md" priority />
       <h1 className="mt-8 text-[28px] leading-tight font-semibold text-foreground">
         {isReset ? "Choose a new password" : "Reset your password"}
       </h1>

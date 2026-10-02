@@ -824,10 +824,10 @@ function AssistantFab({ open, onToggle }: { open: boolean; onToggle: () => void 
               className="assistant-flip-face flex size-full items-center justify-center p-2"
             >
               <img
-                src="/logo.png"
+                src="/logo-mark.png"
                 alt=""
                 aria-hidden
-                className="size-10 object-contain mix-blend-multiply dark:invert"
+                className="size-10 object-contain mix-blend-multiply dark:invert dark:mix-blend-normal"
               />
             </motion.span>
           )}

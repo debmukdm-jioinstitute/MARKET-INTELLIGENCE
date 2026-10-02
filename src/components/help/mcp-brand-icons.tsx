@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
+
 /** Simplified brand marks for setup guides (not official assets). */
 export function ClaudeBrandIcon({ className = "h-10 w-10" }: { className?: string }) {
   return (
@@ -40,7 +42,5 @@ export function McpLinkIcon({ className = "h-10 w-10" }: { className?: string })
 }
 
 export function MarketIntelligenceBrandMark({ className = "h-10 w-auto" }: { className?: string }) {
-  return (
-    <img src="/logo.png" alt="Market Intelligence" className={`${className} dark:invert`} />
-  );
+  return <BrandLogo variant="mark" href={null} size="md" className={className} />;
 }

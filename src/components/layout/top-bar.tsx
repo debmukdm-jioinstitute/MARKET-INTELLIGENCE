@@ -6,6 +6,7 @@ import { NotificationBell } from "@/components/layout/notification-bell";
 import { SymbolSearch } from "@/components/research/symbol-search";
 import { ChevronLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 
 export function TopBar() {
@@ -53,17 +54,14 @@ export function TopBar() {
               <AppNavTrigger />
             )}
 
-            <Link href="/Home" className="flex items-center pl-0.5">
-              <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-6 sm:h-7 w-auto dark:invert" />
-            </Link>
+            <BrandLogo variant="mark" size="xs" href="/Home" priority className="pl-0.5 sm:hidden" />
+            <BrandLogo size="sm" href="/Home" priority className="hidden pl-0.5 sm:inline-flex" />
           </div>
 
           {/* Desktop (>= lg) Left Navigation Controls */}
           <div className="hidden lg:flex items-center gap-3">
             <AppNavTrigger />
-            <Link href="/Home" className="flex items-center">
-              <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-7 w-auto dark:invert" />
-            </Link>
+            <BrandLogo size="sm" href="/Home" priority />
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}

@@ -4,6 +4,7 @@ import { GoogleSignInButton } from "@/components/marketing/google-sign-in-button
 import { PrivacyAcceptanceField } from "@/components/marketing/privacy-acceptance-field";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useMemo, useRef, useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
@@ -220,9 +221,7 @@ export function AuthForm({
 
   return (
     <div className="relative mx-auto w-full max-w-[420px] rounded-2xl border border-border bg-white p-8 shadow-[var(--shadow-lg)]">
-      <Link href="/" className="inline-block rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-        <img src="/logo.png" alt="Market Intelligence" className="h-8 w-auto dark:invert" />
-      </Link>
+      <BrandLogo size="md" priority />
 
       {sessionExpired && mode === "login" ? (
         <div className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-foreground" role="status">

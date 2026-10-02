@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, Home, Menu, X, ArrowRight, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 interface PublicHeaderProps {
   backHref?: string;
@@ -56,9 +57,7 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
             <Home className="size-4 text-primary" aria-hidden />
           </Link>
 
-          <Link href="/" className="flex items-center gap-2 pl-1">
-            <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-7 w-auto dark:invert" />
-          </Link>
+          <BrandLogo size="sm" priority className="pl-1" />
         </div>
 
         {/* Center / Desktop Links */}

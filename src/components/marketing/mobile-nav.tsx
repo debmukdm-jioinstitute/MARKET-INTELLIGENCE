@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Menu, X, Home, LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const EXPLORE_LINKS = [
   { label: "Markets", href: "/markets/india" },
@@ -56,7 +57,7 @@ export function MobileNav({ tone = "light" }: { tone?: "light" | "dark" }) {
           />
           <div className="animate-dropdown-item absolute inset-x-0 top-0 max-h-[85vh] overflow-y-auto rounded-b-2xl border-b border-border bg-white shadow-[var(--shadow-lg)]">
             <div className="flex h-[52px] items-center justify-between border-b border-border px-5">
-              <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
+              <BrandLogo size="sm" href="/" priority />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
