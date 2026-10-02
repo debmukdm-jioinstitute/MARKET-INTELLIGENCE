@@ -1,14 +1,23 @@
 "use client";
 
-import { formatInr, formatIstTimestamp, formatPct, liveFromQuote, sourceLabel } from "@/lib/marketing/landing-v2/format";
+import { formatIstTimestamp } from "@/lib/marketing/landing-v2/format";
+import {
+  buildMarketPanel,
+  buildScenarioSteps,
+  panelCardsOrPlaceholders,
+} from "@/lib/marketing/landing-v2/live-narratives";
+import {
+  buildMarketBoardRows,
+  type MarketTab,
+  type Range,
+} from "@/lib/marketing/landing-v2/market-board-rows";
+import { liveFromQuote } from "@/lib/marketing/landing-v2/format";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
-import { BodyCopy, DataCell, Eyebrow, SectionTitle, SourceLine } from "./ui";
+import { BodyCopy, DataCell, SectionTitle, SourceLine } from "./ui";
 
-type MarketTab = "all" | "currencies" | "bonds" | "global" | "macro" | "micro";
 type Scenario = "risk-on" | "inflation" | "rupee";
-type Range = "1D" | "1M" | "1Y";
 
 const TABS: { id: MarketTab; label: string }[] = [
   { id: "all", label: "All markets" },
@@ -19,35 +28,10 @@ const TABS: { id: MarketTab; label: string }[] = [
   { id: "micro", label: "Micro" },
 ];
 
-const SCENARIOS: { id: Scenario; label: string; steps: string[] }[] = [
-  {
-    id: "risk-on",
-    label: "Risk-on",
-    steps: [
-      "How a risk-on move can travel",
-      "Global yields ease → Borrowing pressure softens",
-      "Foreign flows improve → Demand for local assets rises",
-      "Equity breadth widens → More sectors join the move",
-    ],
-  },
-  {
-    id: "inflation",
-    label: "Inflation shock",
-    steps: [
-      "Commodity prices rise → Input costs move first",
-      "Bond yields reprice → Borrowing gets more expensive",
-      "Rate-sensitive sectors weaken → Margins and valuations feel pressure",
-    ],
-  },
-  {
-    id: "rupee",
-    label: "Weak rupee",
-    steps: [
-      "Dollar demand rises → The currency absorbs pressure",
-      "Imported costs increase → Oil and inputs cost more",
-      "Sector effects split → Exporters and importers react differently",
-    ],
-  },
+const SCENARIO_LABELS: { id: Scenario; label: string }[] = [
+  { id: "risk-on", label: "Risk-on" },
+  { id: "inflation", label: "Inflation shock" },
+  { id: "rupee", label: "Weak rupee" },
 ];
 
 function WatchRow({
@@ -81,149 +65,33 @@ function WatchRow({
   );
 }
 
-function rowFromQuote(label: string, q: ReturnType<typeof liveFromQuote>) {
-  return { label, value: q.display, change: q.changeDisplay, source: q.source, fetched: q.fetched };
-}
-
 export function LandingMarketBoardSection() {
-  const { dashboard } = useLandingDashboard();
+  const { dashboard, loading, error } = useLandingDashboard();
   const [tab, setTab] = useState<MarketTab>("all");
   const [range, setRange] = useState<Range>("1D");
   const [scenario, setScenario] = useState<Scenario>("risk-on");
   const [boardMsg, setBoardMsg] = useState("");
 
   const fetchedAt = dashboard?.fetchedAt ?? "";
-  const pulse = dashboard?.pulse;
-  const global = dashboard?.globalRadar;
 
-  const rows = useMemo(() => {
-    if (!pulse) return [];
-    const p = (field: Parameters<typeof liveFromQuote>[0], suffix?: string) =>
-      rowFromQuote("", liveFromQuote(field, fetchedAt, { suffix, digits: suffix ? 2 : 2 }));
-
-    if (tab === "all") {
-      return [
-        { ...p(pulse.nifty), label: "NIFTY 50" },
-        { ...p(pulse.usdInr, ""), label: "USD/INR", value: pulse.usdInr.value != null ? formatInr(pulse.usdInr.value, 2) : "" },
-        {
-          ...p(pulse.gsec10y, "%"),
-          label: "INDIA 10Y bond yield",
-          value: pulse.gsec10y.value != null ? `${formatInr(pulse.gsec10y.value, 2)}%` : "",
-        },
-        { ...p(pulse.brent), label: "BRENT" },
-        { ...p(global?.sp500), label: "S&P 500" },
-      ];
-    }
-    if (tab === "currencies") {
-      return [
-        { ...p(pulse.usdInr), label: "USD/INR spot" },
-        { ...p(global?.dxy), label: "Dollar Index" },
-      ];
-    }
-    if (tab === "bonds") {
-      return [{ ...p(pulse.gsec10y, "%"), label: "10Y G-Sec", value: pulse.gsec10y.value != null ? `${formatInr(pulse.gsec10y.value, 2)}%` : "" }];
-    }
-    if (tab === "global") {
-      return [
-        { ...p(global?.sp500), label: "S&P 500" },
-        { ...p(global?.nasdaq), label: "NASDAQ" },
-        { ...p(global?.dow), label: "DOW" },
-      ];
-    }
-    if (tab === "macro") {
-      return (dashboard?.indiaMacro ?? []).slice(0, 5).map((m) => ({
-        label: m.indicator,
-        value: m.current != null ? `${m.current}${m.unit === "%" ? "%" : ""}` : "",
-        change: m.previous != null && m.current != null ? formatPct((m.current - m.previous) / (m.previous || 1)) : "",
-        source: sourceLabel(m.source),
-        fetched: formatIstTimestamp(m.source.asOf ?? fetchedAt),
-      }));
-    }
-    const b = pulse.breadth;
-    return [
-      {
-        label: "Market breadth",
-        value: b.advances != null ? `${b.advances} adv` : "",
-        change: b.declines != null ? `${b.declines} dec` : "",
-        source: sourceLabel(b.source),
-        fetched: formatIstTimestamp(b.source.asOf ?? fetchedAt),
-      },
-    ];
-  }, [tab, pulse, global, dashboard, fetchedAt]);
+  const rows = useMemo(() => buildMarketBoardRows(tab, range, dashboard), [tab, range, dashboard]);
 
   const panel = useMemo(() => {
-    const panels: Record<MarketTab, { heading: string; thesis: string; cards: { t: string; b: string }[] }> = {
-      all: {
-        heading: "CROSS-ASSET PULSE",
-        thesis: "One board. Six lenses. Fewer blind spots.",
-        cards: [
-          { t: "WHAT CHANGED", b: "Equities up, long yields down." },
-          { t: "WHY IT MATTERS", b: "The move is broader than one index." },
-          { t: "LINKED ASSETS", b: "Rupee · crude · 10Y yield" },
-          { t: "WATCH NEXT", b: "RBI commentary and foreign flows." },
-        ],
-      },
-      currencies: {
-        heading: "FX MONITOR",
-        thesis: "See what is moving the rupee.",
-        cards: [
-          { t: "DRIVER", b: "Dollar firm; oil softer." },
-          { t: "CONTEXT", b: "Inside the recent range." },
-          { t: "LINKED ASSETS", b: "Oil · FII flows · DXY" },
-          { t: "WATCH NEXT", b: "RBI liquidity update." },
-        ],
-      },
-      bonds: {
-        heading: "RATES MONITOR",
-        thesis: "Read the rate signal across the curve.",
-        cards: [
-          { t: "CURVE", b: "Long end above short end." },
-          { t: "TRANSLATION", b: "Yields down means prices up." },
-          { t: "LINKED ASSETS", b: "Banks · housing · INR" },
-          { t: "WATCH NEXT", b: "Auction and RBI policy." },
-        ],
-      },
-      global: {
-        heading: "WORLD MARKETS",
-        thesis: "Know what happened before India opened.",
-        cards: [
-          { t: "SESSION", b: "US futures set the tone overnight." },
-          { t: "INDIA LINK", b: "IT follows US demand." },
-          { t: "RISK GAUGE", b: "Volatility remains contained." },
-          { t: "WATCH NEXT", b: "Europe open, US futures." },
-        ],
-      },
-      macro: {
-        heading: "ECONOMY MONITOR",
-        thesis: "Turn releases into a readable economic story.",
-        cards: [
-          { t: "REGIME", b: "Growth steady; prices easing." },
-          { t: "SURPRISE", b: "Inflation below prior reading." },
-          { t: "MARKET LINK", b: "Rates · banks · consumers" },
-          { t: "WATCH NEXT", b: "Policy minutes and CPI." },
-        ],
-      },
-      micro: {
-        heading: "MICRO SIGNALS",
-        thesis: "Move from the economy to the businesses inside it.",
-        cards: [
-          { t: "BREADTH", b: "Autos lead; IT lags." },
-          { t: "EARNINGS", b: "Revisions mixed by sector." },
-          { t: "VALUATION", b: "Premiums need context." },
-          { t: "WATCH NEXT", b: "Results and management calls." },
-        ],
-      },
-    };
-    return panels[tab];
-  }, [tab]);
+    const built = buildMarketPanel(tab, dashboard);
+    return { ...built, cards: panelCardsOrPlaceholders(built.cards) };
+  }, [tab, dashboard]);
 
-  const scenarioSteps = SCENARIOS.find((s) => s.id === scenario)?.steps ?? [];
+  const panelSource = useMemo(() => {
+    const n = liveFromQuote(dashboard?.pulse?.nifty, fetchedAt);
+    return n.source || "Live feeds";
+  }, [dashboard, fetchedAt]);
+
+  const scenarioSteps = useMemo(() => buildScenarioSteps(scenario, dashboard), [scenario, dashboard]);
 
   return (
     <section id="markets" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>04 / One market, many moving parts</Eyebrow>
-        <SectionTitle className="mt-3">Track the whole market, not one ticker at a time.</SectionTitle>
+        <SectionTitle>Track the whole market, not one ticker at a time.</SectionTitle>
         <BodyCopy className="mt-4 max-w-3xl">
           Move from the rupee to bonds, global indices, the economy, and company-level signals without opening six tabs. The
           board explains what changed, what connects, and what to watch next.
@@ -291,9 +159,23 @@ export function LandingMarketBoardSection() {
                 </tr>
               </thead>
               <tbody>
+                {loading && !rows.some((r) => r.value) ? (
+                  <tr>
+                    <td colSpan={4} className="py-6 text-center text-sm text-[#6b6b6b]">
+                      Loading market feeds…
+                    </td>
+                  </tr>
+                ) : null}
                 {rows.map((r) => (
-                  <WatchRow key={r.label} {...r} />
+                  <WatchRow key={`${tab}-${r.label}`} {...r} />
                 ))}
+                {error && !dashboard ? (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-sm text-[#9b2c2c]">
+                      Feeds unavailable — refresh the page.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -305,14 +187,14 @@ export function LandingMarketBoardSection() {
                 <DataCell key={c.t} label={c.t} value={c.b} />
               ))}
             </div>
-            <SourceLine source="Live feeds" fetched={formatIstTimestamp(fetchedAt)} />
+            <SourceLine source={panelSource} fetched={formatIstTimestamp(fetchedAt)} />
           </div>
         </div>
 
         <div className="mt-10">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6b6b6b]">Explore a market scenario</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {SCENARIOS.map((s) => (
+            {SCENARIO_LABELS.map((s) => (
               <button
                 key={s.id}
                 type="button"

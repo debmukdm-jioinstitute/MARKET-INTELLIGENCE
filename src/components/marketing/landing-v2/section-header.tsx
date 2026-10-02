@@ -19,10 +19,6 @@ export function LandingHeader() {
         <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-3 px-4 sm:px-5">
           <div className="flex min-w-0 items-center gap-4">
             <BrandLogo size="md" priority invertOnDark={false} />
-            <span className="hidden items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b6b6b] sm:inline-flex">
-              <span className="size-1.5 rounded-full bg-[#0d6b5c]" aria-hidden />
-              Sourced data
-            </span>
           </div>
           <nav className="hidden items-center gap-5 text-sm font-medium text-[#3d3d3d] md:flex">
             <Link href="/research" className="hover:text-[#141414]">
@@ -36,6 +32,9 @@ export function LandingHeader() {
             </Link>
             <Link href="/methodology" className="hover:text-[#141414]">
               Methodology
+            </Link>
+            <Link href="/pricing" className="hover:text-[#141414]">
+              Pricing
             </Link>
             <Link
               href="/signup"

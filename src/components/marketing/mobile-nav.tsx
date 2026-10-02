@@ -94,14 +94,14 @@ export function MobileNav({ tone = "light" }: { tone?: "light" | "dark" }) {
               <a href="#coverage" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Data coverage
               </a>
-              <a href="#pricing" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
-                Pricing
-              </a>
               <Link href="/help" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Help &amp; MCP
               </Link>
               <Link href="/methodology" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Methodology
+              </Link>
+              <Link href="/pricing" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Pricing
               </Link>
             </nav>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { LandingDashboardProvider, type LandingDashboardSeed } from "./landing-dashboard-context";
 import { LandingScrollSpy } from "./scroll-spy";
 import { LandingHeader } from "./section-header";
 import { LandingHeroSection } from "./section-hero";
@@ -18,8 +19,9 @@ import {
 } from "./section-bottom";
 import { LandingShell } from "./ui";
 
-export function LandingV2Page() {
+export function LandingV2Page({ initialDashboard = null }: { initialDashboard?: LandingDashboardSeed | null }) {
   return (
+    <LandingDashboardProvider initialDashboard={initialDashboard}>
     <LandingShell>
       <LandingScrollSpy />
       <LandingHeader />
@@ -38,5 +40,6 @@ export function LandingV2Page() {
       </main>
       <LandingFooter />
     </LandingShell>
+    </LandingDashboardProvider>
   );
 }

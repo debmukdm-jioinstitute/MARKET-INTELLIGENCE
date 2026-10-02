@@ -2,14 +2,16 @@
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
-import { AI_VIEWPOINTS } from "@/lib/marketing/landing-v2/copy";
-import { liveFromQuote } from "@/lib/marketing/landing-v2/format";
+import type { ProofSymbol } from "@/lib/marketing/landing-v2/copy";
+import { formatIstTimestamp, liveFromQuote } from "@/lib/marketing/landing-v2/format";
+import { mapTradingDeskToViewpoints, type LandingViewpointId } from "@/lib/marketing/landing-v2/landing-ai-desk-map";
+import { trustReceiptRows } from "@/lib/marketing/landing-v2/live-narratives";
 import { MARKETING_PLAN_SAVINGS, MARKETING_PLUS_LAUNCH_ACTIVE } from "@/lib/marketing/pricing-marketing";
 import { PLUS_LAUNCH_OFFER_NOTE } from "@/lib/payments/plans";
 import Link from "next/link";
 import { useState } from "react";
-import { useLandingDashboard } from "./use-landing-data";
-import { BodyCopy, Eyebrow, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
+import { useLandingAiDesk, useLandingDashboard, useLandingSiteBrief } from "./use-landing-data";
+import { BodyCopy, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
 
 export function LandingUseCasesSection() {
   const cards = [
@@ -35,8 +37,7 @@ export function LandingUseCasesSection() {
   return (
     <section id="uses" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>02 / Built around the decision</Eyebrow>
-        <SectionTitle className="mt-3">Three things people use it for.</SectionTitle>
+        <SectionTitle>Three things people use it for.</SectionTitle>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {cards.map((c) => (
             <article key={c.title} className="border border-[#dcd6cc] bg-[#faf7f2] p-5">
@@ -54,19 +55,21 @@ export function LandingUseCasesSection() {
 }
 
 export function LandingAiDeskSection() {
-  const [view, setView] = useState<(typeof AI_VIEWPOINTS)[number]["id"]>("fundamentals");
-  const active = AI_VIEWPOINTS.find((v) => v.id === view) ?? AI_VIEWPOINTS[0];
+  const demoSymbol: ProofSymbol = "RELIANCE";
+  const { desk, loading, error } = useLandingAiDesk(demoSymbol);
+  const viewpoints = mapTradingDeskToViewpoints(desk);
+  const [view, setView] = useState<LandingViewpointId>("fundamentals");
+  const active = viewpoints.find((v) => v.id === view) ?? viewpoints[0];
   return (
     <section id="ai-desk" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>03 / A second opinion, times five</Eyebrow>
-        <SectionTitle className="mt-3">Ask five AI analysts about any stock.</SectionTitle>
+        <SectionTitle>Ask five AI analysts about any stock.</SectionTitle>
         <BodyCopy className="mt-4 max-w-3xl">
           Fundamentals, sentiment, technicals, a bull, and a bear argue with cited evidence. A risk manager gives the final word.
         </BodyCopy>
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#6b6b6b]">AI analyst viewpoints</p>
         <div className="mt-3 flex flex-wrap gap-2" role="tablist">
-          {AI_VIEWPOINTS.map((v) => (
+          {viewpoints.map((v) => (
             <button
               key={v.id}
               type="button"
@@ -81,8 +84,14 @@ export function LandingAiDeskSection() {
           ))}
         </div>
         <div className="mt-6 border border-[#dcd6cc] bg-[#faf7f2] p-6" role="tabpanel">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#6b6b6b]">Confidence {active.confidence}</p>
-          <p className="mt-4 text-[17px] leading-relaxed text-[#141414]">{active.body}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#6b6b6b]">
+            Live desk · {demoSymbol}
+            {desk?.asOf ? ` · ${formatIstTimestamp(desk.asOf)}` : ""}
+          </p>
+          {loading && !desk ? <p className="mt-4 text-sm text-[#6b6b6b]">Running live AI desk preview…</p> : null}
+          {error && !desk ? <p className="mt-4 text-sm text-[#9b2c2c]">Desk preview unavailable.</p> : null}
+          <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#6b6b6b]">Confidence {active.confidence}</p>
+          <p className="mt-4 text-[17px] leading-relaxed text-[#141414]">{active.body || "—"}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {active.evidence.map((chip) => (
               <span key={chip} className="border border-[#dcd6cc] px-2 py-1 text-xs text-[#3d3d3d]">
@@ -113,8 +122,7 @@ export function LandingPortfolioSection() {
   return (
     <section id="portfolio" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>05 / The reason to come back</Eyebrow>
-        <SectionTitle className="mt-3">Bring your portfolio. See what it&apos;s really doing.</SectionTitle>
+        <SectionTitle>Bring your portfolio. See what it&apos;s really doing.</SectionTitle>
         <BodyCopy className="mt-4 max-w-3xl">
           Import from Zerodha, Upstox, or Dhan — or paste a CSV. Sharpe, beta, VaR, and attribution come with plain-English
           definitions.
@@ -152,6 +160,10 @@ export function LandingPortfolioSection() {
 }
 
 export function LandingAlertsSection() {
+  const brief = useLandingSiteBrief();
+  const headline = brief?.executiveHeadline ?? "";
+  const watch = brief?.watchToday?.[0] ?? "";
+  const filing = brief?.regulatorHeadlines?.[0];
   return (
     <section id="alerts" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center">
@@ -168,14 +180,16 @@ export function LandingAlertsSection() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[#6b6b6b]">Telegram · Market brief</p>
           <div className="mt-4 space-y-3 text-sm text-[#3d3d3d]">
             <div className="border border-[#dcd6cc] p-3">
-              <p className="font-semibold text-[#141414]">Morning brief is ready</p>
-              <p className="mt-1">Nifty setup, FII/DII flows, RBI watchlist.</p>
-              <p className="mt-2 text-xs text-[#6b6b6b]">07:45 · sourced inside</p>
+              <p className="font-semibold text-[#141414]">{headline || "Morning brief"}</p>
+              <p className="mt-1">{watch || brief?.executiveSummary?.slice(0, 120) || "—"}</p>
+              <p className="mt-2 text-xs text-[#6b6b6b]">
+                {brief?.displayDate ?? "—"} · {brief?.marketSession?.replace("_", " ") ?? "live brief"}
+              </p>
             </div>
             <div className="border border-[#dcd6cc] p-3">
-              <p className="font-semibold text-[#141414]">New company filing</p>
-              <p className="mt-1">Open the filing first, then read the summary.</p>
-              <p className="mt-2 text-xs text-[#6b6b6b]">11:18 · exchange filing</p>
+              <p className="font-semibold text-[#141414]">{filing?.title || "Regulator headline"}</p>
+              <p className="mt-1">{filing?.source || "—"}</p>
+              <p className="mt-2 text-xs text-[#6b6b6b]">{filing?.timeAgo ?? "—"}</p>
             </div>
           </div>
         </div>
@@ -185,10 +199,30 @@ export function LandingAlertsSection() {
 }
 
 export function LandingMacroSection() {
+  const { dashboard } = useLandingDashboard();
+  const macro = dashboard?.indiaMacro ?? [];
+  const repo = macro.find((m) => /repo|policy/i.test(m.indicator));
+  const fii = dashboard?.moneyFlow?.fii?.today;
+  const pulse = dashboard?.pulse;
   const links = [
-    { title: "RBI policy rate", sub: "WHY IT MATTERS →", href: "/macro/rbi" },
-    { title: "Foreign flows", sub: "FOLLOW THE MONEY →", href: "/macro/india" },
-    { title: "Oil & the rupee", sub: "READ THE LINK →", href: "/macro/currency" },
+    {
+      title: repo?.indicator ?? "RBI policy rate",
+      sub: repo?.current != null ? `${repo.current}${repo.unit === "%" ? "%" : ""}` : "WHY IT MATTERS →",
+      href: "/macro/rbi",
+    },
+    {
+      title: "Foreign flows",
+      sub: fii != null ? `FII ${fii >= 0 ? "+" : ""}${Math.round(fii)} Cr today` : "FOLLOW THE MONEY →",
+      href: "/macro/india",
+    },
+    {
+      title: "Oil & the rupee",
+      sub:
+        pulse?.usdInr?.value != null && pulse?.brent?.value != null
+          ? `₹${pulse.usdInr.value.toFixed(2)} · Brent ${pulse.brent.value.toFixed(1)}`
+          : "READ THE LINK →",
+      href: "/macro/currency",
+    },
   ];
   return (
     <section className="border-b border-[#dcd6cc] px-5 py-16">
@@ -213,13 +247,12 @@ export function LandingMacroSection() {
 export function LandingTrustSection() {
   const { dashboard } = useLandingDashboard();
   const fetchedAt = dashboard?.fetchedAt ?? "";
-  const nifty = liveFromQuote(dashboard?.pulse.nifty, fetchedAt);
+  const receipts = trustReceiptRows(dashboard, fetchedAt);
   const [open, setOpen] = useState(true);
   return (
     <section id="trust" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>07 / Trust is the product</Eyebrow>
-        <SectionTitle className="mt-3">We show our work. Most terminals don&apos;t.</SectionTitle>
+        <SectionTitle>We show our work. Most terminals don&apos;t.</SectionTitle>
         <BodyCopy className="mt-4 max-w-3xl">
           Every figure carries its source and fetch time. Estimates are labelled. Missing data stays blank — never guessed.
         </BodyCopy>
@@ -243,12 +276,14 @@ export function LandingTrustSection() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-t border-[#dcd6cc]">
-                  <td className="px-4 py-2">Nifty 50 close</td>
-                  <td className="px-4 py-2">{nifty.source || "—"}</td>
-                  <td className="px-4 py-2">{nifty.fetched} IST</td>
-                  <td className="px-4 py-2">{nifty.unavailable ? "unavailable" : "Source attached"}</td>
-                </tr>
+                {receipts.map((row) => (
+                  <tr key={row.figure} className="border-t border-[#dcd6cc]">
+                    <td className="px-4 py-2">{row.figure}</td>
+                    <td className="px-4 py-2">{row.source || "—"}</td>
+                    <td className="px-4 py-2">{formatIstTimestamp(row.fetched)} IST</td>
+                    <td className="px-4 py-2">{row.ok ? "Source attached" : "unavailable"}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           ) : null}
@@ -277,8 +312,7 @@ export function LandingPricingSection() {
   return (
     <section id="pricing" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>08 / Plain pricing</Eyebrow>
-        <SectionTitle className="mt-3">Start free. Pay only when it earns it.</SectionTitle>
+        <SectionTitle>Start free. Pay only when it earns it.</SectionTitle>
         <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-[#6b6b6b]">Billing period</p>
         <div className="mt-2 inline-flex border border-[#dcd6cc]">
           <button

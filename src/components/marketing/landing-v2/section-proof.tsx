@@ -1,16 +1,18 @@
 "use client";
 
-import { PROOF_BRIEF_BLOCKS, PROOF_TABS, type ProofSymbol } from "@/lib/marketing/landing-v2/copy";
+import { PROOF_TABS, type ProofSymbol } from "@/lib/marketing/landing-v2/copy";
 import { formatIstTimestamp } from "@/lib/marketing/landing-v2/format";
+import { buildProofBlocks } from "@/lib/marketing/landing-v2/proof-blocks";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
-import { useLandingQuote } from "./use-landing-data";
-import { BodyCopy, Eyebrow, SectionTitle, SourceLine } from "./ui";
+import { useLandingQuote, useLandingResearch } from "./use-landing-data";
+import { BodyCopy, SectionTitle, SourceLine } from "./ui";
 
 export function LandingProofSection() {
   const [symbol, setSymbol] = useState<ProofSymbol>("RELIANCE");
   const { quote } = useLandingQuote(symbol);
-  const blocks = PROOF_BRIEF_BLOCKS[symbol];
+  const { research } = useLandingResearch(symbol);
+  const blocks = useMemo(() => buildProofBlocks(research), [research]);
 
   const priceLine = useMemo(() => {
     if (!quote?.ltp) return null;
@@ -23,8 +25,7 @@ export function LandingProofSection() {
   return (
     <section id="proof" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
-        <Eyebrow>01 / Proof before process</Eyebrow>
-        <SectionTitle className="mt-3">Try it before you sign up.</SectionTitle>
+        <SectionTitle>Try it before you sign up.</SectionTitle>
         <BodyCopy className="mt-4 max-w-2xl">
           Choose a company. The brief changes with it, and every conclusion keeps its evidence attached.
         </BodyCopy>
@@ -71,8 +72,11 @@ export function LandingProofSection() {
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b6b6b]">
                   {block.id} · {block.title}
                 </p>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#3d3d3d]">{block.body}</p>
-                <p className="mt-2 text-xs text-[#6b6b6b]">Source: {block.source}</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-[#3d3d3d]">{block.body || "—"}</p>
+                <p className="mt-2 text-xs text-[#6b6b6b]">
+                  Source: {block.source || "unavailable"}
+                  {research?.fetchedAt ? ` · ${formatIstTimestamp(research.fetchedAt)}` : ""}
+                </p>
               </div>
             ))}
           </div>

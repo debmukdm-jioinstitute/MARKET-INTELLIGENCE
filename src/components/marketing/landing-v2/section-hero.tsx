@@ -1,11 +1,12 @@
 "use client";
 
 import { useMarketStatus } from "@/hooks/use-market-status";
+import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { fiiDiiStance, formatIstTimestamp, liveFromQuote, vixRegime } from "@/lib/marketing/landing-v2/format";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
-import { BodyCopy, DataCell, MicroBullet, PaperChart, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
+import { BodyCopy, DataCell, PaperChart, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
 
 type HeroView = "market" | "vix" | "flows";
 
@@ -21,22 +22,26 @@ export function LandingHeroSection() {
   const [view, setView] = useState<HeroView>("market");
   const fetchedAt = dashboard?.fetchedAt ?? "";
 
-  const nifty = liveFromQuote(dashboard?.pulse.nifty, fetchedAt, { digits: 2 });
-  const vix = liveFromQuote(dashboard?.pulse.indiaVix, fetchedAt, { digits: 2 });
+  const nifty = liveFromQuote(dashboard?.pulse?.nifty, fetchedAt, { digits: 2 });
+  const vix = liveFromQuote(dashboard?.pulse?.indiaVix, fetchedAt, { digits: 2 });
   const fiiToday = dashboard?.moneyFlow.fii.today ?? null;
   const diiToday = dashboard?.moneyFlow.dii.today ?? null;
   const flowSource = dashboard?.moneyFlow.fiiVsDii.source;
   const stance = fiiDiiStance(fiiToday, diiToday);
-  const regime = vixRegime(dashboard?.pulse.indiaVix.value ?? null);
+  const regime = vixRegime(dashboard?.pulse?.indiaVix?.value ?? null);
 
   const chartPath = useMemo(() => {
-    const hist = dashboard && "indiaMoving" in dashboard ? dashboard.indiaMoving?.nifty?.history1m : undefined;
+    const moving: IndiaDashboardPayload["indiaMoving"] | undefined =
+      dashboard && "indiaMoving" in dashboard
+        ? (dashboard as IndiaDashboardPayload).indiaMoving
+        : undefined;
+    const hist = view === "market" ? moving?.nifty?.history1m : undefined;
     if (view === "market" && hist && hist.length > 3) {
-      const vals = hist.map((h) => h.value);
+      const vals = hist.map((h: { value: number }) => h.value);
       const min = Math.min(...vals);
       const max = Math.max(...vals);
       const span = max - min || 1;
-      const pts = vals.map((v, i) => {
+      const pts = vals.map((v: number, i: number) => {
         const x = (i / (vals.length - 1)) * 400;
         const y = 75 - ((v - min) / span) * 65;
         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
@@ -65,11 +70,6 @@ export function LandingHeroSection() {
             <PrimaryButton href="/signup">Start free</PrimaryButton>
             <SecondaryButton href="#proof">See a sample brief →</SecondaryButton>
           </div>
-          <ul className="mt-6 list-disc space-y-1 pl-5">
-            <MicroBullet>Source on every live figure</MicroBullet>
-            <MicroBullet>Missing data stays blank</MicroBullet>
-            <MicroBullet>Research, never advice</MicroBullet>
-          </ul>
         </div>
 
         <div className="border border-[#dcd6cc] bg-[#faf7f2]">

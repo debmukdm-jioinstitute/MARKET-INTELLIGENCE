@@ -1,7 +1,9 @@
 import { LandingPage } from "@/components/marketing/landing-page";
+import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 
-export const revalidate = 3600;
+export const revalidate = 120;
 
-export default function Home() {
-  return <LandingPage />;
+export default async function Home() {
+  const initialDashboard = await buildIndiaDashboardQuick().catch(() => null);
+  return <LandingPage initialDashboard={initialDashboard} />;
 }
