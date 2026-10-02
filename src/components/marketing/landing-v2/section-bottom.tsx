@@ -3,14 +3,14 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import type { ProofSymbol } from "@/lib/marketing/landing-v2/copy";
-import { formatIstTimestamp, liveFromQuote } from "@/lib/marketing/landing-v2/format";
-import { mapTradingDeskToViewpoints, type LandingViewpointId } from "@/lib/marketing/landing-v2/landing-ai-desk-map";
+import { formatIstTimestamp } from "@/lib/marketing/landing-v2/format";
+import { mergeLandingViewpoints, type LandingViewpointId } from "@/lib/marketing/landing-v2/landing-ai-desk-map";
 import { trustReceiptRows } from "@/lib/marketing/landing-v2/live-narratives";
 import { MARKETING_PLAN_SAVINGS, MARKETING_PLUS_LAUNCH_ACTIVE } from "@/lib/marketing/pricing-marketing";
 import { PLUS_LAUNCH_OFFER_NOTE } from "@/lib/payments/plans";
 import Link from "next/link";
-import { useState } from "react";
-import { useLandingAiDesk, useLandingDashboard, useLandingSiteBrief } from "./use-landing-data";
+import { useMemo, useState } from "react";
+import { useLandingAiDesk, useLandingDashboard, useLandingResearch, useLandingSiteBrief } from "./use-landing-data";
 import { BodyCopy, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
 
 export function LandingUseCasesSection() {
@@ -56,10 +56,13 @@ export function LandingUseCasesSection() {
 
 export function LandingAiDeskSection() {
   const demoSymbol: ProofSymbol = "RELIANCE";
-  const { desk, loading, error } = useLandingAiDesk(demoSymbol);
-  const viewpoints = mapTradingDeskToViewpoints(desk);
+  const { desk, loading: deskLoading } = useLandingAiDesk(demoSymbol);
+  const { research, loading: researchLoading } = useLandingResearch(demoSymbol);
+  const viewpoints = useMemo(() => mergeLandingViewpoints(desk, research), [desk, research]);
   const [view, setView] = useState<LandingViewpointId>("fundamentals");
   const active = viewpoints.find((v) => v.id === view) ?? viewpoints[0];
+  const loading = deskLoading && researchLoading && !viewpoints.some((v) => v.body);
+  const modeLabel = desk ? "Live AI desk" : research ? "Live research signals" : "Live desk";
   return (
     <section id="ai-desk" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
       <div className="mx-auto max-w-6xl">
@@ -85,11 +88,14 @@ export function LandingAiDeskSection() {
         </div>
         <div className="mt-6 border border-[#dcd6cc] bg-[#faf7f2] p-6" role="tabpanel">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#6b6b6b]">
-            Live desk · {demoSymbol}
-            {desk?.asOf ? ` · ${formatIstTimestamp(desk.asOf)}` : ""}
+            {modeLabel} · {demoSymbol}
+            {desk?.asOf
+              ? ` · ${formatIstTimestamp(desk.asOf)}`
+              : research?.fetchedAt
+                ? ` · ${formatIstTimestamp(research.fetchedAt)}`
+                : ""}
           </p>
-          {loading && !desk ? <p className="mt-4 text-sm text-[#6b6b6b]">Running live AI desk preview…</p> : null}
-          {error && !desk ? <p className="mt-4 text-sm text-[#9b2c2c]">Desk preview unavailable.</p> : null}
+          {loading ? <p className="mt-4 text-sm text-[#6b6b6b]">Loading live preview…</p> : null}
           <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#6b6b6b]">Confidence {active.confidence}</p>
           <p className="mt-4 text-[17px] leading-relaxed text-[#141414]">{active.body || "—"}</p>
           <div className="mt-4 flex flex-wrap gap-2">

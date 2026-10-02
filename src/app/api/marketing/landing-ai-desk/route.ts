@@ -1,6 +1,7 @@
 import { guardExpensive } from "@/lib/api-guard";
 import { AiKeyMissingError } from "@/lib/ai/llm";
 import { runTradingDesk } from "@/lib/ai/trading-desk";
+import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { PROOF_TABS } from "@/lib/marketing/landing-v2/copy";
 import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
@@ -30,6 +31,13 @@ export async function GET(req: Request) {
       headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
     });
   } catch (e) {
+    const detail = await buildResearchDetail(symbol).catch(() => null);
+    if (detail) {
+      return NextResponse.json(
+        { fallback: "research", symbol, fetchedAt: detail.fetchedAt, intelligence: detail.intelligence, fundamentals: detail.fundamentals },
+        { status: 200, headers: { "Cache-Control": "public, max-age=120" } },
+      );
+    }
     if (e instanceof AiKeyMissingError) {
       return NextResponse.json({ error: e.message, setupRequired: true }, { status: 501 });
     }

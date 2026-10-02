@@ -15,12 +15,13 @@ export function LandingProofSection() {
   const blocks = useMemo(() => buildProofBlocks(research), [research]);
 
   const priceLine = useMemo(() => {
-    if (!quote?.ltp) return null;
-    const prev = quote.ohlc.close || quote.ltp - quote.netChange;
-    const pct = prev ? (quote.netChange / prev) * 100 : null;
+    const q = quote ?? research?.upstoxQuote;
+    if (!q?.ltp) return null;
+    const prev = q.ohlc.close || q.ltp - q.netChange;
+    const pct = prev ? (q.netChange / prev) * 100 : null;
     const chStr = pct != null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}% today` : "";
-    return { price: quote.ltp.toLocaleString("en-IN"), change: chStr, asOf: quote.asOf };
-  }, [quote]);
+    return { price: q.ltp.toLocaleString("en-IN"), change: chStr, asOf: q.asOf ?? research?.fetchedAt ?? "" };
+  }, [quote, research]);
 
   return (
     <section id="proof" className="scroll-mt-16 border-b border-[#dcd6cc] px-5 py-16">
