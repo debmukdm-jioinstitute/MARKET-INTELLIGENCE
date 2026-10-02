@@ -7,7 +7,7 @@ export function hasEmailConfigured(): boolean {
 /** Default production sender — use a domain verified in Resend (see docs/RESEND.md). Override with RESEND_FROM_EMAIL on Vercel.
  *  Display name is a real person (founder) — personal senders place better in Gmail Primary than brand names. */
 export const PRODUCTION_RESEND_FROM =
-  "Debabrata Mukherjee <onboarding@getmarketintelligence.in>";
+  "Market Intelligence <onboarding@send.getmarketintelligence.in>";
 
 /** True while using Resend sandbox — delivers only to the Resend account owner email. */
 export function isSandboxSender(): boolean {
