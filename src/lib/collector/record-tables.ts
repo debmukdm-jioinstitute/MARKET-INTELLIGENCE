@@ -187,6 +187,23 @@ export const TABLES: TableSpec[] = [
       return { ...r, symbol: String(r.symbol).toUpperCase(), tonePrepared: tp, toneQa: tq, toneDelta: tp !== null && tq !== null ? Math.round((tq - tp) * 1000) / 1000 : null };
     },
   },
+  {
+    name: "regulatory_events",
+    conflict: ["document_url"],
+    onConflict: "nothing", // dedupe by document URL
+    cols: [
+      { f: "symbol", k: "text" },
+      { f: "companyName", k: "text", req: true },
+      { f: "source", k: "text", req: true },
+      { f: "eventType", k: "text" },
+      { f: "title", k: "text", req: true },
+      { f: "eventDate", k: "date" },
+      { f: "documentUrl", k: "text", req: true },
+      { f: "caseNo", k: "text" },
+      { f: "status", k: "text" },
+    ],
+    normalize: (r) => ({ ...r, symbol: typeof r.symbol === "string" ? r.symbol.toUpperCase() : null }),
+  },
 ];
 
 export const tableSpec = (name: unknown): TableSpec | undefined => TABLES.find((t) => t.name === name);

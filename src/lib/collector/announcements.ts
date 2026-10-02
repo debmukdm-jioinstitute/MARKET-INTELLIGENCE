@@ -43,6 +43,10 @@ const MATERIAL: [category: string, re: RegExp][] = [
   ["Dividend / bonus / split", /dividend|bonus|stock split|sub-?division of (?:equity )?shares|split of (?:equity )?shares/i],
   ["Buyback / rights offer", /buy-?back|rights issue|rights entitlement|right entitlement/i],
   ["M&A / restructuring", /acquisition|amalgamation|merger|scheme of arrangement|demerger|disposal|divest|restructur|takeover|open offer|slump sale/i],
+  ["Default / delay", /\bdefault(?:s|ed)?\b|delay in (?:payment|filing|repayment)|non-?payment|failure to (?:pay|file|comply)/i],
+  ["Fraud / forensic audit", /\bfraud|forensic audit|embezzl|siphon/i],
+  ["Auditor change", /\bauditors?\b[^.]{0,60}(?:resign|qualif|cessation|disqualif)|(?:resign|qualif|cessation)[^.]{0,60}\bauditors?\b/i],
+  ["Regulatory / legal action", /litigation|dispute|insolvency|\bCIRP\b|\bNCLT\b|arbitration|action\(s\) (?:initiated|taken)|orders? passed|show[- ]cause|penalt/i],
   ["Management change", /change in director|change in management|appointment|resignation|cessation|key managerial|senior management/i],
   ["Board meeting", /board meeting/i],
 ];

@@ -557,6 +557,25 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_concall_summaries_symbol_date ON concall_summaries (symbol, transcript_date DESC)`;
 
+      // SEBI orders matched to listed companies. Titles and links only — no legal conclusions are stored.
+      await db`
+        CREATE TABLE IF NOT EXISTS regulatory_events (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text,
+          company_name text NOT NULL,
+          source text NOT NULL,
+          event_type text,
+          title text NOT NULL,
+          event_date date,
+          document_url text,
+          case_no text,
+          status text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE UNIQUE INDEX IF NOT EXISTS idx_regulatory_events_doc ON regulatory_events (document_url)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_regulatory_events_symbol_date ON regulatory_events (symbol, event_date DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
