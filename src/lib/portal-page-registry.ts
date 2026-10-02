@@ -53,22 +53,22 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
     pushUnique(map, {
       href: macro.href,
       label: macro.title,
-      navSection: "Invest",
-      navGroup: "Economy & Macro (sections)",
+      navSection: "Macro & Flows",
+      navGroup: "Macro Board (sections)",
       sortOrder: order++,
       appliesToChildren: false,
     });
   }
 
   const extras: Omit<PortalPageRegistryEntry, "sortOrder">[] = [
-    { href: "/macro/yields", label: "Yield curves", navSection: "Invest", navGroup: "Economy & Macro", appliesToChildren: false },
-    { href: "/macro/stress/backtest", label: "Stress backtest", navSection: "Invest", navGroup: "Economy & Macro", appliesToChildren: false },
+    { href: "/macro/yields", label: "Yield curves", navSection: "Macro & Flows", navGroup: "Macro Board", appliesToChildren: false },
+    { href: "/macro/stress/backtest", label: "Stress backtest", navSection: "Macro & Flows", navGroup: "Stress & Scenarios", appliesToChildren: false },
     { href: "/macro/currency", label: "Currency dashboard", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
     { href: "/macro/commodities", label: "Commodities dashboard", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
     { href: "/macro/indices", label: "World indices", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/markets/india", label: "India equity detail pages", navSection: "Today", navGroup: "India Cockpit", appliesToChildren: true },
-    { href: "/research", label: "Research symbol pages", navSection: "Invest", navGroup: "Research Companies", appliesToChildren: true },
-    { href: "/research/model", label: "DCF model pages", navSection: "Invest", navGroup: "Research Companies", appliesToChildren: true },
+    { href: "/markets/india", label: "India equity detail pages", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: true },
+    { href: "/research", label: "Research symbol pages", navSection: "Stocks", navGroup: "Research", appliesToChildren: true },
+    { href: "/research/model", label: "DCF model pages", navSection: "Stocks", navGroup: "Research", appliesToChildren: true },
   ];
 
   for (const e of extras) {

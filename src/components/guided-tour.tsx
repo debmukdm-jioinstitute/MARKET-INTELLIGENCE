@@ -5,12 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Play } from "lucide-react";
 import { slug } from "@/lib/nav-columns";
 
+/** Sections that have their own phone bottom-bar tab; the rest are reached via "More". */
+const MOBILE_BOTTOM_TABS: string[] = ["Today", "Stocks", "Trade", "Portfolio"];
+
 /** One tour stop per top-level menu section, in menu order. Plain language, no jargon. */
 const TOUR_SECTIONS = [
   { title: "Today", heading: "Today: what's happening now", text: "Your daily starting point. Check the market snapshot (indices, rupee, oil, gold) and read the AI Daily Brief — a 2-minute summary with sources." },
-  { title: "Invest", heading: "Invest: for the long term", text: "Research a company, check if the market is cheap or expensive, and see how the economy (RBI, inflation, global trends) could affect your stocks." },
-  { title: "Trade", heading: "Trade: short-term and intraday", text: "Scan Nifty 500 for breakouts, follow AI signals and unusual options activity, then backtest an idea on history before you risk money." },
-  { title: "My Portfolio", heading: "My Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, and how you could rebalance. Import holdings or statements from your brokerage house." },
+  { title: "Stocks", heading: "Stocks: research any company", text: "Ask the AI Desk to debate a stock, read broker consensus and company disclosures, check promoter and credit risk, and track IPOs." },
+  { title: "Trade", heading: "Trade: short-term ideas", text: "Scan Nifty 500 for breakouts, check any index or F&O stock in Trade Lab, set alerts, follow AI signals and unusual options activity, then backtest an idea on history." },
+  { title: "Macro & Flows", heading: "Macro & Flows: the economy and big money", text: "Check growth, inflation, RBI and yields, stress-test shocks like oil or the rupee, and follow FII/DII and institutional money." },
+  { title: "Portfolio", heading: "Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, tax, and how you could rebalance. Import holdings or statements from your brokerage house." },
   { title: "Data & Tools", heading: "Data & Tools: sources and downloads", text: "See where every number comes from and how fresh it is, or download all the data as one Excel workbook." },
 ] as const;
 
@@ -36,7 +40,7 @@ export function GuidedTour() {
 
     TOUR_SECTIONS.forEach((sec) => {
       steps.push({
-        element: wide ? `#nav-${slug(sec.title)}` : `#nav-bottom-${slug(sec.title)}`,
+        element: wide ? `#nav-${slug(sec.title)}` : MOBILE_BOTTOM_TABS.includes(sec.title) ? `#nav-bottom-${slug(sec.title)}` : "#nav-bottom-more",
         popover: {
           title: sec.heading,
           description: sec.text,

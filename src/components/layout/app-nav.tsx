@@ -15,7 +15,7 @@ import {
 } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Home, LayoutDashboard, LineChart, LogOut, Menu, TrendingUp, X } from "lucide-react";
+import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,22 +35,24 @@ type DynamicTab = {
 type Accent = { text: string; dot: string; hoverBg: string; ring: string };
 const ACCENTS: Record<string, Accent> = {
   Today: { text: "text-blue-600", dot: "bg-blue-500", hoverBg: "hover:bg-blue-50", ring: "border-blue-200" },
-  Invest: { text: "text-emerald-600", dot: "bg-emerald-500", hoverBg: "hover:bg-emerald-50", ring: "border-emerald-200" },
+  Stocks: { text: "text-emerald-600", dot: "bg-emerald-500", hoverBg: "hover:bg-emerald-50", ring: "border-emerald-200" },
   Trade: { text: "text-rose-600", dot: "bg-rose-500", hoverBg: "hover:bg-rose-50", ring: "border-rose-200" },
-  "My Portfolio": { text: "text-violet-600", dot: "bg-violet-500", hoverBg: "hover:bg-violet-50", ring: "border-violet-200" },
+  "Macro & Flows": { text: "text-cyan-600", dot: "bg-cyan-500", hoverBg: "hover:bg-cyan-50", ring: "border-cyan-200" },
+  Portfolio: { text: "text-violet-600", dot: "bg-violet-500", hoverBg: "hover:bg-violet-50", ring: "border-violet-200" },
   "Data & Tools": { text: "text-amber-600", dot: "bg-amber-500", hoverBg: "hover:bg-amber-50", ring: "border-amber-200" },
 };
 const DEFAULT_ACCENT: Accent = { text: "text-blue-600", dot: "bg-blue-500", hoverBg: "hover:bg-blue-50", ring: "border-blue-200" };
 const SECTION_ICONS: Record<string, typeof CalendarDays> = {
   Today: CalendarDays,
-  Invest: TrendingUp,
+  Stocks: TrendingUp,
   Trade: LineChart,
-  "My Portfolio": Briefcase,
+  "Macro & Flows": Globe,
+  Portfolio: Briefcase,
   "Data & Tools": Database,
 };
 
-/** Old admin-created tabs used the previous five section names; map them onto the new ones. */
-const LEGACY_SECTION: Record<string, string> = { markets: "Today", macro: "Invest", research: "Invest", intelligence: "Trade", portfolio: "My Portfolio" };
+/** Old admin-created tabs used earlier section names; map them onto the current ones. */
+const LEGACY_SECTION: Record<string, string> = { markets: "Today", macro: "Macro & Flows", research: "Stocks", intelligence: "Trade", portfolio: "Portfolio", invest: "Stocks", "my portfolio": "Portfolio" };
 
 function filterNavItems(items: NavLink[], hrefAllowed: (href: string) => boolean): NavLink[] {
   return items.filter((i) => i.external || hrefAllowed(i.href));
@@ -157,7 +159,7 @@ function megaGridClass(groupCount: number): string {
   return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
 }
 
-/** Desktop-only hover menu in the TopBar: five sections, each showing task cards in a wide grid when many groups. */
+/** Desktop-only hover menu in the TopBar: six sections, each showing task cards in a wide grid when many groups. */
 export function MegaNavBar() {
   const sections = useNavSections();
   const path = usePathname();
@@ -269,9 +271,13 @@ export function AppNavTrigger() {
   );
 }
 
-/** Phone/tablet bottom tab bar: one tap navigates to the section landing page. */
+/** Sections pinned to the phone bottom bar; everything else lives behind "More" (the full menu). */
+const BOTTOM_TAB_TITLES = ["Today", "Stocks", "Trade", "Portfolio"];
+
+/** Phone/tablet bottom tab bar: Today · Stocks · Trade · Portfolio · More. One tap navigates to the section landing page. */
 export function BottomTabBar() {
-  const sections = useNavSections();
+  const allSections = useNavSections();
+  const sections = allSections.filter((s) => BOTTOM_TAB_TITLES.includes(s.title));
   const path = usePathname();
   const { setOpen, openSection } = useMobileNav();
   const { hrefAllowed } = usePortalPages();
@@ -280,9 +286,9 @@ export function BottomTabBar() {
     <nav
       aria-label="Sections"
       className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-background/95 dark:bg-card/95 pb-safe backdrop-blur lg:hidden"
-      style={{ gridTemplateColumns: `repeat(${Math.min(sections.length, 5)}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `repeat(${sections.length + 1}, minmax(0, 1fr))` }}
     >
-      {sections.slice(0, 5).map((sec) => {
+      {sections.map((sec) => {
         const Icon = SECTION_ICONS[sec.title] ?? BarChart3;
         const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
         const landing = sectionLandingHref(sec, hrefAllowed);
@@ -313,15 +319,27 @@ export function BottomTabBar() {
               />
             ) : null}
             <Icon className={cn("size-5 transition-transform duration-200", on && "scale-110")} />
-            <span className="max-w-full truncate">{sec.title === "My Portfolio" ? "Portfolio" : sec.title === "Data & Tools" ? "Tools" : sec.title}</span>
+            <span className="max-w-full truncate">{sec.title === "Data & Tools" ? "Tools" : sec.title}</span>
           </Link>
         );
       })}
+      <button
+        type="button"
+        id="nav-bottom-more"
+        onClick={() => {
+          openSection(null);
+          setOpen(true);
+        }}
+        className="relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium text-muted-foreground transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95"
+      >
+        <MoreHorizontal className="size-5" />
+        <span className="max-w-full truncate">More</span>
+      </button>
     </nav>
   );
 }
 
-/** Full menu: beginner shortcuts on top, then an accordion of sections (phone/tablet) or a five-column grid (desktop). */
+/** Full menu: beginner shortcuts on top, then an accordion of sections (phone/tablet) or a column grid (desktop). */
 export function AppNav() {
   const { open, setOpen, section, openSection } = useMobileNav();
   const path = usePathname();
@@ -453,7 +471,7 @@ export function AppNav() {
                 })}
               </div>
 
-              {/* Desktop: five columns — each section uses a horizontal grid when expanded in menu */}
+              {/* Desktop: columns — each section uses a horizontal grid when expanded in menu */}
               <div className="mx-auto mt-6 hidden max-w-7xl border-t border-border px-6 pt-6 lg:block">
                 <div className="grid grid-cols-5 gap-x-4">
                 {sections.map((sec) => {

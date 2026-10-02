@@ -164,7 +164,7 @@ export function CommandPalette() {
                 Help — what can I search?
               </CommandItem>
               <CommandItem onSelect={() => goto("/research/ipo")}>IPOs</CommandItem>
-              <CommandItem onSelect={() => goto("/research/offers")}>NCD · RI · BB · OFS</CommandItem>
+              <CommandItem onSelect={() => goto("/research/offers")}>Bonds, Rights & Buybacks</CommandItem>
               <CommandItem onSelect={() => goto("/data/feeds")}>Data feeds</CommandItem>
             </CommandGroup>
 

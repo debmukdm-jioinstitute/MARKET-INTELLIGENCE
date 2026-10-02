@@ -11,7 +11,7 @@ export type NavSection = { title: string; tagline: string; groups: NavGroup[] };
 /** Legacy flat shape (marketing menu, guided tour): one item per group. */
 export type NavColumn = { title: string; items: NavLink[] };
 
-/** Organised by what the visitor wants to do, not by data type — 5 sections, each with 2–4 tasks. */
+/** Organised by what the visitor wants to do, not by data type — 6 sections, each with 1–6 tasks. */
 export const NAV_SECTIONS: NavSection[] = [
   {
     title: "Today",
@@ -21,239 +21,170 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Market Snapshot",
         desc: "Indices, rupee and commodities at a glance.",
         items: [
-          { label: "India Cockpit", href: "/markets/india", desc: "NSE / BSE headline pulse and index depth." },
-          { label: "World indices", href: "/macro/indices", desc: "Global benchmarks — price, range, and 52-week tape.", badge: "NEW" },
-          { label: "Currency", href: "/macro/currency", desc: "DXY, USDINR, and cross-currency tape." },
-          { label: "Commodities", href: "/macro/commodities", desc: "Crude, gold, and industrial metals." },
+          { label: "Overview", href: "/markets", desc: "Equities, rates and FX on one board." },
+          { label: "India Markets", href: "/markets/india", desc: "NSE / BSE headline pulse and index depth." },
+          { label: "World Indices", href: "/macro/indices", desc: "Global benchmarks, ranges and 52-week tape." },
+          { label: "Currency", href: "/macro/currency", desc: "DXY, USDINR and cross-currency tape." },
+          { label: "Commodities", href: "/macro/commodities", desc: "Crude, gold and industrial metals." },
         ],
       },
       {
-        label: "News & Daily Brief",
-        desc: "Start here: a 2-minute read of the day.",
+        label: "Daily Briefing",
+        desc: "Start here: the day in two minutes.",
         badge: "AI",
         items: [
           { label: "Daily Brief", href: "/intelligence/brief", desc: "Pre-market and post-close brief with cited sources.", badge: "AI" },
-          { label: "Intelligence Feed", href: "/intelligence", desc: "News impact scored for sentiment and relevance.", badge: "AI" },
-          {
-            label: "World Monitor",
-            href: "/intelligence/world-monitor",
-            desc: "Global news, maps, country instability (CII), and finance radar (World Monitor integration).",
-            badge: "NEW",
-          },
-          { label: "Economic Calendar", href: "/macro/india?view=calendar", desc: "Upcoming prints that can move the book." },
+          { label: "Intelligence Feed", href: "/intelligence", desc: "News scored for sentiment and relevance.", badge: "AI" },
+          { label: "World Monitor", href: "/intelligence/world-monitor", desc: "Global news, country risk and finance radar." },
+          { label: "Economic Calendar", href: "/macro/calendar", desc: "Upcoming data releases that can move markets.", badge: "NEW" },
         ],
       },
     ],
   },
   {
-    title: "Invest",
-    tagline: "Long-term investing: research, value, the economy",
+    title: "Stocks",
+    tagline: "Research any company",
     groups: [
       {
-        label: "Research Companies",
-        desc: "Look up any stock, read reports, track IPOs.",
+        label: "AI Debate",
+        desc: "Five AI analysts argue the bull and bear case.",
+        badge: "AI",
         items: [
-          { label: "Broker Research & Consensus", href: "/research", desc: "11 brokers, target price consensus, model revisions, and Why Changed? synthesis." },
-          { label: "AI Desk", href: "/research/ai-desk", desc: "Multi-agent debates, sentiment, and factor backtests.", badge: "AI" },
-          { label: "Research Reports", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
-          {
-            label: "Company & Concall Intel",
-            href: "/intelligence/company",
-            desc: "IR disclosures, timeline, AI 'What changed?', and concall tone tracker.",
-            badge: "NEW",
-          },
-          {
-            label: "Reddit Retail Sentiment",
-            href: "/intelligence/reddit",
-            desc: "Alternative social NLP, mention spikes, bull/bear theses, & investor problems.",
-            badge: "NEW",
-          },
-          { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming listings, GMP, and subscription tracking." },
-          {
-            label: "Search-trend intelligence",
-            href: "/intelligence/search-trends",
-            desc: "Google Trends Attention Index — company, IPO, sector, commodity, macro, policy, CEO, product.",
-            badge: "NEW",
-          },
-          {
-            label: "Legal & insolvency",
-            href: "/intelligence/legal-risk",
-            desc: "Corporate risk monitor — NCLT, courts, SEBI, CCI, ED, RBI enforcement chains.",
-            badge: "NEW",
-          },
-          { label: "NCD · RI · BB · OFS", href: "/research/offers", desc: "Chittorgarh calendars for debentures, rights, buybacks, and OFS." },
+          { label: "AI Desk", href: "/research/ai-desk", desc: "Five AI analysts debate a stock, with sources and factor backtests.", badge: "AI" },
         ],
       },
       {
-        label: "Mutual Funds & Flows",
-        desc: "Institutional accumulation, portfolio X-ray, factor tilts & overlap.",
-        badge: "NEW",
+        label: "Research",
+        desc: "What brokers and our models say.",
         items: [
-          {
-            label: "Institutional intelligence",
-            href: "/intelligence/institutional",
-            desc: "FII/DII cash, MF smart-money score, ownership signals, and filing source map.",
-            badge: "NEW",
-          },
+          { label: "Broker Consensus", href: "/research", desc: "Broker targets, consensus and what changed." },
+          { label: "MI Research Notes", href: "/research-reports", desc: "Model-driven notes across the coverage list." },
         ],
       },
       {
-        label: "Alternative Data & Reddit",
-        desc: "Retail sentiment engine, hype momentum, and unaddressed investor problems.",
-        badge: "NEW",
+        label: "Company Deep-Dive",
+        desc: "Disclosures, concalls and timelines.",
         items: [
-          {
-            label: "Retail Sentiment Engine",
-            href: "/intelligence/reddit",
-            desc: "Alternative sentiment across 10 subreddits, mention growth, and bull/bear debates.",
-            badge: "NEW",
-          },
-          {
-            label: "Investor Problems Radar",
-            href: "/intelligence/reddit",
-            desc: "Surfacing structural friction points in research, portfolio, taxes, and data discovery.",
-          },
+          { label: "Company Page", href: "/intelligence/company", desc: "IR disclosures, timeline and AI what-changed summaries.", badge: "NEW" },
         ],
       },
       {
-        label: "Company Disclosures & Concalls",
-        desc: "Automated IR crawler, timeline stream, delta variance, and management tone.",
-        badge: "NEW",
+        label: "Buzz & Sentiment",
+        desc: "What retail and search data say.",
         items: [
-          {
-            label: "Company Intelligence Desk",
-            href: "/intelligence/company",
-            desc: "Explore full IR crawl, continuous timeline, and AI 'What changed?' delta.",
-            badge: "NEW",
-          },
-          {
-            label: "Concall Management Tone",
-            href: "/intelligence/company?symbol=TATAMOTORS",
-            desc: "Track quarterly management confidence inflection and institutional analyst Q&A.",
-          },
+          { label: "Retail Sentiment", href: "/intelligence/reddit", desc: "Reddit chatter, mention spikes and bull/bear theses." },
+          { label: "Search Trends", href: "/intelligence/search-trends", desc: "Google search interest in companies, IPOs and sectors." },
         ],
       },
       {
-        label: "Credit & Solvency Radar",
-        desc: "Rating agency actions (CRISIL, ICRA, CARE) connected to equity prices.",
-        badge: "NEW",
+        label: "Ownership & Risk",
+        desc: "Who owns it and what could go wrong.",
         items: [
-          {
-            label: "Credit / Risk Intelligence",
-            href: "/intelligence/credit",
-            desc: "Track upgrades, downgrades, credit watch, defaults, and liquidity across CRISIL, ICRA, CARE.",
-            badge: "NEW",
-          },
-          {
-            label: "Debt & Solvency Risk",
-            href: "/portfolio/risk",
-            desc: "Feed credit rating changes and debt distress directly into portfolio risk.",
-          },
+          { label: "Promoter Tracker", href: "/intelligence/promoters", desc: "Promoter buying, selling, pledges and insider trades." },
+          { label: "Credit Radar", href: "/intelligence/credit", desc: "Rating upgrades, downgrades and default watch." },
+          { label: "Legal Risk", href: "/intelligence/legal-risk", desc: "NCLT, SEBI and court cases involving listed companies." },
         ],
       },
       {
-        label: "Ownership & Insiders",
-        desc: "Promoter buying, pledge changes, insider trading & bulk/block deals.",
-        badge: "NEW",
+        label: "IPOs & Offers",
+        desc: "New listings and capital raisings.",
         items: [
-          {
-            label: "Promoter Activity Tracker",
-            href: "/intelligence/promoters",
-            desc: "Track promoter buying, selling, pledge changes, insider trades, and block deals.",
-            badge: "NEW",
-          },
-          {
-            label: "Pledge & Governance Risk",
-            href: "/portfolio/risk",
-            desc: "Feed promoter pledge, selling, and insider risks directly into portfolio risk.",
-          },
-        ],
-      },
-      {
-        label: "Valuation & Sectors",
-        desc: "Is the market cheap or expensive? Which sectors lead?",
-        items: [
-          { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "NSE index multiples (link-out) plus live 10Y G-Sec from dashboard." },
-          { label: "Sector Comparables", href: "/markets/sectors", desc: "Illustrative sector matrix — live NSE sector feed planned.", badge: "NEW" },
-        ],
-      },
-      {
-        label: "Economy & Macro",
-        desc: "Growth, inflation, RBI and how they hit stocks.",
-        items: [
-          { label: "Global Board", href: "/macro", desc: "Regime-first read across growth, inflation, liquidity." },
-          { label: "India Macro", href: "/macro/india", desc: "MOSPI, RBI, and fiscal data on one page." },
-          { label: "RBI & Liquidity", href: "/macro/rbi", desc: "Policy stance, repo path, and system liquidity." },
-          { label: "Global Data", href: "/macro/global", desc: "Cross-country macro series." },
-          { label: "Stress Index", href: "/macro/stress", desc: "India macro stress score and cross-signal convergence alerts." },
-          { label: "Transmission Map", href: "/macro/transmission", desc: "Measured sector sensitivity to oil, INR, US yields and the S&P.", badge: "NEW" },
-          { label: "Scenarios", href: "/macro/scenarios", desc: "Shock oil, INR or yields and see sector and portfolio impact." },
+          { label: "IPO Pipeline", href: "/research/ipo", desc: "Upcoming IPOs, GMP and subscription tracking." },
+          { label: "Bonds, Rights & Buybacks", href: "/research/offers", desc: "Debenture, rights issue, buyback and offer-for-sale calendars." },
         ],
       },
     ],
   },
   {
     title: "Trade",
-    tagline: "Short-term and intraday: scans, signals, options",
+    tagline: "Find short-term ideas",
     groups: [
       {
-        label: "Scanners & Signals",
-        desc: "Find stocks that are breaking out right now.",
-        badge: "NEW",
+        label: "Signature Tools",
+        desc: "The fastest way to find and test ideas.",
         items: [
-          { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Live Nifty 500 technical scans: 52-week breakouts, volume gainers, NR7, RSI, MACD and more.", badge: "NEW" },
-          { label: "Trade Lab", href: "/intelligence/trade-lab", desc: "Pick NIFTY, BANK NIFTY, SENSEX or any F&O stock: RSI, MACD and 14 more indicators with plain-English readings, patterns and backtests.", badge: "NEW" },
-          { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Nifty next-day model with its walk-forward track record, plus BTST/STBT candidates.", badge: "AI" },
-          { label: "Alerts & Scanner Bot", href: "/intelligence/alerts", desc: "Scheduled scans, breakout alerts, and on-demand scanner commands.", badge: "NEW" },
-        ],
-      },
-      {
-        label: "Momentum & Breadth",
-        desc: "Is the rally broad or narrow?",
-        items: [
-          { label: "Breadth", href: "/markets/breadth", desc: "Advance/decline and participation signals." },
-          { label: "Momentum", href: "/markets/breadth?view=momentum", desc: "Trend and momentum leaders." },
-        ],
-      },
-      {
-        label: "Options & F&O",
-        desc: "Open interest, positioning and unusual activity.",
-        badge: "AI",
-        items: [
+          { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Live Nifty 500 scans: breakouts, volume, RSI, MACD.", badge: "NEW" },
+          { label: "Trade Lab", href: "/intelligence/trade-lab", desc: "RSI, MACD and 13 more indicators, chart patterns and backtests for any index or F&O stock.", badge: "NEW" },
+          { label: "Alerts", href: "/intelligence/alerts", desc: "Breakout and scan alerts on your schedule." },
           { label: "Options Flow", href: "/research/options-flow", desc: "Unusual activity across the options tape.", badge: "AI" },
-          { label: "Derivatives", href: "/markets/derivatives", desc: "F&O open interest and positioning." },
         ],
       },
       {
-        label: "Ideas & Backtests",
-        desc: "Get AI trade ideas, then test them on history.",
+        label: "Signals & Tests",
+        desc: "Model signals, backtests and derivatives.",
         items: [
-          { label: "Backtesting", href: "/intelligence/backtesting", desc: "₹10K scanner equity curves vs Nifty 500 — signal hold horizons after each close.", badge: "NEW" },
+          { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Next-day model with its published track record.", badge: "AI" },
+          { label: "Backtesting", href: "/intelligence/backtesting", desc: "Test scanner ideas against history." },
+          { label: "Derivatives", href: "/markets/derivatives", desc: "F&O open interest and positioning." },
+          { label: "Breadth & Momentum", href: "/markets/breadth", desc: "Advance/decline and trend leaders in one view." },
         ],
       },
     ],
   },
   {
-    title: "My Portfolio",
-    tagline: "Track and improve your own holdings",
+    title: "Macro & Flows",
+    tagline: "The economy and big money",
     groups: [
       {
-        label: "Holdings",
-        desc: "Everything you own, what it's worth, and what you've gained or lost.",
+        label: "Macro Board",
+        desc: "Growth, inflation, rates and liquidity.",
         items: [
-          { label: "Overview", href: "/portfolio", desc: "Mark-to-market NAV, P&L, and live positions." },
-          { label: "Allocation", href: "/portfolio/allocation", desc: "Policy weights versus actual exposure." },
-          { label: "Watchlist", href: "/portfolio/watchlist", desc: "Names you're tracking without a position.", badge: "NEW" },
+          { label: "Global Board", href: "/macro", desc: "Regime-first read on growth, inflation, liquidity." },
+          { label: "India Macro", href: "/macro/india", desc: "MOSPI, RBI and fiscal data on one page." },
+          { label: "RBI & Liquidity", href: "/macro/rbi", desc: "Policy stance, repo path and system liquidity." },
+          { label: "Global Data", href: "/macro/global", desc: "Cross-country macro series." },
+          { label: "Yields", href: "/macro/yields", desc: "Bond yields across tenors and countries.", badge: "NEW" },
         ],
       },
       {
-        label: "Risk & ideas",
-        desc: "How bumpy the ride could get — and simple ways to smooth it.",
+        label: "Stress & Scenarios",
+        desc: "What breaks, and what if it does.",
         items: [
-          { label: "Risk & VaR", href: "/portfolio/risk", desc: "Vol, drawdown, and 95% Value-at-Risk." },
-          { label: "Attribution", href: "/portfolio/attribution", desc: "Brinson-Fachler sector and security effects." },
-          { label: "Quant & Factors", href: "/portfolio/quant", desc: "Factor loadings and systematic betas." },
-          { label: "Optimizer", href: "/portfolio/optimizer", desc: "Mean-variance and risk-parity rebalancing." },
+          { label: "Stress Index", href: "/macro/stress", desc: "India macro stress score and warning clusters." },
+          { label: "Scenarios", href: "/macro/scenarios", desc: "Shock oil, INR or yields; see the impact." },
+          { label: "How Shocks Spread", href: "/macro/transmission", desc: "Which sectors move when oil, INR or US yields jump." },
+        ],
+      },
+      {
+        label: "Big Flows",
+        desc: "Follow institutional money.",
+        items: [
+          { label: "Institutional Flows", href: "/intelligence/institutional", desc: "FII/DII cash, MF smart-money and ownership signals." },
+        ],
+      },
+      {
+        label: "Sectors & Valuation",
+        desc: "Cheap or expensive? Who leads?",
+        items: [
+          { label: "Sector Map", href: "/markets/sectors", desc: "Sector performance and comparables." },
+          { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "Index multiples and the 10-year G-Sec." },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Portfolio",
+    tagline: "Track and improve your holdings",
+    groups: [
+      {
+        label: "Holdings",
+        desc: "What you own and what it's worth.",
+        items: [
+          { label: "Overview", href: "/portfolio", desc: "Live positions, NAV and P&L." },
+          { label: "Watchlist", href: "/portfolio/watchlist", desc: "Names you're tracking without a position." },
+          { label: "Allocation", href: "/portfolio/allocation", desc: "Your actual exposure vs your targets." },
+          { label: "Activity", href: "/portfolio/activity", desc: "Every trade and corporate action in one log.", badge: "NEW" },
+        ],
+      },
+      {
+        label: "Risk & Improve",
+        desc: "How bumpy the ride is, and how to smooth it.",
+        items: [
+          { label: "Risk", href: "/portfolio/risk", desc: "Volatility, drawdowns and worst-case estimates." },
+          { label: "Attribution", href: "/portfolio/attribution", desc: "What drove your returns: sectors or stock picks." },
+          { label: "Factor Exposure", href: "/portfolio/quant", desc: "Value, momentum and size tilts in your portfolio." },
+          { label: "Optimizer", href: "/portfolio/optimizer", desc: "Rebalance suggestions for your risk level." },
+          { label: "Tax", href: "/portfolio/tax", desc: "Capital-gains view of your holdings.", badge: "NEW" },
         ],
       },
     ],
@@ -264,20 +195,13 @@ export const NAV_SECTIONS: NavSection[] = [
     groups: [
       {
         label: "Data Centre",
-        desc: "Where the numbers come from; download them.",
+        desc: "Where the numbers come from.",
         items: [
-          { label: "Sources & Status", href: "/data", desc: "Feed health, sources, and data freshness." },
-          { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every collected series." },
-          { label: "Data Feeds", href: "/data/feeds", desc: "Full list of connected market data providers." },
-          { label: "Data360 Explorer", href: "/data/data360", desc: "World Bank macro series for India and the US." },
-          { label: "Data Export", href: "/data/export", desc: "Download every dataset on the site as one structured Excel workbook.", badge: "NEW" },
-        ],
-      },
-      {
-        label: "External Brief (Bazaarbrief)",
-        desc: "A short, external read on the day's market narrative.",
-        items: [
-          { label: "External Brief (Bazaarbrief)", href: "https://abhisheksi2o.github.io/Bazaarbrief/", desc: "A short, external read on the day's market narrative.", external: true },
+          { label: "Sources & Status", href: "/data", desc: "Feed health and data freshness." },
+          { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every series." },
+          { label: "Data Feeds", href: "/data/feeds", desc: "Every connected market-data provider." },
+          { label: "World Bank Data", href: "/data/data360", desc: "World Bank macro series for India and the US." },
+          { label: "Data Export", href: "/data/export", desc: "Download site datasets as Excel." },
         ],
       },
     ],
@@ -287,9 +211,10 @@ export const NAV_SECTIONS: NavSection[] = [
 /** Default route when tapping a bottom-tab section on mobile (matches START_HERE intent). */
 export const SECTION_LANDING_HREF: Record<string, string> = {
   Today: "/Home",
-  Invest: "/research",
+  Stocks: "/research",
   Trade: "/intelligence/scanner",
-  "My Portfolio": "/portfolio",
+  "Macro & Flows": "/macro",
+  Portfolio: "/portfolio",
   "Data & Tools": "/data",
 };
 
@@ -310,10 +235,11 @@ export function sectionLandingHref(
 
 /** Beginner shortcuts shown at the top of the full menu. */
 export const START_HERE = [
-  { label: "Just want today's view?", cta: "Read the Daily Brief", href: "/intelligence/brief" },
-  { label: "Investing for the long term?", cta: "Open Company Workbench", href: "/research" },
-  { label: "Trading short-term?", cta: "Open Stock Scanner", href: "/intelligence/scanner" },
-  { label: "Own stocks already?", cta: "Open My Portfolio", href: "/portfolio" },
+  { label: "Just want today's view?", cta: "Read the 2-minute Daily Brief", href: "/intelligence/brief" },
+  { label: "Researching a stock?", cta: "Ask the AI Desk", href: "/research/ai-desk" },
+  { label: "Looking for trading ideas?", cta: "Run the Stock Scanner", href: "/intelligence/scanner" },
+  { label: "Want to test an idea on real data?", cta: "Try Trade Lab", href: "/intelligence/trade-lab" },
+  { label: "Already own stocks?", cta: "Open My Portfolio", href: "/portfolio" },
 ] as const;
 
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

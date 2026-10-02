@@ -143,7 +143,7 @@ export default function FeedsPage() {
                     India Benchmarks Cockpit
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Live prices and intraday percentage moves for Nifty 50, Sensex, and heavyweight index constituents on the India Cockpit.
+                    Live prices and intraday percentage moves for Nifty 50, Sensex, and heavyweight index constituents on the India Markets page.
                   </p>
                 </div>
                 <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">

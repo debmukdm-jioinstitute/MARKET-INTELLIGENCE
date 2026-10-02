@@ -370,9 +370,9 @@ export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLe
 
   let startHere = [...START_HERE];
   if (skillLevel === "beginner") {
-    startHere = startHere.filter((s) => s.href === "/intelligence/brief" || s.href === "/research");
+    startHere = startHere.filter((s) => s.href === "/intelligence/brief" || s.href === "/research/ai-desk");
   } else if (skillLevel === "advanced") {
-    startHere = startHere.filter((s) => s.href === "/intelligence/scanner" || s.href === "/portfolio");
+    startHere = startHere.filter((s) => s.href === "/intelligence/scanner" || s.href === "/intelligence/trade-lab" || s.href === "/portfolio");
   }
 
   return { startHere, sections, aiTools };
@@ -380,7 +380,7 @@ export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLe
 
 export function offeringsOutlineForPrompt(maxSections: NavSection[] = NAV_SECTIONS): string {
   const lines: string[] = [
-    "Portal map (Today / Invest / Trade / My Portfolio / Data & Tools):",
+    "Portal map (Today / Stocks / Trade / Macro & Flows / Portfolio / Data & Tools):",
     ...START_HERE.map((s) => `Start here: ${s.label} → ${s.href} (${s.cta})`),
   ];
   for (const section of maxSections) {

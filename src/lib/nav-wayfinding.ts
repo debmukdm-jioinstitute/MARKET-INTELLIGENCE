@@ -15,7 +15,6 @@ export type PortalWayfinding = {
 };
 
 function sectionShortTitle(title: string) {
-  if (title === "My Portfolio") return "Portfolio";
   if (title === "Data & Tools") return "Tools";
   return title;
 }

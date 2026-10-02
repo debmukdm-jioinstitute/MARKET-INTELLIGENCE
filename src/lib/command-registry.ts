@@ -28,7 +28,7 @@ export const PAGE_COMMANDS: PageCommand[] = [
   { href: "/markets/derivatives", label: "Derivatives", description: "Option chain with live Greeks" },
   { href: "/markets/sectors", label: "Sectors", description: "Sector intelligence" },
   { href: "/research/ipo", label: "IPOs", description: "Mainboard & SME IPOs with Grey Market Premium (GMP)" },
-  { href: "/research/offers", label: "NCD · RI · BB · OFS", description: "Chittorgarh primary-market calendars for bonds and buybacks" },
+  { href: "/research/offers", label: "Bonds, Rights & Buybacks", description: "Chittorgarh primary-market calendars for bonds and buybacks" },
   { href: "/data/feeds", label: "Data feeds", description: "Live market feeds & source health" },
   { href: "/data/export", label: "Data export (Excel)", description: "Download every dataset as one structured workbook" },
   { href: "/portfolio/optimizer", label: "Optimizer", description: "Suggest a better mix (learning tool)" },

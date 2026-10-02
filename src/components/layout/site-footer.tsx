@@ -43,7 +43,7 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
         >
           Sitemap
         </p>
-        <div className="mt-4 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-4 grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
           {sections.map((section) => (
             <div key={section.title}>
               <p
@@ -97,6 +97,17 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
                 {item.label}
               </Link>
             ))}
+            <a
+              href="https://abhisheksi2o.github.io/Bazaarbrief/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "text-sm transition hover:underline",
+                marketing ? "text-gray-500 hover:text-gray-900" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              External Brief (Bazaarbrief) ↗
+            </a>
           </div>
           <p className={cn("text-sm", marketing ? "text-gray-400" : "text-muted-foreground")}>
             ©{" "}

@@ -897,7 +897,7 @@ export const SITE_TOOLS: Tool[] = [
       properties: {
         section: {
           type: "string",
-          enum: ["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"],
+          enum: ["Today", "Stocks", "Trade", "Macro & Flows", "Portfolio", "Data & Tools", "all"],
         },
         skillLevel: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
       },
@@ -905,7 +905,7 @@ export const SITE_TOOLS: Tool[] = [
     },
     run: async (a) => {
       const section = z
-        .enum(["Today", "Invest", "Trade", "My Portfolio", "Data & Tools", "all"])
+        .enum(["Today", "Stocks", "Trade", "Macro & Flows", "Portfolio", "Data & Tools", "all"])
         .default("all")
         .parse(a.section ?? "all");
       const skillLevel = z.enum(["beginner", "intermediate", "advanced"]).optional().parse(a.skillLevel);

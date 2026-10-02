@@ -90,7 +90,7 @@ export function HomeExploreHub() {
                 on ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted/50 text-muted-foreground hover:text-foreground",
               )}
             >
-              {sec.title === "My Portfolio" ? "Portfolio" : sec.title === "Data & Tools" ? "Tools" : sec.title}
+              {sec.title === "Data & Tools" ? "Tools" : sec.title}
             </button>
           );
         })}
