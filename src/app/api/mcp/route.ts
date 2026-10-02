@@ -1,4 +1,5 @@
 import { authErrorForTool, rememberSessionForIp, resolveMcpCallContext, sessionFromToken } from "@/lib/mcp/context";
+import { mcpPaidAccessError } from "@/lib/mcp/paid-access";
 import { clientIp, mcpRateLimited, rateLimitCap, rateLimitKey } from "@/lib/mcp/rate-limit";
 import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
 import { authorizationServerMetadata } from "@/lib/mcp/oauth/metadata";
@@ -12,8 +13,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 /**
- * MCP server (Streamable HTTP). Public market tools are open (IP rate limit).
- * Account tools need mi_sign_in + X-MI-Session. Optional MCP_API_KEYS raise limits only.
+ * MCP server (Streamable HTTP). Paid plans only (Daily pass, Plus, Pro) unless MCP_API_KEYS.
+ * Account tools need mi_sign_in + X-MI-Session on top of paid access.
  * Upgraded to protocol 2025-06-18, version 2.4.0 with prompts, resources, outputSchema, and cursor pagination.
  */
 
@@ -50,7 +51,7 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
         },
         serverInfo: { name: "market-intelligence", version: SERVER_VERSION },
         instructions:
-          "Plug-and-play: public market tools need no API key. Composite tools (get_market_overview, get_research_pack) combine multi-step queries into a single call. For portfolio, OptionStrat, alerts, etc., call mi_sign_in then pass X-MI-Session. Descriptive data only, not investment advice.",
+          "Paid plan required (Daily pass, Plus plan, or Pro plan on getmarketintelligence.in). Composite tools (get_market_overview, get_research_pack) combine multi-step queries. For portfolio, OptionStrat, alerts, etc., call mi_sign_in then pass X-MI-Session. Descriptive data only, not investment advice.",
       });
     case "ping":
       return ok(id, {});
@@ -116,6 +117,14 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
               text: `${authErr}\n\nPlease ask the user for their email and password and call the mi_sign_in tool to sign in. Once signed in, you can view the portfolio and account features.`,
             },
           ],
+        });
+      }
+
+      const paidErr = await mcpPaidAccessError(ctx);
+      if (paidErr) {
+        return ok(id, {
+          isError: true,
+          content: [{ type: "text", text: paidErr }],
         });
       }
 
@@ -263,9 +272,9 @@ export async function GET() {
     prompts: MCP_PROMPTS.map((p) => ({ name: p.name, description: p.description })),
     resources: MCP_RESOURCES.map((r) => ({ uri: r.uri, name: r.name })),
     auth: {
-      publicTools: "No API key — Cursor works with URL only; claude.ai uses OAuth DCR + one-time consent.",
-      accountTools: "tools/call mi_sign_in → X-MI-Session: <sessionToken>",
-      optionalApiKey: "MCP_API_KEYS optional — higher rate limit for automation",
+      paidPlans: "Daily pass, Plus plan, or Pro plan required. Sign in on the website before Claude OAuth Allow access.",
+      accountTools: "tools/call mi_sign_in → X-MI-Session: <sessionToken> (paid + signed in)",
+      optionalApiKey: "MCP_API_KEYS optional — owner automation bypass",
     },
     changelog:
       "v2.4.1: Protocol 2025-06-18, in-memory TTL caching for idempotent tools, payload token compacting & float optimization, structured error guidance, outputSchema support, composite tools.",

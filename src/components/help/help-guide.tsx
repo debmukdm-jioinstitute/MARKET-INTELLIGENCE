@@ -64,7 +64,7 @@ const INVESTOR_TASKS = [
   },
   {
     q: "Connect Claude AI via MCP",
-    a: "Add Market Intelligence as a custom connector in claude.ai or Claude Desktop using our MCP URL. Query live NSE/BSE and macro data with zero API key.",
+    a: "Paid plan required (Daily pass, Plus, or Pro). Add our MCP URL as a custom connector in claude.ai or Claude Desktop, sign in on the website, then Allow access.",
     href: "/connect/claude",
   },
   {
@@ -125,7 +125,7 @@ const TROUBLE = [
   },
   {
     problem: "Portfolio or options tools say sign in required",
-    fix: "Claude OAuth Allow access is only for public market data. For holdings, use mi_sign_in (or mi login) with your website email and password.",
+    fix: "Claude MCP requires a paid plan and website sign-in before Allow access. For holdings inside MCP, also use mi_sign_in (or mi login) with your email and password.",
   },
 ];
 
@@ -313,9 +313,8 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
               .
             </p>
             <p>
-              <b>Connect to your AI (MCP)</b> lets Cursor or Claude pull live numbers when you ask in plain English — for example
-              &ldquo;What is the stress index today?&rdquo; <b>Claude on claude.ai</b> uses a custom connector plus a one-time
-              Allow access step. <b>Cursor</b> only needs the MCP URL in settings.
+              <b>Connect to your AI (MCP)</b> is on paid plans only. Cursor or Claude pull live numbers when you ask in plain English — for example
+              &ldquo;What is the stress index today?&rdquo; Sign in and subscribe, then use a custom connector on claude.ai or paste the MCP URL in Cursor.
             </p>
             <p>
               <b>mi</b> is an optional text menu in Terminal for people who like the command line. You do not need it if you
@@ -389,7 +388,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionTrigger>
           <AccordionContent>
             <p className="mb-3 text-muted-foreground">
-              One MCP URL for every client. You never need to email us for an API key for public market tools.
+              Paid plans only (Daily pass, Plus, Pro). One MCP URL for Claude, Cursor, and Claude Code — sign in on the website before Allow access.
             </p>
             <Code>{ENDPOINT}</Code>
 
@@ -461,7 +460,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   <p className="mb-2 text-sm">
-                    Uses HTTP transport directly — no claude.ai OAuth screen. Same public tools as the website.
+                    Uses HTTP transport directly — no claude.ai OAuth screen. Still requires a paid plan and mi_sign_in for account tools.
                   </p>
                   <Steps
                     items={[
@@ -513,7 +512,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
                       "Pick HTTP or Streamable HTTP transport (use mcp-remote locally only if the app requires it).",
                       "Server URL: paste the MCP endpoint above.",
                       "If the app supports OAuth discovery, it may open the same Allow access flow as Claude.",
-                      "If the app asks for API keys, leave them empty for public market data.",
+                      "If the app asks for API keys, leave them empty — billing is via your website paid plan.",
                       "Save and start a new conversation.",
                     ]}
                   />
@@ -547,7 +546,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
             <dl className="mt-6 grid gap-2 text-sm sm:grid-cols-[8rem_1fr]">
               <dt className="text-muted-foreground">Claude OAuth</dt>
               <dd className="text-muted-foreground">
-                One-time Allow access for public data only — not your website password. Portfolio tools use mi_sign_in separately.
+                One-time Allow access after paid-plan sign-in — not your password in Claude. Portfolio tools use mi_sign_in separately.
               </dd>
               <dt className="text-muted-foreground">Rate limit</dt>
               <dd className="text-muted-foreground">About 45 public tool calls per minute per connection.</dd>
@@ -563,7 +562,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground">
             <p className="mb-3">
-              Public market data needs no API key. Claude&apos;s <b>Allow access</b> step does <b>not</b> unlock your portfolio.
+              Claude MCP needs a paid plan and website sign-in. <b>Allow access</b> does <b>not</b> unlock your portfolio by itself.
               For <b>your</b> holdings, alerts, OptionStrat lab, or site assistant via MCP, sign in with the
               same email and password as the website using <b>mi_sign_in</b> or <b>mi login</b>.
             </p>

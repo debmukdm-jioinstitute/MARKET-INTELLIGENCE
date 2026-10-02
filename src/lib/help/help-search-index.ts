@@ -20,7 +20,7 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "mcp",
     title: "Connect Market Intelligence to Claude / Cursor (MCP)",
-    blurb: "One MCP URL, no API key — Claude custom connector, Cursor, Claude Code.",
+    blurb: "Paid plans only — Claude custom connector, Cursor, Claude Code MCP URL.",
     keywords: [
       "mcp",
       "claude",

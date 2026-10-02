@@ -1,4 +1,4 @@
-/** Public MCP endpoint and copy for Claude / Cursor connectors (no API key). */
+/** MCP endpoint for Claude / Cursor — paid plans only (see /pricing). */
 export const MCP_ENDPOINT = "https://getmarketintelligence.in/api/mcp";
 
 export const CLAUDE_CONNECTOR = {

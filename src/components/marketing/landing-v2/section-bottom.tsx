@@ -343,7 +343,7 @@ export function LandingPricingSection() {
           <div className="border border-[#dcd6cc] bg-[#faf7f2] p-5">
             <p className="font-semibold">Free</p>
             <p className="mt-2 text-2xl font-semibold">₹0</p>
-            <p className="mt-2 text-sm text-[#3d3d3d]">The whole terminal. 5 AI analyses a month.</p>
+            <p className="mt-2 text-sm text-[#3d3d3d]">The whole website. 5 AI analyses a month. Claude MCP is paid-only.</p>
             <PrimaryButton href="/signup" className="mt-6 w-full">
               Start free
             </PrimaryButton>
@@ -352,7 +352,7 @@ export function LandingPricingSection() {
             <p className="font-semibold">Daily pass</p>
             <p className="mt-2 text-2xl font-semibold">₹9</p>
             <p className="mt-1 text-sm text-[#6b6b6b]">, one time</p>
-            <p className="mt-2 text-sm text-[#3d3d3d]">Everything, for one full day.</p>
+            <p className="mt-2 text-sm text-[#3d3d3d]">Everything including Claude MCP, for one full day.</p>
             <SecondaryButton href="/pricing" className="mt-6 w-full">
               Choose daily pass
             </SecondaryButton>
@@ -365,7 +365,7 @@ export function LandingPricingSection() {
                 ? MARKETING_PLAN_SAVINGS
                 : MARKETING_PLUS_LAUNCH_ACTIVE
                   ? "3 months access if you subscribe by 31 Oct 2026."
-                  : "Unlimited access. Cancel any time."}
+                  : "Unlimited access including Claude MCP. Cancel any time."}
             </p>
             <PrimaryButton href="/pricing" className="mt-6 w-full">
               {yearly ? "Choose Pro plan" : "Choose Plus plan"}
@@ -379,7 +379,7 @@ export function LandingPricingSection() {
           </Link>
         </p>
         <p className="mt-6 text-sm text-[#6b6b6b]">
-          Power user? Ask Claude Desktop about the market through the connector, or pull data into your own terminal.{" "}
+          Paid plan? Ask Claude Desktop about the market through the MCP connector, or pull data into your own terminal.{" "}
           <Link href="/connect/claude" className="font-semibold text-[#141414] underline underline-offset-4">
             Connect →
           </Link>

@@ -22,7 +22,10 @@ export const MARKETING_PLANS = PLANS.map((p) => ({
 export const MARKETING_PLAN_SAVINGS = yearlySavingsCopy();
 
 export const MARKETING_FREE_TIER =
-  "Free accounts get the full product with two limits: 5 AI Desk and Options Flow analyses per month (shared counter), and preview-only Company & Concall Intel, Search-trend intelligence, and Legal & insolvency.";
+  "Free accounts get the full website with two limits: 5 AI Desk and Options Flow analyses per month (shared counter), preview-only Company & Concall Intel, Search-trend intelligence, and Legal & insolvency. Claude MCP (Claude Desktop, Cursor, Claude Code) is not on Free — it is included on every paid plan.";
+
+export const MARKETING_PAID_MCP =
+  "Claude MCP connector — live market tools inside Claude Desktop, claude.ai, Cursor, and Claude Code.";
 
 export const MARKETING_COMPARE_ROWS: {
   feature: string;
@@ -38,6 +41,7 @@ export const MARKETING_COMPARE_ROWS: {
   { feature: "Concall tone tracking", mi: "Yes", tickertape: "—", screener: "—" },
   { feature: "Daily brief in Hindi", mi: "Yes", tickertape: "—", screener: "—" },
   { feature: "Instant Telegram alerts", mi: "Yes", tickertape: "—", screener: "—" },
+  { feature: "Claude MCP connector", mi: "Paid plans only", tickertape: "—", screener: "—" },
 ];
 
 export const MARKETING_PLUS_LAUNCH_ACTIVE = plusLaunchOfferActive();

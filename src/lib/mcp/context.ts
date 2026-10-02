@@ -93,7 +93,7 @@ export function resolveMcpCallContext(req: Request): McpCallContext {
 export function authErrorForTool(_access: McpAccess, _ctx: McpCallContext): string | null {
   if (_access === "auth") return null;
   if (_access === "public") {
-    // Open read-only market data — rate-limited by IP in the MCP route (no customer API keys).
+    // Tool-level auth open; paid-plan gate runs in /api/mcp before tools/call.
     return null;
   }
   if (_access === "user") {

@@ -84,7 +84,7 @@ const INTEGRATION_AGENTS: Record<string, IntegrationAgent> = {
     points: [
       "Step 1: Tap \"Connect Telegram Bot in 1 Click\" below — opens @market_intel_alerts_india_bot in Telegram.",
       "Step 2: Tap /start: Instant activation for breaking disclosures, macro shocks, and 08:30 AM briefs.",
-      "Step 3: Connect Claude AI via MCP URL in Claude Desktop or claude.ai for natural language research.",
+      "Step 3: On a paid plan, connect Claude AI via MCP URL in Claude Desktop or claude.ai for natural language research.",
       "Live Guarantee: Every number shows origin exchange, timestamp, and mathematical formula.",
       "No credit card required. Full institutional capabilities unlocked instantly.",
     ],

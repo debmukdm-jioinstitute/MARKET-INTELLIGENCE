@@ -14,7 +14,7 @@ Market Intelligence India provides institutional-grade market data, quantitative
 All data on this platform is accessible via:
 1. Web Interface: https://getmarketintelligence.in
 2. Claude / LLM Standard context: https://getmarketintelligence.in/llms.txt & https://getmarketintelligence.in/llms-full.txt
-3. Model Context Protocol (MCP Server): https://getmarketintelligence.in/api/mcp
+3. Model Context Protocol (MCP Server, paid plans only): https://getmarketintelligence.in/api/mcp
 4. Terminal & Curl Exports: \`curl https://getmarketintelligence.in/api/export\`
 5. OpenAPI 3.1 Spec: https://getmarketintelligence.in/api/openapi.json
 
@@ -33,6 +33,7 @@ All data on this platform is accessible via:
 
 ### Option 1: Model Context Protocol (MCP) Server
 - MCP Endpoint: https://getmarketintelligence.in/api/mcp
+- Requires an active paid plan (Daily pass, Plus plan, or Pro plan) on getmarketintelligence.in
 - Protocol: JSON-RPC 2.0 / Streamable HTTP (Specification 2025-06-18)
 - Configuration for Claude Desktop / Cursor / Claude Code (\`claude_desktop_config.json\`):
 \`\`\`json

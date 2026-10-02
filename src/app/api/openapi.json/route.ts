@@ -51,7 +51,7 @@ export async function GET() {
       "/api/mcp": {
         post: {
           summary: "MCP JSON-RPC Endpoint",
-          description: "Streamable HTTP MCP 2025-06-18 protocol endpoint executing tool calls, prompts, and resources for Claude and LLM agents.",
+          description: "Streamable HTTP MCP 2025-06-18 protocol endpoint for Claude and LLM agents. Requires an active paid plan (Daily pass, Plus, or Pro).",
           responses: {
             "200": {
               description: "MCP Response"

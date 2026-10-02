@@ -1,9 +1,36 @@
 import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
+import { MCP_PAID_PLANS_COPY, MCP_PRICING_URL } from "@/lib/mcp/paid-access";
 
-export function oauthConsentHtml(fields: Record<string, string>): string {
+export type OAuthConsentState = {
+  loggedIn: boolean;
+  paid: boolean;
+  loginNextUrl: string;
+};
+
+export function oauthConsentHtml(fields: Record<string, string>, state: OAuthConsentState): string {
   const hidden = Object.entries(fields)
     .map(([k, v]) => `<input type="hidden" name="${k}" value="${escapeAttr(v)}" />`)
     .join("");
+
+  let body = "";
+  let action = "";
+
+  if (!state.loggedIn) {
+    body = `<p>Sign in on Market Intelligence first, then subscribe to a paid plan (Daily pass, Plus, or Pro). After that, return here and click Allow access.</p>
+      <p><a href="${escapeAttr(state.loginNextUrl)}" style="color:#2563eb;font-weight:600;">Sign in →</a></p>`;
+    action = `<a href="${escapeAttr(state.loginNextUrl)}" style="display:block;text-align:center;padding:0.75rem 1rem;border-radius:0.5rem;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;">Sign in to continue</a>`;
+  } else if (!state.paid) {
+    body = `<p>Signed in, but Claude MCP needs an active paid plan.</p>
+      <p>${escapeAttr(MCP_PAID_PLANS_COPY)}</p>`;
+    action = `<a href="${escapeAttr(MCP_PRICING_URL)}" style="display:block;text-align:center;padding:0.75rem 1rem;border-radius:0.5rem;background:#CC785C;color:#fff;text-decoration:none;font-weight:600;">View pricing</a>`;
+  } else {
+    body = `<p>Claude will read live market data (indices, macro, scanners, research) for your paid plan. Read-only — no trades. Portfolio tools still need <strong>mi_sign_in</strong> inside Claude.</p>`;
+    action = `<form method="post">
+      ${hidden}
+      <input type="hidden" name="approve" value="1" />
+      <button type="submit">Allow access</button>
+    </form>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -25,12 +52,8 @@ export function oauthConsentHtml(fields: Record<string, string>): string {
   <main>
     <p class="logo">Market Intelligence · MCP</p>
     <h1>Allow Claude to connect?</h1>
-    <p>Claude will read <strong>public</strong> live market data (indices, macro, scanners, research). Read-only — no trades. Portfolio tools still need a separate website sign-in.</p>
-    <form method="post">
-      ${hidden}
-      <input type="hidden" name="approve" value="1" />
-      <button type="submit">Allow access</button>
-    </form>
+    ${body}
+    ${action}
   </main>
 </body>
 </html>`;

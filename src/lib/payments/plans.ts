@@ -44,7 +44,7 @@ export function getRazorpayPlans(): RazorpayPlan[] {
     {
       id: "day_pass",
       name: "Daily pass",
-      description: "Full access for 24 hours. No automatic renewal.",
+      description: "Full access for 24 hours, including Claude MCP. No automatic renewal.",
       amountPaise: envPaise("RAZORPAY_DAY_PASS_PAISE", 9_00),
       currency: "INR",
       intervalLabel: ", one time",
@@ -53,8 +53,8 @@ export function getRazorpayPlans(): RazorpayPlan[] {
       id: "pro_monthly",
       name: "Plus plan",
       description: plusLaunchOfferActive()
-        ? `Full access. ${PLUS_LAUNCH_OFFER_NOTE}`
-        : "Full access. Cancel anytime.",
+        ? `Full access including Claude MCP. ${PLUS_LAUNCH_OFFER_NOTE}`
+        : "Full access including Claude MCP. Cancel anytime.",
       amountPaise: envPaise("RAZORPAY_PRO_MONTHLY_PAISE", 99_00),
       currency: "INR",
       intervalLabel: " per month",
@@ -63,7 +63,7 @@ export function getRazorpayPlans(): RazorpayPlan[] {
     {
       id: "pro_annual",
       name: "Pro plan",
-      description: "Everything, plus three exclusive features. Cancel anytime.",
+      description: "Everything including Claude MCP, plus three exclusive features. Cancel anytime.",
       amountPaise: envPaise("RAZORPAY_PRO_ANNUAL_PAISE", 99_900),
       currency: "INR",
       intervalLabel: " per year",

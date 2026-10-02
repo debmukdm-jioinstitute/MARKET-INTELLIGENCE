@@ -8,7 +8,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Add Market Intelligence to Claude · Custom connector",
   description:
-    "Connect Claude on claude.ai with a custom MCP connector, one-time Allow access, and live India market data. No API key.",
+    "Connect Claude on claude.ai with a custom MCP connector. Requires a paid plan (Daily pass, Plus, or Pro) and one-time Allow access.",
 };
 
 export default function ConnectClaudePage() {
@@ -20,7 +20,7 @@ export default function ConnectClaudePage() {
       <h1 className="mt-2 text-3xl font-semibold">Add Market Intelligence to Claude</h1>
       <p className="mt-3 text-base text-muted-foreground">
         Add a custom connector with the MCP URL below, click <b>Connect</b>, then <b>Allow access</b> on our consent page.
-        Live NIFTY, macro, scanners, and research — no API key, no email to us. OAuth client ID/secret stay blank.
+        Sign in, subscribe to a paid plan, then add the MCP URL. Live NIFTY, macro, scanners, and research. OAuth client ID/secret stay blank.
       </p>
 
       <ClaudeConnectorClient url={CLAUDE_CONNECTOR.url} name={CLAUDE_CONNECTOR.name} />

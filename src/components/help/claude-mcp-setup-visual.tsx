@@ -36,7 +36,7 @@ const STEPS: Step[] = [
   },
   {
     title: "Connect and approve access",
-    body: "Click Connect on the connector. A Market Intelligence page opens — click Allow access. This is read-only public market data; it is not the same as signing into the website.",
+    body: "Click Connect on the connector. Sign in on the website if asked, then Allow access (paid plan required). Read-only market data; portfolio still uses mi_sign_in inside Claude.",
     hint: "Allow access",
   },
   {
@@ -94,7 +94,7 @@ export function ClaudeMcpSetupVisual({ endpoint, connectorName, showDesktopNote 
           </div>
         </div>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Live NIFTY, macro, scanners, and research. No API key. Claude handles OAuth for you after you click Allow access.
+          Live NIFTY, macro, scanners, and research on Daily pass, Plus, and Pro plans. Claude handles OAuth after you Allow access.
         </p>
       </div>
 
