@@ -9,7 +9,7 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | Area | Routes | What it does |
 |---|---|---|
 | **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner) |
-| **Markets** | `/markets/*` | India equities + security sheet (Upstox); live breadth (NSE); derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
+| **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
 | **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; integrated **DCF**, **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder** |
@@ -18,6 +18,7 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
 | **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
 | **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections (listed in public sitemap) |
+| **Pricing & Pro** | `/pricing`, `/profile#plans` | Day / monthly / yearly plans via **Razorpay Standard Checkout**; free tier quotas on AI Desk & Options Flow ([§18](#18-environment-variables)) |
 | **Auth** | `/login`, `/signup` | Email/password sessions; **Continue with Google** when OAuth env is set ([docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md)) |
 | **Data & ops** | `/data`, `/data/feeds`, `/data/health`, `/data/data360`, `/data/export`, `/admin` | `/data` = illustrative provider table (banner points to live feeds); `/data/feeds` = real hub health; `/data/health` = collector freshness; **Data360 Explorer** = stored World Bank macro mirror; Excel export; admin ops + FTS RAG Q&A |
 | **Integrations** | `/api/mcp` | Read-only site tools + session-scoped portfolio/watchlist tools; `MCP_API_KEYS` for higher limits |
@@ -80,7 +81,7 @@ The platform is designed as an end-to-end, multi-layered quantitative and resear
 flowchart TD
   subgraph Client["1. Browser Client & UI Layer (Next.js 16 React App Router)"]
     P_Home["/Home<br/>(India Desk & 5 AI Agent Cards)"]
-    P_Markets["/markets/*<br/>(Equities, Breadth, Derivatives, Sectors)"]
+    P_Markets["/markets/india · breadth · derivatives<br/>(/markets redirects to India)"]
     P_Macro["/macro/*<br/>(Regime, Yields, Commodities, FX, World Indices, Stress)"]
     P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
     P_Research["/research/*<br/>(Company Dossiers, DCF Model, AI Desk, Options Flow, IPO)"]
@@ -198,7 +199,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  H["/Home · /markets/*"] --> ID["/api/feeds/india-dashboard"]
+  H["/Home · /markets/india · …"] --> ID["/api/feeds/india-dashboard"]
   H --> SEC["/api/feeds/security/[symbol]"]
   H --> UQ[Upstox quote · candles · depth]
   ID --> B[build-dashboard.ts]
@@ -352,12 +353,12 @@ The India desk landing page. It loads in two passes — a "quick" payload (marke
 
 ## 3. Markets
 
-**Path:** `/markets` and its subpages
+**Paths:** [`/markets/india`](https://getmarketintelligence.in/markets/india) (default entry), `/markets/breadth`, `/markets/derivatives`, `/markets/sectors`, … · Legacy **`/markets` → 308 redirect to `/markets/india`**.
 
 The Markets section is a mix of genuinely live panels and a few **explicitly static teaching mockups** — read the table below carefully; a couple of these will surprise you if you assume every number is live.
 
-### Investable universe — `/markets`
-🟢/⚪ Live quote per symbol where the feed hub has one; 1-day return is live, but **1-month and 1-year returns are drawn from the simulated tape** (`src/lib/market.ts`, described fully under [Portfolio → Virtual portfolio simulation](#virtual-portfolio-engine-b--simulated)) until a full historical-data merge — the page footnotes this itself.
+### India equities — `/markets/india` and the security sheet
+🟢 The equities table matches this app's curated NSE list against live quotes. Clicking a row opens a security sheet built from four independent Upstox calls: full quote + 5-level market depth ladder, historical candles (1M/3M/6M/1Y ranges), and key ratios (company value vs. sector value, per metric).
 
 ### Breadth — `/markets/breadth`
 🟢 Advances/declines/unchanged from NSE's live-indices endpoint; 52-week highs/lows from two dedicated NSE endpoints. Advance/decline ratio and percentages are computed client-side from those raw counts. If NSE's session-based feed fails, the panel falls back to hardcoded placeholder counts (~6,769 advances / ~2,799 declines) baked into the component — so a "breadth" reading is possible even without a live NSE session; the "REGIME: BROAD PARTICIPATION BULL" banner text is always static, not derived from the numbers next to it.
@@ -385,9 +386,6 @@ A hardcoded table of the 10 NIFTY sectors with fixed weight/return/PE/PB/ROE fig
 
 ### Valuation — `/markets/sectors?tab=valuation` ⚪ **entirely static**
 Merged into the Sectors page ("Valuation Multiples" tab); `/markets/valuation` redirects there. Literal figures ("NIFTY 50 Trailing P/E: 21.84x", "5Y Historical Average P/E: 20.42x", "Dividend Yield: 1.22%"). The valuation-meter needle position is a fixed CSS value, not derived from the number next to it.
-
-### India equities — `/markets/india` and the security sheet
-🟢 The equities table matches this app's curated NSE list against live quotes. Clicking a row opens a security sheet built from four independent Upstox calls: full quote + 5-level market depth ladder, historical candles (1M/3M/6M/1Y ranges), and key ratios (company value vs. sector value, per metric).
 
 ---
 
@@ -714,7 +712,7 @@ Every scraped story is upserted keyed on its URL, so re-scraping the same story 
 | **Alert rules** | `/intelligence/alerts` | 🧮 User-defined metric conditions, cron-evaluated |
 | **Scanner & AI signals** | `/intelligence/scanner`, `/intelligence/ai-signals` | 🧮 Scheduled Nifty 500 scans; walk-forward index models + BTST/STBT candidates |
 | **Search-trend Attention Index** | `/intelligence/search-trends` | 🟢/⚪ **Google Trends** interest (`IN`, ~3m window) for companies, IPOs, sectors, commodities, macro, policy, CEOs, products → composite **Attention Index** (interest + momentum). Live when Trends API reachable; deterministic fallback when blocked. API: `/api/feeds/search-trends` · MCP: `get_search_trend_attention` · Code: `src/lib/search-trends/*` |
-| **Institutional intelligence** | `/intelligence/institutional` | 🟢 FII/DII cash, MF smart-money signals, ownership map · MCP: `get_institutional_intelligence` |
+| **Institutional intelligence** | `/intelligence/institutional` | 🟢 FII/DII cash, MF smart-money signals (when disclosure feeds connect), ownership map · MCP: `get_institutional_intelligence` — no public mutual-fund directory or `/api/funds` |
 | **Legal & insolvency monitor** | `/intelligence/legal-risk` | 🟢 Enforcement headlines → company risk chains · MCP: `get_legal_risk_monitor` |
 | **Company / concall intel** | `/intelligence/company` | 🤖 IR timeline, disclosure deltas, concall tone (where configured) |
 | **Credit & promoters** | `/intelligence/credit`, `/intelligence/promoters` | 🟢 Rating-agency and promoter/insider activity feeds (demo + curated sources) |
@@ -849,6 +847,8 @@ npx vercel --prod --yes
 | `DATA_GOV_IN_API_KEY` | India open data (a default public key ships in the repo) |
 | `TRUEDATA_USERNAME` / `TRUEDATA_PASSWORD` | India quote last resort |
 | `MCP_API_KEYS` | Comma-separated keys enabling `tools/call` on `/api/mcp` (disabled if unset) |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay Standard Checkout (pricing page + profile billing) |
+| `RAZORPAY_*_PAISE` | Optional overrides for day / monthly / yearly plan amounts (defaults in `src/lib/payments/plans.ts`) |
 | `CRON_SECRET` | Authenticates Vercel's scheduled jobs (instrument sync, research scrape, options-flow baseline) |
 | `ADMIN_SYNC_SECRET` | Manual trigger for the NSE instrument sync |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Admin push notifications |
@@ -870,6 +870,16 @@ npx vercel --prod --yes
 ## Release history
 
 Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.8 — 2 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Removal | Markets | Retired cross-asset **Investable universe** at `/markets`; **`/markets` → `/markets/india`** (India cockpit is the entry) |
+| Removal | Funds | Removed **`/funds`** UI, **`/api/funds/*`**, and MCP **`get_mutual_fund_intelligence`**; institutional flows live at `/intelligence/institutional` |
+| Fix | Offers | Chittorgarh **Rights / NCD** status uses **issue close dates before row colour hints** (stale “Open now” after close fixed) |
+| Improvement | Onboarding | Founder welcome email **HTML only** — onboarding PDF no longer attached at signup (download from profile / `/onboarding`) |
+| Feature | Billing | **`/pricing`** + profile plans — Razorpay checkout (day / monthly / yearly); free-tier monthly caps on AI Desk & Options Flow |
 
 ### 0.1.7 — 30 Sep 2026 (Hugging Face AI Upgrade & Platform Enhancements)
 
