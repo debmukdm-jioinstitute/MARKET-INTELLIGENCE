@@ -36,6 +36,7 @@ export const PUBLIC_SITEMAP_STATIC: { path: string; changeFrequency: ChangeFrequ
   { path: "/intelligence", changeFrequency: "hourly", priority: 0.8 },
   { path: "/intelligence/scanner", changeFrequency: "daily", priority: 0.85 },
   { path: "/pricing", changeFrequency: "weekly", priority: 0.75 },
+  { path: "/intelligence/trade-lab", changeFrequency: "daily", priority: 0.85 },
   { path: "/intelligence/brief", changeFrequency: "daily", priority: 0.85 },
   { path: "/intelligence/ai-signals", changeFrequency: "daily", priority: 0.75 },
   { path: "/learn", changeFrequency: "weekly", priority: 0.8 },

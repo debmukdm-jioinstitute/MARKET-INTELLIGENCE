@@ -202,6 +202,7 @@ export const NAV_SECTIONS: NavSection[] = [
         badge: "NEW",
         items: [
           { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Live Nifty 500 technical scans: 52-week breakouts, volume gainers, NR7, RSI, MACD and more.", badge: "NEW" },
+          { label: "Trade Lab", href: "/intelligence/trade-lab", desc: "Pick NIFTY, BANK NIFTY, SENSEX or any F&O stock: RSI, MACD and 14 more indicators with plain-English readings, patterns and backtests.", badge: "NEW" },
           { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Nifty next-day model with its walk-forward track record, plus BTST/STBT candidates.", badge: "AI" },
           { label: "Alerts & Scanner Bot", href: "/intelligence/alerts", desc: "Scheduled scans, breakout alerts, and on-demand scanner commands.", badge: "NEW" },
         ],

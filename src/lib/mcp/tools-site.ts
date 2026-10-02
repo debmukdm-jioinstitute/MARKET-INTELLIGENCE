@@ -54,6 +54,9 @@ import { ensureSchema, sql } from "@/lib/db";
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
 import { loadBacktest, loadScan, loadSignals } from "@/lib/scanner/store";
+import { backtestSymbol, STRATEGIES, type StrategyId } from "@/lib/trade-lab/backtest";
+import { computeLab } from "@/lib/trade-lab/engine";
+import { TIMEFRAMES, type Timeframe } from "@/lib/trade-lab/types";
 import {
   worldMonitorExternalUrl,
   worldMonitorLaunchPath,
@@ -797,6 +800,37 @@ export const SITE_TOOLS: Tool[] = [
       );
       const head = { asOf: run.asOf, from: run.from, to: run.to, sessions: run.sessions, symbols: run.symbols, method: run.method, summary };
       return curves ? { ...head, benchmarkEquity: run.benchmarkEquity, curves: scanners.map((s) => ({ scanner: s.label, equity: s.equity })) } : head;
+    },
+  },
+  {
+    name: "get_trade_lab",
+    title: "Trade Lab (indicators & patterns)",
+    category: "Scanners",
+    description:
+      "Technical read for one NSE/BSE instrument (NIFTY, BANKNIFTY, SENSEX, BANKEX, INDIAVIX or any NSE symbol): RSI, MACD, EMA/SMA, Bollinger, Stochastic, ADX, Supertrend, ATR, Ichimoku, PSAR, CCI, Aroon, MFI, OBV, VWAP with plain-English readings and rules, detected candlestick/chart patterns, support/resistance, aggregate verdict and reasons. Pass strategy=<breakout|trend|pullback|meanrev> to backtest a preset on 2y of daily bars instead. Rule-based maths on real candles, no AI.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "e.g. NIFTY, BANKNIFTY, RELIANCE" },
+        timeframe: { type: "string", enum: TIMEFRAMES.map((t) => t.id), description: "Default 1d" },
+        strategy: { type: "string", enum: STRATEGIES.map((s) => s.id), description: "Run a backtest instead of the indicator read" },
+      },
+      required: ["symbol"],
+      additionalProperties: false,
+    },
+    run: async (a) => {
+      const { symbol, timeframe, strategy } = z
+        .object({
+          symbol: z.string().min(1).max(24),
+          timeframe: z.enum(TIMEFRAMES.map((t) => t.id) as [Timeframe, ...Timeframe[]]).default("1d"),
+          strategy: z.enum(STRATEGIES.map((s) => s.id) as [StrategyId, ...StrategyId[]]).optional(),
+        })
+        .parse(a);
+      if (strategy) return backtestSymbol(symbol, strategy);
+      const r = await computeLab(symbol, timeframe);
+      if ("error" in r) return r;
+      const { candles: _c, indicators, ...rest } = r;
+      return { ...rest, indicators: indicators.map(({ spark: _s, ...i }) => i) };
     },
   },
 
