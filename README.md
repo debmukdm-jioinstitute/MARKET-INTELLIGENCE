@@ -869,7 +869,29 @@ npx vercel --prod --yes
 
 ## Release history
 
-Package version in `package.json` is **`0.1.0`**. The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+Package version in `package.json` is **`0.1.0`** (semver tracks architecture; release sections below track shipped features). The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.9 — 2 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Fix | Research / Offers | **`/research/offers`** now continuously pulls fresh data: SWR auto-polls every **60 s** (standard) and **30 s** (NCD Subscription live bidding); manual **"Pull fresh data"** button bypasses all server and CDN caches via `?refresh=true` |
+| Improvement | Research / Offers | Live data controls toolbar — pulsing **green live-sync pill**, relative timestamp ("Updated 15s ago"), **pause / resume auto-refresh toggle**, and interactive year filter (2026 / 2025 / 2024) |
+| Improvement | Research / Offers | Server-side offer cache TTL shortened: **2 min** for calendars, **30 s** for NCD live bidding (was 15 min); API response adds `x-data-freshness` and `x-last-scraped` headers |
+| Improvement | Research / Offers | Smooth **revalidation progress bar** and inline spinning sync icon during background fetches — no table flicker or layout shift |
+| Fix | Command Palette | **Universal `⌘K` / `Ctrl+K`** keyboard shortcut now actually fires on every platform (was purely decorative JSX with no event listener); `/` quick-search trigger added |
+| Fix | Command Palette | Platform-adaptive shortcut badge — Mac shows `⌘K`, Windows / Linux shows `Ctrl K`; powered by `usePlatformShortcut` hook (SSR-safe, zero CLS) |
+| Fix | Mobile | Command Palette repositioned to `top-4` to clear virtual keyboard; **✕ close button** added; input font set to 16 px to block iOS Safari auto-zoom; `max-h-[60vh]` with touch-momentum scrolling |
+| Fix | Markets | **Simulated prices removed** from `/markets` table — only verified quotes shown; explicit "Simulated" label displayed when upstream feed unavailable (SPY `$279` bug fixed) |
+| Improvement | Landing | **Bento showcase** on homepage — animated Claude MCP pipeline visual, 1-click Telegram bot setup modal, glassmorphic cards with scroll-driven animations |
+| Improvement | Landing | Rebuilt with **live data feeds**, light theme, resilient fallbacks; Trading Desk demo matches recorded debate aesthetics with character-typing animation |
+| Improvement | Billing | Plans renamed; **Plus plan launched at ₹99/month**; Claude MCP connector gated behind paid tiers |
+| Fix | Navigation | **"Sourced Data" label** removed site-wide; **Pricing** link added to top-nav directly after Methodology |
+| Improvement | Performance | Full Safari, Chrome, and MCP payload optimisation pass — `maxDuration = 60` on slow serverless routes, singleflight caching on News Intel, ISR on marketing/help pages |
+| Improvement | Mobile | Sticky back + home buttons, 5-tab bottom navigation bar, and public header optimisation for small screens |
+| Feature | Market Sentiment | Multi-pillar sentiment engine now analyses **domestic equities, global markets (DXY, S&P 500), FX, commodities, and news headlines** before issuing mood verdict — no longer limited to government-reported macro |
+| Feature | AI News Intel | TLDR headlines are **clickable hyperlinks** to verified source articles; sentiment badge explains specific news drivers behind positive / negative call |
+| Fix | Telegram | Bot handle updated to **`@market_intel_alerts_india_bot`** across all app surfaces, help guide, and integrations page |
 
 ### 0.1.8 — 2 Oct 2026
 
