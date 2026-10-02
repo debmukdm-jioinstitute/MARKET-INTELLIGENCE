@@ -44,6 +44,8 @@ export type RetargetingTemplate = {
   segments: RetargetingSegment[];
   targetPlanId: RazorpayPlanId | null;
   subjectTemplate: string;
+  /** Short inbox preview line shown after the subject. Keep under ~90 chars, personal tone. */
+  preheaderTemplate: string;
   bodyTemplate: string;
 };
 

@@ -7,30 +7,28 @@ export const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export function welcomeEmailSubject(firstName: string): string {
-  return `${firstName}, welcome to Market Intelligence — your desk is ready`;
+  return `${firstName}, welcome — a quick note from me`;
 }
 
-/** Beta founder letter — matches landing “A note to our beta users” card. */
+const PREHEADER = "Thanks for joining — here's where to start, in plain words";
+
+/**
+ * Plain-text-first founder letter. No banner images, no heavy layout, one
+ * link — reads like a personal note so Gmail files it under Primary.
+ */
 export function renderWelcomeEmailHtml(model: OnboardingFormModel): string {
   const site = model.siteUrl.replace(/\/$/, "");
-  const founderSig = `${site}/founder.png`;
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#f6f8fe;${GOOGLE_SANS_FONT_FAMILY_CSS}">
-  <div style="max-width:680px;margin:0 auto;padding:32px 16px 48px">
-    <div style="background:#ffffff;border:1px solid rgba(255,255,255,0.85);border-radius:36px;box-shadow:0 30px 70px -30px rgba(30,64,175,0.22);padding:clamp(28px,5vw,56px)">
-      <div style="width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e4eeff;font-size:30px;line-height:64px;text-align:center">👋</div>
-      <h1 style="margin:0;font-size:clamp(26px,4vw,34px);font-weight:600;line-height:1.12;letter-spacing:-0.02em;color:#0f172a;text-align:center">A note to our beta users</h1>
-      <div style="max-width:560px;margin:28px auto 0;font-size:18px;line-height:1.85;color:#3c4043">
-        <p style="margin:20px 0 0">Hey there,</p>
-        <p style="margin:20px 0 0">I built Market Intelligence because I was tired of cluttered, expensive, and overwhelming financial tools. I wanted a space where anyone — whether you&apos;re a student, a new investor, or a seasoned trader — could see their money clearly, without the noise. 🎯</p>
-        <p style="margin:20px 0 0">This platform is designed to give you the exact tools the professionals use, but wrapped in an interface that actually feels good to use. No hidden fees, no credit card required to start, and no confusing jargon. Just clean data, beautiful charts, and insights you can trust. 🚀</p>
-        <p style="margin:20px 0 0">I&apos;m incredibly grateful you&apos;re here. If you ever have feedback, ideas, or just want to chat about the markets, my inbox is always open. Let&apos;s build a smarter financial future, together. 🙌 I know that there will be a lot of bugs, so in case you find any, please do mail me at <a href="mailto:${FOUNDER_EMAIL}" style="color:#1a5cff;font-weight:700;text-decoration:none">${FOUNDER_EMAIL}</a>.</p>
-        <p style="margin:26px 0 0;font-size:18px;font-weight:700;color:#0f172a">Warmly,</p>
-        <img src="${esc(founderSig)}" alt="Building Market Intelligence" width="300" style="display:block;margin-top:22px;width:300px;max-width:100%;height:auto;border:0;border-radius:14px" />
-        <p style="margin:30px 0 0;padding-top:20px;border-top:1px solid #e6e9f2;font-size:15px;font-style:italic;line-height:1.6;color:#5f6368">Made with ❤️ by Debabrata Mukherjee from Jio Institute, Room no 507</p>
-      </div>
-    </div>
+<body style="margin:0;padding:0;background:#ffffff;${GOOGLE_SANS_FONT_FAMILY_CSS};color:#202124;font-size:15px;line-height:1.7;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(PREHEADER)}</div>
+  <div style="max-width:560px;margin:0 auto;padding:28px 20px;">
+    <p style="margin:0 0 16px">Hi,</p>
+    <p style="margin:0 0 16px">I'm Debabrata — I built Market Intelligence because I was tired of cluttered, expensive financial tools. I wanted one calm place where anyone, from a student to a seasoned trader, could see their money clearly.</p>
+    <p style="margin:0 0 16px">A good place to start is the home page — it shows you today's market picture in plain words: <a href="${esc(site)}/Home" style="color:#1a5cff;">open your desk</a></p>
+    <p style="margin:0 0 16px">Two honest notes: this is research and learning, not financial advice — and the site is young, so you will find bugs. If you do, just reply to this email and tell me. I read every one.</p>
+    <p style="margin:0 0 16px">Thanks for being here early. It means a lot.</p>
+    <p style="margin:24px 0 0">— Debabrata<br/><span style="color:#5f6368;font-size:13px">Market Intelligence · made by Debabrata Mukherjee, Jio Institute</span></p>
   </div>
 </body></html>`;
 }
