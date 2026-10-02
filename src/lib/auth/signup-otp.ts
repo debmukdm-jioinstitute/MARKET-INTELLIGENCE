@@ -32,10 +32,11 @@ export async function shouldChallengeSignupOtp(): Promise<boolean> {
 }
 
 export async function sendSignupOtpEmail(to: string, code: string): Promise<{ ok: boolean; error?: string }> {
-  const html = `<div style="font-family:${GOOGLE_SANS_FONT_STACK};color:#1f1f1f;line-height:1.5;max-width:480px">
-<p>Your Market Intelligence verification code is</p>
-<p style="font-size:28px;letter-spacing:0.28em;font-variant-numeric:tabular-nums;font-weight:600">${code}</p>
-<p>It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you did not create an account, ignore this email.</p>
+  const html = `<div style="font-family:${GOOGLE_SANS_FONT_STACK};color:#202124;font-size:15px;line-height:1.7;max-width:480px">
+<p style="margin:0 0 12px">Hi,</p>
+<p style="margin:0 0 12px">Your verification code is:</p>
+<p style="margin:0 0 12px;font-size:26px;letter-spacing:0.28em;font-variant-numeric:tabular-nums;">${code}</p>
+<p style="margin:0;color:#5f6368;font-size:13px;">It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you didn't ask for this, just ignore it.</p>
 </div>`;
   return sendTransactionalEmail({
     to,

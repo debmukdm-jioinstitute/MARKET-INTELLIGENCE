@@ -3,6 +3,14 @@ import { applyTemplateVars, buildTemplateVars } from "@/lib/retargeting/audience
 import type { RetargetingCustomer } from "@/lib/retargeting/types";
 import type { RetargetingTemplate } from "@/lib/retargeting/types";
 
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * Plain-text-first wrapper: no cards, no banners, no heavy layout — the email
+ * should read like a personal note from the founder. Minimal links (the body
+ * carries at most one), which keeps Gmail from filing it under Promotions.
+ */
 export function renderRetargetingEmail(
   customer: RetargetingCustomer,
   template: RetargetingTemplate,
@@ -10,15 +18,16 @@ export function renderRetargetingEmail(
 ): { subject: string; html: string } {
   const vars = buildTemplateVars(customer, template.targetPlanId, siteUrl);
   const subject = applyTemplateVars(template.subjectTemplate, vars);
+  const preheader = esc(applyTemplateVars(template.preheaderTemplate ?? "", vars));
   const bodyInner = applyTemplateVars(template.bodyTemplate, vars);
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
-<body style="margin:0;padding:24px;background:#f8f9fa;${GOOGLE_SANS_FONT_FAMILY_CSS};color:#202124;font-size:15px;line-height:1.55;">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e8eaed;border-radius:8px;padding:24px;">
+<body style="margin:0;padding:0;background:#ffffff;${GOOGLE_SANS_FONT_FAMILY_CSS};color:#202124;font-size:15px;line-height:1.7;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
+  <div style="max-width:560px;margin:0 auto;padding:28px 20px;">
     ${bodyInner}
-    <hr style="margin-top:28px;border:none;border-top:1px solid #e8eaed" />
-    <p style="margin-top:16px;font-size:12px;color:#5f6368;">Market Intelligence · <a href="${vars.pricingUrl}" style="color:#5f6368;">Pricing</a></p>
+    <p style="margin:28px 0 0;font-size:13px;color:#5f6368;">—<br/>Debabrata Mukherjee<br/>Market Intelligence</p>
   </div>
 </body>
 </html>`;

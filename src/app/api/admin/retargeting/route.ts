@@ -1,4 +1,4 @@
-import { hasEmailConfigured, isSandboxSender, sendTransactionalEmail } from "@/lib/admin/email";
+import { hasEmailConfigured, isSandboxSender, listUnsubscribeHeaders, sendTransactionalEmail } from "@/lib/admin/email";
 import { requireAdmin } from "@/lib/admin/guard";
 import { defaultSiteUrl } from "@/lib/onboarding/load-form-model";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -125,6 +125,7 @@ export async function POST(req: Request) {
       subject: rendered.subject,
       html: rendered.html,
       replyTo: founderReply,
+      headers: listUnsubscribeHeaders(),
     });
     if (out.ok) {
       sent += 1;
