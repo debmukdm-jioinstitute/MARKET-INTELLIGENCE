@@ -67,15 +67,17 @@ export function TopBar() {
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              aria-label={`Search and commands (${shortcut.label})`}
-              title={`Search symbols, pages & commands (${shortcut.label} or /)`}
+              aria-label={`Search and commands (${shortcut.mounted ? shortcut.label : "keyboard shortcut"})`}
+              title={`Search symbols, pages & commands (${shortcut.mounted ? shortcut.label : "⌘K / Ctrl K"} or /)`}
               className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border/80 bg-card/60 px-3 py-1 text-sm text-muted-foreground shadow-2xs transition-all hover:border-primary/40 hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation md:inline-flex"
             >
               <Search className="size-3.5 text-muted-foreground" aria-hidden />
               <span>Commands</span>
-              <kbd className="ml-1 rounded border border-border/80 bg-muted/60 px-1.5 py-0.5 text-xs font-semibold text-muted-foreground shadow-2xs">
-                {shortcut.label}
-              </kbd>
+              {shortcut.mounted && (
+                <kbd className="ml-1 rounded border border-border/80 bg-muted/60 px-1.5 py-0.5 text-xs font-semibold text-muted-foreground shadow-2xs transition-opacity duration-200">
+                  {shortcut.label}
+                </kbd>
+              )}
             </button>
             <MegaNavBar />
           </div>

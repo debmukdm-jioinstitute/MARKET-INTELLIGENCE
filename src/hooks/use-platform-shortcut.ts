@@ -13,18 +13,20 @@ export interface PlatformShortcut {
   isMac: boolean;
   /** True if mobile phone or touch screen */
   isMobile: boolean;
-  /** Ready after client hydration */
+  /** Ready after client hydration — badge should only render when true */
   mounted: boolean;
 }
 
 export function usePlatformShortcut(): PlatformShortcut {
+  // Start with mounted:false so the badge is suppressed during SSR and hydration.
+  // We deliberately DON'T default to Mac here — the badge is hidden until we know.
   const [state, setState] = useState<PlatformShortcut>({
     label: "⌘K",
     modifier: "⌘",
     key: "K",
     isMac: true,
     isMobile: false,
-    mounted: false,
+    mounted: false,   // <── badge is hidden until useEffect fires with real UA
   });
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export function usePlatformShortcut(): PlatformShortcut {
       platform?: string;
       userAgent?: string;
     };
+
     const platform = nav.userAgentData?.platform || nav.platform || nav.userAgent || "";
     const isMac = /(Mac|iPhone|iPod|iPad)/i.test(platform);
     const isMobile =
@@ -49,7 +52,7 @@ export function usePlatformShortcut(): PlatformShortcut {
       key: "K",
       isMac,
       isMobile,
-      mounted: true,
+      mounted: true,  // <── now safe to render the correct badge
     });
   }, []);
 
