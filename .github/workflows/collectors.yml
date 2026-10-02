@@ -14,6 +14,9 @@ name: collectors-external
 #   SITE_URL     production origin, e.g. https://getmarketintelligence.in
 #   CRON_SECRET  bearer token for /api/collector/ingest
 #                (must match the CRON_SECRET env var on the Vercel project)
+# OPTIONAL SECRET:
+#   HF_TOKEN     Hugging Face token; the broker-calls collector uses it for FinBERT-tone
+#                scoring. Without it calls are still collected, with tone left blank.
 #
 # Schedule is staggered away from collect.yml's :00 3-hour ticks to smooth
 # upstream load. Manual runs: Actions → collectors-external → Run workflow,
@@ -58,6 +61,7 @@ jobs:
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           if [ -n "${{ inputs.only }}" ]; then
             npx --yes tsx@4.20.5 scripts/collectors/run-collectors.ts --only="${{ inputs.only }}"

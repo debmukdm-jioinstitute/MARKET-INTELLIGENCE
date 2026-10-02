@@ -449,6 +449,49 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      // Broker-call feed (Moneycontrol public headlines) — recent calls we collected, NOT market consensus.
+      await db`
+        CREATE TABLE IF NOT EXISTS broker_calls (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text,
+          company text NOT NULL,
+          broker text NOT NULL,
+          action text NOT NULL,
+          target_price numeric,
+          report_date date NOT NULL,
+          tone text,
+          tone_score numeric,
+          source_url text NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE UNIQUE INDEX IF NOT EXISTS idx_broker_calls_source_url ON broker_calls (source_url)`;
+      await db`CREATE INDEX IF NOT EXISTS idx_broker_calls_symbol_date ON broker_calls (symbol, report_date)`;
+
+      // Material NSE corporate announcements (one market-wide fetch per run, filtered to an allow-list).
+      await db`
+        CREATE TABLE IF NOT EXISTS company_announcements (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text NOT NULL,
+          headline text,
+          category text,
+          broadcast_date timestamptz,
+          attachment_url text,
+          content_hash text UNIQUE,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_company_announcements_symbol_date ON company_announcements (symbol, broadcast_date DESC)`;
+
+      // Per-collector delta cursor (max article id / broadcast timestamp already ingested).
+      await db`
+        CREATE TABLE IF NOT EXISTS collector_watermarks (
+          collector_id text PRIMARY KEY,
+          value text NOT NULL,
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

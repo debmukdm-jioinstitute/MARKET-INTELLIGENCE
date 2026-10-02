@@ -1,3 +1,4 @@
+import { cleanRecordBatch } from "./records";
 import type { Obs, SeriesResult } from "./types";
 
 /**
@@ -72,6 +73,7 @@ function cleanSeries(raw: unknown): { series?: SeriesResult; reject?: string } {
   const url = cleanString(raw.url) ?? "";
   const obs = cleanObs(raw.obs);
   if (!obs.length) return { reject: "no usable observations — last-good preserved" };
+  const records = cleanRecordBatch(raw.records) ?? undefined;
   return {
     series: {
       id,
@@ -81,6 +83,7 @@ function cleanSeries(raw: unknown): { series?: SeriesResult; reject?: string } {
       provider,
       url,
       obs,
+      ...(records ? { records } : {}),
     },
   };
 }

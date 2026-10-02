@@ -22,7 +22,7 @@
 import { feedFetch } from "@/lib/feeds/http";
 import { shapeIngestPayload, type CollectorRun } from "@/lib/collector/ingest";
 import { COLLECTORS } from "@/lib/collector/run";
-import type { SeriesResult } from "@/lib/collector/types";
+import type { CollectorContext, SeriesResult } from "@/lib/collector/types";
 
 const COLLECTOR_TIMEOUT_MS = 120_000;
 
@@ -39,6 +39,26 @@ function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([p, timeout]).finally(() => clearTimeout(t!));
 }
 
+/** Delta cursor from the site (never the DB directly). Unreachable → null → full window; unique keys still dedup. */
+function httpContext(site: string, secret: string): CollectorContext {
+  return {
+    watermark: async (id) => {
+      try {
+        const res = await feedFetch(`${site}/api/collector/watermark?id=${encodeURIComponent(id)}`, {
+          headers: { authorization: `Bearer ${secret}` },
+          timeoutMs: 15_000,
+          attempts: 2,
+        });
+        if (!res.ok) return null;
+        const j = (await res.json()) as { watermark?: string | null };
+        return j.watermark ?? null;
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
 async function main() {
   const only = (arg("only") ?? process.env.ONLY ?? "")
     .split(",")
@@ -52,7 +72,8 @@ async function main() {
     process.exit(2);
   }
 
-  const list = only.length ? COLLECTORS.filter((c) => only.includes(c.id)) : COLLECTORS;
+  const ctx = httpContext(site, secret);
+  const list = only.length ? COLLECTORS.filter((c) => only.includes(c.id)) : COLLECTORS; // Actions runner runs everything, including actions-only collectors
   const unknown = only.filter((id) => !COLLECTORS.some((c) => c.id === id));
   if (unknown.length) {
     console.error(JSON.stringify({ level: "error", msg: `unknown collector ids: ${unknown.join(",")}` }));
@@ -64,7 +85,7 @@ async function main() {
     list.map(async (c): Promise<CollectorRun> => {
       const t0 = Date.now();
       try {
-        const results: SeriesResult[] = await withTimeout(c.run(), COLLECTOR_TIMEOUT_MS, c.id);
+        const results: SeriesResult[] = await withTimeout(c.run(ctx), COLLECTOR_TIMEOUT_MS, c.id);
         const usable = results.filter((r) => r.obs.length > 0).length;
         console.log(
           JSON.stringify({ level: "info", msg: "collector done", collector: c.id, series: results.length, usable, ms: Date.now() - t0 }),

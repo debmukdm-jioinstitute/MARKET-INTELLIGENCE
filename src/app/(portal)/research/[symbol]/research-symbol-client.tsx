@@ -14,6 +14,8 @@ import { ScannerFlagsPanel } from "@/components/research/scanner-flags-panel";
 import { TrendPanel } from "@/components/research/trend-panel";
 import { OptionsSnapshotPanel } from "@/components/research/options-snapshot-panel";
 import { IpoPanel } from "@/components/research/ipo-panel";
+import { BrokerCallsPanel } from "@/components/research/broker-calls-panel";
+import { FilingsPanel } from "@/components/research/filings-panel";
 import { ResearchSectionNav, BackToTopButton, type NavSectionItem } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -90,6 +92,10 @@ export function ResearchSymbolClient({
     if (isIndia && symbol) {
       list.push({ id: "retail-sentiment", label: "Retail Sentiment" });
     }
+    if (isIndia && symbol) {
+      list.push({ id: "broker-calls", label: "Broker Calls" });
+      list.push({ id: "filings", label: "Filings" });
+    }
     if (data?.intelligence) {
       list.push({ id: "news", label: "News & Filings" });
     }
@@ -100,7 +106,7 @@ export function ResearchSymbolClient({
       list.push({ id: "sources", label: "Sources" });
     }
     return list;
-  }, [data, isIndia, isFno]);
+  }, [data, isIndia, isFno, symbol]);
 
   return (
     <div className="portal-page pb-16">
@@ -284,6 +290,18 @@ export function ResearchSymbolClient({
             </div>
           </Panel>
         </section>
+      ) : null}
+
+      {/* SECTION 7b: BROKER CALLS + NSE FILINGS (collected by our own collectors; India equities only) */}
+      {data && isIndia && symbol ? (
+        <>
+          <section id="broker-calls" className="scroll-mt-24">
+            <BrokerCallsPanel symbol={symbol} />
+          </section>
+          <section id="filings" className="scroll-mt-24">
+            <FilingsPanel symbol={symbol} />
+          </section>
+        </>
       ) : null}
 
       {/* SECTION 8: NEWS, DISCLOSURES & CORPORATE ACTIONS */}

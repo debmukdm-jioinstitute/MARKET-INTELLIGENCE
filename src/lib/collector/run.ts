@@ -1,4 +1,7 @@
 import { clearFailure, markFailure, saveSeries } from "./store";
+import { dbContext, saveRecords } from "./records";
+import { brokerCalls } from "./broker-calls";
+import { nseAnnouncements } from "./announcements";
 import type { Collector } from "./types";
 import { amfi } from "./sources/amfi";
 import { bls } from "./sources/bls";
@@ -12,20 +15,23 @@ import { rbi } from "./sources/rbi";
 import { rbiMarket } from "./sources/rbi-market";
 import { nseFiidii } from "./sources/nse-fiidii";
 
-export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro];
+export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro, brokerCalls, nseAnnouncements];
 
 export type RunReport = { collector: string; ok: boolean; series: number; points: number; error?: string; ms: number; sample?: unknown };
 
-/** Runs collectors independently: one failing source never blocks or overwrites the others. */
+/** Runs collectors independently: one failing source never blocks or overwrites the others. Actions-only collectors run here only when named in `only`. */
 export async function runCollectors(only?: string[], dry = false): Promise<RunReport[]> {
-  const list = only?.length ? COLLECTORS.filter((c) => only.includes(c.id)) : COLLECTORS;
+  const list = only?.length ? COLLECTORS.filter((c) => only.includes(c.id)) : COLLECTORS.filter((c) => !c.actionsOnly);
   return Promise.all(
     list.map(async (c) => {
       const t0 = Date.now();
       try {
-        const results = await c.run();
+        const results = await c.run(dbContext);
         let points = 0;
-        for (const r of results) points += dry ? r.obs.length : await saveSeries(r);
+        for (const r of results) {
+          points += dry ? r.obs.length : await saveSeries(r);
+          if (!dry && r.records) await saveRecords(r.records);
+        }
         if (!dry) await clearFailure(c.id).catch(() => {});
         if (dry) return { collector: c.id, ok: true, series: results.length, points, ms: Date.now() - t0, sample: results.map((r) => ({ id: r.id, n: r.obs.length, last: r.obs[r.obs.length - 1] })) } as RunReport;
         return { collector: c.id, ok: true, series: results.length, points, ms: Date.now() - t0 };
