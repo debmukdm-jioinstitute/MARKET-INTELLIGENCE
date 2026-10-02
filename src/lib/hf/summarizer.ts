@@ -10,6 +10,7 @@
  */
 
 import { hfInfer } from "@/lib/hf/client";
+import { isNextProductionBuild } from "@/lib/next/build-phase";
 
 const MODEL = "facebook/bart-large-cnn";
 const TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -24,10 +25,24 @@ interface BartSummarizationResponse {
  * @param text      Raw text to summarize (news items, research snippets…)
  * @param maxWords  Approximate max words for the output summary (default 80)
  */
+function extractiveFallback(clipped: string, maxWords: number): string {
+  const sentences = clipped.match(/[^.!?]+[.!?]+/g) || [clipped];
+  let fallback = "";
+  for (const s of sentences) {
+    if ((fallback + s).split(/\s+/).length > maxWords) break;
+    fallback += (fallback ? " " : "") + s.trim();
+  }
+  return fallback || `${clipped.split(/\s+/).slice(0, maxWords).join(" ")}...`;
+}
+
 export async function summarizeText(text: string, maxWords = 80): Promise<string> {
   // BART works best with 100-1024 words; clip longer texts
   const clipped = text.split(/\s+/).slice(0, 900).join(" ");
   if (!clipped.trim()) return "";
+
+  if (isNextProductionBuild()) {
+    return extractiveFallback(clipped, maxWords);
+  }
 
   const cacheKey = `bart-cnn::${clipped.slice(0, 200)}::${maxWords}`;
 
@@ -45,14 +60,7 @@ export async function summarizeText(text: string, maxWords = 80): Promise<string
     console.warn("[BART Summarizer] API unavailable, using extractive fallback:", err instanceof Error ? err.message : err);
   }
 
-  // Fallback: Return first 2-3 key sentences up to maxWords
-  const sentences = clipped.match(/[^.!?]+[.!?]+/g) || [clipped];
-  let fallback = "";
-  for (const s of sentences) {
-    if ((fallback + s).split(/\s+/).length > maxWords) break;
-    fallback += (fallback ? " " : "") + s.trim();
-  }
-  return fallback || clipped.split(/\s+/).slice(0, maxWords).join(" ") + "...";
+  return extractiveFallback(clipped, maxWords);
 }
 
 /**

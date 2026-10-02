@@ -3,12 +3,17 @@ import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import type { ProofSymbol } from "@/lib/marketing/landing-v2/copy";
+import { isNextProductionBuild } from "@/lib/next/build-phase";
 
 export const revalidate = 120;
 
 const PROOF_SEED_SYMBOLS: ProofSymbol[] = ["RELIANCE", "HDFCBANK", "TCS"];
 
 export default async function Home() {
+  if (isNextProductionBuild()) {
+    return <LandingPage />;
+  }
+
   const [initialDashboard, siteBrief, ...researchRows] = await Promise.all([
     buildIndiaDashboardQuick().catch(() => null),
     buildSiteWideExecutiveBrief().catch(() => null),

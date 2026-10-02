@@ -6,7 +6,7 @@ const WORLDMONITOR_UPSTREAM =
   process.env.WORLDMONITOR_UPSTREAM_ORIGIN?.trim() || "https://www.worldmonitor.app";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  staticPageGenerationTimeout: 120,
   async rewrites() {
     return [
       ...worldMonitorApiRewrites(),
