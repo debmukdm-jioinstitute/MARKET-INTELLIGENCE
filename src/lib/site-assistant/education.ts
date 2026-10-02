@@ -80,7 +80,7 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
     label: "Open Daily Brief",
   },
   {
-    fact: "Press ⌘K (or Space when not typing) to search any symbol, metric, or page instantly.",
+    fact: "Press ⌘K (or Ctrl+K on Windows, or / when not typing) to search any symbol, metric, or page instantly.",
   },
   {
     fact: "The Stock Scanner runs 27 technical setups across Nifty 500 after each close.",

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 type CommandPaletteContextValue = {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
 };
 
 const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
@@ -17,20 +17,56 @@ export function useCommandPalette() {
 }
 
 /**
- * Owns the palette's open state and the global Spacebar shortcut. Only opens
- * on Space when nothing is focused (document.activeElement === body) — never
- * hijacks space inside inputs, buttons, or any other focused control.
+ * Owns the palette open state and universal keyboard shortcuts:
+ * - Cmd+K on Mac / iOS
+ * - Ctrl+K on Windows / Linux / Android / Chromebook
+ * - "/" (forward slash) when not typing in an input
+ * - Spacebar when nothing is focused
  */
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.code === "Space" && !open && document.activeElement === document.body) {
+      // 1. Universal Cmd+K (Mac) or Ctrl+K (Windows/Linux) shortcut — works from anywhere
+      if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setOpen((prev) => !prev);
+        return;
+      }
+
+      // Check if user is currently interacting with an input/textarea/select/contenteditable
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isInput =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        Boolean(target?.isContentEditable);
+
+      if (isInput) return;
+
+      // 2. Universal forward slash "/" trigger when not typing
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setOpen(true);
+        return;
+      }
+
+      // 3. Spacebar quick open when body is active
+      if (
+        e.code === "Space" &&
+        !open &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        document.activeElement === document.body
+      ) {
         e.preventDefault();
         setOpen(true);
       }
     }
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);

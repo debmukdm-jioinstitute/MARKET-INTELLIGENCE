@@ -29,7 +29,8 @@ import { METRIC_COMMANDS, PAGE_COMMANDS } from "@/lib/command-registry";
 import useSWR from "swr";
 import { INDIA_EQUITIES, OPTION_UNDERLYINGS, findIndiaInstrument } from "@/lib/feeds/india/instruments";
 import { getInstrument, UNIVERSE } from "@/lib/universe";
-import { ArrowLeft, HelpCircle } from "lucide-react";
+import { ArrowLeft, HelpCircle, X } from "lucide-react";
+import { usePlatformShortcut } from "@/hooks/use-platform-shortcut";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -44,6 +45,7 @@ type View =
 
 export function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
+  const shortcut = usePlatformShortcut();
   const { hrefAllowed } = usePortalPages();
   const pageCommands = PAGE_COMMANDS.filter((p) => hrefAllowed(p.href));
   const router = useRouter();
@@ -90,7 +92,7 @@ export function CommandPalette() {
               <ArrowLeft className="size-3.5" /> Back to search
             </button>
           </div>
-          {view.type === "help" ? <HelpView /> : null}
+          {view.type === "help" ? <HelpView shortcutLabel={shortcut.label} /> : null}
           {view.type === "india-quote" ? (
             <IndiaQuoteResultView instrument={findIndiaInstrument(view.symbol)!} />
           ) : null}
@@ -106,12 +108,12 @@ export function CommandPalette() {
         </div>
       ) : (
         <Command shouldFilter>
-          <div className="flex items-center gap-2 border-b border-border px-1">
-            <div className="flex-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border px-2 py-1">
+            <div className="flex-1 min-w-0">
               <CommandInput value={query} onValueChange={setQuery} placeholder="Search symbols, pages, live metrics, or type “help”…" />
             </div>
             <Select value={source} onValueChange={(v) => setSource(v as DataSource)}>
-              <SelectTrigger className="mr-1 h-7 w-[120px] text-sm">
+              <SelectTrigger className="h-8 w-[100px] sm:w-[120px] text-xs sm:text-sm shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -120,6 +122,15 @@ export function CommandPalette() {
                 <SelectItem value="global">Global (Yahoo)</SelectItem>
               </SelectContent>
             </Select>
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Close search"
+              title="Close (Esc)"
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground touch-manipulation active:scale-95 transition-all"
+            >
+              <X className="size-4" />
+            </button>
           </div>
           <CommandList>
             <CommandEmpty>No results.</CommandEmpty>
@@ -227,20 +238,47 @@ export function CommandPalette() {
               </>
             ) : null}
           </CommandList>
+          <div className="flex items-center justify-between border-t border-border/80 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex items-center gap-1">
+                <kbd className="rounded border border-border/80 bg-card px-1.5 py-0.5 text-[11px] font-medium shadow-2xs">
+                  {shortcut.label}
+                </kbd>
+                <span className="text-[11px] text-muted-foreground">toggle</span>
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1">
+                <kbd className="rounded border border-border/80 bg-card px-1.5 py-0.5 text-[11px] font-medium shadow-2xs">
+                  /
+                </kbd>
+                <span className="text-[11px] text-muted-foreground">search</span>
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1">
+                <kbd className="rounded border border-border/80 bg-card px-1.5 py-0.5 text-[11px] font-medium shadow-2xs">
+                  Esc
+                </kbd>
+                <span className="text-[11px] text-muted-foreground">close</span>
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              <span className="hidden sm:inline">Use </span>
+              <kbd className="rounded border border-border/80 bg-card px-1 py-0.5 text-[10px] font-medium shadow-2xs">↑</kbd>
+              <kbd className="ml-1 rounded border border-border/80 bg-card px-1 py-0.5 text-[10px] font-medium shadow-2xs">↓</kbd>
+              <span className="hidden sm:inline"> to navigate</span>
+            </div>
+          </div>
         </Command>
       )}
     </CommandDialog>
   );
 }
 
-function HelpView() {
+function HelpView({ shortcutLabel = "⌘K" }: { shortcutLabel?: string }) {
   return (
     <div className="space-y-4 p-4 text-sm">
       <div>
-        <p className="font-semibold">Command palette</p>
+        <p className="font-semibold text-foreground">Command palette</p>
         <p className="text-sm text-muted-foreground">
-          Press <kbd className="rounded border border-border px-1">Space</kbd> anywhere (with
-          nothing focused) to open this, or click the search pill in the top bar.
+          Press <kbd className="rounded border border-border px-1.5 py-0.5 font-medium">{shortcutLabel}</kbd> or <kbd className="rounded border border-border px-1.5 py-0.5 font-medium">/</kbd> anywhere to open, or tap search in the top bar.
         </p>
       </div>
       <dl className="space-y-2 text-sm">

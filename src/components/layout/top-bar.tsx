@@ -1,6 +1,7 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { usePlatformShortcut } from "@/hooks/use-platform-shortcut";
 import { AppNavTrigger, MegaNavBar } from "@/components/layout/app-nav";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { SymbolSearch } from "@/components/research/symbol-search";
@@ -13,6 +14,7 @@ export function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setOpen: setPaletteOpen } = useCommandPalette();
+  const shortcut = usePlatformShortcut();
   const isHome = pathname === "/Home";
 
   const handleBack = () => {
@@ -65,11 +67,15 @@ export function TopBar() {
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground md:inline-flex"
+              aria-label={`Search and commands (${shortcut.label})`}
+              title={`Search symbols, pages & commands (${shortcut.label} or /)`}
+              className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border/80 bg-card/60 px-3 py-1 text-sm text-muted-foreground shadow-2xs transition-all hover:border-primary/40 hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation md:inline-flex"
             >
-              <Search className="size-3" />
-              Commands
-              <kbd className="ml-1 rounded border border-border px-1 text-xs">⌘K</kbd>
+              <Search className="size-3.5 text-muted-foreground" aria-hidden />
+              <span>Commands</span>
+              <kbd className="ml-1 rounded border border-border/80 bg-muted/60 px-1.5 py-0.5 text-xs font-semibold text-muted-foreground shadow-2xs">
+                {shortcut.label}
+              </kbd>
             </button>
             <MegaNavBar />
           </div>
@@ -79,10 +85,11 @@ export function TopBar() {
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              aria-label="Search and commands"
-              className="flex size-9 items-center justify-center rounded-xl border border-border/70 bg-card text-muted-foreground hover:bg-accent hover:text-foreground touch-manipulation shadow-xs"
+              aria-label={`Search and commands (${shortcut.label})`}
+              title="Search symbols, pages & commands"
+              className="flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation shadow-xs"
             >
-              <Search className="size-4" />
+              <Search className="size-4" aria-hidden />
             </button>
             <NotificationBell />
             {!isHome ? <AppNavTrigger /> : null}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { usePlatformShortcut } from "@/hooks/use-platform-shortcut";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { useWatchlist } from "@/hooks/use-watchlist";
@@ -260,6 +261,7 @@ function SiteAssistantChat({
   const pathname = usePathname();
   const router = useRouter();
   const { setOpen: setPaletteOpen } = useCommandPalette();
+  const shortcut = usePlatformShortcut();
   const { isGuest } = useAuth();
   const { data: portfolioData, addHolding, removeHolding, updateBenchmark } = useMyPortfolio();
   const { add: addWatchlistItem, remove: removeWatchlistItem } = useWatchlist();
@@ -607,8 +609,8 @@ function SiteAssistantChat({
             <ul className="space-y-1.5">
               {CAPABILITIES.map((c, i) => {
                 const icon = (
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-[11px] font-semibold text-accent-foreground">
-                    {c.icon}
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-[10px] font-semibold text-accent-foreground">
+                    {"action" in c && c.action === "palette" ? shortcut.label : c.icon}
                   </span>
                 );
                 const body = (
