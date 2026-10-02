@@ -462,6 +462,19 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      // -- Gamification: server-side XP ledger (source of truth for points) --
+      await db`
+        CREATE TABLE IF NOT EXISTS xp_events (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_email text NOT NULL,
+          action text NOT NULL,
+          points int NOT NULL,
+          page text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_email)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
