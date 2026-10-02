@@ -515,6 +515,26 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_shareholding_symbol_date ON shareholding (symbol, broadcast_date DESC)`;
 
+      // Credit ratings by agency. Rationale PDFs are linked, never stored.
+      await db`
+        CREATE TABLE IF NOT EXISTS credit_ratings (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text NOT NULL,
+          agency text NOT NULL,
+          rating text,
+          notch text,
+          outlook text,
+          watch text,
+          action text,
+          action_date date,
+          rationale_url text,
+          source text,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE (symbol, agency, action_date)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_credit_ratings_symbol_date ON credit_ratings (symbol, action_date DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

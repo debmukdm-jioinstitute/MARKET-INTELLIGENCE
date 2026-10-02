@@ -143,6 +143,24 @@ export const TABLES: TableSpec[] = [
       return { ...r, symbol: String(r.symbol).toUpperCase(), promoterPct: pct(r.promoterPct), fiiPct: pct(r.fiiPct), diiPct: pct(r.diiPct), publicPct: pct(r.publicPct), pledgePct: pct(r.pledgePct) };
     },
   },
+  {
+    name: "credit_ratings",
+    conflict: ["symbol", "agency", "action_date"],
+    onConflict: "update",
+    cols: [
+      { f: "symbol", k: "text", req: true },
+      { f: "agency", k: "text", req: true },
+      { f: "rating", k: "text" },
+      { f: "notch", k: "text" },
+      { f: "outlook", k: "text" },
+      { f: "watch", k: "text" },
+      { f: "action", k: "text" },
+      { f: "actionDate", k: "date", req: true },
+      { f: "rationaleUrl", k: "text" }, // link only — rationale text is never stored
+      { f: "source", k: "text" },
+    ],
+    normalize: (r) => ({ ...r, symbol: String(r.symbol).toUpperCase() }),
+  },
 ];
 
 export const tableSpec = (name: unknown): TableSpec | undefined => TABLES.find((t) => t.name === name);

@@ -1,6 +1,6 @@
-import { feedFetch } from "@/lib/feeds/http";
+import { feedFetch, type FeedFetchInit } from "@/lib/feeds/http";
 
-export async function getText(url: string, init?: RequestInit & { timeoutMs?: number }): Promise<string> {
+export async function getText(url: string, init?: FeedFetchInit): Promise<string> {
   const res = await feedFetch(url, { timeoutMs: 25_000, ...init });
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
   return res.text();

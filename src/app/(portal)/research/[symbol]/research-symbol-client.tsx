@@ -17,6 +17,7 @@ import { IpoPanel } from "@/components/research/ipo-panel";
 import { BrokerCallsPanel } from "@/components/research/broker-calls-panel";
 import { FilingsPanel } from "@/components/research/filings-panel";
 import { OwnershipPanel } from "@/components/research/ownership-panel";
+import { RatingAlertPulse, RatingsPanel } from "@/components/research/ratings-panel";
 import { ResearchSectionNav, BackToTopButton, type NavSectionItem } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -95,6 +96,7 @@ export function ResearchSymbolClient({
     }
     if (isIndia && symbol) {
       list.push({ id: "ownership", label: "Ownership" });
+      list.push({ id: "ratings", label: "Credit Ratings" });
       list.push({ id: "broker-calls", label: "Broker Calls" });
       list.push({ id: "filings", label: "Filings" });
     }
@@ -121,6 +123,7 @@ export function ResearchSymbolClient({
           {data?.fetchedAt ? ` · Hub sync ${new Date(data.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : null}
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          {isIndia && symbol ? <RatingAlertPulse symbol={symbol} /> : null}
           {symbol ? (
             <Link
               href={`/research/model/${encodeURIComponent(symbol)}`}
@@ -299,6 +302,9 @@ export function ResearchSymbolClient({
         <>
           <section id="ownership" className="scroll-mt-24">
             <OwnershipPanel symbol={symbol} />
+          </section>
+          <section id="ratings" className="scroll-mt-24">
+            <RatingsPanel symbol={symbol} />
           </section>
           <section id="broker-calls" className="scroll-mt-24">
             <BrokerCallsPanel symbol={symbol} />
