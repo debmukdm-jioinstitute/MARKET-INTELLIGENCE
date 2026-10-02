@@ -16,6 +16,7 @@ import { OptionsSnapshotPanel } from "@/components/research/options-snapshot-pan
 import { IpoPanel } from "@/components/research/ipo-panel";
 import { BrokerCallsPanel } from "@/components/research/broker-calls-panel";
 import { FilingsPanel } from "@/components/research/filings-panel";
+import { OwnershipPanel } from "@/components/research/ownership-panel";
 import { ResearchSectionNav, BackToTopButton, type NavSectionItem } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -93,6 +94,7 @@ export function ResearchSymbolClient({
       list.push({ id: "retail-sentiment", label: "Retail Sentiment" });
     }
     if (isIndia && symbol) {
+      list.push({ id: "ownership", label: "Ownership" });
       list.push({ id: "broker-calls", label: "Broker Calls" });
       list.push({ id: "filings", label: "Filings" });
     }
@@ -295,6 +297,9 @@ export function ResearchSymbolClient({
       {/* SECTION 7b: BROKER CALLS + NSE FILINGS (collected by our own collectors; India equities only) */}
       {data && isIndia && symbol ? (
         <>
+          <section id="ownership" className="scroll-mt-24">
+            <OwnershipPanel symbol={symbol} />
+          </section>
           <section id="broker-calls" className="scroll-mt-24">
             <BrokerCallsPanel symbol={symbol} />
           </section>

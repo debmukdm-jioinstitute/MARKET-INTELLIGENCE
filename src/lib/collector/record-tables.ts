@@ -122,6 +122,27 @@ export const TABLES: TableSpec[] = [
       return { ...r, symbol, contentHash: announcementHash(symbol, String(r.headline), String(r.broadcastDate)) };
     },
   },
+  {
+    name: "shareholding",
+    conflict: ["symbol", "broadcast_date"],
+    onConflict: "update", // a later XBRL pass fills pledge/FII/DII on rows first seen from the master list
+    cols: [
+      { f: "symbol", k: "text", req: true },
+      { f: "broadcastDate", k: "date", req: true },
+      { f: "quarterEnd", k: "date" },
+      { f: "promoterPct", k: "num" },
+      { f: "fiiPct", k: "num" },
+      { f: "diiPct", k: "num" },
+      { f: "publicPct", k: "num" },
+      { f: "pledgePct", k: "num" },
+      { f: "shareholderCount", k: "int" },
+      { f: "xbrlUrl", k: "text" },
+    ],
+    normalize: (r) => {
+      const pct = (v: unknown) => (typeof v === "number" && v >= 0 && v <= 100 ? v : null);
+      return { ...r, symbol: String(r.symbol).toUpperCase(), promoterPct: pct(r.promoterPct), fiiPct: pct(r.fiiPct), diiPct: pct(r.diiPct), publicPct: pct(r.publicPct), pledgePct: pct(r.pledgePct) };
+    },
+  },
 ];
 
 export const tableSpec = (name: unknown): TableSpec | undefined => TABLES.find((t) => t.name === name);

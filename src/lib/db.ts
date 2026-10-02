@@ -494,6 +494,27 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      // Quarterly shareholding pattern (NSE master + XBRL). broadcast_date is the filing event time, never estimated from quarter-end.
+      await db`
+        CREATE TABLE IF NOT EXISTS shareholding (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text NOT NULL,
+          broadcast_date date NOT NULL,
+          quarter_end date,
+          promoter_pct numeric,
+          fii_pct numeric,
+          dii_pct numeric,
+          public_pct numeric,
+          pledge_pct numeric,
+          shareholder_count bigint,
+          xbrl_url text,
+          source text NOT NULL DEFAULT 'NSE',
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE (symbol, broadcast_date)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_shareholding_symbol_date ON shareholding (symbol, broadcast_date DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

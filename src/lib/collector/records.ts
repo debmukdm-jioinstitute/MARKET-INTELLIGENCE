@@ -101,13 +101,18 @@ export function buildUpsertSql(spec: TableSpec): string {
 export const toRecordsetJson = (rows: Record<string, unknown>[]) =>
   JSON.stringify(rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [snake(k), v]))));
 
-/** Last-wins (update) / first-wins (nothing) dedupe inside one batch — Postgres rejects an upsert touching a row twice. */
-function dedupeBatch(spec: TableSpec, rows: Record<string, unknown>[]): Record<string, unknown>[] {
+/**
+ * Dedupe inside one batch — Postgres rejects an upsert touching a row twice.
+ * "update" tables merge duplicates (later non-null values win, nulls never erase); "nothing" tables keep the first.
+ */
+export function dedupeBatch(spec: TableSpec, rows: Record<string, unknown>[]): Record<string, unknown>[] {
   const fieldOf = (col: string) => spec.cols.find((c) => snake(c.f) === col)!.f;
   const seen = new Map<string, Record<string, unknown>>();
   for (const r of rows) {
     const key = spec.conflict.map((c) => String(r[fieldOf(c)])).join("\u0000");
-    if (spec.onConflict === "update" || !seen.has(key)) seen.set(key, r);
+    const prev = seen.get(key);
+    if (!prev) seen.set(key, r);
+    else if (spec.onConflict === "update") seen.set(key, { ...prev, ...Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null)) });
   }
   return [...seen.values()];
 }

@@ -38,6 +38,8 @@ export type Collector = {
   run: (ctx?: CollectorContext) => Promise<SeriesResult[]>;
   /** Needs the GitHub Actions runner (browser-grade fetches, HF inference); skipped by the default Vercel cron sweep. */
   actionsOnly?: boolean;
+  /** Per-run time limit for the Actions runner (default 120s); heavy per-symbol collectors raise it. */
+  timeoutMs?: number;
 };
 
 export const batchesOf = (r: SeriesResult): RecordBatch[] => (r.records ? (Array.isArray(r.records) ? r.records : [r.records]) : []);

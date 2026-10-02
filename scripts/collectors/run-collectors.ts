@@ -87,7 +87,7 @@ async function main() {
     list.map(async (c): Promise<CollectorRun> => {
       const t0 = Date.now();
       try {
-        const results: SeriesResult[] = await withTimeout(c.run(ctx), COLLECTOR_TIMEOUT_MS, c.id);
+        const results: SeriesResult[] = await withTimeout(c.run(ctx), c.timeoutMs ?? COLLECTOR_TIMEOUT_MS, c.id);
         const usable = results.filter((r) => r.obs.length > 0).length;
         console.log(
           JSON.stringify({ level: "info", msg: "collector done", collector: c.id, series: results.length, usable, ms: Date.now() - t0 }),
