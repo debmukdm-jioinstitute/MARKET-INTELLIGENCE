@@ -57,7 +57,9 @@ export const CHITTORGARH_OFFER_REPORTS: Record<OfferCategory, ReportDef> = {
 };
 
 const cache = new Map<string, { at: number; report: OfferReport }>();
-const TTL_MS = 15 * 60_000;
+// 30-second TTL for live bidding data, 2-minute TTL for standard filings
+const TTL_LIVE_MS = 30_000;
+const TTL_STANDARD_MS = 120_000;
 
 function fiscalYearSpan(calendarYear: number): string {
   return `${calendarYear}-${String(calendarYear + 1).slice(-2)}`;
@@ -142,11 +144,16 @@ export function parseChittorgarhReportPayload(
 export async function fetchChittorgarhOfferReport(
   category: OfferCategory,
   year = new Date().getFullYear(),
+  force = false,
 ): Promise<OfferReport> {
   const def = CHITTORGARH_OFFER_REPORTS[category];
   const cacheKey = `${category}:${year}`;
   const hit = cache.get(cacheKey);
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.report;
+  const ttl = category === "ncd-subscription" ? TTL_LIVE_MS : TTL_STANDARD_MS;
+
+  if (!force && hit && Date.now() - hit.at < ttl) {
+    return hit.report;
+  }
 
   const url = `${API_BASE}/${def.id}/1/9/${year}/${fiscalYearSpan(year)}/0/0/0?search=`;
   try {
@@ -154,10 +161,25 @@ export async function fetchChittorgarhOfferReport(
     if (!res.ok) return hit?.report ?? emptyReport(category, year);
     const payload = (await res.json()) as unknown;
     const report = parseChittorgarhReportPayload(category, payload, year);
-    if (report.rows.length) cache.set(cacheKey, { at: Date.now(), report });
-    return report.rows.length ? report : (hit?.report ?? report);
+    if (report.rows.length) {
+      cache.set(cacheKey, { at: Date.now(), report });
+      return report;
+    }
+    return hit?.report ?? report;
   } catch {
     return hit?.report ?? emptyReport(category, year);
+  }
+}
+
+export function clearChittorgarhOfferCache(category?: OfferCategory, year?: number) {
+  if (category && year) {
+    cache.delete(`${category}:${year}`);
+  } else if (category) {
+    for (const key of Array.from(cache.keys())) {
+      if (key.startsWith(`${category}:`)) cache.delete(key);
+    }
+  } else {
+    cache.clear();
   }
 }
 

@@ -12,6 +12,7 @@ import {
 } from "@/lib/feeds/offers/offer-status";
 import type { OfferReport, OfferRow } from "@/lib/feeds/offers/types";
 import { cn } from "@/lib/utils";
+import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 const PREFERRED_COLUMNS = [
@@ -149,22 +150,60 @@ function OffersDataTable({ rows, cols }: { rows: OfferRow[]; cols: string[] }) {
   );
 }
 
-export function OffersTable({ report, loading }: { report?: OfferReport; loading: boolean }) {
+export function OffersTable({
+  report,
+  loading,
+  isValidating,
+  onRefresh,
+}: {
+  report?: OfferReport;
+  loading: boolean;
+  isValidating?: boolean;
+  onRefresh?: () => void;
+}) {
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading Chittorgarh data…</p>;
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-border/80 bg-card/40 p-12 text-center">
+        <RefreshCw className="mb-3 size-6 animate-spin text-primary" />
+        <p className="text-sm font-medium text-foreground">Pulling fresh Chittorgarh calendar data…</p>
+        <p className="mt-1 text-xs text-muted-foreground">Connecting to live feed and parsing issue schedules</p>
+      </div>
+    );
   }
   if (!report) {
-    return <p className="text-sm text-muted-foreground">No report loaded.</p>;
+    return (
+      <div className="rounded-xl border border-border/80 bg-card/40 p-8 text-center text-sm text-muted-foreground">
+        No report loaded.
+      </div>
+    );
   }
   if (!report.rows.length) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No rows for {report.title} ({report.year}). Source may be empty —{" "}
-        <a href={report.source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-          view on Chittorgarh
-        </a>
-        .
-      </p>
+      <div className="rounded-xl border border-border/80 bg-card/40 p-8 text-center space-y-3">
+        <p className="text-sm text-muted-foreground">
+          No rows for {report.title} ({report.year}). Source may be empty or awaiting updates.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <RefreshCw className="size-3.5" />
+              Pull fresh data
+            </button>
+          )}
+          <a
+            href={report.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline"
+          >
+            View on Chittorgarh
+          </a>
+        </div>
+      </div>
     );
   }
 
@@ -175,13 +214,32 @@ export function OffersTable({ report, loading }: { report?: OfferReport; loading
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-muted-foreground">
-        {report.title} · FY {report.year}–{String(report.year + 1).slice(-2)} ·{" "}
-        <a href={report.source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-          {report.source.provider}
-        </a>{" "}
-        · updated {new Date(report.source.asOf).toLocaleString("en-IN")}
-      </p>
+      {isValidating && (
+        <div className="h-1 w-full overflow-hidden rounded-full bg-primary/20">
+          <div className="h-full w-1/3 animate-pulse rounded-full bg-primary" />
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+        <p>
+          {report.title} · FY {report.year}–{String(report.year + 1).slice(-2)} ·{" "}
+          <a
+            href={report.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            {report.source.provider}
+          </a>{" "}
+          · Synced {new Date(report.source.asOf).toLocaleString("en-IN")}
+        </p>
+        {isValidating && (
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary">
+            <RefreshCw className="size-3 animate-spin" />
+            Pulling fresh updates…
+          </span>
+        )}
+      </div>
 
       <OffersMetrics counts={counts} total={report.rows.length} />
 
