@@ -7,7 +7,6 @@ import {
 import type { SessionUser } from "@/lib/auth";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { defaultSiteUrl, loadOnboardingFormModelForUser } from "@/lib/onboarding/load-form-model";
-import { renderOnboardingFormPdf } from "@/lib/onboarding/render-form-pdf";
 import { renderWelcomeEmailHtml, welcomeEmailSubject } from "@/lib/onboarding/welcome-email";
 
 const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
@@ -17,7 +16,7 @@ export type WelcomePackSendResult = {
   error?: string;
   resendId?: string;
   from?: string;
-  /** False when the onboarding PDF was skipped after an attachment send failure. */
+  /** Always false — onboarding PDF is not emailed; download from profile or /onboarding. */
   pdfAttached?: boolean;
   pdfSkipReason?: string;
 };
@@ -33,7 +32,7 @@ async function markWelcomeSent(email: string): Promise<void> {
   }
 }
 
-/** Welcome email + onboarding PDF for new accounts. No-op if Resend missing. */
+/** Founder welcome email for new accounts (no PDF attachment). No-op if Resend missing. */
 export async function sendWelcomePackToUser(user: SessionUser, origin?: string): Promise<void> {
   await sendWelcomePackWithResult(user, origin);
 }
@@ -49,56 +48,31 @@ export async function sendWelcomePackWithResult(user: SessionUser, origin?: stri
   try {
     const siteUrl = defaultSiteUrl(origin);
     const model = await loadOnboardingFormModelForUser(user, siteUrl);
-    const pdf = await renderOnboardingFormPdf(model);
     const firstName = user.name.split(/\s+/)[0] || "Friend";
     const subject = welcomeEmailSubject(firstName);
     const html = renderWelcomeEmailHtml(model);
-    const safeId = model.customer.customerId.replace(/[^a-zA-Z0-9-_]/g, "_");
 
-    const base = {
+    const sent = await sendTransactionalEmail({
       to: user.email,
       subject,
       html,
       replyTo: FOUNDER_EMAIL,
-    };
-
-    const withPdf = await sendTransactionalEmail({
-      ...base,
-      attachments: [
-        {
-          filename: `market-intelligence-onboarding-${safeId}.pdf`,
-          content: pdf,
-        },
-      ],
     });
 
-    if (withPdf.ok) {
+    if (sent.ok) {
       await markWelcomeSent(user.email);
-      return { ok: true, resendId: withPdf.id, from, pdfAttached: true };
-    }
-
-    const withoutPdf = await sendTransactionalEmail(base);
-    if (withoutPdf.ok) {
-      await markWelcomeSent(user.email);
-      console.warn("[welcome-pack] PDF attachment failed; sent HTML only.", user.email, withPdf.error);
-      return {
-        ok: true,
-        resendId: withoutPdf.id,
-        from,
-        pdfAttached: false,
-        pdfSkipReason: withPdf.error,
-      };
+      return { ok: true, resendId: sent.id, from, pdfAttached: false };
     }
 
     console.error(
       "[welcome-pack]",
       user.email,
-      withoutPdf.error ?? withPdf.error,
+      sent.error,
       "from=",
       from,
       isSandboxSender() ? "(sandbox)" : "",
     );
-    return { ok: false, error: withoutPdf.error ?? withPdf.error, from };
+    return { ok: false, error: sent.error, from };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Welcome pack failed.";
     console.error("[welcome-pack]", user.email, message);

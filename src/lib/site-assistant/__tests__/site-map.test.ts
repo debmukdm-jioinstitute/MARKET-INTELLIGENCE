@@ -8,10 +8,9 @@ describe("isAllowedHref", () => {
     expect(isAllowedHref("/markets/breadth?view=momentum")).toBe(true);
   });
 
-  it("allows newly integrated intelligence and fund pages", () => {
-    expect(isAllowedHref("/funds")).toBe(true);
-    expect(isAllowedHref("/funds?tab=overlap")).toBe(true);
-    expect(isAllowedHref("/funds?tab=accumulation")).toBe(true);
+  it("allows newly integrated intelligence pages", () => {
+    expect(isAllowedHref("/funds")).toBe(false);
+    expect(isAllowedHref("/intelligence/institutional")).toBe(true);
     expect(isAllowedHref("/intelligence/promoters")).toBe(true);
     expect(isAllowedHref("/intelligence/credit")).toBe(true);
     expect(isAllowedHref("/intelligence/company")).toBe(true);
@@ -33,7 +32,7 @@ describe("searchPages", () => {
 
   it("finds mutual fund, promoter, credit, and reddit pages", () => {
     const mfHits = searchPages("mutual fund", 5);
-    expect(mfHits.some((h) => h.href.includes("/funds"))).toBe(true);
+    expect(mfHits.some((h) => h.href.includes("/intelligence/institutional"))).toBe(true);
 
     const promoterHits = searchPages("promoter", 5);
     expect(promoterHits.some((h) => h.href.includes("/intelligence/promoters"))).toBe(true);

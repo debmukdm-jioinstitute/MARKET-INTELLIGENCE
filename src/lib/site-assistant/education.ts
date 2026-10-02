@@ -113,9 +113,9 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
     label: "Portfolio",
   },
   {
-    fact: "Mutual Fund Intelligence tracks ₹52,000+ Cr AUM, pairwise fund overlap, and Smart Money accumulation across Indian equity schemes.",
-    href: "/funds",
-    label: "Mutual funds",
+    fact: "Institutional intelligence tracks FII/DII cash, ownership signals, and filing sources — MF portfolio disclosures when ingested.",
+    href: "/intelligence/institutional",
+    label: "Institutional flows",
   },
   {
     fact: "Promoter Tracker surfaces real-time insider buying, open-market sales, and pledge risk directly from SEBI & NSE disclosures.",
@@ -167,7 +167,7 @@ const BEGINNER_NUDGES: Nudge[] = [
   {
     title: "See the market",
     body: "Market Snapshot shows indices, rupee, and commodities in one place.",
-    href: "/markets",
+    href: "/markets/india",
     cta: "Market Snapshot",
   },
   {
@@ -177,10 +177,10 @@ const BEGINNER_NUDGES: Nudge[] = [
     cta: "Research",
   },
   {
-    title: "Mutual Fund X-Ray",
-    body: "Compare equity funds, find portfolio overlap, and spot top holdings without clutter.",
-    href: "/funds",
-    cta: "Mutual Funds",
+    title: "Institutional flows",
+    body: "FII/DII cash, smart-money signals, and where filings come from.",
+    href: "/intelligence/institutional",
+    cta: "Institutional desk",
     badge: "NEW",
   },
   {
@@ -263,9 +263,9 @@ const ADVANCED_NUDGES: Nudge[] = [
   },
   {
     title: "Smart Money Accumulation",
-    body: "See which high-conviction stocks India's top fund managers are quietly buying.",
-    href: "/funds?tab=accumulation",
-    cta: "Accumulation Radar",
+    body: "MF accumulation radar when AMC disclosures are connected — track institutional ownership signals today.",
+    href: "/intelligence/institutional",
+    cta: "Institutional desk",
     badge: "NEW",
   },
   {

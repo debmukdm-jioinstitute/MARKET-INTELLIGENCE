@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/cron/test-welcome?email=... — send onboarding welcome + PDF (CRON_SECRET). */
+/** GET /api/cron/test-welcome?email=... — send founder welcome email (CRON_SECRET). */
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;

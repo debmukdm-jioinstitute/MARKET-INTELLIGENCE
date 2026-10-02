@@ -6,11 +6,11 @@ import { buildPortalWayfinding } from "@/lib/nav-wayfinding";
 import { findGroup } from "@/lib/nav-columns";
 import { usePortalPages } from "@/components/providers/portal-page-provider";
 import { cn } from "@/lib/utils";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/** Back link + breadcrumb + sibling tabs — every portal page except Home. */
+/** Back link + Home link + breadcrumb + sibling tabs — every portal page except Home. */
 export function PortalWayfinding() {
   const path = usePathname();
   const sections = useNavSections();
@@ -24,7 +24,24 @@ export function PortalWayfinding() {
       badge: i.badge,
     })) ?? [];
 
-  if (!trail) return null;
+  if (path === "/Home") return null;
+
+  if (!trail) {
+    return (
+      <div className="portal-header-enter mb-3 flex items-center gap-2">
+        <Link
+          href="/Home"
+          className={cn(
+            "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs",
+            "transition touch-manipulation hover:bg-accent active:scale-[0.98]",
+          )}
+        >
+          <ChevronLeft className="size-4 text-muted-foreground" aria-hidden />
+          <span>Back to Home</span>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="portal-header-enter mb-3 space-y-2">
@@ -32,26 +49,39 @@ export function PortalWayfinding() {
         <Link
           href={trail.back.href}
           className={cn(
-            "inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground shadow-sm",
+            "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs sm:text-sm font-semibold text-foreground shadow-xs",
             "transition touch-manipulation hover:bg-accent active:scale-[0.98]",
           )}
         >
           <ChevronLeft className="size-4 text-muted-foreground" aria-hidden />
-          {trail.back.label}
+          <span>{trail.back.label}</span>
         </Link>
-        <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
-          <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+
+        <Link
+          href="/Home"
+          className={cn(
+            "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-foreground shadow-xs",
+            "transition touch-manipulation hover:bg-accent active:scale-[0.98]",
+          )}
+          title="Go to Home"
+        >
+          <Home className="size-3.5 sm:size-4 text-primary" aria-hidden />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
+        <nav aria-label="Breadcrumb" className="min-w-0 flex-1 overflow-x-auto no-scrollbar">
+          <ol className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
             {trail.crumbs.map((crumb, i) => (
-              <li key={crumb.href} className="flex items-center gap-1">
+              <li key={crumb.href} className="flex items-center gap-1 shrink-0">
                 {i > 0 ? <span aria-hidden className="text-border">›</span> : null}
                 <Link href={crumb.href} className="font-medium hover:text-foreground">
                   {crumb.label}
                 </Link>
               </li>
             ))}
-            <li className="flex items-center gap-1">
+            <li className="flex items-center gap-1 shrink-0">
               <span aria-hidden className="text-border">›</span>
-              <span className="font-semibold text-foreground" aria-current="page">
+              <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none" aria-current="page">
                 {trail.current}
               </span>
             </li>

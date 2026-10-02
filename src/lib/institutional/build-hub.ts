@@ -86,9 +86,9 @@ function buildTrackers(moneyFlow: InstitutionalIntelligencePayload["moneyFlow"])
       id: "mutual_funds",
       label: "Mutual funds",
       coverage: "unavailable",
-      summary: "MF accumulation radar unavailable — AMC portfolio disclosures not yet ingested. Live scheme NAVs on /funds.",
+      summary: "MF accumulation radar unavailable — AMC portfolio disclosures not yet ingested.",
       sources: [amfi, sebi],
-      href: "/funds",
+      href: "/intelligence/institutional",
     },
     {
       id: "insurance",

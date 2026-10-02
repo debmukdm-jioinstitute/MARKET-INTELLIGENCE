@@ -198,12 +198,6 @@ export function InstitutionalIntelligenceDashboard() {
           <section>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Investor trackers</h2>
-              <Link
-                href="/funds"
-                className="text-xs font-semibold text-primary hover:underline"
-              >
-                Open Mutual Fund Directory →
-              </Link>
             </div>
             <div className="overflow-x-auto rounded-xl border border-border">
               <table className="w-full min-w-[640px] text-sm">
@@ -256,13 +250,6 @@ export function InstitutionalIntelligenceDashboard() {
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 {data.mutualFunds.message}
-              </p>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                Live scheme NAVs are available in the{" "}
-                <Link href="/funds" className="text-primary hover:underline">
-                  Mutual Fund Directory
-                </Link>
-                .
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">

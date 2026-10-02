@@ -1,3 +1,4 @@
+import { PublicHeader } from "@/components/layout/public-header";
 import { ClaudeConnectorClient } from "@/components/help/claude-connector-client";
 import { CLAUDE_CONNECTOR } from "@/lib/mcp/connector-public";
 import Link from "next/link";
@@ -12,7 +13,9 @@ export const metadata = {
 
 export default function ConnectClaudePage() {
   return (
-    <main className="mx-auto max-w-2xl px-5 py-16 text-sm leading-relaxed">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <PublicHeader backHref="/" backLabel="Home" />
+      <main className="mx-auto max-w-2xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed w-full">
       <p className="text-xs uppercase tracking-[0.2em] text-blue-600">Claude · Custom connector</p>
       <h1 className="mt-2 text-3xl font-semibold">Add Market Intelligence to Claude</h1>
       <p className="mt-3 text-base text-muted-foreground">
@@ -34,6 +37,15 @@ export default function ConnectClaudePage() {
           Back to home
         </Link>
       </p>
+      <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
+          ← Back to Home
+        </Link>
+        <Link href="/Home" className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-600/90 transition-all hover:scale-105 active:scale-95">
+          Open Terminal →
+        </Link>
+      </div>
     </main>
+  </div>
   );
 }

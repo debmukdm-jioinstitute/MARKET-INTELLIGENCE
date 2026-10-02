@@ -27,8 +27,7 @@ All data on this platform is accessible via:
   - Debt risk modeling, Altman Z-score, interest coverage, and liquidity metrics across Nifty 500.
 - Macro Stress & Transmission Engine: https://getmarketintelligence.in/stress & https://getmarketintelligence.in/transmission
   - Macro stress index, cross-asset betas (Brent, USD/INR, US10Y), and scenario shock simulation.
-- Smallcap & Mutual Funds Intelligence: https://getmarketintelligence.in/funds
-  - Fund flow analytics, portfolio overlap, and smallcap liquidity risk scoring.
+- Institutional intelligence (FII/DII, ownership signals): https://getmarketintelligence.in/intelligence/institutional
 
 ## Claude & LLM Integration Options
 

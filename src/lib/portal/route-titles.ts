@@ -13,7 +13,6 @@ const TAB_TITLES: Record<string, Record<string, string>> = {
 
 const PATH_TITLES: Record<string, string> = {
   "/Home": "Home",
-  "/markets": "Markets",
   "/markets/india": "Indian markets",
   "/markets/sectors": "Sector intelligence",
   "/markets/breadth": "Market breadth",

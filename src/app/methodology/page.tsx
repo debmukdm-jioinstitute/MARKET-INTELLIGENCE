@@ -1,3 +1,4 @@
+import { PublicHeader } from "@/components/layout/public-header";
 import { DATA_ISSUE_EMAIL, STALE_AFTER_MINUTES } from "@/lib/provenance";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { TldrBox } from "@/components/ui/tldr-box";
@@ -99,8 +100,9 @@ export default async function MethodologyPage() {
   const tldr = await summarizeText(tldrSource, 55).catch(() => null);
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-16 text-foreground">
-      <Link href="/" className="text-sm text-primary underline-offset-4 hover:underline">← Back</Link>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <PublicHeader backHref="/" backLabel="Home" />
+      <main className="mx-auto max-w-3xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-foreground w-full">
       <h1 className="mt-4 text-3xl font-semibold">Methodology &amp; data sources</h1>
       <p className="mt-2 text-sm text-muted-foreground">What the numbers are, where they come from, and their limits.</p>
       <div className="mt-6"><TldrBox text={tldr} /></div>
@@ -117,6 +119,15 @@ export default async function MethodologyPage() {
           ))}
         </section>
       ))}
+      <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
+          ← Back to Home
+        </Link>
+        <Link href="/Home" className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-600/90 transition-all hover:scale-105 active:scale-95">
+          Open Terminal →
+        </Link>
+      </div>
     </main>
+  </div>
   );
 }

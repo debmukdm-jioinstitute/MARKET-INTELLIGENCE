@@ -84,7 +84,7 @@ export default function AdminSystemPage() {
   }
 
   async function sendBackfill() {
-    if (!bf || !window.confirm(`Send the welcome email + PDF to ${bf.eligible} member(s) who never received it? This emails real people.`)) return;
+    if (!bf || !window.confirm(`Send the welcome email to ${bf.eligible} member(s) who never received it? This emails real people.`)) return;
     setBfBusy(true);
     const log: string[] = [];
     for (let i = 0; i < 200; i++) {
@@ -134,7 +134,7 @@ export default function AdminSystemPage() {
         </div>
       ) : null}
 
-      <AdminCard title="Welcome email test" subtitle="Sends onboarding welcome HTML + PDF via Resend (production keys).">
+      <AdminCard title="Welcome email test" subtitle="Sends founder welcome HTML via Resend (production keys).">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <label className="flex-1 text-sm">
             <span className="text-gray-500">Email</span>
@@ -170,7 +170,7 @@ export default function AdminSystemPage() {
         ) : null}
       </AdminCard>
 
-      <AdminCard title="Welcome email backfill" subtitle="One-off: send the founder's welcome email + onboarding PDF to members who joined before it existed. Skips anyone who unsubscribed, and never sends twice.">
+      <AdminCard title="Welcome email backfill" subtitle="One-off: send the founder welcome email to members who joined before it existed. Skips anyone who unsubscribed, and never sends twice.">
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => void previewBackfill()} disabled={bfBusy} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50">
             {bfBusy ? "Working…" : "Preview recipients (sends nothing)"}

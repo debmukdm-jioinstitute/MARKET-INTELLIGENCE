@@ -1,4 +1,5 @@
 import { feedFetch } from "@/lib/feeds/http";
+import { isOfferClosePast, parseIndianOfferDate } from "@/lib/feeds/offers/offer-status";
 import { compactToken } from "@/lib/feeds/symbol-normalize";
 import type { IpoGmpQuote } from "@/lib/feeds/sources/ipowatch-gmp";
 
@@ -83,6 +84,19 @@ function parseStatusFromRow(rowHtml: string): string | null {
   return null;
 }
 
+function reconcileOpenWithCloseDate(status: string | null, closeLabel: string, now = new Date()): string | null {
+  if (!status || !/^open$/i.test(status)) return status;
+  const close = parseIndianOfferDate(closeLabel);
+  if (isOfferClosePast(close, now)) return "Closed";
+  return status;
+}
+
+function closeLabelFromDateWindow(window: string | null): string {
+  if (!window?.trim()) return "";
+  const parts = window.split(/\s*-\s*/);
+  return (parts[parts.length - 1] ?? "").trim();
+}
+
 function slugKeywords(rowHtml: string): string[] {
   const href = rowHtml.match(/href="\/gmp\/([^"?#/]+)/i)?.[1];
   if (!href) return [];
@@ -129,6 +143,8 @@ export function parseInvestorGainGmpTable(html: string): IpoGmpQuote[] {
     const dateWindow =
       open && close ? `${open} - ${close}` : open || close || null;
 
+    const status = reconcileOpenWithCloseDate(parseStatusFromRow(row), close);
+
     out.push({
       name,
       matchKeywords: slugKeywords(row),
@@ -137,7 +153,7 @@ export function parseInvestorGainGmpTable(html: string): IpoGmpQuote[] {
       estListingInr: estListingInr ?? null,
       estListingGainPct,
       dateWindow,
-      status: parseStatusFromRow(row),
+      status,
       source,
     });
   }
@@ -182,10 +198,16 @@ function applyDashboardHints(rows: IpoGmpQuote[], hints: Map<string, DashboardHi
   return rows.map((row) => {
     const hint = hints.get(compactToken(row.name));
     if (!hint) return row;
+    const dateWindow = row.dateWindow ?? hint.dateWindow;
+    const rawStatus = row.status ?? hint.status;
+    const status = reconcileOpenWithCloseDate(
+      rawStatus,
+      closeLabelFromDateWindow(dateWindow),
+    );
     return {
       ...row,
-      dateWindow: row.dateWindow ?? hint.dateWindow,
-      status: row.status ?? hint.status,
+      dateWindow,
+      status,
     };
   });
 }

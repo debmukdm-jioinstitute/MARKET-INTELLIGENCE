@@ -19,6 +19,8 @@ const PREFERRED_COLUMNS = [
   "Closing Date",
   "Open Date",
   "Close Date",
+  "Issue Open",
+  "Issue Close",
   "Record Date",
   "Issue Size (Rs. cr.)",
   "Offer Size (Rs. Cr.)",

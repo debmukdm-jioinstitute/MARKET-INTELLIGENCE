@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home, LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const EXPLORE_LINKS = [
-  { label: "Markets", href: "/markets" },
+  { label: "Markets", href: "/markets/india" },
   { label: "Macro", href: "/macro" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Research", href: "/research" },
@@ -64,6 +64,25 @@ export function MobileNav() {
             </div>
 
             <nav className="flex flex-col gap-1 px-3 py-4 text-[15px] font-medium text-gray-900">
+              <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2.5 font-semibold text-primary transition hover:bg-muted"
+              >
+                <Home className="size-4" />
+                <span>Home</span>
+              </Link>
+              <Link
+                href="/Home"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2.5 font-semibold text-blue-700 transition hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300"
+              >
+                <LayoutDashboard className="size-4" />
+                <span>Open Terminal</span>
+              </Link>
+              <a href="#integrations" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Integrations (Claude &amp; Telegram)
+              </a>
               <a href="#product" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Product
               </a>
@@ -73,9 +92,12 @@ export function MobileNav() {
               <a href="#pricing" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Pricing
               </a>
-              <a href="/methodology" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+              <Link href="/help" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
+                Help &amp; MCP
+              </Link>
+              <Link href="/methodology" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-muted">
                 Methodology
-              </a>
+              </Link>
             </nav>
 
             <div className="border-t border-border px-3 py-4">

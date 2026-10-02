@@ -66,7 +66,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: pulse?.indiaVix?.changePct != null ? `${pulse.indiaVix.changePct >= 0 ? "+" : ""}${pulse.indiaVix.changePct.toFixed(2)}%` : "—",
       isUp: (pulse?.indiaVix?.changePct ?? 0) < 0, // lower VIX is green for equity
       neutral: pulse?.indiaVix?.changePct == null,
-      href: "/markets",
+      href: "/markets/india",
       category: "DOMESTIC",
     },
     {

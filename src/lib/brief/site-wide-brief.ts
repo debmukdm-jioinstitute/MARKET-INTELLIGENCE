@@ -266,14 +266,14 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
       badge: "Feed Not Connected",
       badgeColor: "amber",
       headline: "Fund portfolio disclosures aren't ingested yet",
-      summary: "AMC monthly portfolio disclosures are the verified source for fund holdings and flows; no ingestion pipeline exists yet. Live NAVs per scheme are available on the funds page. Nothing is estimated in the meantime.",
+      summary: "AMC monthly portfolio disclosures are the verified source for fund holdings and flows; no ingestion pipeline exists yet. Nothing is estimated in the meantime.",
       metrics: [
         { label: "Live Holdings Records", value: "0" },
         { label: "Status", value: "Unavailable" },
       ],
       featuredEntities: [],
-      deepDiveUrl: "/funds",
-      deepDiveLabel: "Open Mutual Funds",
+      deepDiveUrl: "/intelligence/institutional",
+      deepDiveLabel: "Open institutional intelligence",
     },
 
     {

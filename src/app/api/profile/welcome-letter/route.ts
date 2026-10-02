@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ subject: welcomeEmailSubject(firstName), html: renderWelcomeEmailHtml(model) });
 }
 
-/** POST -> email the welcome letter and onboarding PDF to the member (also for accounts that predate it). 3 per hour. */
+/** POST -> email the founder welcome letter (HTML only). 3 per hour. */
 export async function POST(req: Request) {
   const user = await realUser();
   if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });

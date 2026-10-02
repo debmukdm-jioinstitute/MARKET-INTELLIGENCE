@@ -6,7 +6,7 @@ import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { after } from "next/server";
 import { NextResponse } from "next/server";
 
-/** Inserts the user, sets the session cookie, and queues the welcome pack. */
+/** Inserts the user, sets the session cookie, and queues the founder welcome email (no PDF). */
 export async function completeEmailSignup(input: {
   email: string;
   name: string;

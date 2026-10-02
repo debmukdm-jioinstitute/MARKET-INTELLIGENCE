@@ -49,7 +49,7 @@ const CAPABILITY_TILE =
   "flex w-full items-center gap-2 rounded-lg border border-border/80 bg-muted/50 px-2.5 py-2.5 text-left text-xs text-foreground transition touch-manipulation hover:border-primary/35 hover:bg-accent/40 active:scale-[0.99] cursor-pointer min-h-[44px]";
 
 const CAPABILITIES = [
-  { icon: "🧭", label: "Guide you to the right page across Today · Invest · Trade · Portfolio · Data", href: "/markets" as const },
+  { icon: "🧭", label: "Guide you to the right page across Today · Invest · Trade · Portfolio · Data", href: "/markets/india" as const },
   { icon: "🎓", label: "Beginner → advanced paths, AI tools & pro quant", action: "skill" as const },
   { icon: "⌘K", label: "Open symbol search & commands", action: "palette" as const },
 ] as const;

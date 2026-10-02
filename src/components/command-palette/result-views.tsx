@@ -120,7 +120,7 @@ export function GlobalQuoteResultView({ instrument }: { instrument: Instrument }
       ) : (
         <p className="text-sm text-muted-foreground">No live quote — simulated tape only.</p>
       )}
-      <Link href="/markets" className="inline-block text-sm text-primary hover:underline">
+      <Link href="/markets/india" className="inline-block text-sm text-primary hover:underline">
         Open investable universe →
       </Link>
     </div>

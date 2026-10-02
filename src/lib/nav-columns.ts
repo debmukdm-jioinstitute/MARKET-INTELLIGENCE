@@ -21,7 +21,6 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Market Snapshot",
         desc: "Indices, rupee and commodities at a glance.",
         items: [
-          { label: "Overview", href: "/markets", desc: "Cross-asset tape: equities, rates, and FX in one board." },
           { label: "India Cockpit", href: "/markets/india", desc: "NSE / BSE headline pulse and index depth." },
           { label: "World indices", href: "/macro/indices", desc: "Global benchmarks — price, range, and 52-week tape.", badge: "NEW" },
           { label: "Currency", href: "/macro/currency", desc: "DXY, USDINR, and cross-currency tape." },
@@ -94,12 +93,6 @@ export const NAV_SECTIONS: NavSection[] = [
             label: "Institutional intelligence",
             href: "/intelligence/institutional",
             desc: "FII/DII cash, MF smart-money score, ownership signals, and filing source map.",
-            badge: "NEW",
-          },
-          {
-            label: "Mutual Fund Directory",
-            href: "/funds",
-            desc: "Scheme registry with live AMFI NAVs & AMC disclosure links.",
             badge: "NEW",
           },
         ],
@@ -311,7 +304,7 @@ export function sectionLandingHref(
       if (!item.external && hrefAllowed(item.href)) return item.href;
     }
   }
-  return hrefAllowed("/Home") ? "/Home" : "/markets";
+  return hrefAllowed("/Home") ? "/Home" : "/markets/india";
 }
 
 /** Beginner shortcuts shown at the top of the full menu. */

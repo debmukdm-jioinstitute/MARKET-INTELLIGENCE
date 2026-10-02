@@ -4,7 +4,7 @@ import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { sendWelcomePackWithResult } from "@/lib/onboarding/send-welcome-pack";
 
 /**
- * The welcome pack (email + PDF) began going out at sign-up on 2026-09-27 02:20 IST (commit 27ae279). Members who
+ * The founder welcome email began going out at sign-up on 2026-09-27 02:20 IST (commit 27ae279). Members who
  * joined before that never received it. Anyone created after this instant is assumed to have got it at sign-up,
  * so they are NOT re-sent (and any explicit send from now on is recorded in users.welcome_sent_at).
  */
@@ -70,7 +70,7 @@ export type BackfillResult = { sent: number; failed: number; remaining: number; 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Sends the welcome pack to the next `limit` eligible members, one at a time (~2/sec, Resend's limit). Idempotent: a
+ * Sends the welcome email to the next `limit` eligible members, one at a time (~2/sec, Resend's limit). Idempotent: a
  * member is only marked once delivery succeeds, so re-running never double-sends and failures are retried. Stops early
  * after 3 failures in a row (e.g. a daily quota) instead of grinding through everyone.
  */

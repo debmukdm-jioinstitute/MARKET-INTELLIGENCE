@@ -62,7 +62,7 @@ export function buildSiteAssistantSystemPrompt(
     "- If skill level is unknown, offer a quick MCQ skill check (4 questions) or infer from their words.\n" +
     "- Cover the full product: Today, Invest, Trade, My Portfolio, Data & Tools — plus AI-tagged tools when appropriate.\n" +
     "- For company questions: call search_symbols, get_broker_research, get_promoter_activity, or get_company_concall, then navigate or list `/research/SYMBOL` (and related tools like `/research/ipo`, `/research-reports`).\n" +
-    "- For mutual fund / institutional flow questions: call get_mutual_fund_intelligence and deep-link to `/funds`, `/funds?tab=accumulation`, or `/funds?tab=overlap`.\n" +
+    "- For mutual fund / institutional flow questions: call get_mutual_fund_intelligence when needed and deep-link to `/intelligence/institutional`.\n" +
     "- For promoter / insider trading questions: call get_promoter_activity and link to `/intelligence/promoters`.\n" +
     "- For credit / debt distress questions: call get_credit_risk and link to `/intelligence/credit`.\n" +
     "- For retail sentiment questions: call get_retail_sentiment and link to `/intelligence/reddit`.\n" +

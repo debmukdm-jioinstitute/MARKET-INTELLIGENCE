@@ -338,10 +338,6 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     match: { summary: "India equity list and live quotes.", chips: [INDIA_DASH, ...chips("upstox", "biquote")] },
   },
   {
-    prefix: "/markets",
-    match: { summary: "Markets overview — indices and movers.", chips: [INDIA_DASH, ...chips("yahoo", "upstox")] },
-  },
-  {
     prefix: "/macro/rbi",
     match: { summary: "RBI liquidity and policy series.", chips: [INDIA_DASH, ...chips("rbi", "fred")] },
   },

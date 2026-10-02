@@ -32,6 +32,7 @@ const MONTHS: Record<string, number> = {
 const OPEN_FIELD_KEYS = [
   "Opening Date",
   "Open Date",
+  "Issue Open",
   "Issue Open Date",
   "Bid Open Date",
   "Start Date",
@@ -41,11 +42,15 @@ const OPEN_FIELD_KEYS = [
 const CLOSE_FIELD_KEYS = [
   "Closing Date",
   "Close Date",
+  "Issue Close",
   "Issue Close Date",
   "Bid Close Date",
   "End Date",
   "Last Date",
 ];
+
+const OPEN_FIELD_KEY_RE = /^(issue\s*)?open(\s*date)?$/i;
+const CLOSE_FIELD_KEY_RE = /^(issue\s*)?(close|closing)(\s*date)?$/i;
 
 export function offerStatusLabel(bucket: OfferStatusBucket): string {
   const hit = OFFER_STATUS_SECTIONS.find((s) => s.bucket === bucket);
@@ -65,7 +70,8 @@ function startOfIstDay(date: Date): number {
   return Date.UTC(y, m - 1, d);
 }
 
-function parseIndianDateString(raw: string): Date | null {
+/** dd-Mmm-yyyy as used on Chittorgarh offer tables (IST calendar day). */
+export function parseIndianOfferDate(raw: string): Date | null {
   const m = raw.trim().match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
   if (!m) return null;
   const day = Number(m[1]);
@@ -75,12 +81,21 @@ function parseIndianDateString(raw: string): Date | null {
   return new Date(Date.UTC(year, mon, day));
 }
 
-function pickDateFromFields(row: OfferRow, keys: string[]): Date | null {
+function parseFieldDateValue(value: string | number | null | undefined): Date | null {
+  if (value == null || value === "") return null;
+  if (typeof value === "number") return null;
+  return parseIndianOfferDate(String(value));
+}
+
+function pickDateFromFields(row: OfferRow, keys: string[], keyRe?: RegExp): Date | null {
   for (const key of keys) {
-    const v = row.fields[key];
-    if (v == null || v === "") continue;
-    if (typeof v === "number") continue;
-    const parsed = parseIndianDateString(String(v));
+    const parsed = parseFieldDateValue(row.fields[key]);
+    if (parsed) return parsed;
+  }
+  if (!keyRe) return null;
+  for (const [key, value] of Object.entries(row.fields)) {
+    if (!keyRe.test(key.trim())) continue;
+    const parsed = parseFieldDateValue(value);
     if (parsed) return parsed;
   }
   return null;
@@ -88,9 +103,14 @@ function pickDateFromFields(row: OfferRow, keys: string[]): Date | null {
 
 export function parseOfferWindow(row: OfferRow): { open: Date | null; close: Date | null } {
   return {
-    open: pickDateFromFields(row, OPEN_FIELD_KEYS),
-    close: pickDateFromFields(row, CLOSE_FIELD_KEYS),
+    open: pickDateFromFields(row, OPEN_FIELD_KEYS, OPEN_FIELD_KEY_RE),
+    close: pickDateFromFields(row, CLOSE_FIELD_KEYS, CLOSE_FIELD_KEY_RE),
   };
+}
+
+export function isOfferClosePast(close: Date | null, now = new Date()): boolean {
+  if (!close) return false;
+  return startOfIstDay(now) > startOfIstDay(close);
 }
 
 function statusFromDates(row: OfferRow, now: Date): OfferStatusBucket | null {
@@ -109,13 +129,13 @@ function statusFromDates(row: OfferRow, now: Date): OfferStatusBucket | null {
 }
 
 export function classifyOfferStatus(row: OfferRow, now = new Date()): OfferStatusBucket {
-  const hint = row.statusHint ?? "";
-  if (/color-green/i.test(hint)) return "open";
-  if (/color-aqua/i.test(hint)) return "listing";
-  if (/color-lightyellow/i.test(hint)) return "upcoming";
-
   const fromDates = statusFromDates(row, now);
-  if (fromDates) return fromDates;
+  if (fromDates != null) return fromDates;
+
+  const hint = row.statusHint ?? "";
+  if (/color-aqua/i.test(hint)) return "listing";
+  if (/color-green/i.test(hint)) return "open";
+  if (/color-lightyellow/i.test(hint)) return "upcoming";
 
   if (!hint.trim()) return "unknown";
   return "unknown";

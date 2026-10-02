@@ -1,3 +1,4 @@
+import { PublicHeader } from "@/components/layout/public-header";
 import Link from "next/link";
 import { TldrBox } from "@/components/ui/tldr-box";
 import { summarizeText } from "@/lib/hf/summarizer";
@@ -15,7 +16,9 @@ export default async function PrivacyPage() {
   const tldr = await summarizeText(PRIVACY_TEXT, 45).catch(() => null);
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-16 text-sm leading-relaxed text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <PublicHeader backHref="/" backLabel="Home" />
+      <main className="mx-auto max-w-2xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed text-foreground w-full">
       <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
       <h1 className="mb-6 text-2xl font-semibold">Privacy Policy</h1>
       <p className="mb-4 text-muted-foreground">Last updated: September 2026</p>
@@ -54,6 +57,15 @@ export default async function PrivacyPage() {
           Back to sign in
         </Link>
       </p>
+      <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
+          ← Back to Home
+        </Link>
+        <Link href="/Home" className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-600/90 transition-all hover:scale-105 active:scale-95">
+          Open Terminal →
+        </Link>
+      </div>
     </main>
+  </div>
   );
 }

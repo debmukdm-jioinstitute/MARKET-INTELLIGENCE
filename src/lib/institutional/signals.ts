@@ -114,7 +114,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
           : instOwnDir === "down"
             ? "Cross-fund net capital flow is negative this disclosure cycle."
             : "Mutual-fund book changes net to roughly zero across the tracked universe.",
-      href: "/funds",
+      href: "/intelligence/institutional",
     },
     {
       id: "promoter_ownership",
@@ -139,7 +139,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
       detail: !hasMfData
         ? "Net capital movement across schemes is unavailable until AMC portfolio disclosures are ingested from a verified source."
         : `Net capital movement across tracked schemes: ₹${input.mfNetCapitalCr!.toFixed(0)} cr (monthly portfolio disclosure).`,
-      href: "/funds",
+      href: "/intelligence/institutional",
     },
     {
       id: "fii_ownership",

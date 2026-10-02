@@ -18,10 +18,21 @@ function row(partial: Partial<OfferRow> & Pick<OfferRow, "id" | "name">): OfferR
 describe("offer status", () => {
   const now = new Date("2026-09-30T12:00:00.000Z");
 
-  it("maps Chittorgarh highlight hints", () => {
+  it("maps Chittorgarh highlight hints when dates missing", () => {
     expect(classifyOfferStatus(row({ id: "1", name: "A", statusHint: "color-green" }), now)).toBe("open");
     expect(classifyOfferStatus(row({ id: "2", name: "B", statusHint: "color-aqua" }), now)).toBe("listing");
     expect(classifyOfferStatus(row({ id: "3", name: "C", statusHint: "color-lightyellow" }), now)).toBe("upcoming");
+  });
+
+  it("dates beat stale green highlight after issue close", () => {
+    const jan10 = new Date("2026-01-10T12:00:00.000Z");
+    const staleGreen = row({
+      id: "r",
+      name: "Tilak Ventures Ltd",
+      statusHint: "color-green",
+      fields: { "Issue Open": "26-Dec-2025", "Issue Close": "09-Jan-2026" },
+    });
+    expect(classifyOfferStatus(staleGreen, jan10)).toBe("closed");
   });
 
   it("infers closed and open from Indian date fields when hint empty", () => {
