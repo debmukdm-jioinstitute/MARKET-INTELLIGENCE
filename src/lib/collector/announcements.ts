@@ -31,6 +31,9 @@ type Raw = {
   sort_date?: string | null;
 };
 
+/** Transcript of an earnings / analyst-meet call. AGM / postal-ballot transcripts are routine and excluded. Shared with the concall collector. */
+export const isEarningsTranscript = (text: string) => /\btranscripts?\b/i.test(text) && !/\b(?:annual general meeting|AGM|postal ballot)\b/i.test(text);
+
 /** Ordered: first match wins, most specific first. Everything unmatched is routine noise and dropped. */
 const MATERIAL: [category: string, re: RegExp][] = [
   ["Pledge disclosure", /pledg|encumbran/i],
@@ -50,6 +53,7 @@ const ROUTINE = /trading window/i;
 /** desc (NSE's own category) is checked first, then the headline, so "General Updates" that announce results still land. */
 export function categorize(desc: string, headline: string): string | null {
   if (ROUTINE.test(desc) || ROUTINE.test(headline)) return null;
+  if (isEarningsTranscript(`${desc} ${headline}`)) return "Earnings call transcript";
   for (const text of [desc, headline]) {
     for (const [cat, re] of MATERIAL) if (re.test(text)) return cat;
   }

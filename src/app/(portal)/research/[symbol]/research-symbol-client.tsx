@@ -18,6 +18,7 @@ import { BrokerCallsPanel } from "@/components/research/broker-calls-panel";
 import { FilingsPanel } from "@/components/research/filings-panel";
 import { OwnershipPanel } from "@/components/research/ownership-panel";
 import { RatingAlertPulse, RatingsPanel } from "@/components/research/ratings-panel";
+import { ConcallPanel } from "@/components/research/concall-panel";
 import { ResearchSectionNav, BackToTopButton, type NavSectionItem } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -97,6 +98,7 @@ export function ResearchSymbolClient({
     if (isIndia && symbol) {
       list.push({ id: "ownership", label: "Ownership" });
       list.push({ id: "ratings", label: "Credit Ratings" });
+      list.push({ id: "concall", label: "Earnings Call" });
       list.push({ id: "broker-calls", label: "Broker Calls" });
       list.push({ id: "filings", label: "Filings" });
     }
@@ -305,6 +307,9 @@ export function ResearchSymbolClient({
           </section>
           <section id="ratings" className="scroll-mt-24">
             <RatingsPanel symbol={symbol} />
+          </section>
+          <section id="concall" className="scroll-mt-24">
+            <ConcallPanel symbol={symbol} />
           </section>
           <section id="broker-calls" className="scroll-mt-24">
             <BrokerCallsPanel symbol={symbol} />

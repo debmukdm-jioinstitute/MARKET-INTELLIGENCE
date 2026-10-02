@@ -161,6 +161,32 @@ export const TABLES: TableSpec[] = [
     ],
     normalize: (r) => ({ ...r, symbol: String(r.symbol).toUpperCase() }),
   },
+  {
+    name: "concall_summaries",
+    conflict: ["content_hash"],
+    onConflict: "nothing",
+    cols: [
+      { f: "symbol", k: "text", req: true },
+      { f: "quarter", k: "text" },
+      { f: "transcriptDate", k: "date", req: true },
+      { f: "guidance", k: "textarr" },
+      { f: "growthDrivers", k: "textarr" },
+      { f: "risks", k: "textarr" },
+      { f: "qaThemes", k: "textarr" },
+      { f: "tonePrepared", k: "num" },
+      { f: "toneQa", k: "num" },
+      { f: "toneDelta", k: "num" },
+      { f: "sourceUrl", k: "text", req: true },
+      { f: "contentHash", k: "text", req: true },
+      { f: "generatedBy", k: "text" },
+    ],
+    normalize: (r) => {
+      const tone = (v: unknown) => (typeof v === "number" && v >= -1 && v <= 1 ? v : null);
+      const tp = tone(r.tonePrepared);
+      const tq = tone(r.toneQa);
+      return { ...r, symbol: String(r.symbol).toUpperCase(), tonePrepared: tp, toneQa: tq, toneDelta: tp !== null && tq !== null ? Math.round((tq - tp) * 1000) / 1000 : null };
+    },
+  },
 ];
 
 export const tableSpec = (name: unknown): TableSpec | undefined => TABLES.find((t) => t.name === name);

@@ -535,6 +535,28 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_credit_ratings_symbol_date ON credit_ratings (symbol, action_date DESC)`;
 
+      // Concall "said vs guided" summaries. Transcript text itself is never stored — only extracted highlights + link.
+      await db`
+        CREATE TABLE IF NOT EXISTS concall_summaries (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text NOT NULL,
+          quarter text,
+          transcript_date date,
+          guidance text[],
+          growth_drivers text[],
+          risks text[],
+          qa_themes text[],
+          tone_prepared numeric,
+          tone_qa numeric,
+          tone_delta numeric,
+          source_url text,
+          content_hash text UNIQUE,
+          generated_by text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_concall_summaries_symbol_date ON concall_summaries (symbol, transcript_date DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
