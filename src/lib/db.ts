@@ -229,6 +229,14 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status ON newsletter_subscribers(status)`;
       await db`
+        CREATE TABLE IF NOT EXISTS newsletter_assets (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          content_type text NOT NULL,
+          data bytea NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`
         CREATE TABLE IF NOT EXISTS rag_documents (
           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
           source text NOT NULL DEFAULT 'admin' CHECK (source IN ('admin', 'app')),

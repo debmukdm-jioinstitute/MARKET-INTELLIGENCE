@@ -2,6 +2,8 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { hasEmailConfigured, isSandboxSender, sendNewsletter } from "@/lib/admin/email";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getActiveRecipients, getRecipientCount, isValidEmail, withUnsubscribeFooter } from "@/lib/newsletter";
+import { prepareNewsletterHtml } from "@/lib/newsletter/assets";
+import { wrapNewsletterDocument } from "@/lib/newsletter/html";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -43,9 +45,17 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const subject = String(body.subject ?? "").trim();
-  const html = String(body.html ?? "").trim();
+  const htmlRaw = String(body.html ?? "").trim();
   const mode = body.mode === "draft" ? "draft" : "send";
-  if (!subject || !html) return NextResponse.json({ error: "Subject and HTML body are required" }, { status: 400 });
+  if (!subject || !htmlRaw) return NextResponse.json({ error: "Subject and body are required" }, { status: 400 });
+
+  let html: string;
+  try {
+    html = await prepareNewsletterHtml(htmlRaw);
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Could not process newsletter body" }, { status: 400 });
+  }
+  if (!html) return NextResponse.json({ error: "Body is empty after processing" }, { status: 400 });
 
   await ensureSchema();
   const db = sql();
@@ -64,7 +74,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No subscribers to send to yet." }, { status: 400 });
   }
 
-  const result = await sendNewsletter(subject, recipients, (email) => withUnsubscribeFooter(html, email));
+  const result = await sendNewsletter(subject, recipients, (email) =>
+    wrapNewsletterDocument(withUnsubscribeFooter(html, email)),
+  );
   const [row] = await db`
     INSERT INTO newsletters (subject, html, status, sent_at, recipient_count)
     VALUES (${subject}, ${html}, 'sent', now(), ${result.sent})

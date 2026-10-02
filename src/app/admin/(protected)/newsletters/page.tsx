@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
+import { NewsletterComposer } from "@/components/admin/newsletter-composer";
 import { useEffect, useState } from "react";
 
 type Newsletter = { id: string; subject: string; status: "draft" | "sent"; sent_at: string | null; recipient_count: number | null; created_at: string };
@@ -18,6 +19,7 @@ export default function AdminNewslettersPage() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [sendErrors, setSendErrors] = useState<string[]>([]);
+  const [composerReset, setComposerReset] = useState(0);
 
   function load() {
     fetch("/api/admin/newsletters")
@@ -53,6 +55,7 @@ export default function AdminNewslettersPage() {
       setOk(mode === "draft" ? "Draft saved." : `Sent to ${json.sent} recipient(s), ${json.failed} failed.`);
       if (json.errors?.length) setSendErrors(json.errors);
       setForm({ subject: "", html: "" });
+      setComposerReset((k) => k + 1);
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save");
@@ -109,7 +112,7 @@ export default function AdminNewslettersPage() {
         </div>
       ) : null}
 
-      <AdminCard title="Compose" subtitle="HTML body — write raw HTML or simple paragraphs">
+      <AdminCard title="Compose" subtitle="Paste text, rich content, or images — each image becomes its own row in the email">
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-sm text-gray-500">Subject</label>
@@ -120,13 +123,12 @@ export default function AdminNewslettersPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-sm text-gray-500">Body (HTML)</label>
-            <textarea
-              rows={10}
-              value={form.html}
-              onChange={(e) => setForm((f) => ({ ...f, html: e.target.value }))}
-              placeholder="<h1>This week in markets</h1><p>...</p>"
-              className="w-full rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm outline-none focus:border-blue-600"
+            <label className="text-sm text-gray-500">Body</label>
+            <NewsletterComposer
+              resetKey={String(composerReset)}
+              html={form.html}
+              disabled={sending}
+              onChange={(html) => setForm((f) => ({ ...f, html }))}
             />
           </div>
           <div className="space-y-1">
