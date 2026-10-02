@@ -3,9 +3,13 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { defaultSiteUrl } from "@/lib/onboarding/load-form-model";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { isValidEmail } from "@/lib/newsletter";
+import { GRANTABLE_PLAN_IDS, renderGrantEmail } from "@/lib/retargeting/grant-templates";
+import { loadRegisteredMembers } from "@/lib/retargeting/load-registered-members";
 import { loadRetargetingAudience } from "@/lib/retargeting/load-audience";
 import { renderRetargetingEmail } from "@/lib/retargeting/render-email";
 import { RETARGETING_TEMPLATES, getRetargetingTemplate } from "@/lib/retargeting/templates";
+import { computeProExpiry } from "@/lib/payments/pro-entitlement";
+import { getRazorpayPlan, type RazorpayPlanId } from "@/lib/payments/plans";
 import type { RetargetingSegment } from "@/lib/retargeting/types";
 import { NextResponse } from "next/server";
 
@@ -31,9 +35,24 @@ export async function GET(req: Request) {
   const previewEmail = url.searchParams.get("preview")?.trim().toLowerCase() ?? "";
   const templateId = url.searchParams.get("templateId")?.trim() ?? "";
 
-  const customers = await loadRetargetingAudience();
+  const [customers, members] = await Promise.all([loadRetargetingAudience(), loadRegisteredMembers()]);
+  const memberStats = {
+    total: members.length,
+    free: members.filter((m) => m.memberKind === "free").length,
+    paidActive: members.filter((m) => m.memberKind === "paid_active").length,
+    paidLapsed: members.filter((m) => m.memberKind === "paid_lapsed").length,
+    admin: members.filter((m) => m.memberKind === "admin").length,
+  };
+  const grantPlans = GRANTABLE_PLAN_IDS.map((id) => {
+    const plan = getRazorpayPlan(id);
+    return { id, name: plan?.name ?? id, priceInr: plan ? Math.round(plan.amountPaise / 100) : null };
+  });
+
   const payload: Record<string, unknown> = {
     customers,
+    members,
+    memberStats,
+    grantPlans,
     templates: RETARGETING_TEMPLATES,
     stats: segmentStats(customers),
     emailConfigured: hasEmailConfigured(),
@@ -51,15 +70,36 @@ export async function GET(req: Request) {
     `;
   }
 
+  const siteUrl = defaultSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
+
   if (previewEmail && templateId) {
     const template = getRetargetingTemplate(templateId);
     const customer = customers.find((c) => c.email === previewEmail);
     if (!template || !customer) {
       return NextResponse.json({ ...payload, previewError: "Invalid preview email or template." });
     }
-    const siteUrl = defaultSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
     const preview = renderRetargetingEmail(customer, template, siteUrl);
     payload.preview = { email: previewEmail, ...preview };
+  }
+
+  const grantPreviewEmail = url.searchParams.get("grantPreview")?.trim().toLowerCase() ?? "";
+  const grantPlanId = url.searchParams.get("grantPlanId")?.trim() ?? "";
+  const grantNote = url.searchParams.get("grantNote")?.trim() ?? "";
+  if (grantPreviewEmail && GRANTABLE_PLAN_IDS.includes(grantPlanId as RazorpayPlanId)) {
+    const member = members.find((m) => m.email === grantPreviewEmail);
+    if (!member) {
+      return NextResponse.json({ ...payload, grantPreviewError: "Member not found." });
+    }
+    const planId = grantPlanId as RazorpayPlanId;
+    const expiresAtIso = computeProExpiry(new Date(), planId).toISOString();
+    const grantPreview = renderGrantEmail(member, {
+      firstName: member.name?.split(/\s+/)[0] ?? grantPreviewEmail.split("@")[0] ?? "there",
+      grantedPlanId: planId,
+      expiresAtIso,
+      siteUrl,
+      personalNote: grantNote,
+    });
+    payload.grantPreview = { email: grantPreviewEmail, planId, ...grantPreview };
   }
 
   return NextResponse.json(payload);

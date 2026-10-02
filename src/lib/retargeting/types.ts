@@ -35,7 +35,10 @@ export type RetargetingTemplateId =
   | "upsell_day_to_plus"
   | "upsell_plus_to_annual"
   | "win_back_lapsed"
-  | "renew_expiring_plus";
+  | "renew_expiring_plus"
+  | "grant_day_pass"
+  | "grant_pro_monthly"
+  | "grant_pro_annual";
 
 export type RetargetingTemplate = {
   id: RetargetingTemplateId;
