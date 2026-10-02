@@ -1,0 +1,30 @@
+name: trade-lab-precompute
+
+# Free scheduled pre-compute for Trade Lab. Warms the indicator cache for every index + F&O stock and fires
+# transition alerts (RSI 70/30, MACD flip, volume breakout). Vercel Hobby only allows daily crons, so intraday runs here.
+on:
+  schedule:
+    - cron: "*/15 3-10 * * 1-5"   # every 15 min, 08:30–16:00 IST, Mon–Fri (UTC)
+    - cron: "10 10 * * 1-5"        # 15:40 IST final end-of-day pass
+  workflow_dispatch:
+
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Warm cache and fire alerts
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          BASE="${SITE_URL:-https://getmarketintelligence.in}"
+          run_slice() {
+            code=$(curl -sS -m 90 -o /tmp/out.json -w "%{http_code}" -H "Authorization: Bearer ${CRON_SECRET}" "${BASE}/api/cron/trade-compute?$1")
+            echo "$1 -> $code"; head -c 600 /tmp/out.json; echo
+          }
+          # Intraday frames: indices + first 40 F&O names (fast); daily/weekly: full universe in 3 slices.
+          run_slice "tf=15m&limit=45"
+          run_slice "tf=1d&offset=0&limit=100"
+          run_slice "tf=1d&offset=100&limit=100"
+          run_slice "tf=1d&offset=200&limit=100"

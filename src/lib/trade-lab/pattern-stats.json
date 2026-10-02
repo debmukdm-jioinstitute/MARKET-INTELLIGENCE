@@ -1,0 +1,189 @@
+{
+  "generatedAt": "2026-10-02T14:38:45.249Z",
+  "sample": {
+    "symbols": 39,
+    "bars": 96283,
+    "from": "2016-10-03",
+    "to": "2026-10-01",
+    "timeframe": "1d"
+  },
+  "baseRate": {
+    "upAfter5Pct": 53.2,
+    "upAfter10Pct": 54.5,
+    "bars": 93553
+  },
+  "patterns": {
+    "breakout": {
+      "name": "Breakout",
+      "bias": "bullish",
+      "events": 2251,
+      "avgFwd5Pct": 0.31,
+      "avgFwd10Pct": 0.51,
+      "directionalHit5": 52.2,
+      "directionalHit10": 55
+    },
+    "doji": {
+      "name": "Doji",
+      "bias": "neutral",
+      "events": 3586,
+      "avgFwd5Pct": 0.39,
+      "avgFwd10Pct": 0.77,
+      "directionalHit5": null,
+      "directionalHit10": null
+    },
+    "breakdown": {
+      "name": "Breakdown",
+      "bias": "bearish",
+      "events": 1729,
+      "avgFwd5Pct": 0.34,
+      "avgFwd10Pct": 0.73,
+      "directionalHit5": 46.1,
+      "directionalHit10": 44.2
+    },
+    "morning-star": {
+      "name": "Morning star",
+      "bias": "bullish",
+      "events": 1317,
+      "avgFwd5Pct": 0.36,
+      "avgFwd10Pct": 0.88,
+      "directionalHit5": 53.6,
+      "directionalHit10": 55.1
+    },
+    "bearish-engulfing": {
+      "name": "Bearish engulfing",
+      "bias": "bearish",
+      "events": 2789,
+      "avgFwd5Pct": 0.19,
+      "avgFwd10Pct": 0.64,
+      "directionalHit5": 49.1,
+      "directionalHit10": 46.3
+    },
+    "double-bottom": {
+      "name": "Double bottom",
+      "bias": "bullish",
+      "events": 738,
+      "avgFwd5Pct": 0.14,
+      "avgFwd10Pct": 0.43,
+      "directionalHit5": 48.6,
+      "directionalHit10": 53.5
+    },
+    "evening-star": {
+      "name": "Evening star",
+      "bias": "bearish",
+      "events": 1185,
+      "avgFwd5Pct": 0.43,
+      "avgFwd10Pct": 0.72,
+      "directionalHit5": 44.1,
+      "directionalHit10": 44.4
+    },
+    "three-black-crows": {
+      "name": "Three black crows",
+      "bias": "bearish",
+      "events": 557,
+      "avgFwd5Pct": 0.48,
+      "avgFwd10Pct": 0.69,
+      "directionalHit5": 46.1,
+      "directionalHit10": 46.7
+    },
+    "double-top": {
+      "name": "Double top",
+      "bias": "bearish",
+      "events": 739,
+      "avgFwd5Pct": 0.21,
+      "avgFwd10Pct": 0.37,
+      "directionalHit5": 48.6,
+      "directionalHit10": 46.7
+    },
+    "bullish-engulfing": {
+      "name": "Bullish engulfing",
+      "bias": "bullish",
+      "events": 1821,
+      "avgFwd5Pct": 0.2,
+      "avgFwd10Pct": 0.59,
+      "directionalHit5": 51.3,
+      "directionalHit10": 54.5
+    },
+    "three-white-soldiers": {
+      "name": "Three white soldiers",
+      "bias": "bullish",
+      "events": 110,
+      "avgFwd5Pct": 0.32,
+      "avgFwd10Pct": 0.96,
+      "directionalHit5": 48.2,
+      "directionalHit10": 58.2
+    },
+    "ascending-triangle": {
+      "name": "Ascending triangle",
+      "bias": "bullish",
+      "events": 90,
+      "avgFwd5Pct": 0.56,
+      "avgFwd10Pct": 1.09,
+      "directionalHit5": 54.4,
+      "directionalHit10": 57.8
+    },
+    "inverse-head-shoulders": {
+      "name": "Inverse head and shoulders",
+      "bias": "bullish",
+      "events": 457,
+      "avgFwd5Pct": 0.66,
+      "avgFwd10Pct": 1.59,
+      "directionalHit5": 57.1,
+      "directionalHit10": 60.8
+    },
+    "head-shoulders": {
+      "name": "Head and shoulders",
+      "bias": "bearish",
+      "events": 496,
+      "avgFwd5Pct": -0.05,
+      "avgFwd10Pct": 0.41,
+      "directionalHit5": 51.4,
+      "directionalHit10": 49.6
+    },
+    "inverted-hammer": {
+      "name": "Inverted hammer",
+      "bias": "bullish",
+      "events": 243,
+      "avgFwd5Pct": 0.24,
+      "avgFwd10Pct": 0.74,
+      "directionalHit5": 53.5,
+      "directionalHit10": 53.5
+    },
+    "shooting-star": {
+      "name": "Shooting star",
+      "bias": "bearish",
+      "events": 296,
+      "avgFwd5Pct": 0.24,
+      "avgFwd10Pct": 0.32,
+      "directionalHit5": 48,
+      "directionalHit10": 43.6
+    },
+    "hammer": {
+      "name": "Hammer",
+      "bias": "bullish",
+      "events": 309,
+      "avgFwd5Pct": 0.48,
+      "avgFwd10Pct": 0.58,
+      "directionalHit5": 53.4,
+      "directionalHit10": 53.4
+    },
+    "descending-triangle": {
+      "name": "Descending triangle",
+      "bias": "bearish",
+      "events": 62,
+      "avgFwd5Pct": 0.61,
+      "avgFwd10Pct": 0.89,
+      "directionalHit5": 40.3,
+      "directionalHit10": 43.5
+    },
+    "symmetric-triangle": {
+      "name": "Symmetric triangle",
+      "bias": "neutral",
+      "events": 13,
+      "avgFwd5Pct": -0.06,
+      "avgFwd10Pct": 0.74,
+      "directionalHit5": null,
+      "directionalHit10": null
+    }
+  },
+  "note": "First firing of each pattern after ≥10 quiet bars, per stock. Forward return is close→close, no costs. Descriptive history, not a forecast."
+}

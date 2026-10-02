@@ -1,4 +1,6 @@
 import type { Bar } from "@/lib/scanner/types";
+import { readLab, ttlSeconds, writeLab } from "./cache";
+import stats from "./pattern-stats.json";
 import { detectCandlesticks } from "./candlesticks";
 import { detectChartPatterns } from "./chart-patterns";
 import { resolveInstrument, fetchBars } from "./data";
@@ -209,8 +211,11 @@ export async function computeLab(symbolRaw: string, tf: Timeframe): Promise<LabR
   const tfMeta = TIMEFRAMES.find((t) => t.id === tf);
   if (!tfMeta) return { error: "Invalid timeframe", status: 400 };
 
-  const data = await fetchBars(inst.yahoo, tf);
-  if (!data) return { error: `No market data available for ${inst.label} (${tf}). Source: Yahoo Finance.`, status: 404 };
+  const data = await fetchBars(inst, tf);
+  if (!data) {
+    const needsUpstox = inst.id === "BANKEX" && !process.env.UPSTOX_ACCESS_TOKEN;
+    return { error: `No market data available for ${inst.label} (${tf}). Tried ${process.env.UPSTOX_ACCESS_TOKEN ? "Upstox, " : ""}Yahoo Finance.${needsUpstox ? " BANKEX history is only available through the Upstox feed." : ""}`, status: 404 };
+  }
   const { bars, hasVolume } = data;
   const lastBar = bars[bars.length - 1];
   const dayOf = (t: number) => Math.floor((t + 19_800) / 86_400);
@@ -221,7 +226,11 @@ export async function computeLab(symbolRaw: string, tf: Timeframe): Promise<LabR
   const indicators = buildReadings(bars, tfMeta.intraday, hasVolume);
   const candle = detectCandlesticks(bars, 5);
   const chart = detectChartPatterns(bars);
-  const patterns = [...chart.hits, ...candle];
+  const hist = stats as unknown as { sample: { symbols: number; from: string; to: string }; baseRate: { upAfter10Pct: number }; patterns: Record<string, { events: number; directionalHit10: number | null; avgFwd10Pct: number }> };
+  const patterns = [...chart.hits, ...candle].map((p) => {
+    const h = hist.patterns[p.id];
+    return h && tf === "1d" ? { ...p, history: { events: h.events, hit10: h.directionalHit10, fwd10: h.avgFwd10Pct, base10: hist.baseRate.upAfter10Pct, sample: `${hist.sample.symbols} F&O stocks, ${hist.sample.from.slice(0, 4)}–${hist.sample.to.slice(0, 4)}` } } : p;
+  });
 
   const directional = indicators.filter((i) => i.id !== "atr");
   const bullish = directional.filter((i) => i.bias === "bullish").length;
@@ -255,7 +264,7 @@ export async function computeLab(symbolRaw: string, tf: Timeframe): Promise<LabR
     yahooTicker: inst.yahoo,
     tf,
     source: data.source,
-    adjusted: !tfMeta.intraday,
+    adjusted: data.source.startsWith("Yahoo") && !tfMeta.intraday,
     asOf: lastBar.t,
     fetchedAt: Date.now(),
     bars: bars.length,
@@ -275,4 +284,19 @@ export async function computeLab(symbolRaw: string, tf: Timeframe): Promise<LabR
     reasons,
     candles: bars.slice(-120).map((b) => ({ t: b.t, o: b.o, h: b.h, l: b.l, c: b.c, v: b.v })),
   };
+}
+
+/** Cache-first read: fresh cache → serve; else compute (and store); if every source fails → last-good cache flagged stale. */
+export async function getLab(symbolRaw: string, tf: Timeframe): Promise<LabResult | { error: string; status: number }> {
+  const inst = resolveInstrument(symbolRaw);
+  if (!inst) return { error: "Invalid symbol", status: 400 };
+  const cached = await readLab(inst.id, tf);
+  if (cached && cached.ageSec < ttlSeconds(tf)) return { ...cached.data, cacheAgeSec: cached.ageSec };
+  const fresh = await computeLab(symbolRaw, tf);
+  if (!("error" in fresh)) {
+    await writeLab(inst.id, tf, fresh);
+    return fresh;
+  }
+  if (cached && fresh.status === 404) return { ...cached.data, stale: true, cacheAgeSec: cached.ageSec };
+  return fresh;
 }

@@ -121,7 +121,7 @@ export function runBacktest(symbol: string, id: StrategyId, bars: Bar[]): Backte
 export async function backtestSymbol(symbolRaw: string, id: StrategyId): Promise<BacktestResult | { error: string; status: number }> {
   const inst = resolveInstrument(symbolRaw);
   if (!inst) return { error: "Invalid symbol", status: 400 };
-  const data = await fetchBars(inst.yahoo, "1d", "2y");
+  const data = await fetchBars(inst, "1d");
   if (!data) return { error: `No daily data for ${inst.label}.`, status: 404 };
   if (id === "breakout" && !data.hasVolume) return { error: "Breakout needs volume; this instrument has none (index).", status: 422 };
   return runBacktest(inst.id, id, data.bars);

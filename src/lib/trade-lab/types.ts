@@ -38,6 +38,8 @@ export interface PatternHit {
   numbers: string[];
   why: string;
   confidence: "low" | "medium" | "high";
+  /** Walk-forward record of this rule on real history (scripts/validate-trade-patterns.ts). */
+  history?: { events: number; hit10: number | null; fwd10: number; base10: number; sample: string };
 }
 
 export interface Reason {
@@ -67,5 +69,8 @@ export interface LabResult {
   levels: LevelZone[];
   verdict: { bullish: number; bearish: number; neutral: number; total: number; label: string; bias: Bias };
   reasons: Reason[];
+  /** True when live sources failed and this is the last good computation, `cacheAgeSec` old. */
+  stale?: boolean;
+  cacheAgeSec?: number;
   candles: { t: number; o: number; h: number; l: number; c: number; v: number }[];
 }

@@ -1,5 +1,5 @@
 import { rateLimited } from "@/lib/api-guard";
-import { computeLab } from "@/lib/trade-lab/engine";
+import { getLab } from "@/lib/trade-lab/engine";
 import { TIMEFRAMES, type Timeframe } from "@/lib/trade-lab/types";
 import { NextResponse } from "next/server";
 
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   if (await rateLimited(`trade-lab:${ip(req)}`, 60, 60)) {
     return NextResponse.json({ error: "Too many requests — try again in a minute." }, { status: 429 });
   }
-  const res = await computeLab(symbol, tf);
+  const res = await getLab(symbol, tf);
   if ("error" in res) return NextResponse.json({ error: res.error }, { status: res.status });
   const intraday = TIMEFRAMES.find((t) => t.id === tf)!.intraday;
   return NextResponse.json(res, {

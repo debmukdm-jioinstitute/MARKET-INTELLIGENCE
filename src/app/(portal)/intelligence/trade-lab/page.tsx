@@ -4,7 +4,8 @@ import { PageHeader, Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 import type { BacktestResult, StrategyId } from "@/lib/trade-lab/backtest";
 import { TIMEFRAMES, type Bias, type IndicatorReading, type LabResult, type Timeframe } from "@/lib/trade-lab/types";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
 import useSWR from "swr";
 
 type Universe = { indices: { id: string; label: string }[]; stocks: { symbol: string; name: string }[] };
@@ -16,6 +17,35 @@ const STRATEGY_UI: { id: StrategyId; label: string; blurb: string }[] = [
   { id: "pullback", label: "Pullback", blurb: "Uptrend intact · RSI recovers above 40" },
   { id: "meanrev", label: "Mean-reversion", blurb: "Below lower Bollinger · RSI<30" },
 ];
+
+const WATCH_KEY = "mi-trade-lab-watch";
+const EMPTY_WATCH: readonly string[] = [];
+let watchRaw: string | null = null;
+let watchParsed: readonly string[] = EMPTY_WATCH;
+const watchListeners = new Set<() => void>();
+
+function readWatch(): readonly string[] {
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(WATCH_KEY); } catch { /* private mode */ }
+  if (raw === watchRaw) return watchParsed; // stable identity unless storage changed
+  watchRaw = raw;
+  try {
+    const arr = raw ? (JSON.parse(raw) as unknown) : [];
+    watchParsed = Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string").slice(0, 12) : EMPTY_WATCH;
+  } catch { watchParsed = EMPTY_WATCH; }
+  return watchParsed;
+}
+function writeWatch(next: string[]) {
+  try { localStorage.setItem(WATCH_KEY, JSON.stringify(next.slice(0, 12))); } catch { /* ignore */ }
+  watchListeners.forEach((l) => l());
+}
+function subscribeWatch(cb: () => void) {
+  watchListeners.add(cb);
+  window.addEventListener("storage", cb);
+  return () => { watchListeners.delete(cb); window.removeEventListener("storage", cb); };
+}
+
+type WatchRow = { symbol: string; last?: number; changePct?: number; verdict?: Bias; verdictLabel?: string; rsi?: string | null; stale?: boolean; error?: string };
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -148,9 +178,23 @@ function BacktestView({ r }: { r: BacktestResult }) {
 }
 
 export default function TradeLabPage() {
-  const [symbol, setSymbol] = useState("NIFTY");
+  return (
+    <Suspense fallback={null}>
+      <TradeLab />
+    </Suspense>
+  );
+}
+
+function TradeLab() {
+  const sp = useSearchParams();
+  const initialSymbol = (sp.get("symbol") ?? "NIFTY").toUpperCase().slice(0, 24);
+  const initialTf = TIMEFRAMES.some((t) => t.id === sp.get("tf")) ? (sp.get("tf") as Timeframe) : "1d";
+  const [symbol, setSymbol] = useState(initialSymbol);
   const [draft, setDraft] = useState("");
-  const [tf, setTf] = useState<Timeframe>("1d");
+  const [tf, setTf] = useState<Timeframe>(initialTf);
+  const watch = useSyncExternalStore(subscribeWatch, readWatch, () => EMPTY_WATCH);
+  const watchKey = watch.length ? `/api/trade/watch?symbols=${encodeURIComponent(watch.join(","))}&tf=1d` : null;
+  const { data: watchData } = useSWR<{ rows: WatchRow[] }>(watchKey, getJson, { refreshInterval: 5 * 60_000, revalidateOnFocus: false });
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const [strategy, setStrategy] = useState<StrategyId | null>(null);
 
@@ -174,7 +218,7 @@ export default function TradeLabPage() {
         kicker="Trade Lab"
         title="Indicators, patterns & backtests"
         subtitle="Pick an index or F&O stock. Every number is plain maths on real exchange candles — no AI model, no simulated data. Each signal shows the exact rule that produced it."
-        trust={{ source: "Yahoo Finance candles (NSE/BSE)", note: "Rule-based technical readings, not recommendations", delayed: "Split-adjusted; not dividend-adjusted" }}
+        trust={{ source: "Upstox exchange candles, Yahoo Finance fallback", note: "Rule-based technical readings, not recommendations", delayed: "Pre-computed every 15 min in market hours" }}
       />
 
       <Panel title="1 · Instrument & timeframe">
@@ -197,6 +241,32 @@ export default function TradeLabPage() {
         </div>
       </Panel>
 
+      {watch.length ? (
+        <Panel title="Watchlist" subtitle="Saved in this browser. Daily verdict from the pre-computed cache.">
+          <div className="flex flex-wrap gap-2">
+            {watch.map((w) => {
+              const row = watchData?.rows.find((r) => r.symbol === w);
+              return (
+                <div key={w} className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm">
+                  <button type="button" onClick={() => pick(w)} className="flex items-center gap-2 text-left">
+                    <span className="font-semibold">{w}</span>
+                    {row?.error ? <span className="text-xs text-muted-foreground">no data</span> : row?.last !== undefined ? (
+                      <>
+                        <span className="tabular-nums">{money(row.last)}</span>
+                        <span className={cn("text-xs font-semibold tabular-nums", (row.changePct ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>{pct(row.changePct ?? 0, 2)}</span>
+                        <span className={cn("rounded-full border px-1.5 py-0.5 text-[10px] font-semibold", biasBadge[row.verdict ?? "neutral"])}>{biasLabel[row.verdict ?? "neutral"]}</span>
+                        {row.rsi ? <span className="text-xs text-muted-foreground">RSI {row.rsi}</span> : null}
+                      </>
+                    ) : <span className="text-xs text-muted-foreground">…</span>}
+                  </button>
+                  <button type="button" aria-label={`Remove ${w}`} onClick={() => writeWatch(watch.filter((x) => x !== w))} className="text-muted-foreground hover:text-foreground">×</button>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+      ) : null}
+
       {error ? <p className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 text-sm text-rose-700">{error instanceof Error ? error.message : String(error)} Nothing is shown rather than a guess.</p> : null}
       {isLoading && !data ? <p className="text-sm text-muted-foreground">Loading candles for {symbol}…</p> : null}
 
@@ -204,7 +274,14 @@ export default function TradeLabPage() {
         <>
           <Panel
             title={<span>{data.symbol} <span className="text-muted-foreground font-medium">· {data.tf}</span></span>}
-            action={fresh ? <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", fresh.cls)}>{fresh.text}</span> : null}
+            action={
+              <div className="flex items-center gap-2">
+                {fresh ? <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", fresh.cls)}>{data.stale ? "Stale — showing last good data" : fresh.text}</span> : null}
+                <button type="button" onClick={() => writeWatch(watch.includes(data.symbol) ? watch.filter((w) => w !== data.symbol) : [...watch, data.symbol])} className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold hover:bg-muted" aria-pressed={watch.includes(data.symbol)}>
+                  {watch.includes(data.symbol) ? "★ Watching" : "☆ Watch"}
+                </button>
+              </div>
+            }
             trust={{ source: `${data.source} (${data.yahooTicker})`, asOf: new Date(data.asOf * 1000).toISOString(), note: `${data.bars} bars · last bar ${ist(data.asOf, intraday)} IST${data.adjusted ? " · split-adjusted" : ""}` }}
           >
             <div className="flex flex-wrap items-end gap-x-6 gap-y-1">
@@ -263,6 +340,12 @@ export default function TradeLabPage() {
                     <div className="mt-0.5 text-xs text-muted-foreground">{p.barsAgo === 0 ? "On the latest bar" : `${p.barsAgo} bar${p.barsAgo > 1 ? "s" : ""} ago`} · {ist(p.time, intraday)} · confidence: {p.confidence}</div>
                     <p className="mt-1.5 text-sm">{p.why}</p>
                     <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.numbers.join(" · ")}</p>
+                    {p.history ? (
+                      <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                        History ({p.history.sample}, daily, 10 bars after): {p.history.events.toLocaleString("en-IN")} events · avg {pct(p.history.fwd10, 2)}
+                        {p.history.hit10 !== null ? ` · called direction ${p.history.hit10.toFixed(0)}% of the time vs ${p.bias === "bearish" ? (100 - p.history.base10).toFixed(0) : p.history.base10.toFixed(0)}% for a coin-flip drift baseline` : ""}.
+                      </p>
+                    ) : null}
                     <p className="mt-1 text-[11px] leading-snug text-muted-foreground">Rule: {p.rule}</p>
                   </div>
                 ))}

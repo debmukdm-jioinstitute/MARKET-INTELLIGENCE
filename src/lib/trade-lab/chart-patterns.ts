@@ -1,5 +1,4 @@
 import type { Bar } from "@/lib/scanner/types";
-import { atr } from "./indicators";
 import type { LevelZone, PatternHit } from "./types";
 
 /**
@@ -22,8 +21,9 @@ export function findPivots(bars: Bar[], order = 4): Pivot[] {
     let isL = true;
     for (let j = i - order; j <= i + order; j++) {
       if (j === i) continue;
-      if (bars[j].h >= bars[i].h) isH = false;
-      if (bars[j].l <= bars[i].l) isL = false;
+      // ties: the earliest equal extreme wins (left side strict, right side allows equality)
+      if (j < i ? bars[j].h >= bars[i].h : bars[j].h > bars[i].h) isH = false;
+      if (j < i ? bars[j].l <= bars[i].l : bars[j].l < bars[i].l) isL = false;
     }
     if (isH) out.push({ i, price: bars[i].h, type: "H" });
     if (isL) out.push({ i, price: bars[i].l, type: "L" });
@@ -49,25 +49,10 @@ export function supportResistance(bars: Bar[], pivots: Pivot[], tol = 0.006): Le
     .slice(0, 6);
 }
 
-function slope(pts: { x: number; y: number }[]) {
-  const n = pts.length;
-  const mx = pts.reduce((s, p) => s + p.x, 0) / n;
-  const my = pts.reduce((s, p) => s + p.y, 0) / n;
-  let num = 0;
-  let den = 0;
-  for (const p of pts) {
-    num += (p.x - mx) * (p.y - my);
-    den += (p.x - mx) ** 2;
-  }
-  return den === 0 ? 0 : num / den;
-}
-
 export function detectChartPatterns(bars: Bar[]): { hits: PatternHit[]; levels: LevelZone[] } {
   const hits: PatternHit[] = [];
   if (bars.length < 40) return { hits, levels: [] };
   const last = bars.length - 1;
-  const a = atr(bars, 14);
-  const lastAtr = a[last];
   const pivots = findPivots(bars, 4);
   const levels = supportResistance(bars, pivots);
   const highs = pivots.filter((p) => p.type === "H");
@@ -149,23 +134,23 @@ export function detectChartPatterns(bars: Bar[]): { hits: PatternHit[]; levels: 
     }
   }
 
-  // ── Triangles: regress the last 3–4 swing highs and lows (needs ≥3 of each within last 60 bars)
+  // ── Triangles: last 3–4 swing highs/lows within 60 bars. Structural rules (no slope fitting):
+  //    flat = every pivot within 1.5% of the group mean; rising/falling = strictly monotonic, net move ≥1.5%.
   const hi = highs.filter((p) => last - p.i <= 60).slice(-4);
   const lo = lows.filter((p) => last - p.i <= 60).slice(-4);
-  if (hi.length >= 3 && lo.length >= 3 && Number.isFinite(lastAtr)) {
-    const sh = slope(hi.map((p) => ({ x: p.i, y: p.price })));
-    const sl = slope(lo.map((p) => ({ x: p.i, y: p.price })));
-    const flatT = lastAtr / 50; // |slope| below this per bar = flat
-    const trendT = lastAtr / 25; // slope beyond this per bar = clearly rising/falling
-    const flatH = Math.abs(sh) < flatT;
-    const flatL = Math.abs(sl) < flatT;
-    const upL = sl >= trendT;
-    const dnH = sh <= -trendT;
+  if (hi.length >= 3 && lo.length >= 3) {
+    const mean = (ps: Pivot[]) => ps.reduce((s, p) => s + p.price, 0) / ps.length;
+    const flat = (ps: Pivot[]) => ps.every((p) => Math.abs(p.price - mean(ps)) / mean(ps) <= 0.015);
+    const rising = (ps: Pivot[]) => ps.every((p, k) => k === 0 || p.price > ps[k - 1].price) && ps[ps.length - 1].price / ps[0].price - 1 >= 0.015;
+    const falling = (ps: Pivot[]) => ps.every((p, k) => k === 0 || p.price < ps[k - 1].price) && 1 - ps[ps.length - 1].price / ps[0].price >= 0.015;
+    const inside = bars[last].c <= Math.max(...hi.map((p) => p.price)) * 1.005 && bars[last].c >= Math.min(...lo.map((p) => p.price)) * 0.995;
     const mkTri = (id: string, name: string, bias: PatternHit["bias"], rule: string, why: string) =>
-      push({ id, name, bias, rule, numbers: [`upper slope ${f(sh)}/bar`, `lower slope ${f(sl)}/bar`, `${hi.length} highs, ${lo.length} lows`], why, confidence: "low" });
-    if (flatH && upL) mkTri("ascending-triangle", "Ascending triangle", "bullish", "Flat resistance (swing-high slope ≈ 0) with rising swing lows over the last 60 bars.", "Buyers keep stepping in at higher prices against a fixed ceiling — upside break is the usual resolution.");
-    else if (flatL && dnH) mkTri("descending-triangle", "Descending triangle", "bearish", "Flat support (swing-low slope ≈ 0) with falling swing highs over the last 60 bars.", "Sellers keep pressing from lower highs against a fixed floor — downside break is the usual resolution.");
-    else if (dnH && upL) mkTri("symmetric-triangle", "Symmetric triangle", "neutral", "Falling swing highs and rising swing lows over the last 60 bars (converging).", "Range is compressing; direction is decided by the break.");
+      push({ id, name, bias, rule, numbers: [`highs ${hi.map((p) => f(p.price)).join(" → ")}`, `lows ${lo.map((p) => f(p.price)).join(" → ")}`], why, confidence: "low" });
+    if (inside) {
+      if (flat(hi) && rising(lo)) mkTri("ascending-triangle", "Ascending triangle", "bullish", "Last 3–4 swing highs within 1.5% of each other (flat resistance) and swing lows strictly rising ≥1.5%, price still inside the range.", "Buyers keep stepping in at higher prices against a fixed ceiling — upside break is the usual resolution.");
+      else if (flat(lo) && falling(hi)) mkTri("descending-triangle", "Descending triangle", "bearish", "Last 3–4 swing lows within 1.5% of each other (flat support) and swing highs strictly falling ≥1.5%, price still inside the range.", "Sellers keep pressing from lower highs against a fixed floor — downside break is the usual resolution.");
+      else if (falling(hi) && rising(lo)) mkTri("symmetric-triangle", "Symmetric triangle", "neutral", "Swing highs strictly falling and swing lows strictly rising (each ≥1.5% net), price still inside the range.", "Range is compressing; direction is decided by the break.");
+    }
   }
 
   // ── Breakout / breakdown with volume confirmation
