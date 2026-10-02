@@ -62,10 +62,14 @@ export async function getRecipientCount(): Promise<{ users: number; publicSubscr
 /** Appends a standard unsubscribe footer to a newsletter's HTML for one recipient. */
 export function withUnsubscribeFooter(html: string, email: string): string {
   const url = unsubscribeUrl(email);
-  return `${html}
+  const footer = `
 <hr style="margin-top:32px;border:none;border-top:1px solid #e8eaed" />
 <p style="margin-top:16px;font-size:12px;color:#5f6368;${GOOGLE_SANS_FONT_FAMILY_CSS}">
   You're receiving this because you're subscribed to Market Intelligence updates.
   <a href="${url}" style="color:#5f6368;text-decoration:underline">Unsubscribe</a>
 </p>`;
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `${footer}</body>`);
+  }
+  return `${html}${footer}`;
 }

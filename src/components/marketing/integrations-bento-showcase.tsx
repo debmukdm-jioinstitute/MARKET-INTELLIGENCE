@@ -394,7 +394,7 @@ export function IntegrationsBentoShowcase() {
             Claude AI &amp; Telegram Bot in Action
           </h2>
           <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-            Connect Claude Desktop via MCP to query live market tools with zero hallucination, and receive sub-second catalyst alerts directly on Telegram.
+            Paid plan: connect Claude Desktop via MCP to query live market tools, and receive catalyst alerts on Telegram (Free).
           </p>
         </div>
 

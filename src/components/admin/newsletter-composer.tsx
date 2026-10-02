@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  applyImageClickUrlInHtml,
+  extractImageSrcs,
+  readImageClickUrl,
+} from "@/lib/newsletter/image-links";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const IMG_BLOCK = (url: string) =>
   `<p style="margin:12px 0;line-height:0;"><img src="${url}" alt="" style="display:block;max-width:100%;height:auto;margin:12px 0;border:0;" /></p>`;
@@ -98,6 +103,15 @@ export function NewsletterComposer({ resetKey, html, onChange, disabled }: Props
     }
   }
 
+  const imageSrcs = useMemo(() => extractImageSrcs(html), [html]);
+
+  function setClickUrl(imgSrc: string, clickUrl: string) {
+    const next = applyImageClickUrlInHtml(html, imgSrc, clickUrl);
+    onChange(next);
+    const el = editorRef.current;
+    if (el) el.innerHTML = next;
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
@@ -118,6 +132,26 @@ export function NewsletterComposer({ resetKey, html, onChange, disabled }: Props
         aria-label="Newsletter body"
       />
       {pasteHint ? <p className="text-xs text-gray-600">{pasteHint}</p> : null}
+      {imageSrcs.length > 0 ? (
+        <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-3">
+          <p className="text-xs font-semibold text-gray-700">Image click links (optional)</p>
+          <p className="text-xs text-gray-500">Subscriber clicks image → opens URL in browser.</p>
+          {imageSrcs.map((src, i) => (
+            <div key={src} className="space-y-1">
+              <label className="text-xs text-gray-500">Image {i + 1}</label>
+              <input
+                key={`${src}:${readImageClickUrl(html, src)}`}
+                type="url"
+                defaultValue={readImageClickUrl(html, src)}
+                placeholder="https://getmarketintelligence.in/…"
+                disabled={disabled || uploading}
+                onBlur={(e) => setClickUrl(src, e.target.value)}
+                className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-600"
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
       <details className="text-xs text-gray-500">
         <summary className="cursor-pointer">Preview send HTML</summary>
         <pre className="mt-2 max-h-40 overflow-auto rounded border border-gray-100 bg-gray-50 p-2 whitespace-pre-wrap break-all">

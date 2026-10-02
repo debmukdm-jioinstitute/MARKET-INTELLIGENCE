@@ -1,3 +1,4 @@
+import { finalizeNewsletterImageBlocks } from "@/lib/newsletter/image-links";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 
 const IMG_STYLE = "display:block;max-width:100%;height:auto;margin:12px 0;border:0;";
@@ -40,18 +41,9 @@ export function sanitizeNewsletterHtml(html: string): string {
   return out.trim();
 }
 
-/** Each <img> on its own row-friendly block; email-safe inline styles. */
+/** Each <img> on its own row-friendly block; preserves optional click-through links. */
 export function normalizeNewsletterImages(html: string): string {
-  return html.replace(/<img\b([^>]*)>/gi, (_full, attrs: string) => {
-    let a = attrs;
-    if (!/style\s*=/.test(a)) {
-      a += ` style="${IMG_STYLE}"`;
-    } else if (!/max-width/i.test(a)) {
-      a = a.replace(/style\s*=\s*"([^"]*)"/i, (_m, s: string) => `style="${s};${IMG_STYLE}"`);
-    }
-    if (!/alt\s*=/.test(a)) a += ' alt=""';
-    return `<p style="margin:12px 0;line-height:0;">${`<img${a}>`}</p>`;
-  });
+  return finalizeNewsletterImageBlocks(html);
 }
 
 export function wrapNewsletterDocument(bodyHtml: string): string {
