@@ -7,6 +7,7 @@ import { shareholding } from "./shareholding";
 import { creditRatings } from "./credit-ratings";
 import { concallSummaries } from "./concalls";
 import { legalRisk } from "./legal-risk";
+import { ipos } from "./ipos";
 import type { Collector } from "./types";
 import { amfi } from "./sources/amfi";
 import { bls } from "./sources/bls";
@@ -20,7 +21,7 @@ import { rbi } from "./sources/rbi";
 import { rbiMarket } from "./sources/rbi-market";
 import { nseFiidii } from "./sources/nse-fiidii";
 
-export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro, brokerCalls, nseAnnouncements, shareholding, creditRatings, concallSummaries, legalRisk];
+export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro, brokerCalls, nseAnnouncements, shareholding, creditRatings, concallSummaries, legalRisk, ipos];
 
 export type RunReport = { collector: string; ok: boolean; series: number; points: number; error?: string; ms: number; sample?: unknown };
 

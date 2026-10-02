@@ -576,6 +576,59 @@ export async function ensureSchema(): Promise<void> {
       await db`CREATE UNIQUE INDEX IF NOT EXISTS idx_regulatory_events_doc ON regulatory_events (document_url)`;
       await db`CREATE INDEX IF NOT EXISTS idx_regulatory_events_symbol_date ON regulatory_events (symbol, event_date DESC)`;
 
+      // IPO pipeline funnel, GMP (unofficial, sentiment only) and append-only subscription snapshots.
+      await db`
+        CREATE TABLE IF NOT EXISTS ipos (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          company text NOT NULL,
+          symbol text,
+          series text,
+          stage text,
+          issue_size numeric,
+          price_band_low numeric,
+          price_band_high numeric,
+          lot_size bigint,
+          open_date date,
+          close_date date,
+          allotment_date date,
+          listing_date date,
+          brlms text[],
+          drhp_url text,
+          top_risks text[],
+          objects_breakdown jsonb,
+          gmp_value numeric,
+          gmp_pct numeric,
+          gmp_low numeric,
+          gmp_high numeric,
+          gmp_sources text[],
+          gmp_updated_at timestamptz,
+          source text,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE (company)
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS ipo_stage_log (
+          company text NOT NULL,
+          stage text NOT NULL,
+          seen_at timestamptz NOT NULL DEFAULT now(),
+          PRIMARY KEY (company, stage)
+        )
+      `;
+      await db`
+        CREATE TABLE IF NOT EXISTS ipo_subscription_snapshots (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          ipo_id uuid REFERENCES ipos(id),
+          snapshot_at timestamptz NOT NULL,
+          qib_x numeric,
+          nii_x numeric,
+          rii_x numeric,
+          total_x numeric,
+          UNIQUE (ipo_id, snapshot_at)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_ipo_subscription_snapshots_ipo ON ipo_subscription_snapshots (ipo_id, snapshot_at)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);

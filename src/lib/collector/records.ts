@@ -83,6 +83,7 @@ export const dbContext: CollectorContext = { watermark: readWatermark, watermark
 
 /** Builds the single idempotent upsert for a table spec. Identifiers come from trusted constants, never from rows. */
 export function buildUpsertSql(spec: TableSpec): string {
+  if (spec.customSql) return spec.customSql;
   const cols = spec.cols.map((c) => ({ col: snake(c.f), pg: PG_TYPE[c.k] }));
   const names = cols.map((c) => c.col).join(", ");
   const recordset = cols.map((c) => `${c.col} ${c.pg}`).join(", ");

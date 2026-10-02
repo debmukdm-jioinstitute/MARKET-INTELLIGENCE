@@ -19,9 +19,13 @@ export type TableSpec = {
   conflict: string[];
   /** "nothing" keeps the first row (append-only / immutable facts); "update" refreshes provided (non-null) columns. */
   onConflict: "nothing" | "update";
+  /** Replaces the generated upsert (needed when a row must be joined to another table). $1 is the jsonb row array, keyed snake_case. */
+  customSql?: string;
   /** Post-clean hook: recompute derived/untrusted fields; return null to drop the row. */
   normalize?: (row: Record<string, unknown>) => Record<string, unknown> | null;
 };
+
+export const IPO_STAGES = ["drhp_filed", "sebi_nod", "open", "allotment", "listed"];
 
 export const PG_TYPE: Record<Kind, string> = { text: "text", num: "numeric", date: "date", ts: "timestamptz", int: "bigint", bool: "boolean", textarr: "text[]", json: "jsonb" };
 export const snake = (f: string) => f.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
@@ -203,6 +207,66 @@ export const TABLES: TableSpec[] = [
       { f: "status", k: "text" },
     ],
     normalize: (r) => ({ ...r, symbol: typeof r.symbol === "string" ? r.symbol.toUpperCase() : null }),
+  },
+  {
+    name: "ipos",
+    conflict: ["company"],
+    onConflict: "update", // refreshed every run; COALESCE keeps risks / DRHP breakdown once extracted
+    cols: [
+      { f: "company", k: "text", req: true },
+      { f: "symbol", k: "text" },
+      { f: "series", k: "text" },
+      { f: "stage", k: "text", req: true },
+      { f: "issueSize", k: "num" }, // ₹ crore
+      { f: "priceBandLow", k: "num" },
+      { f: "priceBandHigh", k: "num" },
+      { f: "lotSize", k: "int" },
+      { f: "openDate", k: "date" },
+      { f: "closeDate", k: "date" },
+      { f: "allotmentDate", k: "date" },
+      { f: "listingDate", k: "date" },
+      { f: "brlms", k: "textarr" },
+      { f: "drhpUrl", k: "text" },
+      { f: "topRisks", k: "textarr" },
+      { f: "objectsBreakdown", k: "json" },
+      { f: "gmpValue", k: "num" },
+      { f: "gmpPct", k: "num" },
+      { f: "gmpLow", k: "num" },
+      { f: "gmpHigh", k: "num" },
+      { f: "gmpSources", k: "textarr" },
+      { f: "gmpUpdatedAt", k: "ts" },
+      { f: "source", k: "text" },
+    ],
+    normalize: (r) => (IPO_STAGES.includes(String(r.stage)) ? r : null),
+  },
+  {
+    name: "ipo_stage_log",
+    conflict: ["company", "stage"],
+    onConflict: "nothing", // first observation of a company in a stage — the funnel's transition log
+    cols: [
+      { f: "company", k: "text", req: true },
+      { f: "stage", k: "text", req: true },
+      { f: "seenAt", k: "ts", req: true },
+    ],
+    normalize: (r) => (IPO_STAGES.includes(String(r.stage)) ? r : null),
+  },
+  {
+    name: "ipo_subscription_snapshots",
+    conflict: ["company", "snapshot_at"],
+    onConflict: "nothing", // append-only
+    cols: [
+      { f: "company", k: "text", req: true },
+      { f: "snapshotAt", k: "ts", req: true },
+      { f: "qibX", k: "num" },
+      { f: "niiX", k: "num" },
+      { f: "riiX", k: "num" },
+      { f: "totalX", k: "num" },
+    ],
+    customSql:
+      "INSERT INTO ipo_subscription_snapshots (ipo_id, snapshot_at, qib_x, nii_x, rii_x, total_x) " +
+      "SELECT i.id, x.snapshot_at, x.qib_x, x.nii_x, x.rii_x, x.total_x " +
+      "FROM jsonb_to_recordset($1::jsonb) AS x(company text, snapshot_at timestamptz, qib_x numeric, nii_x numeric, rii_x numeric, total_x numeric) " +
+      "JOIN ipos i ON i.company = x.company ON CONFLICT (ipo_id, snapshot_at) DO NOTHING RETURNING 1 AS ok",
   },
 ];
 

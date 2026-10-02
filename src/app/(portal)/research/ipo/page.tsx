@@ -1,6 +1,7 @@
 "use client";
 
 import { IpoDetailSheet } from "@/components/ipo/ipo-detail-sheet";
+import { IpoFunnelSection } from "@/components/ipo/ipo-funnel-section";
 import { IpoList } from "@/components/ipo/ipo-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,6 +32,7 @@ export default function IpoPage() {
         Crawl targets: SEBI, NSE, BSE, exchange announcements, DRHP/RHP PDFs, registrar and lead-manager sites (company microsites via search until dedicated parsers ship).
         Fields marked <span className="font-semibold">planned</span> have honest placeholders — no fabricated issue break-ups or peer tables.
       </p>
+      <IpoFunnelSection />
       <Tabs value={status} onValueChange={(v) => setStatus(v as IpoStatus)}>
         <TabsList>
           {STATUSES.map((s) => (
