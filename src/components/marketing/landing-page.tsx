@@ -16,7 +16,7 @@ import { useGSAP } from "@gsap/react";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { LiveDebate } from "@/components/marketing/live-debate";
 import { FlippingFaqHeadline } from "@/components/marketing/flipping-faq-headline";
-import { HeroRotatingHeadline } from "@/components/marketing/hero-rotating-headline";
+import { LandingHeroTerminalDemo } from "@/components/marketing/landing-hero-terminal-demo";
 import { ProductHuntBadges } from "@/components/marketing/product-hunt-badges";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { IntegrationsBentoShowcase } from "@/components/marketing/integrations-bento-showcase";
@@ -176,12 +176,20 @@ export function LandingPage() {
     });
 
     // Dashboard entrance
+    gsap.from(".landing-terminal-demo", {
+      y: 40,
+      opacity: 0,
+      duration: 1.1,
+      ease: "power4.out",
+      delay: 0.15,
+    });
+
     gsap.from(".mock-dashboard", {
       y: 60,
       opacity: 0,
       duration: 1.2,
       ease: "power4.out",
-      delay: 0.2
+      scrollTrigger: { trigger: ".mock-dashboard", start: "top 88%" },
     });
 
     // Stats counter trigger (simple fade up for now to ensure stability)
@@ -281,29 +289,41 @@ export function LandingPage() {
       </div>
 
       <div className="relative z-10">
-        <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
-          <p className="text-sm text-muted-foreground">
-            Free to start · ₹9 Day Pass · from ₹199/mo ·{" "}
-            <Link href="/pricing" className="font-medium text-blue-600 hover:underline underline-offset-4">
+        <div className="border-b border-gray-200 bg-white py-2.5 text-center">
+          <p className="text-sm text-gray-700">
+            Free to start · No card needed ·{" "}
+            <Link href="/pricing" className="font-medium text-gray-900 hover:underline underline-offset-4">
               See plans →
             </Link>
           </p>
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-2xl backdrop-saturate-150">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050505]/90 backdrop-blur-xl">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
             <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-              <img src="/logo.png" alt="Market Intelligence" className="h-10 sm:h-12 w-auto mix-blend-multiply dark:invert" />
+              <img src="/logo.png" alt="Market Intelligence" className="h-10 sm:h-12 w-auto brightness-0 invert" />
             </Link>
-            <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+            <nav className="hidden items-center gap-6 text-sm font-medium text-white/70 md:flex">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/55">
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Sourced data
+              </span>
+              <Link href="/research" className="transition hover:text-white">
+                Research
+              </Link>
+              <Link href="/markets/india" className="transition hover:text-white">
+                Markets
+              </Link>
+              <Link href="/portfolio" className="transition hover:text-white">
+                Portfolio
+              </Link>
               <MegaMenu />
-              <a href="#integrations" className="transition hover:text-gray-900 flex items-center gap-1.5 font-semibold text-sky-600 dark:text-sky-400">
-                <span className="size-1.5 rounded-full bg-sky-500 animate-pulse" />
+              <a href="#integrations" className="transition hover:text-white">
                 Integrations
               </a>
-              <a href="#coverage" className="transition hover:text-gray-900">Data coverage</a>
-              <a href="#pricing" className="transition hover:text-gray-900">Pricing</a>
-              <Link href="/methodology" className="transition hover:text-gray-900">Methodology</Link>
+              <a href="#pricing" className="transition hover:text-white">
+                Pricing
+              </a>
             </nav>
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
@@ -318,7 +338,7 @@ export function LandingPage() {
                 <>
                   <Link
                     href="/login"
-                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
+                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-white/70 transition hover:text-white sm:px-4"
                   >
                     Sign in
                   </Link>
@@ -332,7 +352,7 @@ export function LandingPage() {
                   ) : (
                     <Link
                       href="/signup"
-                      className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
+                      className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-white/70 transition hover:text-white sm:px-4"
                     >
                       Sign up
                     </Link>
@@ -341,39 +361,33 @@ export function LandingPage() {
                     <button
                       type="button"
                       onClick={() => void enterGuest().then(() => router.push("/Home"))}
-                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
+                      className="whitespace-nowrap rounded-full bg-[#e8845c] px-3 py-1.5 text-sm font-medium text-[#050505] shadow-[var(--shadow-sm)] transition hover:bg-[#f0956c] sm:px-4"
                     >
                       Open demo
                     </button>
                   ) : null}
                 </>
               )}
-              <MobileNav />
+              <MobileNav tone="dark" />
             </div>
           </div>
         </header>
 
-        {/* HERO */}
-        <div className="relative overflow-hidden">
-          {/* Mesh Background */}
-          <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-             <div className="hero-mesh-blob hero-mesh-blob-1" />
-             <div className="hero-mesh-blob hero-mesh-blob-2" />
-             <div className="hero-mesh-blob hero-mesh-blob-3" />
-          </div>
-
-          <section className="relative px-5 pt-16 md:pt-24">
-            <div className="mx-auto max-w-4xl text-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-1.5 text-sm text-muted-foreground shadow-[var(--shadow-sm)] backdrop-blur-md">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-                Free tier · Razorpay checkout live
-              </span>
-
-              <HeroRotatingHeadline />
-            <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.65] text-muted-foreground">
-              Screeners, AI Desk, Options Flow, macro, credit intel, and Telegram alerts — built for Indian markets, with sources and timestamps on every number.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+        {/* HERO — Muse mockup: dark terminal + sourced-data story */}
+        <div className="relative overflow-hidden bg-[#050505] text-white">
+          <section className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-12 md:grid-cols-2 md:items-center md:gap-10 md:pb-20 md:pt-16 lg:gap-14">
+            <div className="max-w-xl md:max-w-none">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#e8845c]">
+                A free investing terminal for India
+              </p>
+              <h1 className="mt-5 text-[clamp(2.1rem,4.2vw,3.35rem)] font-semibold leading-[1.08] tracking-tight text-white">
+                See what the market is doing. Know where every number came from.
+              </h1>
+              <p className="mt-6 text-[17px] leading-[1.65] text-white/65">
+                Indian stocks, currencies, bonds, global markets, macro, company fundamentals, and AI research briefs —
+                connected in one view. In the live terminal, every figure is tagged with its source and fetch time.
+              </p>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               {hasAccess ? (
                 <Link
                   href="/Home"
@@ -392,13 +406,13 @@ export function LandingPage() {
                   </button>
                   <Link
                     href="/signup"
-                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                    className="rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/15"
                   >
                     Create free account
                   </Link>
                   <Link
                     href="/pricing"
-                    className="rounded-full border border-blue-600/30 bg-blue-600/10 px-6 py-3 text-[15px] font-medium text-blue-700 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-blue-600/15"
+                    className="rounded-full border border-[#e8845c]/40 bg-[#e8845c]/15 px-6 py-3 text-[15px] font-medium text-[#f5c4ae] shadow-[var(--shadow-sm)] transition hover:bg-[#e8845c]/25"
                   >
                     View plans
                   </Link>
@@ -413,25 +427,24 @@ export function LandingPage() {
                   </Link>
                   <Link
                     href="/pricing"
-                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
+                    className="rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/15"
                   >
                     Plans from ₹9
                   </Link>
                 </>
               )}
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-white/50">
               {guestAllowed
                 ? "Explore live data as a guest, or sign in for 5 free AI analyses/month. Day Pass and subscriptions unlock unlimited runs."
                 : "Sign in free — 5 AI Desk + Options Flow runs/month. Upgrade on /pricing when you need more."}
             </p>
 
-            {/* Quick Integration Chips */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <TelegramOneClickButton />
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <TelegramOneClickButton className="border-sky-400/35 text-sky-300 hover:border-sky-400 hover:bg-sky-500/15" />
               <Link
                 href="/connect/claude"
-                className="inline-flex items-center gap-2 rounded-full border border-amber-500/35 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 backdrop-blur-md transition-all hover:border-amber-500 hover:bg-amber-500/20 hover:scale-[1.02] shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-amber-400/35 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent px-4 py-2 text-xs font-bold text-amber-200 backdrop-blur-md transition-all hover:border-amber-400 hover:bg-amber-500/20 hover:scale-[1.02] shadow-sm"
               >
                 <div className="relative size-4 shrink-0 overflow-hidden rounded">
                   <Image
@@ -445,10 +458,21 @@ export function LandingPage() {
                 <span>Claude AI (MCP) · Connected</span>
               </Link>
             </div>
-          </div>
+            </div>
 
-          {/* Glass dashboard mockup */}
-          <div className="mock-dashboard relative mx-auto mt-16 max-w-4xl [perspective:1600px]">
+            <LandingHeroTerminalDemo />
+          </section>
+        </div>
+
+        {/* Portfolio preview — same interactive glass mock as before */}
+        <section className="relative px-5 pt-12 md:pt-16">
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Portfolio analytics</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+              Risk, attribution, and quant metrics in one desk
+            </h2>
+          </div>
+          <div className="mock-dashboard relative mx-auto max-w-4xl [perspective:1600px]">
             <div
               className="relative mx-auto rounded-3xl border border-white/70 bg-white/50 p-4 shadow-[0_30px_80px_-20px_rgba(30,58,138,0.35)] backdrop-blur-2xl sm:p-6"
               style={{ transform: "rotateX(8deg) rotateZ(-1deg)" }}
@@ -600,7 +624,6 @@ export function LandingPage() {
             </div>
           </div>
         </section>
-      </div>
 
         {/* TRUST STRIP */}
         <section aria-label="At a glance" className="mx-auto mt-16 max-w-6xl px-5">

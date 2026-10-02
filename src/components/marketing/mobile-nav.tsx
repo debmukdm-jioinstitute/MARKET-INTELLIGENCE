@@ -12,8 +12,12 @@ const EXPLORE_LINKS = [
   { label: "Intelligence", href: "/intelligence" },
 ];
 
-export function MobileNav() {
+export function MobileNav({ tone = "light" }: { tone?: "light" | "dark" }) {
   const [open, setOpen] = useState(false);
+  const menuBtnClass =
+    tone === "dark"
+      ? "-mr-1.5 inline-flex size-9 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10"
+      : "-mr-1.5 inline-flex size-9 items-center justify-center rounded-lg text-gray-700 transition hover:bg-muted";
 
   useEffect(() => {
     if (!open) return;
@@ -38,7 +42,7 @@ export function MobileNav() {
         onClick={() => setOpen(true)}
         aria-label="Open menu"
         aria-expanded={open}
-        className="-mr-1.5 inline-flex size-9 items-center justify-center rounded-lg text-gray-700 transition hover:bg-muted"
+        className={menuBtnClass}
       >
         <Menu className="size-5" />
       </button>
