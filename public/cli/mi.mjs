@@ -605,7 +605,6 @@ const FAVOURITES = [
   ["X", "Macro Stress Index", "get_stress_index"],
   ["B", "Daily brief", "get_daily_brief"],
   ["W", "Site-wide executive brief", "get_site_wide_brief"],
-  ["O", "Mutual fund intelligence & radar", "get_mutual_fund_intelligence"],
   ["P", "Promoter activity tracker & pledges", "get_promoter_activity_tracker"],
   ["D", "Credit rating degradation & watch", "get_credit_risk_intelligence"],
   ["L", "Retail sentiment engine (Reddit)", "get_retail_sentiment_engine"],
@@ -715,7 +714,7 @@ const HELP = `mi ${VERSION}: Market Intelligence terminal
   mi <tool> [key=value ...]   run any feature, e.g.
       mi get_option_chain underlying=NIFTY expiry=2026-10-06
       mi risk TCS        mi scenario brent=10 usdinr=2        mi ipos status=open
-  shortcuts: snapshot stress brief sitebrief funds radar overlap nfo broker promoters credit concall reddit offers scanner signals rbi yields health backtest betas risk scenario
+  shortcuts: snapshot stress brief sitebrief radar overlap nfo broker promoters credit concall reddit offers scanner signals rbi yields health backtest betas risk scenario
   flags: --json raw JSON   --all show every row
   mi update                   download the latest mi
   mi font [N|off|reset]       text size while mi runs (macOS Terminal.app), default 16
@@ -735,7 +734,6 @@ const ALIASES = {
   betas: "get_transmission_betas",
   risk: "get_security_risk",
   scenario: "run_scenario",
-  funds: "get_mutual_fund_intelligence",
   radar: "get_stock_accumulation_radar",
   overlap: "get_mutual_fund_overlap",
   nfo: "get_nfo_calendar",

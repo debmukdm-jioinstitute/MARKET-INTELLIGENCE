@@ -1,10 +1,3 @@
-import {
-  getAllMutualFunds,
-  getMutualFundById,
-  searchMutualFunds,
-  getFundsByCategory,
-} from "@/lib/funds/database";
-import { getLatestNavForFund } from "@/lib/funds/amfi-crawler";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import { getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
 import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
@@ -84,24 +77,6 @@ const empty = { type: "object", properties: {}, additionalProperties: false };
 let quotesCache: { data: Record<string, unknown>; timestamp: number } | null = null;
 let holidaysCache: { data: Record<string, unknown>; timestamp: number } | null = null;
 const underlyingKey = (label: string) => OPTION_UNDERLYINGS.find((u) => u.label.toUpperCase() === label.toUpperCase());
-
-// Mutual funds: only scheme identity + live AMFI NAV are served. Holdings, AUM, factor exposures and
-// accumulation radar have no verified feed and are reported unavailable, never estimated.
-const withLiveNav = async (f: {
-  id: string; name: string; amc: string; category: string; benchmark: string; amfiCode: string;
-}) => {
-  const live = await getLatestNavForFund(f.amfiCode).catch(() => null);
-  return {
-    id: f.id,
-    name: f.name,
-    amc: f.amc,
-    category: f.category,
-    benchmark: f.benchmark,
-    nav: live?.nav ?? null,
-    navDate: live?.date ?? null,
-    navStatus: live ? "LIVE" : "UNAVAILABLE",
-  };
-};
 
 export const SITE_TOOLS: Tool[] = [
   // ---- Markets ----
@@ -934,47 +909,6 @@ export const SITE_TOOLS: Tool[] = [
       await ensureSchema();
       const rows = await sql()`SELECT id, title, body, severity, created_at FROM app_updates WHERE published = true ORDER BY created_at DESC LIMIT 1`;
       return { update: rows[0] ?? null };
-    },
-  },
-  // ---- Mutual Funds & Smart Money ----
-  {
-    name: "get_mutual_fund_intelligence",
-    title: "Mutual fund intelligence",
-    category: "Funds",
-    description: "Search Indian mutual funds: scheme identity plus live NAV from AMFI. Holdings, AUM, and factor exposures are not available — no verified feed is connected.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "Search term e.g. Parag Parikh, HDFC, SBI" },
-        category: { type: "string", description: "Category e.g. Flexi Cap, Large Cap" },
-        fundId: { type: "string", description: "Exact fund id e.g. parag-parikh-flexi-cap" },
-      },
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const parsed = z.object({
-        query: z.string().optional(),
-        category: z.string().optional(),
-        fundId: z.string().optional(),
-      }).parse(a ?? {});
-
-      if (parsed.fundId) {
-        const f = getMutualFundById(parsed.fundId);
-        return f ? { fund: await withLiveNav(f) } : { error: "Fund " + parsed.fundId + " not found" };
-      }
-      if (parsed.category) {
-        const funds = getFundsByCategory(parsed.category);
-        return { count: funds.length, category: parsed.category, funds: await Promise.all(funds.map(withLiveNav)) };
-      }
-      if (parsed.query) {
-        const funds = searchMutualFunds(parsed.query);
-        return { count: funds.length, query: parsed.query, funds: await Promise.all(funds.map(withLiveNav)) };
-      }
-      const all = getAllMutualFunds();
-      return {
-        totalFunds: all.length,
-        funds: await Promise.all(all.map(withLiveNav)),
-      };
     },
   },
   {

@@ -1,6 +1,4 @@
 import { mapResearchRow } from "@/lib/research/api-map";
-import { getAllMutualFunds, searchMutualFunds } from "@/lib/funds/database";
-import { getLatestNavForFund } from "@/lib/funds/amfi-crawler";
 import { TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/database";
 import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
 import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
@@ -272,35 +270,6 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
         return {
           dataStatus: "UNAVAILABLE",
           message: "No verified live feed for rating-agency actions is connected yet. Check agency press-release portals directly.",
-        };
-      },
-    }),
-    get_mutual_fund_intelligence: tool({
-      description:
-        "Mutual Fund lookup: scheme identity plus live NAV from AMFI. Holdings, accumulation radar, and NFOs are not available — no verified feed is connected.",
-      inputSchema: z.object({
-        action: z.enum(["search"]).default("search").describe("What fund intelligence to fetch"),
-        query: z.string().optional().describe("Search term if searching for funds"),
-      }),
-      execute: async ({ query }) => {
-        const funds = query ? searchMutualFunds(query) : getAllMutualFunds();
-        const withNav = await Promise.all(
-          funds.slice(0, 6).map(async (f) => {
-            const live = await getLatestNavForFund(f.amfiCode).catch(() => null);
-            return {
-              id: f.id,
-              name: f.name,
-              category: f.category,
-              nav: live?.nav ?? null,
-              navDate: live?.date ?? null,
-              navStatus: live ? "LIVE" : "UNAVAILABLE",
-            };
-          })
-        );
-        return {
-          type: "funds_list",
-          count: funds.length,
-          funds: withNav,
         };
       },
     }),

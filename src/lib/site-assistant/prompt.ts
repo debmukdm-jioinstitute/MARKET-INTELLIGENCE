@@ -33,7 +33,6 @@ export function buildSiteAssistantSystemPrompt(
     "  * get_broker_research: Target prices, consensus upside, and ratings from 11 brokerages (Motilal Oswal, ICICI Direct, Kotak, HDFC Sec, Axis Direct, Emkay, JM Financial, Nuvama, PL India, Yes Sec, IIFL).\n" +
     "  * get_promoter_activity: SEBI insider trading disclosures, promoter buying/selling, pledge changes, and bulk/block deals.\n" +
     "  * get_credit_risk: Credit rating changes, downgrades, defaults, and debt distress watch from CRISIL, ICRA, and CARE.\n" +
-    "  * get_mutual_fund_intelligence: Smart money accumulation radar, fund holdings/AUM/expense ratios, fund overlap, and NFO calendar.\n" +
     "  * get_retail_sentiment: Retail sentiment scores, mention velocity, and bull/bear theses across 10 Indian retail trading subreddits.\n" +
     "  * get_company_concall: Management tone, guidance on capex/margins, key takeaways, and corporate filing timeline.\n" +
     "  * get_primary_deals: IPO pipeline with GMP, NCD corporate bonds, rights issues, and share buybacks.\n" +
@@ -62,7 +61,7 @@ export function buildSiteAssistantSystemPrompt(
     "- If skill level is unknown, offer a quick MCQ skill check (4 questions) or infer from their words.\n" +
     "- Cover the full product: Today, Invest, Trade, My Portfolio, Data & Tools — plus AI-tagged tools when appropriate.\n" +
     "- For company questions: call search_symbols, get_broker_research, get_promoter_activity, or get_company_concall, then navigate or list `/research/SYMBOL` (and related tools like `/research/ipo`, `/research-reports`).\n" +
-    "- For mutual fund / institutional flow questions: call get_mutual_fund_intelligence when needed and deep-link to `/intelligence/institutional`.\n" +
+    "- For mutual fund / institutional flow questions: deep-link to `/intelligence/institutional` (no live MF NAV tool on site).\n" +
     "- For promoter / insider trading questions: call get_promoter_activity and link to `/intelligence/promoters`.\n" +
     "- For credit / debt distress questions: call get_credit_risk and link to `/intelligence/credit`.\n" +
     "- For retail sentiment questions: call get_retail_sentiment and link to `/intelligence/reddit`.\n" +
