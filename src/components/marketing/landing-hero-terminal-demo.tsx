@@ -64,31 +64,31 @@ export function LandingHeroTerminalDemo() {
 
   return (
     <div className="landing-terminal-demo relative w-full max-w-xl lg:max-w-none lg:justify-self-end">
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#121212] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)]">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white/80 shadow-[0_30px_80px_-24px_rgba(30,58,138,0.28)] backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-gray-200/80 bg-white/90 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-[#ff5f57]" />
             <span className="size-2.5 rounded-full bg-[#febc2e]" />
             <span className="size-2.5 rounded-full bg-[#28c840]" />
           </div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/70">{title}</p>
-          <span className="rounded border border-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/50">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-gray-600">{title}</p>
+          <span className="rounded border border-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
             Demo
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-px bg-white/10">
+        <div className="grid grid-cols-3 gap-px bg-gray-200/80">
           <button
             type="button"
             onClick={() => setView("market")}
             className={cn(
-              "bg-[#121212] px-3 py-4 text-left transition hover:bg-white/[0.04]",
-              view === "market" && "ring-1 ring-inset ring-[#e8845c]/50",
+              "bg-white/95 px-3 py-4 text-left transition hover:bg-gray-50",
+              view === "market" && "ring-1 ring-inset ring-[#e8845c]/55",
             )}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-white/45">Index</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums text-white">{pulse.index.toLocaleString("en-IN")}</p>
-            <p className={cn("mt-0.5 text-xs tabular-nums", pulse.indexPct >= 0 ? "text-emerald-400" : "text-rose-400")}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Index</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-gray-900">{pulse.index.toLocaleString("en-IN")}</p>
+            <p className={cn("mt-0.5 text-xs tabular-nums", pulse.indexPct >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {pulse.indexPct >= 0 ? "+" : ""}
               {pulse.indexPct.toFixed(2)}% today
             </p>
@@ -97,34 +97,34 @@ export function LandingHeroTerminalDemo() {
             type="button"
             onClick={() => setView("vix")}
             className={cn(
-              "bg-[#121212] px-3 py-4 text-left transition hover:bg-white/[0.04]",
-              view === "vix" && "ring-1 ring-inset ring-[#e8845c]/50",
+              "bg-white/95 px-3 py-4 text-left transition hover:bg-gray-50",
+              view === "vix" && "ring-1 ring-inset ring-[#e8845c]/55",
             )}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-white/45">India VIX</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums text-white">{pulse.vix.toFixed(2)}</p>
-            <p className="mt-0.5 text-xs text-white/55">{vixMood}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">India VIX</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-gray-900">{pulse.vix.toFixed(2)}</p>
+            <p className="mt-0.5 text-xs text-gray-600">{vixMood}</p>
           </button>
           <button
             type="button"
             onClick={() => setView("flows")}
             className={cn(
-              "bg-[#121212] px-3 py-4 text-left transition hover:bg-white/[0.04]",
-              view === "flows" && "ring-1 ring-inset ring-[#e8845c]/50",
+              "bg-white/95 px-3 py-4 text-left transition hover:bg-gray-50",
+              view === "flows" && "ring-1 ring-inset ring-[#e8845c]/55",
             )}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-white/45">FII / DII</p>
-            <p className="mt-1 text-lg font-semibold text-white">{pulse.fiiLabel}</p>
-            <p className="mt-0.5 text-xs text-white/55">Cash market</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">FII / DII</p>
+            <p className="mt-1 text-lg font-semibold text-gray-900">{pulse.fiiLabel}</p>
+            <p className="mt-0.5 text-xs text-gray-600">Cash market</p>
           </button>
         </div>
 
-        <div className="relative h-44 border-t border-white/10 bg-[#0c0c0c] sm:h-52">
+        <div className="relative h-44 border-t border-gray-200/80 bg-gray-50/90 sm:h-52">
           <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 400 80">
             {[20, 40, 60].map((y) => (
-              <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+              <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="rgba(15,23,42,0.07)" strokeWidth="1" />
             ))}
-            <path d={`${chartPath} L 400 80 L 0 80 Z`} fill="rgba(232,132,92,0.12)" />
+            <path d={`${chartPath} L 400 80 L 0 80 Z`} fill="rgba(232,132,92,0.15)" />
             <path
               d={chartPath}
               fill="none"
@@ -134,8 +134,8 @@ export function LandingHeroTerminalDemo() {
               strokeLinejoin="round"
             />
           </svg>
-          <p className="absolute bottom-3 left-4 text-[10px] text-white/40">Source: NSE · sample interface</p>
-          <p className="absolute bottom-3 right-4 text-[10px] tabular-nums text-white/40">Fetched {istFetchedLabel(now)} IST</p>
+          <p className="absolute bottom-3 left-4 text-[10px] text-gray-500">Source: NSE · sample interface</p>
+          <p className="absolute bottom-3 right-4 text-[10px] tabular-nums text-gray-500">Fetched {istFetchedLabel(now)} IST</p>
         </div>
       </div>
     </div>

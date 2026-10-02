@@ -289,8 +289,8 @@ export function LandingPage() {
       </div>
 
       <div className="relative z-10">
-        <div className="border-b border-gray-200 bg-white py-2.5 text-center">
-          <p className="text-sm text-gray-700">
+        <div className="border-b border-white/60 bg-white/50 py-2.5 text-center backdrop-blur-xl">
+          <p className="text-sm text-muted-foreground">
             Free to start · No card needed ·{" "}
             <Link href="/pricing" className="font-medium text-gray-900 hover:underline underline-offset-4">
               See plans →
@@ -298,32 +298,40 @@ export function LandingPage() {
           </p>
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050505]/90 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-white/50 bg-white/70 backdrop-blur-2xl backdrop-saturate-150">
           <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-2 px-4 sm:px-5">
-            <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-              <img src="/logo.png" alt="Market Intelligence" className="h-10 sm:h-12 w-auto brightness-0 invert" />
-            </Link>
-            <nav className="hidden items-center gap-6 text-sm font-medium text-white/70 md:flex">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/55">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="flex min-w-0 items-center gap-4 md:gap-6">
+              <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
+                <img src="/logo.png" alt="Market Intelligence" className="h-10 w-auto mix-blend-multiply sm:h-12" />
+              </Link>
+              <span className="hidden items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500 sm:inline-flex">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Sourced data
               </span>
-              <Link href="/research" className="transition hover:text-white">
+            </div>
+            <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
+              <Link href="/research" className="transition hover:text-gray-900">
                 Research
               </Link>
-              <Link href="/markets/india" className="transition hover:text-white">
+              <Link href="/markets/india" className="transition hover:text-gray-900">
                 Markets
               </Link>
-              <Link href="/portfolio" className="transition hover:text-white">
+              <Link href="/portfolio" className="transition hover:text-gray-900">
                 Portfolio
               </Link>
               <MegaMenu />
-              <a href="#integrations" className="transition hover:text-white">
+              <a href="#integrations" className="transition hover:text-gray-900">
                 Integrations
               </a>
-              <a href="#pricing" className="transition hover:text-white">
+              <a href="#coverage" className="transition hover:text-gray-900">
+                Data coverage
+              </a>
+              <a href="#pricing" className="transition hover:text-gray-900">
                 Pricing
               </a>
+              <Link href="/methodology" className="transition hover:text-gray-900">
+                Methodology
+              </Link>
             </nav>
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {hasAccess ? (
@@ -338,7 +346,7 @@ export function LandingPage() {
                 <>
                   <Link
                     href="/login"
-                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-white/70 transition hover:text-white sm:px-4"
+                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
                   >
                     Sign in
                   </Link>
@@ -352,7 +360,7 @@ export function LandingPage() {
                   ) : (
                     <Link
                       href="/signup"
-                      className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-white/70 transition hover:text-white sm:px-4"
+                      className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-gray-900 sm:px-4"
                     >
                       Sign up
                     </Link>
@@ -361,29 +369,34 @@ export function LandingPage() {
                     <button
                       type="button"
                       onClick={() => void enterGuest().then(() => router.push("/Home"))}
-                      className="whitespace-nowrap rounded-full bg-[#e8845c] px-3 py-1.5 text-sm font-medium text-[#050505] shadow-[var(--shadow-sm)] transition hover:bg-[#f0956c] sm:px-4"
+                      className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-[var(--shadow-sm)] transition hover:bg-blue-600/90 sm:px-4"
                     >
                       Open demo
                     </button>
                   ) : null}
                 </>
               )}
-              <MobileNav tone="dark" />
+              <MobileNav />
             </div>
           </div>
         </header>
 
-        {/* HERO — Muse mockup: dark terminal + sourced-data story */}
-        <div className="relative overflow-hidden bg-[#050505] text-white">
+        {/* HERO — Muse mockup layout (light) */}
+        <div className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="hero-mesh-blob hero-mesh-blob-1" />
+            <div className="hero-mesh-blob hero-mesh-blob-2" />
+            <div className="hero-mesh-blob hero-mesh-blob-3" />
+          </div>
           <section className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-12 md:grid-cols-2 md:items-center md:gap-10 md:pb-20 md:pt-16 lg:gap-14">
             <div className="max-w-xl md:max-w-none">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#e8845c]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d9734a]">
                 A free investing terminal for India
               </p>
-              <h1 className="mt-5 text-[clamp(2.1rem,4.2vw,3.35rem)] font-semibold leading-[1.08] tracking-tight text-white">
+              <h1 className="mt-5 text-[clamp(2.1rem,4.2vw,3.35rem)] font-semibold leading-[1.08] tracking-tight text-gray-900">
                 See what the market is doing. Know where every number came from.
               </h1>
-              <p className="mt-6 text-[17px] leading-[1.65] text-white/65">
+              <p className="mt-6 text-[17px] leading-[1.65] text-muted-foreground">
                 Indian stocks, currencies, bonds, global markets, macro, company fundamentals, and AI research briefs —
                 connected in one view. In the live terminal, every figure is tagged with its source and fetch time.
               </p>
@@ -406,13 +419,13 @@ export function LandingPage() {
                   </button>
                   <Link
                     href="/signup"
-                    className="rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/15"
+                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
                   >
                     Create free account
                   </Link>
                   <Link
                     href="/pricing"
-                    className="rounded-full border border-[#e8845c]/40 bg-[#e8845c]/15 px-6 py-3 text-[15px] font-medium text-[#f5c4ae] shadow-[var(--shadow-sm)] transition hover:bg-[#e8845c]/25"
+                    className="rounded-full border border-[#e8845c]/35 bg-[#e8845c]/10 px-6 py-3 text-[15px] font-medium text-[#b85a34] shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-[#e8845c]/15"
                   >
                     View plans
                   </Link>
@@ -427,24 +440,24 @@ export function LandingPage() {
                   </Link>
                   <Link
                     href="/pricing"
-                    className="rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[15px] font-medium text-white shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/15"
+                    className="rounded-full border border-white/70 bg-white/50 px-6 py-3 text-[15px] font-medium text-gray-900 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:bg-white/80"
                   >
                     Plans from ₹9
                   </Link>
                 </>
               )}
             </div>
-            <p className="mt-4 text-sm text-white/50">
+            <p className="mt-4 text-sm text-muted-foreground">
               {guestAllowed
                 ? "Explore live data as a guest, or sign in for 5 free AI analyses/month. Day Pass and subscriptions unlock unlimited runs."
                 : "Sign in free — 5 AI Desk + Options Flow runs/month. Upgrade on /pricing when you need more."}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <TelegramOneClickButton className="border-sky-400/35 text-sky-300 hover:border-sky-400 hover:bg-sky-500/15" />
+              <TelegramOneClickButton />
               <Link
                 href="/connect/claude"
-                className="inline-flex items-center gap-2 rounded-full border border-amber-400/35 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent px-4 py-2 text-xs font-bold text-amber-200 backdrop-blur-md transition-all hover:border-amber-400 hover:bg-amber-500/20 hover:scale-[1.02] shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-amber-500/35 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent px-4 py-2 text-xs font-bold text-amber-800 backdrop-blur-md transition-all hover:border-amber-500 hover:bg-amber-500/20 hover:scale-[1.02] shadow-sm"
               >
                 <div className="relative size-4 shrink-0 overflow-hidden rounded">
                   <Image
