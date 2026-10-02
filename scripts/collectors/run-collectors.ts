@@ -101,33 +101,31 @@ async function main() {
     }),
   );
 
-  const payload = shapeIngestPayload(runs);
-  console.log(
-    JSON.stringify({
-      level: "info",
-      msg: "posting to ingest",
-      series: payload.series.length,
-      ok: payload.ok,
-      failures: payload.failures.map((f) => f.id),
-    }),
-  );
-
-  let res: Response;
-  try {
-    res = await feedFetch(ingestUrl, {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${secret}` },
-      body: JSON.stringify(payload),
-      timeoutMs: 30_000,
-      attempts: 3,
-    });
-  } catch (e) {
-    console.error(JSON.stringify({ level: "error", msg: "ingest POST failed", error: e instanceof Error ? e.message : String(e) }));
-    process.exit(1);
+  // One POST per collector: large event-row batches (shareholding, ratings, sentiment) must not share a single
+  // request body / serverless time limit, and one failed POST must not discard the others' results.
+  const payloads = runs.map((r) => shapeIngestPayload([r]));
+  const payload = { ok: payloads.flatMap((p) => p.ok), failures: payloads.flatMap((p) => p.failures), series: payloads.flatMap((p) => p.series) };
+  let postFailed = false;
+  for (const p of payloads) {
+    const label = p.ok[0] ?? p.failures[0]?.id ?? "?";
+    console.log(JSON.stringify({ level: "info", msg: "posting to ingest", collector: label, series: p.series.length, failures: p.failures.map((f) => f.id) }));
+    try {
+      const res = await feedFetch(ingestUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${secret}` },
+        body: JSON.stringify(p),
+        timeoutMs: 90_000,
+        attempts: 3,
+      });
+      const text = await res.text().catch(() => "");
+      console.log(JSON.stringify({ level: res.ok ? "info" : "error", msg: "ingest response", collector: label, status: res.status, body: text.slice(0, 1500) }));
+      if (!res.ok) postFailed = true;
+    } catch (e) {
+      postFailed = true;
+      console.error(JSON.stringify({ level: "error", msg: "ingest POST failed", collector: label, error: e instanceof Error ? e.message : String(e) }));
+    }
   }
-  const text = await res.text().catch(() => "");
-  console.log(JSON.stringify({ level: "info", msg: "ingest response", status: res.status, body: text.slice(0, 2000) }));
-  if (!res.ok) process.exit(1);
+  if (postFailed && payload.ok.length === 0) process.exit(1);
 
   // Twice-daily Telegram market-data briefing (06:00 + 18:00 IST, right after
   // this collector run). Best-effort: a briefing failure must not fail the
@@ -157,6 +155,7 @@ async function main() {
     process.exit(1);
   }
   console.log(JSON.stringify({ level: "info", msg: "done", succeeded: payload.ok.length, failed: payload.failures.length }));
+  if (postFailed) process.exit(1); // every collector was attempted; the job still goes red so a lost POST is visible
 }
 
 main().catch((e) => {

@@ -21,6 +21,8 @@ export type TableSpec = {
   onConflict: "nothing" | "update";
   /** Replaces the generated upsert (needed when a row must be joined to another table). $1 is the jsonb row array, keyed snake_case. */
   customSql?: string;
+  /** Runs once after the batch is written; $1 is the earliest `day` in the batch (date). Used to derive window statistics in SQL. */
+  afterSql?: string;
   /** Post-clean hook: recompute derived/untrusted fields; return null to drop the row. */
   normalize?: (row: Record<string, unknown>) => Record<string, unknown> | null;
 };
@@ -267,6 +269,53 @@ export const TABLES: TableSpec[] = [
       "SELECT i.id, x.snapshot_at, x.qib_x, x.nii_x, x.rii_x, x.total_x " +
       "FROM jsonb_to_recordset($1::jsonb) AS x(company text, snapshot_at timestamptz, qib_x numeric, nii_x numeric, rii_x numeric, total_x numeric) " +
       "JOIN ipos i ON i.company = x.company ON CONFLICT (ipo_id, snapshot_at) DO NOTHING RETURNING 1 AS ok",
+  },
+  {
+    name: "trend_series",
+    conflict: ["keyword", "fetched_at"],
+    onConflict: "nothing", // one snapshot per keyword per fetch
+    cols: [
+      { f: "keyword", k: "text", req: true }, // NSE symbol (or a market topic key such as NIFTY50)
+      { f: "topicId", k: "text" }, // the exact search term sent to Google Trends
+      { f: "fetchedAt", k: "ts", req: true },
+      { f: "series", k: "json", req: true },
+      { f: "risingQueries", k: "textarr" },
+    ],
+    normalize: (r) => ({ ...r, keyword: String(r.keyword).toUpperCase() }),
+  },
+  {
+    name: "sentiment_daily",
+    conflict: ["symbol", "day", "source"],
+    onConflict: "update",
+    cols: [
+      { f: "symbol", k: "text", req: true },
+      { f: "day", k: "date", req: true },
+      { f: "source", k: "text", req: true },
+      { f: "mentions", k: "int", req: true },
+      { f: "sentimentMean", k: "num" },
+      { f: "bullishShare", k: "num" },
+      { f: "topics", k: "textarr" },
+    ],
+    normalize: (r) => {
+      const m = typeof r.sentimentMean === "number" && r.sentimentMean >= -1 && r.sentimentMean <= 1 ? r.sentimentMean : null;
+      const b = typeof r.bullishShare === "number" && r.bullishShare >= 0 && r.bullishShare <= 1 ? r.bullishShare : null;
+      return ["reddit", "telegram", "youtube", "gdelt"].includes(String(r.source)) && Number(r.mentions) >= 0 ? { ...r, symbol: String(r.symbol).toUpperCase(), sentimentMean: m, bullishShare: b } : null;
+    },
+    // volume_z: today's mentions vs the previous 30 days (needs >= 7 days of history, else NULL — never guessed).
+    // buzzing: volume_z > 2 AND |sentiment| rising versus the previous day.
+    afterSql: `
+      WITH h AS (
+        SELECT id, day, mentions, sentiment_mean,
+               avg(mentions) OVER w AS mu, stddev_samp(mentions) OVER w AS sd, count(*) OVER w AS n,
+               lag(sentiment_mean) OVER (PARTITION BY symbol, source ORDER BY day) AS prev_sent
+        FROM sentiment_daily WHERE day >= ($1::date - 31)
+        WINDOW w AS (PARTITION BY symbol, source ORDER BY day ROWS BETWEEN 30 PRECEDING AND 1 PRECEDING)
+      )
+      UPDATE sentiment_daily s SET
+        volume_z = CASE WHEN h.n >= 7 AND h.sd > 0 THEN round(((s.mentions - h.mu) / h.sd)::numeric, 2) END,
+        sentiment_velocity = CASE WHEN h.prev_sent IS NOT NULL AND s.sentiment_mean IS NOT NULL THEN round((s.sentiment_mean - h.prev_sent)::numeric, 3) END,
+        buzzing = COALESCE(h.n >= 7 AND h.sd > 0 AND (s.mentions - h.mu) / h.sd > 2 AND s.sentiment_mean IS NOT NULL AND h.prev_sent IS NOT NULL AND abs(s.sentiment_mean) > abs(h.prev_sent), false)
+      FROM h WHERE h.id = s.id AND s.day >= $1::date`,
   },
 ];
 

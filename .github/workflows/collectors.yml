@@ -14,9 +14,12 @@ name: collectors-external
 #   SITE_URL     production origin, e.g. https://getmarketintelligence.in
 #   CRON_SECRET  bearer token for /api/collector/ingest
 #                (must match the CRON_SECRET env var on the Vercel project)
-# OPTIONAL SECRET:
-#   HF_TOKEN     Hugging Face token; the broker-calls collector uses it for FinBERT-tone
-#                scoring. Without it calls are still collected, with tone left blank.
+# OPTIONAL SECRETS (each collector degrades honestly without its key — see src/lib/collector/):
+#   HF_TOKEN         Hugging Face token: broker-call tone, filing taxonomy, concall tone,
+#                    sentiment models. Without it those fields stay empty (never faked).
+#   APIFY_TOKEN      Google Trends via the Apify actor. Without it the google-trends
+#                    collector records the failure "APIFY_TOKEN missing — Trends skipped".
+#   YOUTUBE_API_KEY  YouTube Data API v3 (comments). Without it YouTube is skipped.
 #
 # Schedule is staggered away from collect.yml's :00 3-hour ticks to smooth
 # upstream load. Manual runs: Actions → collectors-external → Run workflow,
@@ -37,7 +40,7 @@ on:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35 # heavy per-symbol collectors (shareholding, ratings, sentiment) run in parallel
     steps:
       - name: Check required secrets
         env:
@@ -62,6 +65,8 @@ jobs:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           if [ -n "${{ inputs.only }}" ]; then
             npx --yes tsx@4.20.5 scripts/collectors/run-collectors.ts --only="${{ inputs.only }}"

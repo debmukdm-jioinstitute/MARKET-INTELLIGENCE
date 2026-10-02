@@ -131,6 +131,10 @@ export async function saveRecords(batch: RecordBatch): Promise<{ inserted: numbe
     const res = (await db.query(text, [toRecordsetJson(rows.slice(i, i + 200))])) as unknown[];
     inserted += res.length;
   }
+  if (spec.afterSql && rows.length) {
+    const minDay = rows.map((r) => String(r.day)).sort()[0];
+    await db.query(spec.afterSql, [minDay]);
+  }
   const owner = OWNER[spec.name];
   if (batch.watermark && owner) await setWatermark(owner, batch.watermark);
   for (const [k, v] of Object.entries(batch.watermarks ?? {})) await setWatermark(k, v);

@@ -629,6 +629,40 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_ipo_subscription_snapshots_ipo ON ipo_subscription_snapshots (ipo_id, snapshot_at)`;
 
+      // Google Trends (India) interest-over-time snapshots: 0-100 relative interest, NOT search volume.
+      await db`
+        CREATE TABLE IF NOT EXISTS trend_series (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          keyword text NOT NULL,
+          topic_id text,
+          fetched_at timestamptz NOT NULL DEFAULT now(),
+          series jsonb,
+          rising_queries text[],
+          UNIQUE (keyword, fetched_at)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_trend_series_keyword_fetched ON trend_series (keyword, fetched_at DESC)`;
+
+      // Daily social/news sentiment aggregates per ticker and source (no raw posts are stored).
+      await db`
+        CREATE TABLE IF NOT EXISTS sentiment_daily (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          symbol text NOT NULL,
+          day date NOT NULL,
+          source text NOT NULL,
+          mentions int,
+          volume_z numeric,
+          sentiment_mean numeric,
+          sentiment_velocity numeric,
+          buzzing boolean,
+          bullish_share numeric,
+          topics text[],
+          created_at timestamptz NOT NULL DEFAULT now(),
+          UNIQUE (symbol, day, source)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_sentiment_daily_symbol_day ON sentiment_daily (symbol, day DESC)`;
+
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
