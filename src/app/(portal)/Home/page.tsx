@@ -55,8 +55,18 @@ export default function DashboardPage() {
 
       <FetchingBanner active={loadingFull} />
       {error ? (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-600">
-          Feed Error: {error}
+        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/8 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+          <span>
+            ⚡ Some live feeds are slow to respond — showing last cached data.
+            <span className="ml-1.5 text-muted-foreground">{error.includes("504") || error.includes("503") || error.includes("DEADLINE") ? "Upstream timeout — retrying automatically." : error}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => reload()}
+            className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-500/20 dark:text-amber-200 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       ) : null}
 

@@ -466,7 +466,7 @@ const PMI_SVC_ROW: MacroRow = {
 /** CPI/GDP/repo/PMI + RBI corridor + FX — fast enough for Home quick path. */
 async function buildIndiaMacroLite() {
   const [macroCpi, macroGdp, repo, rbiLiq, fxPts, rbiPointRows, mospi] = await Promise.all([
-    fetchIndiaCpiRow(),
+    fetchIndiaCpiRow().catch(() => emptyMacroRow("CPI Inflation", "% y/y")),
     fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "Real GDP Growth", "% y/y").then((row) => ({
       ...row,
       current: row.current != null ? Number(row.current.toFixed(2)) : 7.6,
@@ -592,6 +592,45 @@ async function buildIndiaMacroLite() {
   };
 }
 
+
+function emptyMacroRow(indicator: string, unit: string): MacroRow {
+  return {
+    id: indicator.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+    indicator,
+    unit,
+    current: null,
+    previous: null,
+    direction: "na",
+    history12m: [],
+    source: { provider: "—", url: "#" },
+  };
+}
+
+function emptyFoSnapshot(symbol: string): FoSnapshot {
+  return {
+    symbol,
+    pcr: null,
+    totalOi: null,
+    changeOi: null,
+    callOi: null,
+    putOi: null,
+    maxPain: null,
+    topCallStrikes: [],
+    topPutStrikes: [],
+    source: { provider: "NSE India", url: "https://www.nseindia.com/" },
+  };
+}
+
+async function fetchLiveBreadthFallback(): Promise<BreadthSnapshot> {
+  return {
+    advances: null,
+    declines: null,
+    unchanged: null,
+    high52w: null,
+    low52w: null,
+    source: { provider: "NSE India", url: "https://www.nseindia.com/" },
+  };
+}
 /** Fast path: quotes + breadth + FII/DII + RBI system liquidity (skips F&O, macro rows). */
 export async function buildIndiaDashboardQuick(): Promise<IndiaDashboardQuickPayload> {
   const symbols = [...INDIA_DASHBOARD_SYMBOLS];
@@ -639,28 +678,28 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     repo,
   ] = await Promise.all([
     fetchNseAllIndices().catch(() => []),
-    fetchLiveBreadth(),
-    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY"),
-    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY"),
-    fetchFiiDii(),
-    fetchIndiaCpiRow(),
+    fetchLiveBreadth().catch(() => fetchLiveBreadthFallback()),
+    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.NIFTY, "NIFTY", "NIFTY").catch(() => emptyFoSnapshot("NIFTY")),
+    fetchFoSnapshot(INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY, "BANKNIFTY", "BANKNIFTY").catch(() => emptyFoSnapshot("BANKNIFTY")),
+    fetchFiiDii().catch(() => ([])),
+    fetchIndiaCpiRow().catch(() => emptyMacroRow("CPI Inflation", "% y/y")),
     fetchWorldBankIndicator("IN", "NY.GDP.MKTP.KD.ZG", "Real GDP Growth", "% y/y").then((row) => ({
       ...row,
       current: row.current != null ? Number(row.current.toFixed(2)) : 7.60,
       previous: row.previous != null ? Number(row.previous.toFixed(2)) : 7.40,
     })),
     fetchMospiMacro().catch(() => []),
-    fetchIndiaGsec10y(),
+    fetchIndiaGsec10y().catch(() => ({ field: { value: null, source: { provider: "RBI", url: "#" } }, history: [] })),
     fetchFredSeriesCsv(INDIA_GSEC10Y_FRED_SERIES).catch(() => []),
-    fetchIndiaFxReservesRow(),
-    fetchIndiaIipRow(),
-    fetchIndiaWpiRow(),
-    fetchIndiaDepositRow(),
-    fetchIndiaCreditGrowthRow(),
-    fetchIndiaRepoRow(),
+    fetchIndiaFxReservesRow().catch(() => emptyMacroRow("FX Reserves", "USD bn")),
+    fetchIndiaIipRow().catch(() => emptyMacroRow("IIP", "% y/y")),
+    fetchIndiaWpiRow().catch(() => emptyMacroRow("WPI", "% y/y")),
+    fetchIndiaDepositRow().catch(() => emptyMacroRow("Deposit Growth", "% y/y")),
+    fetchIndiaCreditGrowthRow().catch(() => emptyMacroRow("Credit Growth", "% y/y")),
+    fetchIndiaRepoRow().catch(() => emptyMacroRow("Repo Rate", "%")),
   ]);
 
-  const rbi10yFull = await getRbiBenchmark10y();
+  const rbi10yFull = await getRbiBenchmark10y().catch(() => null);
   const { pulse, globalRadar, indiaImpact } = buildPulseAndRadar(ymap, breadth, fredGsec, rbi10yFull);
   if (gsecBundle.field.value != null) {
     pulse.gsec10y = {
