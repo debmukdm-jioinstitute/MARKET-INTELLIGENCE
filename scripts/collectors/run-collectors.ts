@@ -39,22 +39,24 @@ function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([p, timeout]).finally(() => clearTimeout(t!));
 }
 
-/** Delta cursor from the site (never the DB directly). Unreachable → null → full window; unique keys still dedup. */
+/** Delta cursors from the site (never the DB directly). Unreachable → empty → full window; unique keys still dedup. */
 function httpContext(site: string, secret: string): CollectorContext {
+  const get = async (qs: string): Promise<Record<string, unknown> | null> => {
+    try {
+      const res = await feedFetch(`${site}/api/collector/watermark?${qs}`, { headers: { authorization: `Bearer ${secret}` }, timeoutMs: 15_000, attempts: 2 });
+      return res.ok ? ((await res.json()) as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  };
   return {
     watermark: async (id) => {
-      try {
-        const res = await feedFetch(`${site}/api/collector/watermark?id=${encodeURIComponent(id)}`, {
-          headers: { authorization: `Bearer ${secret}` },
-          timeoutMs: 15_000,
-          attempts: 2,
-        });
-        if (!res.ok) return null;
-        const j = (await res.json()) as { watermark?: string | null };
-        return j.watermark ?? null;
-      } catch {
-        return null;
-      }
+      const j = await get(`id=${encodeURIComponent(id)}`);
+      return typeof j?.watermark === "string" ? j.watermark : null;
+    },
+    watermarks: async (prefix) => {
+      const j = await get(`prefix=${encodeURIComponent(prefix)}`);
+      return (j?.watermarks as Record<string, string> | undefined) ?? {};
     },
   };
 }

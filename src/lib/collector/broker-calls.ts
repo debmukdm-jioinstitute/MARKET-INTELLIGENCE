@@ -1,7 +1,6 @@
 import { getNseEquityUniverse } from "@/lib/feeds/india/universe";
 import { hfInfer } from "@/lib/hf/client";
 import { getText, today } from "./http";
-import type { BrokerCallRow } from "./records";
 import type { Collector, CollectorContext, SeriesResult } from "./types";
 
 /**
@@ -32,6 +31,18 @@ const BROWSER_HEADERS: Record<string, string> = {
 const TONE_BUDGET_MS = 60_000;
 const MAX_PAGES_FIRST_RUN = 6;
 const MAX_PAGES_DELTA = 3;
+
+export type BrokerCallRow = {
+  symbol: string | null;
+  company: string;
+  broker: string;
+  action: string;
+  targetPrice: number | null;
+  reportDate: string; // YYYY-MM-DD
+  tone: "positive" | "negative" | "neutral" | null;
+  toneScore: number | null;
+  sourceUrl: string;
+};
 
 export type ParsedCall = Omit<BrokerCallRow, "symbol" | "tone" | "toneScore"> & { articleId: number; summary: string };
 

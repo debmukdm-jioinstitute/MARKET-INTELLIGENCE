@@ -2,6 +2,7 @@ import { cronUnauthorized } from "@/lib/api-guard";
 import { hasDatabase } from "@/lib/db";
 import { clearFailure, markFailure, saveSeries } from "@/lib/collector/store";
 import { saveRecords } from "@/lib/collector/records";
+import { batchesOf } from "@/lib/collector/types";
 import { validateIngestBody } from "@/lib/collector/ingest";
 import { NextResponse } from "next/server";
 
@@ -50,9 +51,9 @@ export async function POST(req: Request) {
     try {
       points += await saveSeries(s);
       saved.push(s.id);
-      if (s.records) {
-        const r = await saveRecords(s.records);
-        records.push({ table: s.records.table, received: s.records.rows.length, ...r });
+      for (const b of batchesOf(s)) {
+        const r = await saveRecords(b);
+        records.push({ table: b.table, received: b.rows.length, ...r });
       }
     } catch (e) {
       rejected.push({ id: s.id, reason: e instanceof Error ? e.message : "save failed" });

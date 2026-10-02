@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildSymbolResolver, canonicalBroker, parseBrokerFeed, parseHeadline, parseReportDate } from "@/lib/collector/broker-calls";
 import { categorize, parseNseSortDate, selectMaterial } from "@/lib/collector/announcements";
-import { announcementHash, cleanAnnouncement, cleanBrokerCall, cleanRecordBatch } from "@/lib/collector/records";
+import { announcementHash, normalizeHeadline, cleanRow, tableSpec } from "@/lib/collector/record-tables";
+import { cleanRecordBatch } from "@/lib/collector/records";
+
+const cleanAnnouncement = (raw: unknown) => cleanRow(tableSpec("company_announcements")!, raw);
+const cleanBrokerCall = (raw: unknown) => cleanRow(tableSpec("broker_calls")!, raw);
 
 describe("broker headline parsing", () => {
   it("parses action, company, target and broker", () => {
@@ -103,6 +107,9 @@ describe("record validation", () => {
   it("recomputes the announcement hash instead of trusting the client", () => {
     const a = cleanAnnouncement({ symbol: "tcs", headline: "h", category: "Credit rating", broadcastDate: "2026-10-02T04:30:00.000Z", attachmentUrl: null, contentHash: "forged" });
     expect(a?.contentHash).toBe(announcementHash("TCS", "h", "2026-10-02T04:30:00.000Z"));
+    expect(a?.contentHash).toMatch(/^[0-9a-f]{64}$/); // SHA-256
+    expect(announcementHash("TCS", "Rating  Reaffirmed!", "2026-10-02T09:00:00.000Z")).toBe(announcementHash("tcs", "rating reaffirmed", "2026-10-02T04:30:00.000Z"));
+    expect(normalizeHeadline("A,  B")).toBe("a b");
   });
   it("drops malformed broker calls and nulls out-of-range tone scores", () => {
     expect(cleanBrokerCall({ company: "X", broker: "B", action: "Buy", reportDate: "bad", sourceUrl: "u" })).toBeNull();

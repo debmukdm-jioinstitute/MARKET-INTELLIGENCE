@@ -1,6 +1,7 @@
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { today } from "./http";
-import { announcementHash, type AnnouncementRow } from "./records";
+import { announcementHash } from "./record-tables";
+import { labelHeadlines } from "./taxonomy";
 import type { Collector, CollectorContext, SeriesResult } from "./types";
 
 /**
@@ -10,6 +11,16 @@ import type { Collector, CollectorContext, SeriesResult } from "./types";
  */
 
 const ID = "nse-announcements";
+
+export type AnnouncementRow = {
+  symbol: string;
+  headline: string;
+  category: string;
+  taxonomyLabels: string[] | null;
+  broadcastDate: string; // ISO instant
+  attachmentUrl: string | null;
+  contentHash: string;
+};
 const IST_MS = 5.5 * 3_600_000;
 
 type Raw = {
@@ -27,6 +38,7 @@ const MATERIAL: [category: string, re: RegExp][] = [
   ["Credit rating", /credit rating/i],
   ["Financial results", /financial results?|quarterly results?|unaudited.*results?|audited.*results?/i],
   ["Dividend / bonus / split", /dividend|bonus|stock split|sub-?division of (?:equity )?shares|split of (?:equity )?shares/i],
+  ["Buyback / rights offer", /buy-?back|rights issue|rights entitlement|right entitlement/i],
   ["M&A / restructuring", /acquisition|amalgamation|merger|scheme of arrangement|demerger|disposal|divest|restructur|takeover|open offer|slump sale/i],
   ["Management change", /change in director|change in management|appointment|resignation|cessation|key managerial|senior management/i],
   ["Board meeting", /board meeting/i],
@@ -73,7 +85,7 @@ export function selectMaterial(raw: Raw[], watermarkIso: string | null): { rows:
     if (seen.has(contentHash)) continue;
     seen.add(contentHash);
     if (!maxDate || broadcastDate > maxDate) maxDate = broadcastDate;
-    rows.push({ symbol, headline, category, broadcastDate, attachmentUrl: r.attchmntFile?.trim() || null, contentHash });
+    rows.push({ symbol, headline, category, taxonomyLabels: null, broadcastDate, attachmentUrl: r.attchmntFile?.trim() || null, contentHash });
   }
   return { rows, maxDate };
 }
@@ -86,8 +98,16 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   const path = `/api/corporate-announcements?index=equities&from_date=${istDmy(now - 86_400_000)}&to_date=${istDmy(now)}`;
   const raw = await nseJson<Raw[]>(path);
   if (!Array.isArray(raw)) throw new Error("NSE corporate-announcements returned a non-array payload");
+  // SME board is best-effort: a failure here never fails the main equities fetch.
+  const sme = await nseJson<Raw[]>(path.replace("index=equities", "index=sme")).catch(() => []);
+  if (Array.isArray(sme)) raw.push(...sme);
 
   const { rows, maxDate } = selectMaterial(raw, prevIso);
+  // Second pass (time-boxed): zero-shot taxonomy labels for the risk checklist. Base ingest stays valid without them.
+  const labels = await labelHeadlines(rows.map((r) => r.headline));
+  rows.forEach((r, i) => {
+    r.taxonomyLabels = labels[i];
+  });
   const watermark = [prevIso, maxDate].filter((x): x is string => Boolean(x)).sort().pop();
   return [
     {

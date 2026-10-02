@@ -475,12 +475,14 @@ export async function ensureSchema(): Promise<void> {
           symbol text NOT NULL,
           headline text,
           category text,
+          taxonomy_labels text[],
           broadcast_date timestamptz,
           attachment_url text,
           content_hash text UNIQUE,
           created_at timestamptz NOT NULL DEFAULT now()
         )
       `;
+      await db`ALTER TABLE company_announcements ADD COLUMN IF NOT EXISTS taxonomy_labels text[]`;
       await db`CREATE INDEX IF NOT EXISTS idx_company_announcements_symbol_date ON company_announcements (symbol, broadcast_date DESC)`;
 
       // Per-collector delta cursor (max article id / broadcast timestamp already ingested).

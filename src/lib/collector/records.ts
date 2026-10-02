@@ -1,98 +1,53 @@
-import { createHash } from "node:crypto";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { announcementHash, cleanRow, PG_TYPE, snake, tableSpec, type TableSpec } from "./record-tables";
 import type { CollectorContext, RecordBatch } from "./types";
 
+export { announcementHash };
+
 /**
- * Validation + persistence for collector event rows (broker calls, NSE
- * announcements). Same honesty rules as the series ingest: malformed rows are
- * dropped, never repaired or invented; an empty batch writes nothing.
+ * Validation + persistence for collector event rows. Same honesty rules as the
+ * series ingest: malformed rows are dropped, never repaired or invented; an
+ * empty batch writes nothing.
  */
 
-export type BrokerCallRow = {
-  symbol: string | null;
-  company: string;
-  broker: string;
-  action: string;
-  targetPrice: number | null;
-  reportDate: string; // YYYY-MM-DD
-  tone: "positive" | "negative" | "neutral" | null;
-  toneScore: number | null;
-  sourceUrl: string;
-};
-
-export type AnnouncementRow = {
-  symbol: string;
-  headline: string;
-  category: string;
-  broadcastDate: string; // ISO instant
-  attachmentUrl: string | null;
-  contentHash: string;
-};
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 const str = (v: unknown): string | null => {
   const s = typeof v === "string" ? v.trim() : "";
   return s || null;
 };
-const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
-const isoDay = (v: unknown): string | null => {
-  const s = str(v);
-  return s && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) ? s : null;
-};
-
-export const announcementHash = (symbol: string, headline: string, broadcastDate: string) =>
-  createHash("sha1").update(`${symbol}|${headline}|${broadcastDate}`).digest("hex");
-
-export function cleanBrokerCall(raw: unknown): BrokerCallRow | null {
-  if (!isRecord(raw)) return null;
-  const company = str(raw.company);
-  const broker = str(raw.broker);
-  const action = str(raw.action);
-  const reportDate = isoDay(raw.reportDate);
-  const sourceUrl = str(raw.sourceUrl);
-  if (!company || !broker || !action || !reportDate || !sourceUrl) return null;
-  const target = num(raw.targetPrice);
-  const tone = raw.tone === "positive" || raw.tone === "negative" || raw.tone === "neutral" ? raw.tone : null;
-  const score = num(raw.toneScore);
-  return {
-    symbol: str(raw.symbol)?.toUpperCase() ?? null,
-    company,
-    broker,
-    action,
-    targetPrice: target !== null && target > 0 ? target : null,
-    reportDate,
-    tone,
-    toneScore: tone && score !== null && score >= 0 && score <= 1 ? score : null,
-    sourceUrl,
-  };
-}
-
-export function cleanAnnouncement(raw: unknown): AnnouncementRow | null {
-  if (!isRecord(raw)) return null;
-  const symbol = str(raw.symbol)?.toUpperCase();
-  const headline = str(raw.headline);
-  const category = str(raw.category);
-  const broadcastDate = str(raw.broadcastDate);
-  if (!symbol || !headline || !category || !broadcastDate || Number.isNaN(Date.parse(broadcastDate))) return null;
-  // Hash is recomputed here so a malformed/forged client hash can never poison dedup.
-  return {
-    symbol,
-    headline,
-    category,
-    broadcastDate,
-    attachmentUrl: str(raw.attachmentUrl),
-    contentHash: announcementHash(symbol, headline, broadcastDate),
-  };
-}
 
 export function cleanRecordBatch(raw: unknown): RecordBatch | null {
-  if (!isRecord(raw) || !Array.isArray(raw.rows)) return null;
-  const table = raw.table;
-  if (table !== "broker_calls" && table !== "company_announcements") return null;
-  const cleaner: (r: unknown) => object | null = table === "broker_calls" ? cleanBrokerCall : cleanAnnouncement;
-  const rows = raw.rows.map(cleaner).filter((r): r is Record<string, unknown> => r !== null);
-  return { table, rows, watermark: str(raw.watermark) ?? undefined };
+  if (typeof raw !== "object" || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  const spec = tableSpec(r.table);
+  if (!spec || !Array.isArray(r.rows)) return null;
+  const rows = r.rows.map((x) => cleanRow(spec, x)).filter((x): x is Record<string, unknown> => x !== null);
+  const watermarks: Record<string, string> = {};
+  if (typeof r.watermarks === "object" && r.watermarks !== null) {
+    for (const [k, v] of Object.entries(r.watermarks)) {
+      const val = str(v);
+      if (/^[A-Za-z0-9:_.&-]{1,80}$/.test(k) && val) watermarks[k] = val.slice(0, 80);
+    }
+  }
+  return { table: spec.name, rows, watermark: str(r.watermark)?.slice(0, 80) ?? undefined, ...(Object.keys(watermarks).length ? { watermarks } : {}) };
 }
+
+export function cleanRecordBatches(raw: unknown): RecordBatch[] {
+  const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  return list.map(cleanRecordBatch).filter((b): b is RecordBatch => b !== null);
+}
+
+/** Collector id that owns a table's single cursor (batch.watermark). */
+const OWNER: Record<string, string> = {
+  broker_calls: "broker-calls",
+  company_announcements: "nse-announcements",
+  shareholding: "shareholding",
+  credit_ratings: "credit-ratings",
+  concall_summaries: "concall-summaries",
+  ipos: "ipos",
+  trend_series: "google-trends",
+  regulatory_events: "legal-risk",
+  sentiment_daily: "sentiment",
+};
 
 async function setWatermark(id: string, value: string) {
   await sql()`
@@ -101,64 +56,77 @@ async function setWatermark(id: string, value: string) {
   `;
 }
 
-export async function readWatermark(collectorId: string): Promise<string | null> {
+export async function readWatermark(key: string): Promise<string | null> {
   if (!hasDatabase()) return null;
   try {
     await ensureSchema();
-    const rows = (await sql()`SELECT value FROM collector_watermarks WHERE collector_id = ${collectorId}`) as { value: string }[];
+    const rows = (await sql()`SELECT value FROM collector_watermarks WHERE collector_id = ${key}`) as { value: string }[];
     return rows[0]?.value ?? null;
   } catch {
     return null;
   }
 }
 
+export async function readWatermarks(prefix: string): Promise<Record<string, string>> {
+  if (!hasDatabase()) return {};
+  try {
+    await ensureSchema();
+    const rows = (await sql()`SELECT collector_id, value FROM collector_watermarks WHERE starts_with(collector_id, ${prefix})`) as { collector_id: string; value: string }[];
+    return Object.fromEntries(rows.map((r) => [r.collector_id, r.value]));
+  } catch {
+    return {};
+  }
+}
+
 /** Direct-DB context for the Vercel path (the Actions runner uses an HTTP context instead). */
-export const dbContext: CollectorContext = { watermark: readWatermark };
+export const dbContext: CollectorContext = { watermark: readWatermark, watermarks: readWatermarks };
 
-const WATERMARK_KEY: Record<RecordBatch["table"], string> = {
-  broker_calls: "broker-calls",
-  company_announcements: "nse-announcements",
-};
+/** Builds the single idempotent upsert for a table spec. Identifiers come from trusted constants, never from rows. */
+export function buildUpsertSql(spec: TableSpec): string {
+  const cols = spec.cols.map((c) => ({ col: snake(c.f), pg: PG_TYPE[c.k] }));
+  const names = cols.map((c) => c.col).join(", ");
+  const recordset = cols.map((c) => `${c.col} ${c.pg}`).join(", ");
+  const keys = new Set(spec.conflict);
+  const conflict =
+    spec.onConflict === "nothing"
+      ? `ON CONFLICT (${spec.conflict.join(", ")}) DO NOTHING`
+      : `ON CONFLICT (${spec.conflict.join(", ")}) DO UPDATE SET ${cols
+          .filter((c) => !keys.has(c.col))
+          .map((c) => `${c.col} = COALESCE(EXCLUDED.${c.col}, ${spec.name}.${c.col})`)
+          .join(", ")}`;
+  return `INSERT INTO ${spec.name} (${names}) SELECT ${names} FROM jsonb_to_recordset($1::jsonb) AS x(${recordset}) ${conflict} RETURNING 1 AS ok`;
+}
 
-/** Idempotent insert; returns rows actually inserted (duplicates skipped via unique keys). */
+/** jsonb_to_recordset matches on column names, so row keys go camelCase → snake_case. */
+export const toRecordsetJson = (rows: Record<string, unknown>[]) =>
+  JSON.stringify(rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [snake(k), v]))));
+
+/** Last-wins (update) / first-wins (nothing) dedupe inside one batch — Postgres rejects an upsert touching a row twice. */
+function dedupeBatch(spec: TableSpec, rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  const fieldOf = (col: string) => spec.cols.find((c) => snake(c.f) === col)!.f;
+  const seen = new Map<string, Record<string, unknown>>();
+  for (const r of rows) {
+    const key = spec.conflict.map((c) => String(r[fieldOf(c)])).join("\u0000");
+    if (spec.onConflict === "update" || !seen.has(key)) seen.set(key, r);
+  }
+  return [...seen.values()];
+}
+
+/** Idempotent write; returns rows actually written (duplicates skipped via unique keys). */
 export async function saveRecords(batch: RecordBatch): Promise<{ inserted: number; skipped: number }> {
-  if (!batch.rows.length) return { inserted: 0, skipped: 0 };
+  const spec = tableSpec(batch.table);
+  if (!spec) throw new Error(`unknown record table: ${batch.table}`);
   await ensureSchema();
   const db = sql();
+  const rows = dedupeBatch(spec, batch.rows);
   let inserted = 0;
-  for (let i = 0; i < batch.rows.length; i += 100) {
-    const chunk = batch.rows.slice(i, i + 100);
-    if (batch.table === "broker_calls") {
-      const rows = chunk as unknown as BrokerCallRow[];
-      // Arrays travel as text[] and are cast in the SELECT (same pattern as saveSeries); NULL elements stay NULL.
-      const res = (await db`
-        INSERT INTO broker_calls (symbol, company, broker, action, target_price, report_date, tone, tone_score, source_url)
-        SELECT t.symbol, t.company, t.broker, t.action, t.target_price::numeric, t.report_date::date, t.tone, t.tone_score::numeric, t.source_url
-        FROM unnest(
-          ${rows.map((r) => r.symbol)}::text[], ${rows.map((r) => r.company)}::text[], ${rows.map((r) => r.broker)}::text[],
-          ${rows.map((r) => r.action)}::text[], ${rows.map((r) => (r.targetPrice === null ? null : String(r.targetPrice)))}::text[],
-          ${rows.map((r) => r.reportDate)}::text[], ${rows.map((r) => r.tone)}::text[],
-          ${rows.map((r) => (r.toneScore === null ? null : String(r.toneScore)))}::text[], ${rows.map((r) => r.sourceUrl)}::text[]
-        ) AS t(symbol, company, broker, action, target_price, report_date, tone, tone_score, source_url)
-        ON CONFLICT (source_url) DO NOTHING
-        RETURNING id
-      `) as unknown[];
-      inserted += res.length;
-    } else {
-      const rows = chunk as unknown as AnnouncementRow[];
-      const res = (await db`
-        INSERT INTO company_announcements (symbol, headline, category, broadcast_date, attachment_url, content_hash)
-        SELECT t.symbol, t.headline, t.category, t.broadcast_date::timestamptz, t.attachment_url, t.content_hash
-        FROM unnest(
-          ${rows.map((r) => r.symbol)}::text[], ${rows.map((r) => r.headline)}::text[], ${rows.map((r) => r.category)}::text[],
-          ${rows.map((r) => r.broadcastDate)}::text[], ${rows.map((r) => r.attachmentUrl)}::text[], ${rows.map((r) => r.contentHash)}::text[]
-        ) AS t(symbol, headline, category, broadcast_date, attachment_url, content_hash)
-        ON CONFLICT (content_hash) DO NOTHING
-        RETURNING id
-      `) as unknown[];
-      inserted += res.length;
-    }
+  const text = buildUpsertSql(spec);
+  for (let i = 0; i < rows.length; i += 200) {
+    const res = (await db.query(text, [toRecordsetJson(rows.slice(i, i + 200))])) as unknown[];
+    inserted += res.length;
   }
-  if (batch.watermark) await setWatermark(WATERMARK_KEY[batch.table], batch.watermark);
+  const owner = OWNER[spec.name];
+  if (batch.watermark && owner) await setWatermark(owner, batch.watermark);
+  for (const [k, v] of Object.entries(batch.watermarks ?? {})) await setWatermark(k, v);
   return { inserted, skipped: batch.rows.length - inserted };
 }
