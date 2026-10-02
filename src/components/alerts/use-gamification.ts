@@ -1,12 +1,14 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
+import { awardXp } from "@/lib/gamification/client";
 
 const KEY = "mi-alerts-gamification";
 
-type GamiState = { firstRuleAt: string | null };
+type GamiState = { firstRuleAt: string | null; coverageAwardedAt: string | null };
 
-const EMPTY: GamiState = { firstRuleAt: null };
+const EMPTY: GamiState = { firstRuleAt: null, coverageAwardedAt: null };
 
 // Cache by raw localStorage string so getSnapshot is referentially stable.
 let raw: string | null = "<unset>";
@@ -24,7 +26,10 @@ function read(): GamiState {
   raw = r;
   try {
     const p = r ? (JSON.parse(r) as Partial<GamiState>) : null;
-    parsed = { firstRuleAt: typeof p?.firstRuleAt === "string" ? p.firstRuleAt : null };
+    parsed = {
+      firstRuleAt: typeof p?.firstRuleAt === "string" ? p.firstRuleAt : null,
+      coverageAwardedAt: typeof p?.coverageAwardedAt === "string" ? p.coverageAwardedAt : null,
+    };
   } catch {
     parsed = EMPTY;
   }
@@ -56,15 +61,35 @@ function write(next: GamiState) {
 
 /** Badges: "first-alert" when the user has at least one rule, "market-covered" at 3+ active rules. */
 export function useAlertsGamification(ruleCount: number, activeCount: number) {
+  const { user, isGuest, ready } = useAuth();
+  const signedIn = ready && !!user && !isGuest;
   const g = useSyncExternalStore(subscribe, read, read);
+  const covered = activeCount >= 3;
+
+  // One-time server award the first time the user reaches 3 active rules.
+  // Idempotent across the two hook instances (page + badge strip): the first
+  // writer wins, the second sees coverageAwardedAt and skips.
+  useEffect(() => {
+    if (!covered || !signedIn) return;
+    const cur = read();
+    if (cur.coverageAwardedAt) return;
+    write({ ...cur, coverageAwardedAt: new Date().toISOString() });
+    void awardXp("alert_coverage_3", "alerts");
+  }, [covered, signedIn]);
+
   return {
     badges: {
       firstAlert: ruleCount > 0,
-      marketCovered: activeCount >= 3,
+      marketCovered: covered,
       since: g.firstRuleAt,
     },
     markFirstRule() {
-      if (!read().firstRuleAt) write({ firstRuleAt: new Date().toISOString() });
+      const cur = read();
+      if (cur.firstRuleAt) return false;
+      write({ ...cur, firstRuleAt: new Date().toISOString() });
+      // Mirror the local award on the server for signed-in users (guests: 401, ignored).
+      if (signedIn) void awardXp("first_alert_created", "alerts");
+      return true;
     },
   };
 }
