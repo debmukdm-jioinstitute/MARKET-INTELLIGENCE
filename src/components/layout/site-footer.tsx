@@ -27,6 +27,7 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
   return (
     <footer
       className={cn(
+        "cv-footer",
         marketing
           ? "border-t border-white/60 bg-white/40 px-5 py-10 backdrop-blur-xl"
           : "border-t border-border bg-muted/30 px-3 py-8 sm:px-4 md:px-5",

@@ -737,7 +737,7 @@ export function LandingPage() {
         <IntegrationsBentoShowcase />
 
         {/* DATA METHODOLOGY */}
-        <section id="coverage" className="mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
+        <section id="coverage" className="cv-section mx-auto max-w-6xl scroll-mt-20 px-5 pt-24 md:pt-32">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Data coverage &amp; methodology</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Know where every number comes from</h2>
@@ -851,7 +851,7 @@ export function LandingPage() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="mx-auto max-w-2xl px-5 pb-28">
+        <section id="faq" className="cv-section mx-auto max-w-2xl px-5 pb-28">
           <FlippingFaqHeadline />
           <div className="mt-10 flex flex-col gap-3">
             {FAQS.map((item) => (
@@ -861,7 +861,7 @@ export function LandingPage() {
         </section>
 
         {/* FOUNDER STORY */}
-        <section id="founder" className="mx-auto w-full px-5 py-24 md:py-32">
+        <section id="founder" className="cv-section mx-auto w-full px-5 py-24 md:py-32">
           <div className="founder-note mx-auto w-full max-w-6xl rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-12">
             <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-blue-100 text-3xl shadow-sm">
               👋

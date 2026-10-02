@@ -118,7 +118,7 @@ export function DataTable<T>({
         </div>
       </div>
 
-      <div className={cn("overflow-auto rounded-md border border-border", maxHeightClass)}>
+      <div className={cn("overflow-auto touch-scroll cv-table rounded-md border border-border", maxHeightClass)}>
         <table className="w-full text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead>

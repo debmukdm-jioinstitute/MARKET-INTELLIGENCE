@@ -57,7 +57,7 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
           </Link>
 
           <Link href="/" className="flex items-center gap-2 pl-1">
-            <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
+            <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-7 w-auto dark:invert" />
           </Link>
         </div>
 

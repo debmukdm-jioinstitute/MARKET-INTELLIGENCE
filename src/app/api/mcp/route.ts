@@ -5,6 +5,7 @@ import { authorizationServerMetadata } from "@/lib/mcp/oauth/metadata";
 import { TOOLS } from "@/lib/mcp/tools";
 import { MCP_PROMPTS, getMcpPrompt } from "@/lib/mcp/prompts";
 import { MCP_RESOURCES, readMcpResource } from "@/lib/mcp/resources";
+import { getCachedMcpToolResult, setCachedMcpToolResult, optimizeMcpPayload } from "@/lib/mcp/optimize-result";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export const maxDuration = 120;
  */
 
 const PROTOCOL = "2025-06-18";
-const SERVER_VERSION = "2.4.0";
+const SERVER_VERSION = "2.4.1";
 const TOOL_TIMEOUT_MS = 25_000;
 
 type Rpc = {
@@ -83,7 +84,12 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
       if (!tool) {
         return ok(id, {
           isError: true,
-          content: [{ type: "text", text: `Unknown tool: ${msg.params?.name}` }],
+          content: [
+            {
+              type: "text",
+              text: `Unknown tool: "${msg.params?.name}". Call "tools/list" to see all available tools and categories (e.g. market_overview, stocks, macro, sentiment, screener, alerts, portfolio).`,
+            },
+          ],
         });
       }
 
@@ -127,6 +133,12 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
         });
       }
 
+      // Fast path: Check in-memory cache for idempotent tools
+      const cached = getCachedMcpToolResult(tool.name, args);
+      if (cached !== null) {
+        return ok(id, { content: [{ type: "text", text: JSON.stringify(cached) }] });
+      }
+
       const t0 = Date.now();
       const caller = ctx.user ? `user:${ctx.user.email}` : ctx.apiKey ? "api-key" : ctx.oauthAccess ? "oauth" : `ip:${clientIp(req)}`;
 
@@ -160,7 +172,9 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
             },
           }),
         );
-        return ok(id, { content: [{ type: "text", text: JSON.stringify(out) }] });
+        const optimized = optimizeMcpPayload(out);
+        setCachedMcpToolResult(tool.name, args, optimized);
+        return ok(id, { content: [{ type: "text", text: JSON.stringify(optimized) }] });
       } catch (e) {
         const durationMs = Date.now() - t0;
         console.log(
@@ -175,7 +189,16 @@ async function handle(msg: Rpc, req: Request): Promise<unknown | null> {
             },
           }),
         );
-        return ok(id, { isError: true, content: [{ type: "text", text: e instanceof Error ? e.message : "tool failed" }] });
+        const errMsg = e instanceof Error ? e.message : String(e);
+        return ok(id, {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Tool execution failed for "${tool.name}": ${errMsg}. Please verify the arguments or retry.`,
+            },
+          ],
+        });
       }
     }
     case "prompts/list":
@@ -245,7 +268,7 @@ export async function GET() {
       optionalApiKey: "MCP_API_KEYS optional — higher rate limit for automation",
     },
     changelog:
-      "v2.4.0: Protocol 2025-06-18, outputSchema support, composite tools (get_market_overview, get_research_pack), MCP prompts & resources, 25s timeouts, DB snapshot caching, slimmed payloads.",
+      "v2.4.1: Protocol 2025-06-18, in-memory TTL caching for idempotent tools, payload token compacting & float optimization, structured error guidance, outputSchema support, composite tools.",
   });
 }
 

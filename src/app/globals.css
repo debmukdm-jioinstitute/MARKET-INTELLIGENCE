@@ -237,19 +237,25 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground font-sans;
-    font-size: 14px;
-  }
   html {
     @apply font-sans;
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scrollbar-gutter: stable;
   }
   body {
+    @apply bg-background text-foreground font-sans;
+    font-size: 14px;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     touch-action: pan-y;
+  }
+  a, button, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -510,7 +516,30 @@
   .driver-popover.guided-tour-theme { margin-bottom: 8px; }
 }
 
-/* Mobile Optimization & Responsive Utilities */
+/* Safari WebKit & Chrome Blink Engine Optimizations */
+
+/* Safari Glassmorphism & Backdrop Filter Compatibility */
+[class*="backdrop-blur"] {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur, blur(16px));
+}
+
+.glass-panel {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.glass-pill {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Safari Flexbox min-size overflow fix */
+.safari-flex-fix {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Mobile & Touch Momentum Scrolling */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -519,16 +548,71 @@
   display: none;
 }
 
-.touch-scroll {
+.touch-scroll,
+.overflow-y-auto,
+.overflow-x-auto {
   -webkit-overflow-scrolling: touch;
+}
+
+.touch-scroll {
   overscroll-behavior-x: contain;
 }
 
+/* iOS Safe Area Inset Support */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
 }
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(env(safe-area-inset-top, 0px), 8px);
+}
+.px-safe {
+  padding-left: max(env(safe-area-inset-left, 0px), 12px);
+  padding-right: max(env(safe-area-inset-right, 0px), 12px);
+}
+
+/* Chrome Blink Offscreen Rendering Optimization (Skipping offscreen repaints) */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 500px;
+}
+.cv-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 600px;
+}
+.cv-table {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 400px;
+}
+.cv-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 240px;
+}
+.cv-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 380px;
+}
+
+/* GPU Hardware Compositing Layer for high-rate animations */
+.gpu-composited {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Chromium & WebKit Sleek Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.42);
 }
 
 @media (max-width: 767px) {

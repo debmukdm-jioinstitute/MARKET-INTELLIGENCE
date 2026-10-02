@@ -117,7 +117,7 @@ function IntegrationCard({
     <div
       data-card={id}
       data-state="idle"
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-[var(--shadow-sm)] transition-opacity duration-300 data-[state=idle]:opacity-40 sm:p-6"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-[var(--shadow-sm)] transition-opacity duration-300 data-[state=idle]:opacity-40 sm:p-6 gpu-composited safari-flex-fix"
     >
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
@@ -380,7 +380,7 @@ export function IntegrationsBentoShowcase() {
   return (
     <section
       id="integrations"
-      className="relative border-b border-white/60 bg-white/30 px-5 py-24 backdrop-blur-xl md:py-32 overflow-hidden scroll-mt-20"
+      className="cv-section relative border-b border-white/60 bg-white/30 px-5 py-24 backdrop-blur-xl md:py-32 overflow-hidden scroll-mt-20"
     >
       {/* Ambient background glows for 3D depth */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[800px] bg-gradient-to-r from-sky-400/10 via-blue-500/10 to-amber-400/10 rounded-[100%] blur-[120px] pointer-events-none" />

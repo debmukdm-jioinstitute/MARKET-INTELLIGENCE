@@ -54,7 +54,7 @@ export function TopBar() {
             )}
 
             <Link href="/Home" className="flex items-center pl-0.5">
-              <img src="/logo.png" alt="Market Intelligence" className="h-6 sm:h-7 w-auto dark:invert" />
+              <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-6 sm:h-7 w-auto dark:invert" />
             </Link>
           </div>
 
@@ -62,7 +62,7 @@ export function TopBar() {
           <div className="hidden lg:flex items-center gap-3">
             <AppNavTrigger />
             <Link href="/Home" className="flex items-center">
-              <img src="/logo.png" alt="Market Intelligence" className="h-7 w-auto dark:invert" />
+              <img src="/logo.png" alt="Market Intelligence" loading="eager" decoding="async" className="h-7 w-auto dark:invert" />
             </Link>
             <button
               type="button"

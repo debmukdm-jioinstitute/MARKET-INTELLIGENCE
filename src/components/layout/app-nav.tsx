@@ -278,7 +278,7 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-background/95 dark:bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-background/95 dark:bg-card/95 pb-safe backdrop-blur lg:hidden"
       style={{ gridTemplateColumns: `repeat(${Math.min(sections.length, 5)}, minmax(0, 1fr))` }}
     >
       {sections.slice(0, 5).map((sec) => {

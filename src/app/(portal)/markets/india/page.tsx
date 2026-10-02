@@ -78,7 +78,7 @@ export default function IndiaMarketsPage() {
       ) : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="cv-table overflow-hidden rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
