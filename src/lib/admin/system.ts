@@ -51,9 +51,9 @@ export const ENV_VARS: { key: string; required: boolean; note: string }[] = [
   { key: "REDDIT_USER_AGENT", required: false, note: "Reddit API User-Agent (platform:appId:version)" },
   { key: "NEXT_PUBLIC_RAZORPAY_KEY_ID", required: false, note: "Razorpay Standard Checkout — public key id (test or live)" },
   { key: "RAZORPAY_KEY_SECRET", required: false, note: "Razorpay secret — server order + payment verify only" },
-  { key: "RAZORPAY_DAY_PASS_PAISE", required: false, note: "Day Pass amount in paise (default 900)" },
-  { key: "RAZORPAY_PRO_MONTHLY_PAISE", required: false, note: "Monthly plan in paise (default 19900)" },
-  { key: "RAZORPAY_PRO_ANNUAL_PAISE", required: false, note: "Yearly plan in paise (default 149900)" },
+  { key: "RAZORPAY_DAY_PASS_PAISE", required: false, note: "Daily pass amount in paise (default 900)" },
+  { key: "RAZORPAY_PRO_MONTHLY_PAISE", required: false, note: "Plus plan (monthly) in paise (default 9900)" },
+  { key: "RAZORPAY_PRO_ANNUAL_PAISE", required: false, note: "Pro plan (yearly) in paise (default 99900)" },
 ];
 
 export const FLAGS = [

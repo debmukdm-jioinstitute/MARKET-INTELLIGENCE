@@ -16,9 +16,9 @@ export type PlanCheckoutItem = {
 };
 
 function defaultCheckoutLabel(planId: RazorpayPlanId): string {
-  if (planId === "day_pass") return "Get Day Pass";
-  if (planId === "pro_annual") return "Subscribe yearly";
-  return "Subscribe monthly";
+  if (planId === "day_pass") return "Choose daily pass";
+  if (planId === "pro_annual") return "Choose Pro plan";
+  return "Choose Plus plan";
 }
 
 function checkoutLabel(planId: RazorpayPlanId, activePlanId: RazorpayPlanId | null): string {

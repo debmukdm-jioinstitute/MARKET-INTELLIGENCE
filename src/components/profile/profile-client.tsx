@@ -365,7 +365,7 @@ export function ProfileClient() {
       <Section
         id="plans"
         title="Plans & billing"
-        subtitle="Day Pass, Monthly, or Yearly — pay with Razorpay (UPI, cards, netbanking). Access activates after payment verification."
+        subtitle="Daily pass, Plus plan, or Pro plan — pay with Razorpay (UPI, cards, netbanking). Access activates after payment verification."
       >
         <ProfilePlanBilling
           onUpgraded={() => {

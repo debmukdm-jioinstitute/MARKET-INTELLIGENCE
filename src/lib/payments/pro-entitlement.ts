@@ -1,4 +1,4 @@
-import type { RazorpayPlanId } from "@/lib/payments/plans";
+import { plusPlanGrantDays, type RazorpayPlanId } from "@/lib/payments/plans";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import type { SessionUser } from "@/lib/auth";
 
@@ -12,17 +12,17 @@ const DAY_MS = 86_400_000;
 
 const HOUR_MS = 3_600_000;
 
-export function proDurationDays(planId: RazorpayPlanId): number {
+export function proDurationDays(planId: RazorpayPlanId, at = new Date()): number {
   if (planId === "pro_annual") return 365;
   if (planId === "day_pass") return 1;
-  return 30;
+  return plusPlanGrantDays(at);
 }
 
 export function computeProExpiry(from: Date, planId: RazorpayPlanId): Date {
   if (planId === "day_pass") {
     return new Date(from.getTime() + 24 * HOUR_MS);
   }
-  return new Date(from.getTime() + proDurationDays(planId) * DAY_MS);
+  return new Date(from.getTime() + proDurationDays(planId, from) * DAY_MS);
 }
 
 export function isProEntitlementActive(expiresAt: string | Date | null | undefined, now = new Date()): boolean {

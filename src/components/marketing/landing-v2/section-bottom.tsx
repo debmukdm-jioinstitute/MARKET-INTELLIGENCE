@@ -4,6 +4,8 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { AI_VIEWPOINTS } from "@/lib/marketing/landing-v2/copy";
 import { liveFromQuote } from "@/lib/marketing/landing-v2/format";
+import { MARKETING_PLAN_SAVINGS, MARKETING_PLUS_LAUNCH_ACTIVE } from "@/lib/marketing/pricing-marketing";
+import { PLUS_LAUNCH_OFFER_NOTE } from "@/lib/payments/plans";
 import Link from "next/link";
 import { useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
@@ -284,16 +286,19 @@ export function LandingPricingSection() {
             onClick={() => setYearly(false)}
             className={`px-4 py-2 text-sm font-semibold ${!yearly ? "bg-[#141414] text-white" : "bg-[#faf7f2]"}`}
           >
-            Monthly
+            Plus plan
           </button>
           <button
             type="button"
             onClick={() => setYearly(true)}
             className={`px-4 py-2 text-sm font-semibold ${yearly ? "bg-[#141414] text-white" : "bg-[#faf7f2]"}`}
           >
-            Yearly
+            Pro plan
           </button>
         </div>
+        {MARKETING_PLUS_LAUNCH_ACTIVE ? (
+          <p className="mt-4 text-sm text-[#0d6b5c]">{PLUS_LAUNCH_OFFER_NOTE}</p>
+        ) : null}
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <div className="border border-[#dcd6cc] bg-[#faf7f2] p-5">
             <p className="font-semibold">Free</p>
@@ -304,21 +309,26 @@ export function LandingPricingSection() {
             </PrimaryButton>
           </div>
           <div className="border border-[#dcd6cc] bg-[#faf7f2] p-5">
-            <p className="font-semibold">Day pass</p>
-            <p className="mt-2 text-2xl font-semibold">₹9 / day</p>
+            <p className="font-semibold">Daily pass</p>
+            <p className="mt-2 text-2xl font-semibold">₹9</p>
+            <p className="mt-1 text-sm text-[#6b6b6b]">, one time</p>
             <p className="mt-2 text-sm text-[#3d3d3d]">Everything, for one full day.</p>
             <SecondaryButton href="/pricing" className="mt-6 w-full">
-              Choose day pass
+              Choose daily pass
             </SecondaryButton>
           </div>
           <div className="border-2 border-[#141414] bg-[#faf7f2] p-5">
-            <p className="font-semibold">Full access</p>
-            <p className="mt-2 text-2xl font-semibold">{yearly ? "₹1,499 / year" : "₹199 / month"}</p>
+            <p className="font-semibold">{yearly ? "Pro plan" : "Plus plan"}</p>
+            <p className="mt-2 text-2xl font-semibold">{yearly ? "₹999 / year" : "₹99 / month"}</p>
             <p className="mt-2 text-sm text-[#3d3d3d]">
-              {yearly ? "Save ₹889 compared with monthly." : "Unlimited access. Cancel any time."}
+              {yearly
+                ? MARKETING_PLAN_SAVINGS
+                : MARKETING_PLUS_LAUNCH_ACTIVE
+                  ? "3 months access if you subscribe by 31 Oct 2026."
+                  : "Unlimited access. Cancel any time."}
             </p>
             <PrimaryButton href="/pricing" className="mt-6 w-full">
-              Choose full access
+              {yearly ? "Choose Pro plan" : "Choose Plus plan"}
             </PrimaryButton>
           </div>
         </div>

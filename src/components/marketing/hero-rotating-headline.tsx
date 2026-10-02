@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 const LINES = [
   "India-first market intelligence — research, flow, and macro with sources shown.",
   "AI Desk debates any ticker; Options Flow flags unusual activity before the move.",
-  "Start free, try a ₹9 Day Pass, or go unlimited from ₹199 per month.",
+  "Start free, try a ₹9 daily pass, or go Plus from ₹99 per month.",
 ] as const;
 
 export function HeroRotatingHeadline() {

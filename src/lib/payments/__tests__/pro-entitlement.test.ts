@@ -4,7 +4,8 @@ import { computeProExpiry, isProEntitlementActive, proDurationDays } from "@/lib
 describe("pro entitlement", () => {
   it("computes plan durations", () => {
     expect(proDurationDays("day_pass")).toBe(1);
-    expect(proDurationDays("pro_monthly")).toBe(30);
+    expect(proDurationDays("pro_monthly", new Date("2026-10-02T12:00:00+05:30"))).toBe(90);
+    expect(proDurationDays("pro_monthly", new Date("2026-11-02T12:00:00+05:30"))).toBe(30);
     expect(proDurationDays("pro_annual")).toBe(365);
   });
 
@@ -15,9 +16,9 @@ describe("pro entitlement", () => {
   });
 
   it("extends expiry from anchor date", () => {
-    const base = new Date("2026-01-01T00:00:00.000Z");
+    const base = new Date("2026-10-02T00:00:00+05:30");
     const exp = computeProExpiry(base, "pro_monthly");
-    expect(exp.toISOString().slice(0, 10)).toBe("2026-01-31");
+    expect(Math.round((exp.getTime() - base.getTime()) / 86_400_000)).toBe(90);
   });
 
   it("detects active window", () => {
