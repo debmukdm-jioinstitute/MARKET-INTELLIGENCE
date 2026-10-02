@@ -8,7 +8,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
-import { AuthRequiredError, fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
+import { ScannerQuotaBanner, ScannerQuotaUpgradePanel } from "@/components/payments/scanner-quota-banner";
+import { useScannerQuota } from "@/hooks/use-scanner-quota";
+import { AuthRequiredError, fetchJsonAuth, isAuthRequiredError, isScannerQuotaError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
 import { ScanPresets } from "@/components/scanner/scan-presets";
 import { ScanResults, type ScanRow } from "@/components/scanner/scan-results";
@@ -39,8 +41,15 @@ export default function ScannerPage() {
   const [showAllScans, setShowAllScans] = useState(false);
   const [category, setCategory] = useState<(typeof SCANNER_CATEGORIES)[number]["id"] | "all">("all");
   const [selected, setSelected] = useState<ScanRow | null>(null);
-  const { data, error, isLoading } = useSWR(`/api/scanner?scanner=${active}`, fetcher, { refreshInterval: 5 * 60_000 });
+  const { refreshQuota } = useScannerQuota();
+  const { data, error, isLoading } = useSWR(`/api/scanner?scanner=${active}`, fetcher, {
+    refreshInterval: 5 * 60_000,
+    onSuccess: () => {
+      void refreshQuota();
+    },
+  });
   const needsAuth = isAuthRequiredError(error);
+  const quotaBlocked = isScannerQuotaError(error);
   const current = data?.scanners.find((s) => s.id === active);
   const { state: questState, ready: questsReady, toasts, recordScan } = useScannerQuests();
 
@@ -81,7 +90,9 @@ export default function ScannerPage() {
       />
 
       {needsAuth ? <SignInRequiredBanner feature="the Nifty 500 scanner" nextPath="/intelligence/scanner" /> : null}
-      {!needsAuth && error && !(error instanceof AuthRequiredError) ? (
+      {!needsAuth ? <ScannerQuotaBanner /> : null}
+      {quotaBlocked ? <ScannerQuotaUpgradePanel /> : null}
+      {!needsAuth && error && !(error instanceof AuthRequiredError) && !quotaBlocked ? (
         <p className="text-sm text-rose-600">{error instanceof Error ? error.message : String(error)}</p>
       ) : null}
       {!needsAuth && data && !data.run ? (

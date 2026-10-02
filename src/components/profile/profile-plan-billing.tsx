@@ -2,6 +2,7 @@
 
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
+import { MARKETING_FREE_TIER } from "@/lib/marketing/pricing-marketing";
 import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
 import useSWR from "swr";
 
@@ -64,9 +65,7 @@ export function ProfilePlanBilling({ onUpgraded }: { onUpgraded?: () => void }) 
           . You can extend with another plan below.
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          Free tier includes 5 AI Desk + Options Flow runs per month. Upgrade for unlimited access and paid-only features.
-        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{MARKETING_FREE_TIER}</p>
       )}
 
       {configLoading ? (

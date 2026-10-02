@@ -2,6 +2,7 @@
 
 import { RazorpayCheckoutButton } from "@/components/payments/razorpay-checkout-button";
 import { RazorpayCheckoutProvider } from "@/components/payments/razorpay-checkout-provider";
+import { PRICING_PLAN_BULLETS } from "@/lib/marketing/pricing-marketing";
 import type { RazorpayPlanId } from "@/lib/payments/plans";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -77,6 +78,16 @@ export function PlanCheckoutGrid({
                     <p className="mt-1 text-xs font-medium text-primary">{plan.worksOutLabel}</p>
                   ) : null}
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
+                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                    {PRICING_PLAN_BULLETS[plan.id].map((line) => (
+                      <li key={line} className="flex gap-2">
+                        <span className="text-primary" aria-hidden>
+                          ✓
+                        </span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 {!signedIn ? (
                   <p className="text-sm text-muted-foreground">

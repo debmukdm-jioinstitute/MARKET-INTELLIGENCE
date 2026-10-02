@@ -3,7 +3,11 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
-import { MARKETING_COMPARE_ROWS, MARKETING_FREE_TIER } from "@/lib/marketing/pricing-marketing";
+import {
+  MARKETING_COMPARE_ROWS,
+  MARKETING_FREE_TIER,
+  PRICING_PLAN_BULLETS,
+} from "@/lib/marketing/pricing-marketing";
 import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
 import Link from "next/link";
 import useSWR from "swr";
@@ -104,9 +108,31 @@ export default function PricingPage() {
         )}
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <h2 className="text-lg font-bold text-foreground">What each plan includes</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">{MARKETING_FREE_TIER} Paid plans remove those limits for your plan duration.</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{MARKETING_FREE_TIER}</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {(["free", "day_pass", "pro_monthly", "pro_annual"] as const).map((tier) => (
+            <div key={tier} className="rounded-xl border border-border bg-muted/20 p-4">
+              <h3 className="text-sm font-bold text-foreground">
+                {tier === "free"
+                  ? "Free"
+                  : tier === "day_pass"
+                    ? "Daily pass"
+                    : tier === "pro_monthly"
+                      ? "Plus"
+                      : "Pro"}
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                {PRICING_PLAN_BULLETS[tier].map((line) => (
+                  <li key={line} className="leading-snug">
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-3">

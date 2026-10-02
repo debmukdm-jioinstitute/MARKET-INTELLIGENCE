@@ -372,6 +372,17 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS scanner_monthly_opens (
+          user_email text NOT NULL,
+          period_ym text NOT NULL,
+          scanner_id text NOT NULL,
+          opened_at timestamptz NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_email, period_ym, scanner_id)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_scanner_monthly_opens_period ON scanner_monthly_opens(period_ym, user_email)`;
+
       // -- Options flow screener (data/analysis/flagging 3-agent pipeline) --
       await db`
         CREATE TABLE IF NOT EXISTS options_flow_snapshots (
