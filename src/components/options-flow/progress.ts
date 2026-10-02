@@ -1,5 +1,7 @@
 "use client";
 
+import { awardXp } from "@/lib/gamification/client";
+
 const KEY = "mi-options-flow-progress";
 
 export type OptionsFlowProgress = {
@@ -57,6 +59,8 @@ export function recordVisit(): OptionsFlowProgress {
     firstFlagAt: prev.firstFlagAt,
   };
   write(next);
+  // Mirror the daily check-in on the server (guests get a 401, silently ignored).
+  void awardXp("daily_checkin", "options-flow");
   return next;
 }
 
@@ -65,5 +69,7 @@ export function recordFirstFlag(): boolean {
   const prev = read();
   if (prev.firstFlagAt) return false;
   write({ ...prev, firstFlagAt: new Date().toISOString() });
+  // Mirror the local award on the server (guests get a 401, silently ignored).
+  void awardXp("first_flag_spotted", "options-flow");
   return true;
 }

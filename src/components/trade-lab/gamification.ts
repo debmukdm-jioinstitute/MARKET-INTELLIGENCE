@@ -2,6 +2,7 @@
 
 import type { BacktestResult, StrategyId } from "@/lib/trade-lab/backtest";
 import { useSyncExternalStore } from "react";
+import { awardXp } from "@/lib/gamification/client";
 
 export interface PersonalBest {
   strategy: StrategyId;
@@ -110,5 +111,8 @@ export function recordBacktest(r: BacktestResult): { firstEver: boolean; newBest
     firstBacktestAt: g.firstBacktestAt ?? Date.now(),
     bests: newBest ? { ...g.bests, [r.strategy]: best } : g.bests,
   });
+  // Mirror the local awards on the server (guests get a 401, silently ignored).
+  if (firstEver) void awardXp("first_backtest", "trade-lab");
+  if (newBest) void awardXp("personal_best", "trade-lab");
   return { firstEver, newBest };
 }

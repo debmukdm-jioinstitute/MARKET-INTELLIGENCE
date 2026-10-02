@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
+import { awardXp } from "@/lib/gamification/client";
 
 const KEY = "mi-scanner-quests";
 const QUEST_TARGET = 3; // distinct scans per day
@@ -46,8 +48,8 @@ function load(): QuestState {
   }
 }
 
-/** Pure transition: returns next state + toast messages to show. */
-function applyScan(prev: QuestState, scanId: string): { next: QuestState; toasts: string[] } {
+/** Pure transition: returns next state + toast messages + server-award flags. */
+function applyScan(prev: QuestState, scanId: string): { next: QuestState; toasts: string[]; firstScanAwarded: boolean; questAwarded: boolean } {
   const today = dayStr();
   const toasts: string[] = [];
   const freshDay = prev.questDay !== today;
@@ -63,21 +65,26 @@ function applyScan(prev: QuestState, scanId: string): { next: QuestState; toasts
     streak: prev.lastScanDay === today ? prev.streak : prev.lastScanDay === yesterdayStr() ? prev.streak + 1 : 1,
   };
 
-  if (!prev.firstScan) {
+  const firstScanAwarded = !prev.firstScan;
+  const questAwarded = isNew && next.scansToday.length === QUEST_TARGET;
+
+  if (firstScanAwarded) {
     next.firstScan = true;
     toasts.push("🏅 Badge earned: First scan! Keep exploring — each new scan earns XP.");
   }
-  if (isNew && next.scansToday.length === QUEST_TARGET) {
+  if (questAwarded) {
     next.xp += XP_QUEST_BONUS;
     toasts.push(`⚡ Daily quest complete: ${QUEST_TARGET} different scans. +${XP_QUEST_BONUS} XP bonus!`);
   }
   if (prev.lastScanDay !== today && next.streak >= 2 && (next.streak === 2 || next.streak % 7 === 0)) {
     toasts.push(`🔥 ${next.streak}-day scan streak! Consistency beats intensity.`);
   }
-  return { next, toasts };
+  return { next, toasts, firstScanAwarded, questAwarded };
 }
 
 export function useScannerQuests() {
+  const { user, isGuest, ready: authReady } = useAuth();
+  const signedIn = authReady && !!user && !isGuest;
   const [state, setState] = useState<QuestState>(EMPTY);
   const [ready, setReady] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
@@ -99,7 +106,7 @@ export function useScannerQuests() {
 
   const recordScan = useCallback(
     (scanId: string) => {
-      const { next, toasts } = applyScan(ref.current, scanId);
+      const { next, toasts, firstScanAwarded, questAwarded } = applyScan(ref.current, scanId);
       ref.current = next;
       setState(next);
       try {
@@ -108,8 +115,13 @@ export function useScannerQuests() {
         /* private mode — quests just won't persist */
       }
       toasts.forEach(pushToast);
+      // Mirror the local awards on the server for signed-in users (guests: 401, ignored).
+      if (signedIn) {
+        if (firstScanAwarded) void awardXp("first_scan", "scanner");
+        if (questAwarded) void awardXp("scan_quest_daily", "scanner");
+      }
     },
-    [pushToast],
+    [pushToast, signedIn],
   );
 
   return { state, ready, toasts, recordScan };

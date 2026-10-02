@@ -3,6 +3,8 @@
 import { Check, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/providers/auth-provider";
+import { awardXp } from "@/lib/gamification/client";
 
 export type MissionId = "ask" | "watch";
 
@@ -48,6 +50,8 @@ export type XpToast = { id: number; title: string; xp: number } | null;
  * Local-only missions + XP for the AI Desk. No backend, no auth — pure localStorage.
  */
 export function useAiDeskMissions() {
+  const { user, isGuest, ready } = useAuth();
+  const signedIn = ready && !!user && !isGuest;
   const [stored, setStored] = useState<Stored>(readStored);
   const [toast, setToast] = useState<XpToast>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,7 +73,9 @@ export function useAiDeskMissions() {
     if (timer.current) clearTimeout(timer.current);
     setToast({ id: Date.now(), title: def.title, xp: def.xp });
     timer.current = setTimeout(() => setToast(null), 3200);
-  }, []);
+    // Mirror the local award on the server for signed-in users (guests: 401, ignored).
+    if (signedIn) void awardXp(id === "ask" ? "first_debate_asked" : "debate_completed", "ai-desk");
+  }, [signedIn]);
 
   return { xp: stored.xp, done: stored.done, toast, completeMission };
 }
