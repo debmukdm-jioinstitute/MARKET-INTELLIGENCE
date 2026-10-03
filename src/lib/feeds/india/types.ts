@@ -55,6 +55,8 @@ export type FlowRow = {
   m1: number | null;
   ytd: number | null;
   source: FieldSource;
+  /** Stored NSE observations, oldest first. Missing history is not a zero flow. */
+  history?: { date: string; value: number }[];
 };
 
 export type MacroRow = {
