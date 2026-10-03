@@ -1,3 +1,5 @@
+import { currentCompetition,leaderboard } from "@/lib/competition/store";
+import { DISCLAIMER } from "@/lib/competition/config";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import { getAllRetailSentimentData } from "@/lib/reddit-sentiment/database";
 import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
@@ -83,6 +85,17 @@ let holidaysCache: { data: Record<string, unknown>; timestamp: number } | null =
 const underlyingKey = (label: string) => OPTION_UNDERLYINGS.find((u) => u.label.toUpperCase() === label.toUpperCase());
 
 export const SITE_TOOLS: Tool[] = [
+  {
+    name: "get_alpha_league_preview", title: "Alpha League public standings", category: "Research",
+    description: "Public top-20 virtual portfolio competition standings. Educational only; no participant emails, holdings or trades.",
+    inputSchema: empty,
+    run: async () => {
+      const competition = await currentCompetition();
+      if (!competition) return { competition: null, rows: [], disclaimer: DISCLAIMER };
+      const board = await leaderboard(competition);
+      return { competition: { name: competition.name, status: competition.status }, rows: board.rows.slice(0,20), delayed: board.delayed, disclaimer: DISCLAIMER };
+    },
+  },
   {
     name: "get_home_market_insights",
     title: "Today's market pulse and smart money",

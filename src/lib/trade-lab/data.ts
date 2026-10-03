@@ -1,4 +1,4 @@
-import { feedFetch } from "@/lib/feeds/http";
+import { feedFetch, type FeedFetchInit } from "@/lib/feeds/http";
 import { findIndiaInstrument, INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
 import { fetchUpstoxHistoricalCandles, fetchUpstoxIntradayCandles } from "@/lib/feeds/sources/upstox";
 import { findFoInstrument } from "@/lib/options-flow/fo-universe";
@@ -52,13 +52,15 @@ export interface BarsResult {
 }
 
 /** OHLCV from Yahoo's chart endpoint (split-adjusted, not dividend-adjusted). Returns null if no usable data — never fabricates. */
-export async function fetchYahooBars(yahooTicker: string, tf: Timeframe, range?: string): Promise<BarsResult | null> {
+export async function fetchYahooBars(yahooTicker: string, tf: Timeframe, range?: string, options?: Pick<FeedFetchInit, "timeoutMs" | "attempts" | "signal">): Promise<BarsResult | null> {
   const p = TF_PARAMS[tf];
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooTicker)}?interval=${p.interval}&range=${range ?? p.range}`;
   try {
     const res = await feedFetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceBot/1.0)", Accept: "application/json" },
-      timeoutMs: 15_000,
+      timeoutMs: options?.timeoutMs ?? 15_000,
+      attempts: options?.attempts,
+      signal: options?.signal,
       next: { revalidate: tf.endsWith("m") || tf === "1h" ? 60 : 600 },
     } as RequestInit & { timeoutMs?: number });
     if (!res.ok) return null;
@@ -132,10 +134,10 @@ export async function fetchUpstoxBars(inst: Instrument, tf: Timeframe): Promise<
  * Source ladder: Upstox exchange candles first, Yahoo Finance second. Both are free.
  * Returns null only when every source fails — callers then fall back to the last-good cache, never to invented data.
  */
-export async function fetchBars(inst: Instrument, tf: Timeframe, range?: string): Promise<BarsResult | null> {
+export async function fetchBars(inst: Instrument, tf: Timeframe, range?: string, options?: Pick<FeedFetchInit, "timeoutMs" | "attempts" | "signal">): Promise<BarsResult | null> {
   if (!range) {
     const up = await fetchUpstoxBars(inst, tf);
     if (up) return up;
   }
-  return fetchYahooBars(inst.yahoo, tf, range);
+  return fetchYahooBars(inst.yahoo, tf, range, options);
 }

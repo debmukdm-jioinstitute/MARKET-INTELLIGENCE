@@ -1,4 +1,5 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { ensureCompetitionSchema } from "@/lib/competition/schema";
 
 function connectionString() {
   return (
@@ -700,6 +701,7 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_email)`;
 
+      await ensureCompetitionSchema(db);
       schemaReady = true;
     } catch (e) {
       console.warn("Failed to ensure DB schema, continuing in fallback:", e);
