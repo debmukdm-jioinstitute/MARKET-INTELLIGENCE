@@ -6,7 +6,7 @@ import { fiiDiiStance, formatIstTimestamp, liveFromQuote, vixRegime } from "@/li
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
-import { BodyCopy, DataCell, PaperChart, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
+import { BodyCopy, PaperChart, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
 import { SignedText } from "@/components/ui/signed";
 
 type HeroView = "market" | "vix" | "flows";
