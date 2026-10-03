@@ -12,6 +12,7 @@ import { sql, hasDatabase } from "@/lib/db";
 import { summarizeItems } from "@/lib/hf/summarizer";
 import { sendNewsletter, hasEmailConfigured } from "@/lib/admin/email";
 import { getState, setState } from "@/lib/notify/store";
+import { attentionSectionHtml } from "@/lib/notify/smart/digest";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 
 const istDay = () => new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
@@ -49,11 +50,14 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
 
     try {
       const digest = await summarizeItems(messages, 70).catch(() => messages.join(" "));
+      // Smart layer: top-ranked events the user wasn't pushed, personalized.
+      const attention = await attentionSectionHtml(userEmail).catch(() => "");
       if (hasEmailConfigured()) {
         await sendNewsletter(`Your overnight alert digest (${messages.length} alerts)`, [userEmail], () =>
           `<div style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;padding:16px">` +
             `<h3 style="margin:0 0 8px">Overnight digest — ${messages.length} alerts</h3>` +
             `<p style="font-size:14px">${digest.replace(/</g, "&lt;")}</p>` +
+            attention +
             `<p style="font-size:12px;color:#5f6368">Manage rules at ${process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.vercel.app"}/intelligence/alerts. Not investment advice.</p>` +
           `</div>`,
         ).catch(() => ({ sent: 0 }));

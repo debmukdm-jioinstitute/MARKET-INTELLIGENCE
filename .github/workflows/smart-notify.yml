@@ -1,0 +1,33 @@
+name: smart-notify
+
+# Smart notifications delivery: runs detectors + per-user delivery
+# (critical pushes, bell placement) every 30 minutes.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   SITE_URL     production origin, e.g. https://getmarketintelligence.in
+#   CRON_SECRET  Bearer <redacted> for /api/cron/smart-notify
+#                (must match the CRON_SECRET env var on the Vercel project)
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Run smart notification delivery
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          BASE="${SITE_URL:-https://getmarketintelligence.in}"
+          code=$(curl -sS -m 300 -o /tmp/notify-out.json -w "%{http_code}" \
+            -X POST -H "Authorization: Bearer ${CRON_SECRET}" "${BASE}/api/cron/smart-notify")
+          cat /tmp/notify-out.json | head -c 2000; echo
+          if [ "$code" != "200" ]; then
+            echo "WARN: smart-notify returned HTTP ${code}" >&2
+          fi

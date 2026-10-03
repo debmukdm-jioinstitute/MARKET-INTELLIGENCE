@@ -62,6 +62,30 @@ const dot = { high: "bg-rose-500", medium: "bg-amber-500", info: "bg-blue-500" }
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<{ events: SiteEvent[] }>);
 
+/** Smart (ranked, personalized) event from /api/notifications/smart. */
+export interface SmartEvent extends Omit<SiteEvent, "id"> {
+  id: number;
+  importance: number;
+  symbol: string | null;
+  why: string;
+  source_url: string | null;
+  relevance: number;
+  rank: number;
+  tier: "critical" | "noteworthy" | "info";
+}
+const smartFetcher = (url: string) =>
+  fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<{ events: SmartEvent[]; personal: boolean }>);
+
+const tierBadge = { critical: "bg-rose-500/10 text-rose-600", noteworthy: "bg-amber-500/10 text-amber-700", info: "bg-blue-500/10 text-blue-600" } as const;
+const tierLabel = { critical: "Critical", noteworthy: "Noteworthy", info: "FYI" } as const;
+
+function recordInteraction(eventId: number, action: "clicked" | "dismissed") {
+  fetch("/api/notifications/interactions", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eventId, action }),
+  }).catch(() => {});
+}
+
 function ago(iso: string): string {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "just now";
@@ -80,12 +104,15 @@ function dayLabel(iso: string): string {
 /** Notification centre: every meaningful change in the site's data, with a link to where it is shown. */
 export function NotificationBell() {
   const { data } = useSWR("/api/notifications/feed", fetcher, { refreshInterval: 120_000, revalidateOnFocus: true });
+  const { data: smart } = useSWR("/api/notifications/smart", smartFetcher, { refreshInterval: 120_000, revalidateOnFocus: true });
   const push = usePushSubscription();
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"all" | EventCategory>("all");
+  const [tab, setTab] = useState<"foryou" | "all" | EventCategory>("foryou");
   const [view, setView] = useState<"feed" | "settings">("feed");
   const [muted, setMuted] = useState<EventCategory[]>([]);
   const [seen, setSeen] = useState<number>(() => Date.now() - DAY);
+  const [dismissed, setDismissed] = useState<Set<number>>(new Set());
+  const [whyOpen, setWhyOpen] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     try {
@@ -101,8 +128,17 @@ export function NotificationBell() {
 
   // muted categories are hidden from the list and the badge on this device, and (once subscribed) never pushed to it
   const events = useMemo(() => (data?.events ?? []).filter((e) => !muted.includes(e.category)), [data, muted]);
+  const smartEvents = useMemo(
+    () => (smart?.events ?? []).filter((e) => !dismissed.has(e.id) && !muted.includes(e.category as EventCategory)),
+    [smart, dismissed, muted],
+  );
   const unread = useMemo(() => events.filter((e) => new Date(e.at).getTime() > seen), [events, seen]);
-  const hasHigh = unread.some((e) => e.severity === "high");
+  const smartUnread = useMemo(
+    () => smartEvents.filter((e) => (e.tier === "critical" || e.tier === "noteworthy") && new Date(e.at).getTime() > seen),
+    [smartEvents, seen],
+  );
+  const totalUnread = unread.length + smartUnread.length;
+  const hasHigh = unread.some((e) => e.severity === "high") || smartUnread.some((e) => e.tier === "critical");
 
   const markAllRead = useCallback(() => {
     const now = new Date().toISOString();
@@ -127,6 +163,20 @@ export function NotificationBell() {
     setTab("all");
   }, []);
 
+  const dismissSmart = useCallback((id: number) => {
+    recordInteraction(id, "dismissed");
+    setDismissed((cur) => new Set(cur).add(id));
+  }, []);
+
+  const toggleWhy = useCallback((id: number) => {
+    setWhyOpen((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   // keep the server's copy of this device's mutes in step so broadcast device alerts honour them
   useEffect(() => {
     if (!push.subscribed) return;
@@ -138,8 +188,8 @@ export function NotificationBell() {
       .catch(() => {});
   }, [push.subscribed, muted]);
 
-  const tabs = ["all", ...TAB_CATEGORIES.filter((c) => !muted.includes(c))] as ("all" | EventCategory)[];
-  const shown = events.filter((e) => tab === "all" || e.category === tab);
+  const tabs = ["foryou", "all", ...TAB_CATEGORIES.filter((c) => !muted.includes(c))] as ("foryou" | "all" | EventCategory)[];
+  const shown = tab === "foryou" ? [] : events.filter((e) => tab === "all" || e.category === tab);
   const groups: { label: string; items: SiteEvent[] }[] = [];
   for (const e of shown) {
     const label = dayLabel(e.at);
@@ -153,14 +203,14 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={unread.length ? `Notifications, ${unread.length} unread` : "Notifications"}
+          aria-label={totalUnread ? `Notifications, ${totalUnread} unread` : "Notifications"}
           title="What's changed on the site"
           className="relative inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Bell className="size-4" />
-          {unread.length ? (
+          {totalUnread ? (
             <span className={cn("absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-4 text-white", hasHigh ? "bg-rose-600" : "bg-blue-600")}>
-              {unread.length > 99 ? "99+" : unread.length}
+              {totalUnread > 99 ? "99+" : totalUnread}
             </span>
           ) : null}
         </button>
@@ -194,7 +244,7 @@ export function NotificationBell() {
           <div className="flex gap-1 overflow-x-auto border-b border-border px-3 py-2">
             {tabs.map((t) => (
               <button key={t} type="button" onClick={() => setTab(t)} className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs", tab === t ? "bg-foreground text-background" : "text-muted-foreground hover:bg-accent")}>
-                {t === "all" ? "All" : TAB_LABEL[t]}
+                {t === "foryou" ? "For you" : t === "all" ? "All" : TAB_LABEL[t]}
               </button>
             ))}
           </div>
@@ -237,38 +287,81 @@ export function NotificationBell() {
           </div>
         ) : null}
         <div className={cn("max-h-[min(60vh,480px)] overflow-y-auto", view === "settings" && "hidden")}>
-          {!data ? <p className="px-4 py-6 text-sm text-muted-foreground">Loading…</p> : null}
-          {data && !shown.length ? <p className="px-4 py-8 text-center text-sm text-muted-foreground">Nothing has changed here yet. Significant moves in markets, macro data and scanners will appear as they happen.</p> : null}
-          {groups.map((g) => (
-            <div key={g.label}>
-              <p className="sticky top-0 bg-popover/95 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">{g.label}</p>
+          {tab === "foryou" ? (
+            <>
+              {!smart ? <p className="px-4 py-6 text-sm text-muted-foreground">Ranking what matters to you…</p> : null}
+              {smart && !smartEvents.length ? (
+                <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  All quiet. We watch every feed and tap you when something that matters to you happens.
+                </p>
+              ) : null}
               <ul>
-                {g.items.map((e) => {
+                {smartEvents.map((e) => {
                   const isNew = new Date(e.at).getTime() > seen;
+                  const showWhy = whyOpen.has(e.id);
                   return (
-                    <li key={e.id}>
-                      <Link href={e.href} onClick={() => setOpen(false)} className={cn("block border-t border-border/50 px-4 py-2.5 hover:bg-accent", isNew && "bg-blue-500/5")}>
-                        <div className="flex items-start gap-2.5">
-                          <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", dot[e.severity])} />
-                          <div className="min-w-0 flex-1">
+                    <li key={e.id} className={cn("border-t border-border/50 px-4 py-2.5", isNew && "bg-blue-500/5")}>
+                      <div className="flex items-start gap-2.5">
+                        <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", dot[e.severity])} />
+                        <div className="min-w-0 flex-1">
+                          <Link href={e.href} onClick={() => { recordInteraction(e.id, "clicked"); setOpen(false); }} className="block hover:underline">
                             <p className={cn("text-sm leading-snug", isNew ? "font-semibold" : "font-medium")}>{e.title}</p>
                             <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{e.body}</p>
-                            <p className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                              <span>{CATEGORY_LABEL[e.category]}</span>
-                              <span>·</span>
-                              <span>{ago(e.at)}</span>
-                              {e.severity === "high" ? <span className="rounded bg-rose-500/10 px-1.5 text-rose-600">Important</span> : null}
-                              <span className="ml-auto text-primary">View →</span>
-                            </p>
-                          </div>
+                          </Link>
+                          <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                            <span className={cn("rounded px-1.5 py-0.5 font-semibold", tierBadge[e.tier])}>{tierLabel[e.tier]}</span>
+                            <span>{ago(e.at)}</span>
+                            <button type="button" onClick={() => toggleWhy(e.id)} className="text-primary hover:underline">
+                              {showWhy ? "Hide why" : "Why am I seeing this?"}
+                            </button>
+                            <button type="button" onClick={() => dismissSmart(e.id)} className="ml-auto hover:text-foreground" title="Not interested">
+                              Dismiss
+                            </button>
+                          </p>
+                          {showWhy && e.why ? <p className="mt-1.5 rounded-md bg-accent/60 px-2 py-1.5 text-xs text-muted-foreground">{e.why}</p> : null}
                         </div>
-                      </Link>
+                      </div>
                     </li>
                   );
                 })}
               </ul>
-            </div>
-          ))}
+            </>
+          ) : (
+            <>
+              {!data ? <p className="px-4 py-6 text-sm text-muted-foreground">Loading…</p> : null}
+              {data && !shown.length ? <p className="px-4 py-8 text-center text-sm text-muted-foreground">Nothing has changed here yet. Significant moves in markets, macro data and scanners will appear as they happen.</p> : null}
+              {groups.map((g) => (
+                <div key={g.label}>
+                  <p className="sticky top-0 bg-popover/95 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">{g.label}</p>
+                  <ul>
+                    {g.items.map((e) => {
+                      const isNew = new Date(e.at).getTime() > seen;
+                      return (
+                        <li key={e.id}>
+                          <Link href={e.href} onClick={() => setOpen(false)} className={cn("block border-t border-border/50 px-4 py-2.5 hover:bg-accent", isNew && "bg-blue-500/5")}>
+                            <div className="flex items-start gap-2.5">
+                              <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", dot[e.severity])} />
+                              <div className="min-w-0 flex-1">
+                                <p className={cn("text-sm leading-snug", isNew ? "font-semibold" : "font-medium")}>{e.title}</p>
+                                <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{e.body}</p>
+                                <p className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                                  <span>{CATEGORY_LABEL[e.category]}</span>
+                                  <span>·</span>
+                                  <span>{ago(e.at)}</span>
+                                  {e.severity === "high" ? <span className="rounded bg-rose-500/10 px-1.5 text-rose-600">Important</span> : null}
+                                  <span className="ml-auto text-primary">View →</span>
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </>
+          )}
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
           <span>Informational only — not investment advice.</span>
