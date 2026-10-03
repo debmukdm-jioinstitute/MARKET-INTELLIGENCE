@@ -22,7 +22,7 @@ export async function selectSiteAssistantTier(system: string): Promise<SiteAssis
   const tiers = getSiteAssistantModelTiers();
   if (tiers.length === 0) {
     throw new SiteAssistantConfigError(
-      "Site assistant needs OMNROUTE_BASE_URL + OMNROUTE_API_KEY, or GROQ_API_KEY. See docs/OMNIROUTE.md.",
+      "Site assistant needs OMNIROUTE_BASE_URL + OMNIROUTE_API_KEY (or legacy OMNROUTE_*), or GROQ_API_KEY. See docs/OMNIROUTE.md.",
     );
   }
 

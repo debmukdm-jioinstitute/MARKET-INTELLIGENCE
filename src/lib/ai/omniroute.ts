@@ -7,6 +7,11 @@ const DEFAULT_OMNI_MODEL = "auto/fast";
 const DEFAULT_OMNI_FALLBACK_MODEL = "openai/gpt-oss-20b";
 const DEFAULT_GROQ_MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 
+/** Vercel had a legacy OMNROUTE_* typo; accept either spelling. */
+function omniEnv(primary: string, legacy: string): string | undefined {
+  return process.env[primary]?.trim() || process.env[legacy]?.trim() || undefined;
+}
+
 export class SiteAssistantConfigError extends Error {
   constructor(message: string) {
     super(message);
@@ -21,7 +26,7 @@ export type SiteAssistantTier = {
 };
 
 export function hasOmniRoute(): boolean {
-  return Boolean(process.env.OMNIROUTE_BASE_URL?.trim() && process.env.OMNIROUTE_API_KEY?.trim());
+  return Boolean(omniEnv("OMNIROUTE_BASE_URL", "OMNROUTE_BASE_URL") && omniEnv("OMNIROUTE_API_KEY", "OMNROUTE_API_KEY"));
 }
 
 export function hasSiteAssistantLlm(): boolean {
@@ -29,8 +34,8 @@ export function hasSiteAssistantLlm(): boolean {
 }
 
 function createOmniRouteClient() {
-  const omniBase = process.env.OMNIROUTE_BASE_URL?.trim();
-  const omniKey = process.env.OMNIROUTE_API_KEY?.trim();
+  const omniBase = omniEnv("OMNIROUTE_BASE_URL", "OMNROUTE_BASE_URL");
+  const omniKey = omniEnv("OMNIROUTE_API_KEY", "OMNROUTE_API_KEY");
   if (!omniBase || !omniKey) return null;
   return createOpenAI({
     baseURL: omniBase.replace(/\/$/, ""),
@@ -59,10 +64,10 @@ export function getSiteAssistantModelTiers(): SiteAssistantTier[] {
   const tiers: SiteAssistantTier[] = [];
   const omni = createOmniRouteClient();
   if (omni) {
-    const primary = process.env.OMNIROUTE_MODEL?.trim() || DEFAULT_OMNI_MODEL;
+    const primary = omniEnv("OMNIROUTE_MODEL", "OMNROUTE_MODEL") || DEFAULT_OMNI_MODEL;
     tiers.push({ model: omni.chat(primary), label: "omniroute" });
 
-    const fallbackModel = process.env.OMNIROUTE_FALLBACK_MODEL?.trim() || DEFAULT_OMNI_FALLBACK_MODEL;
+    const fallbackModel = omniEnv("OMNIROUTE_FALLBACK_MODEL", "OMNROUTE_FALLBACK_MODEL") || DEFAULT_OMNI_FALLBACK_MODEL;
     if (fallbackModel !== primary) {
       tiers.push({ model: omni.chat(fallbackModel), label: "omniroute-groq-fallback" });
     }
@@ -82,7 +87,7 @@ export function getSiteAssistantModel(): LanguageModel {
   const tiers = getSiteAssistantModelTiers();
   if (tiers.length === 0) {
     throw new SiteAssistantConfigError(
-      "Site assistant needs OMNROUTE_BASE_URL + OMNROUTE_API_KEY, or GROQ_API_KEY. See docs/OMNIROUTE.md.",
+      "Site assistant needs OMNIROUTE_BASE_URL + OMNIROUTE_API_KEY (or legacy OMNROUTE_*), or GROQ_API_KEY. See docs/OMNIROUTE.md.",
     );
   }
   return tiers[0].model;
