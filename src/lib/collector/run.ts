@@ -22,8 +22,15 @@ import { indiaMacro } from "./sources/india-macro";
 import { rbi } from "./sources/rbi";
 import { rbiMarket } from "./sources/rbi-market";
 import { nseFiidii } from "./sources/nse-fiidii";
+import { fbilRates } from "./sources/fbil";
+import { worldbankIndia } from "./sources/worldbank";
+import { upiStats } from "./sources/upi-npci";
+import { gstCollections } from "./sources/gst-collections";
+import { siamAuto } from "./sources/siam-auto";
+import { powerDemand } from "./sources/power-demand";
+import { monsoon } from "./sources/monsoon";
 
-export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro, brokerCalls, nseAnnouncements, shareholding, creditRatings, concallSummaries, legalRisk, ipos, googleTrends, sentiment];
+export const COLLECTORS: Collector[] = [rbi, rbiMarket, nseFiidii, fredReserves, cboeVix, cftc, bls, ecb, amfi, damodaran, indiaMacro, brokerCalls, nseAnnouncements, shareholding, creditRatings, concallSummaries, legalRisk, ipos, googleTrends, sentiment, fbilRates, worldbankIndia, upiStats, gstCollections, siamAuto, powerDemand, monsoon];
 
 export type RunReport = { collector: string; ok: boolean; series: number; points: number; error?: string; ms: number; sample?: unknown };
 

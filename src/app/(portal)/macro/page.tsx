@@ -11,6 +11,7 @@ import { IndicesStrip } from "@/components/macro/indices-strip";
 import { TransmissionPanels } from "@/components/macro/transmission-panels";
 import { WhatChangedCard } from "@/components/macro/what-changed-card";
 import { YieldCurveCard } from "@/components/macro/yield-curve-card";
+import { AltDataSections } from "@/components/macro/alt-data-sections";
 import { Lines } from "@/components/charts/terminal-charts";
 import { useMacroHub } from "@/hooks/use-macro-hub";
 import { useMacroTape } from "@/hooks/use-macro-tape";
@@ -73,6 +74,7 @@ export default function MacroPage() {
               </Link>
             </p>
           </Panel>
+          <AltDataSections />
           <div>
             <h2 className="mb-3 text-sm uppercase tracking-[0.22em] text-primary">Explore sections</h2>
             <SectionNavGrid />
