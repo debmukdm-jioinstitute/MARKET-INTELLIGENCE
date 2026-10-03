@@ -63,6 +63,7 @@ import {
   WORLDMONITOR_UPSTREAM_REPO,
 } from "@/lib/worldmonitor/public-url";
 import type { Tool } from "./tools";
+import { breadthInsight, flowInsight, marketStatus, vixInsight } from "@/lib/homedashboard/insights";
 
 /**
  * Read-only MCP tools that mirror the website's public data features (the terminal app `mi` builds its menu from
@@ -82,6 +83,23 @@ let holidaysCache: { data: Record<string, unknown>; timestamp: number } | null =
 const underlyingKey = (label: string) => OPTION_UNDERLYINGS.find((u) => u.label.toUpperCase() === label.toUpperCase());
 
 export const SITE_TOOLS: Tool[] = [
+  {
+    name: "get_home_market_insights",
+    title: "Today's market pulse and smart money",
+    category: "Markets",
+    description: "Compact homepage read-through: IST session, breadth, VIX and FII/DII flow patterns from available observations. Regular weekday hours exclude exchange holidays. No personal portfolio or mission data.",
+    inputSchema: empty,
+    run: async () => {
+      const data = await buildIndiaDashboard();
+      return {
+        asOf: data.fetchedAt,
+        session: marketStatus(new Date()),
+        breadth: { advances: data.pulse.breadth.advances, declines: data.pulse.breadth.declines, insight: breadthInsight(data.pulse.breadth.advances, data.pulse.breadth.declines) },
+        vix: { value: data.pulse.indiaVix.value, insight: vixInsight(data.pulse.indiaVix.value) },
+        flows: (["fii", "dii"] as const).map((key) => ({ category: key.toUpperCase(), netCr: data.moneyFlow[key].today, asOf: data.moneyFlow[key].source.asOf, insight: flowInsight(key === "fii" ? "FIIs" : "DIIs", data.moneyFlow[key].history, data.moneyFlow[key].today) })),
+      };
+    },
+  },
   // ---- Markets ----
   {
     name: "get_india_dashboard",

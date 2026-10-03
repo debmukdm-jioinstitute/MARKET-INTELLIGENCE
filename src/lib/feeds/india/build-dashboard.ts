@@ -24,7 +24,7 @@ import { fetchMassiveUsQuotes, MASSIVE_SOURCE } from "@/lib/feeds/sources/massiv
 import { fetchYahooHistory, fetchYahooQuotes, yahooFinanceUrl } from "@/lib/feeds/sources/yahoo";
 import { fetchFredSeriesCsv } from "@/lib/feeds/sources/fred";
 import { getRbiBenchmark10y, getRbiLiquidity } from "@/lib/collector/rbi-live";
-import { latestPoints } from "@/lib/collector/store";
+import { latestPoints, seriesHistory } from "@/lib/collector/store";
 import { persistFiiDiiRows, rollupFiiDiiFromStore } from "@/lib/feeds/india/fii-dii-store";
 import { fetchNifty50IndexValuation } from "@/lib/feeds/india/nse-index-valuation";
 import type { MacroPoint } from "@/lib/feeds/types";
@@ -376,9 +376,15 @@ async function buildMoneyFlow(fiiDii: FiiDiiLike[]): Promise<IndiaDashboardPaylo
     fii: { d5: null, m1: null, ytd: null },
     dii: { d5: null, m1: null, ytd: null },
   }));
+  // Reuse the collector behind MoneyFlow, without another browser fetch/poll.
+  const [fiiHistory, diiHistory] = await Promise.all([
+    seriesHistory("nse_fii_net_cash_cr", 120).catch(() => []),
+    seriesHistory("nse_dii_net_cash_cr", 120).catch(() => []),
+  ]);
   return {
     fii: {
       label: "FII",
+      history: fiiHistory,
       today: fiiNet,
       d5: roll.fii.d5,
       m1: roll.fii.m1,
@@ -387,6 +393,7 @@ async function buildMoneyFlow(fiiDii: FiiDiiLike[]): Promise<IndiaDashboardPaylo
     },
     dii: {
       label: "DII",
+      history: diiHistory,
       today: diiNet,
       d5: roll.dii.d5,
       m1: roll.dii.m1,

@@ -4,6 +4,7 @@ export type HelpToolRow = { group: string; name: string; returns: string; ask: s
 
 /** Example prompts — keyed by tool name; everything else gets a generic ask line. */
 const ASK: Partial<Record<string, string>> = {
+  get_home_market_insights: "Explain today's market breadth, VIX and institutional buying or selling streaks.",
   get_market_overview: "Give me a complete market overview: snapshot, stress, breadth, and daily brief in one call.",
   get_research_pack: "Give me a complete research pack for RELIANCE (stats, price history, ratios, security risk in one call).",
   get_market_snapshot: "Give me today's market snapshot.",
