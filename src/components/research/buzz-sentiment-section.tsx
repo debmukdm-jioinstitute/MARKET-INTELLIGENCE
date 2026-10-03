@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
+import { signClass } from "@/lib/sign-color";
 
 type TrendsResponse = { keyword: string; note: string; dbConfigured: boolean; searchTerm?: string; fetchedAt?: string; series: { points: { d: string; v: number }[]; momentum: string | null; recentChangePct: number | null; yearOnYearChangePct: number | null } | null; risingQueries: string[]; source?: { label: string; url: string } };
 type SentimentResponse = { dbConfigured: boolean; note: string; digest?: SourceDigest[]; points?: QuadrantPoint[] };
@@ -61,7 +62,7 @@ function TrendsOverlay({ symbol, candles }: { symbol: string; candles: { ts: str
             <span><span className="mr-1 inline-block h-0.5 w-4 align-middle" style={{ background: "#1a73e8" }} />Google search interest (India)</span>
             <span><span className="mr-1 inline-block h-0.5 w-4 align-middle" style={{ background: "#5f6368" }} />Share price</span>
             <span>{fmtDay(pts[0].d)} → {fmtDay(pts[pts.length - 1].d)}</span>
-            {data?.series?.momentum ? <span>Interest is {data.series.momentum}{data.series.recentChangePct !== null ? ` (${data.series.recentChangePct >= 0 ? "+" : ""}${data.series.recentChangePct}% vs the previous 13 weeks)` : ""}</span> : null}
+            {data?.series?.momentum ? <span>Interest is {data.series.momentum}{data.series.recentChangePct !== null ? <span className={signClass(data.series.recentChangePct)}>{` (${data.series.recentChangePct >= 0 ? "+" : ""}${data.series.recentChangePct}% vs the previous 13 weeks)`}</span> : ""}</span> : null}
           </div>
           {data?.risingQueries.length ? <p className="text-xs text-muted-foreground">Rising related searches: {data.risingQueries.join(" · ")}</p> : null}
           {data?.source ? (

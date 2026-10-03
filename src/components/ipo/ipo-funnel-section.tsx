@@ -6,6 +6,7 @@ import { fmtInr } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import useSWR from "swr";
+import { signClass } from "@/lib/sign-color";
 
 type Ipo = {
   company: string;
@@ -65,7 +66,7 @@ function GmpGauge({ gmp, disclaimer, explainer }: { gmp: NonNullable<Ipo["gmp"]>
       ) : (
         <p className="text-sm text-foreground">
           {gmp.value === null ? "—" : `₹${gmp.value}`}
-          {gmp.pct !== null ? <span className="ml-1 text-xs text-muted-foreground">({gmp.pct >= 0 ? "+" : ""}{gmp.pct}% of upper price)</span> : null}
+          {gmp.pct !== null ? <span className={cn("ml-1 text-xs", signClass(gmp.pct))}>({gmp.pct >= 0 ? "+" : ""}{gmp.pct}% of upper price)</span> : null}
         </p>
       )}
       {!gmp.disagree && gmp.pct !== null ? (

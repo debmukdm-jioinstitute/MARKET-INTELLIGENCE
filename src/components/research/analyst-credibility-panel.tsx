@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
+import { signClass } from "@/lib/sign-color";
 
 type BrokerAccuracy = {
   broker: string;
@@ -103,7 +104,7 @@ export function AnalystCredibilityPanel() {
                     )}
                     <span className="ml-1 text-xs text-muted-foreground">({b.scored} scored)</span>
                   </td>
-                  <td className="py-2.5 pr-3 tabular-nums">
+                  <td className={cn("py-2.5 pr-3 tabular-nums", signClass(b.avgReturnPct))}>
                     {b.avgReturnPct != null ? `${b.avgReturnPct >= 0 ? "+" : ""}${b.avgReturnPct}%` : "—"}
                   </td>
                   <td className="py-2.5 pr-3 tabular-nums">{b.sampleSize}</td>

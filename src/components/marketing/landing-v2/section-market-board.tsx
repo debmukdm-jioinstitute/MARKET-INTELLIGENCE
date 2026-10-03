@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
 import { BodyCopy, DataCell, SectionTitle, SourceLine } from "./ui";
+import { landingSignClass } from "@/lib/sign-color";
 
 type Scenario = "risk-on" | "inflation" | "rupee";
 
@@ -51,7 +52,7 @@ function WatchRow({
     <tr className="border-b border-[#dcd6cc]">
       <td className="py-2 pr-4 text-sm font-medium text-[#141414]">{label}</td>
       <td className="py-2 pr-4 text-sm tabular-nums">{value || "—"}</td>
-      <td className="py-2 pr-4 text-sm tabular-nums text-[#0d6b5c]">{change || "—"}</td>
+      <td className={cn("py-2 pr-4 text-sm tabular-nums", landingSignClass(change))}>{change || "—"}</td>
       <td className="py-2 text-xs text-[#6b6b6b]">
         {source ? (
           <>

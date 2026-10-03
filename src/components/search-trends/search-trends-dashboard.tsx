@@ -9,6 +9,7 @@ import { ExternalLink, RefreshCw, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import { signClass } from "@/lib/sign-color";
 
 const CATEGORIES = Object.keys(SEARCH_TREND_CATEGORY_LABELS) as SearchTrendCategory[];
 
@@ -175,7 +176,7 @@ export function SearchTrendsDashboard() {
                       <span className="text-lg font-semibold tabular-nums">{row.attentionIndex}</span>
                       <span className="ml-1 text-xs text-muted-foreground">/ 100</span>
                     </td>
-                    <td className="px-4 py-3 tabular-nums">
+                    <td className={cn("px-4 py-3 tabular-nums", signClass(row.momentumPct))}>
                       {row.momentumPct >= 0 ? "+" : ""}
                       {row.momentumPct.toFixed(1)}%
                     </td>

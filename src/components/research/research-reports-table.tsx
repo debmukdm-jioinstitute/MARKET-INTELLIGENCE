@@ -3,6 +3,7 @@
 import { RESEARCH_SOURCE_LABELS } from "@/lib/research/source-labels";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { signClass } from "@/lib/sign-color";
 
 export type ResearchReportRow = {
   id: string;
@@ -105,7 +106,7 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
               </td>
               <td className="px-3 py-2 text-xs font-bold">{r.recommendation ?? "—"}</td>
               <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(r.target_price)}</td>
-              <td className="px-3 py-2 text-right tabular-nums">
+              <td className={cn("px-3 py-2 text-right tabular-nums", signClass(r.upside_pct))}>
                 {r.upside_pct != null ? `${r.upside_pct >= 0 ? "+" : ""}${r.upside_pct.toFixed(1)}%` : "—"}
               </td>
               <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">

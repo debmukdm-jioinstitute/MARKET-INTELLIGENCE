@@ -7,14 +7,15 @@ import { ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import type { FlagCandidate, OptionsFlowRecord, SourcedField } from "./types";
 import { CONFIDENCE_STYLE } from "./types";
+import { signClass } from "@/lib/sign-color";
 
-function Figure({ label, field, fmt }: { label: string; field: SourcedField<number>; fmt: (v: number) => string }) {
+function Figure({ label, field, fmt, signed = false }: { label: string; field: SourcedField<number>; fmt: (v: number) => string; signed?: boolean }) {
   return (
     <div className="rounded-md bg-muted/40 px-2.5 py-1.5">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-semibold">
         {field.status === "ok" ? (
-          <span className="inline-flex items-center gap-1">
+          <span className={cn("inline-flex items-center gap-1", signed && signClass(field.value))}>
             {fmt(field.value)}
             <DataInfo source={field.source} />
           </span>
@@ -65,6 +66,7 @@ export function FlagCard({
           <Figure
             label="Day change"
             field={record.priceChangePct}
+            signed
             fmt={(v) => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`}
           />
           <Figure label="Call volume" field={record.callsVolume} fmt={(v) => v.toLocaleString("en-IN")} />

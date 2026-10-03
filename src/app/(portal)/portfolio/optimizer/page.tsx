@@ -9,6 +9,8 @@ import { formatPct } from "@/lib/format";
 import { optimizeWeightsFromReturns, type OptimizeGoal } from "@/lib/optimizer";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { signClass } from "@/lib/sign-color";
+import { cn } from "@/lib/utils";
 
 function yahooSymbol(market: string, symbol: string) {
   return market === "IN" ? `${symbol}.NS` : symbol;
@@ -120,7 +122,7 @@ export default function OptimizerPage() {
           </div>
           {fetching ? <p className="text-sm text-muted-foreground">Loading return history…</p> : null}
           <div className="grid gap-3 md:grid-cols-3">
-            <Tile metricId="total_return" label="Expected return" value={formatPct(result.stats.ret)} />
+            <Tile metricId="total_return" label="Expected return" value={formatPct(result.stats.ret)} signed />
             <Tile metricId="beta" label="Expected vol" value={formatPct(result.stats.vol)} />
             <Tile metricId="sharpe" label="Sharpe" value={result.stats.sharpe.toFixed(2)} />
           </div>
@@ -161,7 +163,7 @@ export default function OptimizerPage() {
                           <td className="py-2 pr-3 font-medium">{w.symbol}</td>
                           <td className="py-2 pr-3 text-right tabular-nums">{formatPct(cur, 1, false)}</td>
                           <td className="py-2 pr-3 text-right tabular-nums">{formatPct(w.weight, 1, false)}</td>
-                          <td className="py-2 text-right tabular-nums">{formatPct(delta, 1, true)}</td>
+                          <td className={cn("py-2 text-right tabular-nums", signClass(delta))}>{formatPct(delta, 1, true)}</td>
                         </tr>
                       );
                     })}
@@ -176,14 +178,14 @@ export default function OptimizerPage() {
   );
 }
 
-function Tile({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
+function Tile({ metricId, label, value, signed = false }: { metricId?: string; label: string; value: string; signed?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{label}</p>
         <MetricInfo id={metricId ?? "sharpe"} name={label} iconSize="xs" />
       </div>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className={cn("mt-1 text-2xl font-semibold tabular-nums", signed && signClass(value))}>{value}</p>
     </div>
   );
 }
