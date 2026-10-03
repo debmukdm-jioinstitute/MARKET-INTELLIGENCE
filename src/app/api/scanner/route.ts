@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkAndRecordScannerView, type ScannerQuotaView } from "@/lib/payments/scanner-quota";
 import { getSessionUser } from "@/lib/session";
 import { SCANNERS } from "@/lib/scanner/scanners";
 import { loadScan } from "@/lib/scanner/store";
@@ -18,6 +19,17 @@ export async function GET(req: Request) {
   }
 
   const run = await loadScan().catch(() => null);
+
+  let scannerQuota: ScannerQuotaView | undefined;
+  let results: NonNullable<typeof run>["scanners"][string] | undefined;
+
+  if (id && user) {
+    const gate = await checkAndRecordScannerView(user, id);
+    if (!gate.ok) return gate.response;
+    scannerQuota = gate.quota;
+    results = run?.scanners[id] ?? [];
+  }
+
   return NextResponse.json({
     run: run && { asOf: run.asOf, lastBar: run.lastBar, universe: run.universe, scanned: run.scanned, failed: run.failed },
     scanners: SCANNERS.map((s) => ({
@@ -28,7 +40,6 @@ export async function GET(req: Request) {
       matches: run?.scanners[s.id]?.length ?? 0,
       top: (run?.scanners[s.id] ?? []).slice(0, 5).map((r) => ({ symbol: r.symbol, changePct: r.changePct })),
     })),
-    // every scanner that currently flags this symbol
     symbolHits: symbol
       ? SCANNERS.flatMap((s) =>
           (run?.scanners[s.id] ?? [])
@@ -36,7 +47,8 @@ export async function GET(req: Request) {
             .map((r) => ({ scanner: s.id, label: s.label, bias: s.bias, ...r })),
         )
       : undefined,
-    results: id && user ? (run?.scanners[id] ?? []) : undefined,
+    results,
+    scannerQuota,
     authenticated: Boolean(user),
   });
 }

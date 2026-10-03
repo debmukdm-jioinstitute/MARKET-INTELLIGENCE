@@ -372,6 +372,17 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
 
+      await db`
+        CREATE TABLE IF NOT EXISTS scanner_monthly_opens (
+          user_email text NOT NULL,
+          period_ym text NOT NULL,
+          scanner_id text NOT NULL,
+          opened_at timestamptz NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_email, period_ym, scanner_id)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_scanner_monthly_opens_period ON scanner_monthly_opens(period_ym, user_email)`;
+
       // -- Options flow screener (data/analysis/flagging 3-agent pipeline) --
       await db`
         CREATE TABLE IF NOT EXISTS options_flow_snapshots (
@@ -437,6 +448,19 @@ export async function ensureSchema(): Promise<void> {
       // service serves the most recent real quote with stale=true rather than
       // inventing a price. Written by the quote service (throttled), read on
       // live-source failure. Free-tier friendly: one row per symbol.
+      await db`
+        CREATE TABLE IF NOT EXISTS retargeting_sends (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          template_id text NOT NULL,
+          recipient_email text NOT NULL,
+          subject text NOT NULL,
+          sent_at timestamptz NOT NULL DEFAULT now(),
+          sent_by text NOT NULL,
+          resend_id text
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_retargeting_sends_email ON retargeting_sends(recipient_email, sent_at DESC)`;
+
       await db`
         CREATE TABLE IF NOT EXISTS quote_last_good (
           symbol text PRIMARY KEY,
@@ -662,6 +686,19 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_sentiment_daily_symbol_day ON sentiment_daily (symbol, day DESC)`;
+
+      // -- Gamification: server-side XP ledger (source of truth for points) --
+      await db`
+        CREATE TABLE IF NOT EXISTS xp_events (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_email text NOT NULL,
+          action text NOT NULL,
+          points int NOT NULL,
+          page text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_email)`;
 
       schemaReady = true;
     } catch (e) {

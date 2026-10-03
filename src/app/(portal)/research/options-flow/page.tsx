@@ -3,6 +3,8 @@
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { FlagHistory } from "@/components/options-flow/flag-history";
 import { OptionsFlowPanel } from "@/components/options-flow/options-flow-panel";
+import { Playbook } from "@/components/options-flow/playbook";
+import { ProgressStrip } from "@/components/options-flow/progress-strip";
 import { FreeTierAiQuotaBanner } from "@/components/payments/free-tier-ai-quota-banner";
 
 export default function OptionsFlowPage() {
@@ -16,6 +18,8 @@ export default function OptionsFlowPage() {
 
       <FreeTierAiQuotaBanner context="options-flow" />
 
+      <ProgressStrip />
+
       <Panel
         title="Run the screener"
         subtitle="Search and pick from the full NSE F&O universe (~210 optionable stocks, synced weekly from Upstox's instrument master) — options data comes from Upstox's option chain, so it's limited to names with listed options."
@@ -24,10 +28,17 @@ export default function OptionsFlowPage() {
       </Panel>
 
       <Panel
-        title="Flag log"
-        subtitle="Every flag from every run is logged automatically. Check back after a few months to see your real hit rate, not the flags you remember working."
+        title="Flag log — your real hit rate"
+        subtitle="Every flag from every run is logged automatically. Flags over time, the confidence mix, and every flag's story — the ones that led somewhere and the ones that didn't, so your memory can't cherry-pick."
       >
         <FlagHistory />
+      </Panel>
+
+      <Panel
+        title="Beginner's playbook"
+        subtitle="New to options flow? Four short reads on what unusual activity means and how to use this page."
+      >
+        <Playbook />
       </Panel>
     </div>
   );

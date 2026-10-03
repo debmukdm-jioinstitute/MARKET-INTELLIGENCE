@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { hasEmailConfigured, isSandboxSender, sendNewsletter } from "@/lib/admin/email";
+import { hasEmailConfigured, isSandboxSender, listUnsubscribeHeaders, sendNewsletter } from "@/lib/admin/email";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
-import { getActiveRecipients, getRecipientCount, isValidEmail, withUnsubscribeFooter } from "@/lib/newsletter";
+import { getActiveRecipients, getRecipientCount, isValidEmail, unsubscribeUrl, withUnsubscribeFooter } from "@/lib/newsletter";
 import { prepareNewsletterHtml } from "@/lib/newsletter/assets";
 import { wrapNewsletterDocument } from "@/lib/newsletter/html";
 import { NextResponse } from "next/server";
@@ -74,8 +74,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No subscribers to send to yet." }, { status: 400 });
   }
 
-  const result = await sendNewsletter(subject, recipients, (email) =>
-    wrapNewsletterDocument(withUnsubscribeFooter(html, email)),
+  const result = await sendNewsletter(
+    subject,
+    recipients,
+    (email) => wrapNewsletterDocument(withUnsubscribeFooter(html, email)),
+    { headersFor: (email) => listUnsubscribeHeaders(unsubscribeUrl(email)) },
   );
   const [row] = await db`
     INSERT INTO newsletters (subject, html, status, sent_at, recipient_count)

@@ -1,10 +1,11 @@
 import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
-import { hasEmailConfigured, sendNewsletter } from "@/lib/admin/email";
+import { hasEmailConfigured, listUnsubscribeHeaders, sendNewsletter } from "@/lib/admin/email";
 import { hasDatabase } from "@/lib/db";
 import { buildBrief } from "@/lib/brief/build";
 import { briefHtml, briefSubject } from "@/lib/brief/email";
 import { briefRecipients, markEmailed, saveBrief } from "@/lib/brief/store";
+import { unsubscribeUrl } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -23,7 +24,9 @@ export async function GET(req: Request) {
     const to = await briefRecipients(kind);
     if (to.length && !hasEmailConfigured()) email = { skipped: "RESEND_API_KEY not configured" };
     else if (to.length) {
-      const r = await sendNewsletter(briefSubject(brief), to, (addr) => briefHtml(brief, addr));
+      const r = await sendNewsletter(briefSubject(brief), to, (addr) => briefHtml(brief, addr), {
+        headersFor: (addr) => listUnsubscribeHeaders(unsubscribeUrl(addr)),
+      });
       await markEmailed(id);
       email = { sent: r.sent, failed: r.failed };
     }

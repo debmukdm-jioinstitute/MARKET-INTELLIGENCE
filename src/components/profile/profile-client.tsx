@@ -13,7 +13,8 @@ import type { AssistantActionRow } from "@/lib/site-assistant/audit";
 import { cn } from "@/lib/utils";
 import { ProfilePlanBilling } from "@/components/profile/profile-plan-billing";
 import { TelegramAlertsSetupPanel } from "@/components/telegram/telegram-alerts-setup-panel";
-import { Bug, FileText, LogOut, Mail, ShieldCheck } from "lucide-react";
+import { useXpSummary, type XpSummary } from "@/lib/gamification/client";
+import { Bug, FileText, LogOut, Mail, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -176,6 +177,143 @@ function AssistantActivitySection() {
         </ul>
       ) : null}
     </Section>
+  );
+}
+
+const LEVEL_PILL: Record<string, string> = {
+  Explorer: "bg-stone-100 text-stone-700",
+  Learner: "bg-sky-100 text-sky-800",
+  Analyst: "bg-violet-100 text-violet-800",
+  Strategist: "bg-amber-100 text-amber-800",
+};
+
+// Points needed to reach each level (Explorer starts at 0).
+const LEVEL_AT: Record<string, number> = { Learner: 100, Analyst: 300, Strategist: 700 };
+
+function timeAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(ms) || ms < 0) return "";
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  try {
+    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  } catch {
+    return "";
+  }
+}
+
+function XpPointsSection() {
+  const { data, loading } = useXpSummary();
+
+  return (
+    <Section
+      id="points"
+      title="Your points"
+      subtitle="Points for exploring the terminal — asking the AI Desk, running scanner searches, backtesting ideas, setting alerts and spotting options flags."
+    >
+      {loading ? (
+        <div className="space-y-3" aria-label="Loading your points">
+          <div className="h-10 w-44 animate-pulse rounded-lg bg-muted" />
+          <div className="h-2.5 w-full animate-pulse rounded-full bg-muted" />
+          <div className="h-20 w-full animate-pulse rounded-xl bg-muted" />
+        </div>
+      ) : !data || data.total <= 0 ? (
+        <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-muted/40 p-4">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+            <Trophy className="size-5 text-amber-700" aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-foreground">No points yet — the first ones are one click away.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Run your first AI Desk debate, scanner search, backtest, alert or flag check while signed in, and the points land here automatically.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <XpPointsBody data={data} />
+      )}
+    </Section>
+  );
+}
+
+function XpPointsBody({ data }: { data: XpSummary }) {
+  const byAction = data.byAction ?? [];
+  const recent = (data.recent ?? []).slice(0, 5);
+  const need = data.nextLevel && LEVEL_AT[data.nextLevel] != null ? Math.max(0, LEVEL_AT[data.nextLevel] - data.total) : null;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-4xl font-bold tracking-tight text-foreground">
+          {data.total.toLocaleString("en-IN")}
+          <span className="ml-1 text-lg font-medium text-muted-foreground">pts</span>
+        </p>
+        <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold", LEVEL_PILL[data.level] ?? LEVEL_PILL.Explorer)}>
+          <Sparkles className="size-3.5" aria-hidden />
+          {data.level}
+        </span>
+      </div>
+
+      {data.nextLevel ? (
+        <div className="mt-4">
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>
+              {Math.min(100, Math.max(0, Math.round(data.progressPct)))}% of the way to {data.nextLevel}
+            </span>
+            {need !== null && need > 0 ? <span className="font-medium">{need.toLocaleString("en-IN")} more points</span> : null}
+          </div>
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(data.progressPct)} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress to ${data.nextLevel}`}>
+            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${Math.min(100, Math.max(0, data.progressPct))}%` }} />
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
+          <Trophy className="size-3.5" aria-hidden />
+          Top level — nothing above {data.level}.
+        </p>
+      )}
+
+      {byAction.length > 0 ? (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-foreground">How you earned them</h3>
+          <ul className="mt-1 divide-y divide-border">
+            {byAction.map((a) => (
+              <li key={a.action} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">{a.label}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {a.count} {a.count === 1 ? "time" : "times"}
+                  </p>
+                </div>
+                <span className="shrink-0 text-sm font-bold text-amber-700">+{a.points.toLocaleString("en-IN")}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {recent.length > 0 ? (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-foreground">Recent</h3>
+          <ul className="mt-1 divide-y divide-border">
+            {recent.map((e, i) => (
+              <li key={`${e.action}-${e.created_at}-${i}`} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-foreground">{e.label}</p>
+                  <p className="text-xs text-muted-foreground">{timeAgo(e.created_at)}</p>
+                </div>
+                <span className="shrink-0 text-sm font-semibold text-emerald-700">+{e.points}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -353,6 +491,8 @@ export function ProfileClient() {
           {note.text}
         </p>
       ) : null}
+
+      <XpPointsSection />
 
       <Section
         id="telegram"

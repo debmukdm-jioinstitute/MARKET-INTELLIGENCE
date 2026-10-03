@@ -2,161 +2,138 @@
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { PushNotificationsToggle } from "@/components/layout/push-notifications-toggle";
-import { Trash2 } from "lucide-react";
+import { ScanAlerts } from "@/components/scanner/scan-alerts";
 import useSWR from "swr";
 import { useState } from "react";
-import { ScanAlerts } from "@/components/scanner/scan-alerts";
+import { ActivityTimeline } from "@/components/alerts/activity-timeline";
+import { BadgeStrip } from "@/components/alerts/badge-strip";
+import { DEFAULT_DRAFT, condListText, type Draft, type MetricInfo, type Rule, type Template } from "@/components/alerts/model";
+import { RuleCards } from "@/components/alerts/rule-cards";
+import { RuleStudio } from "@/components/alerts/rule-studio";
+import { TemplateGallery } from "@/components/alerts/template-gallery";
+import { useAlertsGamification } from "@/components/alerts/use-gamification";
 
-type Cond = { metric: string; op: string; value: number };
-type Rule = { id: string; name: string; conditions: Cond[]; combinator: "all" | "any"; channels: string[]; cooldownHours: number; active: boolean; lastFiredAt: string | null };
-type Event = { id: string; fired_at: string; message: string };
 type Payload = {
   rules: Rule[];
-  events: Event[];
-  catalog: { id: string; label: string; unit: string; current?: number }[];
+  events: { id: string; fired_at: string; message: string }[];
+  catalog: MetricInfo[];
   canEdit: boolean;
   dbConfigured: boolean;
 };
 
 const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json() as Promise<Payload>);
-const OPS = [">", "<", ">=", "<="];
-const inputCls = "rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground";
+
+const freshDraft = (d: Draft): Draft => ({ ...d, conditions: d.conditions.map((c) => ({ ...c })), channels: [...d.channels] });
 
 export default function AlertRulesPage() {
-  const { data, mutate } = useSWR("/api/alerts", fetcher, { refreshInterval: 60_000 });
-  const [name, setName] = useState("");
-  const [conds, setConds] = useState<Cond[]>([{ metric: "india_vix", op: ">", value: 20 }]);
-  const [combinator, setCombinator] = useState<"all" | "any">("all");
-  const [channels, setChannels] = useState<string[]>(["push"]);
-  const [cooldown, setCooldown] = useState(12);
-  const [err, setErr] = useState<string | null>(null);
-  const label = (id: string) => data?.catalog.find((c) => c.id === id)?.label ?? id;
+  const { data, error, mutate } = useSWR("/api/alerts", fetcher, { refreshInterval: 60_000 });
+  const [draft, setDraft] = useState<Draft>(() => freshDraft(DEFAULT_DRAFT));
+  const activeCount = (data?.rules ?? []).filter((r) => r.active).length;
+  const { markFirstRule } = useAlertsGamification(data?.rules.length ?? 0, activeCount);
+  const labelOf = (id: string) => data?.catalog.find((m) => m.id === id);
 
-  async function create() {
-    setErr(null);
+  function pickTemplate(t: Template) {
+    setDraft(freshDraft(t.draft));
+    document.getElementById("rule-studio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function createRule(d: Draft): Promise<string | null> {
+    const name = d.name.trim() || condListText(d.conditions, d.combinator, labelOf);
     const res = await fetch("/api/alerts", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: name || conds.map((c) => `${label(c.metric)} ${c.op} ${c.value}`).join(" & "), conditions: conds, combinator, channels, cooldownHours: cooldown }),
+      body: JSON.stringify({ name, conditions: d.conditions, combinator: d.combinator, channels: d.channels, cooldownHours: d.cooldownHours }),
     });
-    const json = await res.json();
-    if (!res.ok) return setErr(json.issues?.join("; ") ?? json.error ?? "Failed");
-    setName("");
-    mutate();
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return (json.issues as string[] | undefined)?.join("; ") ?? json.error ?? "Couldn't create the rule — please try again.";
+    markFirstRule();
+    setDraft(freshDraft(DEFAULT_DRAFT));
+    await mutate();
+    return null;
   }
 
-  const call = async (method: string, url: string, body?: unknown) => {
+  async function call(method: string, url: string, body?: unknown) {
     await fetch(url, { method, headers: { "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
-    mutate();
-  };
+    await mutate();
+  }
+
+  async function restoreRule(r: Rule) {
+    await call("POST", "/api/alerts", {
+      name: r.name,
+      conditions: r.conditions,
+      combinator: r.combinator,
+      channels: r.channels,
+      cooldownHours: r.cooldownHours,
+    });
+  }
 
   return (
-    <div className="space-y-6 max-w-[1100px] mx-auto pb-16">
+    <div className="mx-auto max-w-[1100px] space-y-6 pb-16">
       <PageHeader
         kicker="Alerts"
-        title="Alert Rules"
-        subtitle="Get a push notification or email when market conditions you define are met — e.g. India VIX above 20 and FII net flow below −2,000 cr. Rules are checked every 3 hours, so alerts can lag a fast move."
+        title="Market alerts"
+        subtitle="Tell us what to watch, and we'll ping you when it happens — e.g. India VIX above 20, or FII selling more than ₹2,000 cr in a day. Rules are checked every 3 hours, so alerts can lag a fast move."
       />
 
+      {!data && !error ? (
+        <Panel title="Loading your alerts">
+          <p className="animate-pulse text-sm text-muted-foreground">Fetching your rules and the latest market readings…</p>
+        </Panel>
+      ) : null}
+      {error && !data ? (
+        <Panel title="Couldn't load alerts">
+          <p className="text-sm text-muted-foreground">Something went wrong loading your alerts. Please refresh the page.</p>
+        </Panel>
+      ) : null}
+
       {data && !data.canEdit ? (
-        <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-          {data.dbConfigured ? "Sign in with a free account to create alert rules." : "Alert rules need the database, which is not configured in this environment."}
+        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+          {data.dbConfigured
+            ? "Sign in with a free account to create alert rules — you'll see your templates, rules and alert history here."
+            : "Alert rules need the database, which is not configured in this environment."}
         </p>
       ) : null}
 
       {data?.canEdit ? (
         <>
-          <Panel title="New rule" action={<PushNotificationsToggle />}>
-            <div className="space-y-3 text-sm">
-              {conds.map((c, i) => (
-                <div key={i} className="flex flex-wrap items-center gap-2">
-                  <select className={inputCls} value={c.metric} onChange={(e) => setConds(conds.map((x, j) => (j === i ? { ...x, metric: e.target.value } : x)))}>
-                    {data.catalog.map((m) => (
-                      <option key={m.id} value={m.id}>{m.label} ({m.unit})</option>
-                    ))}
-                  </select>
-                  <select className={inputCls} value={c.op} onChange={(e) => setConds(conds.map((x, j) => (j === i ? { ...x, op: e.target.value } : x)))}>
-                    {OPS.map((o) => <option key={o}>{o}</option>)}
-                  </select>
-                  <input className={`${inputCls} w-28 tabular-nums`} type="number" step="any" value={c.value} onChange={(e) => setConds(conds.map((x, j) => (j === i ? { ...x, value: Number(e.target.value) } : x)))} />
-                  <span className="text-muted-foreground">now: {data.catalog.find((m) => m.id === c.metric)?.current?.toFixed(2) ?? "n/a"}</span>
-                  {conds.length > 1 ? <button type="button" className="text-rose-600" onClick={() => setConds(conds.filter((_, j) => j !== i))}>Remove</button> : null}
-                </div>
-              ))}
-              <div className="flex flex-wrap items-center gap-3">
-                {conds.length < 5 ? <button type="button" className="text-blue-600 hover:underline" onClick={() => setConds([...conds, { metric: "fii_net", op: "<", value: -2000 }])}>+ Add condition</button> : null}
-                {conds.length > 1 ? (
-                  <select className={inputCls} value={combinator} onChange={(e) => setCombinator(e.target.value as "all" | "any")}>
-                    <option value="all">ALL must match</option>
-                    <option value="any">ANY can match</option>
-                  </select>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <input className={`${inputCls} w-64`} placeholder="Rule name (optional)" value={name} onChange={(e) => setName(e.target.value)} />
-                {["push", "email"].map((ch) => (
-                  <label key={ch} className="inline-flex items-center gap-1.5 capitalize">
-                    <input type="checkbox" checked={channels.includes(ch)} onChange={(e) => setChannels(e.target.checked ? [...channels, ch] : channels.filter((x) => x !== ch))} />
-                    {ch}
-                  </label>
-                ))}
-                <label className="inline-flex items-center gap-1.5">
-                  Cooldown
-                  <input className={`${inputCls} w-16 tabular-nums`} type="number" min={1} max={168} value={cooldown} onChange={(e) => setCooldown(Number(e.target.value))} /> h
-                </label>
-                <button type="button" disabled={!channels.length} onClick={create} className="rounded-lg bg-blue-600 px-4 py-1.5 font-semibold text-white disabled:opacity-50">Create rule</button>
-              </div>
-              {err ? <p className="text-rose-600">{err}</p> : null}
-            </div>
+          <BadgeStrip ruleCount={data.rules.length} activeCount={activeCount} />
+
+          <Panel title="1 · Start from a template" subtitle="One tap loads a ready-made rule — then make it yours below.">
+            <TemplateGallery onPick={pickTemplate} />
           </Panel>
 
-          <Panel title="Your rules">
-            {data.rules.length ? (
-              <ul className="divide-y divide-border/50 text-sm">
-                {data.rules.map((r) => (
-                  <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                    <div>
-                      <p className="font-semibold text-foreground">{r.name}</p>
-                      <p className="text-muted-foreground">
-                        {r.conditions.map((c) => `${label(c.metric)} ${c.op} ${c.value}`).join(r.combinator === "all" ? " AND " : " OR ")} · {r.channels.join(", ")} · cooldown {r.cooldownHours}h
-                        {r.lastFiredAt ? ` · last fired ${new Date(r.lastFiredAt).toLocaleString()}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <label className="inline-flex items-center gap-1.5">
-                        <input type="checkbox" checked={r.active} onChange={(e) => call("PATCH", "/api/alerts", { id: r.id, active: e.target.checked })} /> Active
-                      </label>
-                      <button type="button" aria-label="Delete rule" className="text-rose-600" onClick={() => call("DELETE", `/api/alerts?id=${r.id}`)}>
-                        <Trash2 className="size-4" />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">No rules yet.</p>
-            )}
+          <div id="rule-studio" className="scroll-mt-24">
+            <Panel title="2 · Rule studio" subtitle="Build the rule in plain words. The preview updates as you type." action={<PushNotificationsToggle />}>
+              <RuleStudio draft={draft} onDraft={setDraft} catalog={data.catalog} onCreate={createRule} canEdit={data.canEdit} />
+            </Panel>
+          </div>
+
+          <Panel title="3 · Your rules" subtitle={`${activeCount} of ${data.rules.length} watching right now.`}>
+            <RuleCards
+              rules={data.rules}
+              labelOf={labelOf}
+              onToggle={(id, active) => call("PATCH", "/api/alerts", { id, active })}
+              onDelete={(id) => call("DELETE", `/api/alerts?id=${encodeURIComponent(id)}`)}
+              onRestore={restoreRule}
+            />
           </Panel>
 
-          <Panel title="Recent alerts">
-            {data.events.length ? (
-              <ul className="divide-y divide-border/50 text-sm">
-                {data.events.map((e) => (
-                  <li key={e.id} className="py-2"><span className="tabular-nums text-muted-foreground">{new Date(e.fired_at).toLocaleString()}</span> <span className="text-foreground">{e.message}</span></li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">Nothing has fired yet.</p>
-            )}
+          <Panel title="4 · Recent alerts" subtitle="Everything that has fired, newest first.">
+            <ActivityTimeline events={data.events} />
           </Panel>
         </>
       ) : null}
-      <p className="text-xs text-muted-foreground">Alerts are informational and based on delayed, third-party data. Research and education only — not investment advice.</p>
 
-      <div className="border-t border-border pt-8 space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Alerts are informational and based on delayed, third-party data. Research and education only — not investment advice.
+      </p>
+
+      <div className="space-y-4 border-t border-border pt-8">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Scanner Alerts</h2>
-          <p className="text-sm text-muted-foreground mt-1">Signals from the daily Nifty 500 scan — breakouts, breakdowns, crossovers and chart patterns — plus an on-demand scanner console.</p>
+          <h2 className="text-xl font-bold text-foreground">Scanner alerts</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Signals from the daily Nifty 500 scan — breakouts, breakdowns, crossovers and chart patterns — plus an on-demand scanner console.
+          </p>
         </div>
         <ScanAlerts />
       </div>

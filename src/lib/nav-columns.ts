@@ -103,7 +103,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Signature Tools",
         desc: "The fastest way to find and test ideas.",
         items: [
-          { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Live Nifty 500 scans: breakouts, volume, RSI, MACD.", badge: "NEW" },
+          { label: "Stock Scanner", href: "/intelligence/scanner", desc: "Nifty 500 scans — 5 free scan types/mo; Daily pass 10, Plus 30, Pro 60.", badge: "NEW" },
           { label: "Trade Lab", href: "/intelligence/trade-lab", desc: "RSI, MACD and 13 more indicators, chart patterns and backtests for any index or F&O stock.", badge: "NEW" },
           { label: "Alerts", href: "/intelligence/alerts", desc: "Breakout and scan alerts on your schedule." },
           { label: "Options Flow", href: "/research/options-flow", desc: "Unusual activity across the options tape.", badge: "AI" },

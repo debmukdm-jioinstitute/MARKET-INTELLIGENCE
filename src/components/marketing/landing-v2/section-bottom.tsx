@@ -6,7 +6,11 @@ import type { ProofSymbol } from "@/lib/marketing/landing-v2/copy";
 import { formatIstTimestamp } from "@/lib/marketing/landing-v2/format";
 import { mergeLandingViewpoints, type LandingViewpointId } from "@/lib/marketing/landing-v2/landing-ai-desk-map";
 import { trustReceiptRows } from "@/lib/marketing/landing-v2/live-narratives";
-import { MARKETING_PLAN_SAVINGS, MARKETING_PLUS_LAUNCH_ACTIVE } from "@/lib/marketing/pricing-marketing";
+import {
+  MARKETING_PLAN_SAVINGS,
+  MARKETING_PLUS_LAUNCH_ACTIVE,
+  PRICING_PLAN_BULLETS,
+} from "@/lib/marketing/pricing-marketing";
 import { PLUS_LAUNCH_OFFER_NOTE } from "@/lib/payments/plans";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -343,7 +347,7 @@ export function LandingPricingSection() {
           <div className="border border-[#dcd6cc] bg-[#faf7f2] p-5">
             <p className="font-semibold">Free</p>
             <p className="mt-2 text-2xl font-semibold">₹0</p>
-            <p className="mt-2 text-sm text-[#3d3d3d]">The whole website. 5 AI analyses a month. Claude MCP is paid-only.</p>
+            <p className="mt-2 text-sm text-[#3d3d3d]">{PRICING_PLAN_BULLETS.free.slice(0, 2).join(" · ")}</p>
             <PrimaryButton href="/signup" className="mt-6 w-full">
               Start free
             </PrimaryButton>
@@ -352,7 +356,7 @@ export function LandingPricingSection() {
             <p className="font-semibold">Daily pass</p>
             <p className="mt-2 text-2xl font-semibold">₹9</p>
             <p className="mt-1 text-sm text-[#6b6b6b]">, one time</p>
-            <p className="mt-2 text-sm text-[#3d3d3d]">Everything including Claude MCP, for one full day.</p>
+            <p className="mt-2 text-sm text-[#3d3d3d]">{PRICING_PLAN_BULLETS.day_pass.slice(0, 2).join(" · ")}</p>
             <SecondaryButton href="/pricing" className="mt-6 w-full">
               Choose daily pass
             </SecondaryButton>
@@ -362,10 +366,10 @@ export function LandingPricingSection() {
             <p className="mt-2 text-2xl font-semibold">{yearly ? "₹999 / year" : "₹99 / month"}</p>
             <p className="mt-2 text-sm text-[#3d3d3d]">
               {yearly
-                ? MARKETING_PLAN_SAVINGS
+                ? `${PRICING_PLAN_BULLETS.pro_annual[0]}. ${MARKETING_PLAN_SAVINGS}`
                 : MARKETING_PLUS_LAUNCH_ACTIVE
-                  ? "3 months access if you subscribe by 31 Oct 2026."
-                  : "Unlimited access including Claude MCP. Cancel any time."}
+                  ? `${PRICING_PLAN_BULLETS.pro_monthly[0]}. 3 months access if you subscribe by 31 Oct 2026.`
+                  : `${PRICING_PLAN_BULLETS.pro_monthly.slice(0, 2).join(" · ")}`}
             </p>
             <PrimaryButton href="/pricing" className="mt-6 w-full">
               {yearly ? "Choose Pro plan" : "Choose Plus plan"}
