@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ProfilePlanBilling } from "@/components/profile/profile-plan-billing";
 import { TelegramAlertsSetupPanel } from "@/components/telegram/telegram-alerts-setup-panel";
 import { useXpSummary, type XpSummary } from "@/lib/gamification/client";
+import { SmartNotifPrefs } from "@/components/profile/smart-notif-prefs";
 import { Bug, FileText, LogOut, Mail, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -608,6 +609,12 @@ export function ProfileClient() {
             </a>
           </div>
         </PrefRow>
+        <PrefRow title="Smart notifications" desc="The bell learns what matters to you — your holdings, what you read, what you tap. Tune how much it tells you.">
+          <span className="shrink-0 text-xs text-muted-foreground">Below</span>
+        </PrefRow>
+        <div className="border-t border-border py-4">
+          <SmartNotifPrefs />
+        </div>
         <PrefRow title="Guided tour" desc="Replay the quick tour of the terminal.">
           <button
             type="button"
