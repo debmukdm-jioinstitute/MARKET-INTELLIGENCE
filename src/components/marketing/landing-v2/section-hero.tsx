@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingDashboard } from "./use-landing-data";
 import { BodyCopy, DataCell, PaperChart, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
+import { SignedText } from "@/components/ui/signed";
 
 type HeroView = "market" | "vix" | "flows";
 
@@ -96,7 +97,7 @@ export function LandingHeroSection() {
               >
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#6b6b6b]">{label}</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums">{val || "—"}</p>
-                {sub ? <p className="mt-0.5 text-xs text-[#0d6b5c]">{sub}</p> : null}
+                {sub ? <p className="mt-0.5 text-xs text-[#6b6b6b]"><SignedText text={sub} palette="landing" /></p> : null}
               </button>
             ))}
           </div>

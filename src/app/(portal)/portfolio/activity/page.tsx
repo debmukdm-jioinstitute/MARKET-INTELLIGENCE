@@ -6,6 +6,8 @@ import { formatInr } from "@/lib/format";
 import useSWR from "swr";
 import type { TradeLogRow } from "@/lib/my-portfolio/types";
 import Link from "next/link";
+import { signClass } from "@/lib/sign-color";
+import { cn } from "@/lib/utils";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -49,7 +51,7 @@ export default function PortfolioActivityPage() {
           <div className="mb-4 flex flex-wrap gap-6 text-sm">
             <div>
               <p className="text-xs uppercase text-muted-foreground">Realized P&L (approx)</p>
-              <p className="font-semibold tabular-nums">{formatInr(realized)}</p>
+              <p className={cn("font-semibold tabular-nums", signClass(realized))}>{formatInr(realized)}</p>
             </div>
             <div>
               <p className="text-xs uppercase text-muted-foreground">Unrealized (book)</p>

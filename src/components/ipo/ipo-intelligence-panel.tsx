@@ -5,6 +5,7 @@ import { fmtInr } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 import { ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
+import { signClass } from "@/lib/sign-color";
 
 function Coverage({ c }: { c: IpoIntelField<unknown>["coverage"] }) {
   return (
@@ -201,10 +202,12 @@ export function IpoIntelligencePanel({ ipoId }: { ipoId: string }) {
             <Row label="GMP*" field={intel.gmp}>
               {intel.gmp.value ? (
                 <>
-                  {intel.gmp.value.gmpInr != null
-                    ? `${intel.gmp.value.gmpInr > 0 ? "+" : ""}${fmtInr(intel.gmp.value.gmpInr)}`
-                    : "—"}
-                  {intel.gmp.value.gmpPct != null ? ` (${intel.gmp.value.gmpPct}%)` : ""}
+                  <span className={signClass(intel.gmp.value.gmpInr)}>
+                    {intel.gmp.value.gmpInr != null
+                      ? `${intel.gmp.value.gmpInr > 0 ? "+" : ""}${fmtInr(intel.gmp.value.gmpInr)}`
+                      : "—"}
+                    {intel.gmp.value.gmpPct != null ? ` (${intel.gmp.value.gmpPct}%)` : ""}
+                  </span>
                   <p className="mt-1 text-[11px]">{intel.gmp.value.disclaimer}</p>
                 </>
               ) : (

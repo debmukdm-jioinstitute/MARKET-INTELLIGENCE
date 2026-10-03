@@ -7,6 +7,7 @@ import { EditableCopy } from "@/components/site/editable-copy";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { cn } from "@/lib/utils";
 import type { EarningsCalendarItem, EarningsCalendarPeriod } from "@/lib/feeds/earnings/build-calendar";
+import { signClass } from "@/lib/sign-color";
 
 type Panel = {
   asOf: string;
@@ -165,11 +166,7 @@ export function EarningsCalendarCard() {
                         <span
                           className={cn(
                             "font-semibold",
-                            item.previousSurprise?.startsWith("-")
-                              ? "text-rose-600"
-                              : item.previousSurprise
-                                ? "text-emerald-600"
-                                : "text-muted-foreground",
+                            signClass(item.previousSurprise),
                           )}
                         >
                           {item.previousSurprise ?? "—"}

@@ -9,6 +9,7 @@ import { findMetric } from "@/lib/my-portfolio/find-metric";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { signClass } from "@/lib/sign-color";
 
 export default function AttributionPage() {
   const { data, loading, error, locked } = useMyPortfolio();
@@ -132,7 +133,7 @@ export default function AttributionPage() {
                     <TableCell>{row.sector}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatPct(row.weight, 1)}</TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">{formatPct(row.benchmarkWeight, 1)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatPct(row.sectorRet)}</TableCell>
+                    <TableCell className={cn("text-right tabular-nums", signClass(row.sectorRet))}>{formatPct(row.sectorRet)}</TableCell>
                     <Cell v={row.allocation} />
                     <Cell v={row.selection + row.interaction} />
                     <Cell v={row.total} />
@@ -164,7 +165,7 @@ function Tile({ metricId, label, value }: { metricId: string; label: string; val
 
 function Cell({ v }: { v: number }) {
   return (
-    <TableCell className={cn("text-right tabular-nums", v >= 0 ? "text-emerald-600" : "text-rose-600")}>
+    <TableCell className={cn("text-right tabular-nums", signClass(v))}>
       {formatPct(v)}
     </TableCell>
   );

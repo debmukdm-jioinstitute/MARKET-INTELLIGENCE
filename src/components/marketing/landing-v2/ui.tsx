@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { landingSignClass } from "@/lib/sign-color";
+import { SignedText } from "@/components/ui/signed";
 
 export function LandingShell({ children }: { children: ReactNode }) {
   return (
@@ -107,9 +109,9 @@ export function DataCell({ label, value, change }: { label: string; value: strin
   return (
     <div className="border border-[#dcd6cc] bg-[#f7f4ef] px-3 py-2">
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b6b6b]">{label}</p>
-      <p className="mt-1 text-sm font-semibold tabular-nums text-[#141414]">{value || "—"}</p>
+      <p className="mt-1 text-sm font-semibold tabular-nums text-[#141414]">{value ? <SignedText text={value} palette="landing" /> : "—"}</p>
       {change ? (
-        <p className={cn("text-xs tabular-nums", change.startsWith("-") ? "text-[#9b2c2c]" : "text-[#0d6b5c]")}>{change}</p>
+        <p className={cn("text-xs tabular-nums", landingSignClass(change))}>{change}</p>
       ) : null}
     </div>
   );

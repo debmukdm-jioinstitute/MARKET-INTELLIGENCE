@@ -6,6 +6,7 @@ import type { FoSnapshot, IndexSnapshot, IndiaDashboardPayload } from "@/lib/fee
 import { fmtChgPct, fmtNum } from "@/lib/format-india";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { signClass } from "@/lib/sign-color";
 
 export function IndiaMoving({ data }: { data: IndiaDashboardPayload }) {
   const { indiaMoving } = data;
@@ -34,15 +35,15 @@ function IndexPanel({ snap, hubSyncedAt }: { snap: IndexSnapshot; hubSyncedAt: s
         <DataInfo source={snap.current.source} hubSyncedAt={hubSyncedAt} />
       </div>
       <p className="mt-1 text-2xl tabular-nums">{fmtNum(snap.current.value)}</p>
-      <p className={cn("text-sm", (snap.change1d ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
+      <p className={cn("text-sm", signClass(snap.change1d))}>
         {fmtChgPct(snap.change1d ?? null)} 1D
       </p>
       <dl className="mt-3 grid grid-cols-2 gap-1 text-sm">
         <Stat k="Intraday H" v={fmtNum(snap.high)} />
         <Stat k="Intraday L" v={fmtNum(snap.low)} />
-        <Stat k="1W" v={fmtChgPct(snap.change1w)} />
-        <Stat k="1M" v={fmtChgPct(snap.change1m)} />
-        <Stat k="YTD" v={fmtChgPct(snap.changeYtd)} />
+        <Stat k="1W" v={fmtChgPct(snap.change1w)} signed />
+        <Stat k="1M" v={fmtChgPct(snap.change1m)} signed />
+        <Stat k="YTD" v={fmtChgPct(snap.changeYtd)} signed />
       </dl>
       {chart.length > 1 ? (
         <div className="mt-3 h-[100px]">
@@ -69,7 +70,7 @@ function VixPanel({
     <div className="rounded-lg border border-border bg-card p-4">
       <h3 className="text-sm font-semibold">INDIA VIX</h3>
       <p className="mt-1 text-2xl">{fmtNum(snap.current.value, 2)}</p>
-      <p className="text-sm text-muted-foreground">Daily {fmtChgPct(snap.change1d ?? null)}</p>
+      <p className="text-sm text-muted-foreground">Daily <span className={signClass(snap.change1d)}>{fmtChgPct(snap.change1d ?? null)}</span></p>
       {range1m ? (
         <p className="mt-2 text-sm text-muted-foreground">
           1M range {fmtNum(range1m.min, 2)} – {fmtNum(range1m.max, 2)}
@@ -126,11 +127,11 @@ function FoCard({ title, row, hubSyncedAt }: { title: string; row: FoSnapshot; h
   );
 }
 
-function Stat({ k, v }: { k: string; v: string }) {
+function Stat({ k, v, signed = false }: { k: string; v: string; signed?: boolean }) {
   return (
     <div className="flex justify-between gap-2">
       <dt className="text-muted-foreground">{k}</dt>
-      <dd>{v}</dd>
+      <dd className={signed ? signClass(v) : undefined}>{v}</dd>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useLandingQuote, useLandingResearch } from "./use-landing-data";
 import { BodyCopy, SectionTitle, SourceLine } from "./ui";
+import { landingSignClass } from "@/lib/sign-color";
 
 export function LandingProofSection() {
   const [symbol, setSymbol] = useState<ProofSymbol>("RELIANCE");
@@ -59,7 +60,7 @@ export function LandingProofSection() {
             {priceLine ? (
               <>
                 <span className="text-lg font-semibold tabular-nums">₹{priceLine.price}</span>
-                {priceLine.change ? <span className="text-sm text-[#0d6b5c]">{priceLine.change}</span> : null}
+                {priceLine.change ? <span className={cn("text-sm", landingSignClass(priceLine.change))}>{priceLine.change}</span> : null}
                 <SourceLine source="NSE / Upstox" fetched={formatIstTimestamp(priceLine.asOf)} />
               </>
             ) : (

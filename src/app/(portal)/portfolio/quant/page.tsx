@@ -8,6 +8,8 @@ import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
 import { formatNumber, formatPct } from "@/lib/format";
 import Link from "next/link";
 import { useMemo } from "react";
+import { signClass } from "@/lib/sign-color";
+import { cn } from "@/lib/utils";
 
 export default function QuantPage() {
   const { data, loading, error, locked } = useMyPortfolio();
@@ -74,13 +76,13 @@ export default function QuantPage() {
       {data?.hasHoldings && portRets.length >= 3 ? (
         <>
           <div className="grid gap-3 md:grid-cols-4">
-            <Q metricId="total_return" label="Daily mean" value={formatPct(mean(portRets), 3)} />
+            <Q metricId="total_return" label="Daily mean" value={formatPct(mean(portRets), 3)} signed />
             <Q metricId="beta" label="Daily sigma" value={formatPct(stdev(portRets), 3)} />
             <Q metricId="var_95" label="Skewness" value={formatNumber(skew)} />
             <Q metricId="cvar" label="Excess kurtosis" value={formatNumber(kurt)} />
             <Q metricId="alpha" label="Hit rate" value={formatPct(hit, 1)} />
-            <Q metricId="today_pnl" label="Avg up day" value={formatPct(avgUp, 2)} />
-            <Q metricId="today_pnl" label="Avg down day" value={formatPct(avgDn, 2)} />
+            <Q metricId="today_pnl" label="Avg up day" value={formatPct(avgUp, 2)} signed />
+            <Q metricId="today_pnl" label="Avg down day" value={formatPct(avgDn, 2)} signed />
             <Q metricId="beta" label="Beta" value={beta != null ? formatNumber(beta) : "—"} />
           </div>
           <Panel title="How to read this">
@@ -105,14 +107,14 @@ function moment(values: number[], p: number) {
   return mean(values.map((v) => ((v - m) / s) ** p));
 }
 
-function Q({ metricId, label, value }: { metricId?: string; label: string; value: string }) {
+function Q({ metricId, label, value, signed = false }: { metricId?: string; label: string; value: string; signed?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-1">
       <div className="flex items-center justify-between">
         <p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
         <MetricInfo id={metricId ?? "beta"} name={label} iconSize="xs" />
       </div>
-      <p className="mt-1 font-heading text-2xl tabular-nums">{value}</p>
+      <p className={cn("mt-1 font-heading text-2xl tabular-nums", signed && signClass(value))}>{value}</p>
     </div>
   );
 }
