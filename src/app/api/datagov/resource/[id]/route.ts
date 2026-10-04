@@ -3,7 +3,7 @@ import { DataGovAuthError, fetchResourcePage } from "@/lib/datagov/client";
 import { hasDatabase, sql } from "@/lib/db";
 import { ensureDataGovSchema } from "@/lib/datagov/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const ID = /^[0-9a-f-]{36}$/i;
 

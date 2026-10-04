@@ -1,7 +1,7 @@
 import { buildLegalRiskHub } from "@/lib/legal-risk/build-hub";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 let cache: { at: number; payload: Awaited<ReturnType<typeof buildLegalRiskHub>> } | null = null;

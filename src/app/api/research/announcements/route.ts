@@ -1,7 +1,7 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=3600, stale-while-revalidate=600";
 const NSE_FILINGS = "https://www.nseindia.com/companies-listing/corporate-filings-announcements";

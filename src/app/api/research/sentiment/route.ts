@@ -2,7 +2,7 @@ import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { ALL_SOURCES, buildDigest, SOURCE_LABEL, type DailyRow, type QuadrantPoint, type SourceId } from "@/lib/research/sentiment";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=21600, stale-while-revalidate=1800"; // 6 hours — collected daily
 const NOTE = "Aggregates only: counts and themes, never individual posts or users. X/Twitter isn't available on any free API, so we don't track it. Telegram covers channel posts only (not discussion-group comments).";

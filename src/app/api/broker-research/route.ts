@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { mapResearchRow, type ApiResearchReport } from "@/lib/research/api-map";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 /**
  * GET /api/broker-research

@@ -1,0 +1,259 @@
+# ISR Phase 2 Report
+
+Base main SHA: c803d436a91cfa0508f2f641dc2d7a2cf7fe25b8
+Before: 224 files with force-dynamic. After: 193 (31 converted).
+Baseline tsc errors: 0. After: 0. eslint on 31 touched files: clean. npm ci: pass. npm run build: pass (exit 0).
+
+## Converted: revalidate = 900 (26)
+- `src/app/api/broker-research/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/broker-research/sources/route.ts` — ISR 15m
+- `src/app/api/company/intelligence/route.ts` — ISR 15m
+- `src/app/api/company/[symbol]/intelligence/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/credit/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/feeds/legal-risk/route.ts` — ISR 15m
+- `src/app/api/feeds/research/[symbol]/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/promoters/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research-reports/credibility/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/announcements/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/broker-calls/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/concall/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/ipos/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/legal-risk/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/ownership/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/ratings/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/sentiment/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/research/trends/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/options-flow/history/route.ts` — ISR 15m
+- `src/app/api/options-flow/universe/route.ts` — ISR 15m
+- `src/app/api/signals/route.ts` — ISR 15m
+- `src/app/api/signals/fno-model/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/stress/route.ts` — ISR 15m
+- `src/app/api/stress/backtest/route.ts` — ISR 15m
+- `src/app/api/trade/universe/route.ts` — ISR 15m
+- `src/app/api/reddit/sentiment/[symbol]/route.ts` — declared only (still dynamic at build: reads request/path params)
+
+## Converted: revalidate = 3600 (5)
+- `src/app/api/openapi.json/route.ts` — ISR 1h
+- `src/app/llms.txt/route.ts` — ISR 1h (force-dynamic line removed; revalidate=3600 already declared)
+- `src/app/api/data360/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/datagov/catalog/route.ts` — declared only (still dynamic at build: reads request/path params)
+- `src/app/api/datagov/resource/[id]/route.ts` — declared only (still dynamic at build: reads request/path params)
+
+## Preserved revalidate = 300 files (20, unchanged)
+- `src/app/api/feeds/hub/route.ts`
+- `src/app/api/feeds/india-dashboard/route.ts`
+- `src/app/api/feeds/institutional/route.ts`
+- `src/app/api/feeds/upstox/breadth/route.ts`
+- `src/app/api/feeds/upstox/candles/route.ts`
+- `src/app/api/feeds/upstox/fundamentals/[isin]/route.ts`
+- `src/app/api/feeds/upstox/india-equities/route.ts`
+- `src/app/api/feeds/upstox/market-info/route.ts`
+- `src/app/api/feeds/upstox/quote/route.ts`
+- `src/app/api/feeds/yahoo/history/route.ts`
+- `src/app/api/macro/auto-sales/route.ts`
+- `src/app/api/macro/fbil-rates/route.ts`
+- `src/app/api/macro/gst/route.ts`
+- `src/app/api/macro/monsoon/route.ts`
+- `src/app/api/macro/power/route.ts`
+- `src/app/api/macro/upi/route.ts`
+- `src/app/api/macro/worldbank/route.ts`
+- `src/app/api/tabs/route.ts`
+- `src/app/api/updates/latest/route.ts`
+- `src/app/llms-full.txt/route.ts`
+
+## Skipped (still force-dynamic): 193
+Rule number per Mandatory skips list.
+
+- `src/app/.well-known/mcp.json/route.ts` — rule 6: OAuth/MCP discovery metadata; origin-specific, not in the two tiers
+- `src/app/.well-known/oauth-authorization-server/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/.well-known/oauth-protected-resource/api/mcp/route.ts` — rule 6: same
+- `src/app/.well-known/oauth-protected-resource/route.ts` — rule 6: same
+- `src/app/admin/competition/page.tsx` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/alpha-league/backtest/page.tsx` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/alpha-league/portfolio/page.tsx` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/alpha-league/verify/[id]/page.tsx` — rule 6: competition certificate (rule 3)
+- `src/app/api/admin/alerts/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/analytics/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/admin/brief/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/competition/certificate/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/competition/events/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/competition/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/content/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/customers/reset-password/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/customers/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/feeds/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/admin/gamification/leaderboard/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/admin/newsletters/assets/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/newsletters/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/notifications/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/pages/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/rag/ask/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/rag/documents/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/rag/ingest-app-data/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/retargeting/grant/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/retargeting/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/stats/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/admin/system/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/tabs/[id]/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/tabs/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/test-welcome/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/updates/[id]/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/updates/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/admin/welcome-backfill/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/alpha-discovery/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/ipo-analyst/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/ipo-drhp/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/options-flow/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/sentiment-portfolio/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/ai/trading-desk/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/alerts/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/analytics/track/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/forgot/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/google/callback/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/auth/google/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/auth/login/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/reset/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/session/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/signup/resend/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/signup/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/auth/signup/verify/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/backtest/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/billing/status/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/brief/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/bug-report/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/collector/disclosures-ingest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/collector/ingest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/collector/route.ts` — rule 6: collector freshness/ops endpoint; not public research content
+- `src/app/api/collector/watermark/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/company/disclosures/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/competition/backtest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/competition/certificate/[id]/route.ts` — rule 6: competition (rule 3)
+- `src/app/api/competition/leaderboard/route.ts` — rule 6: competition (rule 3)
+- `src/app/api/competition/order/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/competition/portfolio/route.ts` — rule 6: competition (rule 3)
+- `src/app/api/competition/register/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/competition/status/route.ts` — rule 6: competition (rule 3)
+- `src/app/api/competition/watchlist/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/copilot/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/create-order/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/cron/52w-levels/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/alerts/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/backtest/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/benchmark-constituents/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/betas/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/brief/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/collect/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/company-disclosures/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/competition-snapshot/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/credit-ratings/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/data360/catalog/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/data360/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/datagov/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/kit-sync-customers/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/macro-sanity/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/options-flow/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/promoter-disclosures/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/prowess/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/reddit-sentiment/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/scan/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/scrape-research/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/signals/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/smart-notify/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/stress/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/telegram-data-brief/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/test-welcome/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/trade-compute/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/warm-feed-hub/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/cron/what-changed/route.ts` — rule 4 trigger (cron-secret route)
+- `src/app/api/export/route.ts` — rule 6: live data export using snapshot + request params; needs fresh data
+- `src/app/api/export/xlsx/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/features/guided-tour/route.ts` — rule 6: feature-flag; must reflect flag changes
+- `src/app/api/feeds/earnings-calendar/route.ts` — rule 6: earnings calendar/market data, not in the two tiers
+- `src/app/api/feeds/earnings/route.ts` — rule 6: Yahoo earnings dates, other refresh tier
+- `src/app/api/feeds/ipo/[id]/intelligence/route.ts` — rule 6: IPO live GMP/subscription data, other refresh tier
+- `src/app/api/feeds/ipo/[id]/route.ts` — rule 6: live IPO data
+- `src/app/api/feeds/ipo/route.ts` — rule 6: live IPO data with request params
+- `src/app/api/feeds/massive/status/route.ts` — rule 6: provider status check; must be live
+- `src/app/api/feeds/offers/route.ts` — rule 6: live offers feed
+- `src/app/api/feeds/search-trends/route.ts` — rule 6: search-trends feed, other tier + request params
+- `src/app/api/feeds/search/symbols/route.ts` — rule 6: search/typeahead by query
+- `src/app/api/feeds/security-risk/route.ts` — rule 6: security data, request-dependent
+- `src/app/api/feeds/security/[symbol]/route.ts` — rule 6: live security detail
+- `src/app/api/feeds/upstox/option-chain/route.ts` — rule 6: live option chain
+- `src/app/api/feeds/upstox/option-expiries/route.ts` — rule 6: live option expiries
+- `src/app/api/feeds/what-changed/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/api/gamification/award/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/gamification/me/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/health/sources/route.ts` — rule 6: monitoring must stay fresh
+- `src/app/api/hf/feed-enrichment/route.ts` — rule 6: Hugging Face inference (AI-like); cost/safety
+- `src/app/api/hf/news-intel/route.ts` — rule 6: Hugging Face inference (AI-like)
+- `src/app/api/hf/rbi-stance/route.ts` — rule 6: Hugging Face inference (AI-like)
+- `src/app/api/hf/what-changed-summary/route.ts` — rule 6: AI summarizer
+- `src/app/api/macro/india/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/api/macro/tape/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/api/macro/ticker/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/api/macro/world-indices/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/api/marketing/landing-ai-desk/route.ts` — rule 6: AI endpoint (rule 5)
+- `src/app/api/mcp/oauth/authorize/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/mcp/oauth/register/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/mcp/oauth/token/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/mcp/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/models/[symbol]/export/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/models/[symbol]/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/newsletter/assets/[id]/route.ts` — rule 6: user-uploaded assets by id; out of scope
+- `src/app/api/newsletter/subscribe/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/newsletter/unsubscribe/route.ts` — rule 6: GET unsubscribe has write side effect (also rule 5)
+- `src/app/api/notifications/feed/route.ts` — rule 6: GET triggers after() live detection side effect (rule 5)
+- `src/app/api/notifications/interactions/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/notifications/prefs/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/notifications/smart-prefs/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/notifications/smart/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/notifications/subscribe/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/onboarding/form/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/optionstrat/heatmap/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/optionstrat/recommend/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/payments/razorpay/config/route.ts` — rule 6: billing (rule 3)
+- `src/app/api/payments/razorpay/create-order/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/payments/razorpay/verify/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portal/content/route.ts` — rule 6: admin-edited CMS; 1h staleness unacceptable
+- `src/app/api/portal/pages/route.ts` — rule 6: admin-edited CMS/page access
+- `src/app/api/portfolio/analysis/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/holdings/[id]/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/holdings/[id]/sell/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/holdings/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/import/dhan/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/import/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/import/upstox/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/import/zerodha/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/instruments/cron-sync/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/portfolio/instruments/search/route.ts` — rule 6: portfolio search (rule 3-adjacent), query-based
+- `src/app/api/portfolio/instruments/sync/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/settings/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/portfolio/trades/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/profile/onboarding-pdf/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/profile/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/profile/welcome-letter/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/prowess/company/route.ts` — rule 6: removed-data stub; not in the two tiers
+- `src/app/api/prowess/ingest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/prowess/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/prowess/status/route.ts` — rule 6: removed-data stub
+- `src/app/api/reddit/sentiment/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/research-reports/ingest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/research-reports/route.ts` — rule 6: GET with sync/refresh param triggers scrape via after() (rule 5)
+- `src/app/api/scanner/ingest/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/scanner/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/scenario/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/search/unified/route.ts` — rule 3 identity/personalized or session/auth/admin/billing/competition
+- `src/app/api/site-assistant/audit/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/site-assistant/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/tabs/route.ts` — rule 6: admin-edited tab config; staleness unacceptable
+- `src/app/api/trade/backtest/route.ts` — rule 6: rate-limited by IP (side-effect counter), request-dependent
+- `src/app/api/trade/lab/route.ts` — rule 6: rate-limited by IP, request-dependent
+- `src/app/api/trade/watch/route.ts` — rule 6: rate-limited by IP, request-dependent
+- `src/app/api/transmission/route.ts` — rule 6: uses live buildSnapshot (live aggregation); other tier
+- `src/app/api/updates/latest/route.ts` — rule 6: admin-posted updates; staleness unacceptable
+- `src/app/api/verify-payment/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/watchlist/[id]/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/watchlist/route.ts` — rule 5 mutation/AI/mixed handlers
+- `src/app/api/worldmonitor/global-feeds/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
+- `src/app/llms-full.txt/route.ts` — rule 6: embeds live snapshot; other tier

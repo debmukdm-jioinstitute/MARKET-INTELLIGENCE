@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLiveCompanySentimentCached } from "@/lib/reddit-sentiment/live-cache";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 30;
 
 type Props = { params: Promise<{ symbol: string }> };

@@ -1,7 +1,7 @@
 import { loadOrBuildIndexModel } from "@/lib/scanner/fno-index-model";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 120;
 
 /** GET ?index=banknifty&horizon=1 — compute or load walk-forward ensemble index model for one F&O underlying. */

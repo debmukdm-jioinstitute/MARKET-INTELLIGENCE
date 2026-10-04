@@ -3,7 +3,7 @@ import { getQuotes } from "@/lib/feeds/quotes";
 import { summarizeBrokerCalls, type BrokerCallRecord } from "@/lib/research/broker-calls";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const WINDOW_DAYS = 90;
 const CACHE = "public, s-maxage=3600, stale-while-revalidate=600";

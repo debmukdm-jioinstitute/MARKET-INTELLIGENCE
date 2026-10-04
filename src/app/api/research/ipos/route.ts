@@ -2,7 +2,7 @@ import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { applyChecklist, computeMomentum, STAGES, type SnapshotPoint } from "@/lib/research/ipos";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=3600, stale-while-revalidate=600"; // 1 hour
 const GMP_DISCLAIMER = "Unofficial dealer quotes — unregulated, unaudited, can be manipulated. Not a listing-price prediction.";

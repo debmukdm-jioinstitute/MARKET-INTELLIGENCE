@@ -3,7 +3,7 @@ import { buildRatingEvents, type RatingRowView } from "@/lib/research/ratings";
 import { buildRiskChecklist, NCLT_SEARCH_URL, type FilingRow, type SebiRow } from "@/lib/research/legal-risk";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=86400, stale-while-revalidate=3600"; // 24 hours
 const LEGAL_CATEGORIES = ["Default / delay", "Fraud / forensic audit", "Regulatory / legal action", "Auditor change"];

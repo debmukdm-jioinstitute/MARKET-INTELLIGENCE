@@ -2,7 +2,7 @@ import { hasDatabase } from "@/lib/db";
 import { listOptionsFlowFlagLog } from "@/lib/options-flow/store";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 /** Doc: "Track your flags. Log every one, and note what actually happened over the following two weeks." */
 export async function GET() {

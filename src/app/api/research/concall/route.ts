@@ -1,7 +1,7 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=86400, stale-while-revalidate=3600"; // 24 hours
 

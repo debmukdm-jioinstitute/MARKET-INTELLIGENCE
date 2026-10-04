@@ -2,7 +2,7 @@ import { loadPromoterFeedSnapshot } from "@/lib/promoters/load-feed";
 import { PROMOTER_RISK_PANEL_SOURCES } from "@/lib/intelligence/verification-links";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 /** GET /api/promoters — RSS-first promoter/insider disclosures; Firecrawl/Crawl4AI optional on cron. */

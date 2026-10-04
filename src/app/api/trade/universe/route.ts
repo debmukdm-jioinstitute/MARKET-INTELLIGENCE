@@ -2,7 +2,7 @@ import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { INDEX_INSTRUMENTS } from "@/lib/trade-lab/data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 /** GET → index cards + the NSE F&O stock universe (from the weekly Upstox instrument-master sync). */
 export async function GET() {

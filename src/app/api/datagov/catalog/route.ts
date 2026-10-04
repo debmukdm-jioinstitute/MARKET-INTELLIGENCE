@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchCatalog } from "@/lib/datagov/client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 /** GET /api/datagov/catalog?q=&sector=&org=&offset=&limit= — live search across data.gov.in's full catalog. */
 export async function GET(req: Request) {

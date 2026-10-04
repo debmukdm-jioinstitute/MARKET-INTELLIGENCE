@@ -2,7 +2,7 @@ import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { computeOwnershipFlags, type OwnershipRow } from "@/lib/research/ownership";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=21600, stale-while-revalidate=1800"; // 6 hours — filings are quarterly
 const NSE_SHP = "https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern";

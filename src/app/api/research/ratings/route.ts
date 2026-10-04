@@ -2,7 +2,7 @@ import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { buildAgencyGrid, buildRatingEvents, hasRecentAlert, type FilingDisclosure, type RatingRowView } from "@/lib/research/ratings";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=86400, stale-while-revalidate=3600"; // 24 hours — rating actions are low-volume
 

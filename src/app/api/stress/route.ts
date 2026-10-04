@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { buildStress } from "@/lib/stress/build";
 import { recentAlerts, stressHistory } from "@/lib/stress/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 30;
 
 export async function GET() {

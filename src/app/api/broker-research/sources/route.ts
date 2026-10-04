@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { BROKER_SOURCES } from "@/lib/research/broker-sources";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 /**
  * GET /api/broker-research/sources

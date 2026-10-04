@@ -1,7 +1,7 @@
 import { loadCreditFeedSnapshot } from "@/lib/credit/load-feed";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 /**

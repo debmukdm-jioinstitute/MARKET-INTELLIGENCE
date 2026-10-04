@@ -6,7 +6,7 @@ import { syncStatus } from "@/lib/data360/sync";
 import { hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 function jsonError(message: string, status = 500) {
   return NextResponse.json({ ok: false, error: message }, { status });

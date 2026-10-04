@@ -1,7 +1,7 @@
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const CACHE = "public, s-maxage=86400, stale-while-revalidate=3600"; // 24 hours — fetched weekly
 const NOTE = "Google Trends is 0–100 relative interest, not absolute search volume.";

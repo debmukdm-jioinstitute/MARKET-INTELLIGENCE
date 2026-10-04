@@ -1,7 +1,7 @@
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 export async function GET(req: Request) {
