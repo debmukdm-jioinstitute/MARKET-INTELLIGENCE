@@ -83,7 +83,7 @@ export function OnboardingFormClient({
         <button
           type="button"
           onClick={() => runDownload(model)}
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-sm)] hover:bg-primary/90"
+          className="rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted"
         >
           Download onboarding form
         </button>
@@ -104,7 +104,7 @@ export function OnboardingFormClient({
         </button>
         <Link
           href={next}
-          className="inline-flex items-center rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted"
+          className="inline-flex basis-full items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-sm)] hover:bg-primary/90"
         >
           Continue to terminal →
         </Link>
