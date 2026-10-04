@@ -27,7 +27,12 @@ export function AlphaBoard() {
   );
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">One league. One leaderboard.</h1>
+      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+        Standings
+      </p>
+      <h1 className="-mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+        One league. One <span className="text-primary">leaderboard.</span>
+      </h1>
       <p className="text-muted-foreground">
         Ranked by percentage return.{" "}
         {data?.competition?.status === "ended"
@@ -53,7 +58,7 @@ export function AlphaBoard() {
           · Public preview: top 20.
         </p>
       ) : null}
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-2xl border border-border border-t-4 border-t-primary bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -73,7 +78,17 @@ export function AlphaBoard() {
           <TableBody>
             {data?.rows.map((r, i) => (
               <TableRow key={`${r.displayName}-${i}`}>
-                <TableCell>{r.rank ?? "—"}</TableCell>
+                <TableCell>
+                  <span
+                    className={
+                      r.rank && r.rank <= 3
+                        ? "inline-flex size-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+                        : "font-semibold"
+                    }
+                  >
+                    {r.rank ?? "—"}
+                  </span>
+                </TableCell>
                 <TableCell className="font-medium">{r.displayName}</TableCell>
                 <TableCell className="tabular-nums">
                   {percent(r.returnPct)}
@@ -94,7 +109,13 @@ export function AlphaBoard() {
         </Table>
       </div>
       {data && !data.rows.length ? (
-        <p className="text-muted-foreground">No participants yet.</p>
+        <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-8 text-center">
+          <p className="font-semibold">No participants yet.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The board fills in once the season opens and participants place
+            their first orders.
+          </p>
+        </div>
       ) : null}
     </div>
   );
