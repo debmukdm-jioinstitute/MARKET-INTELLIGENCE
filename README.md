@@ -1011,5 +1011,6 @@ All 18 scheduled jobs now run on **GitHub Actions** (`.github/workflows/cron-*.y
 - **If dropped:** delete the two Telegram secrets; the job keeps working without them.
 
 ### Other open items (low severity)
-- `cron-kit-sync` needs a `KIT_API_KEY` secret; `cron-datagov` needs `DATA_GOV_IN_API_KEY`. Both fail fast with a clear message until added.
+- `cron-kit-sync`: `KIT_API_KEY` is configured and the job runs green.
+- `cron-datagov` needs a `DATA_GOV_IN_API_KEY` secret (personal data.gov.in key). It fails fast with a clear message until added. **Low severity.**
 - The Neon database password was shared in plain text during setup. Rotate it in Neon, then update the `DATABASE_URL` GitHub secret (and confirm Vercel's synced value).
