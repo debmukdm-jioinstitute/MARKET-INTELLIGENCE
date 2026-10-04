@@ -17,6 +17,7 @@ import {
   Megaphone,
   Sparkles,
   Target,
+  Trophy,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,7 @@ const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/retargeting", label: "Retargeting", icon: Target },
+  { href: "/admin/competition", label: "Alpha League", icon: Trophy },
   { href: "/admin/tabs", label: "App Tabs", icon: LayoutList },
   { href: "/admin/pages", label: "Portal pages", icon: LayoutList },
   { href: "/admin/live-editor", label: "Live editor", icon: PencilLine },
