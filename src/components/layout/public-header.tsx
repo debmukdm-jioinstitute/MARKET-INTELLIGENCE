@@ -69,6 +69,7 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
           <Link href="/markets/india" className="transition hover:text-foreground">
             Markets
           </Link>
+          <Link href="/alpha-league" className="transition hover:text-foreground">Alpha League</Link>
           <Link href="/pricing" className={cn("transition hover:text-foreground", pathname === "/pricing" && "font-semibold text-foreground")}>
             Pricing
           </Link>
@@ -151,6 +152,7 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
             >
               Stock Scanner
             </Link>
+            <Link href="/alpha-league" className="rounded-lg px-3 py-2 font-semibold text-primary">Alpha League</Link>
             <Link
               href="/help"
               onClick={() => setMobileMenuOpen(false)}

@@ -64,17 +64,17 @@ type TagEnsureResult = { ok: boolean; tagId?: number; error?: string };
  * Find-or-create the `customers` tag in Kit. Creating a tag is idempotent on
  * name, so this is safe to call on every sync run.
  */
-export async function ensureCustomersTag(): Promise<TagEnsureResult> {
+export async function ensureKitTag(tagName: string): Promise<TagEnsureResult> {
   const apiKey = process.env.KIT_API_KEY?.trim();
   if (!apiKey) return { ok: false, error: "KIT_API_KEY not set" };
   try {
     const listed = await kitGet("/tags", apiKey);
     const tags = (listed.json as { tags?: Array<{ id?: unknown; name?: unknown }> } | null)?.tags;
     if (listed.status === 200 && Array.isArray(tags)) {
-      const found = tags.find((t) => String(t?.name ?? "").toLowerCase() === KIT_CUSTOMERS_TAG);
+      const found = tags.find((t) => String(t?.name ?? "").toLowerCase() === tagName.toLowerCase());
       if (found && typeof found.id === "number") return { ok: true, tagId: found.id };
     }
-    const created = await kitPost("/tags", apiKey, { name: KIT_CUSTOMERS_TAG });
+    const created = await kitPost("/tags", apiKey, { name: tagName });
     if (created.status === 200 || created.status === 201 || created.status === 422) {
       const body = JSON.parse(created.text || "{}") as { tag?: { id?: unknown }; id?: unknown };
       const tag = (body?.tag ?? body) as { id?: unknown };
@@ -121,6 +121,10 @@ export async function tagCustomerInKit(email: string, firstName?: string): Promi
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+export async function ensureCustomersTag(): Promise<TagEnsureResult> {
+  return ensureKitTag(KIT_CUSTOMERS_TAG);
 }
 
 export type KitSyncResult = { ok: boolean; skipped?: boolean; error?: string };

@@ -1,0 +1,19 @@
+name: alpha-league-market-close
+on:
+  schedule:
+    - cron: '20 10 * * 1-5' # 15:50 IST; delayed daily close usually available
+  workflow_dispatch:
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record closing snapshots
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$SITE_URL" && test -n "$CRON_SECRET"
+          curl --fail-with-body --max-time 60 --retry 2 --retry-delay 20 \
+            -X POST -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL%/}/api/cron/competition-snapshot"

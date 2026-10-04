@@ -62,6 +62,7 @@ for (const [sym, key] of Object.entries(INDIA_INSTRUMENT_KEYS)) {
 for (const inst of INDIA_EQUITIES) {
   if (inst.symbol && inst.instrumentKey) {
     UPSTOX_SYMBOL_MAP.set(inst.symbol.toUpperCase(), inst.instrumentKey);
+    UPSTOX_SYMBOL_MAP.set(`${inst.symbol.toUpperCase()}.NS`, inst.instrumentKey);
   }
 }
 
