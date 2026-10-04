@@ -28,5 +28,9 @@ export async function sendTelegramDigest(run: ScanRun): Promise<boolean> {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ chat_id: chat, text }),
   }).catch(() => null);
+  if (!res?.ok) {
+    const detail = res ? await res.text().catch(() => "") : "network error";
+    console.warn(`telegram digest not sent: ${res?.status ?? "no response"} ${detail}`.slice(0, 300));
+  }
   return Boolean(res?.ok);
 }
