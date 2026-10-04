@@ -148,6 +148,15 @@ export function AlphaAdmin() {
                 {label}
               </Button>
             ))}
+            {c.status === "live" ? (
+              <Button
+                disabled={busy}
+                variant="outline"
+                onClick={() => void command({ action: "reopenRegistration" })}
+              >
+                Reopen registration (before start)
+              </Button>
+            ) : null}
             <Button
               disabled={busy}
               onClick={() => void command({ action: "snapshot" })}

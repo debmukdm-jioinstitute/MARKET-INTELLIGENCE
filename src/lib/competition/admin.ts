@@ -30,6 +30,7 @@ export const adminCommand = z.discriminatedUnion("action", [
     tradingDays: z.array(day).length(5),
     finalistCount: z.number().int().min(1).max(100),
   }),
+  z.object({ action: z.literal("reopenRegistration") }),
   z.object({
     action: z.literal("advance"),
     status: z.enum(["registration", "live", "ended"]),
@@ -89,6 +90,23 @@ export async function runAdmin(input: z.infer<typeof adminCommand>) {
   }
   if (!c) return fail("Create the season first.");
   if (input.action === "snapshot") return takeSnapshot(c);
+  if (input.action === "reopenRegistration") {
+    // Recovery path for a season advanced to live too early: only before the
+    // first market open, and only while no trade or snapshot exists.
+    if (c.status !== "live")
+      return fail("Only a live season that has not started can reopen registration.");
+    if (Date.now() >= Date.parse(c.startsAt))
+      return fail("Registration cannot reopen after the season starts.");
+    const changed = await db`UPDATE competition SET status='registration',revision=revision+1
+      WHERE id=${c.id}::uuid AND status='live' AND revision=${c.revision}
+      AND NOT EXISTS (SELECT 1 FROM competition_trades t WHERE t.competition_id=competition.id)
+      AND NOT EXISTS (SELECT 1 FROM competition_snapshots s WHERE s.competition_id=competition.id)
+      RETURNING id`;
+    invalidateBoard();
+    return changed.length
+      ? { ok: true }
+      : fail("Cannot reopen: trades or snapshots exist, or status changed; reload.");
+  }
   if (input.action === "advance") {
     const expected = {
       registration: "draft",
