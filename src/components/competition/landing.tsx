@@ -81,13 +81,17 @@ export function AlphaLanding() {
   }
   return (
     <div className="space-y-12">
-      <section className="grid gap-8 rounded-3xl border border-border bg-card p-6 sm:p-12 md:grid-cols-[1.5fr_1fr]">
+      <section className="relative grid gap-8 overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-12 md:grid-cols-[1.5fr_1fr]">
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1.5 bg-primary"
+        />
         <div>
-          <p className="text-sm font-semibold text-primary">
+          <p className="inline-flex items-center gap-2 rounded-full bg-[var(--alpha-red-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             Market Intelligence × Jio Institute
           </p>
-          <h1 className="mt-4 text-5xl font-bold tracking-tight sm:text-6xl">
-            The Alpha League
+          <h1 className="mt-5 text-5xl font-bold tracking-tight sm:text-7xl">
+            The <span className="text-primary">Alpha</span> League
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             One week. One leaderboard. Your research put to the test.
@@ -106,12 +110,23 @@ export function AlphaLanding() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col justify-center rounded-2xl bg-primary/5 p-6">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col justify-center rounded-2xl border border-border bg-[var(--alpha-red-soft)] p-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Starting capital per participant
           </p>
-          <p className="mt-2 text-4xl font-bold tabular-nums">₹10,00,000</p>
-          <p className="mt-6 font-semibold">5 market days · Long only</p>
+          <p className="mt-2 text-4xl font-bold tabular-nums text-primary">
+            ₹10,00,000
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["5 market days", "Long only", "NSE equities & ETFs"].map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
           <p className="mt-3 text-sm text-muted-foreground">
             {c
               ? `${c.tradingDays[0]} to ${c.tradingDays[4]} · ${c.status}`
@@ -137,7 +152,10 @@ export function AlphaLanding() {
       </section>
       <StatusMessage error={error} />
       <section>
-        <h2 className="text-2xl font-bold">How it works</h2>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          Three steps
+        </p>
+        <h2 className="mt-1 text-3xl font-bold tracking-tight">How it works</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {[
             [
@@ -158,26 +176,31 @@ export function AlphaLanding() {
           ].map(([n, title, body]) => (
             <article
               key={n}
-              className="rounded-xl border border-border bg-card p-6"
+              className="rounded-2xl border border-border border-t-4 border-t-primary bg-card p-6"
             >
-              <p className="text-primary font-semibold">{n}</p>
+              <p className="text-4xl font-bold tabular-nums text-primary">{n}</p>
               <h3 className="mt-4 text-lg font-bold">{title}</h3>
               <p className="mt-2 text-muted-foreground">{body}</p>
             </article>
           ))}
         </div>
       </section>
-      <section className="rounded-2xl border border-border p-6">
-        <h2 className="text-2xl font-bold">Recognition for your work</h2>
-        <div className="mt-5 grid gap-6 md:grid-cols-3">
-          <div>
+      <section className="rounded-3xl border border-border bg-muted/40 p-6 sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          Prizes
+        </p>
+        <h2 className="mt-1 text-3xl font-bold tracking-tight">
+          Recognition for your work
+        </h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl bg-primary p-5 text-primary-foreground">
             <h3 className="font-bold">Champion</h3>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 opacity-90">
               Rank #1 among prize-eligible finishers: a 1-year Market
               Intelligence subscription and Champion certificate.
             </p>
           </div>
-          <div>
+          <div className="rounded-2xl border border-border bg-card p-5">
             <h3 className="font-bold">Ranked finalists</h3>
             <p className="mt-2 text-muted-foreground">
               Certificates of Excellence for{" "}
@@ -187,7 +210,7 @@ export function AlphaLanding() {
               .
             </p>
           </div>
-          <div>
+          <div className="rounded-2xl border border-border bg-card p-5">
             <h3 className="font-bold">Eligible finishers</h3>
             <p className="mt-2 text-muted-foreground">
               A digital Certificate of Participation. Subscription fulfillment
@@ -198,9 +221,9 @@ export function AlphaLanding() {
       </section>
       <section
         id="register"
-        className="max-w-2xl rounded-2xl border border-border bg-card p-6"
+        className="max-w-2xl scroll-mt-24 rounded-3xl border border-border border-l-4 border-l-primary bg-card p-6 sm:p-8"
       >
-        <h2 className="text-2xl font-bold">Take your place</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Take your place</h2>
         {data?.registration ? (
           <>
             <p className="mt-4">
@@ -213,13 +236,12 @@ export function AlphaLanding() {
           </>
         ) : !data?.signedIn ? (
           <p className="mt-4">
-            <Link
-              className="text-primary underline"
-              href="/login?next=/alpha-league"
-            >
-              Sign in with your institute account
-            </Link>{" "}
-            to register.
+            <Button asChild>
+              <Link href="/login?next=/alpha-league">
+                Sign in with your institute account
+              </Link>
+            </Button>{" "}
+            <span className="ml-2 text-muted-foreground">to register.</span>
           </p>
         ) : c?.status !== "registration" ? (
           <p className="mt-4 text-muted-foreground">
@@ -280,8 +302,11 @@ export function AlphaLanding() {
         )}
       </section>
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Rules & terms</h2>
-        <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          Fair play
+        </p>
+        <h2 className="text-3xl font-bold tracking-tight">Rules & terms</h2>
+        <ul className="grid gap-3 text-muted-foreground marker:text-primary md:grid-cols-2 [&>li]:list-inside [&>li]:list-disc [&>li]:rounded-xl [&>li]:border [&>li]:border-border [&>li]:bg-card [&>li]:p-4">
           <li>
             One standalone season, five configured market days, one unified
             leaderboard.
@@ -310,7 +335,7 @@ export function AlphaLanding() {
             + STT estimate, rounded up to a paise.
           </li>
         </ul>
-        <details className="rounded-xl border border-border p-5">
+        <details className="rounded-2xl border border-border bg-card p-5">
           <summary className="cursor-pointer font-semibold">
             Full terms & conditions
           </summary>
