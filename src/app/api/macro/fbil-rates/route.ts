@@ -1,7 +1,7 @@
 import { CACHE, collectorFailure, curveOf, lastDays, latestOf, loadAltSeries, type AltSeries } from "@/lib/macro/alt-data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const FBIL = "https://www.fbil.org.in/";
 

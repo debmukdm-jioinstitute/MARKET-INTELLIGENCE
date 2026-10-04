@@ -3,7 +3,7 @@ import { resolveSymbol } from "@/lib/feeds/symbol-search";
 import { fetchUpstoxFullQuotes } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function GET(req: Request) {
   const symbol = new URL(req.url).searchParams.get("symbol");

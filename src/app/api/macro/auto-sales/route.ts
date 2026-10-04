@@ -1,7 +1,7 @@
 import { CACHE, collectorFailure, latestOf, loadAltSeries } from "@/lib/macro/alt-data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const SEGMENTS = [
   { key: "pv", label: "Passenger vehicles" },

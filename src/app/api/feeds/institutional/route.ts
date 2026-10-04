@@ -1,7 +1,7 @@
 import { buildInstitutionalIntelligence } from "@/lib/institutional/build-hub";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const maxDuration = 60;
 
 let cache: { at: number; payload: Awaited<ReturnType<typeof buildInstitutionalIntelligence>> } | null = null;

@@ -2,7 +2,7 @@ import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { fetchUpstoxQuotes } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 let cache: { at: number; quotes: Awaited<ReturnType<typeof fetchUpstoxQuotes>> } | null = null;
 const TTL_MS = 8_000;

@@ -1,7 +1,7 @@
 import { CACHE, collectorFailure, latestOf, loadAltSeries, yoyPct } from "@/lib/macro/alt-data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** Gross GST collections (₹ crore) from the Ministry of Finance PIB release. Honest empty state when PIB blocks the collector. */
 export async function GET() {

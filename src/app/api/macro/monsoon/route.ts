@@ -3,7 +3,7 @@ import { MONSOON_POINTS, rainSeriesId } from "@/lib/collector/sources/monsoon";
 import { computeMonsoon } from "@/lib/macro/monsoon";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** Monsoon proxy: season-to-date (Jun–Sep) or last-90-day rainfall as % of the average of earlier stored years. */
 export async function GET() {
