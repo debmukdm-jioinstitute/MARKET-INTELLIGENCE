@@ -8,7 +8,7 @@ import {
 import { fetchYahooCandles, yahooTickerForIndiaSymbol } from "@/lib/feeds/sources/yahoo-candles";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const VALID_RANGES: CandleRange[] = ["1D", "1W", "1M", "3M", "6M", "1Y"];
 

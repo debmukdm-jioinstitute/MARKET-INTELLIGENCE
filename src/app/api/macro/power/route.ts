@@ -1,7 +1,7 @@
 import { CACHE, collectorFailure, lastDays, latestOf, loadAltSeries, yoyPct } from "@/lib/macro/alt-data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** Grid-India all-India power demand: 90-day series + the latest day with YoY (from the stored year-ago day). */
 export async function GET() {
