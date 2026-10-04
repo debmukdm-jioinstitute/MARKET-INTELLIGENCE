@@ -10,8 +10,10 @@ import type { ScanRun } from "@/lib/scanner/types";
  * stay identical.
  */
 export async function sendTelegramDigest(run: ScanRun): Promise<boolean> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chat = process.env.TELEGRAM_CHAT_ID;
+  // Tolerate pasted whitespace/quotes and a stray "bot" prefix from copy-paste.
+  const clean = (v?: string) => v?.trim().replace(/^["']|["']$/g, "").trim();
+  const token = clean(process.env.TELEGRAM_BOT_TOKEN)?.replace(/^bot(?=\d)/i, "");
+  const chat = clean(process.env.TELEGRAM_CHAT_ID);
   if (!token || !chat) return false;
   const line = (id: string, icon: string) => {
     const def = SCANNERS.find((s) => s.id === id)!;
