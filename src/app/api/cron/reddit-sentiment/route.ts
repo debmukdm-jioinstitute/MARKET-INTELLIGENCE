@@ -1,6 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
-import { getLiveCompanySentimentCached, RETAIL_SENTIMENT_WATCHLIST } from "@/lib/reddit-sentiment/live-cache";
-import { pruneOldSentimentCache, ensureRedditSchema } from "@/lib/reddit-sentiment/store";
+import { runRedditSentimentCron } from "@/lib/reddit-sentiment/cron";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -17,45 +16,14 @@ export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
 
-  return runRedditCron();
+  const result = await runRedditSentimentCron();
+  return result.ok ? NextResponse.json(result) : NextResponse.json(result, { status: 500 });
 }
 
 export async function POST(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
 
-  return runRedditCron();
-}
-
-async function runRedditCron() {
-  try {
-    await ensureRedditSchema();
-    const symbols = RETAIL_SENTIMENT_WATCHLIST.slice(0, 10);
-    const refreshed: string[] = [];
-
-    for (const symbol of symbols) {
-      try {
-        await getLiveCompanySentimentCached(symbol, { forceRefresh: true });
-        refreshed.push(symbol);
-      } catch (err) {
-        console.warn(`[cron/reddit-sentiment] Failed to refresh ${symbol}:`, err);
-      }
-    }
-
-    const pruned = await pruneOldSentimentCache().catch(() => 0);
-
-    return NextResponse.json({
-      ok: true,
-      refreshedCount: refreshed.length,
-      refreshed,
-      pruned,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error("[cron/reddit-sentiment] Error:", err);
-    return NextResponse.json(
-      { ok: false, error: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
-    );
-  }
+  const result = await runRedditSentimentCron();
+  return result.ok ? NextResponse.json(result) : NextResponse.json(result, { status: 500 });
 }

@@ -1,7 +1,7 @@
 import { buildIndiaDashboard, buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const maxDuration = 60;
 
 let fullCache: { at: number; payload: Awaited<ReturnType<typeof buildIndiaDashboard>> } | null = null;
