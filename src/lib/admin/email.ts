@@ -43,6 +43,10 @@ export async function sendTransactionalEmail(input: {
   to: string;
   subject: string;
   html: string;
+  /** Plain-text alternative (multipart); improves inbox placement. */
+  text?: string;
+  /** Overrides the default From (must be on a Resend-verified domain). */
+  from?: string;
   replyTo?: string;
   attachments?: EmailAttachment[];
   /** Extra headers (e.g. List-Unsubscribe) passed straight to Resend. */
@@ -52,10 +56,11 @@ export async function sendTransactionalEmail(input: {
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
   const resend = new Resend(apiKey);
   const { data, error } = await resend.emails.send({
-    from: getResendFromAddress(),
+    from: input.from ?? getResendFromAddress(),
     to: input.to,
     subject: input.subject,
     html: input.html,
+    text: input.text,
     replyTo: input.replyTo,
     headers: input.headers,
     attachments: input.attachments?.map((a) => ({

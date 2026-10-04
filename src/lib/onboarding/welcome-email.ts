@@ -32,3 +32,22 @@ export function renderWelcomeEmailHtml(model: OnboardingFormModel): string {
   </div>
 </body></html>`;
 }
+
+/** Plain-text twin of the welcome letter (sent as the multipart text part). */
+export function renderWelcomeEmailText(model: OnboardingFormModel): string {
+  const site = model.siteUrl.replace(/\/$/, "");
+  return [
+    "Hi,",
+    "",
+    "I'm Debabrata — I built Market Intelligence because I was tired of cluttered, expensive financial tools. I wanted one calm place where anyone, from a student to a seasoned trader, could see their money clearly.",
+    "",
+    `A good place to start is the home page — it shows you today's market picture in plain words: ${site}/Home`,
+    "",
+    "Two honest notes: this is research and learning, not financial advice — and the site is young, so you will find bugs. If you do, just reply to this email and tell me. I read every one.",
+    "",
+    "Thanks for being here early. It means a lot.",
+    "",
+    "— Debabrata",
+    "Market Intelligence · made by Debabrata Mukherjee, Jio Institute",
+  ].join("\n");
+}

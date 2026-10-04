@@ -7,7 +7,7 @@ import {
 import type { SessionUser } from "@/lib/auth";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { defaultSiteUrl, loadOnboardingFormModelForUser } from "@/lib/onboarding/load-form-model";
-import { renderWelcomeEmailHtml, welcomeEmailSubject } from "@/lib/onboarding/welcome-email";
+import { renderWelcomeEmailHtml, renderWelcomeEmailText, welcomeEmailSubject } from "@/lib/onboarding/welcome-email";
 
 const FOUNDER_EMAIL = "Deb@getmarketintelligence.in";
 
@@ -20,6 +20,17 @@ export type WelcomePackSendResult = {
   pdfAttached?: boolean;
   pdfSkipReason?: string;
 };
+
+/**
+ * A personal-looking sender ("Debabrata Mukherjee <deb@…>") on the same verified
+ * domain as the configured From — a person, not "onboarding@", reads as
+ * correspondence to Gmail. Sandbox senders are left untouched.
+ */
+function personalFrom(configured: string): string {
+  const domain = configured.match(/@([^>\s]+)>?\s*$/)?.[1];
+  if (!domain || domain === "resend.dev") return configured;
+  return `Debabrata Mukherjee <deb@${domain}>`;
+}
 
 /** Records delivery so the backfill never emails the same member twice. Best effort. */
 async function markWelcomeSent(email: string): Promise<void> {
@@ -56,6 +67,8 @@ export async function sendWelcomePackWithResult(user: SessionUser, origin?: stri
       to: user.email,
       subject,
       html,
+      text: renderWelcomeEmailText(model),
+      from: personalFrom(from),
       replyTo: FOUNDER_EMAIL,
     });
 
