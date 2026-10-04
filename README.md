@@ -996,3 +996,20 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 ## License & disclaimer
 
 Market data is indicative, drawn from public and licensed APIs; delays and gaps can occur. Every metric, model, screener, and AI agent in this app is a research and education tool, not investment advice — several sections above describe simulated, illustrative, or static content explicitly so it's never mistaken for a live signal. Verify anything material against official exchange and regulator sources before acting on it.
+
+---
+
+## Scheduled jobs & developer notes
+
+### Where the crons run
+All 18 scheduled jobs now run on **GitHub Actions** (`.github/workflows/cron-*.yml`), not Vercel Cron (`vercel.json` has `"crons": []`). Each workflow runs a script in `scripts/crons/run-*.ts` that writes straight to Neon Postgres. The `/api/cron/*` routes remain as manual/admin fallbacks. Secrets checklist: [`docs/cron-offload-secrets.md`](docs/cron-offload-secrets.md).
+
+### TODO for the developer — Telegram scan digest (pick up later)
+- **Status:** not working. `cron-scan` completes and saves results, but the optional Telegram digest is skipped. Telegram returns `401 Unauthorized`, so the `TELEGRAM_BOT_TOKEN` stored in GitHub Actions secrets is not a valid bot token (most likely a typo or a revoked/old token).
+- **Severity:** **Low / non-blocking.** It is a convenience notification for the owner only. The scan, database writes and the website are unaffected, and nothing else depends on it.
+- **To fix:** in Telegram, open @BotFather → `/mybots` → the bot → API Token, copy it, check it at `https://api.telegram.org/bot<TOKEN>/getMe` (must return `"ok":true`), then update the `TELEGRAM_BOT_TOKEN` secret in repo Settings → Secrets and variables → Actions. Confirm `TELEGRAM_CHAT_ID` is the owner's chat id (message the bot first, press Start). Re-run the `cron-scan` workflow; the log should show `"telegram":true`.
+- **If dropped:** delete the two Telegram secrets; the job keeps working without them.
+
+### Other open items (low severity)
+- `cron-kit-sync` needs a `KIT_API_KEY` secret; `cron-datagov` needs `DATA_GOV_IN_API_KEY`. Both fail fast with a clear message until added.
+- The Neon database password was shared in plain text during setup. Rotate it in Neon, then update the `DATABASE_URL` GitHub secret (and confirm Vercel's synced value).
