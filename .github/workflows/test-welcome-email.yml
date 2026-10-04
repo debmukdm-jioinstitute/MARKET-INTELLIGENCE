@@ -1,0 +1,29 @@
+name: test-welcome-email
+
+# Manual only: sends the founder welcome test email (Resend) to the address
+# given as input via /api/cron/test-welcome. Auth: CRON_SECRET.
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "Recipient email for the test welcome message"
+        required: true
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send test welcome email
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          TO_EMAIL: ${{ inputs.email }}
+        run: |
+          set -euo pipefail
+          BASE="${SITE_URL:-https://getmarketintelligence.in}"
+          code=$(curl -sS -m 120 -G -o /tmp/out.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            --data-urlencode "email=${TO_EMAIL}" "${BASE}/api/cron/test-welcome")
+          cat /tmp/out.json; echo
+          [ "$code" = "200" ] || { echo "::error::HTTP ${code}"; exit 1; }
