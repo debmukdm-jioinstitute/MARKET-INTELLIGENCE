@@ -1,7 +1,7 @@
 import { CACHE, collectorFailure, latestOf, loadAltSeries, yoyPct } from "@/lib/macro/alt-data";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 const PAGE = "https://www.npci.org.in/what-we-do/upi/product-statistics";
 
 /** NPCI UPI monthly volume (million) and value (₹ crore): 24-month series + YoY for every month with a stored year-ago month. */
