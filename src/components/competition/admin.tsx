@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { DISCLAIMER } from "@/lib/competition/config";
 import type { Competition } from "@/lib/competition/types";
 import { loadCompetition, sendCompetition, StatusMessage } from "./shared";
+import { TradingDaysPicker } from "./trading-days-picker";
 type Overview = {
   competition: Competition | null;
   participants: { user_email: string; display_name: string; status: string }[];
@@ -26,7 +27,7 @@ type Overview = {
 const loader = (url: string) => loadCompetition<Overview>(url);
 export function AlphaAdmin() {
   const { data, error, mutate } = useSWR("/api/admin/competition", loader);
-  const [dates, setDates] = useState(""),
+  const [dates, setDates] = useState<string[]>([]),
     [finalists, setFinalists] = useState(3),
     [symbol, setSymbol] = useState(""),
     [name, setName] = useState(""),
@@ -97,7 +98,7 @@ export function AlphaAdmin() {
             e.preventDefault();
             void command({
               action: "create",
-              tradingDays: dates.split(",").map((s) => s.trim()),
+              tradingDays: dates,
               finalistCount: finalists,
             });
           }}
@@ -105,14 +106,10 @@ export function AlphaAdmin() {
           <h2 className="text-xl font-semibold">
             Create the standalone season
           </h2>
-          <label className="block">
-            Five trading dates (YYYY-MM-DD, comma-separated)
-            <Input
-              required
-              value={dates}
-              onChange={(e) => setDates(e.target.value)}
-            />
-          </label>
+          <div className="block space-y-2">
+            <span className="text-sm font-medium">Five trading dates</span>
+            <TradingDaysPicker value={dates} onChange={setDates} maxDates={5} required />
+          </div>
           <label className="block">
             Finalist places including Champion
             <Input
@@ -126,7 +123,7 @@ export function AlphaAdmin() {
           <p className="text-sm text-muted-foreground">
             Verify NSE holidays. Dates must form one five-day trading week.
           </p>
-          <Button disabled={busy}>Create draft season</Button>
+          <Button disabled={busy || dates.length !== 5}>Create draft season</Button>
         </form>
       ) : (
         <section className="space-y-3 rounded-xl border border-border p-5">

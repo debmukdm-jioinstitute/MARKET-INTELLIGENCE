@@ -2,7 +2,7 @@ import { CACHE, collectorFailure, latestOf, loadAltSeries } from "@/lib/macro/al
 import { WB_INDICATORS, wbSeriesId } from "@/lib/collector/sources/worldbank";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** World Bank India annual indicators: latest published value + 10-year series (the "year" is the data year, not today). */
 export async function GET() {

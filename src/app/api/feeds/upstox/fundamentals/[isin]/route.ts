@@ -1,7 +1,7 @@
 import { fetchUpstoxKeyRatios } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function GET(_req: Request, ctx: { params: Promise<{ isin: string }> }) {
   const { isin } = await ctx.params;
