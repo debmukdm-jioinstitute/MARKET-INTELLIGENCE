@@ -258,3 +258,10 @@ Rule number per Mandatory skips list.
 - `src/app/api/watchlist/route.ts` — rule 5 mutation/AI/mixed handlers
 - `src/app/api/worldmonitor/global-feeds/route.ts` — rule 1 ISR-hostile (live aggregation; prerender timeout)
 - `src/app/llms-full.txt/route.ts` — rule 6: embeds live snapshot; other tier
+
+## Ship & live verification
+- First push `f5cc76f` (31 converted): GitHub CI green, **Vercel deploy FAILED** — prerender timeout on `/api/stress` and `/api/stress/backtest` (>120s x3). Fix-forward `82ff088` restored both to `force-dynamic`.
+- Final main SHA `82ff088`; Vercel deployment READY: https://vercel.com/debmukdm-8008s-projects/market-intelligence/7fEm5J23SLhvoTPZTJfENpAvcqNj
+- Live: `/` 200; `/api/signals` 200 (`x-vercel-cache: PRERENDER`); `/api/options-flow/universe` 200 PRERENDER; `/api/broker-research/sources` 200 PRERENDER; `/api/openapi.json` 200 PRERENDER (s-maxage 3600); `/llms.txt` 200 PRERENDER; `/api/stress` 200 (dynamic, as restored).
+- Effective ISR (build-confirmed): broker-research/sources, company/intelligence, feeds/legal-risk, openapi.json, options-flow/history, options-flow/universe, signals, trade/universe, llms.txt (9 files). The other converted files read request/path params and still render dynamically; the declaration is harmless there but gives no caching (limitation).
+- Local `npm run build` passed with the stress routes converted; Vercel's build did not. Local pass is not proof for DB-backed prerender; Vercel build is the authority.
