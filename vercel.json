@@ -1,1 +1,76 @@
-{"crons":[]}
+{
+  "crons": [
+    {
+      "path": "/api/portfolio/instruments/cron-sync",
+      "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/benchmark-constituents",
+      "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/scrape-research",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/52w-levels",
+      "schedule": "5 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/options-flow",
+      "schedule": "25 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/datagov",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/data360/catalog",
+      "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/data360",
+      "schedule": "45 3 * * *"
+    },
+    {
+      "path": "/api/cron/collect",
+      "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/cron/what-changed",
+      "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/scan",
+      "schedule": "30 11 * * 1-5"
+    },
+    {
+      "path": "/api/cron/backtest",
+      "schedule": "0 12 * * 6"
+    },
+    {
+      "path": "/api/cron/signals",
+      "schedule": "45 11 * * 1-5"
+    },
+    {
+      "path": "/api/cron/kit-sync-customers",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/company-disclosures",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/reddit-sentiment",
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/credit-ratings",
+      "schedule": "45 4 * * *"
+    },
+    {
+      "path": "/api/cron/promoter-disclosures",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}
