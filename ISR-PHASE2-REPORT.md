@@ -1,10 +1,10 @@
 # ISR Phase 2 Report
 
 Base main SHA: c803d436a91cfa0508f2f641dc2d7a2cf7fe25b8
-Before: 224 files with force-dynamic. After: 193 (31 converted).
+Before: 224 files with force-dynamic. After: 195 (29 converted, 2 reverted after Vercel build trap).
 Baseline tsc errors: 0. After: 0. eslint on 31 touched files: clean. npm ci: pass. npm run build: pass (exit 0).
 
-## Converted: revalidate = 900 (26)
+## Converted: revalidate = 900 (24)
 - `src/app/api/broker-research/route.ts` — declared only (still dynamic at build: reads request/path params)
 - `src/app/api/broker-research/sources/route.ts` — ISR 15m
 - `src/app/api/company/intelligence/route.ts` — ISR 15m
@@ -27,8 +27,6 @@ Baseline tsc errors: 0. After: 0. eslint on 31 touched files: clean. npm ci: pas
 - `src/app/api/options-flow/universe/route.ts` — ISR 15m
 - `src/app/api/signals/route.ts` — ISR 15m
 - `src/app/api/signals/fno-model/route.ts` — declared only (still dynamic at build: reads request/path params)
-- `src/app/api/stress/route.ts` — ISR 15m
-- `src/app/api/stress/backtest/route.ts` — ISR 15m
 - `src/app/api/trade/universe/route.ts` — ISR 15m
 - `src/app/api/reddit/sentiment/[symbol]/route.ts` — declared only (still dynamic at build: reads request/path params)
 
@@ -38,6 +36,9 @@ Baseline tsc errors: 0. After: 0. eslint on 31 touched files: clean. npm ci: pas
 - `src/app/api/data360/route.ts` — declared only (still dynamic at build: reads request/path params)
 - `src/app/api/datagov/catalog/route.ts` — declared only (still dynamic at build: reads request/path params)
 - `src/app/api/datagov/resource/[id]/route.ts` — declared only (still dynamic at build: reads request/path params)
+
+## Build-trap reverts (restored to force-dynamic)
+- `src/app/api/stress/route.ts` and `src/app/api/stress/backtest/route.ts`: Vercel build failed with 'Failed to build /api/stress after 3 attempts' (>120s static generation, live compute). Local build passed (no DB/network latency), Vercel did not. Reverted; skipped rule 6 (build trap).
 
 ## Preserved revalidate = 300 files (20, unchanged)
 - `src/app/api/feeds/hub/route.ts`
