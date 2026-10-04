@@ -6,16 +6,12 @@ name: cron-kit-sync
 # (11:00 IST). The /api/cron/kit-sync-customers route stays as a manual
 # fallback.
 #
-# IMPORTANT: this job genuinely needs KIT_API_KEY at runtime, but KIT_API_KEY
-# is NOT among the secrets currently available to these workflows (only
-# DATABASE_URL / CRON_SECRET / TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID are).
-# Until a KIT_API_KEY Actions secret is provisioned (and passed to the
-# runner env below), the runner fails fast with a clear message. KIT_API_KEY
-# is intentionally NOT referenced here because it does not exist yet.
+# Needs the KIT_API_KEY Actions secret; without it the runner fails fast with
+# a clear message.
 #
 # REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
 #   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
-#   KIT_API_KEY   Kit API key — REQUIRED for this job, but not yet provisioned
+#   KIT_API_KEY   Kit API key — REQUIRED for this job
 
 on:
   schedule:
@@ -46,4 +42,5 @@ jobs:
       - name: Sync Kit customers tag
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          KIT_API_KEY: ${{ secrets.KIT_API_KEY }}
         run: npx --yes tsx@4 scripts/crons/run-kit-sync.ts
