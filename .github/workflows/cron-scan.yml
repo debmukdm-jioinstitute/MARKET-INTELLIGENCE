@@ -1,0 +1,48 @@
+name: cron-scan
+
+# Moved off Vercel (Fluid Active CPU over quota). Scans the Nifty 500 with
+# every scanner, saves the result to Neon, and sends the Telegram digest (only
+# when TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set) — all via the shared
+# lib code, zero Vercel compute. Same UTC schedule the old vercel.json cron
+# used: weekdays 11:30 UTC (17:00 IST, after NSE close).
+#
+# Guard: a partial run (< 60% of the universe scanned) fails loudly and does
+# NOT overwrite a good full scan.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL        Neon connection string (POSTGRES_URL also accepted)
+#   TELEGRAM_BOT_TOKEN  optional — scan digest only; skipped when unset
+#   TELEGRAM_CHAT_ID    optional — scan digest only; skipped when unset
+
+on:
+  schedule:
+    - cron: "30 11 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Nifty 500 scan
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: npx --yes tsx@4 scripts/crons/run-scan.ts

@@ -1,0 +1,39 @@
+name: cron-reddit-sentiment
+
+# Moved off Vercel (Fluid Active CPU over quota). Refreshes retail Reddit
+# sentiment for the watchlist bellwethers into Neon on the GitHub Actions
+# runner — zero Vercel compute. Same UTC schedule the old vercel.json cron
+# used: daily 06:30 UTC (12:00 IST). The /api/cron/reddit-sentiment route
+# stays as a manual fallback.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+# HF_TOKEN is optional — the HF lib works without it.
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  reddit-sentiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set (repo Settings → Secrets and variables → Actions)"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Refresh Reddit sentiment
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-reddit-sentiment.ts

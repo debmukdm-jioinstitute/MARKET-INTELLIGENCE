@@ -1,0 +1,44 @@
+name: cron-promoter-disclosures
+
+# Moved off Vercel (Fluid Active CPU over quota). Deep-fetches the
+# promoter-disclosure feed and persists new items straight to Neon via the
+# shared lib code — zero Vercel compute.
+# Same UTC schedule the old vercel.json cron used: daily 05:00 UTC (10:30 IST).
+#
+# NOTE: the Vercel route also warmed an in-memory feed cache
+# (setPromoterFeedSnapshot) — skipped here on purpose; an in-memory cache is
+# meaningless in a one-shot runner process. See scripts/crons/run-promoter-disclosures.ts.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  promoter-disclosures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch and persist promoter-disclosure feed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-promoter-disclosures.ts

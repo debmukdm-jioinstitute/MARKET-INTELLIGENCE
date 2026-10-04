@@ -1,0 +1,40 @@
+name: cron-benchmark-constituents
+
+# Moved off Vercel (Fluid Active CPU over quota). Refreshes NSE index
+# constituent weights (archives CSV + Yahoo cap proxy) on the GitHub Actions
+# runner — zero Vercel compute. Same UTC schedule the old vercel.json cron
+# used: daily 03:30 UTC (09:00 IST).
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh benchmark constituents
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-benchmark-constituents.ts

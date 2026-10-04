@@ -1,0 +1,40 @@
+name: cron-data360-catalog
+
+# Moved off Vercel (Fluid Active CPU over quota). Refreshes the World Bank
+# Data360 dataset + indicator id catalog on the GitHub Actions runner —
+# zero Vercel compute. Same UTC schedule the old vercel.json cron used:
+# Sundays 02:00 UTC (07:30 IST).
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh Data360 catalog
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-data360-catalog.ts

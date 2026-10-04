@@ -1,0 +1,41 @@
+name: cron-what-changed
+
+# Moved off Vercel (Fluid Active CPU over quota). Force-rebuilds the
+# "what changed" institutional-shifts payload into Neon on the GitHub
+# Actions runner — zero Vercel compute. Same UTC schedule the old
+# vercel.json cron used: daily 04:15 UTC (09:45 IST). The
+# /api/cron/what-changed route stays as a manual fallback.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+
+on:
+  schedule:
+    - cron: "15 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  what-changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set (repo Settings → Secrets and variables → Actions)"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild what-changed cache
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-what-changed.ts

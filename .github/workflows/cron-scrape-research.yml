@@ -1,0 +1,41 @@
+name: cron-scrape-research
+
+# Moved off Vercel (Fluid Active CPU over quota). Scrapes all research
+# sources into Neon on the GitHub Actions runner — zero Vercel compute.
+# Same UTC schedule the old vercel.json cron used: daily 04:00 UTC
+# (09:30 IST). The /api/cron/scrape-research route stays as a manual
+# fallback.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   DATABASE_URL  Neon connection string (POSTGRES_URL also accepted)
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  scrape-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set (repo Settings → Secrets and variables → Actions)"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Scrape research sources
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx --yes tsx@4 scripts/crons/run-scrape-research.ts
