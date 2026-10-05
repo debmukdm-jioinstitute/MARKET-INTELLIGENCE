@@ -3,7 +3,7 @@ import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
 import { fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

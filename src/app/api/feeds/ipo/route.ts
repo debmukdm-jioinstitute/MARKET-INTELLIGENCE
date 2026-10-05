@@ -3,7 +3,7 @@ import type { IpoStatus } from "@/lib/feeds/ipo/types";
 import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 
 const VALID_STATUSES: IpoStatus[] = ["open", "closed", "listed", "upcoming"];
 

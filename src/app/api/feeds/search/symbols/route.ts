@@ -1,7 +1,7 @@
 import { searchSymbols } from "@/lib/feeds/symbol-search";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams.get("q") ?? "";

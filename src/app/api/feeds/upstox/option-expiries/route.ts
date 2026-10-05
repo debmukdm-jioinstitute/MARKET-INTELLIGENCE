@@ -2,7 +2,7 @@ import { findOptionUnderlying } from "@/lib/feeds/india/instruments";
 import { fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(req: Request) {
   const underlying = new URL(req.url).searchParams.get("underlying");

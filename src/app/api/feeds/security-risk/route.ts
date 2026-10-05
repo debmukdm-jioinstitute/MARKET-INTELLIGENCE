@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 30;
 
 export async function GET(req: Request) {

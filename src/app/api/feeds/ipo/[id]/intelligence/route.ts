@@ -2,7 +2,7 @@ import { buildIpoIntelligence } from "@/lib/feeds/ipo/build-intelligence";
 import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {

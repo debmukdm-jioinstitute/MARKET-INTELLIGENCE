@@ -2,7 +2,7 @@ import { buildSearchTrendHub } from "@/lib/search-trends/build-hub";
 import type { SearchTrendCategory } from "@/lib/search-trends/types";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900;
 export const maxDuration = 60;
 
 let cache: { key: string; at: number; payload: Awaited<ReturnType<typeof buildSearchTrendHub>> } | null = null;
