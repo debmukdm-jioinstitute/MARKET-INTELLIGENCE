@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { STRATEGIES, type BacktestResult, type StrategyId } from "@/lib/trade-lab/backtest";
 import { TIMEFRAMES, type Bias, type IndicatorReading, type LabResult, type Timeframe } from "@/lib/trade-lab/types";
 import { EquityChart } from "@/components/trade-lab/equity-chart";
+import { IndicatorChart } from "@/components/trade-lab/indicator-chart";
+import { chartKeysForReading, type ChartIndicatorKey } from "@/lib/trade-lab/chart-indicators";
 import { recordBacktest, useTradeLabGame } from "@/components/trade-lab/gamification";
 import { TradeLabStepper } from "@/components/trade-lab/stepper";
 import { ReasonsAccordion, VerdictMeter } from "@/components/trade-lab/verdict-meter";
@@ -119,7 +121,7 @@ function CandleChart({ candles }: { candles: LabResult["candles"] }) {
   );
 }
 
-function IndicatorCard({ ind }: { ind: IndicatorReading }) {
+function IndicatorCard({ ind, onPlot }: { ind: IndicatorReading; onPlot?: () => void }) {
   return (
     <div className="rounded-lg border border-border bg-background p-3.5">
       <div className="flex items-start justify-between gap-2">
@@ -131,6 +133,11 @@ function IndicatorCard({ ind }: { ind: IndicatorReading }) {
       <Sparkline values={ind.spark} bias={ind.bias} />
       <p className="mt-1 text-sm leading-snug text-foreground"><span className="font-medium">What this means: </span>{ind.reading}</p>
       <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">Rule: {ind.rule}</p>
+      {onPlot ? (
+        <button type="button" onClick={onPlot} className="mt-2 inline-flex min-h-8 items-center gap-1 rounded-md border border-primary/40 px-2 text-xs font-semibold text-primary hover:bg-primary/5">
+          Plot on chart ↑
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -240,6 +247,8 @@ function TradeLab() {
   const { data: watchData } = useSWR<{ rows: WatchRow[] }>(watchKey, getJson, { refreshInterval: 5 * 60_000, revalidateOnFocus: false });
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const [strategy, setStrategy] = useState<StrategyId | null>(null);
+  const [plotKeys, setPlotKeys] = useState<ChartIndicatorKey[] | undefined>(undefined);
+  const chartRef = useRef<HTMLDivElement>(null);
   const game = useTradeLabGame();
   const recordedRef = useRef<string | null>(null);
 
@@ -385,6 +394,10 @@ function TradeLab() {
         <Panel title="Indicators" subtitle="Tick the ones you want to see. Every value is computed exactly from the candles — each card shows the rule." collapsible={false}>
           {data && !error ? (
             <div>
+              <div ref={chartRef} className="mb-4 rounded-xl border border-border bg-card p-3">
+                <div className="mb-2 text-sm font-semibold text-foreground">Chart <span className="text-xs font-normal text-muted-foreground">· click "Plot on chart" on any card below, or pick several indicators from the dropdown</span></div>
+                <IndicatorChart symbol={symbol} tf={tf} onTfChange={setTf} forceIndicators={plotKeys} height={380} />
+              </div>
               <div className="mb-3 flex flex-wrap gap-1.5">
                 {data.indicators.map((i) => (
                   <label key={i.id} className={cn("flex cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 text-xs", hidden.has(i.id) ? "border-border text-muted-foreground" : "border-primary/40 bg-primary/5 text-foreground")}>
@@ -393,7 +406,10 @@ function TradeLab() {
                   </label>
                 ))}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{shown.map((i) => <IndicatorCard key={i.id} ind={i} />)}</div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{shown.map((i) => {
+                const keys = chartKeysForReading(i.id);
+                return <IndicatorCard key={i.id} ind={i} onPlot={keys.length ? () => { setPlotKeys(keys); chartRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); } : undefined} />;
+              })}</div>
               {!data.indicators.some((i) => i.id === "mfi") ? <p className="mt-3 text-xs text-muted-foreground">Volume-based indicators (OBV, MFI, VWAP) are not shown: this instrument reports no traded volume.</p> : null}
             </div>
           ) : <NeedsInstrument onGo={() => setStep(1)} />}

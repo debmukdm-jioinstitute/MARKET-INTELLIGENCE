@@ -7,6 +7,7 @@ import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { WelcomeStrip } from "@/components/homedashboard/WelcomeStrip";
 import { MarketPulse } from "@/components/homedashboard/MarketPulse";
+import { ChartDesk } from "@/components/homedashboard/ChartDesk";
 import { BriefTeaser } from "@/components/homedashboard/BriefTeaser";
 import { SignatureFive } from "@/components/homedashboard/SignatureFive";
 import { MissionsCard } from "@/components/homedashboard/MissionsCard";
@@ -64,6 +65,7 @@ export default function DashboardPage() {
       </header>
       <WelcomeStrip progress={progress} />
       <MarketPulse data={data} now={now} />
+      <ChartDesk />
       <BriefTeaser
         data={brief}
         watched={authenticated ? [...items, ...portfolio.holdings] : []}
