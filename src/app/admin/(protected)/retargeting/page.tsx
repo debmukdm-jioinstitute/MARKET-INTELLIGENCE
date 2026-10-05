@@ -257,16 +257,58 @@ export default function AdminRetargetingPage() {
 
       {view === "members" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <AdminStat label="Registered" value={memberStats?.total ?? "—"} />
-          <AdminStat label="Free" value={memberStats?.free ?? "—"} />
-          <AdminStat label="Paid active" value={memberStats?.paidActive ?? "—"} />
-          <AdminStat label="Paid lapsed" value={memberStats?.paidLapsed ?? "—"} />
+          <AdminStat label="Registered" value={memberStats?.total ?? "—"} href="/admin/customers" />
+          <AdminStat
+            label="Free"
+            value={memberStats?.free ?? "—"}
+            onClick={() => {
+              setMemberKindFilter("free");
+              document.getElementById("members-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+          <AdminStat
+            label="Paid active"
+            value={memberStats?.paidActive ?? "—"}
+            onClick={() => {
+              setMemberKindFilter("paid_active");
+              document.getElementById("members-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+          <AdminStat
+            label="Paid lapsed"
+            value={memberStats?.paidLapsed ?? "—"}
+            onClick={() => {
+              setMemberKindFilter("paid_lapsed");
+              document.getElementById("members-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          <AdminStat label="Paid audience" value={stats?.total ?? "—"} />
-          <AdminStat label="Active entitlement" value={stats?.active ?? "—"} />
-          <AdminStat label="Lapsed" value={stats?.lapsed ?? "—"} />
+          <AdminStat
+            label="Paid audience"
+            value={stats?.total ?? "—"}
+            onClick={() => {
+              setSegmentFilter("all");
+              document.getElementById("paid-audience-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+          <AdminStat
+            label="Active entitlement"
+            value={stats?.active ?? "—"}
+            onClick={() => {
+              setSegmentFilter("active");
+              document.getElementById("paid-audience-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+          <AdminStat
+            label="Lapsed"
+            value={stats?.lapsed ?? "—"}
+            onClick={() => {
+              setSegmentFilter("lapsed");
+              document.getElementById("paid-audience-table")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
         </div>
       )}
 
@@ -389,7 +431,7 @@ export default function AdminRetargetingPage() {
       )}
 
       {view === "members" ? (
-        <AdminCard title="All registered customers" subtitle={`${filteredMembers.length} row(s)`}>
+        <AdminCard id="members-table" title="All registered customers" subtitle={`${filteredMembers.length} row(s)`}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <label className="text-sm text-gray-500">Filter</label>
             <select
@@ -458,7 +500,7 @@ export default function AdminRetargetingPage() {
           </div>
         </AdminCard>
       ) : (
-        <AdminCard title="Paid audience" subtitle={`${filteredPaid.length} row(s)`}>
+        <AdminCard id="paid-audience-table" title="Paid audience" subtitle={`${filteredPaid.length} row(s)`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

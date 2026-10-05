@@ -62,12 +62,12 @@ export default function AdminNotificationsPage() {
         </div>
       ) : null}
 
-      <AdminStat label="Active subscribers" value={subscriberCount} />
+      <AdminStat label="Active subscribers" value={subscriberCount} href="#compose" />
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {ok ? <p className="text-sm text-emerald-600">{ok}</p> : null}
 
-      <AdminCard title="Compose">
+      <AdminCard id="compose" title="Compose">
         <form onSubmit={send} className="space-y-3">
           <div className="space-y-1">
             <label className="text-sm text-gray-500">Title</label>

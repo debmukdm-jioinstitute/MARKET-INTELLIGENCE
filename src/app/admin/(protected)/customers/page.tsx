@@ -132,16 +132,18 @@ export default function AdminCustomersPage() {
       {resetMessage ? <p className="text-sm text-emerald-600">{resetMessage}</p> : null}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <AdminStat label="Total customers" value={customers ? totalCustomers : "…"} />
-        <AdminStat label="Customers with points" value={points ? withPoints : "—"} />
-        <AdminStat label="Total points awarded" value={points ? totalPoints.toLocaleString() : "—"} />
+        <AdminStat label="Total customers" value={customers ? totalCustomers : "…"} href="#customer-table" />
+        <AdminStat label="Customers with points" value={points ? withPoints : "—"} href="/admin/competition" />
+        <AdminStat label="Total points awarded" value={points ? totalPoints.toLocaleString() : "—"} href="/admin/competition" />
         <AdminStat
           label="Average per active customer"
           value={points ? (avgActive === null ? "—" : avgActive.toLocaleString()) : "—"}
+          href="/admin/competition"
         />
       </div>
 
       <AdminCard
+        id="customer-table"
         title="All accounts"
         subtitle={
           pointsError

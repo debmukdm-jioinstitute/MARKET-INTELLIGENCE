@@ -38,11 +38,11 @@ export default function AdminDashboardPage() {
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <AdminStat label="Registered customers" value={stats?.customers ?? "—"} />
-        <AdminStat label="Knowledge base docs" value={stats?.documents ?? "—"} />
-        <AdminStat label="Push notifications sent" value={stats?.notificationsSent ?? "—"} />
-        <AdminStat label="Newsletters sent" value={stats?.newslettersSent ?? "—"} />
-        <AdminStat label="Pageviews (7d)" value={stats?.pageviews7d ?? "—"} />
+        <AdminStat label="Registered customers" value={stats?.customers ?? "—"} href="/admin/customers" />
+        <AdminStat label="Knowledge base docs" value={stats?.documents ?? "—"} href="/admin/knowledge-base" />
+        <AdminStat label="Push notifications sent" value={stats?.notificationsSent ?? "—"} href="/admin/notifications" />
+        <AdminStat label="Newsletters sent" value={stats?.newslettersSent ?? "—"} href="/admin/newsletters" />
+        <AdminStat label="Pageviews (7d)" value={stats?.pageviews7d ?? "—"} href="/admin/analytics" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

@@ -2,6 +2,8 @@
 
 import { AdminCard } from "@/components/admin/admin-card";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 type Data = {
   db: boolean;
@@ -13,6 +15,17 @@ type Data = {
   scrapeLog: { source: string; ok: boolean; items_found: number; error: string | null; ran_at: string }[];
 };
 type RunResult = { ok: boolean; status: number; ms: number; body: string };
+
+const TABLE_HREF: Record<string, string> = {
+  users: "/admin/customers",
+  brief_subscriptions: "/admin/brief",
+  alert_rules: "/admin/alerts",
+  alert_events: "/admin/alerts",
+  push_subscriptions: "/admin/notifications",
+  newsletter_subscribers: "/admin/newsletters",
+  research_reports: "/research-reports",
+  scan_latest: "/intelligence/scanner",
+};
 
 export default function AdminSystemPage() {
   const [data, setData] = useState<Data | null>(null);
@@ -274,12 +287,23 @@ export default function AdminSystemPage() {
 
       <AdminCard title="Data footprint">
         <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {Object.entries(data.stats).map(([k, v]) => (
-            <div key={k} className="rounded-md border border-gray-200 bg-white p-2">
-              <p className="text-xs text-gray-500">{k}</p>
-              <p className="text-lg font-semibold text-gray-900">{v ?? "n/a"}</p>
-            </div>
-          ))}
+          {Object.entries(data.stats).map(([k, v]) => {
+            const href = TABLE_HREF[k];
+            return (
+              <Link
+                key={k}
+                href={href ?? "#"}
+                prefetch={false}
+                className="group relative rounded-md border border-gray-200 bg-white p-2 transition-all duration-150 hover:border-blue-400 hover:bg-blue-50/40 hover:shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">{k}</p>
+                  <ArrowUpRight className="size-3 text-gray-400 opacity-60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-blue-600 group-hover:opacity-100" />
+                </div>
+                <p className="text-lg font-semibold text-gray-900">{v ?? "n/a"}</p>
+              </Link>
+            );
+          })}
         </div>
       </AdminCard>
 
