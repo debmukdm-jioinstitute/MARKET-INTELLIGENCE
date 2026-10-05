@@ -154,7 +154,7 @@ export function AlphaAdmin() {
                 variant="outline"
                 onClick={() => void command({ action: "reopenRegistration" })}
               >
-                Reopen registration (before start)
+                Reopen registration
               </Button>
             ) : null}
             <Button
