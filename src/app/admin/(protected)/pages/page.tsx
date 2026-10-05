@@ -99,7 +99,6 @@ export default function AdminPortalPagesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Portal control</p>
         <h1 className="mt-1 text-xl font-semibold">Pages &amp; features</h1>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
           Toggle pages off to hide them from navigation, command palette, and direct URLs. Lock a page to keep it visible

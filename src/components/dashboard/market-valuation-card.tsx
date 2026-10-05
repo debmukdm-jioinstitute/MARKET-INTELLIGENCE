@@ -19,10 +19,7 @@ export function MarketValuationCard() {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Scale className="size-3.5" />
-              MARKET VALUATION MULTIPLES
-            </span>
+            <Scale className="size-3.5 text-primary" aria-hidden />
             <MetricInfo metric="pe_ratio" sourceOverride={nseSource} customTitle="NSE Valuation Suite" />
           </div>
           <a

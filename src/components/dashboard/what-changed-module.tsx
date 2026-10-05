@@ -47,18 +47,15 @@ export function WhatChangedModule() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <History className="size-3.5" />
-              WHAT CHANGED?
-            </span>
+            <History className="size-3.5 text-primary" aria-hidden />
+            <h3 className="text-lg font-bold text-foreground">
+              Key institutional market & macro shifts
+            </h3>
             <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-sm font-semibold text-emerald-600">
               Since last visit
             </span>
             <MetricInfo metric="fii_flow" customTitle="Institutional Market Delta Engine" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mt-0.5">
-            Key Institutional Market & Macro Shifts
-          </h3>
           <p className="mt-1 text-xs text-muted-foreground">
             {updatedAt ? (
               <>

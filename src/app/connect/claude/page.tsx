@@ -16,7 +16,6 @@ export default function ConnectClaudePage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-2xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed w-full">
-      <p className="text-xs uppercase tracking-[0.2em] text-blue-600">Claude · Custom connector</p>
       <h1 className="mt-2 text-3xl font-semibold">Add Market Intelligence to Claude</h1>
       <p className="mt-3 text-base text-muted-foreground">
         Add a custom connector with the MCP URL below, click <b>Connect</b>, then <b>Allow access</b> on our consent page.

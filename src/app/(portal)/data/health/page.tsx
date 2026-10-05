@@ -60,7 +60,7 @@ export default function DataHealthPage() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <PageHeader
-        kicker="Data centre"
+
         title="Data health & provenance"
         subtitle="Every stored macro and market series: where it comes from, the date of its latest observation, and whether it is fresh, stale, or failing. A failed fetch never overwrites the last good value."
       />

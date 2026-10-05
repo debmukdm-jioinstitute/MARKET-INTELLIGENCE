@@ -153,7 +153,7 @@ function Data360ExplorerInner() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Data Centre"
+
         title="World Bank Data360 Explorer"
         subtitle="Browse stored World Bank macro series for India and the United States. Copies refresh overnight from the public Data360 API."
       />

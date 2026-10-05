@@ -31,7 +31,7 @@ export default async function CompanyIntelligencePage() {
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Investor Relations & Earnings Concalls"
+
         title="Company-Specific & Concall Intelligence"
         subtitle="Live exchange-published disclosures, concall transcripts, and board outcomes for Indian listed equities — continuously crawled, enriched with FinBERT AI sentiment, and linked to original regulatory filings."
         trust={{

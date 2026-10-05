@@ -36,7 +36,7 @@ export default function StressIndexPage() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <PageHeader
-        kicker="Risk Radar"
+
         title="India Macro Stress Index"
         subtitle="A 0–100 read of market stress built from volatility, currency, rates, oil, capital flows and price action — plus a convergence alert when several independent signals stress at once."
       />

@@ -37,7 +37,6 @@ export default function AdminBriefPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Daily brief</p>
         <h1 className="text-2xl font-semibold text-gray-900">Subscribers and generated briefs</h1>
         <p className="text-sm text-gray-500">{data.totals.subscribers} subscribers · {data.totals.pre} pre-market · {data.totals.post} post-market</p>
       </div>

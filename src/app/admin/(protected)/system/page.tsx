@@ -123,7 +123,6 @@ export default function AdminSystemPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">System</p>
         <h1 className="text-2xl font-semibold text-gray-900">Jobs, config and feature switches</h1>
       </div>
 

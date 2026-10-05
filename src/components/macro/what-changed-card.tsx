@@ -127,8 +127,7 @@ export function WhatChangedCard({ seed }: { seed: BriefingSeed }) {
 
   return (
     <section className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-6 shadow-lg">
-      <p className="text-sm uppercase tracking-[0.28em] text-primary">Morning briefing</p>
-      <h2 className="mt-1 font-heading text-2xl md:text-3xl">What changed since you last visited?</h2>
+      <h2 className="font-heading text-2xl md:text-3xl">What changed since you last visited?</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         {firstVisit
           ? "First visit — we’ll personalize this list next time. Five links to the underlying data."

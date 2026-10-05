@@ -102,7 +102,7 @@ export default function IntelligencePage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Intelligence Terminal"
+
         title="Market Intelligence & AI Copilot"
         subtitle="Unifying exchange RSS, Reddit & publisher feeds, institutional flow shifts, and conversational portfolio diagnostics."
       />

@@ -43,10 +43,7 @@ export default async function ResearchPage() {
       {/* 1. Page Header & Hero Search */}
       <div className="space-y-6">
         <div className="text-center max-w-3xl mx-auto">
-          <p className="text-xs uppercase tracking-[0.28em] font-semibold text-[#1a73e8]">
-            Institutional Research Notes
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl text-foreground">
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl text-foreground">
             Broker Research Notes Aggregator
           </h1>
           <p className="mx-auto mt-3 text-sm text-muted-foreground leading-relaxed">

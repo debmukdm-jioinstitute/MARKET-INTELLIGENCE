@@ -69,7 +69,7 @@ export default function AiDeskPage() {
 
   return (
     <div className="portal-page">
-      <PageHeader kicker="AI Desk" title="Multi-agent research lab" />
+      <PageHeader title="Multi-agent research lab" />
 
       <FreeTierAiQuotaBanner context="ai-desk" />
 

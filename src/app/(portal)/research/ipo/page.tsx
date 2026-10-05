@@ -24,7 +24,7 @@ export default function IpoPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Primary market"
+
         title="IPO intelligence"
         subtitle="Calendar from Upstox · GMP (Chittorgarh / IPO Watch) · DRHP/RHP extract · SEBI/NSE/BSE/registrar source map · equity-research-style analyst memo on demand."
       />

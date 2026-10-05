@@ -63,7 +63,7 @@ function MarketBreadthView() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Market Internals"
+
         title="Market Breadth & Momentum Desk"
         subtitle="Advance/decline and 52-week expansion from the India dashboard feed; NIFTY trend from daily closes."
         trust={{ source: breadthSource?.provider ?? "NSE India", asOf }}

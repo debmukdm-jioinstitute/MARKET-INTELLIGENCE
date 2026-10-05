@@ -158,7 +158,7 @@ export default function FinancialModelPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Financial model"
+
         title={dataset ? `${dataset.profile.name} · ${dataset.profile.symbol}` : symbol}
         subtitle="Free-cash-flow DCF (residual income for banks and insurers) built from Yahoo Finance statements — bottom-up beta, local-currency CAPM, normalised terminal value, full equity bridge, scenarios and Monte Carlo."
       />

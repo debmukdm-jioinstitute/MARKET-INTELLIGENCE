@@ -11,7 +11,7 @@ export default function OptionsFlowPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Research Desk"
+
         title="Options flow screener"
         subtitle="A three-agent attention-direction system: a data agent gathers price, volume, and options activity with a source and timestamp on every figure; an analysis agent describes the gap between options activity and price without calling it bullish or bearish; a flagging agent turns that into a research shortlist of at most 5 tickers. It is a screener, not a signal — unusual activity is a reason to go look at a company, not a reason to take a position."
       />

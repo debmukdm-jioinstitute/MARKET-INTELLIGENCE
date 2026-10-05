@@ -215,8 +215,7 @@ export function ProductProof({
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Product proof</p>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+        <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
           Pick a stock. See the chart and a sourced brief.
         </h2>
       </motion.div>

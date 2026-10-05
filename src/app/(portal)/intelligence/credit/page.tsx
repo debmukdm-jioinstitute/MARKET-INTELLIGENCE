@@ -14,7 +14,7 @@ export default function CreditIntelligencePage() {
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Fixed Income & Corporate Credit Surveillance"
+
         title="Credit / Risk Intelligence"
         subtitle="Rating-agency actions from CRISIL, ICRA, CARE, India Ratings, Acuité, and Brickwork — ingested via Google News RSS with optional Firecrawl / Crawl4AI render for JS portals."
         trust={{

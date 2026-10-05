@@ -43,7 +43,7 @@ export default function PortfolioPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Portfolio"
+
         title={data?.settings.name ?? "My portfolio"}
         subtitle="Live prices, how your money is split, and where your risk sits. Hover any ⓘ to see how a number is worked out."
       />

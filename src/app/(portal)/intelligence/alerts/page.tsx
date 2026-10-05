@@ -70,7 +70,7 @@ export default function AlertRulesPage() {
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 pb-16">
       <PageHeader
-        kicker="Alerts"
+
         title="Market alerts"
         subtitle="Tell us what to watch, and we'll ping you when it happens — e.g. India VIX above 20, or FII selling more than ₹2,000 cr in a day. Rules are checked every 3 hours, so alerts can lag a fast move."
       />

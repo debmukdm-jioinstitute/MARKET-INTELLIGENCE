@@ -57,7 +57,6 @@ export default function AdminUpdatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">App updates</p>
         <h1 className="mt-1 text-xl font-semibold">Update banners</h1>
         <p className="mt-1 text-sm text-gray-500">The most recent published update shows as a dismissible banner in the main app.</p>
       </div>

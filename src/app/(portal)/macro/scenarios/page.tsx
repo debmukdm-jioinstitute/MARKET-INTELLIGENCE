@@ -60,7 +60,7 @@ export default function ScenarioPage() {
   return (
     <div className="space-y-6 max-w-[1200px] mx-auto pb-16">
       <PageHeader
-        kicker="Scenario Engine"
+
         title="What If? Macro Shock Scenarios"
         subtitle="Apply a shock to crude, the rupee, US yields or the S&P 500 and see the model-implied same-day effect on each Indian sector and on your portfolio, using the measured betas from the Transmission Map."
       />

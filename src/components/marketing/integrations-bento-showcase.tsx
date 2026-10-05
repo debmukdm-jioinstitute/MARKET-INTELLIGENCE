@@ -387,9 +387,6 @@ export function IntegrationsBentoShowcase() {
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <p className="text-sm font-bold tracking-[0.2em] text-blue-600 uppercase">
-            Ecosystem Integrations
-          </p>
           <h2 className="mt-3 text-[clamp(2rem,5vw,3.25rem)] font-bold tracking-tight text-gray-900 leading-[1.1]">
             Claude AI &amp; Telegram Bot in Action
           </h2>

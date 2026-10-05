@@ -41,7 +41,7 @@ export default function QuantPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Quant"
+
         title="The numbers behind your returns"
         subtitle={
           data?.hasHoldings

@@ -102,7 +102,7 @@ function Stat({ label, value, sub, href }: { label: string; value: string; sub?:
 function SectionTitle({ children, note }: { children: ReactNode; note?: string }) {
   return (
     <div className="mb-3">
-      <h2 className="text-sm uppercase tracking-[0.22em] text-primary">{children}</h2>
+      <h2 className="text-base font-bold text-foreground">{children}</h2>
       {note ? <p className="mt-1 text-sm text-muted-foreground">{note}</p> : null}
     </div>
   );

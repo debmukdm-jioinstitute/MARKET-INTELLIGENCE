@@ -50,22 +50,17 @@ export function EarningsCalendarCard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <CalendarDays className="size-3.5" aria-hidden />
-              <EditableCopy id="card.earnings.kicker" label="Earnings kicker">
-                EARNINGS DISCLOSURES & CALENDAR
-              </EditableCopy>
-            </span>
+            <CalendarDays className="size-3.5 text-primary" aria-hidden />
+            <EditableCopy
+              id="card.earnings.title"
+              as="h3"
+              label="Earnings title"
+              className="text-base font-bold text-foreground"
+            >
+              Upcoming results dates (Nifty 500)
+            </EditableCopy>
             <MetricInfo metric="earnings_results" customTitle="Quarterly Financial Results & EPS" />
           </div>
-          <EditableCopy
-            id="card.earnings.title"
-            as="h3"
-            label="Earnings title"
-            className="text-base font-bold text-foreground mt-0.5"
-          >
-            Upcoming results dates (Nifty 500)
-          </EditableCopy>
           <p className="mt-1 text-xs text-muted-foreground">
             {data?.asOf
               ? `Yahoo calendar · ${data.scanned ?? 500} Nifty 500 names · refreshed ${fmtAsOf(data.asOf)} IST${

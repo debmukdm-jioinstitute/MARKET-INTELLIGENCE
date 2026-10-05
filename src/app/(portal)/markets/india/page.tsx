@@ -25,7 +25,7 @@ export default function IndiaMarketsPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="India"
+
         title="Indian markets"
         subtitle="NSE prices via Upstox — live during the session, last close when the market is shut. Tap a row for quote, depth, charts, and fundamentals."
         trust={{ source: "Upstox, NSE India", asOf: feedData?.fetchedAt, delayed: "Quotes may be delayed" }}

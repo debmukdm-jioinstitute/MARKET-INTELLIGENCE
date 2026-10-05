@@ -42,23 +42,16 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
         <div>
           <div className="flex items-center gap-2">
             <EditableCopy
-              id="card.hero-india.kicker"
-              label="India market kicker"
-              className="text-sm uppercase tracking-wider text-primary font-bold"
+              id="card.hero-india.title"
+              as="h2"
+              label="India market title"
+              className="text-xl font-bold tracking-tight text-foreground"
             >
-              INDIA MARKET
+              NSE / BSE Headline Pulse
             </EditableCopy>
             <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
             <MetricInfo metric="nifty50" sourceOverride={nifty?.source} />
           </div>
-          <EditableCopy
-            id="card.hero-india.title"
-            as="h2"
-            label="India market title"
-            className="text-xl font-bold tracking-tight text-foreground mt-0.5"
-          >
-            NSE / BSE Headline Pulse
-          </EditableCopy>
         </div>
 
         <div className="flex items-center gap-2">
