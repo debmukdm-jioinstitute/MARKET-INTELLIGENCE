@@ -1,4 +1,5 @@
 import { hasEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
+import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
 import { isGoogleOnlyPasswordHash } from "@/lib/auth/google-oauth";
 import { createResetToken } from "@/lib/auth/password-reset";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -31,10 +32,23 @@ export async function POST(req: Request) {
   if (row && !isGoogleOnlyPasswordHash(row.password_hash)) {
     const base = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
     const link = `${base}/reset-password?token=${encodeURIComponent(createResetToken(email, row.password_hash))}`;
+    const text = [
+      "We received a request to reset your Market Intelligence password.",
+      "",
+      `Choose a new password: ${link}`,
+      "",
+      "This link expires in 1 hour and works once. If you did not ask for this, ignore this email.",
+    ].join("\n");
     await sendTransactionalEmail({
       to: email,
       subject: "Reset your Market Intelligence password",
-      html: `<p>We received a request to reset your password.</p><p><a href="${link}">Choose a new password</a></p><p>This link expires in 1 hour and works once. If you did not ask for this, ignore this email.</p>`,
+      text,
+      html: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:24px 20px;background:#ffffff;font-family:${GOOGLE_SANS_FONT_STACK};color:#202124;font-size:15px;line-height:1.7;max-width:520px;">
+<p style="margin:0 0 16px">We received a request to reset your Market Intelligence password.</p>
+<p style="margin:0 0 16px"><a href="${link}" style="color:#1a5cff;">Choose a new password</a></p>
+<p style="margin:0;color:#5f6368;font-size:13px;">This link expires in 1 hour and works once. If you did not ask for this, ignore this email.</p>
+</body></html>`,
     });
   }
   return NextResponse.json(GENERIC);

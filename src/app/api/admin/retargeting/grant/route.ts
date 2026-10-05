@@ -87,6 +87,7 @@ export async function POST(req: Request) {
           html: rendered.html,
           replyTo: founderReply,
           headers: listUnsubscribeHeaders(),
+          kind: "marketing",
         });
         if (out.ok) {
           emailed += 1;

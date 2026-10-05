@@ -1,4 +1,4 @@
-import { sendNewsletter, hasEmailConfigured } from "@/lib/admin/email";
+import { hasEmailConfigured, htmlToPlainText, sendTransactionalEmail } from "@/lib/admin/email";
 import { hasPushConfigured, sendPush, type PushSubscriptionRow } from "@/lib/admin/push";
 import { sql } from "@/lib/db";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
@@ -49,10 +49,20 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
       }
     }
     if (rule.channels.includes("email") && hasEmailConfigured()) {
-      const r = await sendNewsletter(`Alert: ${rule.name}`, [rule.userEmail], () =>
-        `<div style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;padding:16px"><h3 style="margin:0 0 8px">${rule.name.replace(/</g, "&lt;")}</h3><p style="font-size:14px">${detail.map((d) => d.replace(/</g, "&lt;")).join("<br>")}</p><p style="font-size:12px;color:#5f6368">Your alert rule fired. Rules are checked every 3 hours. <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.vercel.app"}/intelligence/alerts">Manage rules</a>. Not investment advice.</p></div>`,
-      ).catch(() => ({ sent: 0 }));
-      emailSent = r.sent > 0;
+      const site = process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.in";
+      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:16px;${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;color:#202124;">
+<h3 style="margin:0 0 8px">${rule.name.replace(/</g, "&lt;")}</h3>
+<p style="font-size:14px">${detail.map((d) => d.replace(/</g, "&lt;")).join("<br>")}</p>
+<p style="font-size:12px;color:#5f6368">Your alert rule fired. Rules are checked every 3 hours. <a href="${site}/intelligence/alerts">Manage rules</a>. Not investment advice.</p>
+</body></html>`;
+      const r = await sendTransactionalEmail({
+        to: rule.userEmail,
+        subject: `Alert: ${rule.name}`,
+        html,
+        text: htmlToPlainText(html),
+      }).catch(() => ({ ok: false }));
+      emailSent = r.ok;
     }
     await db`INSERT INTO alert_events (rule_id, user_email, message, metric_values, push_sent, email_sent) VALUES (${rule.id}::uuid, ${rule.userEmail}, ${message}, ${JSON.stringify(metrics)}::jsonb, ${pushSent}, ${emailSent})`;
     await db`UPDATE alert_rules SET last_fired_at = now() WHERE id = ${rule.id}::uuid`;
