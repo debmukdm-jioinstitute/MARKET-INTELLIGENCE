@@ -1,7 +1,24 @@
 import { Resend } from "resend";
 
 export function hasEmailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  return Boolean(process.env.RESEND_API_KEY?.trim());
+}
+
+const FOUNDER_REPLY_TO = "Deb@getmarketintelligence.in";
+
+/** Personal From on same verified domain — better inbox placement than onboarding@. */
+export function personalFromAddress(configured: string): string {
+  const domain = configured.match(/@([^>\s]+)>?\s*$/)?.[1];
+  if (!domain || domain === "resend.dev") return configured;
+  return `Debabrata Mukherjee <deb@${domain}>`;
+}
+
+/** Block OTP / welcome sends when production still points at Resend sandbox. */
+export function productionEmailMisconfiguredReason(): string | null {
+  if (process.env.NODE_ENV !== "production") return null;
+  if (!hasEmailConfigured()) return null;
+  if (!isSandboxSender()) return null;
+  return "Email sender is on Resend sandbox (onboarding@resend.dev). Set RESEND_FROM_EMAIL to your verified domain in Vercel — see docs/RESEND.md.";
 }
 
 /** Default production sender — use a domain verified in Resend (see docs/RESEND.md). Override with RESEND_FROM_EMAIL on Vercel.
@@ -52,7 +69,7 @@ export async function sendTransactionalEmail(input: {
   /** Extra headers (e.g. List-Unsubscribe) passed straight to Resend. */
   headers?: Record<string, string>;
 }): Promise<{ ok: boolean; error?: string; id?: string }> {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
   const resend = new Resend(apiKey);
   const { data, error } = await resend.emails.send({
@@ -69,8 +86,11 @@ export async function sendTransactionalEmail(input: {
     })),
   });
   if (error) return { ok: false, error: error.message };
-  return { ok: true, id: data?.id };
+  if (!data?.id) return { ok: false, error: "Resend accepted the request but did not return a message id." };
+  return { ok: true, id: data.id };
 }
+
+export { FOUNDER_REPLY_TO };
 
 export type NewsletterSendResult = { sent: number; failed: number; errors: string[] };
 
@@ -89,7 +109,7 @@ export async function sendNewsletter(
   htmlFor: (email: string) => string,
   opts?: { headersFor?: (email: string) => Record<string, string> },
 ): Promise<NewsletterSendResult> {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
   const resend = new Resend(apiKey);
   const from = getResendFromAddress();

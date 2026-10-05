@@ -38,5 +38,7 @@ RESEND_FROM_EMAIL=Market Intelligence <onboarding@getmarketintelligence.in>
 | Symptom | Fix |
 |---------|-----|
 | Only founder inbox receives mail | Sandbox sender or unverified domain — set `RESEND_FROM_EMAIL` to verified domain |
+| Sign-up OTP screen but no email | Check Admin → System → email block; run **testSignupOtp** action; confirm `RESEND_API_KEY` after rotation (no stray spaces) |
 | `403` / domain not verified | Match FROM domain to a green domain in Resend |
+| `RESEND_API_KEY` removed after leak | Sign-up skips OTP and creates account immediately until a new key is set |
 | Welcome PDF missing | Check Vercel function logs for `[welcome-pack]` |

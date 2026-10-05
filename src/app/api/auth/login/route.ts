@@ -28,7 +28,10 @@ export async function POST(req: Request) {
   const row = rows[0] as { email: string; name: string; password_hash: string; role: "user" | "admin" } | undefined;
 
   if (!row) {
-    return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    return NextResponse.json(
+      { error: "No account with this email yet.", code: "account_not_found" },
+      { status: 404 },
+    );
   }
   if (isGoogleOnlyPasswordHash(row.password_hash)) {
     return NextResponse.json({ error: "This account uses Google sign-in. Continue with Google." }, { status: 401 });
