@@ -42,3 +42,4 @@ RESEND_FROM_EMAIL=Market Intelligence <onboarding@getmarketintelligence.in>
 | `403` / domain not verified | Match FROM domain to a green domain in Resend |
 | `RESEND_API_KEY` removed after leak | Sign-up skips OTP and creates account immediately until a new key is set |
 | Welcome PDF missing | Check Vercel function logs for `[welcome-pack]` |
+| Outlook / enterprise junk | From stays on verified `send.getmarketintelligence.in` (no fake `deb@` on send subdomain); mail is multipart text+html; IT can allowlist `send.getmarketintelligence.in` and `onboarding@send.getmarketintelligence.in`. Publish **DMARC** on `getmarketintelligence.in` (Resend dashboard shows the record). |

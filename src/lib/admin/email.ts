@@ -6,11 +6,57 @@ export function hasEmailConfigured(): boolean {
 
 const FOUNDER_REPLY_TO = "Deb@getmarketintelligence.in";
 
-/** Personal From on same verified domain — better inbox placement than onboarding@. */
+const TRANSACTIONAL_DISPLAY_NAME = "Debabrata Mukherjee · Market Intelligence";
+
+/** Keep the Resend-verified mailbox; only normalize display name (Outlook junked deb@ on send subdomain). */
+export function deliverabilityFromAddress(configured: string): string {
+  const trimmed = configured.trim();
+  const angled = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
+  const addr = (angled?.[2] ?? trimmed).trim();
+  if (!addr.includes("@")) return trimmed;
+  if (addr.includes("@resend.dev")) return trimmed;
+  return `${TRANSACTIONAL_DISPLAY_NAME} <${addr}>`;
+}
+
+/** @deprecated Use deliverabilityFromAddress — same verified address, no cross-domain deb@ From. */
 export function personalFromAddress(configured: string): string {
-  const domain = configured.match(/@([^>\s]+)>?\s*$/)?.[1];
-  if (!domain || domain === "resend.dev") return configured;
-  return `Debabrata Mukherjee <deb@${domain}>`;
+  return deliverabilityFromAddress(configured);
+}
+
+/** Minimal HTML → plain text for multipart/alternative (Outlook prefers text+html). */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/tr>/gi, "\n")
+    .replace(/<\/h[1-6]>/gi, "\n\n")
+    .replace(/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** Exchange / Outlook: suppress auto-replies; do not mark bulk/marketing. */
+export function transactionalMailHeaders(): Record<string, string> {
+  return {
+    "X-Auto-Response-Suppress": "OOF, DR, RN, NRN, AutoReply",
+  };
+}
+
+function mergeHeaders(...parts: Array<Record<string, string> | undefined>): Record<string, string> | undefined {
+  const out: Record<string, string> = {};
+  for (const p of parts) {
+    if (!p) continue;
+    Object.assign(out, p);
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 /** Block OTP / welcome sends when production still points at Resend sandbox. */
@@ -24,7 +70,7 @@ export function productionEmailMisconfiguredReason(): string | null {
 /** Default production sender — use a domain verified in Resend (see docs/RESEND.md). Override with RESEND_FROM_EMAIL on Vercel.
  *  Display name is a real person (founder) — personal senders place better in Gmail Primary than brand names. */
 export const PRODUCTION_RESEND_FROM =
-  "Market Intelligence <onboarding@send.getmarketintelligence.in>";
+  "Debabrata Mukherjee · Market Intelligence <onboarding@send.getmarketintelligence.in>";
 
 /** True while using Resend sandbox — delivers only to the Resend account owner email. */
 export function isSandboxSender(): boolean {
@@ -68,18 +114,27 @@ export async function sendTransactionalEmail(input: {
   attachments?: EmailAttachment[];
   /** Extra headers (e.g. List-Unsubscribe) passed straight to Resend. */
   headers?: Record<string, string>;
+  /** Marketing adds List-Unsubscribe only via `headers`; default is account/OTP mail. */
+  kind?: "transactional" | "marketing";
 }): Promise<{ ok: boolean; error?: string; id?: string }> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
   const resend = new Resend(apiKey);
+  const fromRaw = input.from ?? getResendFromAddress();
+  const from = deliverabilityFromAddress(fromRaw);
+  const text = input.text ?? htmlToPlainText(input.html);
+  const headers = mergeHeaders(
+    input.kind === "marketing" ? undefined : transactionalMailHeaders(),
+    input.headers,
+  );
   const { data, error } = await resend.emails.send({
-    from: input.from ?? getResendFromAddress(),
+    from,
     to: input.to,
     subject: input.subject,
     html: input.html,
-    text: input.text,
-    replyTo: input.replyTo,
-    headers: input.headers,
+    text,
+    replyTo: input.replyTo ?? FOUNDER_REPLY_TO,
+    headers,
     attachments: input.attachments?.map((a) => ({
       filename: a.filename,
       content: typeof a.content === "string" ? a.content : a.content,
@@ -107,12 +162,15 @@ export async function sendNewsletter(
   subject: string,
   recipients: string[],
   htmlFor: (email: string) => string,
-  opts?: { headersFor?: (email: string) => Record<string, string> },
+  opts?: {
+    headersFor?: (email: string) => Record<string, string>;
+    textFor?: (email: string) => string;
+  },
 ): Promise<NewsletterSendResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
   const resend = new Resend(apiKey);
-  const from = getResendFromAddress();
+  const from = deliverabilityFromAddress(getResendFromAddress());
 
   let sent = 0;
   let failed = 0;
@@ -121,13 +179,18 @@ export async function sendNewsletter(
   for (let i = 0; i < recipients.length; i += 100) {
     const chunk = recipients.slice(i, i + 100);
     const { data, error } = await resend.batch.send(
-      chunk.map((to) => ({
-        from,
-        to,
-        subject,
-        html: htmlFor(to),
-        headers: opts?.headersFor?.(to),
-      })),
+      chunk.map((to) => {
+        const html = htmlFor(to);
+        return {
+          from,
+          to,
+          subject,
+          html,
+          text: opts?.textFor?.(to) ?? htmlToPlainText(html),
+          replyTo: FOUNDER_REPLY_TO,
+          headers: opts?.headersFor?.(to),
+        };
+      }),
     );
     if (!error) {
       sent += data?.data?.length ?? chunk.length;
@@ -136,11 +199,14 @@ export async function sendNewsletter(
 
     // Batch call rejected as a whole — retry individually so one bad address doesn't sink the rest.
     for (const to of chunk) {
+      const html = htmlFor(to);
       const single = await resend.emails.send({
         from,
         to,
         subject,
-        html: htmlFor(to),
+        html,
+        text: opts?.textFor?.(to) ?? htmlToPlainText(html),
+        replyTo: FOUNDER_REPLY_TO,
         headers: opts?.headersFor?.(to),
       });
       if (single.error) {
