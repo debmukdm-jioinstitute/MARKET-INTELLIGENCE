@@ -1,5 +1,12 @@
 import crypto from "crypto";
-import { hasEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
+import {
+  FOUNDER_REPLY_TO,
+  getResendFromAddress,
+  hasEmailConfigured,
+  personalFromAddress,
+  productionEmailMisconfiguredReason,
+  sendTransactionalEmail,
+} from "@/lib/admin/email";
 import { isFeatureEnabled } from "@/lib/api-guard";
 import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
 
@@ -28,19 +35,36 @@ export function signupOtpMatches(email: string, code: string, storedHash: string
 /** OTP when the admin switch is on (default) and Resend is configured. Local without mail keeps instant signup. */
 export async function shouldChallengeSignupOtp(): Promise<boolean> {
   if (!(await isFeatureEnabled("signup-otp"))) return false;
-  return hasEmailConfigured();
+  if (!hasEmailConfigured()) return false;
+  if (productionEmailMisconfiguredReason()) return false;
+  return true;
 }
 
-export async function sendSignupOtpEmail(to: string, code: string): Promise<{ ok: boolean; error?: string }> {
+export async function sendSignupOtpEmail(to: string, code: string): Promise<{ ok: boolean; error?: string; id?: string }> {
+  const misconfig = productionEmailMisconfiguredReason();
+  if (misconfig) return { ok: false, error: misconfig };
+
+  const fromConfigured = getResendFromAddress();
+  const text = `Your Market Intelligence verification code is ${code}. It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you didn't request this, ignore this email.`;
   const html = `<div style="font-family:${GOOGLE_SANS_FONT_STACK};color:#202124;font-size:15px;line-height:1.7;max-width:480px">
 <p style="margin:0 0 12px">Hi,</p>
 <p style="margin:0 0 12px">Your verification code is:</p>
 <p style="margin:0 0 12px;font-size:26px;letter-spacing:0.28em;font-variant-numeric:tabular-nums;">${code}</p>
 <p style="margin:0;color:#5f6368;font-size:13px;">It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you didn't ask for this, just ignore it.</p>
 </div>`;
-  return sendTransactionalEmail({
+
+  const sent = await sendTransactionalEmail({
     to,
-    subject: `Your Market Intelligence code is ${code}`,
+    subject: `Your Market Intelligence verification code`,
     html,
+    text,
+    from: personalFromAddress(fromConfigured),
+    replyTo: FOUNDER_REPLY_TO,
   });
+
+  if (!sent.ok) {
+    console.error("[signup-otp] send failed", to, sent.error, "from=", fromConfigured);
+    return sent;
+  }
+  return sent;
 }

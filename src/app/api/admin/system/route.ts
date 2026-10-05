@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { getResendFromAddress, hasEmailConfigured } from "@/lib/admin/email";
+import { getResendFromAddress, hasEmailConfigured, isSandboxSender, productionEmailMisconfiguredReason } from "@/lib/admin/email";
+import { generateSignupOtp, sendSignupOtpEmail } from "@/lib/auth/signup-otp";
 import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { invalidateRequireAccountCache } from "@/lib/auth/require-account";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -41,7 +42,21 @@ export async function GET() {
       scrapeLog = (await d`SELECT source, ok, items_found, error, ran_at FROM research_scrape_log ORDER BY ran_at DESC LIMIT 10`) as unknown as unknown[];
     } catch {}
   }
-  return NextResponse.json({ db, crons: CRONS, env, flags, stats, scrapeLog, cronSecretSet: Boolean(process.env.CRON_SECRET) });
+  return NextResponse.json({
+    db,
+    crons: CRONS,
+    env,
+    flags,
+    stats,
+    scrapeLog,
+    cronSecretSet: Boolean(process.env.CRON_SECRET),
+    email: {
+      configured: hasEmailConfigured(),
+      from: getResendFromAddress(),
+      sandboxSender: isSandboxSender(),
+      misconfiguredReason: productionEmailMisconfiguredReason(),
+    },
+  });
 }
 
 export async function POST(req: Request) {
@@ -64,6 +79,24 @@ export async function POST(req: Request) {
     await sql()`INSERT INTO feature_flags (flag, enabled, updated_at) VALUES (${body.flag!}, ${body.enabled}, now()) ON CONFLICT (flag) DO UPDATE SET enabled = ${body.enabled}, updated_at = now()`;
     if (body.flag === "require-account") invalidateRequireAccountCache();
     return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === "testSignupOtp") {
+    if (!hasEmailConfigured()) {
+      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 503 });
+    }
+    const misconfig = productionEmailMisconfiguredReason();
+    if (misconfig) {
+      return NextResponse.json({ error: misconfig, from: getResendFromAddress() }, { status: 503 });
+    }
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });
+    const code = generateSignupOtp();
+    const sent = await sendSignupOtpEmail(email, code);
+    if (!sent.ok) {
+      return NextResponse.json({ error: sent.error ?? "Resend rejected the send.", from: getResendFromAddress() }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true, sentTo: email, from: getResendFromAddress(), resendId: sent.id });
   }
 
   if (body.action === "testWelcome") {
