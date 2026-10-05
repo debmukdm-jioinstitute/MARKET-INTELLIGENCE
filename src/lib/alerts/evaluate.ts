@@ -1,7 +1,7 @@
 import { hasOutboundEmailConfigured, htmlToPlainText, sendTransactionalEmail } from "@/lib/admin/email";
 import { hasPushConfigured, sendPush, type PushSubscriptionRow } from "@/lib/admin/push";
 import { sql } from "@/lib/db";
-import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
+import { renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 import { METRICS, type MetricValues } from "@/lib/snapshot";
 import { listActiveRules, type Op, type Rule } from "./store";
 
@@ -50,12 +50,16 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
     }
     if (rule.channels.includes("email") && hasOutboundEmailConfigured()) {
       const site = process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.in";
-      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/></head>
-<body style="margin:0;padding:16px;${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;color:#202124;">
-<h3 style="margin:0 0 8px">${rule.name.replace(/</g, "&lt;")}</h3>
-<p style="font-size:14px">${detail.map((d) => d.replace(/</g, "&lt;")).join("<br>")}</p>
-<p style="font-size:12px;color:#5f6368">Your alert rule fired. Rules are checked every 3 hours. <a href="${site}/intelligence/alerts">Manage rules</a>. Not investment advice.</p>
-</body></html>`;
+      const safeName = rule.name.replace(/</g, "&lt;");
+      const detailHtml = detail.map((d) => d.replace(/</g, "&lt;")).join("<br>");
+      const html = renderMarketIntelligenceEmail({
+        badge: "ALERT",
+        title: safeName,
+        contentHtml: `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3c4043;">${detailHtml}</p>`,
+        primaryCta: { label: "Manage alert rules →", href: `${site}/intelligence/alerts` },
+        footnote: "Rules are checked every 3 hours. Not investment advice.",
+        siteUrl: site,
+      });
       const r = await sendTransactionalEmail({
         to: rule.userEmail,
         subject: `Alert: ${rule.name}`,
