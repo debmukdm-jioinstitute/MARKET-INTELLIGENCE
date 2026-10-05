@@ -87,9 +87,11 @@ export function IndicatorChart({
     if (saved?.length) setSelected(saved);
   }, []);
 
+  // Compare by content so a parent re-render with an equal list doesn't wipe the reader's dropdown picks.
+  const forceSig = forceIndicators ? forceIndicators.join(",") : null;
   useEffect(() => {
-    if (forceIndicators?.length) setSelected(forceIndicators);
-  }, [forceIndicators]);
+    if (forceSig !== null) setSelected(forceSig ? (forceSig.split(",") as ChartIndicatorKey[]) : []);
+  }, [forceSig]);
 
   const persist = useCallback((next: ChartIndicatorKey[]) => {
     setSelected(next);
@@ -151,7 +153,7 @@ export function IndicatorChart({
 
     for (const o of overlayOutputs) {
       for (const l of o.lines) {
-        chart.addSeries(LineSeries, { color: l.color, lineWidth: l.width ?? 1, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, title: l.name }, 0).setData(toPoints(l.values));
+        chart.addSeries(LineSeries, { color: l.color, lineWidth: l.width ?? 1, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, title: l.name, ...(l.dots ? { lineVisible: false, pointMarkersVisible: true, pointMarkersRadius: 1.5 } : {}) }, 0).setData(toPoints(l.values));
       }
     }
 

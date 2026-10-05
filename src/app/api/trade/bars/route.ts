@@ -20,7 +20,9 @@ export async function GET(req: Request) {
   if (!tfMeta) return NextResponse.json({ error: "Invalid timeframe" }, { status: 400 });
   const inst = resolveInstrument(sp.get("symbol") ?? "NIFTY");
   if (!inst) return NextResponse.json({ error: "Invalid symbol" }, { status: 400 });
-  if (await rateLimited(`trade-bars:${ip(req)}`, 120, 60)) {
+  // Never let a slow limiter store stall the chart: after 2s, fail open.
+  const limited = await Promise.race([rateLimited(`trade-bars:${ip(req)}`, 120, 60), new Promise<boolean>((r) => setTimeout(() => r(false), 2000))]);
+  if (limited) {
     return NextResponse.json({ error: "Too many requests, try again in a minute." }, { status: 429 });
   }
   const data = await fetchBars(inst, tf);

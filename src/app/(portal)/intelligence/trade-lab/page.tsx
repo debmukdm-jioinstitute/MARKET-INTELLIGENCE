@@ -260,11 +260,17 @@ function TradeLab() {
 
   const intraday = TIMEFRAMES.find((t) => t.id === tf)!.intraday;
   const shown = useMemo(() => data?.indicators.filter((i) => !hidden.has(i.id)) ?? [], [data, hidden]);
+  // Every ticked card is plotted on the chart; "Plot on chart" on a single card overrides until the ticks change.
+  const checkedKeys = useMemo(() => {
+    const keys = new Set<ChartIndicatorKey>();
+    for (const i of shown) chartKeysForReading(i.id).forEach((k) => keys.add(k));
+    return [...keys];
+  }, [shown]);
   const ageSec = data ? Math.max(0, Math.round(data.fetchedAt / 1000 - data.asOf)) : 0;
   const fresh = !data ? null : !intraday ? { cls: "bg-muted text-muted-foreground", text: "End-of-day bars" } : ageSec < 300 ? { cls: "bg-emerald-500/10 text-emerald-700", text: "Live" } : ageSec < 3600 ? { cls: "bg-amber-500/10 text-amber-700", text: "Delayed" } : { cls: "bg-muted text-muted-foreground", text: "Stale — market closed or feed delayed" };
 
   const pick = (id: string) => { setSymbol(id); setStrategy(null); setStep(2); };
-  const toggle = (id: string) => setHidden((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const toggle = (id: string) => { setPlotKeys(undefined); setHidden((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; }); };
 
   // Gamification: first-backtest badge + per-strategy personal best (localStorage only).
   useEffect(() => {
@@ -396,7 +402,7 @@ function TradeLab() {
             <div>
               <div ref={chartRef} className="mb-4 rounded-xl border border-border bg-card p-3">
                 <div className="mb-2 text-sm font-semibold text-foreground">Chart <span className="text-xs font-normal text-muted-foreground">· click "Plot on chart" on any card below, or pick several indicators from the dropdown</span></div>
-                <IndicatorChart symbol={symbol} tf={tf} onTfChange={setTf} forceIndicators={plotKeys} height={380} />
+                <IndicatorChart symbol={symbol} tf={tf} onTfChange={setTf} forceIndicators={plotKeys ?? checkedKeys} height={380} />
               </div>
               <div className="mb-3 flex flex-wrap gap-1.5">
                 {data.indicators.map((i) => (

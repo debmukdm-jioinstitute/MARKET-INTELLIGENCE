@@ -1,5 +1,5 @@
 import type { Bar } from "@/lib/scanner/types";
-import { adx, aroon, atr, bollinger, cci, emaStd, macd, mfi, obv, rsi, sessionVwap, sma, stochastic, supertrend } from "./indicators";
+import { adx, aroon, atr, bollinger, cci, emaStd, ichimoku, macd, mfi, obv, psar, rsi, sessionVwap, sma, stochastic, supertrend } from "./indicators";
 
 /**
  * Indicators the chart can plot. `overlay` ones draw on the price pane; `pane` ones get their own
@@ -7,7 +7,7 @@ import { adx, aroon, atr, bollinger, cci, emaStd, macd, mfi, obv, rsi, sessionVw
  * lines always match the Bullish/Bearish cards.
  */
 export type ChartIndicatorKey =
-  | "ema20" | "ema50" | "ema200" | "sma50" | "sma200" | "bb" | "supertrend" | "vwap"
+  | "ema20" | "ema50" | "ema200" | "sma20" | "sma50" | "sma200" | "bb" | "supertrend" | "ichimoku" | "psar" | "vwap"
   | "rsi" | "macd" | "stoch" | "adx" | "cci" | "aroon" | "obv" | "atr" | "mfi";
 
 export interface ChartIndicatorMeta {
@@ -25,9 +25,12 @@ export const CHART_INDICATORS: ChartIndicatorMeta[] = [
   { key: "ema20", label: "EMA 20", kind: "overlay", group: "Trend" },
   { key: "ema50", label: "EMA 50", kind: "overlay", group: "Trend" },
   { key: "ema200", label: "EMA 200", kind: "overlay", group: "Trend" },
+  { key: "sma20", label: "SMA 20", kind: "overlay", group: "Trend" },
   { key: "sma50", label: "SMA 50", kind: "overlay", group: "Trend" },
   { key: "sma200", label: "SMA 200", kind: "overlay", group: "Trend" },
   { key: "supertrend", label: "Supertrend (10,3)", kind: "overlay", group: "Trend" },
+  { key: "ichimoku", label: "Ichimoku (9,26,52)", kind: "overlay", group: "Trend" },
+  { key: "psar", label: "Parabolic SAR", kind: "overlay", group: "Trend" },
   { key: "vwap", label: "VWAP (session)", kind: "overlay", group: "Volume", needsVolume: true, intradayOnly: true },
   { key: "bb", label: "Bollinger Bands (20,2)", kind: "overlay", group: "Volatility" },
   { key: "macd", label: "MACD (12,26,9)", kind: "pane", group: "Momentum" },
@@ -41,7 +44,7 @@ export const CHART_INDICATORS: ChartIndicatorMeta[] = [
   { key: "obv", label: "OBV", kind: "pane", group: "Volume", needsVolume: true },
 ];
 
-export type LineSpec = { name: string; color: string; values: number[]; width?: 1 | 2 | 3 };
+export type LineSpec = { name: string; color: string; values: number[]; width?: 1 | 2 | 3; /** Draw as dots, no connecting line. */ dots?: boolean };
 export type HistSpec = { name: string; values: number[]; upColor: string; downColor: string };
 export type IndicatorOutput = {
   key: ChartIndicatorKey;
@@ -68,6 +71,17 @@ export function computeIndicator(key: ChartIndicatorKey, bars: Bar[]): Indicator
     case "ema20": return out({ lines: [{ name: "EMA 20", color: C.blue, values: emaStd(close, 20) }] });
     case "ema50": return out({ lines: [{ name: "EMA 50", color: C.amber, values: emaStd(close, 50) }] });
     case "ema200": return out({ lines: [{ name: "EMA 200", color: C.rose, values: emaStd(close, 200), width: 2 }] });
+    case "sma20": return out({ lines: [{ name: "SMA 20", color: C.teal, values: sma(close, 20) }] });
+    case "ichimoku": {
+      const ic = ichimoku(bars);
+      return out({ lines: [
+        { name: "Tenkan", color: C.blue, values: ic.tenkan },
+        { name: "Kijun", color: C.rose, values: ic.kijun },
+        { name: "Cloud top", color: C.emerald, values: ic.cloudTop },
+        { name: "Cloud bottom", color: C.orange, values: ic.cloudBottom },
+      ] });
+    }
+    case "psar": return out({ lines: [{ name: "PSAR", color: C.slate, values: psar(bars).sar, dots: true }] });
     case "sma50": return out({ lines: [{ name: "SMA 50", color: C.violet, values: sma(close, 50) }] });
     case "sma200": return out({ lines: [{ name: "SMA 200", color: C.slate, values: sma(close, 200), width: 2 }] });
     case "bb": {
@@ -108,8 +122,8 @@ export function computeIndicator(key: ChartIndicatorKey, bars: Bar[]): Indicator
 export function chartKeysForReading(id: string): ChartIndicatorKey[] {
   switch (id) {
     case "ema": return ["ema20", "ema50", "ema200"];
-    case "sma": return ["sma50", "sma200"];
-    case "bb": case "supertrend": case "vwap": case "rsi": case "macd": case "stoch": case "adx":
+    case "sma": return ["sma20", "sma50", "sma200"];
+    case "bb": case "supertrend": case "ichimoku": case "psar": case "vwap": case "rsi": case "macd": case "stoch": case "adx":
     case "cci": case "aroon": case "atr": case "mfi": case "obv":
       return [id as ChartIndicatorKey];
     default: return [];
