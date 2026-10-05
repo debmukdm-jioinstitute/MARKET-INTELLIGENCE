@@ -6,7 +6,6 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
   return (
     <section aria-label="Smart Money">
       <SectionHeading
-        number="05 / FOLLOW THE PARTICIPATION"
         title="Where is the big money going?"
         detail="Foreign and domestic institutions. Look for the pattern, not just the number."
         action={

@@ -44,10 +44,7 @@ export default function DashboardPage() {
     >
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-600">
-            YOUR DAILY MARKET COMPANION
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             A clearer view. A smarter start.
           </h1>
           <p className="mt-2 text-sm text-stone-500">

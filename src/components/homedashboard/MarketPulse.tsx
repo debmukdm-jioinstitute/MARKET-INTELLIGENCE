@@ -125,7 +125,6 @@ export function MarketPulse({
   return (
     <section aria-label="Market Pulse">
       <SectionHeading
-        number="01 / THE BIG PICTURE"
         title="Market Pulse"
         detail="A quick read on India. A little context behind every move."
         action={<HomeLink href="/markets">Full market board</HomeLink>}

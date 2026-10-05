@@ -132,7 +132,6 @@ export function SignatureFive({
   return (
     <section aria-label="The Signature Five">
       <SectionHeading
-        number="03 / YOUR NEXT MOVE"
         title="Five ways to find your edge"
         detail="Follow your curiosity. Every tool gives you somewhere useful to start."
       />
