@@ -1,5 +1,5 @@
 import { finalizeNewsletterImageBlocks } from "@/lib/newsletter/image-links";
-import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
+import { renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 
 const IMG_STYLE = "display:block;max-width:100%;height:auto;margin:12px 0;border:0;";
 
@@ -46,13 +46,12 @@ export function normalizeNewsletterImages(html: string): string {
   return finalizeNewsletterImageBlocks(html);
 }
 
-export function wrapNewsletterDocument(bodyHtml: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
-<body style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:640px;margin:0 auto;padding:16px 20px;color:#202124;font-size:15px;line-height:1.5;">
-${bodyHtml}
-</body></html>`;
+export function wrapNewsletterDocument(bodyHtml: string, title = "From the desk"): string {
+  return renderMarketIntelligenceEmail({
+    badge: "NEWSLETTER",
+    title,
+    contentHtml: bodyHtml,
+  });
 }
 
 export function normalizeNewsletterBody(raw: string): string {

@@ -125,7 +125,7 @@ export default function DataExportPage() {
   return (
     <div className="space-y-6 max-w-[1100px] mx-auto pb-16">
       <PageHeader
-        kicker="Data Export"
+
         title="Download all market data"
         subtitle="One structured Excel workbook with every dataset behind the platform, one tab per topic, sources linked on every sheet. Generated live, so it reflects the data as of this moment."
       />

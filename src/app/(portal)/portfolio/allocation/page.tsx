@@ -44,7 +44,7 @@ export default function AllocationPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Allocation"
+
         title="Where your money sits"
         subtitle={
           data?.hasHoldings

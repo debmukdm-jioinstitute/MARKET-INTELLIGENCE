@@ -1,5 +1,9 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { getResendFromAddress, hasEmailConfigured } from "@/lib/admin/email";
+import { activeEmailProvider, getResendFromAddress, hasEmailConfigured, hasOutboundEmailConfigured, isSandboxSender, productionEmailMisconfiguredReason } from "@/lib/admin/email";
+import { getResendQuotaSnapshot, resetResendQuotaRouting } from "@/lib/admin/email-quota";
+import { getState, setState } from "@/lib/notify/store";
+import { isKitEmailConfigured } from "@/lib/kit";
+import { generateSignupOtp, sendSignupOtpEmail } from "@/lib/auth/signup-otp";
 import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { invalidateRequireAccountCache } from "@/lib/auth/require-account";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -41,7 +45,36 @@ export async function GET() {
       scrapeLog = (await d`SELECT source, ok, items_found, error, ran_at FROM research_scrape_log ORDER BY ran_at DESC LIMIT 10`) as unknown as unknown[];
     } catch {}
   }
-  return NextResponse.json({ db, crons: CRONS, env, flags, stats, scrapeLog, cronSecretSet: Boolean(process.env.CRON_SECRET) });
+  if (db && hasEmailConfigured()) {
+    const healKey = "email:quota-heal-v2";
+    const healed = await getState<{ done?: boolean }>(healKey);
+    if (!healed?.done) {
+      await resetResendQuotaRouting();
+      await setState(healKey, { done: true });
+    }
+  }
+
+  return NextResponse.json({
+    db,
+    crons: CRONS,
+    env,
+    flags,
+    stats,
+    scrapeLog,
+    cronSecretSet: Boolean(process.env.CRON_SECRET),
+    email: {
+      configured: hasOutboundEmailConfigured(),
+      resend: hasEmailConfigured(),
+      kit: isKitEmailConfigured(),
+      activeProvider: await activeEmailProvider(),
+      resendQuota: await getResendQuotaSnapshot(),
+      from: getResendFromAddress(),
+      fromNormalizedFromSendSubdomain:
+        Boolean(process.env.RESEND_FROM_EMAIL?.includes("@send.getmarketintelligence.in")),
+      sandboxSender: isSandboxSender(),
+      misconfiguredReason: productionEmailMisconfiguredReason(),
+    },
+  });
 }
 
 export async function POST(req: Request) {
@@ -66,9 +99,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  if (body.action === "resetEmailQuota") {
+    const resendQuota = await resetResendQuotaRouting();
+    return NextResponse.json({
+      ok: true,
+      message: "Resend routing restored (Kit fallback cleared until the next real Resend quota error).",
+      resendQuota,
+      activeProvider: await activeEmailProvider(),
+    });
+  }
+
+  if (body.action === "testSignupOtp") {
+    if (!hasOutboundEmailConfigured()) {
+      return NextResponse.json({ error: "No email provider (Resend or Kit) configured." }, { status: 503 });
+    }
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });
+    const code = generateSignupOtp();
+    const sent = await sendSignupOtpEmail(email, code);
+    if (!sent.ok) {
+      return NextResponse.json({ error: sent.error ?? "Resend rejected the send.", from: getResendFromAddress() }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true, sentTo: email, from: getResendFromAddress(), resendId: sent.id });
+  }
+
   if (body.action === "testWelcome") {
-    if (!hasEmailConfigured()) {
-      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 503 });
+    if (!hasOutboundEmailConfigured()) {
+      return NextResponse.json({ error: "No email provider (Resend or Kit) configured." }, { status: 503 });
     }
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });

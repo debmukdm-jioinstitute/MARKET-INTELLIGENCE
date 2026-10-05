@@ -26,7 +26,14 @@ async function postJson(url: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  if (!res.ok) {
+    const errBody = json as { error?: string; code?: string };
+    const err = new Error(errBody.error ?? `Request failed (${res.status})`) as Error & {
+      code?: string;
+    };
+    err.code = errBody.code;
+    throw err;
+  }
   return json;
 }
 

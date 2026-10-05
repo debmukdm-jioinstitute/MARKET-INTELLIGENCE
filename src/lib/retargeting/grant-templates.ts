@@ -1,8 +1,10 @@
-import { getRazorpayPlan, type RazorpayPlanId } from "@/lib/payments/plans";
-import { planLabel } from "@/lib/retargeting/audience";
-import { planFeatureListHtml } from "@/lib/retargeting/plan-features";
-import { renderRetargetingEmail } from "@/lib/retargeting/render-email";
-import type { RetargetingCustomer, RetargetingTemplate } from "@/lib/retargeting/types";
+import type { RazorpayPlanId } from "@/lib/payments/plans";
+import {
+  escapeMiEmailHtml,
+  miEmailParagraph,
+  renderMarketIntelligenceEmail,
+} from "@/lib/email/market-intelligence-layout";
+import type { RetargetingCustomer } from "@/lib/retargeting/types";
 
 export const GRANTABLE_PLAN_IDS: RazorpayPlanId[] = ["day_pass", "pro_monthly", "pro_annual"];
 
@@ -14,119 +16,76 @@ export type GrantEmailInput = {
   personalNote: string;
 };
 
-function grantTemplateForPlan(planId: RazorpayPlanId): RetargetingTemplate {
-  const plan = getRazorpayPlan(planId);
-  const name = plan?.name ?? planLabel(planId);
-  const id: RetargetingTemplate["id"] = `grant_${planId}` as RetargetingTemplate["id"];
+const GRANT_COPY: Record<
+  RazorpayPlanId,
+  { badge: string; title: string; subject: string; preheader: string; intro: string; footnote: string }
+> = {
+  day_pass: {
+    badge: "DAILY PASS ACTIVATED",
+    title: "Your Daily Pass is ready.",
+    subject: "{{firstName}}, your Daily Pass is ready",
+    preheader: "Complimentary day of full access, no card required",
+    intro:
+      "Enjoy a complimentary day of Market Intelligence. Explore your dashboard and see what works for you.",
+    footnote: "No card required. Just sign in and explore.",
+  },
+  pro_monthly: {
+    badge: "QUARTERLY PASS ACTIVATED",
+    title: "Your Quarterly Pass is ready.",
+    subject: "{{firstName}}, your Quarterly Pass is ready",
+    preheader: "Plus access on us, MCP, scanner, and desk tools",
+    intro:
+      "We activated complimentary Plus access on your account. Explore your dashboard, Claude MCP, and scanner tools at your pace.",
+    footnote: "No checkout needed. Sign in with your existing account.",
+  },
+  pro_annual: {
+    badge: "YEARLY PASS ACTIVATED",
+    title: "Your Yearly Pass is ready.",
+    subject: "{{firstName}}, your Yearly Pass is ready",
+    preheader: "A full year of Pro on us, briefings, MCP, and more",
+    intro:
+      "You have a complimentary year of Pro on Market Intelligence. Explore briefings, MCP, and everything on the desk.",
+    footnote: "No card required. Just sign in and explore.",
+  },
+};
 
-  const bodies: Record<RazorpayPlanId, { subject: string; preheader: string; body: string }> = {
-    day_pass: {
-      subject: "{{firstName}}, your 24-hour all-access pass is live",
-      preheader: "No checkout, just open the desk and poke around",
-      body: `<p>Hey {{firstName}},</p>
-<p>We flipped on a complimentary <strong>Daily pass</strong> on your Market Intelligence account, think of it as a no-strings test drive before anyone asks for your card.</p>
-<p><strong>Good until {{expiresAtShort}}.</strong> Here is the fun stuff you can actually use:</p>
-{{featureListHtml}}
-<p>Start here when you are ready: <a href="{{dashboardUrl}}">open your dashboard</a> · <a href="{{pricingUrl}}">see plans later</a></p>
-{{personalNoteBlock}}
-<p>Debabrata</p>`,
-    },
-    pro_monthly: {
-      subject: "{{firstName}}, Plus is on the house for a bit",
-      preheader: "MCP, AI Desk, options, the works, on us",
-      body: `<p>Hey {{firstName}},</p>
-<p>Startup rule #47: sometimes you comp the curious ones. We activated <strong>Plus</strong> on your account, full paid access, zero invoice drama.</p>
-<p><strong>Active through {{expiresAtShort}}.</strong> What that unlocks (with links, because we are helpful like that):</p>
-{{featureListHtml}}
-<p>Hop in: <a href="{{dashboardUrl}}">dashboard</a> · wire Claude via <a href="{{mcpUrl}}">MCP setup</a> · <a href="{{pricingUrl}}">pricing</a> when you want to stay after the gift period</p>
-{{personalNoteBlock}}
-<p>Debabrata</p>`,
-    },
-    pro_annual: {
-      subject: "{{firstName}}, welcome to Pro, we picked up the tab",
-      preheader: "Yearly Pro comp: briefings, MCP, the whole parade",
-      body: `<p>Hey {{firstName}},</p>
-<p>You have been upgraded to <strong>Pro (yearly)</strong> on us, the “everything including the kitchen-sink briefing” tier. No confetti cannon in your inbox, but mentally we are doing a tiny desk dance.</p>
-<p><strong>Runs until {{expiresAtShort}}.</strong> Your feature map:</p>
-{{featureListHtml}}
-<p>Main doors: <a href="{{dashboardUrl}}">dashboard</a> · <a href="{{mcpUrl}}">Claude MCP</a> · morning vibe at <a href="{{briefUrl}}">daily brief</a></p>
-{{personalNoteBlock}}
-<p>Debabrata</p>`,
-    },
-  };
-
-  const b = bodies[planId];
-  return {
-    id,
-    label: `Complimentary ${name}`,
-    goal: "renew",
-    segments: [],
-    targetPlanId: planId,
-    subjectTemplate: b.subject.replace(/\{\{firstName\}\}/g, "{{firstName}}"),
-    preheaderTemplate: b.preheader,
-    bodyTemplate: b.body,
-  };
-}
-
-export function buildGrantTemplateVars(input: GrantEmailInput): Record<string, string> {
-  const expires = new Date(input.expiresAtIso);
-  const expiresAtShort = Number.isFinite(expires.getTime())
-    ? expires.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-    : "soon";
-  const root = input.siteUrl.replace(/\/$/, "");
-  const note = input.personalNote.trim();
-  const personalNoteBlock = note
-    ? `<p style="margin-top:16px;padding:12px 14px;background:#f8f9fa;border-radius:8px;font-size:14px;"><strong>Note from the desk:</strong> ${note.replace(/</g, "&lt;")}</p>`
-    : "";
-
-  return {
-    firstName: input.firstName,
-    expiresAtShort,
-    featureListHtml: planFeatureListHtml(input.grantedPlanId, root),
-    dashboardUrl: `${root}/dashboard`,
-    mcpUrl: `${root}/connect/claude`,
-    briefUrl: `${root}/intelligence/brief`,
-    pricingUrl: `${root}/pricing`,
-    personalNoteBlock,
-    currentPlan: planLabel(input.grantedPlanId),
-    expiresPhrase: `until ${expiresAtShort}`,
-    targetPrice: "",
-    targetInterval: "",
-    annualPrice: "",
-    annualInterval: "",
-    savingsLine: "",
-    launchOfferLine: "",
-  };
+function formatExpiresShort(expiresAtIso: string): string {
+  const expires = new Date(expiresAtIso);
+  if (!Number.isFinite(expires.getTime())) return "soon";
+  return expires.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function renderGrantEmail(
   member: Pick<RetargetingCustomer, "email" | "name">,
   input: GrantEmailInput,
 ): { subject: string; html: string } {
-  const template = grantTemplateForPlan(input.grantedPlanId);
-  const vars = buildGrantTemplateVars(input);
+  const copy = GRANT_COPY[input.grantedPlanId];
   const firstName =
-    (member.name?.trim().split(/\s+/)[0] || member.email.split("@")[0] || "there").replace(/[<>]/g, "");
+    (input.firstName?.trim() ||
+      member.name?.trim().split(/\s+/)[0] ||
+      member.email.split("@")[0] ||
+      "there").replace(/[<>]/g, "");
+  const expiresAtShort = formatExpiresShort(input.expiresAtIso);
+  const root = input.siteUrl.replace(/\/$/, "");
+  const note = input.personalNote.trim();
+  const personalNoteHtml = note
+    ? `<div style="margin-top:16px;padding:12px 14px;background:#f8f9fa;border-radius:8px;font-size:14px;line-height:1.55;color:#3c4043;"><strong>Note from the desk:</strong> ${escapeMiEmailHtml(note)}</div>`
+    : "";
 
-  const customer: RetargetingCustomer = {
-    email: member.email,
-    name: member.name,
-    segment: "lapsed_paid",
-    suggestedTemplateId: "",
-    currentPlanId: input.grantedPlanId,
-    currentPlanLabel: planLabel(input.grantedPlanId),
-    entitlementActive: true,
-    expiresAt: input.expiresAtIso,
-    lastPaidAt: null,
-    paidOrderCount: 0,
-    plansEverPurchased: [],
-  };
+  const subject = copy.subject.replace(/\{\{firstName\}\}/g, firstName);
+  const html = renderMarketIntelligenceEmail({
+    preheader: copy.preheader,
+    badge: copy.badge,
+    title: copy.title,
+    greeting: `Hey ${firstName},`,
+    bodyHtml: miEmailParagraph(copy.intro),
+    validUntilLabel: `Valid until ${expiresAtShort}`,
+    footnote: copy.footnote,
+    primaryCta: { label: "Open your dashboard →", href: `${root}/dashboard` },
+    secondaryCta: { label: "View plans", href: `${root}/pricing` },
+    extraHtml: personalNoteHtml,
+    siteUrl: root,
+  });
 
-  const base = renderRetargetingEmail(customer, template, input.siteUrl);
-  const subject = template.subjectTemplate.replace(/\{\{firstName\}\}/g, firstName);
-  let html = base.html;
-  for (const [key, val] of Object.entries({ ...vars, firstName })) {
-    html = html.replaceAll(`{{${key}}}`, val);
-  }
   return { subject, html };
 }

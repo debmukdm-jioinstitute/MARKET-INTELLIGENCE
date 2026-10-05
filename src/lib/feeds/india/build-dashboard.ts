@@ -73,6 +73,7 @@ const YAHOO = (sym: string) => ({
 const UPSTOX = {
   provider: "Upstox",
   url: "https://upstox.com/developer/api-documentation/ltp-v3/",
+  fetchMethod: "Upstox Market Quote LTP v3 API — src/lib/feeds/sources/upstox",
 };
 
 /** Attributes a QuoteField's source to whichever live source actually served the row. */

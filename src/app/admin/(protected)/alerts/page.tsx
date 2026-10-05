@@ -38,7 +38,6 @@ export default function AdminAlertsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Alert rules</p>
         <h1 className="text-2xl font-semibold text-gray-900">User alerts and firing history</h1>
         <p className="text-sm text-gray-500">{data.totals.rules} rules · {data.totals.active} active · {data.totals.users} users</p>
       </div>

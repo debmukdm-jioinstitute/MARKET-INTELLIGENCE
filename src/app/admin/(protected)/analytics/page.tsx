@@ -4,6 +4,7 @@ import { AnalyticsMetricInfo } from "@/components/admin/analytics-metric-info";
 import { ANALYTICS_SECTIONS, type AnalyticsDashboardPayload } from "@/lib/admin/analytics-catalog";
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 function formatMetric(value: number | string | null | undefined, format?: string): string {
   if (value == null || value === "") return "—";
@@ -43,7 +44,6 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Analytics</p>
           <h1 className="mt-1 text-xl font-semibold">Product metrics</h1>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
             Live from Postgres — pageviews, sessions, users, retention, product events. Metrics without data show — until
@@ -89,6 +89,7 @@ export default function AdminAnalyticsPage() {
                   <AdminStat
                     label={m.label}
                     value={formatted}
+                    href={m.href}
                     info={
                       <AnalyticsMetricInfo
                         metricKey={m.key}
@@ -107,7 +108,7 @@ export default function AdminAnalyticsPage() {
       ))}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Daily pageviews (14 days)">
+        <AdminCard id="daily-pageviews" title="Daily pageviews (14 days)">
           <div className="flex h-40 items-end gap-1">
             {(data?.daily ?? []).map((d) => (
               <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
@@ -123,7 +124,7 @@ export default function AdminAnalyticsPage() {
           </div>
         </AdminCard>
 
-        <AdminCard title="Traffic mix (30 days)">
+        <AdminCard id="traffic-mix" title="Traffic mix (30 days)">
           <div className="space-y-1">
             {(data?.trafficMix ?? []).map((t) => (
               <div key={t.source} className="flex items-center justify-between border-b border-gray-100 py-1.5 text-sm">
@@ -139,18 +140,24 @@ export default function AdminAnalyticsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Top pages (7 days)">
+        <AdminCard id="top-pages" title="Top pages (7 days)">
           <div className="space-y-1">
             {(data?.topPaths ?? []).map((p) => (
               <div key={p.path} className="flex items-center justify-between border-b border-gray-100 py-1.5 text-sm">
-                <span className="truncate text-gray-700">{p.path}</span>
+                <Link
+                  href={p.path}
+                  prefetch={false}
+                  className="truncate text-gray-700 hover:text-blue-600 hover:underline"
+                >
+                  {p.path}
+                </Link>
                 <span className="tabular-nums text-gray-500">{p.n}</span>
               </div>
             ))}
           </div>
         </AdminCard>
 
-        <AdminCard title="Feature events (30 days)">
+        <AdminCard id="feature-events" title="Feature events (30 days)">
           <div className="space-y-1">
             {(data?.topFeatures ?? []).map((f) => (
               <div key={f.name} className="flex items-center justify-between border-b border-gray-100 py-1.5 text-sm">

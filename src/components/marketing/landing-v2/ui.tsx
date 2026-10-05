@@ -12,10 +12,8 @@ export function LandingShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <p className={cn("text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b84624]", className)}>{children}</p>
-  );
+export function Eyebrow(_props: { children: ReactNode; className?: string }) {
+  return null;
 }
 
 export function SectionTitle({ children, className }: { children: ReactNode; className?: string }) {

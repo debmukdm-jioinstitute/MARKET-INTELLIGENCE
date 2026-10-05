@@ -8,7 +8,12 @@ import {
   leaderboard,
   takeSnapshot,
 } from "./store";
-import { marketClose, marketOpen, STARTING_CAPITAL } from "./config";
+import {
+  marketClose,
+  marketOpen,
+  nextSeasonTradingWeek,
+  STARTING_CAPITAL,
+} from "./config";
 import { getHoldings } from "./engine";
 
 const day = z
@@ -91,20 +96,26 @@ export async function runAdmin(input: z.infer<typeof adminCommand>) {
   if (!c) return fail("Create the season first.");
   if (input.action === "snapshot") return takeSnapshot(c);
   if (input.action === "reopenRegistration") {
-    // Recovery path for a season advanced to live too early: only before the
-    // first market open, and only while no trade or snapshot exists.
+    // Recovery when "Go live" was clicked before registration finished.
     if (c.status !== "live")
-      return fail("Only a live season that has not started can reopen registration.");
-    if (Date.now() >= Date.parse(c.startsAt))
-      return fail("Registration cannot reopen after the season starts.");
-    const changed = await db`UPDATE competition SET status='registration',revision=revision+1
+      return fail("Only a live season with no trading yet can reopen registration.");
+    const rollDates = Date.now() >= Date.parse(c.startsAt);
+    const days = rollDates ? nextSeasonTradingWeek() : c.tradingDays;
+    const startsAt = marketOpen(days[0]!);
+    const endsAt = marketClose(days[4]!);
+    const changed = await db`UPDATE competition SET
+      status='registration',
+      starts_at=${startsAt}::timestamptz,
+      ends_at=${endsAt}::timestamptz,
+      trading_days=${JSON.stringify(days)}::jsonb,
+      revision=revision+1
       WHERE id=${c.id}::uuid AND status='live' AND revision=${c.revision}
       AND NOT EXISTS (SELECT 1 FROM competition_trades t WHERE t.competition_id=competition.id)
       AND NOT EXISTS (SELECT 1 FROM competition_snapshots s WHERE s.competition_id=competition.id)
       RETURNING id`;
     invalidateBoard();
     return changed.length
-      ? { ok: true }
+      ? { ok: true, rolledDates: rollDates, tradingDays: days }
       : fail("Cannot reopen: trades or snapshots exist, or status changed; reload.");
   }
   if (input.action === "advance") {
@@ -115,8 +126,19 @@ export async function runAdmin(input: z.infer<typeof adminCommand>) {
     }[input.status];
     if (c.status !== expected)
       return fail("Statuses must advance draft → registration → live → ended.");
-    if (input.status === "registration" && Date.now() >= Date.parse(c.startsAt))
-      return fail("Registration cannot open after the season starts.");
+    if (
+      input.status === "registration" &&
+      Date.now() >= Date.parse(c.startsAt)
+    ) {
+      const days = nextSeasonTradingWeek();
+      const changed =
+        await db`UPDATE competition SET status='registration',starts_at=${marketOpen(days[0]!)}::timestamptz,ends_at=${marketClose(days[4]!)}::timestamptz,trading_days=${JSON.stringify(days)}::jsonb,revision=revision+1
+        WHERE id=${c.id}::uuid AND status='draft' AND revision=${c.revision} RETURNING id`;
+      invalidateBoard();
+      return changed.length
+        ? { ok: true, tradingDays: days }
+        : fail("Status changed; reload.");
+    }
     if (input.status === "live" && Date.now() >= Date.parse(c.endsAt))
       return fail("Season has already elapsed.");
     if (input.status === "ended") {

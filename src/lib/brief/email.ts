@@ -1,5 +1,5 @@
+import { renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 import { withUnsubscribeFooter } from "@/lib/newsletter";
-import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
 import type { Brief } from "./types";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -18,12 +18,19 @@ export function briefHtml(b: Brief, email: string): string {
 <div style="font-size:14px;color:#202124;margin-top:2px">${esc(i.text)}</div></td></tr>`,
     )
     .join("");
-  const watch = b.watch.length ? `<p style="font-size:13px;color:#202124"><b>Watch:</b> ${b.watch.map(esc).join(" · ")}</p>` : "";
-  const body = `<div style="max-width:600px;margin:0 auto;padding:24px;${GOOGLE_SANS_FONT_FAMILY_CSS}">
-<p style="font-size:12px;color:#5f6368;margin:0">${b.kind === "pre" ? "PRE-MARKET BRIEF" : "POST-CLOSE BRIEF"} · ${new Date(b.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
-<h2 style="margin:6px 0 12px;font-size:20px;color:#202124">${esc(b.headline)}</h2>
+  const watch = b.watch.length ? `<p style="font-size:13px;color:#202124;margin:12px 0 0"><b>Watch:</b> ${b.watch.map(esc).join(" · ")}</p>` : "";
+  const when = new Date(b.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const contentHtml = `<p style="margin:0 0 8px;font-size:12px;color:#5f6368;">${esc(when)} IST</p>
 <table style="width:100%;border-collapse:collapse">${items}</table>${watch}
-<p style="font-size:12px;color:#5f6368"><a href="${site}/intelligence/brief" style="color:#1a73e8">Sources and full brief</a> · Generated from live data${b.engine === "llm" ? " with AI assistance" : ""}. Research and education only — not investment advice.</p>
-</div>`;
-  return withUnsubscribeFooter(body, email);
+<p style="margin:16px 0 0;font-size:12px;color:#5f6368;">Generated from live data${b.engine === "llm" ? " with AI assistance" : ""}. Research and education only — not investment advice.</p>`;
+
+  const doc = renderMarketIntelligenceEmail({
+    preheader: b.headline,
+    badge: b.kind === "pre" ? "PRE-MARKET BRIEF" : "POST-CLOSE BRIEF",
+    title: b.headline,
+    contentHtml,
+    primaryCta: { label: "Read full brief →", href: `${site}/intelligence/brief` },
+    siteUrl: site,
+  });
+  return withUnsubscribeFooter(doc, email);
 }

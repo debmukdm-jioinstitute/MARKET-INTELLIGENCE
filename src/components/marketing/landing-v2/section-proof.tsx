@@ -54,8 +54,7 @@ export function LandingProofSection() {
         </div>
 
         <div className="mt-6 border border-[#dcd6cc] bg-[#faf7f2] p-5 md:p-8" role="tabpanel">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b84624]">One-page company brief</p>
-          <div className="mt-4 flex flex-wrap items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-3">
             <h3 className="text-xl font-semibold text-[#141414]">{symbol}</h3>
             {priceLine ? (
               <>
@@ -71,9 +70,7 @@ export function LandingProofSection() {
           <div className="mt-8 space-y-6">
             {blocks.map((block) => (
               <div key={block.id}>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b6b6b]">
-                  {block.id} · {block.title}
-                </p>
+                <p className="text-sm font-semibold text-[#141414]">{block.title}</p>
                 <p className="mt-2 text-[15px] leading-relaxed text-[#3d3d3d]">{block.body || "—"}</p>
                 <p className="mt-2 text-xs text-[#6b6b6b]">
                   Source: {block.source || "unavailable"}

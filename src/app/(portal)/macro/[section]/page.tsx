@@ -31,7 +31,7 @@ export default function MacroSectionPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="India macro"
+
         title={meta.title}
         subtitle={meta.subtitle}
         trust={

@@ -39,7 +39,7 @@ export default function PortfolioTaxPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Tax"
+
         title="Capital gains estimate (India)"
         subtitle="Illustrative STCG/LTCG math on your book — not tax advice. Confirm with a CA."
       />

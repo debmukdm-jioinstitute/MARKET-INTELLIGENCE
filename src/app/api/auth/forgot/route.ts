@@ -1,4 +1,5 @@
-import { hasEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
+import { miEmailParagraph, renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 import { isGoogleOnlyPasswordHash } from "@/lib/auth/google-oauth";
 import { createResetToken } from "@/lib/auth/password-reset";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   }
   const email = body.email?.trim().toLowerCase();
   if (!email) return NextResponse.json({ error: "Email is required." }, { status: 400 });
-  if (!hasEmailConfigured()) {
+  if (!hasOutboundEmailConfigured()) {
     return NextResponse.json({ error: "Password reset email is not configured on this deployment." }, { status: 503 });
   }
 
@@ -31,10 +32,24 @@ export async function POST(req: Request) {
   if (row && !isGoogleOnlyPasswordHash(row.password_hash)) {
     const base = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
     const link = `${base}/reset-password?token=${encodeURIComponent(createResetToken(email, row.password_hash))}`;
+    const text = [
+      "We received a request to reset your Market Intelligence password.",
+      "",
+      `Choose a new password: ${link}`,
+      "",
+      "This link expires in 1 hour and works once. If you did not ask for this, ignore this email.",
+    ].join("\n");
     await sendTransactionalEmail({
       to: email,
       subject: "Reset your Market Intelligence password",
-      html: `<p>We received a request to reset your password.</p><p><a href="${link}">Choose a new password</a></p><p>This link expires in 1 hour and works once. If you did not ask for this, ignore this email.</p>`,
+      text,
+      html: renderMarketIntelligenceEmail({
+        badge: "PASSWORD RESET",
+        title: "Reset your password",
+        bodyHtml: miEmailParagraph("We received a request to reset your Market Intelligence password."),
+        primaryCta: { label: "Choose a new password →", href: link },
+        footnote: "This link expires in 1 hour and works once. If you did not ask for this, ignore this email.",
+      }),
     });
   }
   return NextResponse.json(GENERIC);

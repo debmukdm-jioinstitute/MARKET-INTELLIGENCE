@@ -52,7 +52,6 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Push notifications</p>
         <h1 className="mt-1 text-xl font-semibold">Send a push notification</h1>
         <p className="mt-1 text-sm text-gray-500">Delivered to everyone who enabled notifications (bell icon in the main app&apos;s top bar).</p>
       </div>
@@ -63,12 +62,12 @@ export default function AdminNotificationsPage() {
         </div>
       ) : null}
 
-      <AdminStat label="Active subscribers" value={subscriberCount} />
+      <AdminStat label="Active subscribers" value={subscriberCount} href="#compose" />
 
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {ok ? <p className="text-sm text-emerald-600">{ok}</p> : null}
 
-      <AdminCard title="Compose">
+      <AdminCard id="compose" title="Compose">
         <form onSubmit={send} className="space-y-3">
           <div className="space-y-1">
             <label className="text-sm text-gray-500">Title</label>

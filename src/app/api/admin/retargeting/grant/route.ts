@@ -1,4 +1,4 @@
-import { hasEmailConfigured, isSandboxSender, listUnsubscribeHeaders, sendTransactionalEmail } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, isSandboxSender, sendTransactionalEmail } from "@/lib/admin/email";
 import { requireAdmin } from "@/lib/admin/guard";
 import { defaultSiteUrl } from "@/lib/onboarding/load-form-model";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
@@ -38,8 +38,8 @@ export async function POST(req: Request) {
   if (emails.length === 0) return NextResponse.json({ error: "Select at least one member email." }, { status: 400 });
 
   const notify = body.notify !== false;
-  if (notify && !hasEmailConfigured()) {
-    return NextResponse.json({ error: "RESEND_API_KEY is not configured — cannot send grant email." }, { status: 503 });
+  if (notify && !hasOutboundEmailConfigured()) {
+    return NextResponse.json({ error: "No email provider configured — cannot send grant email." }, { status: 503 });
   }
 
   const personalNote = String(body.personalNote ?? "").trim().slice(0, 500);
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
           subject: rendered.subject,
           html: rendered.html,
           replyTo: founderReply,
-          headers: listUnsubscribeHeaders(),
+          kind: "transactional",
         });
         if (out.ok) {
           emailed += 1;

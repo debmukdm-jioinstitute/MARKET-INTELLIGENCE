@@ -53,17 +53,20 @@ export function AuthForm({
   oauthError,
   sessionExpired,
   fromDemo,
+  fromLogin,
 }: {
   mode: "login" | "signup";
   next?: string;
   oauthError?: string | null;
   sessionExpired?: boolean;
   fromDemo?: boolean;
+  fromLogin?: boolean;
 }) {
   const { login, signup, enterGuest, isGuest, guestAllowed, verifySignup, resendSignupOtp } = useAuth();
   const router = useRouter();
   const dest = next.startsWith("/") ? next : "/Home";
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [formError, setFormError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -87,6 +90,20 @@ export function AuthForm({
     const t = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
     return () => window.clearTimeout(t);
   }, [resendIn]);
+
+  useEffect(() => {
+    if (mode !== "signup") return;
+    try {
+      const raw = sessionStorage.getItem("mi_signup_prefill");
+      if (!raw) return;
+      sessionStorage.removeItem("mi_signup_prefill");
+      const parsed = JSON.parse(raw) as { email?: string; password?: string };
+      if (parsed.email) setEmail(parsed.email);
+      if (parsed.password) setPassword(parsed.password);
+    } catch {
+      /* ignore corrupt prefill */
+    }
+  }, [mode]);
 
   const oauthMessage = useMemo(
     () => (oauthError ? (OAUTH_ERRORS[oauthError] ?? "Sign-in error.") : ""),
@@ -128,7 +145,7 @@ export function AuthForm({
         const result = await signup({
           name: String(data.get("name") ?? name).trim() || "Investor",
           email: email.trim(),
-          password: String(data.get("password") ?? ""),
+          password: String(data.get("password") ?? password),
           acceptPrivacy: true,
         });
         if (result.pending) {
@@ -139,10 +156,33 @@ export function AuthForm({
           return;
         }
       } else {
-        await login({
-          email: email.trim(),
-          password: String(data.get("password") ?? ""),
-        });
+        const loginPassword = String(data.get("password") ?? password);
+        try {
+          await login({
+            email: email.trim(),
+            password: loginPassword,
+          });
+        } catch (loginErr) {
+          const code =
+            loginErr instanceof Error
+              ? (loginErr as Error & { code?: string }).code
+              : undefined;
+          if (code === "account_not_found") {
+            try {
+              sessionStorage.setItem(
+                "mi_signup_prefill",
+                JSON.stringify({ email: email.trim(), password: loginPassword }),
+              );
+            } catch {
+              /* storage full / private mode */
+            }
+            router.push(
+              `/signup?next=${encodeURIComponent(dest)}&from=login`,
+            );
+            return;
+          }
+          throw loginErr;
+        }
       }
       if (isSignup) {
         router.push(`/onboarding?next=${encodeURIComponent(dest)}&download=1`);
@@ -237,7 +277,7 @@ export function AuthForm({
       </h1>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
         {awaitingOtp
-          ? `Enter the 6-digit code we sent to ${otpEmail}.`
+          ? `Enter the 6-digit code we sent to ${otpEmail}. Check spam and Promotions if it is not in your inbox within a minute.`
           : mode === "signup"
             ? "Open a virtual desk in seconds. No brokerage. No card."
             : "Continue to your saved watchlists and research."}
@@ -248,6 +288,15 @@ export function AuthForm({
           <p className="font-semibold text-blue-700">Saving after demo</p>
           <p className="mt-1 text-muted-foreground">
             Demo mode uses sample books only. After sign-up, your real watchlists, portfolio holdings, and alert rules will save to this account.
+          </p>
+        </div>
+      ) : null}
+
+      {fromLogin && isSignup && !awaitingOtp ? (
+        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground" role="status">
+          <p className="font-semibold text-foreground">Create your account</p>
+          <p className="mt-1 text-muted-foreground">
+            We did not find an account for that email. Your details are filled in below — accept the terms and finish sign-up.
           </p>
         </div>
       ) : null}
@@ -380,6 +429,8 @@ export function AuthForm({
             type="password"
             required
             minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             autoComplete={isSignup ? "new-password" : "current-password"}
             className={inputClass}
             placeholder={isSignup ? "At least 6 characters" : "Your password"}

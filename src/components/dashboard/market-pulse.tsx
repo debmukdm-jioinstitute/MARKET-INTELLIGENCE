@@ -10,7 +10,7 @@ export function MarketPulse({ data }: { data: IndiaDashboardPayload }) {
   return (
     <section className="rounded-lg border border-border bg-card/80 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm uppercase tracking-[0.22em] text-primary">Market pulse</h2>
+        <h2 className="text-base font-bold text-foreground">Market pulse</h2>
         <span className="text-sm text-muted-foreground">
           {new Date(data.fetchedAt).toLocaleTimeString()}
         </span>

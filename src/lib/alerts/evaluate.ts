@@ -1,7 +1,7 @@
-import { sendNewsletter, hasEmailConfigured } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, htmlToPlainText, sendTransactionalEmail } from "@/lib/admin/email";
 import { hasPushConfigured, sendPush, type PushSubscriptionRow } from "@/lib/admin/push";
 import { sql } from "@/lib/db";
-import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
+import { renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 import { METRICS, type MetricValues } from "@/lib/snapshot";
 import { listActiveRules, type Op, type Rule } from "./store";
 
@@ -48,11 +48,25 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
         else if (r.expired) await db`DELETE FROM push_subscriptions WHERE endpoint = ${sub.endpoint}`;
       }
     }
-    if (rule.channels.includes("email") && hasEmailConfigured()) {
-      const r = await sendNewsletter(`Alert: ${rule.name}`, [rule.userEmail], () =>
-        `<div style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;padding:16px"><h3 style="margin:0 0 8px">${rule.name.replace(/</g, "&lt;")}</h3><p style="font-size:14px">${detail.map((d) => d.replace(/</g, "&lt;")).join("<br>")}</p><p style="font-size:12px;color:#5f6368">Your alert rule fired. Rules are checked every 3 hours. <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.vercel.app"}/intelligence/alerts">Manage rules</a>. Not investment advice.</p></div>`,
-      ).catch(() => ({ sent: 0 }));
-      emailSent = r.sent > 0;
+    if (rule.channels.includes("email") && hasOutboundEmailConfigured()) {
+      const site = process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.in";
+      const safeName = rule.name.replace(/</g, "&lt;");
+      const detailHtml = detail.map((d) => d.replace(/</g, "&lt;")).join("<br>");
+      const html = renderMarketIntelligenceEmail({
+        badge: "ALERT",
+        title: safeName,
+        contentHtml: `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3c4043;">${detailHtml}</p>`,
+        primaryCta: { label: "Manage alert rules →", href: `${site}/intelligence/alerts` },
+        footnote: "Rules are checked every 3 hours. Not investment advice.",
+        siteUrl: site,
+      });
+      const r = await sendTransactionalEmail({
+        to: rule.userEmail,
+        subject: `Alert: ${rule.name}`,
+        html,
+        text: htmlToPlainText(html),
+      }).catch(() => ({ ok: false }));
+      emailSent = r.ok;
     }
     await db`INSERT INTO alert_events (rule_id, user_email, message, metric_values, push_sent, email_sent) VALUES (${rule.id}::uuid, ${rule.userEmail}, ${message}, ${JSON.stringify(metrics)}::jsonb, ${pushSent}, ${emailSent})`;
     await db`UPDATE alert_rules SET last_fired_at = now() WHERE id = ${rule.id}::uuid`;

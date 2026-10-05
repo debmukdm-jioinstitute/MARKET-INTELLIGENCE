@@ -14,7 +14,7 @@ export default function PromotersIntelligencePage() {
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Ownership & Corporate Governance Radar"
+
         title="Promoter Activity Tracker"
         subtitle="Promoter buying/selling, pledges, insider trades, and bulk/block deals — Google News RSS plus optional Firecrawl / Crawl4AI on NSE/BSE filing pages."
         trust={{

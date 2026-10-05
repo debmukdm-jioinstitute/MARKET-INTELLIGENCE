@@ -25,7 +25,7 @@ export default function MacroPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Macro"
+
         title="Global macro board"
         subtitle="Regime-first view with nested growth, inflation, RBI liquidity, fiscal, consumer, corporate, external, jobs, and global tape — open data (MOSPI, RBI, World Bank, FRED, NSE)."
       />
@@ -76,7 +76,7 @@ export default function MacroPage() {
           </Panel>
           <AltDataSections />
           <div>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.22em] text-primary">Explore sections</h2>
+            <h2 className="mb-3 text-base font-bold text-foreground">Explore sections</h2>
             <SectionNavGrid />
           </div>
         </>

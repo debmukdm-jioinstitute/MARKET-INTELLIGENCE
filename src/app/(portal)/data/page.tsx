@@ -111,7 +111,7 @@ export default function DataPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Data"
+
         title="Where our data comes from"
         subtitle="Illustrative provider overview (design mockup). For measured feed health — latency probes and degraded sources — use Feed health."
       />

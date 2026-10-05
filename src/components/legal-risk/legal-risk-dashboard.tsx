@@ -109,7 +109,7 @@ export function LegalRiskDashboard() {
     <div className="portal-page space-y-8 pb-12">
       <PageHeader
         titleAs="h1"
-        kicker="Legal / insolvency intelligence"
+
         title="Corporate risk monitor"
         subtitle="NCLT, courts, SEBI, CCI, ED, and RBI enforcement — mapped from live news feeds into company → case → regulator → exposure → impact."
         trust={{

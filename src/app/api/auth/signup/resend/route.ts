@@ -1,5 +1,6 @@
-import { hasEmailConfigured } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, productionEmailMisconfiguredReason } from "@/lib/admin/email";
 import { rateLimited } from "@/lib/api-guard";
+import { isKitEmailConfigured } from "@/lib/kit";
 import { generateSignupOtp, hashSignupOtp, sendSignupOtpEmail, SIGNUP_OTP_RESEND_SEC, SIGNUP_OTP_TTL_MIN } from "@/lib/auth/signup-otp";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -14,8 +15,12 @@ export async function POST(req: Request) {
   if (!hasDatabase()) {
     return NextResponse.json({ error: "Accounts are not configured on this deployment yet." }, { status: 503 });
   }
-  if (!hasEmailConfigured()) {
+  if (!hasOutboundEmailConfigured()) {
     return NextResponse.json({ error: "Email is not configured on this deployment." }, { status: 503 });
+  }
+  const mailMisconfig = productionEmailMisconfiguredReason();
+  if (mailMisconfig && !isKitEmailConfigured()) {
+    return NextResponse.json({ error: mailMisconfig }, { status: 503 });
   }
 
   let body: { email?: string };
@@ -55,15 +60,15 @@ export async function POST(req: Request) {
 
   const code = generateSignupOtp();
   const codeHash = hashSignupOtp(email, code);
+  const sent = await sendSignupOtpEmail(email, code);
+  if (!sent.ok) {
+    return NextResponse.json({ error: sent.error ?? "Could not send the verification code." }, { status: 502 });
+  }
   await db`
     UPDATE signup_otps
     SET code_hash = ${codeHash}, attempts = 0, created_at = now(),
         expires_at = now() + make_interval(mins => ${SIGNUP_OTP_TTL_MIN})
     WHERE email = ${email}
   `;
-  const sent = await sendSignupOtpEmail(email, code);
-  if (!sent.ok) {
-    return NextResponse.json({ error: sent.error ?? "Could not send the verification code." }, { status: 502 });
-  }
   return NextResponse.json({ ok: true, email });
 }

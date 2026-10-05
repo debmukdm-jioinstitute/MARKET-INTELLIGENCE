@@ -7,6 +7,7 @@ import { fetchUpstoxFullQuotes } from "@/lib/feeds/sources/upstox";
 const UPSTOX_SOURCE = {
   provider: "Upstox (NSE cash)",
   url: "https://upstox.com/developer/api-documentation/ltp-v3/",
+  fetchMethod: "Upstox Full Market Quote v2 API",
 };
 const CHUNK = 100; // full quote accepts up to 500 keys; keep URLs and payloads modest
 const CONCURRENCY = 5;

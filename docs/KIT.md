@@ -6,7 +6,8 @@ Public newsletter signups on the site are mirrored into Kit so newsletters can b
 
 - `src/lib/kit.ts` — server-only Kit v4 API client (`addEmailToKitNewsletter`). Two-step flow: create/upsert subscriber, then add to the form by email. Never throws.
 - `POST /api/newsletter/subscribe` — after writing to `newsletter_subscribers`, best-effort adds the email to the Kit form. Kit failures are logged server-side as `[newsletter] Kit sync failed` and never fail the signup.
-- The site's own DB stays the source of truth for site-sent mail (daily brief / morning digest via Resend — see `docs/RESEND.md`). Kit is the broadcast list for newsletters composed in Kit.
+- **Automatic fallback sender:** when Resend's free quota is used up (or Resend returns a quota error), the site sends OTP, welcome, brief, alerts, and admin mail through Kit's broadcast API (`sendKitTransactionalEmail` in `src/lib/kit.ts`). Only `KIT_API_KEY` is required for fallback; `KIT_FORM_ID` is still used for public newsletter form sync.
+- The site's DB stays the source of truth for opt-in lists; Resend is primary for programmatic sends — see `docs/RESEND.md`.
 
 ## Vercel env
 

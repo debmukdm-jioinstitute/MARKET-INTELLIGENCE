@@ -40,7 +40,6 @@ export default function AdminLoginPage() {
     <main className="grid min-h-screen place-items-center bg-muted px-5">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-border bg-white p-6 shadow-[var(--shadow-lg)]">
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Market Intelligence · Admin</p>
           <h1 className="mt-1 text-xl font-semibold text-foreground">Backend sign-in</h1>
         </div>
         <div className="space-y-1">

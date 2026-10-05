@@ -215,7 +215,7 @@ function SectorsView() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Sector Matrix"
+
         title="Sector Intelligence & Rotation Workbench"
         subtitle="Sector workbench — table below is illustrative until NSE sector indices are wired."
         trust={{ source: "Illustrative sample data", note: "Not live market data. Not investment advice" }}

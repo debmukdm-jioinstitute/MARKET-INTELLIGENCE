@@ -2,7 +2,7 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, **broker research aggregation**, **Google Trends Attention Index**, institutional and legal-risk monitors, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, **broker research aggregation**, **Google Trends Attention Index**, institutional and legal-risk monitors, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, **The Alpha League** virtual portfolio championship (Jio Institute co-brand), and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
 
 ## Product capabilities (summary)
 
@@ -19,6 +19,7 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
 | **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections (listed in public sitemap) |
 | **Pricing & Pro** | `/pricing`, `/profile#plans` | Day / monthly / yearly plans via **Razorpay Standard Checkout**; free tier quotas on AI Desk & Options Flow ([§18](#18-environment-variables)) |
+| **The Alpha League** | `/alpha-league`, `/alpha-league/board`, `/alpha-league/portfolio` | Five-day **virtual** NSE cash equity championship (Market Intelligence × Jio Institute): ₹10L paper book, leaderboard, certificates, institute-domain registration. Ops: `/admin/competition` · Runbook: [docs/alpha-league.md](docs/alpha-league.md) · MCP: `get_alpha_league_preview` (public standings only) |
 | **Auth** | `/login`, `/signup` | Email/password sessions; **Continue with Google** when OAuth env is set ([docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md)) |
 | **Data & ops** | `/data`, `/data/feeds`, `/data/health`, `/data/data360`, `/data/export`, `/admin` | `/data` = illustrative provider table (banner points to live feeds); `/data/feeds` = real hub health; `/data/health` = collector freshness; **Data360 Explorer** = stored World Bank macro mirror; Excel export; admin ops + FTS RAG Q&A |
 | **Integrations** | `/api/mcp` | Read-only site tools + session-scoped portfolio/watchlist tools; `MCP_API_KEYS` for higher limits |
@@ -75,6 +76,9 @@ The platform is designed as an end-to-end, multi-layered quantitative and resear
         │
         ▼
 [Neon Serverless Postgres & External Data Providers (Upstox, NSE, Yahoo, FRED)]
+
+[GitHub Actions cron workflows] ──► [scripts/crons/run-*.ts] ──► Neon + same domain libs (collectors, scan, options-flow baseline, …)
+        │                              `/api/cron/*` = manual/admin fallback only (vercel.json crons empty)
 ```
 
 ### Complete End-to-End System Architecture
@@ -88,6 +92,7 @@ flowchart TD
     P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
     P_Research["/research/*<br/>(Company Dossiers, DCF Model, AI Desk, Options Flow, IPO)"]
     P_Intel["/intelligence/*<br/>(Brief, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
+    P_Alpha["/alpha-league/*<br/>(Virtual 5-day championship · board · paper book)"]
     P_Widgets["Interactive Shell<br/>(Ask Deb Widget, Command Palette ⌘K, MetricInfo Popovers)"]
   end
 
@@ -100,6 +105,8 @@ flowchart TD
     API_Assist["/api/site-assistant<br/>(Ask Deb + OmniRoute / Groq Gateway)"]
     API_Intel["/api/brief · /api/reddit · /api/credit · /api/legal-risk"]
     API_MCP["/api/mcp<br/>(Claude Connector & OAuth DCR Protocol)"]
+    API_Comp["/api/competition/*<br/>(Register, orders, leaderboard, certificates)"]
+    API_Broker["/api/broker-research<br/>(Institutional note aggregator)"]
   end
 
   subgraph AI_Engine["3. AI & Natural Language Processing Suite"]
@@ -124,6 +131,7 @@ flowchart TD
     ENG_Optimizer["Mean-Variance Optimizer<br/>(Gradient Descent Iterative Allocator)"]
     ENG_Regime["Macro Regime Engine<br/>(GDP/CPI Quadrants & Transmission Matrix)"]
     ENG_Collector["Collector Pipeline<br/>(RBI Scraper, Cboe VIX, CFTC COT, BLS, ECB)"]
+    ENG_League["Alpha League ledger<br/>(Append-only trades · daily snapshots · scoring)"]
   end
 
   subgraph External["5. External Data Feeds & External AI APIs"]
@@ -142,10 +150,16 @@ flowchart TD
     DB_Options[("options_flow_snapshots & flag_log")]
     DB_RAG[("rag_documents (FTS Knowledge Base)")]
     DB_Alerts[("alert_rules & notification_prefs")]
+    DB_League[("competition_* · season · trades · snapshots")]
+  end
+
+  subgraph Ops["7. Scheduled jobs (GitHub Actions — not Vercel Cron)"]
+    GH_Cron[".github/workflows/cron-*.yml<br/>scripts/crons/run-*.ts"]
   end
 
   %% Relationships
   Client --> API
+  P_Alpha --> API_Comp
   API_Feeds --> EXT_Upstox & EXT_NSE & EXT_Yahoo & EXT_Trends
   API_Macro --> ENG_Regime & EXT_Gov & EXT_Yahoo
   API_Portfolio --> ENG_Metrics & ENG_Virtual & ENG_Optimizer & DB_Holdings
@@ -153,12 +167,17 @@ flowchart TD
   API_AI --> Groq_Agents
   API_Assist --> Groq_Omni & DB_RAG
   API_Intel --> HF_FinBERT & Groq_Brief & DB_Alerts
-  API_MCP --> API_Feeds & API_Portfolio & API_Macro
+  API_MCP --> API_Feeds & API_Portfolio & API_Macro & API_Comp
+  API_Comp --> ENG_League & EXT_Upstox
+  API_Broker --> EXT_NSE
+  P_Research --> API_Broker
 
   HF_Models --> EXT_HF_API
   Groq_Agents --> EXT_Groq_API
 
+  GH_Cron --> ENG_Collector & DB_Options & DB_Collector
   ENG_Collector --> DB_Collector & EXT_Gov & EXT_NSE
+  ENG_League --> DB_League
   ENG_Metrics --> EXT_Upstox & EXT_Yahoo
   ENG_DCF --> EXT_Upstox & EXT_Yahoo
 ```
@@ -169,8 +188,9 @@ flowchart TD
 | **2. API Routes** | Session verification, caching, orchestration, rate limiting | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `hf/*`, `ai/*`, `mcp/*` |
 | **3. AI & ML Suite** | FinBERT sentiment, BART summarizer, MiniLM embeddings, Groq multi-agent debate | `src/lib/hf/*`, `src/lib/ai/*`, `src/lib/site-assistant/*` |
 | **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, DCF valuation, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/models/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
-| **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`) |
+| **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base, Alpha League ledger | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`, `competition_*`) |
 | **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
+| **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback |
 
 ---
 
@@ -311,8 +331,10 @@ flowchart LR
 ```mermaid
 flowchart LR
   AD["admin.* → /admin"] --> APIA["/api/admin/*"]
-  CR["Vercel Cron"] --> CRON["/api/cron/collect · stress · scrape…"]
-  CRON --> COL[collector → Neon collected_series]
+  GH["GitHub Actions<br/>cron-*.yml"] --> RUN["scripts/crons/run-*.ts"]
+  RUN --> COL[collector → Neon collected_series]
+  CR["Manual / admin"] -.-> CRON["/api/cron/* fallback"]
+  CRON --> COL
   APIA --> PG
   APIA --> RAGA[Admin RAG ask<br/>FTS not vectors]
   MCP["/api/mcp"] --> KEY[MCP_API_KEYS gate]
@@ -320,7 +342,7 @@ flowchart LR
   EXP["/api/export/xlsx"] --> COLL[collect-market.ts aggregate]
 ```
 
-**Logic:** **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
+**Logic:** **Scheduled collectors** run on GitHub Actions (direct Neon writes); `/api/cron/*` remains for manual triggers. **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
 
 ---
 
@@ -741,7 +763,7 @@ For **in-app navigation and product help**, use the floating **site assistant** 
 
 **Path:** `/admin` (session-authenticated, not public)
 
-A lightweight internal ops console: customer account management (including password resets), push notifications (once VAPID keys are configured), a newsletter composer/sender, analytics counters, and the dynamic nav-tab configuration that lets an admin add or reorder sidebar sections without a deploy.
+A lightweight internal ops console: customer account management (including password resets), push notifications (once VAPID keys are configured), a newsletter composer/sender, analytics counters, **Alpha League** season ops (`/admin/competition` — dates, instrument list, snapshots, certificates; see [docs/alpha-league.md](docs/alpha-league.md)), and the dynamic nav-tab configuration that lets an admin add or reorder sidebar sections without a deploy.
 
 Its one AI feature is a **retrieval-augmented Q&A box** over an internal knowledge base — and it's worth naming precisely what kind of "RAG" it is: retrieval is **Postgres full-text search** (`websearch_to_tsquery`, ranked by `ts_rank`), not vector/embedding search. The top 6 matching documents are handed to an LLM with instructions to answer only from them and cite sources inline; if no LLM key is configured, it just returns the matched documents verbatim.
 
@@ -854,6 +876,7 @@ npx vercel --prod --yes
 | `CRON_SECRET` | Authenticates Vercel's scheduled jobs (instrument sync, research scrape, options-flow baseline) |
 | `ADMIN_SYNC_SECRET` | Manual trigger for the NSE instrument sync |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Admin push notifications |
+| `COMPETITION_*` | **The Alpha League** — institute domains, device salt, turnover/price gates, certificate font path, Kit tags; full table in [docs/alpha-league.md](docs/alpha-league.md) |
 
 ---
 
@@ -864,7 +887,7 @@ npx vercel --prod --yes
 - **Charts:** Recharts · Lightweight Charts (candlesticks)
 - **Database:** Neon serverless Postgres
 - **AI:** Groq (`openai/gpt-oss-120b`)
-- **Cron:** Vercel Cron on `/api/cron/*` (see `vercel.json`, admin **System** registry in `src/lib/admin/system.ts`); supplemental jobs on GitHub Actions (`collect`, `brief`, `stress`, `alerts`, `betas`)
+- **Cron:** **18 scheduled jobs on GitHub Actions** (`.github/workflows/cron-*.yml` → `scripts/crons/run-*.ts` → Neon); `vercel.json` has no Vercel crons. `/api/cron/*` routes remain for manual/admin triggers. Registry: `src/lib/admin/system.ts` · secrets: [docs/cron-offload-secrets.md](docs/cron-offload-secrets.md)
 - **Caching:** Live quotes via SWR client polling; slow-moving marketing/help pages use Next.js ISR (`revalidate = 3600`) where configured
 
 ---
@@ -872,6 +895,18 @@ npx vercel --prod --yes
 ## Release history
 
 Package version in `package.json` is **`0.1.0`** (semver tracks architecture; release sections below track shipped features). The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### 0.1.10 — 5 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Alpha League | **The Alpha League** — five-market-day virtual NSE cash portfolio championship (Jio Institute co-brand): `/alpha-league`, board, paper portfolio, PDF certificates, `/admin/competition` ops ([docs/alpha-league.md](docs/alpha-league.md)); MCP `get_alpha_league_preview` |
+| Improvement | Ops / CI | All **18 collector/scraper crons** moved from Vercel to **GitHub Actions**; `vercel.json` `"crons": []`; runner scripts in `scripts/crons/` ([docs/cron-offload-secrets.md](docs/cron-offload-secrets.md)) |
+| Improvement | Performance | **ISR** tiers on public research/reference routes and market-data cache (5m); stress routes stay `force-dynamic` where prerender timed out |
+| Improvement | UX | Removed decorative **page/card eyebrow kickers** sitewide — nested pages lead with titles, not uppercase label lines |
+| Fix | Home | Index **day-change %** scaling and Upstox **source info** on home dashboard cards |
+| Fix | Email | Welcome pack: plain-text part + personal sender for deliverability |
+| Improvement | Admin | Alpha League **reopen registration** (guarded), multi-date season picker, admin sidebar link |
 
 ### 0.1.9 — 2 Oct 2026
 

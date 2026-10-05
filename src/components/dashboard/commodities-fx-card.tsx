@@ -92,12 +92,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       <div>
         <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Coins className="size-3.5" aria-hidden />
-              <EditableCopy id="card.commodities.kicker" label="Commodities kicker">
-                COMMODITIES & FX DATA
-              </EditableCopy>
-            </span>
+            <Coins className="size-3.5 text-primary" aria-hidden />
             <MetricInfo metric="brent" customTitle="Global Commodity & FX Feeds" />
           </div>
           <Link

@@ -26,7 +26,7 @@ export default function DerivativesPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="F&O"
+
         title="Derivatives dashboard"
         subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
         trust={{ source: snapshot?.source.provider ?? "Upstox", asOf: snapshot?.source.asOf, note: "Greeks are model-derived. Not investment advice" }}

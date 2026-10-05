@@ -25,7 +25,7 @@ export default function TransmissionPage() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-16">
       <PageHeader
-        kicker="Transmission Map"
+
         title="How Global Moves Reach Indian Sectors"
         subtitle="Measured sensitivities of each sector to crude oil, the rupee, US yields and the S&P 500, estimated from about two years of daily returns. Numbers in bold are statistically significant (|t| ≥ 2); faded numbers are indistinguishable from noise."
       />

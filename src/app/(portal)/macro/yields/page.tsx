@@ -13,7 +13,7 @@ export default function YieldsMacroPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Macro"
+
         title="Yield curve"
         subtitle="India government bond yields vs US curve — US rates often steer global capital flows into or out of India."
         trust={{ source: "FRED, RBI (live 10Y G-Sec)", asOf: data?.fetchedAt, delayed: "Daily series; latest print may lag 1 business day" }}

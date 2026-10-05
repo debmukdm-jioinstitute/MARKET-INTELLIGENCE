@@ -5,17 +5,19 @@
  * composed and sent from the Kit dashboard (free plan: up to 10,000
  * subscribers, unlimited sends).
  *
+ * When Resend's free quota is exhausted, site-sent mail falls back to Kit
+ * one-recipient broadcasts (see `sendKitTransactionalEmail` and `src/lib/admin/email.ts`).
+ *
  * Also maintains a `customers` tag in Kit holding every registered site user
  * (`users` table) — the "all customers" broadcast audience. New signups are
  * tagged at signup time (email + Google), and a daily cron
  * (`/api/cron/kit-sync-customers`) backfills anyone missed.
  *
- * The site's own `newsletter_subscribers` table stays the source of truth for
- * site-sent mail (daily brief / morning digest via Resend); Kit is the
- * broadcast list for newsletters composed in Kit.
- *
- * Setup: docs/KIT.md — needs KIT_API_KEY and KIT_FORM_ID.
+ * Setup: docs/KIT.md — needs KIT_API_KEY and KIT_FORM_ID for list sync;
+ * fallback sends only require KIT_API_KEY.
  */
+
+import crypto from "crypto";
 
 const KIT_API_BASE = "https://api.convertkit.com/v4";
 
@@ -31,6 +33,11 @@ function kitConfig(): KitConfig | null {
 /** False when the Kit env vars aren't set — callers should skip silently. */
 export function isKitConfigured(): boolean {
   return kitConfig() !== null;
+}
+
+/** Kit API key present — enough for Resend-quota fallback sends. */
+export function isKitEmailConfigured(): boolean {
+  return Boolean(process.env.KIT_API_KEY?.trim());
 }
 
 async function kitPost(path: string, apiKey: string, body: unknown): Promise<{ status: number; text: string }> {
@@ -138,6 +145,83 @@ export type KitSyncResult = { ok: boolean; skipped?: boolean; error?: string };
  * Never throws and never fails the caller: Kit problems are returned as
  * `{ ok: false }` so the site signup proceeds regardless.
  */
+function fallbackTagName(email: string): string {
+  const hash = crypto.createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 16);
+  return `mi-fallback-${hash}`;
+}
+
+function kitBroadcastBody(html: string): string {
+  if (html.includes("{{ unsubscribe_url }}")) return html;
+  return `${html}<p style="font-size:12px;color:#888;margin-top:24px"><a href="{{ unsubscribe_url }}">Unsubscribe</a></p>`;
+}
+
+/**
+ * Sends one email via a Kit broadcast targeted at a per-recipient tag.
+ * Used when Resend quota is exhausted (Kit free plan: unlimited sends).
+ */
+export async function sendKitTransactionalEmail(input: {
+  to: string;
+  subject: string;
+  html: string;
+  previewText?: string;
+}): Promise<{ ok: boolean; error?: string; id?: string }> {
+  const apiKey = process.env.KIT_API_KEY?.trim();
+  if (!apiKey) return { ok: false, error: "KIT_API_KEY is not set." };
+
+  const email_address = input.to.trim().toLowerCase();
+  if (!email_address.includes("@")) return { ok: false, error: "Invalid recipient email." };
+
+  try {
+    const upsert = await kitPost("/subscribers", apiKey, { email_address, state: "active" });
+    if (upsert.status !== 200 && upsert.status !== 201 && upsert.status !== 422) {
+      return { ok: false, error: `Kit subscriber: HTTP ${upsert.status} ${upsert.text.slice(0, 180)}` };
+    }
+
+    const tagName = fallbackTagName(email_address);
+    const tag = await ensureKitTag(tagName);
+    if (!tag.ok || !tag.tagId) return { ok: false, error: tag.error ?? "Kit fallback tag failed." };
+
+    const tagged = await kitPost(`/tags/${tag.tagId}/subscribers`, apiKey, { email_address });
+    if (tagged.status !== 200 && tagged.status !== 201 && tagged.status !== 422) {
+      return { ok: false, error: `Kit tag subscriber: HTTP ${tagged.status} ${tagged.text.slice(0, 180)}` };
+    }
+
+    const sendAt = new Date().toISOString();
+    const created = await kitPost("/broadcasts", apiKey, {
+      subject: input.subject,
+      preview_text: input.previewText ?? input.subject.slice(0, 140),
+      description: "Market Intelligence (Kit fallback send)",
+      content: kitBroadcastBody(input.html),
+      public: false,
+      published_at: null,
+      send_at: sendAt,
+      subscriber_filter: [
+        {
+          all: [{ type: "tag", ids: [tag.tagId] }],
+          any: null,
+          none: null,
+        },
+      ],
+    });
+
+    if (created.status !== 200 && created.status !== 201) {
+      return { ok: false, error: `Kit broadcast: HTTP ${created.status} ${created.text.slice(0, 220)}` };
+    }
+
+    let id: string | undefined;
+    try {
+      const body = JSON.parse(created.text || "{}") as { broadcast?: { id?: unknown }; id?: unknown };
+      const raw = body.broadcast?.id ?? body.id;
+      if (raw != null) id = String(raw);
+    } catch {
+      /* optional */
+    }
+    return { ok: true, id };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 export async function addEmailToKitNewsletter(email: string, firstName?: string): Promise<KitSyncResult> {
   const cfg = kitConfig();
   if (!cfg) return { ok: false, skipped: true };

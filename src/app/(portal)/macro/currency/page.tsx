@@ -180,7 +180,7 @@ export default function CurrencyMacroPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Macro"
+
         title="Currency dashboard"
         subtitle={`${focusCounts.all} pairs — ${indiaCount} INR crosses, ${usCount} USD bloc, ${globalCount} global & EM. Yahoo Finance spot; RBI reference on Intelligence hub.`}
         trust={{ source: "FRED, RBI, Yahoo Finance", asOf: data?.fetchedAt, delayed: "Quotes may be delayed" }}

@@ -64,7 +64,7 @@ export default function RiskPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Risk"
+
         title="What could go wrong"
         subtitle={
           data?.hasHoldings

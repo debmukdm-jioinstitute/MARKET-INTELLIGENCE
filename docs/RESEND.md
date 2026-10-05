@@ -1,15 +1,18 @@
 # Resend (transactional email)
 
-Welcome emails, newsletters, signup OTP codes, and daily briefs use [Resend](https://resend.com).
+Welcome emails, newsletters, signup OTP codes, and daily briefs use [Resend](https://resend.com) **first**. When the monthly free quota is exhausted (or Resend returns a quota error), the app automatically sends through [Kit](https://kit.com) instead — see `docs/KIT.md` and Admin → System → `email.activeProvider`.
 
 ## Production (getmarketintelligence.in)
 
-DNS already routes **`send.getmarketintelligence.in`** to Resend (`send.forge.rmta.net` + SPF for Resend IPs).
+**2026-10:** Nameservers moved to Cloudflare; **`send.getmarketintelligence.in` must be re-added** in DNS (or use apex From — code defaults to `onboarding@getmarketintelligence.in` with apex DKIM). Gmail spam + “isn't authenticated” usually means the From domain has no SPF/DKIM — check Resend → Domains.
+
+Historically **`send.getmarketintelligence.in`** pointed at Resend (`send.forge.rmta.net` + SPF).
 
 | Vercel env | Value |
 |------------|--------|
 | `RESEND_API_KEY` | API key from [Resend → API Keys](https://resend.com/api-keys) |
 | `RESEND_FROM_EMAIL` | **Production:** `Market Intelligence <onboarding@send.getmarketintelligence.in>` (verified subdomain in Resend) |
+| `RESEND_MONTHLY_LIMIT` | Optional — default `3000`; after this count (UTC month) mail routes to Kit when `KIT_API_KEY` is set |
 
 Without `RESEND_FROM_EMAIL`, production falls back to `onboarding@send.getmarketintelligence.in` in code. Do **not** use `onboarding@resend.dev` in production — sandbox only delivers to your Resend login email.
 
@@ -38,5 +41,8 @@ RESEND_FROM_EMAIL=Market Intelligence <onboarding@getmarketintelligence.in>
 | Symptom | Fix |
 |---------|-----|
 | Only founder inbox receives mail | Sandbox sender or unverified domain — set `RESEND_FROM_EMAIL` to verified domain |
+| Sign-up OTP screen but no email | Check Admin → System → email block; run **testSignupOtp** action; confirm `RESEND_API_KEY` after rotation (no stray spaces) |
 | `403` / domain not verified | Match FROM domain to a green domain in Resend |
+| `RESEND_API_KEY` removed after leak | Sign-up skips OTP and creates account immediately until a new key is set |
 | Welcome PDF missing | Check Vercel function logs for `[welcome-pack]` |
+| Outlook / enterprise junk | From stays on verified `send.getmarketintelligence.in` (no fake `deb@` on send subdomain); mail is multipart text+html; IT can allowlist `send.getmarketintelligence.in` and `onboarding@send.getmarketintelligence.in`. Publish **DMARC** on `getmarketintelligence.in` (Resend dashboard shows the record). |

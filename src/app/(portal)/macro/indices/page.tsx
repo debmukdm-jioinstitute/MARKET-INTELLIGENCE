@@ -210,7 +210,7 @@ export default function WorldIndicesPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Macro"
+
         title="World stock indices"
         subtitle={`${focusCounts.all} benchmarks — live price, day change, volume, intraday and 52-week ranges (Yahoo Finance). Same coverage as Yahoo world indices, tuned for India-first context.`}
         trust={{ source: "Yahoo Finance", asOf: data?.fetchedAt, delayed: "Quotes may be delayed; closed markets show last close" }}

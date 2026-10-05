@@ -22,7 +22,7 @@ export default function RbiPolicyPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Central Banking"
+
         title="RBI Policy Stance & Banking Liquidity Desk"
         subtitle="Monetary policy corridor, system liquidity, and RBI press releases — no placeholder policy rates."
         trust={{ source: "Reserve Bank of India", asOf: data?.fetchedAt }}
