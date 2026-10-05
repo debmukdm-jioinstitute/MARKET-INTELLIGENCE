@@ -34,7 +34,7 @@ describe("reengagement-email", () => {
     expect(res.days).toBe(20);
   });
 
-  it("renders Apple liquid glass template with corporate logo, no Jio Institute, and Google Sans font", async () => {
+  it("renders official Market Intelligence email template with Mi lockup and Google Sans", async () => {
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const customer = {
       email: "trader@example.com",
@@ -53,9 +53,8 @@ describe("reengagement-email", () => {
     expect(rendered.html).toContain("14 days");
     expect(rendered.text).toContain("14 days");
 
-    // Corporate branding with logo.png
-    expect(rendered.html).toContain("/logo.png");
-    expect(rendered.html).toContain('alt="Market Intelligence"');
+    expect(rendered.html).toContain("Market intelligence");
+    expect(rendered.html).toContain(">Mi</span>");
 
     // Strict removal of Jio Institute
     expect(rendered.html).not.toContain("Jio Institute");
@@ -78,7 +77,7 @@ describe("reengagement-email", () => {
 
     // Call to action
     expect(rendered.html).toContain("/login");
-    expect(rendered.html).toContain("Log in now");
+    expect(rendered.html).toContain("Open your dashboard");
     expect(rendered.text).toContain("/login");
   });
 });

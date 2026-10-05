@@ -10,7 +10,7 @@ import {
 import { preferKitOverResend } from "@/lib/admin/email-quota";
 import { isFeatureEnabled } from "@/lib/api-guard";
 import { isKitEmailConfigured } from "@/lib/kit";
-import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
+import { escapeMiEmailHtml, miEmailParagraph, renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 
 export const SIGNUP_OTP_TTL_MIN = 10;
 export const SIGNUP_OTP_MAX_ATTEMPTS = 8;
@@ -47,14 +47,15 @@ export async function sendSignupOtpEmail(to: string, code: string): Promise<{ ok
 
   const fromConfigured = getResendFromAddress();
   const text = `Your Market Intelligence verification code is ${code}. It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you didn't request this, ignore this email.`;
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/></head>
-<body style="margin:0;padding:0;background:#ffffff;font-family:${GOOGLE_SANS_FONT_STACK};color:#202124;font-size:15px;line-height:1.7;">
-<div style="max-width:480px;margin:0 auto;padding:24px 20px;">
-<p style="margin:0 0 12px">Hi,</p>
-<p style="margin:0 0 12px">Your sign-up verification code is:</p>
-<p style="margin:0 0 12px;font-size:26px;letter-spacing:0.28em;font-variant-numeric:tabular-nums;">${code}</p>
-<p style="margin:0;color:#5f6368;font-size:13px;">It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you did not request this, you can ignore this email.</p>
-</div></body></html>`;
+  const html = renderMarketIntelligenceEmail({
+    preheader: `Your verification code expires in ${SIGNUP_OTP_TTL_MIN} minutes`,
+    badge: "VERIFICATION",
+    title: "Your sign-up code",
+    greeting: "Hi,",
+    bodyHtml: miEmailParagraph("Enter this code to finish creating your Market Intelligence account:"),
+    extraHtml: `<p style="margin:8px 0 16px;font-size:28px;font-weight:700;letter-spacing:0.28em;font-variant-numeric:tabular-nums;color:#202124;">${escapeMiEmailHtml(code)}</p>`,
+    footnote: `It expires in ${SIGNUP_OTP_TTL_MIN} minutes. If you did not request this, you can ignore this email.`,
+  });
 
   const sent = await sendTransactionalEmail({
     to,

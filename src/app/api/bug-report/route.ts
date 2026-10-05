@@ -3,7 +3,7 @@ import { rateLimited } from "@/lib/api-guard";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { FOUNDER_EMAIL } from "@/lib/onboarding/welcome-email";
 import { getSessionUser } from "@/lib/session";
-import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
+import { renderMarketIntelligenceEmail } from "@/lib/email/market-intelligence-layout";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -40,12 +40,13 @@ export async function POST(req: Request) {
 
   let emailed = false;
   if (hasEmailConfigured()) {
-    const html = `<div style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:640px;font-size:14px;line-height:1.6;color:#202124">
-      <h2 style="margin:0 0 4px;font-size:18px">${esc(title)}</h2>
-      <p style="margin:0 0 16px;color:#5f6368">Severity: <b>${esc(severity)}</b> · From: <b>${esc(name || "member")}</b> &lt;${esc(email)}&gt; · ${signedIn ? "signed-in member" : "not signed in"}</p>
-      <div style="white-space:pre-wrap;border:1px solid #e8eaed;border-radius:8px;padding:12px 14px;background:#f8f9fa">${esc(details)}</div>
-      <p style="margin:16px 0 0;font-size:12px;color:#5f6368">Page: ${esc(pageUrl || "not given")}<br/>Browser: ${esc(ua || "unknown")}<br/>Reply to this email to answer ${esc(email)} directly.</p>
-    </div>`;
+    const html = renderMarketIntelligenceEmail({
+      badge: "BUG REPORT",
+      title,
+      contentHtml: `<p style="margin:0 0 16px;color:#5f6368;font-size:14px;">Severity: <b>${esc(severity)}</b> · From: <b>${esc(name || "member")}</b> &lt;${esc(email)}&gt; · ${signedIn ? "signed-in member" : "not signed in"}</p>
+<div style="white-space:pre-wrap;border:1px solid #e8eaed;border-radius:8px;padding:12px 14px;background:#f8f9fa;font-size:14px;line-height:1.6;color:#202124;">${esc(details)}</div>
+<p style="margin:16px 0 0;font-size:12px;color:#5f6368;">Page: ${esc(pageUrl || "not given")}<br/>Browser: ${esc(ua || "unknown")}<br/>Reply to this email to answer ${esc(email)} directly.</p>`,
+    });
     const sent = await sendTransactionalEmail({ to: FOUNDER_EMAIL, subject: `[Bug · ${severity}] ${title}`, html, replyTo: email });
     emailed = sent.ok;
     if (!sent.ok) console.error("[bug-report] email failed:", sent.error);
