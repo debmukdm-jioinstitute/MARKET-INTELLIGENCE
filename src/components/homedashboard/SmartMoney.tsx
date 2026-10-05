@@ -1,5 +1,6 @@
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { flowInsight } from "@/lib/homedashboard/insights";
+import { DataInfo } from "@/components/feeds/data-info";
 import { cardClass, HomeLink, SectionHeading } from "./shared";
 
 export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
@@ -22,11 +23,20 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
             <article key={key} className="py-4 first:pt-0 last:pb-0">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-stone-900">
-                    {key === "fii"
-                      ? "FII · Foreign institutions"
-                      : "DII · Domestic institutions"}
-                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      {key === "fii"
+                        ? "FII · Foreign institutions"
+                        : "DII · Domestic institutions"}
+                    </h3>
+                    {row?.source ? (
+                      <DataInfo
+                        source={row.source}
+                        name={key === "fii" ? "FII Cash Flow" : "DII Cash Flow"}
+                        hubSyncedAt={data?.fetchedAt}
+                      />
+                    ) : null}
+                  </div>
                   <p className="mt-1 text-xs text-stone-500">
                     {row?.source.asOf
                       ? `Reported ${row.source.asOf}`

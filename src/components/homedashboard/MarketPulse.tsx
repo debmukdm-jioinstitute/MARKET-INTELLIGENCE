@@ -1,6 +1,7 @@
 "use client";
 import useSWR from "swr";
 import { Activity, ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { DataInfo } from "@/components/feeds/data-info";
 import { useCandles } from "@/hooks/use-candles";
 import type {
   BreadthSnapshot,
@@ -24,10 +25,12 @@ function IndexCard({
   name,
   quote,
   meaning,
+  hubSyncedAt,
 }: {
   name: string;
   quote?: QuoteField;
   meaning: string;
+  hubSyncedAt?: string;
 }) {
   const { candles } = useCandles(name, "1D", true);
   const lastDay = candles.length
@@ -44,18 +47,47 @@ function IndexCard({
         `${(i / Math.max(1, values.length - 1)) * 180},${36 - ((v - low) / (high - low || 1)) * 30}`,
     )
     .join(" ");
-  const change = quote?.changePct;
+
+  const change =
+    quote?.changePct ??
+    (quote?.change != null && quote?.value != null && quote.value !== quote.change
+      ? quote.change / (quote.value - quote.change)
+      : null);
+  const pct = change != null ? change * 100 : null;
+  const isPositive = pct != null && pct >= 0.005;
+  const isNegative = pct != null && pct <= -0.005;
+  const formattedPct =
+    pct != null ? (Math.abs(pct) < 0.005 ? "0.00" : pct.toFixed(2)) : null;
   const ChangeIcon =
-    change == null || change === 0
+    !pct || (!isPositive && !isNegative)
       ? Minus
-      : change > 0
+      : isPositive
         ? ArrowUpRight
         : ArrowDownRight;
+
+  const strokeClass =
+    isPositive
+      ? "text-teal-600"
+      : isNegative
+        ? "text-rose-600"
+        : values.length > 1 && values[values.length - 1] >= values[0]
+          ? "text-teal-600"
+          : "text-rose-600";
+
   return (
     <article className="min-w-0 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-      <h3 className="text-xs font-semibold tracking-wide text-stone-500">
-        {name}
-      </h3>
+      <div className="flex items-center justify-between gap-1.5">
+        <h3 className="text-xs font-semibold tracking-wide text-stone-500">
+          {name}
+        </h3>
+        {quote?.source ? (
+          <DataInfo
+            source={quote.source}
+            name={name}
+            hubSyncedAt={hubSyncedAt}
+          />
+        ) : null}
+      </div>
       <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-900 tabular-nums">
         {quote?.value != null
           ? quote.value.toLocaleString("en-IN", {
@@ -65,19 +97,25 @@ function IndexCard({
           : "—"}
       </p>
       <p
-        className={`mt-1 flex items-center gap-1 text-xs font-semibold ${change == null || change === 0 ? "text-stone-500" : change > 0 ? "text-emerald-600" : "text-rose-600"}`}
+        className={`mt-1 flex items-center gap-1 text-xs font-semibold ${
+          !pct || (!isPositive && !isNegative)
+            ? "text-stone-500"
+            : isPositive
+              ? "text-emerald-600"
+              : "text-rose-600"
+        }`}
       >
         <ChangeIcon className="size-3.5" />
-        {change == null
+        {formattedPct == null
           ? "Quote unavailable"
-          : `${change > 0 ? "+" : ""}${change.toFixed(2)}% · day change`}
+          : `${isPositive ? "+" : ""}${formattedPct}% · day change`}
       </p>
       {values.length > 1 ? (
         <svg
           role="img"
           aria-label={`${name} intraday close, ${lastDay}`}
           viewBox="0 0 180 42"
-          className={`mt-3 h-10 w-full ${values[values.length - 1] >= values[0] ? "text-teal-600" : "text-rose-600"}`}
+          className={`mt-3 h-10 w-full ${strokeClass}`}
         >
           <path d="M0 40H180 M0 20H180" stroke="#e7e5e4" strokeWidth="0.5" />
           <polyline
@@ -143,29 +181,42 @@ export function MarketPulse({
           name="NIFTY 50"
           quote={data?.pulse.nifty}
           meaning="India’s 50 large companies — your broad market reference."
+          hubSyncedAt={data?.fetchedAt}
         />
         <IndexCard
           name="SENSEX"
           quote={data?.pulse.sensex}
           meaning="30 major BSE companies — another view of large-cap direction."
+          hubSyncedAt={data?.fetchedAt}
         />
         <IndexCard
           name="BANK NIFTY"
           quote={data?.pulse.bankNifty}
           meaning="Banking stocks — a read on the financial sector."
+          hubSyncedAt={data?.fetchedAt}
         />
         <IndexCard
           name="INDIA VIX"
           quote={data?.pulse.indiaVix}
           meaning={vixInsight(data?.pulse.indiaVix.value)}
+          hubSyncedAt={data?.fetchedAt}
         />
       </div>
       <div className={`${cardClass} mt-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
-            <Activity className="size-4 text-teal-600" />
-            Is the whole market joining in?
-          </h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+              <Activity className="size-4 text-teal-600" />
+              Is the whole market joining in?
+            </h3>
+            {breadth?.source ? (
+              <DataInfo
+                source={breadth.source}
+                name="Market Breadth"
+                hubSyncedAt={data?.fetchedAt}
+              />
+            ) : null}
+          </div>
           <p className="text-xs text-stone-500">
             {adv != null && dec != null
               ? `${adv.toLocaleString("en-IN")} advancing · ${dec.toLocaleString("en-IN")} declining`
