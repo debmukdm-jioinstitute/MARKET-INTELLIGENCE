@@ -12,6 +12,27 @@ export const istDay = (value: string | number | Date) =>
   new Date(new Date(value).getTime() + 19_800_000).toISOString().slice(0, 10);
 export const marketOpen = (day: string) => `${day}T03:45:00.000Z`;
 export const marketClose = (day: string) => `${day}T10:00:00.000Z`;
+
+/** Next Mon–Fri block in IST, starting on the first Monday strictly after today (IST). */
+export function nextSeasonTradingWeek(): string[] {
+  const istNow = new Date(Date.now() + 19_800_000);
+  let cursor = new Date(
+    Date.UTC(
+      istNow.getUTCFullYear(),
+      istNow.getUTCMonth(),
+      istNow.getUTCDate(),
+    ),
+  );
+  cursor.setUTCDate(cursor.getUTCDate() + 1);
+  while (cursor.getUTCDay() !== 1) cursor.setUTCDate(cursor.getUTCDate() + 1);
+  const days: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(cursor);
+    d.setUTCDate(cursor.getUTCDate() + i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
 export function instituteDomains(): string[] {
   return (process.env.COMPETITION_EMAIL_DOMAINS ?? "")
     .split(",")
