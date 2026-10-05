@@ -1,5 +1,6 @@
-import { hasEmailConfigured, productionEmailMisconfiguredReason } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, productionEmailMisconfiguredReason } from "@/lib/admin/email";
 import { rateLimited } from "@/lib/api-guard";
+import { isKitEmailConfigured } from "@/lib/kit";
 import { generateSignupOtp, hashSignupOtp, sendSignupOtpEmail, SIGNUP_OTP_RESEND_SEC, SIGNUP_OTP_TTL_MIN } from "@/lib/auth/signup-otp";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -14,11 +15,11 @@ export async function POST(req: Request) {
   if (!hasDatabase()) {
     return NextResponse.json({ error: "Accounts are not configured on this deployment yet." }, { status: 503 });
   }
-  if (!hasEmailConfigured()) {
+  if (!hasOutboundEmailConfigured()) {
     return NextResponse.json({ error: "Email is not configured on this deployment." }, { status: 503 });
   }
   const mailMisconfig = productionEmailMisconfiguredReason();
-  if (mailMisconfig) {
+  if (mailMisconfig && !isKitEmailConfigured()) {
     return NextResponse.json({ error: mailMisconfig }, { status: 503 });
   }
 

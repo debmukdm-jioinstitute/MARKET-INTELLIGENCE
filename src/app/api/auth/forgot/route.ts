@@ -1,4 +1,4 @@
-import { hasEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, sendTransactionalEmail } from "@/lib/admin/email";
 import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
 import { isGoogleOnlyPasswordHash } from "@/lib/auth/google-oauth";
 import { createResetToken } from "@/lib/auth/password-reset";
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   }
   const email = body.email?.trim().toLowerCase();
   if (!email) return NextResponse.json({ error: "Email is required." }, { status: 400 });
-  if (!hasEmailConfigured()) {
+  if (!hasOutboundEmailConfigured()) {
     return NextResponse.json({ error: "Password reset email is not configured on this deployment." }, { status: 503 });
   }
 

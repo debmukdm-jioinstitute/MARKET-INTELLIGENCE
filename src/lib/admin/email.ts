@@ -1,7 +1,28 @@
+import {
+  isResendQuotaError,
+  markResendQuotaExhausted,
+  preferKitOverResend,
+  recordResendSend,
+} from "@/lib/admin/email-quota";
+import { isKitEmailConfigured, sendKitTransactionalEmail } from "@/lib/kit";
 import { Resend } from "resend";
+
+export type EmailProvider = "resend" | "kit";
 
 export function hasEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim());
+}
+
+/** Resend and/or Kit can deliver outbound mail. */
+export function hasOutboundEmailConfigured(): boolean {
+  return hasEmailConfigured() || isKitEmailConfigured();
+}
+
+export async function activeEmailProvider(): Promise<EmailProvider | "none"> {
+  if ((await preferKitOverResend()) && isKitEmailConfigured()) return "kit";
+  if (hasEmailConfigured() && !productionEmailMisconfiguredReason()) return "resend";
+  if (isKitEmailConfigured()) return "kit";
+  return "none";
 }
 
 const FOUNDER_REPLY_TO = "Deb@getmarketintelligence.in";
@@ -101,22 +122,19 @@ export function listUnsubscribeHeaders(unsubscribeUrl?: string): Record<string, 
 
 export type EmailAttachment = { filename: string; content: Buffer | string };
 
-/** Single transactional email (welcome, alerts, etc.). */
-export async function sendTransactionalEmail(input: {
+export type SendEmailResult = { ok: boolean; error?: string; id?: string; provider?: EmailProvider };
+
+async function sendViaResend(input: {
   to: string;
   subject: string;
   html: string;
-  /** Plain-text alternative (multipart); improves inbox placement. */
   text?: string;
-  /** Overrides the default From (must be on a Resend-verified domain). */
   from?: string;
   replyTo?: string;
   attachments?: EmailAttachment[];
-  /** Extra headers (e.g. List-Unsubscribe) passed straight to Resend. */
   headers?: Record<string, string>;
-  /** Marketing adds List-Unsubscribe only via `headers`; default is account/OTP mail. */
   kind?: "transactional" | "marketing";
-}): Promise<{ ok: boolean; error?: string; id?: string }> {
+}): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY is not configured." };
   const resend = new Resend(apiKey);
@@ -140,9 +158,71 @@ export async function sendTransactionalEmail(input: {
       content: typeof a.content === "string" ? a.content : a.content,
     })),
   });
-  if (error) return { ok: false, error: error.message };
-  if (!data?.id) return { ok: false, error: "Resend accepted the request but did not return a message id." };
-  return { ok: true, id: data.id };
+  if (error) return { ok: false, error: error.message, provider: "resend" };
+  if (!data?.id) {
+    return { ok: false, error: "Resend accepted the request but did not return a message id.", provider: "resend" };
+  }
+  return { ok: true, id: data.id, provider: "resend" };
+}
+
+/** Single transactional email (welcome, alerts, etc.). Resend first; Kit when quota exhausted. */
+export async function sendTransactionalEmail(input: {
+  to: string;
+  subject: string;
+  html: string;
+  /** Plain-text alternative (multipart); improves inbox placement. */
+  text?: string;
+  /** Overrides the default From (must be on a Resend-verified domain). */
+  from?: string;
+  replyTo?: string;
+  attachments?: EmailAttachment[];
+  /** Extra headers (e.g. List-Unsubscribe) passed straight to Resend. */
+  headers?: Record<string, string>;
+  /** Marketing adds List-Unsubscribe only via `headers`; default is account/OTP mail. */
+  kind?: "transactional" | "marketing";
+}): Promise<SendEmailResult> {
+  if (input.attachments?.length) {
+    if (!(await preferKitOverResend()) && hasEmailConfigured()) {
+      const r = await sendViaResend(input);
+      if (r.ok) await recordResendSend(1);
+      else if (isResendQuotaError(r.error)) await markResendQuotaExhausted();
+      if (r.ok || !isKitEmailConfigured()) return r;
+    }
+    if (isKitEmailConfigured()) {
+      console.warn("[email] Kit fallback cannot attach files — sending HTML only via Kit.");
+      const kit = await sendKitTransactionalEmail({
+        to: input.to,
+        subject: input.subject,
+        html: input.html,
+        previewText: input.text ?? input.subject,
+      });
+      return kit.ok ? { ...kit, provider: "kit" } : { ...kit, provider: "kit" };
+    }
+    return { ok: false, error: "No email provider configured for attachments." };
+  }
+
+  const tryResend = hasEmailConfigured() && !(await preferKitOverResend()) && !productionEmailMisconfiguredReason();
+  if (tryResend) {
+    const r = await sendViaResend(input);
+    if (r.ok) {
+      await recordResendSend(1);
+      return r;
+    }
+    if (isResendQuotaError(r.error)) await markResendQuotaExhausted();
+    else if (!isKitEmailConfigured()) return r;
+  }
+
+  if (!isKitEmailConfigured()) {
+    return { ok: false, error: tryResend ? "Resend failed and KIT_API_KEY is not set." : "RESEND_API_KEY is not configured." };
+  }
+
+  const kit = await sendKitTransactionalEmail({
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+    previewText: input.text ?? input.subject,
+  });
+  return kit.ok ? { ...kit, provider: "kit" } : { ...kit, provider: "kit" };
 }
 
 export { FOUNDER_REPLY_TO };
@@ -167,14 +247,36 @@ export async function sendNewsletter(
     textFor?: (email: string) => string;
   },
 ): Promise<NewsletterSendResult> {
+  let sent = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  const useKit = (await preferKitOverResend()) || !hasEmailConfigured() || productionEmailMisconfiguredReason();
+  if (useKit) {
+    if (!isKitEmailConfigured()) {
+      throw new Error("Resend quota exhausted and KIT_API_KEY is not configured.");
+    }
+    for (const to of recipients) {
+      const html = htmlFor(to);
+      const kit = await sendKitTransactionalEmail({
+        to,
+        subject,
+        html,
+        previewText: opts?.textFor?.(to) ?? htmlToPlainText(html),
+      });
+      if (kit.ok) sent += 1;
+      else {
+        failed += 1;
+        errors.push(`${to}: ${kit.error ?? "Kit send failed"}`);
+      }
+    }
+    return { sent, failed, errors: [...new Set(errors)] };
+  }
+
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
   const resend = new Resend(apiKey);
   const from = deliverabilityFromAddress(getResendFromAddress());
-
-  let sent = 0;
-  let failed = 0;
-  const errors: string[] = [];
 
   for (let i = 0; i < recipients.length; i += 100) {
     const chunk = recipients.slice(i, i + 100);
@@ -193,8 +295,31 @@ export async function sendNewsletter(
       }),
     );
     if (!error) {
-      sent += data?.data?.length ?? chunk.length;
+      const n = data?.data?.length ?? chunk.length;
+      sent += n;
+      await recordResendSend(n);
       continue;
+    }
+
+    if (isResendQuotaError(error.message)) {
+      await markResendQuotaExhausted();
+      if (isKitEmailConfigured()) {
+        for (const to of recipients.slice(i)) {
+          const html = htmlFor(to);
+          const kit = await sendKitTransactionalEmail({
+            to,
+            subject,
+            html,
+            previewText: opts?.textFor?.(to) ?? htmlToPlainText(html),
+          });
+          if (kit.ok) sent += 1;
+          else {
+            failed += 1;
+            errors.push(`${to}: ${kit.error ?? "Kit send failed"}`);
+          }
+        }
+        return { sent, failed, errors: [...new Set(errors)] };
+      }
     }
 
     // Batch call rejected as a whole — retry individually so one bad address doesn't sink the rest.
@@ -210,10 +335,31 @@ export async function sendNewsletter(
         headers: opts?.headersFor?.(to),
       });
       if (single.error) {
+        if (isResendQuotaError(single.error.message)) {
+          await markResendQuotaExhausted();
+          if (isKitEmailConfigured()) {
+            for (const rest of recipients.slice(recipients.indexOf(to))) {
+              const h = htmlFor(rest);
+              const kit = await sendKitTransactionalEmail({
+                to: rest,
+                subject,
+                html: h,
+                previewText: opts?.textFor?.(rest) ?? htmlToPlainText(h),
+              });
+              if (kit.ok) sent += 1;
+              else {
+                failed += 1;
+                errors.push(`${rest}: ${kit.error ?? "Kit send failed"}`);
+              }
+            }
+            return { sent, failed, errors: [...new Set(errors)] };
+          }
+        }
         failed += 1;
         errors.push(`${to}: ${single.error.message}`);
       } else {
         sent += 1;
+        await recordResendSend(1);
       }
     }
   }

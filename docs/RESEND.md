@@ -1,6 +1,6 @@
 # Resend (transactional email)
 
-Welcome emails, newsletters, signup OTP codes, and daily briefs use [Resend](https://resend.com).
+Welcome emails, newsletters, signup OTP codes, and daily briefs use [Resend](https://resend.com) **first**. When the monthly free quota is exhausted (or Resend returns a quota error), the app automatically sends through [Kit](https://kit.com) instead — see `docs/KIT.md` and Admin → System → `email.activeProvider`.
 
 ## Production (getmarketintelligence.in)
 
@@ -10,6 +10,7 @@ DNS already routes **`send.getmarketintelligence.in`** to Resend (`send.forge.rm
 |------------|--------|
 | `RESEND_API_KEY` | API key from [Resend → API Keys](https://resend.com/api-keys) |
 | `RESEND_FROM_EMAIL` | **Production:** `Market Intelligence <onboarding@send.getmarketintelligence.in>` (verified subdomain in Resend) |
+| `RESEND_MONTHLY_LIMIT` | Optional — default `3000`; after this count (UTC month) mail routes to Kit when `KIT_API_KEY` is set |
 
 Without `RESEND_FROM_EMAIL`, production falls back to `onboarding@send.getmarketintelligence.in` in code. Do **not** use `onboarding@resend.dev` in production — sandbox only delivers to your Resend login email.
 

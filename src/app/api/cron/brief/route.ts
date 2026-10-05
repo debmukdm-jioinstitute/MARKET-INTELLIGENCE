@@ -1,6 +1,6 @@
 import { cronUnauthorized } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
-import { hasEmailConfigured, listUnsubscribeHeaders, sendNewsletter } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, listUnsubscribeHeaders, sendNewsletter } from "@/lib/admin/email";
 import { hasDatabase } from "@/lib/db";
 import { buildBrief } from "@/lib/brief/build";
 import { briefHtml, briefSubject } from "@/lib/brief/email";
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     const id = await saveBrief(brief);
     let email: { sent: number; failed: number } | { skipped: string } = { skipped: "no subscribers" };
     const to = await briefRecipients(kind);
-    if (to.length && !hasEmailConfigured()) email = { skipped: "RESEND_API_KEY not configured" };
+    if (to.length && !hasOutboundEmailConfigured()) email = { skipped: "No email provider (Resend or Kit) configured" };
     else if (to.length) {
       const r = await sendNewsletter(briefSubject(brief), to, (addr) => briefHtml(brief, addr), {
         headersFor: (addr) => listUnsubscribeHeaders(unsubscribeUrl(addr)),

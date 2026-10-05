@@ -7,7 +7,9 @@ import {
   productionEmailMisconfiguredReason,
   sendTransactionalEmail,
 } from "@/lib/admin/email";
+import { preferKitOverResend } from "@/lib/admin/email-quota";
 import { isFeatureEnabled } from "@/lib/api-guard";
+import { isKitEmailConfigured } from "@/lib/kit";
 import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
 
 export const SIGNUP_OTP_TTL_MIN = 10;
@@ -35,9 +37,8 @@ export function signupOtpMatches(email: string, code: string, storedHash: string
 /** OTP when the admin switch is on (default) and Resend is configured. Local without mail keeps instant signup. */
 export async function shouldChallengeSignupOtp(): Promise<boolean> {
   if (!(await isFeatureEnabled("signup-otp"))) return false;
-  if (!hasEmailConfigured()) return false;
-  if (productionEmailMisconfiguredReason()) return false;
-  return true;
+  if (hasEmailConfigured() && !(await preferKitOverResend()) && !productionEmailMisconfiguredReason()) return true;
+  return isKitEmailConfigured();
 }
 
 export async function sendSignupOtpEmail(to: string, code: string): Promise<{ ok: boolean; error?: string; id?: string }> {
