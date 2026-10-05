@@ -22,36 +22,36 @@ function grantTemplateForPlan(planId: RazorpayPlanId): RetargetingTemplate {
   const bodies: Record<RazorpayPlanId, { subject: string; preheader: string; body: string }> = {
     day_pass: {
       subject: "{{firstName}}, your 24-hour all-access pass is live",
-      preheader: "No checkout — just open the desk and poke around",
+      preheader: "No checkout, just open the desk and poke around",
       body: `<p>Hey {{firstName}},</p>
-<p>We flipped on a complimentary <strong>Daily pass</strong> on your Market Intelligence account — think of it as a no-strings test drive before anyone asks for your card.</p>
+<p>We flipped on a complimentary <strong>Daily pass</strong> on your Market Intelligence account, think of it as a no-strings test drive before anyone asks for your card.</p>
 <p><strong>Good until {{expiresAtShort}}.</strong> Here is the fun stuff you can actually use:</p>
 {{featureListHtml}}
 <p>Start here when you are ready: <a href="{{dashboardUrl}}">open your dashboard</a> · <a href="{{pricingUrl}}">see plans later</a></p>
 {{personalNoteBlock}}
-<p>— Debabrata</p>`,
+<p>Debabrata</p>`,
     },
     pro_monthly: {
       subject: "{{firstName}}, Plus is on the house for a bit",
-      preheader: "MCP, AI Desk, options — the works, on us",
+      preheader: "MCP, AI Desk, options, the works, on us",
       body: `<p>Hey {{firstName}},</p>
-<p>Startup rule #47: sometimes you comp the curious ones. We activated <strong>Plus</strong> on your account — full paid access, zero invoice drama.</p>
+<p>Startup rule #47: sometimes you comp the curious ones. We activated <strong>Plus</strong> on your account, full paid access, zero invoice drama.</p>
 <p><strong>Active through {{expiresAtShort}}.</strong> What that unlocks (with links, because we are helpful like that):</p>
 {{featureListHtml}}
 <p>Hop in: <a href="{{dashboardUrl}}">dashboard</a> · wire Claude via <a href="{{mcpUrl}}">MCP setup</a> · <a href="{{pricingUrl}}">pricing</a> when you want to stay after the gift period</p>
 {{personalNoteBlock}}
-<p>— Debabrata</p>`,
+<p>Debabrata</p>`,
     },
     pro_annual: {
-      subject: "{{firstName}}, welcome to Pro — we picked up the tab",
+      subject: "{{firstName}}, welcome to Pro, we picked up the tab",
       preheader: "Yearly Pro comp: briefings, MCP, the whole parade",
       body: `<p>Hey {{firstName}},</p>
-<p>You have been upgraded to <strong>Pro (yearly)</strong> on us — the “everything including the kitchen-sink briefing” tier. No confetti cannon in your inbox, but mentally we are doing a tiny desk dance.</p>
+<p>You have been upgraded to <strong>Pro (yearly)</strong> on us, the “everything including the kitchen-sink briefing” tier. No confetti cannon in your inbox, but mentally we are doing a tiny desk dance.</p>
 <p><strong>Runs until {{expiresAtShort}}.</strong> Your feature map:</p>
 {{featureListHtml}}
 <p>Main doors: <a href="{{dashboardUrl}}">dashboard</a> · <a href="{{mcpUrl}}">Claude MCP</a> · morning vibe at <a href="{{briefUrl}}">daily brief</a></p>
 {{personalNoteBlock}}
-<p>— Debabrata</p>`,
+<p>Debabrata</p>`,
     },
   };
 

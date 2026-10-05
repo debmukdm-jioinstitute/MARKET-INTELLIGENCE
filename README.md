@@ -30,6 +30,8 @@ This document explains **how every page actually computes what it shows** — th
 
 ---
 
+> **Email policy:** customer emails never contain em dashes. Enforced in `src/lib/admin/email.ts` via `src/lib/email-copy.ts`; see [`docs/EMAIL_STYLE.md`](docs/EMAIL_STYLE.md).
+
 ## Table of contents
 
 0. [Website architecture](#website-architecture)

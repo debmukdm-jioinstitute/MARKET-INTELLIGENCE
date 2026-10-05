@@ -35,7 +35,7 @@ export function planFeatureListHtml(planId: RazorpayPlanId, siteUrl: string): st
 ${links
   .map(
     (f) =>
-      `<li style="margin-bottom:10px;"><a href="${f.path}" style="color:#1a73e8;text-decoration:underline;">${f.label}</a> — ${f.teaser}</li>`,
+      `<li style="margin-bottom:10px;"><a href="${f.path}" style="color:#1a73e8;text-decoration:underline;">${f.label}</a>: ${f.teaser}</li>`,
   )
   .join("\n")}
 </ul>`;

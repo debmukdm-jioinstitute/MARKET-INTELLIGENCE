@@ -1,5 +1,5 @@
 /**
- * Morning alert digest — compresses each user's overnight-fired alert_events into one short
+ * Morning alert digest, compresses each user's overnight-fired alert_events into one short
  * paragraph via summarizeItems (BART), instead of leaving them as a list of separate messages.
  * Runs as part of the existing alerts cron (see src/app/api/cron/alerts/route.ts); a failure here
  * never blocks rule evaluation itself.
@@ -45,7 +45,7 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
     const day = istDay();
     const prev = await getState<{ day: string }>(`digest:${userEmail}`).catch(() => null);
     if (prev?.day === day) continue;
-    // A single overnight alert is already its own notification — nothing to compress.
+    // A single overnight alert is already its own notification, nothing to compress.
     if (messages.length < 2) continue;
 
     try {
@@ -55,7 +55,7 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
       if (hasEmailConfigured()) {
         await sendNewsletter(`Your overnight alert digest (${messages.length} alerts)`, [userEmail], () =>
           `<div style="${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;padding:16px">` +
-            `<h3 style="margin:0 0 8px">Overnight digest — ${messages.length} alerts</h3>` +
+            `<h3 style="margin:0 0 8px">Overnight digest, ${messages.length} alerts</h3>` +
             `<p style="font-size:14px">${digest.replace(/</g, "&lt;")}</p>` +
             attention +
             `<p style="font-size:12px;color:#5f6368">Manage rules at ${process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.vercel.app"}/intelligence/alerts. Not investment advice.</p>` +

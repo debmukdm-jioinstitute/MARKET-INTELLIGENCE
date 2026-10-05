@@ -8,6 +8,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## Customer emails: no em dashes (required)
+
+Never put an em dash (`—`, `&mdash;`, `&#8212;`) in any email sent to a customer (subject, body, signature, text part). Use commas, colons, periods or parentheses; sign off `Debabrata`. All sends must go through `sendTransactionalEmail` / `sendNewsletter` in `src/lib/admin/email.ts`, which strip em dashes via `src/lib/email-copy.ts` as a safety net. Policy: `docs/EMAIL_STYLE.md`.
+
 ## Typography (required)
 
 **Google Sans is the only allowed typeface** in this repository — UI, emails, static HTML, and agent-generated markup. Do not import `Google_Sans_Code`, use `font-mono` / `font-serif`, or set `font-family` to system fonts, Roboto, Product Sans, or monospace stacks.

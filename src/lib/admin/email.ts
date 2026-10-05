@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { stripEmDashes, stripEmDashesOpt } from "@/lib/email-copy";
 
 export function hasEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
@@ -58,9 +59,9 @@ export async function sendTransactionalEmail(input: {
   const { data, error } = await resend.emails.send({
     from: input.from ?? getResendFromAddress(),
     to: input.to,
-    subject: input.subject,
-    html: input.html,
-    text: input.text,
+    subject: stripEmDashes(input.subject),
+    html: stripEmDashes(input.html),
+    text: stripEmDashesOpt(input.text),
     replyTo: input.replyTo,
     headers: input.headers,
     attachments: input.attachments?.map((a) => ({
@@ -104,8 +105,8 @@ export async function sendNewsletter(
       chunk.map((to) => ({
         from,
         to,
-        subject,
-        html: htmlFor(to),
+        subject: stripEmDashes(subject),
+        html: stripEmDashes(htmlFor(to)),
         headers: opts?.headersFor?.(to),
       })),
     );
@@ -119,8 +120,8 @@ export async function sendNewsletter(
       const single = await resend.emails.send({
         from,
         to,
-        subject,
-        html: htmlFor(to),
+        subject: stripEmDashes(subject),
+        html: stripEmDashes(htmlFor(to)),
         headers: opts?.headersFor?.(to),
       });
       if (single.error) {

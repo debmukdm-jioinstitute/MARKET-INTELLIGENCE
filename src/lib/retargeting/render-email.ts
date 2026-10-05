@@ -7,7 +7,7 @@ const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
- * Plain-text-first wrapper: no cards, no banners, no heavy layout — the email
+ * Plain-text-first wrapper: no cards, no banners, no heavy layout, the email
  * should read like a personal note from the founder. Minimal links (the body
  * carries at most one), which keeps Gmail from filing it under Promotions.
  */
@@ -27,7 +27,7 @@ export function renderRetargetingEmail(
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
   <div style="max-width:560px;margin:0 auto;padding:28px 20px;">
     ${bodyInner}
-    <p style="margin:28px 0 0;font-size:13px;color:#5f6368;">—<br/>Debabrata Mukherjee<br/>Market Intelligence</p>
+    <p style="margin:28px 0 0;font-size:13px;color:#5f6368;">Debabrata Mukherjee<br/>Market Intelligence</p>
   </div>
 </body>
 </html>`;
