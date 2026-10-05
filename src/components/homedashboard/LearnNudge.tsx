@@ -17,9 +17,6 @@ export function LearnNudge() {
             <BookOpen className="size-5" />
           </span>
           <div className="flex-1">
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-600">
-              06 / KEEP LEARNING
-            </p>
             <h2 className="font-semibold text-stone-900">
               New here? Start here.
             </h2>

@@ -17,7 +17,6 @@ export function PortfolioTeaser({
   return (
     <section aria-label="Your stocks">
       <SectionHeading
-        number="07 / MAKE IT YOURS"
         title="Your stocks"
         detail="Bring the market back to what matters to you."
       />

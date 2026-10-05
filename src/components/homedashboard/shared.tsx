@@ -18,12 +18,10 @@ export async function homeJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 export function SectionHeading({
-  number,
   title,
   detail,
   action,
 }: {
-  number: string;
   title: string;
   detail: string;
   action?: ReactNode;
@@ -31,9 +29,6 @@ export function SectionHeading({
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-600">
-          {number}
-        </p>
         <h2 className="text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl">
           {title}
         </h2>

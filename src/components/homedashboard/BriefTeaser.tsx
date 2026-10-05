@@ -37,7 +37,6 @@ export function BriefTeaser({
   return (
     <section aria-label="Today's Brief">
       <SectionHeading
-        number="02 / CONNECT THE DOTS"
         title="Today’s 2-minute brief"
         detail="What happened — and why it deserves a place on your radar."
         action={

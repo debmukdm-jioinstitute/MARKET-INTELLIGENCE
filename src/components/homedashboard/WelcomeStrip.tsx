@@ -75,10 +75,7 @@ export function WelcomeStrip({ progress }: { progress: HomeProgress }) {
       >
         <X className="size-4" />
       </button>
-      <p className="pr-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-600">
-        A little curiosity goes a long way
-      </p>
-      <h2 className="mt-2 max-w-2xl text-xl font-semibold tracking-tight text-stone-900">
+      <h2 className="pr-8 max-w-2xl text-xl font-semibold tracking-tight text-stone-900">
         Welcome to Market Intelligence — your free investing terminal.
       </h2>
       <p className="mt-2 text-sm text-stone-500">

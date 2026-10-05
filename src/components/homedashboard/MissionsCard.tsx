@@ -52,7 +52,6 @@ export function MissionsCard({
   return (
     <section aria-label="Daily Missions">
       <SectionHeading
-        number="04 / BUILD A SMALL DAILY HABIT"
         title="Today’s missions"
         detail="Three useful stops. One step a day keeps your streak going."
       />
