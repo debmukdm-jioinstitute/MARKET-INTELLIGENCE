@@ -74,6 +74,9 @@ The platform is designed as an end-to-end, multi-layered quantitative and resear
         │
         ▼
 [Neon Serverless Postgres & External Data Providers (Upstox, NSE, Yahoo, FRED)]
+
+[GitHub Actions cron workflows] ──► [scripts/crons/run-*.ts] ──► Neon + same domain libs (collectors, scan, options-flow baseline, …)
+        │                              `/api/cron/*` = manual/admin fallback only (vercel.json crons empty)
 ```
 
 ### Complete End-to-End System Architecture
@@ -87,6 +90,7 @@ flowchart TD
     P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
     P_Research["/research/*<br/>(Company Dossiers, DCF Model, AI Desk, Options Flow, IPO)"]
     P_Intel["/intelligence/*<br/>(Brief, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
+    P_Alpha["/alpha-league/*<br/>(Virtual 5-day championship · board · paper book)"]
     P_Widgets["Interactive Shell<br/>(Ask Deb Widget, Command Palette ⌘K, MetricInfo Popovers)"]
   end
 
@@ -99,6 +103,8 @@ flowchart TD
     API_Assist["/api/site-assistant<br/>(Ask Deb + OmniRoute / Groq Gateway)"]
     API_Intel["/api/brief · /api/reddit · /api/credit · /api/legal-risk"]
     API_MCP["/api/mcp<br/>(Claude Connector & OAuth DCR Protocol)"]
+    API_Comp["/api/competition/*<br/>(Register, orders, leaderboard, certificates)"]
+    API_Broker["/api/broker-research<br/>(Institutional note aggregator)"]
   end
 
   subgraph AI_Engine["3. AI & Natural Language Processing Suite"]
@@ -123,6 +129,7 @@ flowchart TD
     ENG_Optimizer["Mean-Variance Optimizer<br/>(Gradient Descent Iterative Allocator)"]
     ENG_Regime["Macro Regime Engine<br/>(GDP/CPI Quadrants & Transmission Matrix)"]
     ENG_Collector["Collector Pipeline<br/>(RBI Scraper, Cboe VIX, CFTC COT, BLS, ECB)"]
+    ENG_League["Alpha League ledger<br/>(Append-only trades · daily snapshots · scoring)"]
   end
 
   subgraph External["5. External Data Feeds & External AI APIs"]
@@ -141,10 +148,16 @@ flowchart TD
     DB_Options[("options_flow_snapshots & flag_log")]
     DB_RAG[("rag_documents (FTS Knowledge Base)")]
     DB_Alerts[("alert_rules & notification_prefs")]
+    DB_League[("competition_* · season · trades · snapshots")]
+  end
+
+  subgraph Ops["7. Scheduled jobs (GitHub Actions — not Vercel Cron)"]
+    GH_Cron[".github/workflows/cron-*.yml<br/>scripts/crons/run-*.ts"]
   end
 
   %% Relationships
   Client --> API
+  P_Alpha --> API_Comp
   API_Feeds --> EXT_Upstox & EXT_NSE & EXT_Yahoo & EXT_Trends
   API_Macro --> ENG_Regime & EXT_Gov & EXT_Yahoo
   API_Portfolio --> ENG_Metrics & ENG_Virtual & ENG_Optimizer & DB_Holdings
@@ -152,12 +165,17 @@ flowchart TD
   API_AI --> Groq_Agents
   API_Assist --> Groq_Omni & DB_RAG
   API_Intel --> HF_FinBERT & Groq_Brief & DB_Alerts
-  API_MCP --> API_Feeds & API_Portfolio & API_Macro
+  API_MCP --> API_Feeds & API_Portfolio & API_Macro & API_Comp
+  API_Comp --> ENG_League & EXT_Upstox
+  API_Broker --> EXT_NSE
+  P_Research --> API_Broker
 
   HF_Models --> EXT_HF_API
   Groq_Agents --> EXT_Groq_API
 
+  GH_Cron --> ENG_Collector & DB_Options & DB_Collector
   ENG_Collector --> DB_Collector & EXT_Gov & EXT_NSE
+  ENG_League --> DB_League
   ENG_Metrics --> EXT_Upstox & EXT_Yahoo
   ENG_DCF --> EXT_Upstox & EXT_Yahoo
 ```
@@ -168,8 +186,9 @@ flowchart TD
 | **2. API Routes** | Session verification, caching, orchestration, rate limiting | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `hf/*`, `ai/*`, `mcp/*` |
 | **3. AI & ML Suite** | FinBERT sentiment, BART summarizer, MiniLM embeddings, Groq multi-agent debate | `src/lib/hf/*`, `src/lib/ai/*`, `src/lib/site-assistant/*` |
 | **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, DCF valuation, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/models/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
-| **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`) |
+| **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base, Alpha League ledger | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`, `competition_*`) |
 | **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
+| **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback |
 
 ---
 
@@ -310,8 +329,10 @@ flowchart LR
 ```mermaid
 flowchart LR
   AD["admin.* → /admin"] --> APIA["/api/admin/*"]
-  CR["Vercel Cron"] --> CRON["/api/cron/collect · stress · scrape…"]
-  CRON --> COL[collector → Neon collected_series]
+  GH["GitHub Actions<br/>cron-*.yml"] --> RUN["scripts/crons/run-*.ts"]
+  RUN --> COL[collector → Neon collected_series]
+  CR["Manual / admin"] -.-> CRON["/api/cron/* fallback"]
+  CRON --> COL
   APIA --> PG
   APIA --> RAGA[Admin RAG ask<br/>FTS not vectors]
   MCP["/api/mcp"] --> KEY[MCP_API_KEYS gate]
@@ -319,7 +340,7 @@ flowchart LR
   EXP["/api/export/xlsx"] --> COLL[collect-market.ts aggregate]
 ```
 
-**Logic:** **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
+**Logic:** **Scheduled collectors** run on GitHub Actions (direct Neon writes); `/api/cron/*` remains for manual triggers. **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
 
 ---
 
