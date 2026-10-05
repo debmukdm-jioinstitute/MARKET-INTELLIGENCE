@@ -4,7 +4,9 @@ Welcome emails, newsletters, signup OTP codes, and daily briefs use [Resend](htt
 
 ## Production (getmarketintelligence.in)
 
-DNS already routes **`send.getmarketintelligence.in`** to Resend (`send.forge.rmta.net` + SPF for Resend IPs).
+**2026-10:** Nameservers moved to Cloudflare; **`send.getmarketintelligence.in` must be re-added** in DNS (or use apex From — code defaults to `onboarding@getmarketintelligence.in` with apex DKIM). Gmail spam + “isn't authenticated” usually means the From domain has no SPF/DKIM — check Resend → Domains.
+
+Historically **`send.getmarketintelligence.in`** pointed at Resend (`send.forge.rmta.net` + SPF).
 
 | Vercel env | Value |
 |------------|--------|
