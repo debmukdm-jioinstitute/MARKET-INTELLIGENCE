@@ -75,6 +75,7 @@ export function fmtDate(iso: string): string {
 export function formatLine(
   meta: SeriesMeta,
   point: { date: string; value: number; prev: number | null },
+  now = Date.now(),
 ): string {
   const u = meta.unit?.trim() ?? "";
   const unit = !u ? "" : u === "%" ? "%" : ` ${u}`;
@@ -83,7 +84,7 @@ export function formatLine(
     const d = point.value - point.prev;
     line += `, ${d > 0 ? "+" : ""}${fmtNum(d)} vs prev`;
   }
-  const freshness = classify({ id: meta.id, last_ok: meta.last_ok, last_error: meta.last_error, latest_date: point.date });
+  const freshness = classify({ id: meta.id, last_ok: meta.last_ok, last_error: meta.last_error, latest_date: point.date }, now);
   if (freshness === "stale") line += " \u00B7 stale";
   else if (freshness === "failing") line += " \u00B7 source failing";
   return line + ")";
@@ -164,7 +165,7 @@ export async function buildDataBrief(now = Date.now()): Promise<{ messages: stri
     if (!p) continue; // no observations: skip, never invent
     const title = sectionFor(meta.id);
     if (!sections.has(title)) sections.set(title, { title, lines: [] });
-    const line = formatLine(meta, p);
+    const line = formatLine(meta, p, now);
     if (line.includes("\u00B7 stale") || line.includes("\u00B7 source failing")) stale++;
     sections.get(title)!.lines.push({ id: meta.id, text: line });
   }

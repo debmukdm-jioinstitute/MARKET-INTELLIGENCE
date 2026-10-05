@@ -69,12 +69,14 @@ const meta = (over: Record<string, unknown> = {}) => ({
 });
 
 describe("formatLine", () => {
+  const refTime = new Date("2026-09-30T12:00:00Z").getTime();
+
   it("shows value, unit, date and delta", () => {
-    const line = formatLine(meta(), { date: "2026-09-30", value: 5.5, prev: 5.75 });
+    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: "2026-09-30", value: 5.5, prev: 5.75 }, refTime);
     expect(line).toBe("RBI policy repo rate: 5.5% (30 Sep, -0.25 vs prev)");
   });
   it("omits delta when unchanged", () => {
-    const line = formatLine(meta(), { date: "2026-09-30", value: 5.5, prev: 5.5 });
+    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: "2026-09-30", value: 5.5, prev: 5.5 }, refTime);
     expect(line).toBe("RBI policy repo rate: 5.5% (30 Sep)");
   });
   it("labels stale series honestly", () => {
@@ -82,7 +84,7 @@ describe("formatLine", () => {
       date: "2020-01-01",
       value: 5.5,
       prev: null,
-    });
+    }, refTime);
     expect(line).toContain("\u00B7 stale");
   });
   it("labels failing sources honestly", () => {
@@ -90,7 +92,7 @@ describe("formatLine", () => {
       date: "2020-01-01",
       value: 5.5,
       prev: null,
-    });
+    }, refTime);
     expect(line).toContain("\u00B7 source failing");
   });
 });
