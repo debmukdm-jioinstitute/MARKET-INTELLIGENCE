@@ -15,7 +15,12 @@ export function resendMonthlyLimit(): number {
 
 export function isResendQuotaError(message: string | undefined): boolean {
   if (!message) return false;
-  return /(monthly|daily).*(quota|limit)|quota.*exceeded|exceeded.*quota|too many emails|rate limit|429/i.test(message);
+  return (
+    /(monthly|daily)\s+(email\s+)?(quota|limit)/i.test(message) ||
+    /quota\s+(exceeded|reached|limit)/i.test(message) ||
+    /exceeded\s+(your\s+)?(monthly|daily)\s+limit/i.test(message) ||
+    /only\s+send\s+\d+/i.test(message)
+  );
 }
 
 async function readQuota(): Promise<QuotaState> {
@@ -25,12 +30,11 @@ async function readQuota(): Promise<QuotaState> {
   return raw;
 }
 
-/** True when Resend free tier is treated as exhausted — route mail through Kit. */
+/** True when Resend returned a quota error — route mail through Kit. Counter is display-only (not routing). */
 export async function preferKitOverResend(): Promise<boolean> {
   if (process.env.EMAIL_FORCE_KIT === "1" || process.env.EMAIL_FORCE_KIT === "true") return true;
   const st = await readQuota();
-  if (st.exhausted) return true;
-  return st.count >= resendMonthlyLimit();
+  return st.exhausted;
 }
 
 export async function getResendQuotaSnapshot(): Promise<QuotaState & { limit: number }> {
@@ -44,8 +48,16 @@ export async function recordResendSend(sends = 1): Promise<void> {
   await setState(STATE_KEY, {
     month: st.month,
     count: st.count + sends,
-    exhausted: st.exhausted || st.count + sends >= resendMonthlyLimit(),
+    exhausted: st.exhausted,
   });
+}
+
+/** Clears Kit-forced routing after a mistaken quota flag (Admin → System). */
+export async function resetResendQuotaRouting(): Promise<QuotaState & { limit: number }> {
+  const month = currentMonth();
+  const next = { month, count: 0, exhausted: false };
+  await setState(STATE_KEY, next);
+  return { ...next, limit: resendMonthlyLimit() };
 }
 
 export async function markResendQuotaExhausted(): Promise<void> {

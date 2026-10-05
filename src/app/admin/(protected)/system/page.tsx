@@ -13,6 +13,16 @@ type Data = {
   flags: { flag: string; label: string; enabled: boolean }[];
   stats: Record<string, number | null>;
   scrapeLog: { source: string; ok: boolean; items_found: number; error: string | null; ran_at: string }[];
+  email?: {
+    configured: boolean;
+    resend: boolean;
+    kit: boolean;
+    activeProvider: string;
+    resendQuota: { month: string; count: number; exhausted: boolean; limit: number };
+    from: string;
+    sandboxSender: boolean;
+    misconfiguredReason: string | null;
+  };
 };
 type RunResult = { ok: boolean; status: number; ms: number; body: string };
 
@@ -33,6 +43,8 @@ export default function AdminSystemPage() {
   const [welcomeEmail, setWelcomeEmail] = useState("debmuk.dm@gmail.com");
   const [welcomeName, setWelcomeName] = useState("Debabrata Mukherjee");
   const [welcomeRun, setWelcomeRun] = useState<RunResult | "running" | null>(null);
+  const [otpRun, setOtpRun] = useState<RunResult | "running" | null>(null);
+  const [emailResetRun, setEmailResetRun] = useState<RunResult | "running" | null>(null);
   const [error, setError] = useState("");
   type Preview = { ready: boolean; blocker?: string; eligible: number; skippedOptedOut: number; alreadySent: number; joinedAfterLaunch: number; sample: string[] };
   const [bf, setBf] = useState<Preview | null>(null);
@@ -71,6 +83,33 @@ export default function AdminSystemPage() {
     } else {
       setError(j.error ?? "Run all failed");
     }
+  }
+
+  async function sendTestOtp() {
+    setOtpRun("running");
+    const res = await fetch("/api/admin/system", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "testSignupOtp", email: welcomeEmail }),
+    });
+    const j = await res.json();
+    setOtpRun(
+      res.ok ? { ok: true, status: res.status, ms: 0, body: JSON.stringify(j) } : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" },
+    );
+  }
+
+  async function resetEmailRouting() {
+    setEmailResetRun("running");
+    const res = await fetch("/api/admin/system", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "resetEmailQuota" }),
+    });
+    const j = await res.json();
+    setEmailResetRun(
+      res.ok ? { ok: true, status: res.status, ms: 0, body: JSON.stringify(j) } : { ok: false, status: res.status, ms: 0, body: j.error ?? "failed" },
+    );
+    load();
   }
 
   async function sendTestWelcome() {
@@ -144,6 +183,68 @@ export default function AdminSystemPage() {
           {!data.db ? "No database configured. " : ""}
           {missing.length > 0 ? `Missing required env: ${missing.map((m) => m.key).join(", ")}` : ""}
         </div>
+      ) : null}
+
+      {data.email ? (
+        <AdminCard title="Email delivery" subtitle="Resend first; Kit only after a real Resend quota error.">
+          <dl className="grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-gray-500">Active provider</dt>
+              <dd className="font-medium text-gray-900">{data.email.activeProvider}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">From (Resend)</dt>
+              <dd className="break-all font-medium text-gray-900">{data.email.from}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Resend / Kit keys</dt>
+              <dd className="font-medium text-gray-900">
+                {data.email.resend ? "Resend ✓" : "Resend ✗"} · {data.email.kit ? "Kit ✓" : "Kit ✗"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Resend sends this month</dt>
+              <dd className="font-medium text-gray-900">
+                {data.email.resendQuota.count} / {data.email.resendQuota.limit}
+                {data.email.resendQuota.exhausted ? " · routing via Kit" : ""}
+              </dd>
+            </div>
+          </dl>
+          {data.email.sandboxSender ? (
+            <p className="mt-3 text-sm text-amber-700">Resend sandbox From — only your Resend login inbox receives mail.</p>
+          ) : null}
+          {data.email.misconfiguredReason ? (
+            <p className="mt-3 text-sm text-red-700">{data.email.misconfiguredReason}</p>
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void resetEmailRouting()}
+              disabled={emailResetRun === "running"}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {emailResetRun === "running" ? "Resetting…" : "Restore Resend routing"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void sendTestOtp()}
+              disabled={otpRun === "running"}
+              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {otpRun === "running" ? "Sending…" : "Send test OTP"}
+            </button>
+          </div>
+          {emailResetRun && emailResetRun !== "running" ? (
+            <pre className={`mt-3 max-h-24 overflow-auto rounded-md p-2 text-xs ${emailResetRun.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+              {emailResetRun.body}
+            </pre>
+          ) : null}
+          {otpRun && otpRun !== "running" ? (
+            <pre className={`mt-3 max-h-24 overflow-auto rounded-md p-2 text-xs ${otpRun.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+              {otpRun.body}
+            </pre>
+          ) : null}
+        </AdminCard>
       ) : null}
 
       <AdminCard title="Welcome email test" subtitle="Sends founder welcome HTML via Resend (production keys).">

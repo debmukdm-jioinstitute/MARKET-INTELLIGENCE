@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
 import { activeEmailProvider, getResendFromAddress, hasEmailConfigured, hasOutboundEmailConfigured, isSandboxSender, productionEmailMisconfiguredReason } from "@/lib/admin/email";
-import { getResendQuotaSnapshot } from "@/lib/admin/email-quota";
+import { getResendQuotaSnapshot, resetResendQuotaRouting } from "@/lib/admin/email-quota";
+import { getState, setState } from "@/lib/notify/store";
 import { isKitEmailConfigured } from "@/lib/kit";
 import { generateSignupOtp, sendSignupOtpEmail } from "@/lib/auth/signup-otp";
 import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
@@ -44,6 +45,15 @@ export async function GET() {
       scrapeLog = (await d`SELECT source, ok, items_found, error, ran_at FROM research_scrape_log ORDER BY ran_at DESC LIMIT 10`) as unknown as unknown[];
     } catch {}
   }
+  if (db && hasEmailConfigured()) {
+    const healKey = "email:quota-heal-v2";
+    const healed = await getState<{ done?: boolean }>(healKey);
+    if (!healed?.done) {
+      await resetResendQuotaRouting();
+      await setState(healKey, { done: true });
+    }
+  }
+
   return NextResponse.json({
     db,
     crons: CRONS,
@@ -85,6 +95,16 @@ export async function POST(req: Request) {
     await sql()`INSERT INTO feature_flags (flag, enabled, updated_at) VALUES (${body.flag!}, ${body.enabled}, now()) ON CONFLICT (flag) DO UPDATE SET enabled = ${body.enabled}, updated_at = now()`;
     if (body.flag === "require-account") invalidateRequireAccountCache();
     return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === "resetEmailQuota") {
+    const resendQuota = await resetResendQuotaRouting();
+    return NextResponse.json({
+      ok: true,
+      message: "Resend routing restored (Kit fallback cleared until the next real Resend quota error).",
+      resendQuota,
+      activeProvider: await activeEmailProvider(),
+    });
   }
 
   if (body.action === "testSignupOtp") {

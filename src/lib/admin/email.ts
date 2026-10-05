@@ -222,7 +222,16 @@ export async function sendTransactionalEmail(input: {
     html: input.html,
     previewText: input.text ?? input.subject,
   });
-  return kit.ok ? { ...kit, provider: "kit" } : { ...kit, provider: "kit" };
+  if (kit.ok) return { ...kit, provider: "kit" };
+
+  if (hasEmailConfigured() && !productionEmailMisconfiguredReason()) {
+    const retry = await sendViaResend(input);
+    if (retry.ok) {
+      await recordResendSend(1);
+      return retry;
+    }
+  }
+  return { ...kit, provider: "kit" };
 }
 
 export { FOUNDER_REPLY_TO };
@@ -251,7 +260,10 @@ export async function sendNewsletter(
   let failed = 0;
   const errors: string[] = [];
 
-  const useKit = (await preferKitOverResend()) || !hasEmailConfigured() || productionEmailMisconfiguredReason();
+  const useKit =
+    ((await preferKitOverResend()) && isKitEmailConfigured()) ||
+    (!hasEmailConfigured() && isKitEmailConfigured()) ||
+    (Boolean(productionEmailMisconfiguredReason()) && isKitEmailConfigured());
   if (useKit) {
     if (!isKitEmailConfigured()) {
       throw new Error("Resend quota exhausted and KIT_API_KEY is not configured.");
