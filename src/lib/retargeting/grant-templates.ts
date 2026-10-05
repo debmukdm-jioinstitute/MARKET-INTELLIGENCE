@@ -21,10 +21,10 @@ function grantTemplateForPlan(planId: RazorpayPlanId): RetargetingTemplate {
 
   const bodies: Record<RazorpayPlanId, { subject: string; preheader: string; body: string }> = {
     day_pass: {
-      subject: "{{firstName}}, your 24-hour all-access pass is live",
-      preheader: "No checkout — just open the desk and poke around",
-      body: `<p>Hey {{firstName}},</p>
-<p>We flipped on a complimentary <strong>Daily pass</strong> on your Market Intelligence account — think of it as a no-strings test drive before anyone asks for your card.</p>
+      subject: "{{firstName}}, your complimentary Daily pass is active",
+      preheader: "Your account was upgraded — open your dashboard when you have a minute",
+      body: `<p>Hi {{firstName}},</p>
+<p>We activated a complimentary <strong>Daily pass</strong> on your Market Intelligence account. No checkout — it is already on your login.</p>
 <p><strong>Good until {{expiresAtShort}}.</strong> Here is the fun stuff you can actually use:</p>
 {{featureListHtml}}
 <p>Start here when you are ready: <a href="{{dashboardUrl}}">open your dashboard</a> · <a href="{{pricingUrl}}">see plans later</a></p>

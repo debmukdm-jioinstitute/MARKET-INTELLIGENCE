@@ -69,6 +69,8 @@ export async function GET() {
       activeProvider: await activeEmailProvider(),
       resendQuota: await getResendQuotaSnapshot(),
       from: getResendFromAddress(),
+      fromNormalizedFromSendSubdomain:
+        Boolean(process.env.RESEND_FROM_EMAIL?.includes("@send.getmarketintelligence.in")),
       sandboxSender: isSandboxSender(),
       misconfiguredReason: productionEmailMisconfiguredReason(),
     },

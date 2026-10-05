@@ -90,8 +90,14 @@ export function productionEmailMisconfiguredReason(): string | null {
 
 /** Default production sender — use a domain verified in Resend (see docs/RESEND.md). Override with RESEND_FROM_EMAIL on Vercel.
  *  Display name is a real person (founder) — personal senders place better in Gmail Primary than brand names. */
+/** Apex domain — DKIM live at resend._domainkey.getmarketintelligence.in (send.* subdomain DNS was removed). */
 export const PRODUCTION_RESEND_FROM =
-  "Debabrata Mukherjee · Market Intelligence <onboarding@send.getmarketintelligence.in>";
+  "Debabrata Mukherjee · Market Intelligence <onboarding@getmarketintelligence.in>";
+
+/** send.getmarketintelligence.in had dedicated Resend DNS; remap if env still points there. */
+export function normalizeResendFromAddress(from: string): string {
+  return from.replace(/@send\.getmarketintelligence\.in/gi, "@getmarketintelligence.in");
+}
 
 /** True while using Resend sandbox — delivers only to the Resend account owner email. */
 export function isSandboxSender(): boolean {
@@ -101,7 +107,7 @@ export function isSandboxSender(): boolean {
 
 export function getResendFromAddress(): string {
   const configured = process.env.RESEND_FROM_EMAIL?.trim();
-  if (configured) return configured;
+  if (configured) return normalizeResendFromAddress(configured);
   if (process.env.NODE_ENV === "production") return PRODUCTION_RESEND_FROM;
   return "Debabrata Mukherjee <onboarding@resend.dev>";
 }

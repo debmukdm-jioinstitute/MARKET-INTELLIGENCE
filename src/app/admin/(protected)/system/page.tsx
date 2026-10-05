@@ -22,6 +22,7 @@ type Data = {
     from: string;
     sandboxSender: boolean;
     misconfiguredReason: string | null;
+    fromNormalizedFromSendSubdomain?: boolean;
   };
 };
 type RunResult = { ok: boolean; status: number; ms: number; body: string };
@@ -215,6 +216,13 @@ export default function AdminSystemPage() {
           ) : null}
           {data.email.misconfiguredReason ? (
             <p className="mt-3 text-sm text-red-700">{data.email.misconfiguredReason}</p>
+          ) : null}
+          {data.email.fromNormalizedFromSendSubdomain ? (
+            <p className="mt-3 text-sm text-amber-800">
+              Vercel still has <code className="text-xs">@send.getmarketintelligence.in</code> — code remaps to apex for DKIM. Update{" "}
+              <code className="text-xs">RESEND_FROM_EMAIL</code> to{" "}
+              <code className="text-xs">onboarding@getmarketintelligence.in</code> and restore send DNS in Cloudflare when ready.
+            </p>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <button
