@@ -149,11 +149,6 @@ export function SignatureFive({
               {c.desc}
             </p>
             <div className="mb-4 mt-4 rounded-lg bg-stone-50 p-3">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-teal-600">
-                {c.live
-                  ? "Latest available"
-                  : "Explore · live teaser unavailable"}
-              </p>
               <p className="text-xs font-medium leading-relaxed text-stone-700">
                 {c.teaser}
               </p>

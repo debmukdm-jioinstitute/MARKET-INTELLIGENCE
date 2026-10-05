@@ -23,7 +23,7 @@ export default function WatchlistPage() {
   return (
     <div className="space-y-6 max-w-[1000px] mx-auto pb-16">
       <PageHeader
-        kicker="Watchlist"
+
         title="Watchlist"
         subtitle="Names you're keeping an eye on — add from a research page, the command palette, or ask Ask Deb."
       />

@@ -13,7 +13,7 @@ function RedditSentimentContent() {
     <div className="space-y-6">
       <PageHeader
         titleAs="h1"
-        kicker="Alternative Data & Social Sentiment"
+
         title="Retail Sentiment Engine"
         subtitle="Real Reddit community posts, debate sentiment, and discussion tone for NSE-listed equities — continuously crawled, enriched with Hugging Face FinBERT AI models, and tracked across India-focused investor forums."
         trust={{

@@ -28,7 +28,7 @@ export default function AttributionPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Attribution"
+
         title="What made you money"
         subtitle={
           data?.hasHoldings

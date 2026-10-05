@@ -114,7 +114,7 @@ export default function ResearchReportsPage() {
   return (
     <div className="portal-page max-w-[1440px] pb-16 space-y-6">
       <PageHeader
-        kicker="Institutional Research & Broker Intelligence Desk"
+
         title="Live Broker Research Reports & PDFs"
         subtitle="Live institutional equity research, quarterly result first-cuts, and target price forecasts—continuously ingested from Ventura Securities, Axis Direct, Trendlyne, ICICI Direct, Motilal Oswal, and exchange disclosures."
       />

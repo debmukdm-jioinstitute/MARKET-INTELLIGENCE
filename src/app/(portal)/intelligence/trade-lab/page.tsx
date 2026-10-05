@@ -287,7 +287,7 @@ function TradeLab() {
   return (
     <div className="mx-auto max-w-[1200px] space-y-5 pb-16">
       <PageHeader
-        kicker="Trade Lab"
+
         title="Indicators, patterns & backtests"
         subtitle="Pick an index or F&O stock. Every number is plain maths on real exchange candles — no AI model, no simulated data. Each signal shows the exact rule that produced it."
         trust={{ source: "Upstox exchange candles, Yahoo Finance fallback", note: "Rule-based technical readings, not recommendations", delayed: "Pre-computed every 15 min in market hours" }}

@@ -31,7 +31,7 @@ export default function PortfolioActivityPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Activity"
+
         title="Trade ledger"
         subtitle="Buys and sells recorded from adds, edits, sells, and imports."
       />

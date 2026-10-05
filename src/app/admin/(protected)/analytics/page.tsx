@@ -43,7 +43,6 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-blue-600">Analytics</p>
           <h1 className="mt-1 text-xl font-semibold">Product metrics</h1>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
             Live from Postgres — pageviews, sessions, users, retention, product events. Metrics without data show — until

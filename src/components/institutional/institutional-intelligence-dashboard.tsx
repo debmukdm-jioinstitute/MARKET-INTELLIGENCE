@@ -123,7 +123,7 @@ export function InstitutionalIntelligenceDashboard() {
     <div className="portal-page space-y-8 pb-12">
       <PageHeader
         titleAs="h1"
-        kicker="Institutional investor intelligence"
+
         title="Smart money & ownership radar"
         subtitle="FII/FPI and DII cash from NSE, mutual-fund books from AMFI disclosures, plus a roadmap for promoters, insurers, and insider filings."
         trust={{

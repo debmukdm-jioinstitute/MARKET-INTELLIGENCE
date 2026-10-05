@@ -83,7 +83,7 @@ export default function ScannerPage() {
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 pb-16">
       <PageHeader
-        kicker="Scanner"
+
         title="Nifty 500 stock scanner"
         subtitle="Daily price screens across the Nifty 500 — refreshed after each NSE close. Pick a starter scan or open a category; definitions follow the open-source PKScreener menu."
         trust={{ source: "NSE daily prices (PKScreener scan definitions)", asOf: data?.run?.asOf, delayed: "Refreshed after each NSE close", note: "Technical screens, not recommendations" }}

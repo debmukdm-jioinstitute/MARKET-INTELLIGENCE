@@ -19,7 +19,6 @@ export default async function TermsPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-2xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed text-foreground w-full">
-      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600">Market Intelligence</p>
       <h1 className="mb-6 text-2xl font-semibold">Terms of Service</h1>
       <p className="mb-4 text-muted-foreground">Last updated: September 2026</p>
       <TldrBox text={tldr} />

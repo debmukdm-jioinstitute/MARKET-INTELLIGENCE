@@ -106,13 +106,16 @@ export function CorporateEventsCard() {
     <div className="bento-card-shell bg-gradient-to-b from-card to-card/60">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wider text-primary font-bold flex items-center gap-1.5">
-              <Calendar className="size-3.5" aria-hidden />
-              <EditableCopy id="card.corporate-events.kicker" label="Corporate events kicker">
-                CORPORATE DISCLOSURES & EVENTS
-              </EditableCopy>
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Calendar className="size-3.5 text-primary" aria-hidden />
+            <EditableCopy
+              id="card.corporate-events.title"
+              as="h3"
+              label="Corporate events title"
+              className="text-base font-bold text-foreground"
+            >
+              Real-Time Material Filings (RBI, NSE & BSE RSS)
+            </EditableCopy>
             <MetricInfo metric="corporate_announcement" customTitle="Material Corporate Events & Filings" />
             <DataInfo
               name="Corporate events feed"
@@ -125,14 +128,6 @@ export function CorporateEventsCard() {
               Live RSS Feed
             </span>
           </div>
-          <EditableCopy
-            id="card.corporate-events.title"
-            as="h3"
-            label="Corporate events title"
-            className="text-base font-bold text-foreground mt-0.5"
-          >
-            Real-Time Material Filings (RBI, NSE & BSE RSS)
-          </EditableCopy>
         </div>
 
         <Link

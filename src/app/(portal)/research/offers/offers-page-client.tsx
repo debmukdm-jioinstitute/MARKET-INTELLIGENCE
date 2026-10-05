@@ -50,7 +50,7 @@ export default function OffersPageClient() {
     <div className="portal-page">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <PageHeader
-          kicker="Primary market"
+
           title="NCD · Rights · Buyback · OFS"
           subtitle="Live primary market calendars scraped from Chittorgarh report API — NCD issues, rights issues, tender buybacks, OFS, and real-time subscription bidding."
         />

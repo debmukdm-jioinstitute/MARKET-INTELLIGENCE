@@ -30,7 +30,7 @@ export default function FeedsPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Feeds"
+
         title="Market data feeds"
         subtitle="Which feeds are up, which are slow, and when each last sent data: NSE, BSE, RBI, FRED, World Bank, IMF, OECD, MOSPI, and Upstox."
       />

@@ -53,11 +53,10 @@ export function HomeExploreHub() {
     <section className="bento-card-shell bento-card-stack">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-3">
         <div>
-          <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
-            <Compass className="size-4" aria-hidden />
-            Explore the portal
-          </p>
-          <h2 className="mt-1 text-lg font-bold text-foreground">Nested pages by what you want to do</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+            <Compass className="size-4 text-primary" aria-hidden />
+            Nested pages by what you want to do
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">Same structure as the menu — jump straight to sub-pages without digging.</p>
         </div>
         {section && landing ? (

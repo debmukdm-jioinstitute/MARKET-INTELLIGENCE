@@ -675,7 +675,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Valuation Multiples */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">VALUATION MULTIPLES</span>
+            <span className="text-sm font-bold text-foreground">Valuation multiples</span>
             <MetricInfo metric="pe_ratio" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -711,7 +711,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Technical Indicators */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">MOMENTUM OSCILLATORS</span>
+            <span className="text-sm font-bold text-foreground">Momentum oscillators</span>
             <MetricInfo metric="rsi" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">
@@ -740,7 +740,7 @@ export default function TickerDetailPage({ params }: PageProps) {
         {/* Institutional Positioning */}
         <div className="rounded-xl border border-border/80 bg-card p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">INSTITUTIONAL FLOWS</span>
+            <span className="text-sm font-bold text-foreground">Institutional flows</span>
             <MetricInfo metric="pcr" />
           </div>
           <div className="flex justify-between py-1 border-b border-border/50">

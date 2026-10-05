@@ -72,7 +72,7 @@ export default function OptimizerPage() {
   return (
     <div className="portal-page">
       <PageHeader
-        kicker="Optimizer"
+
         title="A better mix?"
         subtitle={
           data?.hasHoldings

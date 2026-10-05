@@ -20,7 +20,7 @@ export default function StressBacktestPage() {
   return (
     <div className="space-y-6 max-w-[1100px] mx-auto pb-16">
       <PageHeader
-        kicker="Model Check"
+
         title="Does the Stress Index Predict Anything?"
         subtitle="A historical test of the stress index's market-based inputs against what NIFTY did over the following 5–10 trading days. It is published whichever way the answer comes out."
       />

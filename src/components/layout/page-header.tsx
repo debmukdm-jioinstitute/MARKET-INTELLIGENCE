@@ -12,14 +12,12 @@ import { useId, useState } from "react";
 type TrustProps = ComponentProps<typeof TrustNote>;
 
 export function PageHeader({
-  kicker,
   title,
   subtitle,
   className,
   titleAs: TitleTag = "h2",
   trust,
 }: {
-  kicker?: string;
   title: string;
   subtitle?: string;
   className?: string;
@@ -28,41 +26,19 @@ export function PageHeader({
   trust?: TrustProps;
 }) {
   const path = usePathname();
-  const kickerSlot = siteContentSlot(path, "page-header.kicker");
   const titleSlot = siteContentSlot(path, "page-header.title");
   const subtitleSlot = siteContentSlot(path, "page-header.subtitle");
 
-  const displayKicker = useSiteContent(kickerSlot, kicker ?? "");
   const displayTitle = useSiteContent(titleSlot, title);
   const displaySubtitle = useSiteContent(subtitleSlot, subtitle ?? "");
 
-  const showKicker = Boolean(displayKicker || kicker);
-
   return (
     <div className={cn("portal-header-enter mb-4 sm:mb-5", className)}>
-      {showKicker ? (
-        <p
-          data-mi-slot={kickerSlot}
-          data-mi-field="kicker"
-          data-mi-label="Kicker"
-          className="text-sm uppercase tracking-[0.28em] text-blue-600 font-bold"
-        >
-          {displayKicker || kicker}
-        </p>
-      ) : (
-        <span
-          data-mi-slot={kickerSlot}
-          data-mi-field="kicker"
-          data-mi-label="Kicker"
-          className="hidden"
-          aria-hidden
-        />
-      )}
       <TitleTag
         data-mi-slot={titleSlot}
         data-mi-field="title"
         data-mi-label="Page title"
-        className={cn("font-heading text-2xl font-bold tracking-tight text-foreground", showKicker ? "mt-1" : "")}
+        className="font-heading text-2xl font-bold tracking-tight text-foreground"
       >
         {displayTitle}
       </TitleTag>

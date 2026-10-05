@@ -52,11 +52,10 @@ export function HomeAiFiveAgents() {
     <section className="bento-card-shell bento-card-stack border-primary/15 bg-gradient-to-b from-card to-accent/20">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-3">
         <div>
-          <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-primary">
-            <Sparkles className="size-4" aria-hidden />
-            Five AI agents
-          </p>
-          <h2 className="mt-1 text-lg font-bold text-foreground">Specialists across brief, signals, flow & algo</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+            <Sparkles className="size-4 text-primary" aria-hidden />
+            Specialists across brief, signals, flow & algo
+          </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Each agent owns a lane — copilot navigation, daily narrative, model signals, options pipeline, or the NIFTY ML desk.
           </p>

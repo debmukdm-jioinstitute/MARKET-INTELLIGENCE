@@ -63,7 +63,7 @@ export default function PricingPage() {
   return (
     <div className="portal-page max-w-5xl space-y-10">
       <PageHeader
-        kicker="Pricing plan"
+
         title="Market Intelligence"
         subtitle={`getmarketintelligence.in · ${pricingDate}. All prices are in INR and include all taxes.`}
       />

@@ -138,7 +138,7 @@ function InflationHero({ metrics }: { metrics: MacroMetric[] }) {
   return (
     <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-background p-6">
       <div className="flex items-center justify-between pb-1">
-        <p className="text-sm uppercase tracking-[0.22em] text-orange-300 font-bold">INFLATION TELEMETRY</p>
+        <h2 className="text-base font-bold text-foreground">Inflation</h2>
         <MetricInfo
           id="cpi_headline"
           name="Headline Consumer Price Index (CPI)"

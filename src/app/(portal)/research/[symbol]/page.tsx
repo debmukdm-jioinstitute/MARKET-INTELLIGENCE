@@ -61,7 +61,7 @@ export default function ResearchSymbolPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Investment research"
+
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
       />

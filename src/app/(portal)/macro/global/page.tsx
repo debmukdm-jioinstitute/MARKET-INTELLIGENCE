@@ -18,7 +18,7 @@ export default function GlobalMacroPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Global Macro"
+
         title="Global Macroeconomic Data & Cross-Market Spreads"
         subtitle="Tracking US benchmarks, global sovereign yield curves, currency strength (DXY), and inter-market correlation coefficients."
         trust={{ source: "Yahoo Finance, FRED", asOf: data?.fetchedAt, delayed: "Quotes may be delayed" }}

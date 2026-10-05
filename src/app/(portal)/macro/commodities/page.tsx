@@ -172,7 +172,7 @@ export default function CommoditiesMacroPage() {
   return (
     <div className="portal-page pb-10">
       <PageHeader
-        kicker="Macro"
+
         title="Commodity dashboard"
         subtitle={`${focusCounts.all} instruments — ${globalCount} global futures, ${usCount} US ETFs, ${indiaCount} India NSE proxies. Yahoo Finance; MCX live requires exchange licence.`}
         trust={{ source: "FRED, RBI, Yahoo Finance", asOf: data?.fetchedAt, delayed: "Quotes may be delayed" }}

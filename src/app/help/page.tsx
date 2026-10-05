@@ -22,7 +22,6 @@ export default function HelpPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-6xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed text-foreground w-full">
-        <p className="mb-2 text-xs uppercase tracking-[0.2em] text-blue-600 font-bold">Market Intelligence · Help</p>
         <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">Help center</h1>
         <p className="max-w-3xl text-sm sm:text-base text-muted-foreground leading-relaxed">
           Start with everyday investor tasks below. Developer setup for <b className="font-semibold text-foreground">Connect your AI</b>{" "}
