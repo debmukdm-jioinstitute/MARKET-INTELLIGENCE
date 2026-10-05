@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useEffect, useMemo, useState } from "react";
 import {
   Mail,
@@ -618,13 +619,16 @@ export default function AdminCustomersPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-blue-100 p-2 text-blue-700">
-                  <Mail className="size-5" />
-                </div>
+                <BrandLogo size="sm" variant="mark" href={null} invertOnDark={false} />
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900">
-                    Send Re-engagement Nudge
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-gray-900">
+                      Send Re-engagement Nudge
+                    </h2>
+                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                      Corporate Template
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-500">
                     To: <strong className="text-gray-700">{nudgeTarget.name || "Customer"}</strong> ({nudgeTarget.email})
                   </p>

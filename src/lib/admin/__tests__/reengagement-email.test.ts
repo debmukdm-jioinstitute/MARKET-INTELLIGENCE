@@ -34,7 +34,7 @@ describe("reengagement-email", () => {
     expect(res.days).toBe(20);
   });
 
-  it("renders email containing dynamic days, market update, hyperlinked features, and log in button", async () => {
+  it("renders Apple liquid glass template with corporate logo, no Jio Institute, and Google Sans font", async () => {
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const customer = {
       email: "trader@example.com",
@@ -50,9 +50,21 @@ describe("reengagement-email", () => {
 
     // Dynamic inactivity
     expect(rendered.daysInactive).toBe(14);
-    expect(rendered.subject).toContain("14 days");
     expect(rendered.html).toContain("14 days");
     expect(rendered.text).toContain("14 days");
+
+    // Corporate branding with logo.png
+    expect(rendered.html).toContain("/logo.png");
+    expect(rendered.html).toContain('alt="Market Intelligence"');
+
+    // Strict removal of Jio Institute
+    expect(rendered.html).not.toContain("Jio Institute");
+    expect(rendered.text).not.toContain("Jio Institute");
+    expect(rendered.html).toContain("Founder, Market Intelligence");
+    expect(rendered.text).toContain("Founder, Market Intelligence");
+
+    // Strict Google Sans font
+    expect(rendered.html).toContain('"Google Sans"');
 
     // Today's update
     expect(rendered.html).toContain("FII net flows turned positive");
