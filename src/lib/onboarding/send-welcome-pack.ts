@@ -1,7 +1,7 @@
 import {
   FOUNDER_REPLY_TO,
   getResendFromAddress,
-  hasEmailConfigured,
+  hasOutboundEmailConfigured,
   isSandboxSender,
   personalFromAddress,
   sendTransactionalEmail,
@@ -41,7 +41,7 @@ export async function sendWelcomePackToUser(user: SessionUser, origin?: string):
 export async function sendWelcomePackWithResult(user: SessionUser, origin?: string): Promise<WelcomePackSendResult> {
   const from = getResendFromAddress();
   if (user.guest) return { ok: false, error: "Sign in to receive your welcome pack.", from };
-  if (!hasEmailConfigured()) {
+  if (!hasOutboundEmailConfigured()) {
     return { ok: false, error: "Email is not configured on this deployment.", from };
   }
 

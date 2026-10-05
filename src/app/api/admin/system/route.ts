@@ -1,5 +1,7 @@
 import { requireAdmin } from "@/lib/admin/guard";
-import { getResendFromAddress, hasEmailConfigured, isSandboxSender, productionEmailMisconfiguredReason } from "@/lib/admin/email";
+import { activeEmailProvider, getResendFromAddress, hasEmailConfigured, hasOutboundEmailConfigured, isSandboxSender, productionEmailMisconfiguredReason } from "@/lib/admin/email";
+import { getResendQuotaSnapshot } from "@/lib/admin/email-quota";
+import { isKitEmailConfigured } from "@/lib/kit";
 import { generateSignupOtp, sendSignupOtpEmail } from "@/lib/auth/signup-otp";
 import { CRONS, defaultFlagEnabled, ENV_VARS, FLAGS } from "@/lib/admin/system";
 import { invalidateRequireAccountCache } from "@/lib/auth/require-account";
@@ -51,7 +53,11 @@ export async function GET() {
     scrapeLog,
     cronSecretSet: Boolean(process.env.CRON_SECRET),
     email: {
-      configured: hasEmailConfigured(),
+      configured: hasOutboundEmailConfigured(),
+      resend: hasEmailConfigured(),
+      kit: isKitEmailConfigured(),
+      activeProvider: await activeEmailProvider(),
+      resendQuota: await getResendQuotaSnapshot(),
       from: getResendFromAddress(),
       sandboxSender: isSandboxSender(),
       misconfiguredReason: productionEmailMisconfiguredReason(),
@@ -82,12 +88,8 @@ export async function POST(req: Request) {
   }
 
   if (body.action === "testSignupOtp") {
-    if (!hasEmailConfigured()) {
-      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 503 });
-    }
-    const misconfig = productionEmailMisconfiguredReason();
-    if (misconfig) {
-      return NextResponse.json({ error: misconfig, from: getResendFromAddress() }, { status: 503 });
+    if (!hasOutboundEmailConfigured()) {
+      return NextResponse.json({ error: "No email provider (Resend or Kit) configured." }, { status: 503 });
     }
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });
@@ -100,8 +102,8 @@ export async function POST(req: Request) {
   }
 
   if (body.action === "testWelcome") {
-    if (!hasEmailConfigured()) {
-      return NextResponse.json({ error: "RESEND_API_KEY is not configured." }, { status: 503 });
+    if (!hasOutboundEmailConfigured()) {
+      return NextResponse.json({ error: "No email provider (Resend or Kit) configured." }, { status: 503 });
     }
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email.includes("@")) return NextResponse.json({ error: "Valid email required." }, { status: 400 });

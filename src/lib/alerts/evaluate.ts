@@ -1,4 +1,4 @@
-import { hasEmailConfigured, htmlToPlainText, sendTransactionalEmail } from "@/lib/admin/email";
+import { hasOutboundEmailConfigured, htmlToPlainText, sendTransactionalEmail } from "@/lib/admin/email";
 import { hasPushConfigured, sendPush, type PushSubscriptionRow } from "@/lib/admin/push";
 import { sql } from "@/lib/db";
 import { GOOGLE_SANS_FONT_FAMILY_CSS } from "@/lib/typography";
@@ -48,7 +48,7 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
         else if (r.expired) await db`DELETE FROM push_subscriptions WHERE endpoint = ${sub.endpoint}`;
       }
     }
-    if (rule.channels.includes("email") && hasEmailConfigured()) {
+    if (rule.channels.includes("email") && hasOutboundEmailConfigured()) {
       const site = process.env.NEXT_PUBLIC_SITE_URL || "https://getmarketintelligence.in";
       const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/></head>
 <body style="margin:0;padding:16px;${GOOGLE_SANS_FONT_FAMILY_CSS};max-width:520px;color:#202124;">
