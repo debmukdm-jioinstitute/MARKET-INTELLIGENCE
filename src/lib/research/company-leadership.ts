@@ -38,7 +38,7 @@ export function parseBrsrPay(text: string): PayRow[] {
   const t = text.replace(/\s+/g, " ");
   const start = t.search(/Median remuneration/i);
   if (start < 0) return [];
-  const seg = t.slice(start, start + 1800);
+  const seg = t.slice(start, start + 3500);
   // Companies report in rupees, lakhs, crores or millions; normalise to rupees.
   const unitText = t.slice(Math.max(0, start - 300), start + 500);
   const mult = /lakh/i.test(unitText) ? 1e5 : /crore|\bcr\b/i.test(unitText) ? 1e7 : /million/i.test(unitText) ? 1e6 : 1;
@@ -115,13 +115,19 @@ async function fetchRetry(url: string): Promise<Uint8Array> {
 async function payFromPdf(bytes: Uint8Array) {
   const proxy = await getDocumentProxy(bytes, { stopAtErrors: false } as never);
   try {
-    const limit = Math.min(proxy.numPages, 140);
-    for (let i = 1; i <= limit; i++) {
+    const limit = Math.min(proxy.numPages, 220);
+    const deadline = Date.now() + 25_000;
+    let prev = "";
+    for (let i = 1; i <= limit && Date.now() < deadline; i++) {
       const content = await (await proxy.getPage(i)).getTextContent();
       const page = content.items.map((it) => ("str" in it ? it.str : "")).join(" ");
-      if (!/median remuneration/i.test(page)) continue;
-      const rows = parseBrsrPay(page);
-      if (rows.length >= 2) return rows;
+      // The table can spill onto the next page, so test the previous page joined with this one as well.
+      for (const text of [page, `${prev} ${page}`]) {
+        if (!/median remuneration/i.test(text)) continue;
+        const rows = parseBrsrPay(text);
+        if (rows.length >= 2) return rows;
+      }
+      prev = page;
     }
     return null;
   } finally { await (proxy as unknown as { destroy?: () => Promise<void> }).destroy?.(); }
