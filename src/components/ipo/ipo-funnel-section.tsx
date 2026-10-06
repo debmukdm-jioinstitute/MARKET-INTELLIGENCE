@@ -52,6 +52,16 @@ function offerStructure(offer: OfferCover | undefined): string | null {
   return parts.join(" + ");
 }
 
+/** Red dot = the prospectus prints "[●]" here: the figure is not decided yet. Shown inline (not hover-only) so beginners on phones see it. */
+function Tbd({ what }: { what: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5" title={`[●] in the prospectus: ${what}`}>
+      <span aria-hidden className="inline-block size-2 shrink-0 rounded-full bg-rose-500" />
+      <span className="text-muted-foreground">{what}</span>
+    </span>
+  );
+}
+
 function Meter({ label, x, delta }: { label: string; x: number | null; delta: number | null | undefined }) {
   if (x === null) return null;
   const width = Math.min(x, 2) / 2; // 0..2× fills the bar; the tick marks 1× (fully subscribed)
@@ -115,12 +125,21 @@ function IpoCard({ ipo, disclaimer, explainer }: { ipo: Ipo; disclaimer: string;
         {sub.heatingUp ? <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-800">Retail demand heating up</span> : null}
       </div>
       {ipo.stage === "drhp_filed" ? (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
-          <div className="col-span-2"><dt className="text-muted-foreground">Offer structure (from the DRHP)</dt><dd className="text-foreground">{offerStructure(ipo.objects?.offer) ?? "Being read from the prospectus"}</dd></div>
-          <div><dt className="text-muted-foreground">Issue size</dt><dd className="text-foreground">{ipo.issueSizeCr !== null ? `₹${ipo.issueSizeCr.toLocaleString("en-IN")} cr` : ipo.objects?.offer?.freshIssueCr != null ? `At least ${cr(ipo.objects.offer.freshIssueCr)}` : "Fixed at RHP"}</dd></div>
-          <div><dt className="text-muted-foreground">Lead managers</dt><dd className="text-foreground">{ipo.brlms.length ? ipo.brlms.join(", ") : "Being read from the prospectus"}</dd></div>
-          <div className="col-span-2 sm:col-span-4"><dd className="text-muted-foreground">Price band and bidding dates are announced only after SEBI clears the issue and the RHP is filed.</dd></div>
-        </dl>
+        <>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
+            <div className="col-span-2"><dt className="text-muted-foreground">Offer structure (from the DRHP)</dt><dd className="text-foreground">{offerStructure(ipo.objects?.offer) ?? "Being read from the prospectus"}</dd></div>
+            <div><dt className="text-muted-foreground">Issue size</dt><dd className="text-foreground">{ipo.issueSizeCr !== null ? `₹${ipo.issueSizeCr.toLocaleString("en-IN")} cr` : ipo.objects?.offer?.freshIssueCr != null ? `At least ${cr(ipo.objects.offer.freshIssueCr)}` : <Tbd what="not decided yet" />}</dd></div>
+            <div><dt className="text-muted-foreground">Lead managers</dt><dd className="text-foreground">{ipo.brlms.length ? ipo.brlms.join(", ") : "Being read from the prospectus"}</dd></div>
+            <div><dt className="text-muted-foreground">Price band</dt><dd><Tbd what="set in the RHP" /></dd></div>
+            <div><dt className="text-muted-foreground">Bidding dates</dt><dd><Tbd what="after SEBI approval" /></dd></div>
+          </dl>
+          <p className="flex items-start gap-1.5 rounded-md bg-rose-50 px-2.5 py-1.5 text-[11px] leading-snug text-rose-900">
+            <span aria-hidden className="mt-1 inline-block size-2 shrink-0 rounded-full bg-rose-500" />
+            <span>
+              <span className="font-semibold">What the red dot means:</span> a draft prospectus (DRHP) prints <span className="font-mono">[●]</span> wherever a figure is not decided yet, such as the price, the final issue size or the dates. They are filled in the final prospectus (RHP) after SEBI approves, so we show a dot instead of a number rather than guess.
+            </span>
+          </p>
+        </>
       ) : (
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
         <div><dt className="text-muted-foreground">Issue size</dt><dd className="text-foreground">{ipo.issueSizeCr !== null ? `₹${ipo.issueSizeCr.toLocaleString("en-IN")} cr` : "—"}</dd></div>

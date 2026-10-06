@@ -18,7 +18,7 @@ Engine: `src/lib/guide/driver-rules.ts`. Hook: `src/hooks/use-driver-nudges.ts`.
 | Page | Status |
 | --- | --- |
 | https://getmarketintelligence.in/research/SYMBOL | Live |
-| https://getmarketintelligence.in/markets/india/SYMBOL | Not yet |
-| https://getmarketintelligence.in/research/model/SYMBOL | Not yet |
-| https://getmarketintelligence.in/portfolio (holdings) | Not yet |
-| https://getmarketintelligence.in/intelligence/scanner | Not yet |
+| https://getmarketintelligence.in/markets/india/nifty50 (index and rupee/Brent pages) | Live |
+| https://getmarketintelligence.in/research/model/SYMBOL | Page removed (DCF model deleted) |
+| https://getmarketintelligence.in/portfolio (share of your book by driver) | Live |
+| https://getmarketintelligence.in/intelligence/scanner (drivers behind the matches) | Live |

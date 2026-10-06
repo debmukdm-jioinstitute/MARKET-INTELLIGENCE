@@ -4,6 +4,7 @@ import { Donut } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { AddHoldingDialog } from "@/components/my-portfolio/add-holding-dialog";
 import { AttributionPanel } from "@/components/my-portfolio/attribution-panel";
+import { BookDriverNudges } from "@/components/guide/book-driver-nudges";
 import { HoldingsList } from "@/components/my-portfolio/holdings-list";
 import { MetricsCatalog } from "@/components/my-portfolio/metrics-catalog";
 import { PerformanceChart } from "@/components/my-portfolio/performance-chart";
@@ -17,7 +18,7 @@ import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { Lock } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function PortfolioPage() {
   const {
@@ -40,6 +41,10 @@ export default function PortfolioPage() {
   } = useMyPortfolio();
   const hasBook = Boolean(data?.hasHoldings && data.positions.length > 0);
   const [benchBusy, setBenchBusy] = useState(false);
+  const bookItems = useMemo(
+    () => (data?.positions ?? []).filter((p) => p.currency === "INR").map((p) => ({ symbol: p.symbol, name: p.name, weight: p.marketValueInr })),
+    [data?.positions],
+  );
 
   return (
     <div className="portal-page">
@@ -148,6 +153,8 @@ export default function PortfolioPage() {
             onSync={syncFromAccount}
           />
           <PortfolioOverview metrics={data.overview} />
+
+          <BookDriverNudges items={bookItems} scope="portfolio" />
 
           <div className="grid gap-4 xl:grid-cols-3">
             <Panel title="Performance" subtitle="Portfolio vs benchmark, rebased to your first holding" className="xl:col-span-2">

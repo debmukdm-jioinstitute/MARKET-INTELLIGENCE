@@ -254,3 +254,75 @@ export function buildExposure(
     .sort((a, b) => Math.abs(b.beta) - Math.abs(a.beta))
     .slice(0, top);
 }
+
+export type BookItem = { symbol: string; name: string; weight: number };
+
+export type BookNudge = {
+  factor: FactorId;
+  label: string;
+  href: string;
+  cta: string;
+  /** Share of the book's weight sitting in names that lean on this driver (0-100). */
+  sharePct: number;
+  names: number;
+  total: number;
+  topNames: string[];
+  /** Weight-averaged measured sensitivity across the sensitive names. */
+  beta: number;
+  todayMove: number | null;
+  todayUnit: "%" | "bp";
+  /** Book-level effect today: Σ weight × sensitivity × move, in %. */
+  impliedPct: number | null;
+};
+
+/**
+ * How much of a book (portfolio by value, scanner matches equally weighted) leans on each global driver.
+ * A name counts when the driver is curated for it or its sector sensitivity is significant (|t| >= 2).
+ */
+export function buildBookNudges(
+  items: BookItem[],
+  betas: BetaPayload | null | undefined,
+  shocks: Shocks | null | undefined,
+  max = 3,
+): { coveragePct: number; nudges: BookNudge[] } {
+  const total = items.reduce((a, i) => a + i.weight, 0);
+  if (!betas || !items.length || total <= 0) return { coveragePct: 0, nudges: [] };
+  const profiles = items.map((i) => ({ ...i, p: profileFor(i.symbol, i.name) }));
+  const known = profiles.filter((x) => x.p.why !== null || x.p.sector !== "nifty");
+  const coveragePct = Math.round((known.reduce((a, x) => a + x.weight, 0) / total) * 100);
+  const nudges: BookNudge[] = [];
+  for (const fac of Object.keys(DRIVER_META) as FactorId[]) {
+    const meta = DRIVER_META[fac];
+    let w = 0;
+    let wBeta = 0;
+    const hit: { symbol: string; weight: number }[] = [];
+    for (const x of profiles) {
+      const c = betas.sectors.find((s) => s.id === x.p.sector)?.betas[fac];
+      if (!c) continue;
+      if (!(x.p.drivers.includes(fac) || Math.abs(c.t) >= 2)) continue;
+      w += x.weight;
+      wBeta += x.weight * c.beta;
+      hit.push({ symbol: x.symbol, weight: x.weight });
+    }
+    if (!hit.length) continue;
+    const beta = wBeta / w;
+    const move = todayMoveFor(fac, shocks);
+    const per = fac === "us10y" ? beta / 10 : beta;
+    nudges.push({
+      factor: fac,
+      label: meta.label,
+      href: meta.href,
+      cta: meta.cta,
+      sharePct: Math.round((w / total) * 100),
+      names: hit.length,
+      total: items.length,
+      topNames: hit.sort((a, b) => b.weight - a.weight).slice(0, 3).map((h) => h.symbol),
+      beta,
+      todayMove: move,
+      todayUnit: fac === "us10y" ? "bp" : "%",
+      impliedPct: move == null ? null : (w / total) * per * move,
+    });
+  }
+  nudges.sort((a, b) => b.sharePct * Math.abs(b.beta) - a.sharePct * Math.abs(a.beta));
+  return { coveragePct, nudges: nudges.slice(0, max) };
+}

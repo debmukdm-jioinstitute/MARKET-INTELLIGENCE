@@ -54,3 +54,23 @@ describe("index and exposure nudges", () => {
     expect(e[0].impliedPct).toBeCloseTo(0.8);
   });
 });
+
+import { buildBookNudges } from "../driver-rules";
+
+describe("book nudges", () => {
+  const cellB = (beta: number, t: number) => ({ beta, se: 0.1, t });
+  const sec = (id: string, brent: [number, number]) => ({ id, label: id, proxy: "", r2: 0.2, residSd: 1, n: 500, betas: { brent: cellB(...brent), usdinr: cellB(0, 0), us10y: cellB(0, 0), spx: cellB(0, 0) } });
+  const bk = { computedAt: "", windowStart: "", windowEnd: "", method: "", factors: [], sectors: [sec("oilgas", [0.4, 5]), sec("it", [0, 0.1])] } as unknown as BetaPayload;
+  it("reports the share of a book leaning on crude, with implied move", () => {
+    const r = buildBookNudges([{ symbol: "RELIANCE", name: "Reliance Industries", weight: 60 }, { symbol: "TCS", name: "Tata Consultancy", weight: 40 }], bk, { brent: 2 });
+    const n = r.nudges[0];
+    expect(n.factor).toBe("brent");
+    expect(n.sharePct).toBe(60);
+    expect(n.topNames).toEqual(["RELIANCE"]);
+    expect(n.impliedPct).toBeCloseTo(0.48); // 0.6 * 0.4 * 2
+  });
+  it("is empty without data", () => {
+    expect(buildBookNudges([], bk, null).nudges).toEqual([]);
+    expect(buildBookNudges([{ symbol: "X", name: "X", weight: 1 }], null, null).nudges).toEqual([]);
+  });
+});
