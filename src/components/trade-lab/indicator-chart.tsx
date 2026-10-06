@@ -1,5 +1,6 @@
 "use client";
 
+import { chartFontFamily } from "@/lib/chart-font";
 import {
   CandlestickSeries,
   ColorType,
@@ -131,7 +132,7 @@ export function IndicatorChart({
     const chart: IChartApi = createChart(container, {
       width: container.clientWidth,
       height: total,
-      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: "#57534e", fontSize: 11, panes: { separatorColor: "#e7e5e4" } },
+      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: "#57534e", fontSize: 12, fontFamily: chartFontFamily(), panes: { separatorColor: "#e7e5e4" } },
       grid: { vertLines: { color: "#f5f5f4" }, horzLines: { color: "#f5f5f4" } },
       rightPriceScale: { borderColor: "#e7e5e4" },
       timeScale: { borderColor: "#e7e5e4", timeVisible: data.intraday, secondsVisible: false },

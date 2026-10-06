@@ -199,7 +199,7 @@ export function MiMascot({
             setGestureTick((n) => n + 1);
           }}
           aria-label={open ? "Hide Mi's tip" : "Show Mi's tip"}
-          className="relative h-20 w-20 cursor-pointer select-none touch-pan-y md:h-24 md:w-24"
+          className={`relative cursor-pointer select-none touch-pan-y transition-[width,height] duration-300 ${open ? "h-20 w-20 md:h-24 md:w-24" : "h-14 w-14 md:h-16 md:w-16"}`}
           initial={reduce ? false : { y: 40, opacity: 0 }}
           animate={reduce ? undefined : { y: 0, opacity: 1 }}
           whileHover={reduce ? undefined : { scale: 1.06, rotate: -4 }}

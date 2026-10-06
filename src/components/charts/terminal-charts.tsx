@@ -23,7 +23,7 @@ import {
   YAxis,
 } from "recharts";
 
-const axis = { fontSize: 11, fill: "#5f6368", tickLine: false };
+const axis = { fontSize: 13, fill: "#5f6368", tickLine: false };
 const grid = { stroke: "#e8eaed" };
 
 export function NavChart({
@@ -52,7 +52,7 @@ export function NavChart({
         <XAxis dataKey="date" {...axis} minTickGap={48} />
         <YAxis {...axis} width={64} domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toLocaleString()} />
         <Tooltip
-          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }}
         />
         <Area type="monotone" dataKey={aKey} name={aName} stroke="#1a73e8" fill="url(#navFill)" strokeWidth={1.6} />
         {bKey ? (
@@ -82,7 +82,7 @@ export function Bars({
         <XAxis type="number" {...axis} tickFormatter={(v) => fmt(Number(v))} />
         <YAxis type="category" dataKey={x} {...axis} width={92} />
         <Tooltip
-          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }}
           formatter={(v) => fmt(Number(v))}
         />
         <Bar dataKey={y} fill="#1a73e8" radius={3} />
@@ -105,8 +105,8 @@ export function Donut({ data }: { data: { name: string; value: number }[] }) {
             <Cell key={entry.name} fill={PALETTE[i % PALETTE.length]} />
           ))}
         </Pie>
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 13 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -134,8 +134,8 @@ export function Lines({
           domain={["auto", "auto"]}
           tickFormatter={yTickFormatter ?? ((v) => Number(v).toLocaleString(undefined, { maximumFractionDigits: 4 }))}
         />
-        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }} />
+        <Legend wrapperStyle={{ fontSize: 13 }} />
         {keys.map((k) => (
           <Line key={k.key} type="monotone" dataKey={k.key} name={k.name} stroke={k.color} dot={false} strokeWidth={1.4} />
         ))}
@@ -159,10 +159,10 @@ export function OiBars({
         <XAxis dataKey={xKey} {...axis} minTickGap={24} />
         <YAxis {...axis} width={56} tickFormatter={(v) => Number(v).toLocaleString()} />
         <Tooltip
-          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }}
+          contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }}
           formatter={(v) => Number(v).toLocaleString()}
         />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Legend wrapperStyle={{ fontSize: 13 }} />
         <Bar dataKey="callOi" name="Call OI" fill="#34d399" radius={2} />
         <Bar dataKey="putOi" name="Put OI" fill="#fb7185" radius={2} />
       </BarChart>
@@ -178,8 +178,8 @@ export function RatioRadar({ data }: { data: { metric: string; company: number; 
         <PolarGrid stroke="#e8eaed" />
         <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: "#8b93a1" }} />
         <PolarRadiusAxis tick={{ fontSize: 9, fill: "#8b93a1" }} />
-        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }} />
+        <Legend wrapperStyle={{ fontSize: 13 }} />
         <Radar name="Sector (baseline)" dataKey="sector" stroke="#8b93a1" fill="#8b93a1" fillOpacity={0.1} />
         <Radar name="Company" dataKey="company" stroke="#1a73e8" fill="#1a73e8" fillOpacity={0.35} />
       </RadarChart>

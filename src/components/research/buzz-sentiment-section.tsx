@@ -38,7 +38,7 @@ function TrendsOverlay({ symbol, candles }: { symbol: string; candles: { ts: str
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-foreground">Attention vs price</h3>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">Google Trends is 0–100 relative interest, not absolute search volume.</span> Both lines are rescaled to 0–100 so you can compare their shape, not their size.
       </p>
       {isLoading ? <p className="animate-pulse text-sm text-muted-foreground">Loading search interest…</p> : null}
@@ -58,15 +58,15 @@ function TrendsOverlay({ symbol, candles }: { symbol: string; candles: { ts: str
             <polyline points={line("price")} fill="none" stroke="#5f6368" strokeWidth="2" strokeLinejoin="round" />
             <polyline points={line("trend")} fill="none" stroke="#1a73e8" strokeWidth="2.5" strokeLinejoin="round" />
           </svg>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span><span className="mr-1 inline-block h-0.5 w-4 align-middle" style={{ background: "#1a73e8" }} />Google search interest (India)</span>
             <span><span className="mr-1 inline-block h-0.5 w-4 align-middle" style={{ background: "#5f6368" }} />Share price</span>
             <span>{fmtDay(pts[0].d)} → {fmtDay(pts[pts.length - 1].d)}</span>
             {data?.series?.momentum ? <span>Interest is {data.series.momentum}{data.series.recentChangePct !== null ? <span className={signClass(data.series.recentChangePct)}>{` (${data.series.recentChangePct >= 0 ? "+" : ""}${data.series.recentChangePct}% vs the previous 13 weeks)`}</span> : ""}</span> : null}
           </div>
-          {data?.risingQueries.length ? <p className="text-xs text-muted-foreground">Rising related searches: {data.risingQueries.join(" · ")}</p> : null}
+          {data?.risingQueries.length ? <p className="text-sm text-muted-foreground">Rising related searches: {data.risingQueries.join(" · ")}</p> : null}
           {data?.source ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Source:{" "}
               <a href={data.source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                 {data.source.label} ↗
@@ -87,7 +87,7 @@ function SourceCard({ d }: { d: SourceDigest }) {
     <li className={cn("rounded-lg border p-3 text-sm", d.live ? "border-border bg-card" : "border-dashed border-border bg-muted/40")}>
       <div className="flex items-center justify-between gap-2">
         <span className="font-semibold text-foreground">{SOURCE_LABEL[d.source]}</span>
-        <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", d.live ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground")}>{d.live ? "Live" : "Not live"}</span>
+        <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", d.live ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground")}>{d.live ? "Live" : "Not live"}</span>
       </div>
       {d.mentions > 0 ? (
         <>
@@ -95,10 +95,10 @@ function SourceCard({ d }: { d: SourceDigest }) {
             {d.mentions.toLocaleString("en-IN")} {d.source === "gdelt" ? "news articles" : "mentions"} this week
             {d.bullishPct !== null ? `, ${d.bullishPct}% bullish` : ""}
           </p>
-          {d.themes.length ? <p className="mt-1 text-xs text-muted-foreground">Themes: {d.themes.join(" · ")}</p> : null}
+          {d.themes.length ? <p className="mt-1 text-sm text-muted-foreground">Themes: {d.themes.join(" · ")}</p> : null}
         </>
       ) : (
-        <p className="mt-1 text-xs text-muted-foreground">{d.live ? "Nothing about this company this week." : "No recent data from this source."}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{d.live ? "Nothing about this company this week." : "No recent data from this source."}</p>
       )}
     </li>
   );
@@ -154,7 +154,7 @@ function BuzzQuadrant({ symbol }: { symbol: string }) {
             })}
           </svg>
           {active ? (
-            <p className="rounded-md bg-muted p-3 text-xs text-foreground">
+            <p className="rounded-md bg-muted p-3 text-sm text-foreground">
               <Link href={`/research/${encodeURIComponent(active.symbol)}`} className="font-semibold text-primary hover:underline">
                 {active.symbol}
               </Link>{" "}
@@ -162,7 +162,7 @@ function BuzzQuadrant({ symbol }: { symbol: string }) {
               {active.topics.length ? `top themes: ${active.topics.slice(0, 3).join(" · ")}` : "no clear theme yet"}
             </p>
           ) : (
-            <p className="text-xs text-muted-foreground">Tap a dot to see what people are discussing about that stock.</p>
+            <p className="text-sm text-muted-foreground">Tap a dot to see what people are discussing about that stock.</p>
           )}
         </>
       ) : null}
@@ -198,12 +198,12 @@ export function BuzzSentimentSection({ symbol, candles }: { symbol: string; cand
               ))}
             </ul>
           ) : null}
-          <p className="text-xs text-muted-foreground">Aggregates only — we never quote or show individual users.</p>
+          <p className="text-sm text-muted-foreground">Aggregates only — we never quote or show individual users.</p>
         </div>
 
         <BuzzQuadrant symbol={symbol} />
 
-        <p className="rounded-md bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="rounded-md bg-muted p-3 text-sm leading-relaxed text-muted-foreground">
           <span className="font-semibold text-foreground">Sources:</span> live right now — {live.length ? live.join(", ") : "none yet"}
           {notLive.length ? `; not live — ${notLive.join(", ")}` : ""}. Reddit comes from a volunteer-run public mirror and can disappear; each source works on its own. X/Twitter isn&apos;t available on any free API, so we don&apos;t track it. Telegram covers channel posts only, not discussion-group comments.
         </p>

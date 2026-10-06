@@ -53,6 +53,14 @@ function walk(dir, files = []) {
 
 const violations = [];
 
+/** Canvas charts ignore CSS fonts: every createChart() call must pass layout.fontFamily (see src/lib/chart-font.ts). */
+function checkCharts(file, rel) {
+  const src = readFileSync(file, "utf8");
+  if (/\bcreateChart\(/.test(src) && !/fontFamily\s*:/.test(src)) {
+    violations.push(`${rel}: createChart() without layout.fontFamily (canvas falls back to system fonts) → use chartFontFamily()`);
+  }
+}
+
 for (const dir of SCAN_DIRS) {
   const abs = join(ROOT, dir);
   try {
@@ -62,6 +70,7 @@ for (const dir of SCAN_DIRS) {
   }
   for (const file of walk(abs)) {
     const rel = relative(ROOT, file);
+    if (/\.tsx?$/.test(file)) checkCharts(file, rel);
     const lines = readFileSync(file, "utf8").split("\n");
     lines.forEach((line, i) => {
       if (/font-family:\s*sans-serif/i.test(line) && isAllowedSansSerifOnly(line, rel)) return;

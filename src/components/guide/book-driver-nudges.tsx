@@ -40,7 +40,7 @@ export function BookDriverNudges({ items, scope, title = "What your book leans o
             <div className="flex items-baseline justify-between gap-2">
               <span className="font-semibold">{n.label}</span>
               {n.todayMove != null ? (
-                <span className={cn("text-xs tabular-nums", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                <span className={cn("text-sm tabular-nums", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {sign(n.todayMove, 1)}
                   {n.todayUnit} today
                 </span>
@@ -52,7 +52,7 @@ export function BookDriverNudges({ items, scope, title = "What your book leans o
                 {noun} · {n.names} of {n.total} {scope === "portfolio" ? "holdings" : "stocks"}
               </span>
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Mostly {n.topNames.join(", ")}
               {n.impliedPct != null ? (
                 <>
@@ -61,7 +61,7 @@ export function BookDriverNudges({ items, scope, title = "What your book leans o
                 </>
               ) : null}
             </p>
-            <Link href={n.href} className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+            <Link href={n.href} className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
               {n.cta} →
             </Link>
           </li>

@@ -36,7 +36,7 @@ function SimilarityBar({ value }: { value: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{pct}%</span>
+      <span className="text-xs text-muted-foreground tabular-nums w-8 text-right">{pct}%</span>
     </div>
   );
 }
@@ -66,8 +66,8 @@ export function SimilarStocksPanel({ symbol }: { symbol: string }) {
       <div className="flex items-center gap-2 mb-3">
         <span className="text-base">🔗</span>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-foreground">Similar Companies</p>
-          <p className="text-[10px] text-muted-foreground">Semantic similarity · MiniLM-L6-v2</p>
+          <p className="text-sm font-bold uppercase tracking-wider text-foreground">Similar Companies</p>
+          <p className="text-xs text-muted-foreground">Semantic similarity · MiniLM-L6-v2</p>
         </div>
       </div>
 
@@ -81,13 +81,13 @@ export function SimilarStocksPanel({ symbol }: { symbol: string }) {
               >
                 {s.symbol}
               </Link>
-              <span className="text-[11px] text-muted-foreground line-clamp-1 max-w-[160px] text-right">
+              <span className="text-xs text-muted-foreground line-clamp-1 max-w-[160px] text-right">
                 {s.name}
               </span>
             </div>
             <SimilarityBar value={s.similarity} />
             {s.sector && (
-              <p className="text-[10px] text-muted-foreground">{s.sector}</p>
+              <p className="text-xs text-muted-foreground">{s.sector}</p>
             )}
           </div>
         ))}

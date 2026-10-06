@@ -45,9 +45,9 @@ function MetricTile({
         className,
       )}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className={cn("mt-1 text-2xl font-semibold tabular-nums", valueClassName)}>{count}</p>
-      {description ? <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</p> : null}
+      {description ? <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p> : null}
     </button>
   );
 }

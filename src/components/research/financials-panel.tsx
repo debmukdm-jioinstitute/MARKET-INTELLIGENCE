@@ -2,19 +2,17 @@
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { ForensicHealth } from "@/components/research/forensic-health";
 import { cn } from "@/lib/utils";
 import type { FinancialsPayload } from "@/lib/financials/types";
 import {
   Activity,
-  AlertTriangle,
-  CheckCircle2,
   Clock,
   ExternalLink,
   FileSpreadsheet,
   FileText,
   ShieldCheck,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
@@ -94,7 +92,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
       }}
       action={
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-xs font-semibold">
+          <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-sm font-semibold">
             <button
               type="button"
               onClick={() => setPeriodType("quarter")}
@@ -133,7 +131,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
       {error ? (
         <div className="rounded-xl border border-rose-200/50 bg-rose-50/50 p-4 text-sm text-rose-700 dark:border-rose-900/30 dark:bg-rose-950/20 dark:text-rose-400">
           <p className="font-medium">Could not load financial statements</p>
-          <p className="text-xs mt-1 text-muted-foreground">{error}</p>
+          <p className="text-sm mt-1 text-muted-foreground">{error}</p>
         </div>
       ) : null}
 
@@ -157,7 +155,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer",
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all cursor-pointer",
                     active
                       ? "bg-primary/10 text-primary border border-primary/25 shadow-xs"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border border-transparent",
@@ -171,95 +169,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
           </div>
 
           {/* TAB 1: EXECUTIVE FORENSIC HEALTH */}
-          {activeTab === "forensic" && (
-            <div className="space-y-6">
-              {/* Scorecard banner */}
-              <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/20 p-5 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Institutional Solvency & Health Rating
-                      </span>
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          "font-semibold",
-                          data.forensicAnalysis.rating === "Strong"
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                            : data.forensicAnalysis.rating === "Adequate"
-                            ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
-                            : "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-                        )}
-                      >
-                        {data.forensicAnalysis.rating}
-                      </Badge>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-extrabold tabular-nums tracking-tight text-foreground">
-                        {data.forensicAnalysis.healthScore}
-                      </span>
-                      <span className="text-sm text-muted-foreground font-medium">/ 100 Health Score</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground sm:border-l sm:border-border/60 sm:pl-6">
-                    <div>
-                      <p className="font-medium text-foreground">Working Capital</p>
-                      <p className="mt-0.5">{data.forensicAnalysis.workingCapitalSummary}</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">Earnings Quality</p>
-                      <p className="mt-0.5">{data.forensicAnalysis.cashFlowQuality} Cash Backing</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Executive Synthesis */}
-                <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-xs leading-relaxed text-foreground">
-                  <div className="mb-1.5 flex items-center gap-1.5 font-semibold text-primary">
-                    <Zap className="size-3.5" />
-                    <span>AI Forensic & Solvency Synthesis ({data.forensicAnalysis.aiModelUsed})</span>
-                  </div>
-                  <p className="text-muted-foreground">{data.forensicAnalysis.executiveSummary}</p>
-                </div>
-              </div>
-
-              {/* Signals Grid */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {data.forensicAnalysis.flags.map((flag, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "flex items-start gap-3 rounded-xl border p-4 transition-all text-xs",
-                      flag.type === "strength"
-                        ? "border-emerald-500/30 bg-emerald-500/5 text-foreground"
-                        : flag.type === "warning"
-                        ? "border-amber-500/30 bg-amber-500/5 text-foreground"
-                        : "border-border bg-card text-foreground",
-                    )}
-                  >
-                    {flag.type === "strength" ? (
-                      <CheckCircle2 className="size-4 shrink-0 text-emerald-500 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
-                    )}
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold">{flag.title}</span>
-                        {flag.metricValue ? (
-                          <Badge variant="outline" className="text-[10px] tabular-nums font-semibold">
-                            {flag.metricValue}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-muted-foreground leading-relaxed">{flag.detail}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeTab === "forensic" && <ForensicHealth analysis={data.forensicAnalysis} />}
 
           {/* TAB 2: QUARTERLY PERFORMANCE ANALYSIS */}
           {activeTab === "quarterly_perf" && (
@@ -283,10 +193,10 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
                     <div key={q.key} className="rounded-xl border border-border/80 bg-card p-4 space-y-3 shadow-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-sm">{q.label}</span>
-                        <Badge variant="outline" className="text-[10px]">{q.audited ? "Audited" : "Reviewed"}</Badge>
+                        <Badge variant="outline" className="text-xs">{q.audited ? "Audited" : "Reviewed"}</Badge>
                       </div>
 
-                      <div className="space-y-2 text-xs">
+                      <div className="space-y-2 text-sm">
                         <div>
                           <span className="text-muted-foreground">Revenue: </span>
                           <span className="font-semibold tabular-nums">₹{fmtCr(curRev)} Cr</span>
@@ -314,7 +224,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
                       </div>
 
                       {q.xbrlUrl ? (
-                        <div className="pt-1 border-t border-border/50 flex items-center justify-between text-[11px]">
+                        <div className="pt-1 border-t border-border/50 flex items-center justify-between text-xs">
                           <span className="text-muted-foreground">Filing XBRL:</span>
                           <a href={q.xbrlUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-0.5">
                             <span>XML</span>
@@ -328,7 +238,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
               </div>
 
               {/* Sequential Analysis Commentary */}
-              <div className="rounded-xl border border-border p-4 bg-muted/20 text-xs text-muted-foreground leading-relaxed">
+              <div className="rounded-xl border border-border p-4 bg-muted/20 text-sm text-muted-foreground leading-relaxed">
                 <p className="font-semibold text-foreground mb-1">Quarterly Growth Velocity:</p>
                 <p>
                   Figures represent sequential quarter-on-quarter and annual performance extracted from standalone and consolidated regulatory disclosures submitted to the National Stock Exchange of India.
@@ -340,17 +250,17 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
           {/* TAB 3, 4, 5: STATEMENT TABLES (P&L, BS, CF) */}
           {(activeTab === "pl" || activeTab === "bs" || activeTab === "cf") && (
             <div className="overflow-x-auto rounded-xl border border-border/80 bg-card shadow-xs">
-              <table className="w-full border-collapse text-left text-xs">
+              <table className="w-full border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 font-semibold text-foreground">
                     <th className="py-2.5 pl-4 pr-3 min-w-[220px]">
                       {activeTab === "pl" ? "Income Statement Item" : activeTab === "bs" ? "Balance Sheet Item" : "Cash Flow Activity"}
-                      <span className="ml-1 text-[10px] text-muted-foreground font-normal">(₹ in Cr)</span>
+                      <span className="ml-1 text-xs text-muted-foreground font-normal">(₹ in Cr)</span>
                     </th>
                     {cols.map((col) => (
                       <th key={col.key} className="py-2.5 px-3 text-right font-medium whitespace-nowrap">
                         <div>{col.label}</div>
-                        <div className="text-[10px] font-normal text-muted-foreground">
+                        <div className="text-xs font-normal text-muted-foreground">
                           {col.audited ? "Audited" : "Reviewed"}
                         </div>
                       </th>
@@ -402,15 +312,15 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <h4 className="text-sm font-bold text-foreground">Working Capital Efficiency & Operating Cycle</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Days Sales Outstanding (DSO), Inventory Days (DIO), Payable Days (DPO), and Net Cash Conversion Cycle (CCC).
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-semibold">Regulatory Standard</Badge>
+                  <Badge variant="outline" className="text-xs font-semibold">Regulatory Standard</Badge>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs">
+                  <table className="w-full border-collapse text-left text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/40 font-semibold text-foreground">
                         <th className="py-2 pl-3 pr-2">Metric</th>
@@ -451,7 +361,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
 
               {/* Ratios Table */}
               <div className="overflow-x-auto rounded-xl border border-border/80 bg-card shadow-xs">
-                <table className="w-full border-collapse text-left text-xs">
+                <table className="w-full border-collapse text-left text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/40 font-semibold text-foreground">
                       <th className="py-2 pl-4 pr-3">Key Financial Ratio</th>
@@ -516,7 +426,7 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
           )}
 
           {/* Official Verification & Regulatory Source Links */}
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 text-xs text-muted-foreground space-y-2">
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground space-y-2">
             <div className="flex items-center gap-1.5 font-semibold text-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
               <span>Official Regulatory Provenance & Source Citations</span>
@@ -526,13 +436,13 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
                 <div key={idx} className="flex items-center justify-between rounded-lg border border-border/50 bg-card p-2.5">
                   <div className="min-w-0 pr-2">
                     <p className="font-medium text-foreground truncate">{s.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{s.description}</p>
+                    <p className="text-xs text-muted-foreground">{s.description}</p>
                   </div>
                   <a
                     href={s.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="shrink-0 text-primary hover:underline inline-flex items-center gap-1 text-[11px] font-medium"
+                    className="shrink-0 text-primary hover:underline inline-flex items-center gap-1 text-xs font-medium"
                   >
                     <span>Verify at {s.provider.includes("NSE") ? "NSE" : "Source"}</span>
                     <ExternalLink className="size-2.5" />

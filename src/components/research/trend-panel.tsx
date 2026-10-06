@@ -145,7 +145,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
       title="Technical Trend & Momentum"
       subtitle="Computed client-side across 5-year daily candles. No additional network latency."
       action={
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {lastDate ? `Session as of ${new Date(lastDate).toLocaleDateString()} (IST · UTC+05:30)` : ""}
         </span>
       }
@@ -154,7 +154,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* RSI */}
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">RSI (14-Day)</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">RSI (14-Day)</span>
             <div className="flex items-baseline gap-2 mt-1">
               <p className="text-2xl font-bold tabular-nums text-foreground">
                 {rsi != null ? rsi.toFixed(1) : "—"}
@@ -162,7 +162,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[10px] font-semibold",
+                  "text-xs font-semibold",
                   rsi != null && rsi > 70 && "border-amber-500 text-amber-600 bg-amber-500/10",
                   rsi != null && rsi < 30 && "border-rose-500 text-rose-600 bg-rose-500/10",
                   rsi != null && rsi >= 50 && rsi <= 70 && "border-emerald-500 text-emerald-600 bg-emerald-500/10",
@@ -172,12 +172,12 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
                 {rsiLabel}
               </Badge>
             </div>
-            <span className="text-xs text-muted-foreground mt-0.5 block">Wilder-smoothed momentum</span>
+            <span className="text-sm text-muted-foreground mt-0.5 block">Wilder-smoothed momentum</span>
           </div>
 
           {/* MACD */}
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">MACD (12, 26, 9)</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">MACD (12, 26, 9)</span>
             <div className="flex items-baseline gap-2 mt-1">
               <p
                 className={cn(
@@ -187,16 +187,16 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
               >
                 {macdHist != null ? (macdHist >= 0 ? `+${macdHist.toFixed(2)}` : macdHist.toFixed(2)) : "—"}
               </p>
-              <Badge variant="outline" className="text-[10px] font-semibold">
+              <Badge variant="outline" className="text-xs font-semibold">
                 {macdLabel}
               </Badge>
             </div>
-            <span className="text-xs text-muted-foreground mt-0.5 block">Signal line delta</span>
+            <span className="text-sm text-muted-foreground mt-0.5 block">Signal line delta</span>
           </div>
 
           {/* 200-day SMA */}
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">200-Day SMA</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">200-Day SMA</span>
             <div className="flex items-baseline gap-2 mt-1">
               {vsSma200 != null ? (
                 <>
@@ -208,7 +208,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
                   >
                     {vsSma200 >= 0 ? "+" : ""}{vsSma200.toFixed(1)}%
                   </p>
-                  <span className="text-xs text-muted-foreground tabular-nums">₹{sma200?.toFixed(1)}</span>
+                  <span className="text-sm text-muted-foreground tabular-nums">₹{sma200?.toFixed(1)}</span>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground font-medium mt-1">
@@ -216,14 +216,14 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
                 </p>
               )}
             </div>
-            <span className="text-xs text-muted-foreground mt-0.5 block">
+            <span className="text-sm text-muted-foreground mt-0.5 block">
               {vsSma200 != null ? (vsSma200 >= 0 ? "Above 200 DMA (Long-term bull)" : "Below 200 DMA (Long-term bear)") : "Requires 200 trading sessions"}
             </span>
           </div>
 
           {/* Distance from 52-week High */}
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">52-Week High Distance</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">52-Week High Distance</span>
             <div className="flex items-baseline gap-2 mt-1">
               <p
                 className={cn(
@@ -233,9 +233,9 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
               >
                 {distFrom52wHigh.toFixed(1)}%
               </p>
-              <span className="text-xs text-muted-foreground tabular-nums">Peak ₹{yearHigh.toFixed(1)}</span>
+              <span className="text-sm text-muted-foreground tabular-nums">Peak ₹{yearHigh.toFixed(1)}</span>
             </div>
-            <span className="text-xs text-muted-foreground mt-0.5 block">
+            <span className="text-sm text-muted-foreground mt-0.5 block">
               {distFrom52wHigh > -3 ? "Near 52-week high breakout" : "Drawdown from 1Y peak"}
             </span>
           </div>

@@ -25,7 +25,7 @@ interface StatProps {
 const StatCard = ({ label, value, metricKey, name, explanation, utility, calculation, asOf }: StatProps) => (
   <div className="rounded-lg border border-border/70 p-3 relative group">
     <div className="flex items-center justify-between gap-1">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground truncate">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">{label}</p>
       <MetricInfo
         id={metricKey}
         name={name}
@@ -115,7 +115,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
       <div className="grid gap-3 text-sm sm:grid-cols-2">
         <div className="rounded-lg border border-border/70 p-3">
           <div className="flex items-center justify-between gap-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Next earnings</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Next earnings</p>
             <MetricInfo
               id="earnings_date"
               name="Upcoming Earnings Release Date"
@@ -132,7 +132,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
         </div>
         <div className="rounded-lg border border-border/70 p-3">
           <div className="flex items-center justify-between gap-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Recent insider filings</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent insider filings</p>
             <MetricInfo
               id="insider_filings"
               name="Insider & Promoter Disclosure Filings"
@@ -157,7 +157,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
           )}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">{r.method} As of {r.asOf}. Not a rating or recommendation.</p>
+      <p className="text-sm text-muted-foreground">{r.method} As of {r.asOf}. Not a rating or recommendation.</p>
     </div>
   );
 }

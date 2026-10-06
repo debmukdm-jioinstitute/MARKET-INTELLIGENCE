@@ -67,7 +67,7 @@ function Sparkline({ title, points, color, flagged }: { title: string; points: (
   if (vals.length < 2) {
     return (
       <div className="rounded-lg border border-border p-3">
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
         <p className="mt-2 text-sm text-muted-foreground">{vals.length === 1 ? `${vals[0].toFixed(2)}% — only one quarter available so far.` : "Not enough quarters yet."}</p>
       </div>
     );
@@ -84,14 +84,14 @@ function Sparkline({ title, points, color, flagged }: { title: string; points: (
   return (
     <div className="rounded-lg border border-border p-3">
       <div className="flex items-baseline justify-between">
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
         <p className="text-sm font-semibold tabular-nums text-foreground">{last.toFixed(2)}%</p>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 h-12 w-full" role="img" aria-label={`${title}, last ${points.length} quarters`}>
         <polyline points={d} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (p === null ? null : <circle key={i} cx={x(i)} cy={y(p)} r={flagged.has(i) ? 3.5 : 2} fill={flagged.has(i) ? "#d93025" : color} />))}
       </svg>
-      <p className="mt-1 text-[11px] text-muted-foreground">
+      <p className="mt-1 text-xs text-muted-foreground">
         Low {lo.toFixed(2)}% · High {hi.toFixed(2)}% (last {points.length} quarters)
       </p>
     </div>
@@ -128,10 +128,10 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
             <ul className="space-y-2">
               {data.flags.map((f) => (
                 <li key={`${f.label}-${f.broadcastDate}`} className={cn("flex flex-wrap items-start gap-2 rounded-md border p-3 text-sm", f.severity === "high" ? "border-rose-300 bg-rose-50" : "border-amber-300 bg-amber-50")}>
-                  <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", f.severity === "high" ? "bg-rose-600 text-white" : "bg-amber-500 text-white")}>{f.label}</span>
+                  <span className={cn("rounded-full px-2.5 py-0.5 text-sm font-semibold", f.severity === "high" ? "bg-rose-600 text-white" : "bg-amber-500 text-white")}>{f.label}</span>
                   <span className="min-w-0 flex-1 text-foreground">{f.detail}</span>
                   {f.filingUrl ? (
-                    <a href={f.filingUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary hover:underline">
+                    <a href={f.filingUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline">
                       Filing ↗
                     </a>
                   ) : null}
@@ -150,11 +150,11 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
                   <span className="ml-auto tabular-nums text-muted-foreground">{pct(s.value)}</span>
                 </li>
               ))}
-              <li className="mt-1 text-xs text-muted-foreground">
+              <li className="mt-1 text-sm text-muted-foreground">
                 Pledged / encumbered promoter shares: <span className="font-semibold text-foreground">{pct(l.pledgePct)}</span>
                 {l.shareholderCount ? ` · ${l.shareholderCount.toLocaleString("en-IN")} shareholders` : ""}
               </li>
-              <li className="text-xs text-muted-foreground">
+              <li className="text-sm text-muted-foreground">
                 {quarterLabel(l)} quarter · filed with NSE on {fmtDay(l.broadcastDate)}{" "}
                 {l.xbrlUrl ? (
                   <a href={l.xbrlUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
@@ -174,7 +174,7 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
             <Sparkline title="Promoter shares pledged" points={data.series.map((p) => p.pledgePct)} color="#d93025" flagged={flaggedIdx} />
           </div>
 
-          <p className="rounded-md bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
+          <p className="rounded-md bg-muted p-3 text-sm leading-relaxed text-muted-foreground">
             <span className="font-semibold text-foreground">Promoter</span> = the people who started or run the company.{" "}
             <span className="font-semibold text-foreground">Pledge</span> = promoter shares given as collateral for loans — a high pledge can mean forced selling if those loans go bad. Red dots mark quarters with a warning.
           </p>

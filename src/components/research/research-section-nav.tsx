@@ -63,7 +63,7 @@ export function ResearchSectionNav({ sections }: ResearchSectionNavProps) {
               type="button"
               onClick={() => scrollTo(s.id)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/60",
@@ -96,7 +96,7 @@ export function BackToTopButton() {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Back to top"
-      className="fixed bottom-6 right-6 z-30 rounded-full border border-border/80 bg-background/90 p-2.5 text-xs font-medium text-foreground shadow-lg backdrop-blur hover:bg-accent transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-1.5"
+      className="fixed bottom-6 right-6 z-30 rounded-full border border-border/80 bg-background/90 p-2.5 text-sm font-medium text-foreground shadow-lg backdrop-blur hover:bg-accent transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-1.5"
     >
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />

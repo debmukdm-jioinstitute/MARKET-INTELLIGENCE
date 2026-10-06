@@ -57,7 +57,7 @@ export function ConsensusBar({
           ) : null,
         )}
       </div>
-      <p className="text-[10px] text-muted-foreground tabular-nums">
+      <p className="text-xs text-muted-foreground tabular-nums">
         Apply {consensus.apply} · May {consensus.mayApply} · Neutral {consensus.neutral} · Avoid {consensus.avoid}
       </p>
     </div>
@@ -68,7 +68,7 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[960px] text-sm">
-        <thead className="border-b border-border bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+        <thead className="border-b border-border bg-muted/40 text-left text-sm uppercase tracking-wide text-muted-foreground">
           <tr>
             <th className="px-3 py-2">Source</th>
             <th className="px-3 py-2">Broker</th>
@@ -83,9 +83,9 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.id || r.url} className="border-b border-border/60 last:border-0 hover:bg-muted/20">
-              <td className="px-3 py-2 text-xs text-muted-foreground">{RESEARCH_SOURCE_LABELS[r.source] ?? r.source}</td>
-              <td className="px-3 py-2 text-xs">{r.broker ?? "—"}</td>
-              <td className="px-3 py-2 text-xs font-semibold">
+              <td className="px-3 py-2 text-sm text-muted-foreground">{RESEARCH_SOURCE_LABELS[r.source] ?? r.source}</td>
+              <td className="px-3 py-2 text-sm">{r.broker ?? "—"}</td>
+              <td className="px-3 py-2 text-sm font-semibold">
                 {r.symbol ? (
                   <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="text-primary hover:underline">
                     {r.symbol}
@@ -104,12 +104,12 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
                   </div>
                 ) : null}
               </td>
-              <td className="px-3 py-2 text-xs font-bold">{r.recommendation ?? "—"}</td>
+              <td className="px-3 py-2 text-sm font-bold">{r.recommendation ?? "—"}</td>
               <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(r.target_price)}</td>
               <td className={cn("px-3 py-2 text-right tabular-nums", signClass(r.upside_pct))}>
                 {r.upside_pct != null ? `${r.upside_pct >= 0 ? "+" : ""}${r.upside_pct.toFixed(1)}%` : "—"}
               </td>
-              <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+              <td className="px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">
                 {r.published_at ? new Date(r.published_at).toLocaleDateString("en-IN") : "—"}
               </td>
             </tr>

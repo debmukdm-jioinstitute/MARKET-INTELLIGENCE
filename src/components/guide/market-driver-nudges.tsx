@@ -43,14 +43,14 @@ export function MarketDriverNudges({ marketKey, name, sectors }: { marketKey: st
           {exposure.map((e) => (
             <li key={e.label} className="rounded-lg border border-border bg-card/50 p-3 text-sm">
               <p className="font-semibold">{e.label}</p>
-              <p className="text-xs text-muted-foreground">Sensitivity {sign(e.beta)} {DRIVER_META[factor].unitNote}</p>
+              <p className="text-sm text-muted-foreground">Sensitivity {sign(e.beta)} {DRIVER_META[factor].unitNote}</p>
               {e.impliedPct != null ? (
-                <p className={cn("mt-1 text-xs font-medium", e.impliedPct >= 0 ? "text-emerald-600" : "text-rose-600")}>Implied today {sign(e.impliedPct)}%</p>
+                <p className={cn("mt-1 text-sm font-medium", e.impliedPct >= 0 ? "text-emerald-600" : "text-rose-600")}>Implied today {sign(e.impliedPct)}%</p>
               ) : null}
             </li>
           ))}
         </ul>
-        <Link href="/macro/transmission" className="mt-3 inline-block text-xs font-semibold text-primary hover:underline">Full sector map →</Link>
+        <Link href="/macro/transmission" className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">Full sector map →</Link>
       </Panel>
     );
   }
@@ -67,14 +67,14 @@ export function MarketDriverNudges({ marketKey, name, sectors }: { marketKey: st
             <div className="flex items-baseline justify-between gap-2">
               <span className="font-semibold">{n.label}</span>
               {n.todayMove != null ? (
-                <span className={cn("tabular-nums text-xs", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                <span className={cn("tabular-nums text-sm", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
                   {sign(n.todayMove, 1)}
                   {n.todayUnit} today
                 </span>
               ) : null}
             </div>
             <p className="mt-1 text-muted-foreground">{n.headline}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Index sensitivity {sign(n.beta)}
               {n.impliedPct != null ? (
                 <>
@@ -83,7 +83,7 @@ export function MarketDriverNudges({ marketKey, name, sectors }: { marketKey: st
                 </>
               ) : null}
             </p>
-            <Link href={n.href} className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+            <Link href={n.href} className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
               {n.cta} →
             </Link>
           </li>

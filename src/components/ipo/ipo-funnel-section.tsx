@@ -136,7 +136,7 @@ function IpoCard({ ipo, disclaimer, explainer }: { ipo: Ipo; disclaimer: string;
           <p className="flex items-start gap-1.5 rounded-md bg-rose-50 px-2.5 py-1.5 text-[11px] leading-snug text-rose-900">
             <span aria-hidden className="mt-1 inline-block size-2 shrink-0 rounded-full bg-rose-500" />
             <span>
-              <span className="font-semibold">What the red dot means:</span> a draft prospectus (DRHP) prints <span className="font-mono">[●]</span> wherever a figure is not decided yet, such as the price, the final issue size or the dates. They are filled in the final prospectus (RHP) after SEBI approves, so we show a dot instead of a number rather than guess.
+              <span className="font-semibold">What the red dot means:</span> a draft prospectus (DRHP) prints <span className="font-semibold">[●]</span> wherever a figure is not decided yet, such as the price, the final issue size or the dates. They are filled in the final prospectus (RHP) after SEBI approves, so we show a dot instead of a number rather than guess.
             </span>
           </p>
         </>

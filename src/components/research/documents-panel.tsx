@@ -165,7 +165,7 @@ export function DocumentsPanel({
                 type="button"
                 onClick={() => setActiveTab(tab.id as any)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all cursor-pointer",
                   active
                     ? "bg-primary/10 text-primary border border-primary/25 shadow-xs"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border border-transparent",
@@ -182,7 +182,7 @@ export function DocumentsPanel({
         {activeTab === "annual_reports" && (
           <div className="space-y-4">
             {annualReports.length === 0 ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 No annual reports recorded for {symbol}. Verify directly on{" "}
                 <a
                   href={`https://www.nseindia.com/companies-listing/corporate-filings-annual-reports?symbol=${encodeURIComponent(symbol)}`}
@@ -204,27 +204,27 @@ export function DocumentsPanel({
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-sm text-foreground">{ar.financialYear}</span>
-                        <Badge variant="outline" className="text-[10px] font-semibold">
+                        <Badge variant="outline" className="text-xs font-semibold">
                           Official PDF
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{ar.companyName}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-1">{ar.companyName}</p>
                       {ar.broadcastDate ? (
-                        <p className="text-[11px] text-muted-foreground/80">
+                        <p className="text-xs text-muted-foreground/80">
                           Filed on: {ar.broadcastDate}
                         </p>
                       ) : null}
                     </div>
 
                     <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground tabular-nums">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         {ar.fileSize ?? "PDF Document"}
                       </span>
                       <a
                         href={ar.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/20 transition-all cursor-pointer"
                       >
                         <Download className="size-3" />
                         <span>Download</span>
@@ -242,12 +242,12 @@ export function DocumentsPanel({
           <div className="space-y-4">
             {/* Category Filter Pills */}
             {annData?.categories?.length ? (
-              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 text-sm">
                 <button
                   type="button"
                   onClick={() => setAnnouncementCategory(null)}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer text-xs font-medium",
+                    "rounded-md px-2.5 py-1 transition-all cursor-pointer text-sm font-medium",
                     announcementCategory === null
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/60 text-muted-foreground hover:text-foreground",
@@ -261,7 +261,7 @@ export function DocumentsPanel({
                     type="button"
                     onClick={() => setAnnouncementCategory(c.category)}
                     className={cn(
-                      "rounded-md px-2.5 py-1 transition-all cursor-pointer text-xs font-medium",
+                      "rounded-md px-2.5 py-1 transition-all cursor-pointer text-sm font-medium",
                       announcementCategory === c.category
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted/60 text-muted-foreground hover:text-foreground",
@@ -274,21 +274,21 @@ export function DocumentsPanel({
             ) : null}
 
             {annLoading ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">Loading announcements…</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">Loading announcements…</p>
             ) : annData?.items?.length ? (
               <div className="divide-y divide-border/50 rounded-xl border border-border/80 bg-card overflow-hidden">
                 {annData.items.map((item, idx) => (
                   <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 hover:bg-muted/20 transition-colors">
                     <div className="space-y-1 min-w-0 pr-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-[10px] font-medium">
+                        <Badge variant="secondary" className="text-xs font-medium">
                           {item.category}
                         </Badge>
-                        <span className="text-[11px] text-muted-foreground tabular-nums">
+                        <span className="text-xs text-muted-foreground tabular-nums">
                           {fmtDate(item.broadcastDate)}
                         </span>
                       </div>
-                      <p className="text-xs font-medium text-foreground leading-snug">{item.headline}</p>
+                      <p className="text-sm font-medium text-foreground leading-snug">{item.headline}</p>
                     </div>
 
                     {item.attachmentUrl ? (
@@ -296,7 +296,7 @@ export function DocumentsPanel({
                         href={item.attachmentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        className="shrink-0 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
                       >
                         <span>View Filing</span>
                         <ExternalLink className="size-3" />
@@ -306,7 +306,7 @@ export function DocumentsPanel({
                 ))}
               </div>
             ) : (
-              <p className="py-6 text-center text-xs text-muted-foreground">
+              <p className="py-6 text-center text-sm text-muted-foreground">
                 No recent announcements found. View on{" "}
                 <a href={annData?.nseUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                   NSE Corporate Filings
@@ -321,7 +321,7 @@ export function DocumentsPanel({
         {activeTab === "ratings" && (
           <div className="space-y-4">
             {ratingsLoading ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">Loading credit ratings…</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">Loading credit ratings…</p>
             ) : ratingsData?.events?.length ? (
               <div className="divide-y divide-border/50 rounded-xl border border-border/80 bg-card overflow-hidden">
                 {ratingsData.events.map((ev, idx) => (
@@ -329,20 +329,20 @@ export function DocumentsPanel({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         {ev.agency ? (
-                          <Badge variant="outline" className="text-[10px] font-bold">
+                          <Badge variant="outline" className="text-xs font-bold">
                             {ev.agency}
                           </Badge>
                         ) : null}
-                        <span className="text-[11px] text-muted-foreground tabular-nums">
+                        <span className="text-xs text-muted-foreground tabular-nums">
                           {fmtDate(ev.date)}
                         </span>
                         {ev.rating ? (
-                          <Badge className="bg-primary/10 text-primary text-[10px] font-bold">
+                          <Badge className="bg-primary/10 text-primary text-xs font-bold">
                             {ev.rating}
                           </Badge>
                         ) : null}
                       </div>
-                      <p className="text-xs font-medium text-foreground">{ev.detail}</p>
+                      <p className="text-sm font-medium text-foreground">{ev.detail}</p>
                     </div>
 
                     {ev.link ? (
@@ -350,7 +350,7 @@ export function DocumentsPanel({
                         href={ev.link}
                         target="_blank"
                         rel="noreferrer"
-                        className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        className="shrink-0 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
                       >
                         <span>Rating Rationale</span>
                         <ExternalLink className="size-3" />
@@ -360,7 +360,7 @@ export function DocumentsPanel({
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-border/70 p-5 text-center text-xs text-muted-foreground">
+              <div className="rounded-xl border border-border/70 p-5 text-center text-sm text-muted-foreground">
                 <p>No credit rating downgrade or radar events logged for {symbol} in the last 90 days.</p>
                 <p className="mt-1">Covered agencies: CRISIL, CARE, ICRA.</p>
               </div>
@@ -372,7 +372,7 @@ export function DocumentsPanel({
         {activeTab === "concalls" && (
           <div className="space-y-4">
             {concallLoading ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">Loading concall summary…</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">Loading concall summary…</p>
             ) : concallData?.summary ? (
               <div className="space-y-4 rounded-xl border border-border/80 bg-card p-5">
                 <div className="flex items-center justify-between">
@@ -380,7 +380,7 @@ export function DocumentsPanel({
                     <h4 className="text-sm font-bold text-foreground">
                       {concallData.summary.quarter ?? "Earnings"} Concall Transcript Briefing
                     </h4>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Transcript Date: {concallData.summary.transcriptDate ? fmtDate(concallData.summary.transcriptDate) : "Not verified"} · Analyzed via {concallData.summary.generatedBy}
                     </p>
                   </div>
@@ -389,7 +389,7 @@ export function DocumentsPanel({
                       href={concallData.summary.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/20"
                     >
                       <span>Full Transcript</span>
                       <ExternalLink className="size-3" />
@@ -398,7 +398,7 @@ export function DocumentsPanel({
                 </div>
 
                 {concallData.summary.guidance.length ? (
-                  <div className="space-y-1.5 text-xs">
+                  <div className="space-y-1.5 text-sm">
                     <p className="font-semibold text-foreground">Management Guidance & Outlook:</p>
                     <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
                       {concallData.summary.guidance.map((g, i) => (
@@ -409,7 +409,7 @@ export function DocumentsPanel({
                 ) : null}
 
                 {concallData.summary.growthDrivers.length ? (
-                  <div className="space-y-1.5 text-xs">
+                  <div className="space-y-1.5 text-sm">
                     <p className="font-semibold text-foreground">Growth Drivers & Catalysts:</p>
                     <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
                       {concallData.summary.growthDrivers.map((d, i) => (
@@ -420,7 +420,7 @@ export function DocumentsPanel({
                 ) : null}
               </div>
             ) : (
-              <div className="rounded-xl border border-border/70 p-5 text-center text-xs text-muted-foreground">
+              <div className="rounded-xl border border-border/70 p-5 text-center text-sm text-muted-foreground">
                 <p>{concallData?.message ?? "Transcript archives are temporarily unavailable. Please retry shortly."}</p>
               </div>
             )}

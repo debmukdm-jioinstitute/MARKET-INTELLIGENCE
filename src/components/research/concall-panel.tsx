@@ -37,7 +37,7 @@ const pos = (v: number) => `${((Math.max(-1, Math.min(1, v)) + 1) * 50).toFixed(
 function ToneMeter({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="flex justify-between text-xs text-muted-foreground">
+      <div className="flex justify-between text-sm text-muted-foreground">
         <span>{label}</span>
         <span className="tabular-nums">{value >= 0 ? "+" : ""}{value.toFixed(2)}</span>
       </div>
@@ -87,7 +87,7 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
       {data?.documents?.length ? <details className="mb-3 text-sm"><summary className="cursor-pointer text-primary">Original transcript archive ({data.documents.length})</summary><ul className="mt-2 space-y-2">{data.documents.map((d) => <li key={d.url}><a href={d.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{d.title} ↗</a></li>)}</ul></details> : null}
       {s ? (
         <div className="space-y-4">
-          <p className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
+          <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
             <span className="font-semibold text-foreground">{usedModel ? "AI summary of the linked transcript — read the original for exact wording." : "Auto-extracted from the linked transcript — read the original for exact wording."}</span>{" "}
             {s.quarter ? `${s.quarter} · ` : ""}{s.transcriptDate ? `dated ${fmtDay(s.transcriptDate)}` : "date not verified"} ·{" "}
             <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
@@ -118,7 +118,7 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
                     {delta < -DELTA_BAND ? "Tone cooled in Q&A" : delta > DELTA_BAND ? "Tone warmed in Q&A" : "Tone held steady"} ({delta >= 0 ? "+" : ""}{delta.toFixed(2)})
                   </p>
                 ) : null}
-                <p className="text-xs text-muted-foreground">Scale: −1 very negative, +1 very positive (FinBERT reading of the words used). A cooler Q&amp;A than prepared remarks is the signal to watch.</p>
+                <p className="text-sm text-muted-foreground">Scale: −1 very negative, +1 very positive (FinBERT reading of the words used). A cooler Q&amp;A than prepared remarks is the signal to watch.</p>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">Tone was not scored for this call (the scoring model was unavailable when it was processed).</p>
@@ -126,7 +126,7 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
           </div>
 
           <div>
-            <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="text-xs font-semibold text-primary hover:underline">
+            <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="text-sm font-semibold text-primary hover:underline">
               {more ? "Hide" : "Show"} growth drivers and risks
             </button>
             {more ? (

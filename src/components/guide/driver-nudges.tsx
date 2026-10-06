@@ -27,7 +27,7 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
       : null,
   );
 
-  if (!nudges.length) return loading ? <p className="text-xs text-muted-foreground">Checking what moves {symbol}…</p> : null;
+  if (!nudges.length) return loading ? <p className="text-sm text-muted-foreground">Checking what moves {symbol}…</p> : null;
 
   return (
     <Panel
@@ -42,14 +42,14 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-semibold">{n.label}</span>
                 {n.todayMove != null ? (
-                  <span className={cn("tabular-nums text-xs", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                  <span className={cn("tabular-nums text-sm", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
                     {sign(n.todayMove, 1)}
                     {n.todayUnit} today
                   </span>
                 ) : null}
               </div>
               <p className="mt-1 text-muted-foreground">{n.reason ?? n.headline}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Sector sensitivity {sign(n.beta)}
                 {n.significant ? " (statistically significant)" : ""}
                 {imp != null ? (
@@ -60,7 +60,7 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
                   </>
                 ) : null}
               </p>
-              <Link href={n.href} className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+              <Link href={n.href} className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
                 {n.cta} →
               </Link>
             </li>

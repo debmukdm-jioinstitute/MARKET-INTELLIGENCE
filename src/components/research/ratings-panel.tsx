@@ -44,7 +44,7 @@ export function RatingAlertPulse({ symbol }: { symbol: string }) {
   const { data } = useSWR<RatingsResponse>(ratingsKey(symbol), loadRatings, { revalidateOnFocus: false });
   if (!data?.alert) return null;
   return (
-    <a href="#ratings" className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700" title="A rating agency downgraded or turned negative on this company in the last 90 days">
+    <a href="#ratings" className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-2.5 py-1 text-sm font-semibold text-rose-700" title="A rating agency downgraded or turned negative on this company in the last 90 days">
       <span className="relative flex size-2">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-rose-500 opacity-60" />
         <span className="relative inline-flex size-2 rounded-full bg-rose-600" />
@@ -74,7 +74,7 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[30rem] text-left text-sm">
-              <thead className="text-xs text-muted-foreground">
+              <thead className="text-sm text-muted-foreground">
                 <tr className="border-b border-border">
                   <th className="py-2 pr-3 font-medium">Agency</th>
                   <th className="py-2 pr-3 font-medium">Rating</th>
@@ -89,12 +89,12 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
                     <td className="py-2 pr-3 font-medium text-foreground">{a.agency}</td>
                     {a.covered ? (
                       <>
-                        <td className="py-2 pr-3">{a.rating ? <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", NOTCH_TONE[a.notch ?? ""] ?? "bg-muted")}>{a.rating}</span> : <span className="text-muted-foreground">—</span>}</td>
+                        <td className="py-2 pr-3">{a.rating ? <span className={cn("rounded-full px-2.5 py-0.5 text-sm font-semibold", NOTCH_TONE[a.notch ?? ""] ?? "bg-muted")}>{a.rating}</span> : <span className="text-muted-foreground">—</span>}</td>
                         <td className={cn("py-2 pr-3", a.outlook === "negative" || a.watch === "negative" ? "font-semibold text-rose-700" : "text-muted-foreground")}>{a.watch ? `Watch ${a.watch}` : a.outlook ? cap(a.outlook) : "—"}</td>
                         <td className="py-2 pr-3 text-muted-foreground">{a.lastAction ? `${ACTION_LABEL[a.lastAction] ?? cap(a.lastAction)}${a.lastActionDate ? ` · ${fmtDay(a.lastActionDate)}` : ""}` : "—"}</td>
                         <td className="py-2">
                           {a.rationaleUrl ? (
-                            <a href={a.rationaleUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary hover:underline">
+                            <a href={a.rationaleUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline">
                               Open ↗
                             </a>
                           ) : (
@@ -129,14 +129,14 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
 
           {data.events.length ? (
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent events</h3>
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Recent events</h3>
               <ul className="space-y-2">
                 {data.events.slice(0, 8).map((e) => (
                   <li key={`${e.type}-${e.agency}-${e.date}-${e.detail}`} className={cn("flex flex-wrap items-start gap-2 rounded-md border p-3 text-sm", e.type === "disclosure" ? "border-border bg-card" : "border-rose-300 bg-rose-50")}>
-                    <span className="text-xs font-medium text-muted-foreground">{fmtDay(e.date)}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{fmtDay(e.date)}</span>
                     <span className="min-w-0 flex-1 text-foreground">{e.detail}</span>
                     {e.link ? (
-                      <a href={e.link} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary hover:underline">
+                      <a href={e.link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline">
                         {e.type === "disclosure" ? "NSE filing ↗" : "Source ↗"}
                       </a>
                     ) : null}
@@ -146,7 +146,7 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
             </div>
           ) : null}
 
-          <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
+          <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
             <p className="mb-1 font-semibold text-foreground">How to read the letters</p>
             <p className="flex flex-wrap gap-x-3 gap-y-1">
               {LEGEND.map(([k, v]) => (

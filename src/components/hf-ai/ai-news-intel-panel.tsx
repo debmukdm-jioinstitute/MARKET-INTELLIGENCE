@@ -176,32 +176,32 @@ function PillarCard({ pillar }: { pillar: MarketPillarCard }) {
     <div className="group rounded-xl border border-border/70 bg-card p-3.5 space-y-2.5 transition-all hover:border-primary/50 hover:bg-muted/20 shadow-xs h-full flex flex-col justify-between">
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+          <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
             <span className="text-base leading-none">{pillar.icon}</span>
             <span className="truncate">{pillar.name}</span>
           </div>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeStyle}`}>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${badgeStyle}`}>
             {pillar.badge}
           </span>
         </div>
 
-        <div className="text-xs font-semibold text-foreground/90 group-hover:text-primary transition-colors flex items-center justify-between gap-1">
+        <div className="text-sm font-semibold text-foreground/90 group-hover:text-primary transition-colors flex items-center justify-between gap-1">
           <span className="line-clamp-1">{pillar.headline}</span>
           <ArrowUpRight className="size-3 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
         </div>
 
-        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
           {pillar.details}
         </p>
       </div>
 
       {pillar.metrics && pillar.metrics.length > 0 ? (
-        <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border/50 text-[11px]">
+        <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border/50 text-xs">
           {pillar.metrics.slice(0, 4).map((m, idx) => (
             <div key={idx} className="rounded bg-muted/40 px-2 py-1 flex items-center justify-between gap-1">
-              <span className="text-[10px] text-muted-foreground truncate">{m.label}:</span>
+              <span className="text-xs text-muted-foreground truncate">{m.label}:</span>
               <span
-                className={`font-semibold text-[10px] ${
+                className={`font-semibold text-xs ${
                   m.changePct != null
                     ? m.isPositive
                       ? "text-emerald-600 dark:text-emerald-400"
@@ -247,12 +247,12 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className={`w-2.5 h-2.5 rounded-full ${colors.dot} animate-pulse`} />
-          <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+          <span className="text-sm font-bold uppercase tracking-wider text-foreground">
             AI Market Sentiment · Multi-Pillar Engine
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className={`text-xs font-bold ${colors.text}`}>
+          <span className={`text-sm font-bold ${colors.text}`}>
             {colors.title} · {Math.round(sentiment.confidence * 100)}% CONFIDENCE
           </span>
         </div>
@@ -276,7 +276,7 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
       </div>
 
       {/* Breakdown Pills */}
-      <div className="flex gap-2 text-xs">
+      <div className="flex gap-2 text-sm">
         <span className="flex-1 text-center rounded-lg bg-emerald-500/10 py-1.5 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20">
           🐂 {bullPct}% Bullish (+ve)
         </span>
@@ -291,12 +291,12 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
       {/* Multi-Pillar Market Intelligence Matrix */}
       {pillars ? (
         <div className="space-y-2 pt-1">
-          <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+          <div className="flex items-center justify-between text-sm font-semibold text-foreground">
             <span className="flex items-center gap-1.5">
               <Compass className="size-3.5 text-primary" />
               <span>Multi-Pillar Intelligence Matrix:</span>
             </span>
-            <span className="text-[11px] text-muted-foreground font-normal">
+            <span className="text-xs text-muted-foreground font-normal">
               Click any pillar for deeper dossier
             </span>
           </div>
@@ -313,12 +313,12 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
 
       {/* Regional Disparity Callout Banner */}
       {sentiment.disparityNote ? (
-        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-primary text-[11px] uppercase tracking-wider">
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1 text-sm">
+          <div className="flex items-center gap-1.5 font-bold text-primary text-xs uppercase tracking-wider">
             <Globe className="size-3.5" />
             <span>Cross-Market Disparity Analysis</span>
           </div>
-          <p className="text-xs text-foreground/90 leading-relaxed">
+          <p className="text-sm text-foreground/90 leading-relaxed">
             {sentiment.disparityNote}
           </p>
         </div>
@@ -326,13 +326,13 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
 
       {/* Synthesized Market Sentiment Explanation */}
       <div className="p-3.5 rounded-xl bg-card border border-border/80 space-y-3 shadow-xs">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+        <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
           <Sparkles className="size-3.5 text-primary" />
           <span>Why is the market sentiment {sentiment.label.toUpperCase()}?</span>
         </div>
 
         {sentiment.rationale ? (
-          <p className="text-xs text-foreground/90 leading-relaxed font-normal">
+          <p className="text-sm text-foreground/90 leading-relaxed font-normal">
             {sentiment.rationale}
           </p>
         ) : null}
@@ -340,14 +340,14 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
         {/* Contributing Drivers List */}
         {drivers && (drivers.positive.length > 0 || drivers.negative.length > 0 || drivers.neutral.length > 0) ? (
           <div className="pt-2.5 border-t border-border/60 space-y-2.5">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Key Contributing Market Catalysts:
             </span>
 
             {/* Bearish Catalysts */}
             {drivers.negative.length > 0 ? (
               <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                <div className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
                   <TrendingDown className="size-3" />
                   <span>Bearish / Risk Drag Factors (-ve):</span>
                 </div>
@@ -360,7 +360,7 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
             {/* Bullish Catalysts */}
             {drivers.positive.length > 0 ? (
               <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <TrendingUp className="size-3" />
                   <span>Bullish / Resilient Drivers (+ve):</span>
                 </div>
@@ -373,7 +373,7 @@ function SentimentMeter({ sentiment }: { sentiment: AggSentiment }) {
             {/* Neutral Baseline */}
             {drivers.neutral.length > 0 ? (
               <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
+                <div className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                   <Minus className="size-3" />
                   <span>Macro & Liquidity Baseline (↔ Neutral):</span>
                 </div>
@@ -412,7 +412,7 @@ function DriverCard({
       : "bg-muted text-muted-foreground";
 
   const InnerContent = (
-    <div className={`block p-2.5 rounded-lg border text-xs transition-colors group shadow-xs ${containerStyle}`}>
+    <div className={`block p-2.5 rounded-lg border text-sm transition-colors group shadow-xs ${containerStyle}`}>
       <div className="flex items-start justify-between gap-2">
         <span className="font-semibold text-foreground group-hover:text-primary transition-colors flex-1 line-clamp-1">
           {driver.title}
@@ -423,8 +423,8 @@ function DriverCard({
           <ExternalLink className="size-3 text-muted-foreground group-hover:text-primary shrink-0 mt-0.5 transition-colors" />
         )}
       </div>
-      <div className="flex items-center gap-2 mt-1 text-[11px]">
-        <span className={`font-bold px-1.5 py-0.2 rounded text-[10px] ${badgeStyle}`}>
+      <div className="flex items-center gap-2 mt-1 text-xs">
+        <span className={`font-bold px-1.5 py-0.2 rounded text-xs ${badgeStyle}`}>
           {driver.sourceLabel}
         </span>
         <span className="truncate">· {driver.reason}</span>
@@ -461,35 +461,35 @@ function TldrCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base">✨</span>
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
             AI TL;DR & News Digest — {analyzedCount} Headlines
           </span>
         </div>
-        <span className="text-[10px] text-muted-foreground bg-muted/60 rounded px-1.5 py-0.5">
+        <span className="text-xs text-muted-foreground bg-muted/60 rounded px-1.5 py-0.5">
           BART-large-cnn + FinBERT
         </span>
       </div>
 
       {/* Executive Overview Synthesis */}
       {tldr ? (
-        <div className="p-3 rounded-lg bg-muted/30 border border-border/60 text-xs text-foreground/90 leading-relaxed space-y-1">
-          <div className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-3 rounded-lg bg-muted/30 border border-border/60 text-sm text-foreground/90 leading-relaxed space-y-1">
+          <div className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
             <FileText className="size-3" />
             <span>Executive Brief</span>
           </div>
-          <p className="text-xs leading-relaxed">{tldr}</p>
+          <p className="text-sm leading-relaxed">{tldr}</p>
         </div>
       ) : null}
 
       {/* Clickable Headlines Digest List */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium pt-1">
+        <div className="flex items-center justify-between text-sm text-muted-foreground font-medium pt-1">
           <span>Click any headline to open verified source:</span>
-          <span className="text-[10px] text-primary font-semibold">100% Live Links</span>
+          <span className="text-xs text-primary font-semibold">100% Live Links</span>
         </div>
 
         {items.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic">No individual headline details available.</p>
+          <p className="text-sm text-muted-foreground italic">No individual headline details available.</p>
         ) : (
           <div className="space-y-2">
             {items.map((item) => {
@@ -511,19 +511,19 @@ function TldrCard({
                   title={`Open original source on ${item.sourceLabel || item.source}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex-1 leading-snug">
+                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors flex-1 leading-snug">
                       {item.title}
                     </span>
                     <ExternalLink className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 mt-0.5 transition-colors" />
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-border/40 text-[11px]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-border/40 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-primary px-2 py-0.5 rounded bg-primary/10 text-[10px]">
+                      <span className="font-bold text-primary px-2 py-0.5 rounded bg-primary/10 text-xs">
                         {item.sourceLabel || item.source.toUpperCase()}
                       </span>
                       {item.publishedAt ? (
-                        <span className="text-muted-foreground text-[10px] flex items-center gap-1">
+                        <span className="text-muted-foreground text-xs flex items-center gap-1">
                           <Clock className="size-2.5" />
                           {timeAgo(item.publishedAt)}
                         </span>
@@ -531,10 +531,10 @@ function TldrCard({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <span className={`font-bold px-2 py-0.5 rounded-full border text-[10px] ${badgeStyle}`}>
+                      <span className={`font-bold px-2 py-0.5 rounded-full border text-xs ${badgeStyle}`}>
                         {isPos ? "🐂 +ve" : isNeg ? "🐻 -ve" : "↔ Neutral"}
                       </span>
-                      <span className="text-muted-foreground text-[11px] hidden sm:inline">
+                      <span className="text-muted-foreground text-xs hidden sm:inline">
                         · {item.sentiment.reason}
                       </span>
                     </div>
@@ -554,18 +554,18 @@ function CategoryTags({ categories }: { categories: CategoryItem[] }) {
 
   return (
     <div className="space-y-1.5">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
         Zero-Shot Category Tags (BART-large-mnli)
       </div>
       <div className="flex flex-wrap gap-1.5">
         {categories.map((c, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2.5 py-0.5 text-[11px] text-muted-foreground"
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2.5 py-0.5 text-xs text-muted-foreground"
             title={`${c.confidence}% confidence`}
           >
             {CATEGORY_ICONS[c.category] ?? "📌"} {c.category.replace(/-/g, " ")}
-            <span className="text-[10px] opacity-60">{c.confidence}%</span>
+            <span className="text-xs opacity-60">{c.confidence}%</span>
           </span>
         ))}
       </div>
@@ -606,7 +606,7 @@ export function AiNewsIntelPanel({ compact = false }: { compact?: boolean }) {
 
   if (error || !data || data.error) {
     return (
-      <div className="rounded-xl border border-border bg-muted/20 p-4 text-xs text-muted-foreground">
+      <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
         AI Market Intelligence temporarily unavailable. Using standard market feed.
       </div>
     );
@@ -628,7 +628,7 @@ export function AiNewsIntelPanel({ compact = false }: { compact?: boolean }) {
       <div className="space-y-4">
         <SentimentMeter sentiment={data.sentiment} />
         <TldrCard tldr={data.tldr} items={data.items} analyzedCount={data.analyzedCount} />
-        <p className="text-right text-[10px] text-muted-foreground">
+        <p className="text-right text-xs text-muted-foreground">
           Powered by {poweredBy} · Updated {asOf} IST
         </p>
       </div>
@@ -640,7 +640,7 @@ export function AiNewsIntelPanel({ compact = false }: { compact?: boolean }) {
       <SentimentMeter sentiment={data.sentiment} />
       <TldrCard tldr={data.tldr} items={data.items} analyzedCount={data.analyzedCount} />
       <CategoryTags categories={data.categories} />
-      <p className="text-right text-[10px] text-muted-foreground">
+      <p className="text-right text-xs text-muted-foreground">
         Sentiment: {poweredBy} · Summary: facebook/BART-large-cnn · Categories: BART-large-mnli ·{" "}
         {asOf} IST
       </p>

@@ -124,7 +124,7 @@ export default function ResearchSymbolPage() {
                 <p className="font-medium capitalize">{data.about.description}</p>
               ) : null}
               <p className="text-muted-foreground leading-relaxed">{data.about.extract}</p>
-              <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-xs hover:underline">
+              <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
                 Source: Wikipedia
               </a>
             </div>

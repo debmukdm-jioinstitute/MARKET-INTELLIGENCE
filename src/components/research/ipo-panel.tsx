@@ -74,7 +74,7 @@ export function IpoPanel({ symbol, currentPrice }: IpoPanelProps) {
       title="IPO & Listing History"
       subtitle="Public offering parameters and cumulative post-listing performance."
       action={
-        <Link href="/research/ipo" className="text-xs font-semibold text-primary hover:underline">
+        <Link href="/research/ipo" className="text-sm font-semibold text-primary hover:underline">
           IPO & GMP Tracker →
         </Link>
       }
@@ -82,21 +82,21 @@ export function IpoPanel({ symbol, currentPrice }: IpoPanelProps) {
       <div className="space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Issue Price / Band</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Issue Price / Band</span>
             <p className="text-xl font-bold tabular-nums text-foreground mt-1">
               {priceBandText}
             </p>
-            <span className="text-xs text-muted-foreground">Offer price to investors</span>
+            <span className="text-sm text-muted-foreground">Offer price to investors</span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Subscription Multiple</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Subscription Multiple</span>
             <p className="text-xl font-bold tabular-nums text-foreground mt-1">{subDisplay}</p>
-            <span className="text-xs text-muted-foreground">Overall investor book demand</span>
+            <span className="text-sm text-muted-foreground">Overall investor book demand</span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Return Since Issue</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Return Since Issue</span>
             {returnSinceIssue != null ? (
               <p
                 className={cn(
@@ -109,19 +109,19 @@ export function IpoPanel({ symbol, currentPrice }: IpoPanelProps) {
             ) : (
               <p className="text-xl font-bold text-muted-foreground mt-1">—</p>
             )}
-            <span className="text-xs text-muted-foreground">Cumulative return vs issue price</span>
+            <span className="text-sm text-muted-foreground">Cumulative return vs issue price</span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Issue Timeline</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Issue Timeline</span>
             <p className="text-sm font-semibold text-foreground mt-1">
               {ipo.biddingEndDate ? `Closed ${ipo.biddingEndDate}` : "Recent listing"}
             </p>
-            <span className="text-xs text-muted-foreground">NSE / BSE official listing</span>
+            <span className="text-sm text-muted-foreground">NSE / BSE official listing</span>
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground border-t border-border/40 pt-2">
+        <p className="text-sm text-muted-foreground border-t border-border/40 pt-2">
           Listing return is calculated against the final public issue price. For historical gray market premium (GMP) and listing day performance, visit the IPO Intelligence Hub.
         </p>
       </div>
