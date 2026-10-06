@@ -84,6 +84,7 @@ export function AuthForm({
 
   useEffect(() => {
     void prefetchIndiaDashboard();
+    void fetch("/api/homedashboard/headlines", { cache: "no-store" }).catch(() => {});
   }, []);
   const privacyRef = useRef<HTMLInputElement>(null);
   const isSignup = mode === "signup";

@@ -91,9 +91,9 @@ function timeAgoFrom(iso: string | undefined): string {
 }
 
 const REGULATOR_FALLBACK = [
-  { title: "RBI: latest press releases and circulars", source: "Reserve Bank of India", link: "https://www.rbi.org.in/", timeAgo: "check source" },
-  { title: "NSE: latest corporate announcements and circulars", source: "National Stock Exchange", link: "https://www.nseindia.com/", timeAgo: "check source" },
-  { title: "SEBI: latest circulars and orders", source: "Securities and Exchange Board of India", link: "https://www.sebi.gov.in/", timeAgo: "check source" },
+  { title: "RBI: latest press releases and circulars", source: "Reserve Bank of India", link: "https://www.rbi.org.in/", timeAgo: "Official source" },
+  { title: "NSE: latest corporate announcements and circulars", source: "National Stock Exchange", link: "https://www.nseindia.com/", timeAgo: "Official source" },
+  { title: "SEBI: latest circulars and orders", source: "Securities and Exchange Board of India", link: "https://www.sebi.gov.in/", timeAgo: "Official source" },
 ];
 
 export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBrief> {

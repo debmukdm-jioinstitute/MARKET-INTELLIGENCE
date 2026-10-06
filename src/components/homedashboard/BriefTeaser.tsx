@@ -1,8 +1,9 @@
 "use client";
 import useSWR from "swr";
 import { Clock3, ExternalLink, Newspaper } from "lucide-react";
-import type { BriefResponse } from "@/lib/homedashboard/brief";
-import { briefHeadlines, mentions } from "@/lib/homedashboard/brief";
+import type { BriefResponse, HomeHeadline } from "@/lib/homedashboard/brief";
+import { briefHeadlines, mergeHomeHeadlines, mentions } from "@/lib/homedashboard/brief";
+import { useMemo } from "react";
 import { cardClass, fetchOptions, HomeLink, SectionHeading } from "./shared";
 import { homeActions } from "./useHomeProgress";
 
@@ -25,7 +26,15 @@ export function BriefTeaser({
   data?: BriefResponse;
   watched: { symbol: string; name?: string }[];
 }) {
-  const headlines = briefHeadlines(data).slice(0, 5);
+  const { data: liveHeadlines } = useSWR<{ headlines: HomeHeadline[]; stale?: boolean }>(
+    "/api/homedashboard/headlines",
+    homeJson,
+    { ...fetchOptions, refreshInterval: 90_000 },
+  );
+  const headlines = useMemo(
+    () => mergeHomeHeadlines(liveHeadlines?.headlines ?? [], briefHeadlines(data), 5),
+    [liveHeadlines, data],
+  );
   const key = headlines.length
     ? JSON.stringify(headlines.map((h) => h.title.slice(0, 2000)))
     : null;
@@ -70,12 +79,17 @@ export function BriefTeaser({
                         ? `${new Date(h.publishedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} IST · brief time`
                         : h.time}
                     </span>
+                    {(h.severity ?? 0) >= 35 ? (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-800">
+                        High impact
+                      </span>
+                    ) : null}
                     <span
                       className={`rounded-full px-2 py-0.5 font-medium ${label === "positive" ? "bg-emerald-50 text-emerald-600" : label === "negative" ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-stone-500"}`}
                     >
                       {label
                         ? label[0].toUpperCase() + label.slice(1)
-                        : "Sentiment unavailable"}
+                        : "Neutral"}
                     </span>
                   </div>
                   <a

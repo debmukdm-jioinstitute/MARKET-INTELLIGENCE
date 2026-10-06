@@ -1,6 +1,7 @@
 import type { Brief } from "@/lib/brief/types";
 import type { SiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
+import { headlineSeverityScore } from "@/lib/homedashboard/headline-severity";
 import { isToday } from "./insights";
 
 export type BriefResponse = {
@@ -16,6 +17,7 @@ export type HomeHeadline = {
   sector: string;
   symbols: string[];
   why: string;
+  severity?: number;
 };
 function normalized(text: string) {
   return ` ${text
@@ -78,11 +80,10 @@ export function briefHeadlines(
         href: h.link,
         time: "From the latest brief",
         publishedAt: brief.generatedAt,
+        severity: headlineSeverityScore(h.title),
       });
   }
   for (const h of data?.siteWideBrief?.regulatorHeadlines ?? []) {
-    // Upstream static source links are not news headlines.
-    if (h.timeAgo === "check source") continue;
     stories.push({
       ...annotate(h.title),
       title: h.title,
@@ -90,15 +91,35 @@ export function briefHeadlines(
       href: h.link ?? "/intelligence/brief",
       time: h.timeAgo,
       publishedAt: h.publishedAt,
+      severity: headlineSeverityScore(h.title),
     });
   }
   const unique = [...new Map(stories.map((h) => [h.title, h])).values()];
   unique.sort((a, b) => {
+    const sd = (b.severity ?? 0) - (a.severity ?? 0);
+    if (sd !== 0) return sd;
     const ta = a.publishedAt ? Date.parse(a.publishedAt) : 0;
     const tb = b.publishedAt ? Date.parse(b.publishedAt) : 0;
     return tb - ta;
   });
   return unique;
+}
+
+export function mergeHomeHeadlines(primary: HomeHeadline[], secondary: HomeHeadline[], max = 5): HomeHeadline[] {
+  const map = new Map<string, HomeHeadline>();
+  for (const h of [...primary, ...secondary]) {
+    const key = h.title.toLowerCase();
+    if (!map.has(key)) map.set(key, h);
+  }
+  return [...map.values()]
+    .sort((a, b) => {
+      const sd = (b.severity ?? 0) - (a.severity ?? 0);
+      if (sd !== 0) return sd;
+      const ta = a.publishedAt ? Date.parse(a.publishedAt) : 0;
+      const tb = b.publishedAt ? Date.parse(b.publishedAt) : 0;
+      return tb - ta;
+    })
+    .slice(0, max);
 }
 export function trendingSymbol(data: BriefResponse | undefined, now: Date) {
   const counts = new Map<string, number>();
