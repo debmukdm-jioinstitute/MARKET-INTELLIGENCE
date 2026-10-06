@@ -8,6 +8,8 @@ import { useState } from "react";
 import useSWR from "swr";
 import { signClass } from "@/lib/sign-color";
 
+type OfferCover = { freshIssueCr: number | null; ofsShares: number | null; ofsCr: number | null; totalOfferCr: number | null; structure: "fresh" | "ofs" | "fresh+ofs" | null };
+
 type Ipo = {
   company: string;
   symbol: string | null;
@@ -19,7 +21,7 @@ type Ipo = {
   brlms: string[];
   prospectusUrl: string | null;
   topRisks: string[];
-  objects: { objects?: { title: string; category: string }[]; freshIssueMillions?: number | null; hasOfferForSale?: boolean } | null;
+  objects: { objects?: { title: string; category: string }[]; freshIssueMillions?: number | null; hasOfferForSale?: boolean; offer?: OfferCover } | null;
   subscription: Momentum & { series: unknown[] };
   apply: { lotSize: number | null; minInvestmentInr: number | null };
   gmp: { value: number | null; low: number | null; high: number | null; pct: number | null; sources: string[]; updatedAt: string | null; disagree: boolean } | null;
@@ -36,6 +38,19 @@ async function loadIpos(url: string): Promise<IposResponse> {
 
 const fmtDay = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", timeZone: "UTC" }) : "—");
 const CATEGORY_LABEL: Record<string, string> = { capex: "Building / equipment", "debt-repayment": "Paying down debt", "working-capital": "Day-to-day working capital", ofs: "Existing holders selling", "general-corporate": "General corporate use", other: "Other" };
+
+
+const cr = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 2 })} cr`;
+const shares = (n: number) => `${n.toLocaleString("en-IN")} shares`;
+
+/** What a DRHP actually states about the offer: fresh issue, offer for sale, both. Unstated parts are left out, never guessed. */
+function offerStructure(offer: OfferCover | undefined): string | null {
+  if (!offer?.structure) return null;
+  const parts: string[] = [];
+  if (offer.structure !== "ofs") parts.push(offer.freshIssueCr !== null ? `Fresh issue up to ${cr(offer.freshIssueCr)}` : "Fresh issue (size set at RHP)");
+  if (offer.structure !== "fresh") parts.push(offer.ofsCr !== null ? `Offer for sale up to ${cr(offer.ofsCr)}` : offer.ofsShares !== null ? `Offer for sale up to ${shares(offer.ofsShares)}` : "Offer for sale");
+  return parts.join(" + ");
+}
 
 function Meter({ label, x, delta }: { label: string; x: number | null; delta: number | null | undefined }) {
   if (x === null) return null;
@@ -99,12 +114,21 @@ function IpoCard({ ipo, disclaimer, explainer }: { ipo: Ipo; disclaimer: string;
         {ipo.board === "SME" ? <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">SME</span> : null}
         {sub.heatingUp ? <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-800">Retail demand heating up</span> : null}
       </div>
+      {ipo.stage === "drhp_filed" ? (
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
+          <div className="col-span-2"><dt className="text-muted-foreground">Offer structure (from the DRHP)</dt><dd className="text-foreground">{offerStructure(ipo.objects?.offer) ?? "Being read from the prospectus"}</dd></div>
+          <div><dt className="text-muted-foreground">Issue size</dt><dd className="text-foreground">{ipo.issueSizeCr !== null ? `₹${ipo.issueSizeCr.toLocaleString("en-IN")} cr` : ipo.objects?.offer?.freshIssueCr != null ? `At least ${cr(ipo.objects.offer.freshIssueCr)}` : "Fixed at RHP"}</dd></div>
+          <div><dt className="text-muted-foreground">Lead managers</dt><dd className="text-foreground">{ipo.brlms.length ? ipo.brlms.join(", ") : "Being read from the prospectus"}</dd></div>
+          <div className="col-span-2 sm:col-span-4"><dd className="text-muted-foreground">Price band and bidding dates are announced only after SEBI clears the issue and the RHP is filed.</dd></div>
+        </dl>
+      ) : (
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
         <div><dt className="text-muted-foreground">Issue size</dt><dd className="text-foreground">{ipo.issueSizeCr !== null ? `₹${ipo.issueSizeCr.toLocaleString("en-IN")} cr` : "—"}</dd></div>
         <div><dt className="text-muted-foreground">Price band</dt><dd className="text-foreground">{ipo.priceBand.high !== null ? (ipo.priceBand.low !== ipo.priceBand.high ? `${fmtInr(ipo.priceBand.low)}–${fmtInr(ipo.priceBand.high)}` : fmtInr(ipo.priceBand.high)) : "—"}</dd></div>
         <div><dt className="text-muted-foreground">Bidding</dt><dd className="text-foreground">{fmtDay(ipo.dates.open)} → {fmtDay(ipo.dates.close)}</dd></div>
         <div><dt className="text-muted-foreground">Lead managers</dt><dd className="text-foreground">{ipo.brlms.length ? ipo.brlms.join(", ") : "—"}</dd></div>
       </dl>
+      )}
 
       {live ? (
         <div className="space-y-1.5 rounded-md border border-border p-2.5">

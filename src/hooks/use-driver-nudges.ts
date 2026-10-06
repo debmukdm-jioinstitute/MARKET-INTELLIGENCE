@@ -16,6 +16,16 @@ async function loadTransmission(url: string): Promise<TransmissionPayload> {
   return json as TransmissionPayload;
 }
 
+/** Shared, cached transmission betas + today's global moves (one SWR key for every nudge consumer). */
+export function useTransmission() {
+  const { data, isLoading } = useSWR("/api/transmission", loadTransmission, {
+    refreshInterval: 300_000,
+    revalidateOnFocus: false,
+    dedupingInterval: 60_000,
+  });
+  return { betas: data?.betas ?? null, shocks: data?.today?.shocks ?? null, loading: isLoading && !data };
+}
+
 /** Instant, rule-based driver nudges for a stock. Reuses the cached /api/transmission payload. */
 export function useDriverNudges(symbol: string, name: string | undefined) {
   const { data, isLoading } = useSWR("/api/transmission", loadTransmission, {

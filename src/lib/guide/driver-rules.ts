@@ -161,3 +161,96 @@ export function buildNudges(
   nudges.sort((a, b) => strength(b) - strength(a));
   return { sectorLabel: fit?.label ?? null, nudges: nudges.slice(0, max) };
 }
+
+const SECTOR_LABEL_RULES: [RegExp, SectorId][] = [
+  [/financ|bank|insur/i, "bank"],
+  [/information tech|\bit\b|software|tech/i, "it"],
+  [/oil|gas|petro|energy(?! util)/i, "oilgas"],
+  [/fast moving|fmcg|consumer (?:staple|def)|food|beverage|tobacco/i, "fmcg"],
+  [/auto/i, "auto"],
+  [/pharma|healthcare|health/i, "pharma"],
+  [/metal|mining|steel/i, "metal"],
+  [/construction|capital goods|infra|cement|power|utilit/i, "infra"],
+  [/real ?estate|realty/i, "realty"],
+];
+
+/** Sector label as shown on the markets page → modelled sector proxy (null when the model has no proxy). */
+export function sectorIdForLabel(label: string): SectorId | null {
+  return SECTOR_LABEL_RULES.find(([re]) => re.test(label))?.[1] ?? null;
+}
+
+/**
+ * Index nudges: sector-weight-averaged betas. A driver counts as significant when the weighted |t| clears 2.
+ * Only sectors the model covers contribute (weights renormalised), so coverage is reported.
+ */
+export function buildIndexNudges(
+  sectors: { name: string; weight: number }[],
+  betas: BetaPayload | null | undefined,
+  shocks: Shocks | null | undefined,
+  max = 3,
+): { coveragePct: number; topSectors: { name: string; weight: number }[]; nudges: DriverNudge[] } {
+  if (!betas || !sectors.length) return { coveragePct: 0, topSectors: [], nudges: [] };
+  const mapped = sectors
+    .map((s) => ({ ...s, id: sectorIdForLabel(s.name) }))
+    .filter((s): s is { name: string; weight: number; id: SectorId } => s.id !== null);
+  const total = sectors.reduce((a, s) => a + s.weight, 0) || 1;
+  const covered = mapped.reduce((a, s) => a + s.weight, 0);
+  if (!covered) return { coveragePct: 0, topSectors: [], nudges: [] };
+  const nudges: DriverNudge[] = [];
+  for (const fac of Object.keys(DRIVER_META) as FactorId[]) {
+    let beta = 0;
+    let t = 0;
+    let contributors: { name: string; w: number; impact: number }[] = [];
+    for (const s of mapped) {
+      const c = betas.sectors.find((x) => x.id === s.id)?.betas[fac];
+      if (!c) continue;
+      beta += (s.weight / covered) * c.beta;
+      t += (s.weight / covered) * Math.abs(c.t);
+      contributors.push({ name: s.name, w: s.weight, impact: Math.abs(c.beta * s.weight) });
+    }
+    if (t < 2) continue;
+    contributors = contributors.sort((a, b) => b.impact - a.impact);
+    const meta = DRIVER_META[fac];
+    const unit: "%" | "bp" = fac === "us10y" ? "bp" : "%";
+    const move = todayMoveFor(fac, shocks);
+    const impliedPct = move == null ? null : (fac === "us10y" ? beta / 10 : beta) * move;
+    nudges.push({
+      factor: fac,
+      label: meta.label,
+      href: meta.href,
+      cta: meta.cta,
+      beta,
+      significant: true,
+      direction: beta >= 0 ? "up" : "down",
+      todayMove: move,
+      todayUnit: unit,
+      impliedPct,
+      headline: `Mostly through ${contributors.slice(0, 2).map((c) => c.name).join(" and ")}`,
+      reason: null,
+    });
+  }
+  nudges.sort((a, b) => Math.abs(b.impliedPct ?? 0) * 10 + Math.abs(b.beta) - (Math.abs(a.impliedPct ?? 0) * 10 + Math.abs(a.beta)));
+  const topSectors = [...mapped].sort((a, b) => b.weight - a.weight).slice(0, 3).map((s) => ({ name: s.name, weight: s.weight }));
+  return { coveragePct: Math.round((covered / total) * 100), topSectors, nudges: nudges.slice(0, max) };
+}
+
+/** For a driver's own page (rupee, crude): which sectors feel its move most, with today's implied effect. */
+export function buildExposure(
+  factor: FactorId,
+  betas: BetaPayload | null | undefined,
+  shocks: Shocks | null | undefined,
+  top = 4,
+): { label: string; beta: number; significant: boolean; impliedPct: number | null }[] {
+  if (!betas) return [];
+  const move = todayMoveFor(factor, shocks);
+  return betas.sectors
+    .filter((s) => s.id !== "nifty")
+    .map((s) => {
+      const c = s.betas[factor];
+      const per = factor === "us10y" ? c.beta / 10 : c.beta;
+      return { label: s.label, beta: c.beta, significant: Math.abs(c.t) >= 2, impliedPct: move == null ? null : per * move };
+    })
+    .filter((r) => r.significant)
+    .sort((a, b) => Math.abs(b.beta) - Math.abs(a.beta))
+    .slice(0, top);
+}

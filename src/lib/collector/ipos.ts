@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { feedFetch } from "@/lib/feeds/http";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { extractObjects, extractTopRisks } from "./drhp";
+import { extractCover, type DrhpCover } from "./drhp-cover";
 import { fetchGmpSources, gmpFor, type GmpSet } from "./ipo-gmp";
 import { getText, today } from "./http";
 import { IPO_STAGES } from "./record-tables";
@@ -17,7 +18,7 @@ import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./t
 
 const ID = "ipos";
 const BUDGET_MS = Number(process.env.IPOS_BUDGET_MS ?? 6 * 60_000);
-const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 3);
+const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 6);
 const MAX_PDF_BYTES = 40 * 1024 * 1024;
 const PAST_WINDOW_DAYS = 75;
 
@@ -204,7 +205,7 @@ async function sebiPdfUrl(page: string): Promise<string | null> {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-async function analyse(page: string): Promise<{ topRisks: string[]; objects: ReturnType<typeof extractObjects> } | null> {
+async function analyse(page: string): Promise<{ topRisks: string[]; objects: ReturnType<typeof extractObjects>; cover: DrhpCover } | null> {
   const pdf = await sebiPdfUrl(page);
   if (!pdf) return null;
   const res = await feedFetch(pdf, { headers: HEADERS, timeoutMs: 150_000, attempts: 2 });
@@ -216,10 +217,14 @@ async function analyse(page: string): Promise<{ topRisks: string[]; objects: Ret
   const pages = Array.isArray(text) ? text : [text];
   const topRisks = extractTopRisks(pages);
   const objects = extractObjects(pages);
-  return topRisks.length || objects.objects.length ? { topRisks, objects } : null;
+  const cover = extractCover(pages); // first pages only: lead managers + offer size
+  const hasCover = cover.brlms.length > 0 || cover.offer.structure !== null;
+  return topRisks.length || objects.objects.length || hasCover ? { topRisks, objects, cover } : null;
 }
 
-const hashKey = (company: string) => `ipo-drhp:${createHash("sha256").update(companyKey(company)).digest("hex").slice(0, 40)}`;
+// v2: the cover (lead managers, offer size) is parsed too, so every prospectus is read once more.
+const WATERMARK_PREFIX = "ipo-drhp2:";
+const hashKey = (company: string) => `${WATERMARK_PREFIX}${createHash("sha256").update(companyKey(company)).digest("hex").slice(0, 40)}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const hourFloor = (ms: number) => new Date(Math.floor(ms / 3_600_000) * 3_600_000).toISOString();
 
@@ -227,7 +232,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
   const deadline = now + BUDGET_MS;
-  const seenDrhp: Record<string, string> = (await ctx?.watermarks("ipo-drhp:").catch(() => ({}))) ?? {};
+  const seenDrhp: Record<string, string> = (await ctx?.watermarks(WATERMARK_PREFIX).catch(() => ({}))) ?? {};
 
   /* 1) pipeline sources ------------------------------------------------ */
   const [upcoming, current, past] = await Promise.all([
@@ -290,7 +295,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   for (const r of recs.values()) if (r.stage === "open" || r.stage === "sebi_nod") gmpByCompany.set(r.company, gmpFor(gmpSet, r.company, r.symbol, r.priceBandHigh));
 
   /* 4) DRHP / RHP analysis — once ever, newest pipeline first --------- */
-  const analysed = new Map<string, { topRisks: string[]; objects: unknown }>();
+  const analysed = new Map<string, { topRisks: string[]; objects: ReturnType<typeof extractObjects>; cover: DrhpCover }>();
   const watermarks: Record<string, string> = {};
   const todo = [...recs.values()]
     .filter((r) => r.sebiPage && RANK[r.stage] <= RANK.open && !seenDrhp[hashKey(r.company)])
@@ -302,7 +307,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
     try {
       const out = await analyse(r.sebiPage!);
       watermarks[hashKey(r.company)] = out ? "done" : "nothing-extractable"; // parsed once; never fetched again
-      if (out) analysed.set(r.company, { topRisks: out.topRisks, objects: out.objects });
+      if (out) analysed.set(r.company, { topRisks: out.topRisks, objects: out.objects, cover: out.cover });
       analysedCount++;
     } catch {
       analyseFailures++; // transient: retried next run
@@ -318,7 +323,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
       symbol: r.symbol,
       series: r.series,
       stage: r.stage,
-      issueSize: r.issueSize,
+      issueSize: r.issueSize ?? a?.cover.offer.totalOfferCr ?? null,
       priceBandLow: r.priceBandLow,
       priceBandHigh: r.priceBandHigh,
       lotSize: r.lotSize,
@@ -326,10 +331,10 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
       closeDate: r.closeDate,
       allotmentDate: null,
       listingDate: r.listingDate,
-      brlms: r.brlms,
+      brlms: r.brlms ?? (a?.cover.brlms.length ? a.cover.brlms : null),
       drhpUrl: r.drhpUrl ?? r.sebiPage,
       topRisks: a?.topRisks ?? null,
-      objectsBreakdown: a?.objects ?? null,
+      objectsBreakdown: a ? { ...a.objects, offer: a.cover.offer } : null,
       gmpValue: g?.value ?? null,
       gmpPct: g?.pct ?? null,
       gmpLow: g?.low ?? null,
