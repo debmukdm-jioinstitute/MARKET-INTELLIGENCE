@@ -21,6 +21,7 @@ import {
   LandingUseCasesSection,
 } from "./section-bottom";
 import { LandingShell } from "./ui";
+import { LandingMascot } from "@/components/mascot/landing-mascot";
 
 export function LandingV2Page({
   initialDashboard = null,
@@ -54,6 +55,7 @@ export function LandingV2Page({
         <LandingFounderSection />
       </main>
       <LandingFooter />
+      <LandingMascot />
     </LandingShell>
     </LandingDashboardProvider>
   );
