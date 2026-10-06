@@ -2,6 +2,7 @@
 
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
 import { Lines } from "@/components/charts/terminal-charts";
+import { DriverNudges } from "@/components/guide/driver-nudges";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -108,6 +109,8 @@ export default function ResearchSymbolPage() {
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
       </div>
+
+      {data ? <DriverNudges symbol={symbol} name={data.name} /> : null}
 
       {data?.about ? (
         <Panel title="About">

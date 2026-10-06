@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Google_Sans } from "next/font/google";
 import { McpClaudeLaunchBanner } from "@/components/layout/mcp-claude-launch-banner";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { PortalMascot } from "@/components/mascot/portal-mascot";
 import { MathInspectorProvider } from "@/components/providers/math-inspector-provider";
 import { JsonLd } from "@/components/seo/json-ld";
 import { absoluteUrl, pageMetadata } from "@/lib/seo/metadata";
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <McpClaudeLaunchBanner />
         <AuthProvider>
           <MathInspectorProvider>{children}</MathInspectorProvider>
+          <PortalMascot />
         </AuthProvider>
       </body>
     </html>
