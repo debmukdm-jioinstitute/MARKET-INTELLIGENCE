@@ -1,7 +1,8 @@
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { computeStress, type StressResult } from "@/lib/stress/compute";
-import { hasDatabase, sql } from "@/lib/db";
+import { readAppCache, writeAppCache } from "@/lib/app-cache";
+import { persistIndiaDashboard } from "@/lib/feeds/india/dashboard-persist";
 
 /** Metrics a user rule can reference. `unit` is what the threshold is expressed in. */
 export const METRICS = {
@@ -56,44 +57,23 @@ export function metricsFrom(d: IndiaDashboardPayload, s: StressResult): MetricVa
 let cache: { at: number; value: Snapshot } | null = null;
 let inFlight: Promise<Snapshot> | null = null;
 
+const MARKET_SNAPSHOT_KEY = "market_snapshot";
+
 async function getDbCachedSnapshot(): Promise<Snapshot | null> {
-  if (!hasDatabase()) return null;
-  try {
-    const db = sql();
-    const rows = await db`
-      SELECT value, extract(epoch from (now() - updated_at)) as age_sec
-      FROM app_cache
-      WHERE key = 'market_snapshot' AND updated_at > now() - interval '60 seconds'
-      LIMIT 1
-    `;
-    if (rows && rows.length > 0 && rows[0]?.value) {
-      return rows[0].value as Snapshot;
-    }
-  } catch {
-    // app_cache might not exist yet or connection error — non-fatal
-  }
-  return null;
+  const fresh = await readAppCache<Snapshot>(MARKET_SNAPSHOT_KEY);
+  if (!fresh) return null;
+  const ageMs = Date.now() - new Date(fresh.updatedAt).getTime();
+  if (ageMs > 60_000) return null;
+  return fresh.value;
+}
+
+async function getDbStaleSnapshot(): Promise<Snapshot | null> {
+  const row = await readAppCache<Snapshot>(MARKET_SNAPSHOT_KEY);
+  return row?.value ?? null;
 }
 
 async function setDbCachedSnapshot(value: Snapshot): Promise<void> {
-  if (!hasDatabase()) return;
-  try {
-    const db = sql();
-    await db`
-      CREATE TABLE IF NOT EXISTS app_cache (
-        key text PRIMARY KEY,
-        value jsonb NOT NULL,
-        updated_at timestamptz NOT NULL DEFAULT now()
-      )
-    `;
-    await db`
-      INSERT INTO app_cache (key, value, updated_at)
-      VALUES ('market_snapshot', ${JSON.stringify(value)}::jsonb, now())
-      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
-    `;
-  } catch {
-    // Non-fatal cache write failure
-  }
+  await writeAppCache(MARKET_SNAPSHOT_KEY, value);
 }
 
 export async function buildSnapshot(): Promise<Snapshot> {
@@ -109,7 +89,17 @@ export async function buildSnapshot(): Promise<Snapshot> {
       return dbCached;
     }
 
-    const dashboard = await buildIndiaDashboard();
+    let dashboard;
+    try {
+      dashboard = await buildIndiaDashboard();
+    } catch {
+      const stale = await getDbStaleSnapshot();
+      if (stale) {
+        cache = { at: Date.now(), value: stale };
+        return stale;
+      }
+      throw new Error("India dashboard unavailable");
+    }
     const stress = computeStress(dashboard);
     const value: Snapshot = {
       asOf: dashboard.fetchedAt,
@@ -118,8 +108,8 @@ export async function buildSnapshot(): Promise<Snapshot> {
       metrics: metricsFrom(dashboard, stress),
     };
     cache = { at: Date.now(), value };
-    // Non-blocking write to database cache for other serverless instances
     setDbCachedSnapshot(value).catch(() => {});
+    persistIndiaDashboard(dashboard).catch(() => {});
     return value;
   })().finally(() => {
     inFlight = null;

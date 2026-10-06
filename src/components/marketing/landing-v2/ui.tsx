@@ -92,7 +92,11 @@ export function SecondaryButton({
 
 export function SourceLine({ source, fetched, prefix }: { source: string; fetched: string; prefix?: string }) {
   if (!source) {
-    return <p className="text-xs text-[#6b6b6b]">unavailable</p>;
+    return fetched && fetched !== "—" ? (
+      <p className="text-xs text-[#6b6b6b]">Last stored · {fetched} IST</p>
+    ) : (
+      <p className="text-xs text-[#6b6b6b]">Loading live feeds…</p>
+    );
   }
   return (
     <p className="text-xs text-[#6b6b6b]">

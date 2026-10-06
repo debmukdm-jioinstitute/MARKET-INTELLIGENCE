@@ -1,4 +1,9 @@
 import { buildIndiaDashboard, buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
+import {
+  loadPersistedIndiaDashboard,
+  persistIndiaDashboard,
+  quickPayloadFromDashboard,
+} from "@/lib/feeds/india/dashboard-persist";
 import { NextResponse } from "next/server";
 
 export const revalidate = 300;
@@ -7,8 +12,24 @@ export const maxDuration = 60;
 let fullCache: { at: number; payload: Awaited<ReturnType<typeof buildIndiaDashboard>> } | null = null;
 let quickCache: { at: number; payload: Awaited<ReturnType<typeof buildIndiaDashboardQuick>> } | null = null;
 let inflight: Promise<Awaited<ReturnType<typeof buildIndiaDashboard>>> | null = null;
+let inflightQuick: Promise<Awaited<ReturnType<typeof buildIndiaDashboardQuick>>> | null = null;
 const FULL_TTL = 45_000;
 const QUICK_TTL = 20_000;
+
+function refreshQuickCache() {
+  if (!inflightQuick) {
+    inflightQuick = buildIndiaDashboardQuick()
+      .then((payload) => {
+        quickCache = { at: Date.now(), payload };
+        void persistIndiaDashboard(payload);
+        return payload;
+      })
+      .finally(() => {
+        inflightQuick = null;
+      });
+  }
+  return inflightQuick;
+}
 /** Hard wall: if buildIndiaDashboard hasn't finished in 55 s, serve the last good cache or a slim 206 */
 const BUILD_DEADLINE_MS = 55_000;
 
@@ -29,24 +50,26 @@ export async function GET(request: Request) {
         headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=30" },
       });
     }
+
+    const persisted = await loadPersistedIndiaDashboard();
+    const instant = quickCache?.payload ?? persisted ?? (fullCache ? quickPayloadFromDashboard(fullCache.payload) : null);
+    if (instant) {
+      void refreshQuickCache().catch(() => {});
+      return NextResponse.json(instant, {
+        headers: {
+          "Cache-Control": "public, max-age=5, stale-while-revalidate=120",
+          "x-stale": "1",
+          "x-stale-source": quickCache ? "memory" : persisted ? "db" : "full-cache",
+        },
+      });
+    }
+
     try {
-      const payload = await buildIndiaDashboardQuick();
-      quickCache = { at: now, payload };
+      const payload = await refreshQuickCache();
       return NextResponse.json(payload, {
         headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=30" },
       });
     } catch {
-      // If quick build fails, serve stale quick cache or fall through to full cache
-      if (quickCache) {
-        return NextResponse.json(quickCache.payload, {
-          headers: { "Cache-Control": "public, max-age=5, stale-while-revalidate=60", "x-stale": "1" },
-        });
-      }
-      if (fullCache) {
-        return NextResponse.json(fullCache.payload, {
-          headers: { "Cache-Control": "public, max-age=5, stale-while-revalidate=60", "x-stale": "1" },
-        });
-      }
       return NextResponse.json({ error: "Quick feed unavailable" }, { status: 503 });
     }
   }
@@ -68,23 +91,9 @@ export async function GET(request: Request) {
   try {
     const payload = await inflight;
     fullCache = { at: now, payload };
-    quickCache = {
-      at: now,
-      payload: {
-        fetchedAt: payload.fetchedAt,
-        pulse: payload.pulse,
-        globalRadar: payload.globalRadar,
-        indiaImpact: payload.indiaImpact,
-        moneyFlow: payload.moneyFlow,
-        indiaMacro: payload.indiaMacro,
-        rbiLiquidity: {
-          systemLiquidity: payload.rbiLiquidity.systemLiquidity,
-          corridor: payload.rbiLiquidity.corridor,
-          fxReserves: payload.rbiLiquidity.fxReserves,
-          rows: payload.rbiLiquidity.rows,
-        },
-      },
-    };
+    const slim = quickPayloadFromDashboard(payload);
+    quickCache = { at: now, payload: slim };
+    void persistIndiaDashboard(payload);
     return NextResponse.json(payload, {
       headers: { "Cache-Control": "public, max-age=25, stale-while-revalidate=60" },
     });
@@ -96,6 +105,17 @@ export async function GET(request: Request) {
         headers: {
           "Cache-Control": "public, max-age=5, stale-while-revalidate=120",
           "x-stale": "1",
+          "x-stale-reason": isDeadline ? "timeout" : "upstream_error",
+        },
+      });
+    }
+    const persisted = await loadPersistedIndiaDashboard();
+    if (persisted) {
+      return NextResponse.json(persisted, {
+        headers: {
+          "Cache-Control": "public, max-age=5, stale-while-revalidate=300",
+          "x-stale": "1",
+          "x-stale-source": "db",
           "x-stale-reason": isDeadline ? "timeout" : "upstream_error",
         },
       });

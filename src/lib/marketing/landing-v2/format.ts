@@ -41,11 +41,11 @@ export type LiveFigure = {
 };
 
 export function liveFromQuote(q: QuoteField | undefined, fetchedAt: string, opts?: { suffix?: string; digits?: number }): LiveFigure {
-  const source = sourceLabel(q?.source);
   const fetched = formatIstTimestamp(q?.source?.asOf ?? fetchedAt);
-  if (q?.value == null || !source) {
+  if (q?.value == null || !Number.isFinite(q.value)) {
     return { display: "", changeDisplay: "", source: "", fetched, unavailable: true };
   }
+  const source = sourceLabel(q?.source) || "Last stored snapshot";
   const display = `${formatInr(q.value, opts?.digits ?? 2)}${opts?.suffix ?? ""}`;
   const changeDisplay = formatPct(q.changePct);
   return { display, changeDisplay, source, fetched, unavailable: false };
