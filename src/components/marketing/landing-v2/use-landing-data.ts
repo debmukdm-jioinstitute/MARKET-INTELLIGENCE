@@ -46,8 +46,11 @@ async function loadLandingDesk(url: string): Promise<TradingDeskResult | null> {
 
 async function loadDashboard(url: string): Promise<IndiaDashboardPayload> {
   const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
-  if (!quickRes.ok) throw new Error(`HTTP ${quickRes.status}`);
-  const quick = (await quickRes.json()) as IndiaDashboardPayload;
+  const quickJson = (await quickRes.json()) as IndiaDashboardPayload & { error?: string };
+  if (!quickRes.ok) {
+    throw new Error(quickJson.error ?? `HTTP ${quickRes.status}`);
+  }
+  const quick = quickJson;
   try {
     const fullRes = await fetch(url, { cache: "no-store" });
     if (fullRes.ok) return (await fullRes.json()) as IndiaDashboardPayload;

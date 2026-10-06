@@ -58,8 +58,10 @@ function WatchRow({
           <>
             {source} · {fetched}
           </>
+        ) : value ? (
+          <>Last stored · {fetched}</>
         ) : (
-          "unavailable"
+          "Loading…"
         )}
       </td>
     </tr>
