@@ -3,10 +3,16 @@
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
 import { consolidateHoldings, holdingMatchKey, mergeHoldingIntoList } from "@/lib/my-portfolio/merge-holding";
+import {
+  provisionalPortfolioAnalysis,
+  readCachedPortfolioAnalysis,
+  writeCachedPortfolioAnalysis,
+} from "@/lib/my-portfolio/client-cache";
+import { fetchPortfolioAnalysis } from "@/lib/my-portfolio/fetch-analysis";
 import type { Holding, PortfolioAnalysis, PortfolioSettings } from "@/lib/my-portfolio/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import useSWR from "swr";
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "mi_user_holdings_v2";
 const SETTINGS_KEY = "mi_portfolio_settings_v1";
@@ -128,26 +134,10 @@ function setLocalSettings(settings: PortfolioSettings) {
 }
 
 const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, boolean, PortfolioSettings]) => {
-  let res: Response;
-  if (holdings && Array.isArray(holdings)) {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ holdings, settings }),
-    });
-  } else {
-    res = await fetch(url);
-  }
+  const json = await fetchPortfolioAnalysis(url, holdings, settings);
 
-  const json = await res.json();
-  if (!res.ok) {
-    const msg = typeof json.error === "string" ? json.error : `HTTP ${res.status}`;
-    throw new Error(msg.slice(0, 200));
-  }
-  
-  // Sync server book into local storage once (avoid SWR ↔ external store ping-pong).
   if (!holdings && json.positions && json.positions.length > 0 && !getLocalHoldings()?.length) {
-    const seeded: Holding[] = json.positions.map((p: any) => ({
+    const seeded: Holding[] = json.positions.map((p) => ({
       id: p.id,
       market: p.market,
       symbol: p.symbol,
@@ -161,8 +151,9 @@ const fetcher = async ([url, holdings, , settings]: [string, Holding[] | null, b
     }));
     setLocalHoldings(seeded);
   }
-  
-  return json as PortfolioAnalysis;
+
+  writeCachedPortfolioAnalysis(json);
+  return json;
 };
 
 type PortfolioAnalysisKey = readonly [
@@ -174,7 +165,7 @@ type PortfolioAnalysisKey = readonly [
   number,
 ];
 
-function fetchPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name, cashInr]: PortfolioAnalysisKey) {
+function loadPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name, cashInr]: PortfolioAnalysisKey) {
   const holdings = holdingsRaw ? getLocalHoldings() : null;
   const settings: PortfolioSettings = {
     ...getLocalSettings(),
@@ -184,6 +175,20 @@ function fetchPortfolioAnalysis([url, holdingsRaw, guest, benchmark, name, cashI
     cashInr,
   };
   return fetcher([url, holdings, guest, settings]);
+}
+
+/** Warm localStorage analysis cache before /portfolio mounts (portal login, nav hover). */
+export async function prefetchPortfolioAnalysis(): Promise<void> {
+  if (typeof window === "undefined") return;
+  const holdings = getLocalHoldings();
+  if (!holdings?.length) return;
+  const settings = getLocalSettings();
+  try {
+    const json = await fetchPortfolioAnalysis("/api/portfolio/analysis", holdings, settings);
+    writeCachedPortfolioAnalysis(json);
+  } catch {
+    /* background warm */
+  }
 }
 
 export function useMyPortfolio(refreshMs = 60_000) {
@@ -203,8 +208,24 @@ export function useMyPortfolio(refreshMs = 60_000) {
     if (locked) throw new Error("Log in or create an account to add or import holdings");
   }, [locked]);
 
+  const [bootstrap] = useState(() => {
+    if (typeof window === "undefined") return undefined;
+    const cached = readCachedPortfolioAnalysis();
+    if (cached) return cached;
+    const local = getLocalHoldings();
+    if (local?.length) return provisionalPortfolioAnalysis(local, getLocalSettings());
+    return undefined;
+  });
+
+  const instantFallback = useMemo(() => {
+    if (locked) return bootstrap;
+    const local = localHoldings ?? [];
+    if (!local.length) return bootstrap;
+    return provisionalPortfolioAnalysis(local, localSettings);
+  }, [locked, localHoldings, localSettings, bootstrap]);
+
   // SWR key uses primitives only — object in key or unstable snapshot → revalidate / #185 loop.
-  const { data, error, isLoading, mutate } = useSWR<PortfolioAnalysis>(
+  const { data, error, isLoading, isValidating, mutate } = useSWR<PortfolioAnalysis>(
     ready
       ? ([
           "/api/portfolio/analysis",
@@ -215,8 +236,14 @@ export function useMyPortfolio(refreshMs = 60_000) {
           localSettings.cashInr ?? 0,
         ] as const)
       : null,
-    fetchPortfolioAnalysis,
-    { refreshInterval: refreshMs },
+    loadPortfolioAnalysis,
+    {
+      refreshInterval: refreshMs,
+      fallbackData: instantFallback,
+      keepPreviousData: true,
+      revalidateOnMount: true,
+      shouldRetryOnError: false,
+    },
   );
 
   const reload = useCallback(() => mutate(), [mutate]);
@@ -507,7 +534,8 @@ export function useMyPortfolio(refreshMs = 60_000) {
     locked,
     holdings: localHoldings ?? [],
     data: data ?? null,
-    loading: isLoading && !data,
+    loading: isLoading && !data && !instantFallback,
+    refreshing: isValidating && Boolean(data),
     error: error instanceof Error ? error.message : error ? String(error) : null,
     reload,
     addHolding,

@@ -23,6 +23,7 @@ export default function PortfolioPage() {
   const {
     data,
     loading,
+    refreshing,
     error,
     locked,
     addHolding,
@@ -128,8 +129,14 @@ export default function PortfolioPage() {
         </div>
       ) : null}
 
-      {loading && !data ? <p className="text-sm text-muted-foreground">Syncing live exchange feeds…</p> : null}
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {loading && !data ? <p className="text-sm text-muted-foreground">Loading your book…</p> : null}
+      {refreshing && data?.hasHoldings ? (
+        <p className="text-xs text-muted-foreground">Updating live exchange prices…</p>
+      ) : null}
+      {error && !data ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error && data ? (
+        <p className="text-xs text-amber-700">Live refresh failed — showing cached book. {error}</p>
+      ) : null}
 
       {data && hasBook ? (
         <>

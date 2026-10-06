@@ -1,6 +1,7 @@
 "use client";
 
 import { prefetchIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { prefetchPortfolioAnalysis } from "@/hooks/use-my-portfolio";
 import { isGuestUser, type SessionUser } from "@/lib/auth";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
@@ -74,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!ready || isGuestUser(user)) return;
+    void prefetchPortfolioAnalysis();
+  }, [ready, user?.email]);
+
   const value = useMemo<AuthCtx>(
     () => ({
       user,
@@ -94,18 +100,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setUser(json.user);
         void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async signup({ name, email, password, acceptPrivacy }) {
         const json = await postJson("/api/auth/signup", { name, email, password, acceptPrivacy });
         if (json.pending) return { pending: true };
         setUser(json.user);
         void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
         return { pending: false };
       },
       async verifySignup({ email, code }) {
         const json = await postJson("/api/auth/signup/verify", { email, code });
         setUser(json.user);
         void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async resendSignupOtp(email) {
         await postJson("/api/auth/signup/resend", { email });
@@ -114,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const json = await postJson("/api/auth/login", { email, password });
         setUser(json.user);
         void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async logout() {
         await fetch("/api/auth/session", { method: "DELETE" });

@@ -12,6 +12,7 @@ import { computeBrinsonSectorAttribution } from "@/lib/my-portfolio/brinson-sect
 import { benchmarkSupportsActiveShare, isIndiaBenchmark } from "@/lib/my-portfolio/benchmark-constituents";
 import { fetchBenchmarkHistory, getBenchmarkStockWeights, getBenchmarkWeightsSnapshot } from "@/lib/my-portfolio/benchmarks";
 import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
+import { emptyPortfolioAnalysis } from "@/lib/my-portfolio/metrics-empty";
 import { CATEGORY_METRICS, CATEGORY_TITLES, GLOSSARY, OVERVIEW_METRICS } from "@/lib/my-portfolio/glossary";
 import type {
   Holding,
@@ -270,36 +271,12 @@ async function fetchHoldingSeries(
   };
 }
 
-function emptyAnalysis(settings: PortfolioSettings): PortfolioAnalysis {
-  const categories: MetricCategory[] = Object.entries(CATEGORY_METRICS).map(([id, ids]) => ({
-    id,
-    title: CATEGORY_TITLES[id]!,
-    metrics: ids.map((mid) => NA(mid, "Add a holding to see this metric.")),
-  }));
-  return {
-    fetchedAt: new Date().toISOString(),
-    settings,
-    hasHoldings: false,
-    navInr: 0,
-    cashInr: settings.cashInr ?? 0,
-    todayPnlInr: 0,
-    positions: [],
-    overview: OVERVIEW_METRICS.map((id) => NA(id, "Add a holding to see this metric.")),
-    categories,
-    navSeries: [],
-    allocation: [],
-    attribution: [],
-    riskContribution: [],
-    sectorAttribution: [],
-  };
-}
-
 export async function computePortfolioAnalysis(
   holdings: Holding[],
   settings: PortfolioSettings,
   tradeLog: TradeLogRow[],
 ): Promise<PortfolioAnalysis> {
-  if (holdings.length === 0) return emptyAnalysis(settings);
+  if (holdings.length === 0) return emptyPortfolioAnalysis(settings);
 
   // One batched Yahoo v7 request for every holding's quote detail (was: one v8
   // request per holding). Indexed under both the .NS and raw symbol.
