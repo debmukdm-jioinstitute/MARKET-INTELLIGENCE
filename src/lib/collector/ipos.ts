@@ -18,7 +18,7 @@ import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./t
 
 const ID = "ipos";
 const BUDGET_MS = Number(process.env.IPOS_BUDGET_MS ?? 6 * 60_000);
-const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 12);
+const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 20);
 const MAX_PDF_BYTES = 40 * 1024 * 1024;
 const PAST_WINDOW_DAYS = 75;
 
@@ -253,6 +253,21 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   for (const f of rhpHtml ? parseSebiFilings(rhpHtml, "RHP") : []) put({ ...blank(f.company, "sebi_nod", "SEBI", filingSeen(f.company, f.page)), sebiPage: f.page, drhpUrl: null });
   for (const r of past ?? []) put(fromPast(r, now));
   for (const r of upcoming ?? []) put(fromUpcoming(r));
+
+  // SEBI's listing shows only the latest ~25 filings. Older DRHPs we already know about (stored with their SEBI page)
+  // but that still lack cover data are fetched back from our own public API, so they get read too.
+  const site = process.env.SITE_URL?.replace(/\/$/, "");
+  if (site) {
+    try {
+      const own = JSON.parse(await getText(`${site}/api/research/ipos?stage=drhp_filed&limit=100`, { headers: { Accept: "application/json" }, timeoutMs: 30_000 })) as { ipos?: { company: string; prospectusUrl: string | null; brlms: string[] }[] };
+      for (const o of own.ipos ?? []) {
+        if (!o.prospectusUrl || o.brlms?.length || recs.has(companyKey(o.company))) continue;
+        put({ ...blank(o.company, "drhp_filed", "SEBI", o.prospectusUrl), drhpUrl: o.prospectusUrl });
+      }
+    } catch {
+      /* best-effort backfill */
+    }
+  }
 
   // Ensure every active issue carries its live Total multiple even when per-category data is unavailable.
   const currentBySymbol = new Map((current ?? []).map((c) => [c.symbol, c]));
