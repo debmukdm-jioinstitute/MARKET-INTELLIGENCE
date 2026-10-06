@@ -1,0 +1,29 @@
+name: warm-transcripts
+
+# Pre-computes the earnings-transcript archive for the Indian universe (Nifty Total Market = Nifty 500 +
+# Microcap 250, plus broad and sector indices) by calling the public API, which persists results.
+# Already-cached symbols return instantly, so re-runs only do new work.
+on:
+  schedule:
+    - cron: "30 2 * * *" # 08:00 IST daily
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated symbols (default: whole universe)"
+        required: false
+        default: ""
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Warm transcript archive
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          ONLY: ${{ github.event.inputs.only }}
+        run: node scripts/warm-transcripts.mjs ${ONLY:+--only "$ONLY"}

@@ -128,7 +128,7 @@ async function discover(symbol: string, market: Market, signal: AbortSignal) {
   const exchangeTask = (async () => {
   if (market === "IN" && !signal.aborted) {
     try {
-      const bounded = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
+      const bounded = AbortSignal.any([signal, AbortSignal.timeout(8_000)]);
       const home = await download("https://www.nseindia.com/", bounded);
       const headers = { Cookie: home.cookie, Referer: "https://www.nseindia.com/", Accept: "application/json" };
       const now = Date.now();
@@ -265,8 +265,9 @@ export async function getTranscriptArchive(symbol: string, market: Market = "IN"
     const publicHistory = history.slice(0, 8).map((r) => ({ ...r, symbol }));
     const value: Archive = { symbol, market, dbConfigured: hasDatabase(), summary: publicHistory[0] ?? null, history: publicHistory, documents: found.documents, status: history.length ? "ready" : failures ? "source_error" : "unavailable", message: history.length ? "Highlights extracted from linked earnings-call transcripts." : failures ? "Some archive sources could not be reached. This does not mean the company has no transcripts. Try again shortly or open the archive links." : found.documents.length ? "Transcript links found, but readable call text could not be extracted. Open the originals below." : "No accessible transcript was found in the sources checked. This is not a claim that no transcript exists.", checkedAt: new Date().toISOString() };
     if (cache.size >= 200) cache.delete(cache.keys().next().value!);
-    const ttl = history.length ? 6 * 3600_000 : 60_000;
-    cache.set(key, { value, until: Date.now() + ttl });
+    // Confirmed absence is cached for hours so thousands of small caps do not re-crawl on every visit; transient failures retry within a minute.
+    const ttl = history.length ? 24 * 3600_000 : failures ? 60_000 : 6 * 3600_000;
+    cache.set(key, { value, until: Date.now() + Math.min(ttl, 6 * 3600_000) });
     if (hasDatabase()) {
       await sql()`INSERT INTO transcript_archive_cache (cache_key, payload, expires_at)
         VALUES (${key}, ${JSON.stringify(value)}::jsonb, ${new Date(Date.now() + ttl).toISOString()}::timestamptz)
