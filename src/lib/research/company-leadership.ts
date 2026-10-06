@@ -1,4 +1,4 @@
-import { getDocumentProxy, extractText } from "unpdf";
+import { getDocumentProxy } from "unpdf";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { validateSource } from "@/lib/research/transcript-archive";
@@ -103,33 +103,53 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
   return buf;
 }
 
-async function brsrPay(symbol: string) {
-  const r = await nseJson<{ data?: { attachmentFile?: string; fyFrom?: number; fyTo?: number }[] }>(`/api/corporate-bussiness-sustainabilitiy?index=equities&symbol=${encodeURIComponent(symbol)}`);
-  const latest = (r.data ?? []).filter((d) => d.attachmentFile).sort((a, b) => (b.fyTo ?? 0) - (a.fyTo ?? 0))[0];
-  if (!latest?.attachmentFile || !/\.pdf$/i.test(latest.attachmentFile)) return null;
-  const proxy = await getDocumentProxy(await fetchBytes(latest.attachmentFile));
+async function fetchRetry(url: string): Promise<Uint8Array> {
+  let last: unknown;
+  for (let i = 0; i < 3; i++) {
+    try { return await fetchBytes(url); } catch (e) { last = e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); }
+  }
+  throw last;
+}
+
+/** Scan pages in order and stop at the median-pay table (it sits in the first ~60 pages of long reports). */
+async function payFromPdf(bytes: Uint8Array) {
+  const proxy = await getDocumentProxy(bytes, { stopAtErrors: false } as never);
   try {
-    if (proxy.numPages > 260) throw new Error("BRSR too long");
-    const { text } = await extractText(proxy, { mergePages: false });
-    for (const page of text) {
+    const limit = Math.min(proxy.numPages, 140);
+    for (let i = 1; i <= limit; i++) {
+      const content = await (await proxy.getPage(i)).getTextContent();
+      const page = content.items.map((it) => ("str" in it ? it.str : "")).join(" ");
       if (!/median remuneration/i.test(page)) continue;
       const rows = parseBrsrPay(page);
-      if (rows.length >= 2) {
-        const emp = rows.find((x) => x.category.startsWith("Employees"));
-        const empMedian = emp?.maleMedian ?? emp?.femaleMedian ?? null;
-        const ratios: { label: string; times: number }[] = [];
-        if (empMedian) {
-          for (const x of rows) {
-            if (x === emp || x.category === "Workers") continue;
-            const top = Math.max(x.maleMedian ?? 0, x.femaleMedian ?? 0);
-            if (top > 0) ratios.push({ label: `${x.category} vs employee median`, times: Math.round((top / empMedian) * 10) / 10 });
-          }
-        }
-        return { fy: `FY${String(latest.fyTo ?? "").slice(2) || "?"}`, sourceUrl: latest.attachmentFile, rows, ratios };
-      }
+      if (rows.length >= 2) return rows;
     }
     return null;
   } finally { await (proxy as unknown as { destroy?: () => Promise<void> }).destroy?.(); }
+}
+
+async function brsrPay(symbol: string) {
+  const r = await nseJson<{ data?: { attachmentFile?: string; fyFrom?: number; fyTo?: number }[] }>(`/api/corporate-bussiness-sustainabilitiy?index=equities&symbol=${encodeURIComponent(symbol)}`);
+  const files = (r.data ?? []).filter((d) => d.attachmentFile && /\.pdf$/i.test(d.attachmentFile)).sort((a, b) => (b.fyTo ?? 0) - (a.fyTo ?? 0)).slice(0, 2);
+  let lastErr: unknown = new Error("No BRSR filing listed");
+  // Newest filing first; fall back to the prior year only if the newest file is dead or unreadable (labelled with its FY).
+  for (const f of files) {
+    try {
+      const rows = await payFromPdf(await fetchRetry(f.attachmentFile!));
+      if (!rows) { lastErr = new Error("Pay table not found in BRSR"); continue; }
+      const emp = rows.find((x) => x.category.startsWith("Employees"));
+      const empMedian = emp?.maleMedian ?? emp?.femaleMedian ?? null;
+      const ratios: { label: string; times: number }[] = [];
+      if (empMedian) {
+        for (const x of rows) {
+          if (x === emp || x.category === "Workers") continue;
+          const top = Math.max(x.maleMedian ?? 0, x.femaleMedian ?? 0);
+          if (top > 0) ratios.push({ label: `${x.category} vs employee median`, times: Math.round((top / empMedian) * 10) / 10 });
+        }
+      }
+      return { fy: `FY${String(f.fyTo ?? "").slice(2) || "?"}`, sourceUrl: f.attachmentFile!, rows, ratios };
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
 }
 
 async function holdingsAndIsin(symbol: string, ttm: number | null) {
