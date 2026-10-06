@@ -15,6 +15,7 @@ import {
   type ResearchIntelligence,
 } from "@/lib/feeds/research-intelligence";
 import { UNIVERSE } from "@/lib/universe";
+import { fetchCompanyAbout, type CompanyAbout } from "@/lib/feeds/company-about";
 
 export type ResearchDetailPayload = {
   symbol: string;
@@ -29,6 +30,7 @@ export type ResearchDetailPayload = {
   candles: Candle[];
   usDetail: Awaited<ReturnType<typeof buildSecurityDetail>> | null;
   intelligence: ResearchIntelligence;
+  about: CompanyAbout | null;
   sources: SourceLink[];
 };
 
@@ -105,6 +107,7 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
   const instrument = UNIVERSE.find((u) => u.symbol === resolved.symbol);
   const name = resolved.name || instrument?.name || resolved.symbol;
 
+  const aboutPromise = fetchCompanyAbout(name);
   const intelligence = await buildResearchIntelligence({
     symbol: resolved.symbol,
     name,
@@ -113,6 +116,10 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
     upstoxNews: news,
   });
 
+  const about = await aboutPromise;
+  if (about) {
+    sources.push({ id: "wikipedia-about", label: "Wikipedia", url: about.url, usedFor: "Company overview" });
+  }
   if (intelligence.newsFeed.length) {
     sources.push({
       id: "google-news-rss",
@@ -143,6 +150,7 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
     candles,
     usDetail,
     intelligence,
+    about,
     sources,
   };
 }
