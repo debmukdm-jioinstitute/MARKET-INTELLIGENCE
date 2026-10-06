@@ -208,9 +208,16 @@ async function sebiPdfUrl(page: string): Promise<string | null> {
 async function analyse(page: string): Promise<{ topRisks: string[]; objects: ReturnType<typeof extractObjects>; cover: DrhpCover } | null> {
   const pdf = await sebiPdfUrl(page);
   if (!pdf) return null;
-  const res = await feedFetch(pdf, { headers: HEADERS, timeoutMs: 150_000, attempts: 2 });
-  if (!res.ok) throw new Error(`prospectus HTTP ${res.status}`);
-  const buf = new Uint8Array(await res.arrayBuffer());
+  let buf: Uint8Array | null = null;
+  for (let attempt = 0; attempt < 3 && !buf; attempt++) {
+    const res = await feedFetch(pdf, { headers: HEADERS, timeoutMs: 150_000, attempts: 2 });
+    if (!res.ok) throw new Error(`prospectus HTTP ${res.status}`);
+    const got = new Uint8Array(await res.arrayBuffer());
+    const expected = Number(res.headers.get("content-length") ?? 0);
+    if (expected > 0 && got.length < expected) continue; // SEBI occasionally cuts the transfer short: retry instead of parsing half a PDF
+    buf = got;
+  }
+  if (!buf) throw new Error("prospectus download incomplete");
   if (buf.length > MAX_PDF_BYTES) return null;
   const { extractText, getDocumentProxy } = await import("unpdf");
   const { text } = await extractText(await getDocumentProxy(buf), { mergePages: false }); // ~4 s for 700 pages; the download dominates

@@ -53,4 +53,9 @@ describe("drhp cover", () => {
   it("strips table-header words from unknown banker names", () => {
     expect(extractBrlms(["BOOK RUNNING LEAD MANAGER (“BRLM”) Logo Name Contact Person Telephone Email Socradamus Capital Private Limited Kritika Rupda 022 REGISTRAR TO THE OFFER"])).toEqual(["Socradamus Capital"]);
   });
+  it("Jagatjit: fresh amount in million with trailing period, unknown banker after TELEPHONE AND E-MAIL header", () => {
+    const t = "Fresh Issue and Offer for Sale Up to [●] Equity Shares of face value of ₹ 5 each aggregating up to ₹ 3,000 million. Up to 3,100,000 Equity Shares of face value of ₹ 5 each aggregating up to ₹ [●] million. Up to [●] Equity Shares of face value of ₹ 5 each aggregating up to ₹ [●] million.";
+    expect(extractCover([t]).offer).toMatchObject({ freshIssueCr: 300, ofsShares: 3100000 });
+    expect(extractBrlms(["BOOK RUNNING LEAD MANAGER NAME LOGO CONTACT PERSON TELEPHONE AND E-MAIL Keynote Financial Services Limited Milan Soni Telephone: +91 22 6826 6000 REGISTRAR TO THE OFFER"])).toEqual(["Keynote Financial Services"]);
+  });
 });
