@@ -68,7 +68,6 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
     { href: "/macro/indices", label: "World indices", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
     { href: "/markets/india", label: "India equity detail pages", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: true },
     { href: "/research", label: "Research symbol pages", navSection: "Stocks", navGroup: "Research", appliesToChildren: true },
-    { href: "/research/model", label: "DCF model pages", navSection: "Stocks", navGroup: "Research", appliesToChildren: true },
   ];
 
   for (const e of extras) {
