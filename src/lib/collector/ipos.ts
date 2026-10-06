@@ -18,7 +18,7 @@ import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./t
 
 const ID = "ipos";
 const BUDGET_MS = Number(process.env.IPOS_BUDGET_MS ?? 6 * 60_000);
-const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 6);
+const DRHP_MAX_PER_RUN = Number(process.env.IPOS_DRHP_MAX ?? 12);
 const MAX_PDF_BYTES = 40 * 1024 * 1024;
 const PAST_WINDOW_DAYS = 75;
 
@@ -213,7 +213,7 @@ async function analyse(page: string): Promise<{ topRisks: string[]; objects: Ret
   const buf = new Uint8Array(await res.arrayBuffer());
   if (buf.length > MAX_PDF_BYTES) return null;
   const { extractText, getDocumentProxy } = await import("unpdf");
-  const { text } = await extractText(await getDocumentProxy(buf), { mergePages: false });
+  const { text } = await extractText(await getDocumentProxy(buf), { mergePages: false }); // ~4 s for 700 pages; the download dominates
   const pages = Array.isArray(text) ? text : [text];
   const topRisks = extractTopRisks(pages);
   const objects = extractObjects(pages);
@@ -224,7 +224,8 @@ async function analyse(page: string): Promise<{ topRisks: string[]; objects: Ret
 
 // v2: the cover (lead managers, offer size) is parsed too, so every prospectus is read once more.
 const WATERMARK_PREFIX = "ipo-drhp2:";
-const hashKey = (company: string) => `${WATERMARK_PREFIX}${createHash("sha256").update(companyKey(company)).digest("hex").slice(0, 40)}`;
+const digest = (company: string) => createHash("sha256").update(companyKey(company)).digest("hex").slice(0, 40);
+const hashKey = (company: string) => `${WATERMARK_PREFIX}${digest(company)}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const hourFloor = (ms: number) => new Date(Math.floor(ms / 3_600_000) * 3_600_000).toISOString();
 
@@ -297,22 +298,28 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   /* 4) DRHP / RHP analysis — once ever, newest pipeline first --------- */
   const analysed = new Map<string, { topRisks: string[]; objects: ReturnType<typeof extractObjects>; cover: DrhpCover }>();
   const watermarks: Record<string, string> = {};
+  // Rows still missing their cover data go first (DRHP stage has nothing else to show), then nearest-to-open.
   const todo = [...recs.values()]
     .filter((r) => r.sebiPage && RANK[r.stage] <= RANK.open && !seenDrhp[hashKey(r.company)])
-    .sort((a, b) => RANK[b.stage] - RANK[a.stage]); // IPOs nearest to opening first
+    .sort((a, b) => Number(!!a.brlms?.length) - Number(!!b.brlms?.length) || RANK[a.stage] - RANK[b.stage]); // DRHP-stage first
   let analysedCount = 0;
   let analyseFailures = 0;
-  for (const r of todo) {
-    if (analysedCount >= DRHP_MAX_PER_RUN || Date.now() > deadline) break;
-    try {
-      const out = await analyse(r.sebiPage!);
-      watermarks[hashKey(r.company)] = out ? "done" : "nothing-extractable"; // parsed once; never fetched again
-      if (out) analysed.set(r.company, { topRisks: out.topRisks, objects: out.objects, cover: out.cover });
-      analysedCount++;
-    } catch {
-      analyseFailures++; // transient: retried next run
+  // Small worker pool: downloads dominate (10–15 MB each), parsing is cheap.
+  const queue = todo.slice(0, DRHP_MAX_PER_RUN);
+  const worker = async () => {
+    for (let r = queue.shift(); r; r = queue.shift()) {
+      if (Date.now() > deadline) return;
+      try {
+        const out = await analyse(r.sebiPage!);
+        watermarks[hashKey(r.company)] = out ? "done" : "nothing-extractable"; // parsed once; never fetched again
+        if (out) analysed.set(r.company, { topRisks: out.topRisks, objects: out.objects, cover: out.cover });
+        analysedCount++;
+      } catch {
+        analyseFailures++; // transient: retried next run
+      }
     }
-  }
+  };
+  await Promise.all([worker(), worker(), worker()]);
 
   /* 5) rows ------------------------------------------------------------ */
   const ipoRows = [...recs.values()].map((r) => {
