@@ -19,11 +19,13 @@ import { RouteProvenanceBar } from "@/components/feeds/route-provenance-bar";
 import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PortalDocumentTitle } from "@/components/layout/portal-document-title";
+import { IndiaDashboardWarmup } from "@/components/providers/india-dashboard-warmup";
 import { Suspense } from "react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
+      <IndiaDashboardWarmup />
       <PortfolioProvider>
         <CommandPaletteProvider>
           <MobileNavProvider>

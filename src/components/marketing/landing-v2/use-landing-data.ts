@@ -3,9 +3,10 @@
 import type { TradingDeskResult } from "@/lib/ai/trading-desk";
 import type { SiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
+import { writeDashboardClientCache } from "@/lib/feeds/india/dashboard-client-cache";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import type { FullMarketQuote } from "@/lib/feeds/sources/upstox";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import useSWR from "swr";
 import type { ProofSymbol } from "@/lib/marketing/landing-v2/copy";
 import {
@@ -77,6 +78,11 @@ export function useLandingDashboard(refreshMs = 55_000) {
     shouldRetryOnError: false,
   });
   const dashboard: LandingDashboardSeed | null = data ?? seed ?? null;
+  useEffect(() => {
+    if (dashboard?.pulse?.nifty?.value != null) {
+      writeDashboardClientCache(dashboard as IndiaDashboardPayload);
+    }
+  }, [dashboard]);
   return { dashboard, loading: isLoading && !dashboard, error: error && !dashboard ? error : undefined };
 }
 

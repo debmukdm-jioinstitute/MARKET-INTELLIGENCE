@@ -3,6 +3,7 @@
 import { GoogleSignInButton } from "@/components/marketing/google-sign-in-button";
 import { PrivacyAcceptanceField } from "@/components/marketing/privacy-acceptance-field";
 import { useAuth } from "@/components/providers/auth-provider";
+import { prefetchIndiaDashboard } from "@/hooks/use-india-dashboard";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { useMemo, useRef, useState, useEffect, type FormEvent } from "react";
@@ -80,6 +81,10 @@ export function AuthForm({
   const emailRef = useRef<HTMLInputElement>(null);
   const otpRef = useRef<HTMLInputElement>(null);
   const otpBusy = useRef(false);
+
+  useEffect(() => {
+    void prefetchIndiaDashboard();
+  }, []);
   const privacyRef = useRef<HTMLInputElement>(null);
   const isSignup = mode === "signup";
   const showDemoMigration = isSignup && (fromDemo || isGuest);

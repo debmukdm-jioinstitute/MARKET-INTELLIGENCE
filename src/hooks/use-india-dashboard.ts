@@ -1,8 +1,14 @@
 "use client";
 
+import {
+  readDashboardClientCache,
+  writeDashboardClientCache,
+} from "@/lib/feeds/india/dashboard-client-cache";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { useCallback, useRef, useState } from "react";
 import useSWR, { type MutatorCallback, useSWRConfig } from "swr";
+
+export const INDIA_DASHBOARD_SWR_KEY = "/api/feeds/india-dashboard";
 
 type DashboardMutate = (
   key: string,
@@ -10,54 +16,119 @@ type DashboardMutate = (
   opts?: { revalidate?: boolean },
 ) => void;
 
+type QuickSlice = Partial<IndiaDashboardPayload> & {
+  fetchedAt: string;
+  rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
+};
+
+export function mergeQuickIntoDashboard(
+  base: IndiaDashboardPayload,
+  quick: QuickSlice,
+): IndiaDashboardPayload {
+  return {
+    ...base,
+    fetchedAt: quick.fetchedAt ?? base.fetchedAt,
+    pulse: quick.pulse ?? base.pulse,
+    globalRadar: quick.globalRadar ?? base.globalRadar,
+    indiaImpact: quick.indiaImpact ?? base.indiaImpact,
+    moneyFlow: quick.moneyFlow ?? base.moneyFlow,
+    indiaMacro: quick.indiaMacro?.length ? quick.indiaMacro : base.indiaMacro,
+    rbiLiquidity: quick.rbiLiquidity
+      ? {
+          ...base.rbiLiquidity,
+          ...quick.rbiLiquidity,
+          systemLiquidity: quick.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
+          corridor: quick.rbiLiquidity.corridor ?? base.rbiLiquidity.corridor,
+          rows: quick.rbiLiquidity.rows?.length ? quick.rbiLiquidity.rows : base.rbiLiquidity.rows,
+          fxReserves: quick.rbiLiquidity.fxReserves ?? base.rbiLiquidity.fxReserves,
+        }
+      : base.rbiLiquidity,
+  };
+}
+
+function hasPulseNumbers(d: IndiaDashboardPayload): boolean {
+  return (
+    d.pulse.nifty.value != null ||
+    d.pulse.sensex.value != null ||
+    d.pulse.bankNifty.value != null ||
+    d.pulse.indiaVix.value != null
+  );
+}
+
+async function hydrateFullDashboard(
+  url: string,
+  mutate: DashboardMutate,
+  onFirstFull: () => void,
+): Promise<void> {
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return;
+    const full = (await res.json()) as IndiaDashboardPayload;
+    writeDashboardClientCache(full);
+    mutate(url, full, { revalidate: false });
+    onFirstFull();
+  } catch {
+    /* keep quick / cached */
+  }
+}
+
 /** Module-level loader — never define `const fetcher = async` inside a hook body (SWR #185). */
-async function loadIndiaDashboard(url: string, mutate: DashboardMutate, onFirstFull: () => void): Promise<IndiaDashboardPayload> {
+async function loadIndiaDashboard(
+  url: string,
+  mutate: DashboardMutate,
+  onFirstFull: () => void,
+): Promise<IndiaDashboardPayload> {
+  const cached = readDashboardClientCache();
+  const base = cached ?? emptyShell();
+
   const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
   if (quickRes.ok) {
-    const quick = (await quickRes.json()) as Partial<IndiaDashboardPayload> & { fetchedAt: string };
+    const quick = (await quickRes.json()) as QuickSlice;
+    const merged = mergeQuickIntoDashboard(base, quick);
+    writeDashboardClientCache(merged);
+    mutate(url, merged, { revalidate: false });
+    if (hasPulseNumbers(merged)) onFirstFull();
+    void hydrateFullDashboard(url, mutate, onFirstFull);
+    return merged;
+  }
 
-    mutate(
-      url,
-      (prev: IndiaDashboardPayload | undefined) => {
-        const base = prev ?? emptyShell();
-        const q = quick as Partial<IndiaDashboardPayload> & {
-          rbiLiquidity?: Partial<IndiaDashboardPayload["rbiLiquidity"]>;
-        };
-        return {
-          ...base,
-          fetchedAt: q.fetchedAt ?? base.fetchedAt,
-          pulse: q.pulse ?? base.pulse,
-          globalRadar: q.globalRadar ?? base.globalRadar,
-          indiaImpact: q.indiaImpact ?? base.indiaImpact,
-          moneyFlow: q.moneyFlow ?? base.moneyFlow,
-          indiaMacro: q.indiaMacro?.length ? q.indiaMacro : base.indiaMacro,
-          rbiLiquidity: q.rbiLiquidity
-            ? {
-                ...base.rbiLiquidity,
-                ...q.rbiLiquidity,
-                systemLiquidity: q.rbiLiquidity.systemLiquidity ?? base.rbiLiquidity.systemLiquidity,
-                corridor: q.rbiLiquidity.corridor ?? base.rbiLiquidity.corridor,
-                rows: q.rbiLiquidity.rows?.length ? q.rbiLiquidity.rows : base.rbiLiquidity.rows,
-                fxReserves: q.rbiLiquidity.fxReserves ?? base.rbiLiquidity.fxReserves,
-              }
-            : base.rbiLiquidity,
-        };
-      },
-      { revalidate: false },
-    );
+  if (cached && hasPulseNumbers(cached)) {
+    void hydrateFullDashboard(url, mutate, onFirstFull);
+    return cached;
   }
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const full = (await res.json()) as IndiaDashboardPayload;
+  writeDashboardClientCache(full);
   onFirstFull();
   return full;
+}
+
+/** Warm SWR + localStorage before /Home mounts (login, landing, portal shell). */
+export async function prefetchIndiaDashboard(mutate?: DashboardMutate): Promise<void> {
+  const url = INDIA_DASHBOARD_SWR_KEY;
+  const cached = readDashboardClientCache();
+  if (cached && hasPulseNumbers(cached)) {
+    mutate?.(url, cached, { revalidate: false });
+  }
+  try {
+    const quickRes = await fetch(`${url}?quick=1`, { cache: "no-store" });
+    if (!quickRes.ok) return;
+    const quick = (await quickRes.json()) as QuickSlice;
+    const merged = mergeQuickIntoDashboard(cached ?? emptyShell(), quick);
+    writeDashboardClientCache(merged);
+    mutate?.(url, merged, { revalidate: false });
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useIndiaDashboard(refreshMs = 55_000) {
   const { mutate } = useSWRConfig();
   const [loadingFull, setLoadingFull] = useState(true);
   const fullLoadedRef = useRef(false);
+  const [bootstrap] = useState(() => readDashboardClientCache() ?? undefined);
 
   const fetcher = useCallback(
     (url: string) =>
@@ -70,15 +141,23 @@ export function useIndiaDashboard(refreshMs = 55_000) {
   );
 
   const { data, error, isLoading, mutate: reloadMutate } = useSWR<IndiaDashboardPayload>(
-    "/api/feeds/india-dashboard",
+    INDIA_DASHBOARD_SWR_KEY,
     fetcher,
-    { refreshInterval: refreshMs },
+    {
+      refreshInterval: refreshMs,
+      fallbackData: bootstrap,
+      keepPreviousData: true,
+      revalidateOnMount: true,
+      shouldRetryOnError: false,
+    },
   );
+
+  const hasData = Boolean(data && hasPulseNumbers(data));
 
   return {
     data: data ?? null,
-    loading: isLoading && !data,
-    loadingFull: loadingFull && !data,
+    loading: isLoading && !hasData,
+    loadingFull: loadingFull && !hasData,
     error: error instanceof Error ? error.message : error ? String(error) : null,
     reload: () => reloadMutate(),
   };
@@ -108,7 +187,7 @@ function emptyShell(): IndiaDashboardPayload {
     },
     indiaMoving: {
       nifty: { symbol: "^NSEI", name: "NIFTY", current: na, history1m: [] },
-      bankNifty: { symbol: "^NSEBANK", name: "BANK NIFTY", current: na, history1m: [] },
+      bankNifty: { symbol: "^NSEBANK", name: "BANKNIFTY", current: na, history1m: [] },
       indiaVix: { symbol: "^INDIAVIX", name: "VIX", current: na, history1m: [] },
       breadth: {
         advances: null,

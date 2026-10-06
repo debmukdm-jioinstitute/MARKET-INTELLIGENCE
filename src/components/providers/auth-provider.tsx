@@ -1,5 +1,6 @@
 "use client";
 
+import { prefetchIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { isGuestUser, type SessionUser } from "@/lib/auth";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
@@ -92,16 +93,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(typeof json.error === "string" ? json.error : `Request failed (${res.status})`);
         }
         setUser(json.user);
+        void prefetchIndiaDashboard();
       },
       async signup({ name, email, password, acceptPrivacy }) {
         const json = await postJson("/api/auth/signup", { name, email, password, acceptPrivacy });
         if (json.pending) return { pending: true };
         setUser(json.user);
+        void prefetchIndiaDashboard();
         return { pending: false };
       },
       async verifySignup({ email, code }) {
         const json = await postJson("/api/auth/signup/verify", { email, code });
         setUser(json.user);
+        void prefetchIndiaDashboard();
       },
       async resendSignupOtp(email) {
         await postJson("/api/auth/signup/resend", { email });
@@ -109,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async login({ email, password }) {
         const json = await postJson("/api/auth/login", { email, password });
         setUser(json.user);
+        void prefetchIndiaDashboard();
       },
       async logout() {
         await fetch("/api/auth/session", { method: "DELETE" });
