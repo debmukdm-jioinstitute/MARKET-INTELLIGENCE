@@ -8,7 +8,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { signClass } from "@/lib/sign-color";
 
-type OfferCover = { freshIssueCr: number | null; ofsShares: number | null; ofsCr: number | null; totalOfferCr: number | null; structure: "fresh" | "ofs" | "fresh+ofs" | null };
+type OfferCover = { freshIssueCr: number | null; freshShares?: number | null; totalShares?: number | null; ofsShares: number | null; ofsCr: number | null; totalOfferCr: number | null; structure: "fresh" | "ofs" | "fresh+ofs" | null };
 
 type Ipo = {
   company: string;
@@ -47,7 +47,7 @@ const shares = (n: number) => `${n.toLocaleString("en-IN")} shares`;
 function offerStructure(offer: OfferCover | undefined): string | null {
   if (!offer?.structure) return null;
   const parts: string[] = [];
-  if (offer.structure !== "ofs") parts.push(offer.freshIssueCr !== null ? `Fresh issue up to ${cr(offer.freshIssueCr)}` : "Fresh issue (size set at RHP)");
+  if (offer.structure !== "ofs") parts.push(offer.freshIssueCr !== null ? `Fresh issue up to ${cr(offer.freshIssueCr)}` : offer.freshShares != null ? `Fresh issue up to ${shares(offer.freshShares)}` : "Fresh issue (size set at RHP)");
   if (offer.structure !== "fresh") parts.push(offer.ofsCr !== null ? `Offer for sale up to ${cr(offer.ofsCr)}` : offer.ofsShares !== null ? `Offer for sale up to ${shares(offer.ofsShares)}` : "Offer for sale");
   return parts.join(" + ");
 }

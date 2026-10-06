@@ -222,8 +222,8 @@ async function analyse(page: string): Promise<{ topRisks: string[]; objects: Ret
   return topRisks.length || objects.objects.length || hasCover ? { topRisks, objects, cover } : null;
 }
 
-// v2: the cover (lead managers, offer size) is parsed too, so every prospectus is read once more.
-const WATERMARK_PREFIX = "ipo-drhp2:";
+// v3: cover parser fixed (table cells, header words), so every prospectus is read once more.
+const WATERMARK_PREFIX = "ipo-drhp3:";
 const digest = (company: string) => createHash("sha256").update(companyKey(company)).digest("hex").slice(0, 40);
 const hashKey = (company: string) => `${WATERMARK_PREFIX}${digest(company)}`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

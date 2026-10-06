@@ -119,6 +119,14 @@ function brlmSections(pages: string[]): string[] {
   return out;
 }
 
+const HEADER_WORDS = new Set(["logo", "name", "of", "the", "brlm", "brlms", "brlm(s)", "contact", "person", "persons", "person(s)", "telephone", "tel", "email", "e-mail", "and", "no", "details", "to", "offer", "issue"]);
+/** Drop table-header words that precede a name ("Telephone Email Socradamus Capital" → "Socradamus Capital"). */
+function stripHeader(name: string): string {
+  const w = name.split(" ");
+  while (w.length > 2 && HEADER_WORDS.has(w[0].toLowerCase().replace(/[:.]/g, ""))) w.shift();
+  return w.join(" ");
+}
+
 const NAME_RE = /((?:[A-Z][A-Za-z.&'’-]*\s+){1,7}(?:Private\s+)?(?:Limited|Ltd\.?))/g;
 
 /** Lead managers: dictionary trie first (canonical names), generic "… Limited" pattern for unknown bankers. */
@@ -132,7 +140,7 @@ export function extractBrlms(pages: string[]): string[] {
     const body = section.replace(/^.*?E-?\s?MAIL\s+AND\s+TELEPHONE\s*/i, "").replace(/^.*?CONTACT PERSON\s*/i, "");
     const out: string[] = [];
     for (const m of body.matchAll(NAME_RE)) {
-      const name = collapse(m[1]).replace(/\s+(?:Private\s+)?(?:Limited|Ltd\.?)$/i, "").replace(/^(?:Name of|The)\s+/i, "");
+      const name = stripHeader(collapse(m[1]).replace(/\s+(?:Private\s+)?(?:Limited|Ltd\.?)$/i, ""));
       if (name.split(" ").length >= 2 && !out.includes(name)) out.push(name);
     }
     if (out.length) return out.slice(0, 10);
@@ -148,34 +156,59 @@ const toCr = (amount: number, unit: string): number => {
   return amount; // crore
 };
 const r2 = (n: number) => Math.round(n * 100) / 100;
-const AMOUNT = String.raw`₹\s*([\d,]+(?:\.\d+)?)\s*(million|lakhs?|crores?|billion)`;
 
 export type OfferCover = {
   freshIssueCr: number | null;
+  freshShares: number | null;
+  totalShares: number | null;
   ofsShares: number | null;
   ofsCr: number | null;
   totalOfferCr: number | null;
   structure: "fresh" | "ofs" | "fresh+ofs" | null;
 };
 
-/** Offer size from the first pages. Everything still "[●]" stays null. */
+type Cell = { applicable: boolean; shares: number | null; cr: number | null };
+
+const BLANK = String.raw`\[[●•]\]`;
+// One table cell: "Not applicable" or "[Up to|Fresh Issue of up to|Offer for sale of up to] N Equity Shares … aggregating (up) to ₹ X unit".
+const CELL_RE = new RegExp(
+  String.raw`Not\s+applicable|(?:(?:Fresh Issue|Offer for Sale)\s+of\s+)?(?:up\s*to\s+)?([\d,]+|${BLANK})\s+(?:equity\s+)?shares(?:(?!Not\s+applicable)[\s\S]){0,110}?(?:aggregating|amounting)\s*(?:up\s*)?to\s*₹\s*([\d,]+(?:\.\d+)?|${BLANK})\s*(million|lakhs?|crores?|billion)?`,
+  "gi",
+);
+const LABEL_RE = /(Fresh Issue and Offer for Sale|Fresh Issue and OFS|Offer for Sale|Fresh Issue)\s+(?=Up\s*to|Upto|Not\s+applicable|Fresh Issue of|Offer for Sale of)/i;
+
+const toNum = (v: string | undefined) => (v && /\d/.test(v) ? Number(v.replace(/,/g, "")) : null);
+
+/**
+ * Offer size from the "Details of the Offer" table on the cover: one row labelled
+ * Fresh Issue / Offer for Sale / both, then three cells (fresh, OFS, total) in that order.
+ * Anything still "[●]" stays null: nothing is estimated.
+ */
 export function extractOfferCover(pages: string[]): OfferCover {
   const t = collapse(pages.slice(0, 6).join(" "));
-  const num = (s: string) => Number(s.replace(/,/g, ""));
-  const fresh = new RegExp(String.raw`Fresh Issue(?: of)?(?:(?!Offer for Sale)[\s\S]){0,160}?(?:aggregating|amounting)(?: up)?\s*to\s*${AMOUNT}`, "i").exec(t);
-  const ofsAmt = new RegExp(String.raw`Offer for Sale(?: of)?(?:(?!Fresh Issue)[\s\S]){0,160}?(?:aggregating|amounting)(?: up)?\s*to\s*${AMOUNT}`, "i").exec(t);
-  const ofsShares = /Offer for Sale of up to\s*([\d,]+)\s*(?:equity )?shares/i.exec(t);
-  const total = new RegExp(String.raw`(?:aggregating|amounting)(?: up)?\s*to\s*${AMOUNT}\s*(?:\(|comprising|\.)`, "i").exec(t);
-  const freshIssueCr = fresh ? r2(toCr(num(fresh[1]), fresh[2])) : null;
-  const ofsCr = ofsAmt ? r2(toCr(num(ofsAmt[1]), ofsAmt[2])) : null;
-  const hasFresh = /Fresh Issue of/i.test(t);
-  const hasOfs = /Offer for Sale of/i.test(t);
+  const label = LABEL_RE.exec(t);
+  const empty: OfferCover = { freshIssueCr: null, freshShares: null, totalShares: null, ofsShares: null, ofsCr: null, totalOfferCr: null, structure: null };
+  if (!label) return empty;
+  const segment = t.slice(label.index + label[0].length, label.index + label[0].length + 1200);
+  const cells: Cell[] = [];
+  for (const m of segment.matchAll(CELL_RE)) {
+    if (cells.length >= 3) break;
+    if (/^not/i.test(m[0])) cells.push({ applicable: false, shares: null, cr: null });
+    else cells.push({ applicable: true, shares: toNum(m[1]), cr: m[2] && /\d/.test(m[2]) ? r2(toCr(toNum(m[2])!, m[3] ?? "crore")) : null });
+  }
+  const both = /and (?:Offer for Sale|OFS)/i.test(label[1]);
+  const isOfs = !both && /^Offer/i.test(label[1]);
+  const [fresh, ofs, total] = both ? [cells[0], cells[1], cells[2]] : isOfs ? [undefined, cells[1] ?? cells[0], cells[2] ?? cells[1]] : [cells[0], undefined, cells[2] ?? cells[1]];
+  const freshIssueCr = fresh?.cr ?? null;
+  const ofsCr = ofs?.cr ?? null;
   return {
     freshIssueCr,
-    ofsShares: ofsShares ? num(ofsShares[1]) : null,
+    freshShares: fresh?.shares ?? null,
+    totalShares: total?.shares ?? null,
+    ofsShares: ofs?.shares ?? null,
     ofsCr,
-    totalOfferCr: total ? r2(toCr(num(total[1]), total[2])) : freshIssueCr !== null && ofsCr !== null ? r2(freshIssueCr + ofsCr) : freshIssueCr !== null && !hasOfs ? freshIssueCr : ofsCr !== null && !hasFresh ? ofsCr : null,
-    structure: hasFresh && hasOfs ? "fresh+ofs" : hasFresh ? "fresh" : hasOfs ? "ofs" : null,
+    totalOfferCr: total?.cr ?? (freshIssueCr !== null && ofsCr !== null ? r2(freshIssueCr + ofsCr) : isOfs ? ofsCr : both ? null : freshIssueCr),
+    structure: both ? "fresh+ofs" : isOfs ? "ofs" : "fresh",
   };
 }
 

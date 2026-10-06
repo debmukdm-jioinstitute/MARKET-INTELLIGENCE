@@ -11,7 +11,7 @@ ICICI Securities Limited Rahul Sharma / Sumit Singh
 J. P. Morgan India Private Limited Varun Agrawal
 REGISTRAR TO THE OFFER Name and logo of the Registrar MUFG Intime India Private Limited`;
 const ELECTROMECH_P0 = `DETAILS OF OFFER TO THE PUBLIC TYPE FRESH ISSUE# OFFER FOR SALE
-Fresh Issue of up to [●] Equity Shares of face value of ₹5 each aggregating up to ₹ 32,600 lakhs
+Fresh Issue and Offer for Sale Fresh Issue of up to [●] Equity Shares of face value of ₹5 each aggregating up to ₹ 32,600 lakhs
 Offer for Sale of up to 18,91,000 Equity Shares of face value of ₹5 each aggregating up to ₹ [●] lakhs`;
 const ELECTROMECH_P1 = `BOOK RUNNING LEAD MANAGER NAME OF BRLM AND LOGO CONTACT PERSON E-MAIL AND TELEPHONE
 Arihant Capital Markets Limited Amol Kshirsagar Telephone: +91 22 4225 4800
@@ -37,7 +37,20 @@ describe("drhp cover", () => {
     expect(c.brlms).toEqual(["Arihant Capital"]);
   });
   it("handles million and no cover", () => {
-    expect(extractCover(["Fresh Issue of up to [●] Equity Shares aggregating up to ₹ 5,000 million"]).offer.freshIssueCr).toBe(500);
+    expect(extractCover(["Fresh Issue Up to [●] Equity Shares of face value ₹10 each aggregating up to ₹ 5,000 million Not applicable Up to [●] Equity Shares aggregating up to ₹ 5,000 million"]).offer.freshIssueCr).toBe(500);
     expect(extractCover([""]).brlms).toEqual([]);
+  });
+  it("reads table rows: Pentacle (fresh in million, OFS in shares) and Tanvi (shares only)", () => {
+    const pentacle = "Fresh Issue and Offer for Sale Up to [●] Equity Shares of face value ₹10/- each aggregating to ₹ 1,066.98 million Up to 21,25,000 Equity Shares of face value ₹10/- each aggregating to ₹ [●] million Up to [●] Equity Shares of face value ₹10/- each aggregating to ₹ [●] million";
+    expect(extractCover([pentacle]).offer).toMatchObject({ freshIssueCr: 106.7, ofsShares: 2125000, ofsCr: null, totalOfferCr: null });
+    const tanvi = "Fresh Issue and Offer for Sale Up to 3,580,000 Equity Shares of face value of ₹ 10 each aggregating to ₹ [•] million Up to 3,580,000 Equity Shares of face value of ₹ 10 each aggregating to ₹ [●] million Up to 7,160,000 Equity Shares of face value of ₹ 10 each aggregating to ₹ [●] million";
+    expect(extractCover([tanvi]).offer).toMatchObject({ freshShares: 3580000, ofsShares: 3580000, totalShares: 7160000, freshIssueCr: null });
+  });
+  it("fresh-only row with Not Applicable OFS cell (Sanghvi)", () => {
+    const o = extractCover(["Fresh Issue Upto 60,00,000 Equity Shares of face value of ₹ 10 each aggregating upto ₹ [●] lakhs Not Applicable Upto 60,00,000 Equity Shares of face value of ₹ 10 each aggregating upto ₹ [●] lakhs"]).offer;
+    expect(o).toMatchObject({ structure: "fresh", freshShares: 6000000, ofsShares: null });
+  });
+  it("strips table-header words from unknown banker names", () => {
+    expect(extractBrlms(["BOOK RUNNING LEAD MANAGER (“BRLM”) Logo Name Contact Person Telephone Email Socradamus Capital Private Limited Kritika Rupda 022 REGISTRAR TO THE OFFER"])).toEqual(["Socradamus Capital"]);
   });
 });
