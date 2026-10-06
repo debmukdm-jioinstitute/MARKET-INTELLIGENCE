@@ -60,6 +60,12 @@ type ConcallResponse = {
   message?: string;
 };
 
+async function loadFinancialsJson(url: string): Promise<{ annualReports?: AnnualReportDoc[] }> {
+  const res = await fetch(url);
+  if (!res.ok) return {};
+  return (await res.json()) as { annualReports?: AnnualReportDoc[] };
+}
+
 async function loadConcall(url: string): Promise<ConcallResponse> {
   const res = await fetch(url);
   const json = (await res.json()) as ConcallResponse & { error?: string };
@@ -86,7 +92,7 @@ export function DocumentsPanel({
   symbol: string;
   annualReports?: AnnualReportDoc[];
 }) {
-  const { data: finData } = useSWR<any>(`/api/research/financials?symbol=${encodeURIComponent(symbol)}`, async (u: string) => fetch(u).then((r) => r.json()), { revalidateOnFocus: false });
+  const { data: finData } = useSWR(`/api/research/financials?symbol=${encodeURIComponent(symbol)}`, loadFinancialsJson, { revalidateOnFocus: false });
   const annualReports: AnnualReportDoc[] = initialAnnualReports ?? (finData?.annualReports as AnnualReportDoc[] | undefined) ?? [];
   const [activeTab, setActiveTab] = useState<"annual_reports" | "announcements" | "ratings" | "concalls">("annual_reports");
   const [announcementCategory, setAnnouncementCategory] = useState<string | null>(null);

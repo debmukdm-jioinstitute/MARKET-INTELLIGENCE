@@ -104,7 +104,21 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
                       </>
                     ) : (
                       <td colSpan={4} className="py-2 text-muted-foreground">
-                        Not covered — we found no public rating from {a.agency} for this company.
+                        Not covered in public bond registry —{" "}
+                        <a
+                          href={
+                            a.agency === "CRISIL"
+                              ? `https://www.crisil.com/en/home/our-businesses/ratings/company-factsheet.${encodeURIComponent(symbol)}.html`
+                              : a.agency === "CARE"
+                              ? `https://www.careratings.com/search.aspx?q=${encodeURIComponent(symbol)}`
+                              : `https://www.icra.in/Rating/List?search=${encodeURIComponent(symbol)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline font-medium"
+                        >
+                          Verify on {a.agency} portal ↗
+                        </a>
                       </td>
                     )}
                   </tr>
