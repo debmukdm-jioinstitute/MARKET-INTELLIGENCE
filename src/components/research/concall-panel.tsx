@@ -7,7 +7,7 @@ import useSWR from "swr";
 
 type Summary = {
   quarter: string | null;
-  transcriptDate: string;
+  transcriptDate: string | null;
   guidance: string[];
   growthDrivers: string[];
   risks: string[];
@@ -18,7 +18,7 @@ type Summary = {
   sourceUrl: string;
   generatedBy: string;
 };
-type ConcallResponse = { symbol: string; dbConfigured: boolean; summary: Summary | null };
+type ConcallResponse = { symbol: string; dbConfigured: boolean; summary: Summary | null; history?: Summary[]; documents?: { title: string; url: string }[]; message?: string };
 
 /** Module-level fetcher — never inline an async fn in useSWR (React #185). */
 async function loadConcall(url: string): Promise<ConcallResponse> {
@@ -62,9 +62,11 @@ function Bullets({ items, quoted }: { items: string[]; quoted: boolean }) {
 }
 
 export function ConcallPanel({ symbol }: { symbol: string }) {
-  const { data, error, isLoading } = useSWR<ConcallResponse>(`/api/research/concall?symbol=${encodeURIComponent(symbol)}`, loadConcall, { revalidateOnFocus: false });
+  const [market, setMarket] = useState<"IN" | "US">("IN");
+  const { data, error, isLoading } = useSWR<ConcallResponse>(`/api/research/concall?symbol=${encodeURIComponent(symbol)}&market=${market}`, loadConcall, { revalidateOnFocus: false });
   const [more, setMore] = useState(false);
-  const s = data?.summary ?? null;
+  const [selected, setSelected] = useState<string>("");
+  const s = data?.history?.find((r) => r.sourceUrl === selected) ?? data?.summary ?? null;
   const usedModel = s ? /finbert|distilbart/i.test(s.generatedBy) : false;
   const abstractive = s ? /distilbart/i.test(s.generatedBy) : false;
   const delta = s?.toneDelta ?? null;
@@ -74,21 +76,24 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
       id="concalls"
       title="Earnings Concalls (Said vs Guided)"
       subtitle="What management guided in the earnings call versus what analysts pushed on afterwards."
-      trust={{ source: "Company earnings-call transcript filed on NSE", asOf: s ? `${s.transcriptDate}T00:00:00Z` : null, note: "Automated reading of a transcript — not investment advice" }}
+      trust={{ source: "Linked company / exchange earnings-call transcript", asOf: s?.transcriptDate ? `${s.transcriptDate}T00:00:00Z` : null, note: "Automated reading of a transcript — not investment advice" }}
     >
+      <label className="mb-3 block text-sm">Transcript market <select aria-label="Transcript market" value={market} onChange={(e) => setMarket(e.target.value as "IN" | "US")} className="ml-2 rounded border border-border bg-background p-2"><option value="IN">India</option><option value="US">United States</option></select></label>
       {isLoading ? <p className="animate-pulse text-sm text-muted-foreground">Loading call summary for {symbol}…</p> : null}
       {error ? <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">Could not load the call summary right now. Try again in a moment.</p> : null}
-      {data && !error && !s ? <p className="text-sm text-muted-foreground">No earnings-call transcript has been summarised for {symbol} yet. Summaries appear after a company files its transcript with NSE.</p> : null}
+      {data && !error && !s ? <p className="text-sm text-muted-foreground">{data.message ?? "Transcript archives are temporarily unavailable. This does not mean the company has no transcripts."}</p> : null}
 
+      {(data?.history?.length ?? 0) > 1 ? <label className="mb-3 block text-sm">Archived calls <select aria-label="Select earnings call" value={s?.sourceUrl ?? ""} onChange={(e) => setSelected(e.target.value)} className="ml-2 rounded border border-border bg-background p-2">{data!.history!.map((r) => <option key={r.sourceUrl} value={r.sourceUrl}>{r.quarter ?? r.transcriptDate ?? "Archived call"}</option>)}</select></label> : null}
+      {data?.documents?.length ? <details className="mb-3 text-sm"><summary className="cursor-pointer text-primary">Original transcript archive ({data.documents.length})</summary><ul className="mt-2 space-y-2">{data.documents.map((d) => <li key={d.url}><a href={d.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{d.title} ↗</a></li>)}</ul></details> : null}
       {s ? (
         <div className="space-y-4">
           <p className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{usedModel ? "AI summary of the linked transcript — read the original for exact wording." : "Auto-extracted from the linked transcript — read the original for exact wording."}</span>{" "}
-            {s.quarter ? `${s.quarter} · ` : ""}filed {fmtDay(s.transcriptDate)} ·{" "}
+            {s.quarter ? `${s.quarter} · ` : ""}{s.transcriptDate ? `dated ${fmtDay(s.transcriptDate)}` : "date not verified"} ·{" "}
             <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
-              Open transcript PDF ↗
+              Open original transcript ↗
             </a>{" "}
-            · Method: {s.generatedBy}. Text in quotation marks is copied word for word.
+            · Method: {s.generatedBy}. {s.generatedBy.includes("prepared-only") ? "Q&A could not be reliably identified; only prepared remarks are shown. " : ""}Text in quotation marks is copied word for word.
           </p>
 
           <div className="grid gap-4 md:grid-cols-2">

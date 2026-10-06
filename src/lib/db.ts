@@ -570,6 +570,11 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_credit_ratings_symbol_date ON credit_ratings (symbol, action_date DESC)`;
 
+      // Persistent archive cache prevents repeated scraping/PDF parsing on serverless cold starts.
+      await db`CREATE TABLE IF NOT EXISTS transcript_archive_cache (
+        cache_key text PRIMARY KEY, payload jsonb NOT NULL, expires_at timestamptz NOT NULL
+      )`;
+
       // Concall "said vs guided" summaries. Transcript text itself is never stored — only extracted highlights + link.
       await db`
         CREATE TABLE IF NOT EXISTS concall_summaries (

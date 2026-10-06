@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { hfInfer } from "@/lib/hf/client";
 
 /**
@@ -5,8 +6,8 @@ import { hfInfer } from "@/lib/hf/client";
  *
  * Extractive-first by design: every guidance / driver / risk / Q&A bullet is a
  * real sentence from the transcript (so numbers can never be invented). The
- * optional abstractive pass (distilbart) is accepted only when every number in
- * its output also appears in its source text. Tone uses FinBERT strictly: if the
+ * archive and collector keep verbatim extracts; numeric overlap alone cannot
+ * establish factual entailment for abstractive output. Tone uses FinBERT strictly: if the
  * model is unavailable the tone is null — never a rule-based stand-in.
  */
 
@@ -23,32 +24,40 @@ export function parseTurns(text: string): Turn[] {
   const hits = [...text.matchAll(SPEAKER_RE)].map((m) => ({ name: m[1].trim(), start: m.index! + (m[0].length - m[0].trimStart().length), end: m.index! + m[0].length }));
   const freq = new Map<string, number>();
   for (const h of hits) freq.set(h.name, (freq.get(h.name) ?? 0) + 1);
-  const real = hits.filter((h) => (freq.get(h.name) ?? 0) >= 2 || h.name === "Moderator");
+  const hasHost = hits.some((h) => /^(Moderator|Operator)$/i.test(h.name));
+  const real = hits.filter((h) => (freq.get(h.name) ?? 0) >= 2 || /^(Moderator|Operator)$/i.test(h.name) || (hasHost && /\S+\s+\S+/.test(h.name) && !/^(?:Dear|To|Sub|For|Date|Subject)\b/.test(h.name)));
   const turns: Turn[] = [];
   real.forEach((h, i) => {
     const body = text.slice(h.end, real[i + 1]?.start ?? text.length).replace(/\s+/g, " ").trim();
-    if (body) turns.push({ speaker: h.name, text: body });
+    if (body) turns.push({ speaker: /^(Moderator|Operator)$/i.test(h.name) ? "Moderator" : h.name, text: body });
   });
   return turns;
 }
 
 const FIRST_Q = /(?:first|next)\s+question\s+(?:is|comes)\s+from|line\s+of\s+[A-Z]/i;
-const QA_START = /question[- ]and[- ]answer session\s+(?:now|will|begins)|we will now (?:begin|start|take)|open(?:ing)? (?:the )?(?:floor|lines?) for (?:questions|Q&A)|begin the Q&A/i;
+const QA_START = /question[- ]and[- ]answer session\s+(?:now|will|begins)|we will now (?:begin|start|take)|open(?:ing)? (?:the )?(?:floor|lines?) for (?:questions|Q&A)|begin the Q&A|now (?:take|open|go to|move to)[^.]{0,60}(?:questions|Q&A)|ready to take questions/i;
 
 export type Split = { prepared: Turn[]; qa: Turn[]; found: boolean; analysts: Set<string> };
 
 /** Splits at the moderator's first-question handoff. `found=false` when no Q&A segment can be identified. */
 export function splitTranscript(text: string): Split {
-  const turns = parseTurns(text);
+  // Normalize explicit speaker-role labels seen in Indian and US PDF transcripts.
+  const normalized = text.replace(/(?:^|\n)([A-Z][A-Za-z.'’-]+(?:[ \t]+[A-Z][A-Za-z.'’-]+){1,3})[ \t]+[–—-][^:\n]{1,160}:\s*/g, "\n$1: ");
+  const turns = parseTurns(normalized);
   const callStart = turns.findIndex((t) => t.speaker === "Moderator");
-  const live = callStart >= 0 ? turns.slice(callStart) : [];
+  const live = callStart >= 0 ? turns.slice(callStart) : turns;
   const analysts = new Set<string>();
   for (const t of live) {
     if (t.speaker !== "Moderator") continue;
     for (const m of t.text.matchAll(/line of ([A-Z][A-Za-z.'’-]+(?:\s[A-Z][A-Za-z.'’-]+){0,3}?)(?:\s+(?:from|of|with|at)\b|\.|,)/g)) analysts.add(m[1].trim());
   }
   let idx = live.findIndex((t, i) => t.speaker === "Moderator" && i > 0 && FIRST_Q.test(t.text));
-  if (idx < 0) idx = live.findIndex((t, i) => t.speaker === "Moderator" && i > 1 && QA_START.test(t.text));
+  if (idx < 0) idx = live.findIndex((t, i) => t.speaker === "Moderator" && i > 0 && QA_START.test(t.text));
+  if (idx < 0) idx = live.findIndex((t, i) => i > 0 && /^(?:Questions? (?:and|&) Answers?|Q&A)$/i.test(t.speaker));
+  // US calls often use single analyst turns. Infer questioners only when speaker labels are explicit.
+  for (const t of live.slice(idx >= 0 ? idx : live.length)) {
+    if (t.speaker !== "Moderator" && /^(?:can|could|what|how|why|thanks.*question)|\?/i.test(t.text)) analysts.add(t.speaker);
+  }
   if (idx < 0) return { prepared: live.filter((t) => t.speaker !== "Moderator"), qa: [], found: false, analysts };
   return { prepared: live.slice(0, idx).filter((t) => t.speaker !== "Moderator"), qa: live.slice(idx), found: true, analysts };
 }
@@ -166,7 +175,9 @@ export function numbersSupported(candidate: string, source: string): boolean {
 /** "Q1 FY2026-27" / "Q1 FY27" / "Q1 FY 2027" → "Q1 FY27". */
 export function detectQuarter(text: string): string | null {
   const m = /\bQ([1-4])\s*[-–]?\s*FY\s*['’]?\s*(?:20)?(\d{2})(?:\s*[-–/]\s*(?:20)?(\d{2}))?/i.exec(text.slice(0, 6000));
-  return m ? `Q${m[1]} FY${m[3] ?? m[2]}` : null;
+  if (m) return `Q${m[1]} FY${m[3] ?? m[2]}`;
+  const calendar = /\bQ([1-4])\s*[- ]\s*(20\d{2})\b/i.exec(text.slice(0, 6000));
+  return calendar ? `Q${calendar[1]} ${calendar[2]}` : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -194,7 +205,7 @@ export async function segmentTone(text: string, maxChunks = 10): Promise<number 
     const scores: number[] = [];
     for (let i = 0; i < chunks.length; i += 5) {
       const batch = chunks.slice(i, i + 5);
-      const raw = await hfInfer<string[], Cls>(TONE_MODEL, batch, { ttlMs: 3600_000, maxRetries: 2, cacheKey: `concall-tone::${batch.join("|").slice(0, 300)}::${batch.length}::${batch.join("").length}` });
+      const raw = await hfInfer<string[], Cls>(TONE_MODEL, batch, { ttlMs: 3600_000, maxRetries: 2, cacheKey: `concall-tone::${createHash("sha256").update(JSON.stringify(batch)).digest("hex")}` });
       for (const c of raw) {
         const pos = c.find((x) => x.label.toLowerCase() === "positive")?.score ?? 0;
         const neg = c.find((x) => x.label.toLowerCase() === "negative")?.score ?? 0;
@@ -219,7 +230,7 @@ export async function abstractBullets(sourceSentences: string[]): Promise<string
     const raw = await hfInfer<{ inputs: string; parameters: { max_length: number; min_length: number } }, { summary_text: string }[]>(
       SUMMARY_MODEL,
       { inputs: source, parameters: { max_length: 90, min_length: 25 } },
-      { ttlMs: 3600_000, maxRetries: 2, cacheKey: `concall-sum::${source.length}::${source.slice(0, 200)}` },
+      { ttlMs: 3600_000, maxRetries: 2, cacheKey: `concall-sum::${createHash("sha256").update(source).digest("hex")}` },
     );
     const out = (raw?.[0]?.summary_text ?? "").split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter((s) => wordCount(s) >= 5 && numbersSupported(s, source));
     return out.length ? out.slice(0, 4) : null;

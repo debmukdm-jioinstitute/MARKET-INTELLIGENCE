@@ -32,6 +32,7 @@ export default function HelpPage() {
           , open <b className="font-semibold text-foreground">Market Intelligence terminal (mi)</b> →{" "}
           <b className="font-semibold text-foreground">How to set up in terminal</b> (Mac, Windows, or Linux).
         </p>
+        <p className="mt-4">Earnings-call archives: use the read-only <b>get_earnings_transcripts</b> tool in Claude MCP or the mi terminal, with a symbol and optional market IN or US.</p>
         <p className="mt-4"><Link href="/alpha-league" className="text-primary underline">The Alpha League</Link>: virtual portfolio championship. The read-only <b>get_alpha_league_preview</b> MCP tool provides public top-20 standings in the terminal. No personal holdings or trades are exposed.</p>
         <div className="mt-6 max-w-xl">
           <SemanticSearchBox corpus="help" placeholder="Search help topics (e.g. how do I connect Claude)" />

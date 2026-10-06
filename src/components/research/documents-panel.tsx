@@ -41,7 +41,7 @@ async function loadAnnouncements(url: string): Promise<AnnouncementsResponse> {
 
 type ConcallSummary = {
   quarter: string | null;
-  transcriptDate: string;
+  transcriptDate: string | null;
   guidance: string[];
   growthDrivers: string[];
   risks: string[];
@@ -57,6 +57,7 @@ type ConcallResponse = {
   symbol: string;
   dbConfigured: boolean;
   summary: ConcallSummary | null;
+  message?: string;
 };
 
 async function loadConcall(url: string): Promise<ConcallResponse> {
@@ -374,7 +375,7 @@ export function DocumentsPanel({
                       {concallData.summary.quarter ?? "Earnings"} Concall Transcript Briefing
                     </h4>
                     <p className="text-[11px] text-muted-foreground">
-                      Transcript Date: {fmtDate(concallData.summary.transcriptDate)} · Analyzed via {concallData.summary.generatedBy}
+                      Transcript Date: {concallData.summary.transcriptDate ? fmtDate(concallData.summary.transcriptDate) : "Not verified"} · Analyzed via {concallData.summary.generatedBy}
                     </p>
                   </div>
                   {concallData.summary.sourceUrl ? (
@@ -414,7 +415,7 @@ export function DocumentsPanel({
               </div>
             ) : (
               <div className="rounded-xl border border-border/70 p-5 text-center text-xs text-muted-foreground">
-                <p>No recent earnings conference call transcript processed for {symbol}.</p>
+                <p>{concallData?.message ?? "Transcript archives are temporarily unavailable. Please retry shortly."}</p>
               </div>
             )}
           </div>

@@ -1,3 +1,4 @@
+import { getTranscriptArchive } from "@/lib/research/transcript-archive";
 import { currentCompetition,leaderboard } from "@/lib/competition/store";
 import { DISCLAIMER } from "@/lib/competition/config";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
@@ -277,6 +278,17 @@ export const SITE_TOOLS: Tool[] = [
   },
 
   // ---- Research ----
+  {
+    name: "get_earnings_transcripts",
+    title: "Earnings call transcript archive",
+    category: "Research",
+    description: "Source-linked earnings-call highlights and archived calls. Indian exchange/IR sources and publicly accessible US transcripts where available; unavailable never means no transcript exists.",
+    inputSchema: { type: "object", properties: { symbol: sym, market: { type: "string", enum: ["IN", "US"], default: "IN" } }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => {
+      const input = z.object({ symbol: SymbolArg.shape.symbol, market: z.enum(["IN", "US"]).default("IN") }).parse(a);
+      return getTranscriptArchive(input.symbol, input.market);
+    },
+  },
   {
     name: "get_research_pack",
     title: "Stock research pack (composite)",

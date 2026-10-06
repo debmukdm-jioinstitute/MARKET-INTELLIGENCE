@@ -1,3 +1,4 @@
+import { getTranscriptArchive } from "@/lib/research/transcript-archive";
 import { mapResearchRow } from "@/lib/research/api-map";
 import { TRACKED_SUBREDDITS } from "@/lib/reddit-sentiment/database";
 import { getLiveCompanySentimentCached, getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
@@ -293,16 +294,12 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
     }),
     get_company_concall: tool({
       description:
-        "Company Intelligence & Concalls: official filing timelines and earnings-call tone. No verified transcript feed is connected yet — reports unavailable rather than estimates.",
+        "Source-linked earnings-call transcript archive and extracted guidance, growth drivers, risks and analyst questions. Availability varies; tone is shown only when FinBERT produced it.",
       inputSchema: z.object({
-        symbol: z.string().describe("Company ticker symbol e.g. TATAMOTORS, RELIANCE, INFY"),
+        symbol: z.string().regex(/^[A-Za-z0-9&.\-]{1,20}$/).describe("Company ticker symbol e.g. TATAMOTORS, RELIANCE, INFY"),
+        market: z.enum(["IN", "US"]).default("IN"),
       }),
-      execute: async () => {
-        return {
-          dataStatus: "UNAVAILABLE",
-          message: "No verified concall transcript feed is connected yet. Check company IR portals and exchange filings directly.",
-        };
-      },
+      execute: async ({ symbol, market }) => getTranscriptArchive(symbol, market),
     }),
     get_primary_deals: tool({
       description:
