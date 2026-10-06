@@ -1,3 +1,4 @@
+import { getCompanyLeadership } from "@/lib/research/company-leadership";
 import { getTranscriptArchive } from "@/lib/research/transcript-archive";
 import { currentCompetition,leaderboard } from "@/lib/competition/store";
 import { DISCLAIMER } from "@/lib/competition/config";
@@ -288,6 +289,14 @@ export const SITE_TOOLS: Tool[] = [
       const input = z.object({ symbol: SymbolArg.shape.symbol, market: z.enum(["IN", "US"]).default("IN") }).parse(a);
       return getTranscriptArchive(input.symbol, input.market);
     },
+  },
+  {
+    name: "get_company_leadership",
+    title: "Founders, pay disparity, holdings and dividends",
+    category: "Research",
+    description: "Indian company founders/CEO (Wikidata), median pay by group from the BRSR, promoter/director share counts from the shareholding filing, and dividend history with derived dividend income.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => getCompanyLeadership(SymbolArg.parse(a).symbol),
   },
   {
     name: "get_research_pack",

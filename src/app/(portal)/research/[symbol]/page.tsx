@@ -16,6 +16,7 @@ import { OwnershipPanel } from "@/components/research/ownership-panel";
 import { DocumentsPanel } from "@/components/research/documents-panel";
 import { RatingsPanel } from "@/components/research/ratings-panel";
 import { ConcallPanel } from "@/components/research/concall-panel";
+import { LeadershipPanel } from "@/components/research/leadership-panel";
 import { ResearchSectionNav } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -131,6 +132,8 @@ export default function ResearchSymbolPage() {
           </div>
         </Panel>
       ) : null}
+
+      {isIndia && symbol ? <LeadershipPanel symbol={symbol} /> : null}
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
