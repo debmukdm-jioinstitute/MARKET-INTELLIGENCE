@@ -1,7 +1,50 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { researchReportNotificationHref } from "@/lib/research/notification-href";
 import { ensureSchema as ensureAppSchema, hasDatabase, sql } from "../db";
 import type { NewEvent, SiteEvent } from "./types";
+
+function brokerReportIdFromKey(key: unknown): string | null {
+  const k = String(key ?? "");
+  if (!k.startsWith("broker:")) return null;
+  const id = k.slice("broker:".length);
+  return /^\d+$/.test(id) ? id : null;
+}
+
+async function enrichBrokerEventHrefs(rows: Record<string, unknown>[]): Promise<SiteEvent[]> {
+  const reportIds = [
+    ...new Set(
+      rows
+        .map((r) => (r.category === "broker" ? brokerReportIdFromKey(r.key) : null))
+        .filter((x): x is string => Boolean(x)),
+    ),
+  ];
+  const hrefByReportId = new Map<string, string>();
+  if (reportIds.length && hasDatabase()) {
+    try {
+      const reports = await sql()`SELECT id, pdf_url, url FROM research_reports WHERE id = ANY(${reportIds.map(Number)}::bigint[])`;
+      for (const r of reports) {
+        hrefByReportId.set(String(r.id), researchReportNotificationHref(r as { pdf_url?: string | null; url?: string | null }));
+      }
+    } catch {
+      /* keep stored href */
+    }
+  }
+  return rows.map((r) => {
+    const reportId = r.category === "broker" ? brokerReportIdFromKey(r.key) : null;
+    const resolved = reportId ? hrefByReportId.get(reportId) : undefined;
+    const href = reportId && hrefByReportId.has(reportId) ? hrefByReportId.get(reportId)! : String(r.href);
+    return {
+      id: String(r.id),
+      at: new Date(r.at as string).toISOString(),
+      category: r.category,
+      severity: r.severity,
+      title: r.title,
+      body: r.body,
+      href,
+    } as SiteEvent;
+  });
+}
 
 /**
  * Event feed + detector state. Postgres (Neon) when configured, otherwise JSON files under `.notify-cache/` so local
@@ -77,8 +120,8 @@ export async function addEvents(events: NewEvent[]): Promise<NewEvent[]> {
 export async function listEvents(limit = 60): Promise<SiteEvent[]> {
   if (hasDatabase()) {
     await ensureSchema();
-    const rows = await sql()`SELECT id, at, category, severity, title, body, href FROM site_events ORDER BY at DESC, id DESC LIMIT ${limit}`;
-    return rows.map((r) => ({ id: String(r.id), at: new Date(r.at as string).toISOString(), category: r.category, severity: r.severity, title: r.title, body: r.body, href: r.href }) as SiteEvent);
+    const rows = await sql()`SELECT id, key, at, category, severity, title, body, href FROM site_events ORDER BY at DESC, id DESC LIMIT ${limit}`;
+    return enrichBrokerEventHrefs(rows);
   }
   const all = await readJson<SiteEvent[]>("events.json", []);
   return all.slice(0, limit).map(({ id, at, category, severity, title, body, href }) => ({ id, at, category, severity, title, body, href }));

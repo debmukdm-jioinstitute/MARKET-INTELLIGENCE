@@ -1,4 +1,5 @@
 import { getWatchlistLiveSentiment } from "../reddit-sentiment/live-cache";
+import { researchReportNotificationHref } from "@/lib/research/notification-href";
 import { ensureSchema, hasDatabase, sql } from "../db";
 import type { NewEvent } from "./types";
 
@@ -12,7 +13,7 @@ export async function detectFeedUpdates(): Promise<NewEvent[]> {
       await ensureSchema();
       const db = sql();
       const rows = await db`
-        SELECT id, broker, symbol, title, recommendation, target_price, url, scraped_at
+        SELECT id, broker, symbol, title, recommendation, target_price, url, pdf_url, scraped_at
         FROM research_reports
         WHERE scraped_at > now() - interval '24 hours'
         ORDER BY scraped_at DESC
@@ -29,7 +30,10 @@ export async function detectFeedUpdates(): Promise<NewEvent[]> {
           severity: "medium",
           title: `New research note${broker ? ` from ${broker}` : ""}${symbol ? ` on ${symbol}` : ""}${reco ? ` — ${reco}` : ""}`,
           body: title,
-          href: "/research",
+          href: researchReportNotificationHref({
+            pdf_url: r.pdf_url as string | null,
+            url: r.url as string | null,
+          }),
         });
       }
     }
