@@ -28,11 +28,14 @@ export function MiMascot({
   tip,
   tipKey,
   className = "",
+  dockRightOnPoint = false,
 }: {
   tip: MascotTip | null;
   /** Changes whenever the tip should re-announce (section id or route). */
   tipKey: string;
   className?: string;
+  /** Pointing pose faces left, so dock on the right edge for "point" tips (only where that corner is free). */
+  dockRightOnPoint?: boolean;
 }) {
   const reduce = useReducedMotion();
   const [hidden, setHidden] = useState(true);
@@ -73,21 +76,35 @@ export function MiMascot({
   if (!mounted || !tip) return null;
 
   const gesture = reduce ? undefined : GESTURES[tip.gesture];
+  const pointing = !hidden && dockRightOnPoint && tip.gesture === "point";
+  const sprite = pointing ? "/mascot/mi-owl-point-sm.webp" : "/mascot/mi-owl-sm.webp";
 
   return (
     <div
-      className={`pointer-events-none fixed bottom-[max(4.75rem,env(safe-area-inset-bottom,0px)+3.5rem)] left-[max(0.5rem,env(safe-area-inset-left,0px))] z-40 flex items-end gap-2 md:bottom-5 md:left-5 ${className}`}
+      className={`pointer-events-none fixed bottom-[max(4.75rem,env(safe-area-inset-bottom,0px)+3.5rem)] z-40 flex items-end gap-2 md:bottom-5 ${
+        pointing
+          ? "right-[max(0.5rem,env(safe-area-inset-right,0px))] flex-row-reverse md:right-5"
+          : "left-[max(0.5rem,env(safe-area-inset-left,0px))] md:left-5"
+      } ${className}`}
       aria-live="polite"
     >
       {hidden ? (
-        // Hanging off the edge: only the top of the owl peeks in.
+        // Dismissed: Mi hangs from a ledge and swings; click to bring him back.
         <button
           type="button"
           onClick={() => setHiddenPersist(false)}
           aria-label="Bring Mi back"
-          className="pointer-events-auto -ml-2 h-14 w-16 overflow-hidden rounded-t-full transition-transform hover:-translate-y-1"
+          className="pointer-events-auto relative -mb-1 flex w-16 flex-col items-center"
         >
-          <Image src="/mascot/mi-owl-sm.webp" alt="" width={64} height={64} className="h-16 w-16 max-w-none" unoptimized />
+          <span aria-hidden className="h-1.5 w-16 rounded-full bg-neutral-400 shadow dark:bg-neutral-500" />
+          <motion.span
+            className="-mt-1 block"
+            style={{ transformOrigin: "50% 0%" }}
+            animate={reduce ? undefined : { rotate: [-5, 5, -5] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Image src="/mascot/mi-owl-hang-sm.webp" alt="" width={52} height={71} unoptimized className="h-auto w-[52px]" draggable={false} />
+          </motion.span>
         </button>
       ) : (
         <>
@@ -116,7 +133,7 @@ export function MiMascot({
                 transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
-                  src="/mascot/mi-owl-sm.webp"
+                  src={sprite}
                   alt="Mi, the Market Intelligence owl"
                   width={96}
                   height={96}
@@ -142,7 +159,9 @@ export function MiMascot({
               >
                 <span
                   aria-hidden
-                  className="absolute -left-1.5 bottom-4 h-3 w-3 rotate-45 border-b border-l border-black/10 bg-white dark:border-white/15 dark:bg-neutral-900"
+                  className={`absolute bottom-4 h-3 w-3 rotate-45 border-black/10 bg-white dark:border-white/15 dark:bg-neutral-900 ${
+                    pointing ? "-right-1.5 border-r border-t" : "-left-1.5 border-b border-l"
+                  }`}
                 />
                 <button
                   type="button"

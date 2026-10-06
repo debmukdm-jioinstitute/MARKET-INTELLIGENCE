@@ -34,5 +34,5 @@ export function LandingMascot() {
     return () => io.disconnect();
   }, []);
 
-  return <MiMascot tip={LANDING_TIPS[active] ?? LANDING_TIPS.hero} tipKey={active} />;
+  return <MiMascot tip={LANDING_TIPS[active] ?? LANDING_TIPS.hero} tipKey={active} dockRightOnPoint />;
 }
