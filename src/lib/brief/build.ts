@@ -1,7 +1,5 @@
 import { callLlmJson, hasLlmKey, untrustedBlock } from "@/lib/ai/llm";
-import { fetchBseNews } from "@/lib/feeds/sources/bse";
-import { fetchNseNews } from "@/lib/feeds/sources/nse";
-import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
+import { fetchLiveMarketHeadlines } from "@/lib/brief/live-market-headlines";
 import { buildSnapshot, type Snapshot } from "@/lib/snapshot";
 import type { Brief, BriefItem, Stance } from "./types";
 
@@ -32,10 +30,8 @@ export function factsFrom(s: Snapshot): Fact[] {
 }
 
 async function headlines(): Promise<Brief["headlines"]> {
-  const [rbi, nse, bse] = await Promise.allSettled([fetchRbiNews(), fetchNseNews(), fetchBseNews()]);
-  const take = (r: PromiseSettledResult<{ title: string; link: string }[]>, source: string, n: number) =>
-    r.status === "fulfilled" ? r.value.slice(0, n).map((x) => ({ title: x.title, link: x.link, source })) : [];
-  return [...take(rbi, "RBI", 4), ...take(nse, "NSE", 3), ...take(bse, "BSE", 3)];
+  const live = await fetchLiveMarketHeadlines(14);
+  return live.map((h) => ({ title: h.title, link: h.link, source: h.source }));
 }
 
 /** Deterministic fallback so the brief still publishes when the LLM is unavailable. */

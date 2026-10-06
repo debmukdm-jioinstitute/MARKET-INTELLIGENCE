@@ -38,6 +38,10 @@ export const DEFAULT_REDDIT_SUBREDDITS = [
 
 export const DEFAULT_GOOGLE_NEWS_QUERIES: { query: string; tag: string }[] = [
   { query: "NSE BSE India stock market", tag: "India markets" },
+  { query: "Nifty Sensex stock market today", tag: "Market moves" },
+  { query: "India quarterly earnings results", tag: "Earnings" },
+  { query: "SEBI fraud scam stock manipulation India", tag: "Regulation & fraud" },
+  { query: "geopolitics oil markets impact India stocks", tag: "Global & geopolitics" },
   { query: "RBI monetary policy India", tag: "RBI policy" },
   { query: "India FII DII flows", tag: "Institutional flows" },
 ];

@@ -39,11 +39,17 @@ function annotate(title: string) {
   );
   const sector =
     matches[0]?.[2] ??
-    (/\b(rbi|rates?|inflation|gdp)\b/i.test(title)
-      ? "Economy & policy"
-      : /\b(sebi|nse|bse)\b/i.test(title)
-        ? "Market regulation"
-        : "Market news");
+    (/\b(earnings|quarter|Q[1-4]|results)\b/i.test(title)
+      ? "Earnings"
+      : /\b(fraud|scam|manipulation|penalty|ban|sebi order)\b/i.test(title)
+        ? "Regulation & enforcement"
+        : /\b(war|geopolit|sanction|tariff|oil|middle east|china|ukraine)\b/i.test(title)
+          ? "Global & geopolitics"
+          : /\b(rbi|rates?|inflation|gdp)\b/i.test(title)
+            ? "Economy & policy"
+            : /\b(sebi|nse|bse)\b/i.test(title)
+              ? "Market regulation"
+              : "Market news");
   return {
     sector,
     symbols: matches.map(([symbol]) => symbol),
@@ -83,9 +89,16 @@ export function briefHeadlines(
       source: h.source,
       href: h.link ?? "/intelligence/brief",
       time: h.timeAgo,
+      publishedAt: h.publishedAt,
     });
   }
-  return [...new Map(stories.map((h) => [h.title, h])).values()];
+  const unique = [...new Map(stories.map((h) => [h.title, h])).values()];
+  unique.sort((a, b) => {
+    const ta = a.publishedAt ? Date.parse(a.publishedAt) : 0;
+    const tb = b.publishedAt ? Date.parse(b.publishedAt) : 0;
+    return tb - ta;
+  });
+  return unique;
 }
 export function trendingSymbol(data: BriefResponse | undefined, now: Date) {
   const counts = new Map<string, number>();
