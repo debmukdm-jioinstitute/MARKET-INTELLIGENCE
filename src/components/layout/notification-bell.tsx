@@ -1,13 +1,13 @@
 "use client";
 
 import { usePushSubscription } from "@/components/layout/push-notifications-toggle";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { EventCategory, SiteEvent } from "@/lib/notify/types";
 import { cn } from "@/lib/utils";
 import { Bell, ChevronLeft, SlidersHorizontal } from "lucide-react";
-import { isExternalNotificationHref } from "@/lib/research/notification-href";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 const SEEN_KEY = "mi.notif.seen";
@@ -87,31 +87,6 @@ function recordInteraction(eventId: number, action: "clicked" | "dismissed") {
   }).catch(() => {});
 }
 
-function NotificationItemLink({
-  href,
-  className,
-  onNavigate,
-  children,
-}: {
-  href: string;
-  className?: string;
-  onNavigate?: () => void;
-  children: ReactNode;
-}) {
-  if (isExternalNotificationHref(href)) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={onNavigate}>
-        {children}
-      </a>
-    );
-  }
-  return (
-    <Link href={href} className={className} onClick={onNavigate}>
-      {children}
-    </Link>
-  );
-}
-
 function ago(iso: string): string {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "just now";
@@ -129,8 +104,14 @@ function dayLabel(iso: string): string {
 
 /** Notification centre: every meaningful change in the site's data, with a link to where it is shown. */
 export function NotificationBell() {
-  const { data } = useSWR("/api/notifications/feed", fetcher, { refreshInterval: 120_000, revalidateOnFocus: true });
-  const { data: smart } = useSWR("/api/notifications/smart", smartFetcher, { refreshInterval: 120_000, revalidateOnFocus: true });
+  // Invocation guard: the two notification endpoints are force-dynamic, so every
+  // poll is a billed function invocation. Poll (and revalidate on focus) only for
+  // signed-in, non-guest users — logged-out tabs were re-hitting both endpoints
+  // every 2 minutes forever. Guests still get the initial load on mount.
+  const { user, isGuest, ready } = useAuth();
+  const live = ready && !!user && !isGuest;
+  const { data } = useSWR("/api/notifications/feed", fetcher, { refreshInterval: live ? 120_000 : 0, revalidateOnFocus: live });
+  const { data: smart } = useSWR("/api/notifications/smart", smartFetcher, { refreshInterval: live ? 120_000 : 0, revalidateOnFocus: live });
   const push = usePushSubscription();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"foryou" | "all" | EventCategory>("foryou");
@@ -330,17 +311,10 @@ export function NotificationBell() {
                       <div className="flex items-start gap-2.5">
                         <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", dot[e.severity])} />
                         <div className="min-w-0 flex-1">
-                          <NotificationItemLink
-                            href={e.source_url && isExternalNotificationHref(e.source_url) ? e.source_url : e.href}
-                            onNavigate={() => {
-                              recordInteraction(e.id, "clicked");
-                              setOpen(false);
-                            }}
-                            className="block hover:underline"
-                          >
+                          <Link href={e.href} onClick={() => { recordInteraction(e.id, "clicked"); setOpen(false); }} className="block hover:underline">
                             <p className={cn("text-sm leading-snug", isNew ? "font-semibold" : "font-medium")}>{e.title}</p>
                             <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{e.body}</p>
-                          </NotificationItemLink>
+                          </Link>
                           <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                             <span className={cn("rounded px-1.5 py-0.5 font-semibold", tierBadge[e.tier])}>{tierLabel[e.tier]}</span>
                             <span>{ago(e.at)}</span>
@@ -371,11 +345,7 @@ export function NotificationBell() {
                       const isNew = new Date(e.at).getTime() > seen;
                       return (
                         <li key={e.id}>
-                          <NotificationItemLink
-                            href={e.href}
-                            onNavigate={() => setOpen(false)}
-                            className={cn("block border-t border-border/50 px-4 py-2.5 hover:bg-accent", isNew && "bg-blue-500/5")}
-                          >
+                          <Link href={e.href} onClick={() => setOpen(false)} className={cn("block border-t border-border/50 px-4 py-2.5 hover:bg-accent", isNew && "bg-blue-500/5")}>
                             <div className="flex items-start gap-2.5">
                               <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", dot[e.severity])} />
                               <div className="min-w-0 flex-1">
@@ -386,13 +356,11 @@ export function NotificationBell() {
                                   <span>·</span>
                                   <span>{ago(e.at)}</span>
                                   {e.severity === "high" ? <span className="rounded bg-rose-500/10 px-1.5 text-rose-600">Important</span> : null}
-                                  <span className="ml-auto text-primary">
-                                    {isExternalNotificationHref(e.href) ? "Open PDF →" : "View →"}
-                                  </span>
+                                  <span className="ml-auto text-primary">View →</span>
                                 </p>
                               </div>
                             </div>
-                          </NotificationItemLink>
+                          </Link>
                         </li>
                       );
                     })}
