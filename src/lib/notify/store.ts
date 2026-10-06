@@ -32,7 +32,6 @@ async function enrichBrokerEventHrefs(rows: Record<string, unknown>[]): Promise<
   }
   return rows.map((r) => {
     const reportId = r.category === "broker" ? brokerReportIdFromKey(r.key) : null;
-    const resolved = reportId ? hrefByReportId.get(reportId) : undefined;
     const href = reportId && hrefByReportId.has(reportId) ? hrefByReportId.get(reportId)! : String(r.href);
     return {
       id: String(r.id),
