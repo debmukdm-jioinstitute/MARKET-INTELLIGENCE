@@ -2,19 +2,12 @@
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Fold, Takeaway, Tile } from "@/components/guide/explain";
 import { cn } from "@/lib/utils";
 import type { AnnualReportDoc } from "@/lib/financials/types";
-import {
-  Bell,
-  Download,
-  ExternalLink,
-  FileCheck2,
-  FileSpreadsheet,
-  Headphones,
-} from "lucide-react";
+import { Bell, Download, ExternalLink, FileSpreadsheet } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
-import { ratingsKey, loadRatings, type RatingsResponse } from "./ratings-panel";
 
 type Announcement = {
   headline: string;
@@ -39,38 +32,10 @@ async function loadAnnouncements(url: string): Promise<AnnouncementsResponse> {
   return json;
 }
 
-type ConcallSummary = {
-  quarter: string | null;
-  transcriptDate: string | null;
-  guidance: string[];
-  growthDrivers: string[];
-  risks: string[];
-  qaThemes: string[];
-  tonePrepared: number | null;
-  toneQa: number | null;
-  toneDelta: number | null;
-  sourceUrl: string;
-  generatedBy: string;
-};
-
-type ConcallResponse = {
-  symbol: string;
-  dbConfigured: boolean;
-  summary: ConcallSummary | null;
-  message?: string;
-};
-
 async function loadFinancialsJson(url: string): Promise<{ annualReports?: AnnualReportDoc[] }> {
   const res = await fetch(url);
   if (!res.ok) return {};
   return (await res.json()) as { annualReports?: AnnualReportDoc[] };
-}
-
-async function loadConcall(url: string): Promise<ConcallResponse> {
-  const res = await fetch(url);
-  const json = (await res.json()) as ConcallResponse & { error?: string };
-  if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-  return json;
 }
 
 const fmtDate = (iso: string) => {
@@ -94,177 +59,152 @@ export function DocumentsPanel({
 }) {
   const { data: finData } = useSWR(`/api/research/financials?symbol=${encodeURIComponent(symbol)}`, loadFinancialsJson, { revalidateOnFocus: false });
   const annualReports: AnnualReportDoc[] = initialAnnualReports ?? (finData?.annualReports as AnnualReportDoc[] | undefined) ?? [];
-  const [activeTab, setActiveTab] = useState<"annual_reports" | "announcements" | "ratings" | "concalls">("annual_reports");
+  const [activeTab, setActiveTab] = useState<"annual_reports" | "announcements">("annual_reports");
   const [announcementCategory, setAnnouncementCategory] = useState<string | null>(null);
 
-  // Load announcements
   const announcementsUrl = `/api/research/announcements?symbol=${encodeURIComponent(symbol)}&limit=25${
     announcementCategory ? `&category=${encodeURIComponent(announcementCategory)}` : ""
   }`;
-  const { data: annData, isLoading: annLoading } = useSWR<AnnouncementsResponse>(
-    announcementsUrl,
-    loadAnnouncements,
-    { revalidateOnFocus: false },
-  );
+  const { data: annData, isLoading: annLoading } = useSWR<AnnouncementsResponse>(announcementsUrl, loadAnnouncements, { revalidateOnFocus: false });
 
-  // Load credit ratings
-  const { data: ratingsData, isLoading: ratingsLoading } = useSWR<RatingsResponse>(
-    ratingsKey(symbol),
-    loadRatings,
-    { revalidateOnFocus: false },
-  );
+  const latestReport = annualReports[0] ?? null;
+  const latestNotice = annData?.items?.[0] ?? null;
+  const items = annData?.items ?? [];
 
-  // Load concalls
-  const concallUrl = `/api/research/concall?symbol=${encodeURIComponent(symbol)}`;
-  const { data: concallData, isLoading: concallLoading } = useSWR<ConcallResponse>(
-    concallUrl,
-    loadConcall,
-    { revalidateOnFocus: false },
+  const NoticeRow = ({ item }: { item: Announcement }) => (
+    <li className="flex flex-col justify-between gap-2 p-4 sm:flex-row sm:items-center">
+      <div className="min-w-0 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="text-sm font-medium">{item.category}</Badge>
+          <span className="text-sm tabular-nums text-muted-foreground">{fmtDate(item.broadcastDate)}</span>
+        </div>
+        <p className="text-base font-medium leading-snug text-foreground">{item.headline}</p>
+      </div>
+      {item.attachmentUrl ? (
+        <a href={item.attachmentUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-1 text-base font-semibold text-primary hover:underline">
+          Read filing <ExternalLink className="size-4" />
+        </a>
+      ) : null}
+    </li>
   );
 
   return (
     <Panel
       id="regulatory-documents"
-      title="Statutory Documents & Regulatory Disclosures"
-      subtitle="Comprehensive regulatory document archive: official statutory Annual Reports, NSE corporate announcements, credit rating agency rationales, and earnings call transcripts."
+      title="Company documents and notices"
+      subtitle="The official papers a company files: yearly reports and notices to the stock exchange."
       trust={{
-        source: "NSE India (Regulation 30, 33 & 34) · CRISIL · CARE · ICRA",
-        note: "Every document link leads to the original regulatory PDF or exchange filing as submitted by the issuer.",
+        source: "NSE India (Regulation 30, 33 & 34)",
+        note: "Every link opens the original document as filed by the company.",
       }}
     >
       <div className="space-y-5">
-        {/* Document Category Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto border-b border-border/60 pb-2.5 no-scrollbar">
-          {[
-            {
-              id: "annual_reports",
-              label: `Annual Reports (${annualReports.length})`,
-              icon: FileSpreadsheet,
-            },
-            {
-              id: "announcements",
-              label: `Announcements (${annData?.count ?? "..."})`,
-              icon: Bell,
-            },
-            {
-              id: "ratings",
-              label: `Credit Ratings (${ratingsData?.events?.length ?? "..."})`,
-              icon: FileCheck2,
-            },
-            {
-              id: "concalls",
-              label: "Earnings Concalls",
-              icon: Headphones,
-            },
-          ].map((tab) => {
+        <Takeaway
+          tone="info"
+          sub="Looking for ratings or earnings-call summaries? They have their own sections on this page: Credit ratings radar and Earnings concalls."
+        >
+          {latestReport && latestNotice
+            ? `Start with the ${latestReport.financialYear} annual report. The latest notice to the exchange was on ${fmtDate(latestNotice.broadcastDate)}.`
+            : latestReport
+              ? `The latest annual report on file is ${latestReport.financialYear}.`
+              : latestNotice
+                ? `The latest notice to the exchange was on ${fmtDate(latestNotice.broadcastDate)}.`
+                : "Official filings for this company will appear here as they are collected."}
+        </Takeaway>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Tile
+            label="Annual reports"
+            value={annualReports.length}
+            hint="A long yearly report: business, accounts and risks. Best place to learn what the company really does."
+            footer={latestReport ? <a href={latestReport.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-base font-semibold text-primary hover:underline"><Download className="size-4" /> Latest ({latestReport.financialYear})</a> : null}
+          />
+          <Tile label="Company notices" value={annData?.count ?? "…"} hint="Short updates to the exchange: results, dividends, meetings, big orders." />
+          <Tile
+            label="Latest notice"
+            value={latestNotice ? fmtDate(latestNotice.broadcastDate) : "—"}
+            hint={latestNotice ? `${latestNotice.category}: ${latestNotice.headline.slice(0, 90)}${latestNotice.headline.length > 90 ? "…" : ""}` : "Nothing collected yet."}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-border/60 pb-3 no-scrollbar">
+          {([
+            { id: "annual_reports", label: `Annual reports (${annualReports.length})`, icon: FileSpreadsheet },
+            { id: "announcements", label: `Company notices (${annData?.count ?? "…"})`, icon: Bell },
+          ] as const).map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all cursor-pointer",
-                  active
-                    ? "bg-primary/10 text-primary border border-primary/25 shadow-xs"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground border border-transparent",
+                  "inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-base font-semibold transition-all",
+                  active ? "border-primary/25 bg-primary/10 text-primary" : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                 )}
               >
-                <Icon className={cn("size-3.5", active ? "text-primary" : "text-muted-foreground")} />
-                <span>{tab.label}</span>
+                <Icon className="size-4" />
+                {tab.label}
               </button>
             );
           })}
         </div>
 
-        {/* 1. ANNUAL REPORTS */}
         {activeTab === "annual_reports" && (
           <div className="space-y-4">
             {annualReports.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                No annual reports recorded for {symbol}. Verify directly on{" "}
-                <a
-                  href={`https://www.nseindia.com/companies-listing/corporate-filings-annual-reports?symbol=${encodeURIComponent(symbol)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  NSE Annual Reports portal
+              <p className="py-6 text-center text-base text-muted-foreground">
+                No annual reports recorded for {symbol}. Check the{" "}
+                <a href={`https://www.nseindia.com/companies-listing/corporate-filings-annual-reports?symbol=${encodeURIComponent(symbol)}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                  NSE annual reports page
                 </a>
                 .
               </p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {annualReports.map((ar: AnnualReportDoc, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 shadow-xs transition-all hover:border-primary/40 space-y-3"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-sm text-foreground">{ar.financialYear}</span>
-                        <Badge variant="outline" className="text-xs font-semibold">
-                          Official PDF
-                        </Badge>
+              <>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {annualReports.slice(0, 3).map((ar) => (
+                    <div key={ar.url} className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-4">
+                      <div>
+                        <p className="text-xl font-bold">{ar.financialYear}</p>
+                        <p className="text-sm text-muted-foreground">{ar.broadcastDate ? `Filed ${ar.broadcastDate}` : "Official PDF"}{ar.fileSize ? ` · ${ar.fileSize}` : ""}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1">{ar.companyName}</p>
-                      {ar.broadcastDate ? (
-                        <p className="text-xs text-muted-foreground/80">
-                          Filed on: {ar.broadcastDate}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {ar.fileSize ?? "PDF Document"}
-                      </span>
-                      <a
-                        href={ar.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/20 transition-all cursor-pointer"
-                      >
-                        <Download className="size-3" />
-                        <span>Download</span>
+                      <a href={ar.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-base font-semibold text-primary hover:bg-primary/20">
+                        <Download className="size-4" /> Download report
                       </a>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {annualReports.length > 3 ? (
+                  <Fold title={`Older reports (${annualReports.length - 3})`}>
+                    <ul className="divide-y divide-border/50">
+                      {annualReports.slice(3).map((ar) => (
+                        <li key={ar.url} className="flex items-center justify-between gap-3 py-2.5 text-base">
+                          <span className="font-medium">{ar.financialYear}</span>
+                          <a href={ar.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"><Download className="size-4" /> Download</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </Fold>
+                ) : null}
+              </>
             )}
           </div>
         )}
 
-        {/* 2. ANNOUNCEMENTS */}
         {activeTab === "announcements" && (
           <div className="space-y-4">
-            {/* Category Filter Pills */}
             {annData?.categories?.length ? (
-              <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                <button
-                  type="button"
-                  onClick={() => setAnnouncementCategory(null)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer text-sm font-medium",
-                    announcementCategory === null
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/60 text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  All ({annData.count})
-                </button>
-                {annData.categories.map((c) => (
+              <div className="flex flex-wrap items-center gap-2">
+                {[{ category: "All", count: annData.count, value: null as string | null }, ...annData.categories.map((c) => ({ ...c, value: c.category as string | null }))].map((c) => (
                   <button
                     key={c.category}
                     type="button"
-                    onClick={() => setAnnouncementCategory(c.category)}
+                    onClick={() => setAnnouncementCategory(c.value)}
                     className={cn(
-                      "rounded-md px-2.5 py-1 transition-all cursor-pointer text-sm font-medium",
-                      announcementCategory === c.category
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/60 text-muted-foreground hover:text-foreground",
+                      "cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition-all",
+                      announcementCategory === c.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground hover:text-foreground",
                     )}
                   >
                     {c.category} ({c.count})
@@ -274,156 +214,31 @@ export function DocumentsPanel({
             ) : null}
 
             {annLoading ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">Loading announcements…</p>
-            ) : annData?.items?.length ? (
-              <div className="divide-y divide-border/50 rounded-xl border border-border/80 bg-card overflow-hidden">
-                {annData.items.map((item, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 hover:bg-muted/20 transition-colors">
-                    <div className="space-y-1 min-w-0 pr-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-xs font-medium">
-                          {item.category}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {fmtDate(item.broadcastDate)}
-                        </span>
-                      </div>
-                      <p className="text-sm font-medium text-foreground leading-snug">{item.headline}</p>
-                    </div>
-
-                    {item.attachmentUrl ? (
-                      <a
-                        href={item.attachmentUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="shrink-0 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                      >
-                        <span>View Filing</span>
-                        <ExternalLink className="size-3" />
-                      </a>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
+              <p className="py-6 text-center text-base text-muted-foreground">Loading company notices…</p>
+            ) : items.length ? (
+              <>
+                <ul className="divide-y divide-border/50 overflow-hidden rounded-xl border border-border bg-card">
+                  {items.slice(0, 6).map((item, idx) => <NoticeRow key={idx} item={item} />)}
+                </ul>
+                {items.length > 6 ? (
+                  <Fold title={`Show ${items.length - 6} more notices`}>
+                    <ul className="-mx-4 divide-y divide-border/50">
+                      {items.slice(6).map((item, idx) => <NoticeRow key={idx} item={item} />)}
+                    </ul>
+                  </Fold>
+                ) : null}
+              </>
             ) : (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                No recent announcements found. View on{" "}
-                <a href={annData?.nseUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                  NSE Corporate Filings
-                </a>
-                .
+              <p className="py-6 text-center text-base text-muted-foreground">
+                No recent notices found. See{" "}
+                <a href={annData?.nseUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">NSE corporate filings</a>.
               </p>
             )}
-          </div>
-        )}
-
-        {/* 3. CREDIT RATINGS */}
-        {activeTab === "ratings" && (
-          <div className="space-y-4">
-            {ratingsLoading ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">Loading credit ratings…</p>
-            ) : ratingsData?.events?.length ? (
-              <div className="divide-y divide-border/50 rounded-xl border border-border/80 bg-card overflow-hidden">
-                {ratingsData.events.map((ev, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 hover:bg-muted/20 transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        {ev.agency ? (
-                          <Badge variant="outline" className="text-xs font-bold">
-                            {ev.agency}
-                          </Badge>
-                        ) : null}
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {fmtDate(ev.date)}
-                        </span>
-                        {ev.rating ? (
-                          <Badge className="bg-primary/10 text-primary text-xs font-bold">
-                            {ev.rating}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-sm font-medium text-foreground">{ev.detail}</p>
-                    </div>
-
-                    {ev.link ? (
-                      <a
-                        href={ev.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="shrink-0 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                      >
-                        <span>Rating Rationale</span>
-                        <ExternalLink className="size-3" />
-                      </a>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-border/70 p-5 text-center text-sm text-muted-foreground">
-                <p>No credit rating downgrade or radar events logged for {symbol} in the last 90 days.</p>
-                <p className="mt-1">Covered agencies: CRISIL, CARE, ICRA.</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 4. CONCALLS */}
-        {activeTab === "concalls" && (
-          <div className="space-y-4">
-            {concallLoading ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">Loading concall summary…</p>
-            ) : concallData?.summary ? (
-              <div className="space-y-4 rounded-xl border border-border/80 bg-card p-5">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <h4 className="text-sm font-bold text-foreground">
-                      {concallData.summary.quarter ?? "Earnings"} Concall Transcript Briefing
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      Transcript Date: {concallData.summary.transcriptDate ? fmtDate(concallData.summary.transcriptDate) : "Not verified"} · Analyzed via {concallData.summary.generatedBy}
-                    </p>
-                  </div>
-                  {concallData.summary.sourceUrl ? (
-                    <a
-                      href={concallData.summary.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/20"
-                    >
-                      <span>Full Transcript</span>
-                      <ExternalLink className="size-3" />
-                    </a>
-                  ) : null}
-                </div>
-
-                {concallData.summary.guidance.length ? (
-                  <div className="space-y-1.5 text-sm">
-                    <p className="font-semibold text-foreground">Management Guidance & Outlook:</p>
-                    <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                      {concallData.summary.guidance.map((g, i) => (
-                        <li key={i}>{g}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {concallData.summary.growthDrivers.length ? (
-                  <div className="space-y-1.5 text-sm">
-                    <p className="font-semibold text-foreground">Growth Drivers & Catalysts:</p>
-                    <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                      {concallData.summary.growthDrivers.map((d, i) => (
-                        <li key={i}>{d}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-border/70 p-5 text-center text-sm text-muted-foreground">
-                <p>{concallData?.message ?? "Transcript archives are temporarily unavailable. Please retry shortly."}</p>
-              </div>
-            )}
+            <Fold title="What kinds of notices are these?">
+              <p className="text-base leading-relaxed text-muted-foreground">
+                Listed companies must tell the stock exchange about anything that could affect the share price: quarterly results, dividends, board meetings, new orders, rating changes and leadership moves. They are posted here as filed.
+              </p>
+            </Fold>
           </div>
         )}
       </div>
