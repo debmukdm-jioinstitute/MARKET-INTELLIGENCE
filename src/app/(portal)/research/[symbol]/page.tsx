@@ -126,7 +126,7 @@ export default function ResearchSymbolPage() {
               ) : null}
               <p className="text-muted-foreground leading-relaxed">{data.about.extract}</p>
               <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
-                Source: Wikipedia
+                Source: {data.about.source}
               </a>
             </div>
           </div>
