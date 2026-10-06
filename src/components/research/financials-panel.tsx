@@ -3,21 +3,16 @@
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { FinancialsPayload, StatementColumn, StatementRow } from "@/lib/financials/types";
+import type { FinancialsPayload } from "@/lib/financials/types";
 import {
   Activity,
   AlertTriangle,
-  ArrowDownRight,
-  ArrowUpRight,
   CheckCircle2,
   Clock,
-  Download,
   ExternalLink,
   FileSpreadsheet,
   FileText,
-  PieChart,
   ShieldCheck,
-  TrendingDown,
   TrendingUp,
   Zap,
 } from "lucide-react";

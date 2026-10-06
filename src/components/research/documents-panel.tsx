@@ -10,12 +10,7 @@ import {
   ExternalLink,
   FileCheck2,
   FileSpreadsheet,
-  FileText,
-  Filter,
   Headphones,
-  Search,
-  ShieldCheck,
-  Star,
 } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";

@@ -10,7 +10,6 @@ import type {
   StatementRow,
 } from "./types";
 import { parseResultsXbrl, type ParsedPeriod, type ParsedResults } from "./xbrl";
-import { classifyFinancialSentiment } from "@/lib/hf/finbert";
 import { summarizeText } from "@/lib/hf/summarizer";
 
 const BROWSER_HEADERS = {

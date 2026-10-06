@@ -116,7 +116,7 @@ export default function ResearchSymbolPage() {
         <Panel title="About">
           <div className="flex gap-4">
             {data.about.thumbnail ? (
-              // eslint-disable-next-line @next/next/no-img-element
+               
               <img src={data.about.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded object-contain" />
             ) : null}
             <div className="space-y-2 text-sm">
