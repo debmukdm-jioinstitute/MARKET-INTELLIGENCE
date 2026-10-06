@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
+import { GuestLoginToggle } from "@/components/admin/guest-login-toggle";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -36,6 +37,8 @@ export default function AdminDashboardPage() {
           Variables.
         </div>
       ) : null}
+
+      <GuestLoginToggle />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <AdminStat label="Registered customers" value={stats?.customers ?? "—"} href="/admin/customers" />

@@ -1,7 +1,7 @@
 import { hasDatabase, sql } from "@/lib/db";
 
 let cache: { value: boolean; at: number } | null = null;
-const TTL_MS = 10_000;
+const TTL_MS = 3_000;
 
 /** Drop the short-lived middleware cache after an admin toggle. */
 export function invalidateRequireAccountCache() {
