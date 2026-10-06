@@ -25,7 +25,7 @@ export function BriefTeaser({
   data?: BriefResponse;
   watched: { symbol: string; name?: string }[];
 }) {
-  const headlines = briefHeadlines(data).slice(0, 3);
+  const headlines = briefHeadlines(data).slice(0, 5);
   const key = headlines.length
     ? JSON.stringify(headlines.map((h) => h.title.slice(0, 2000)))
     : null;
@@ -124,9 +124,9 @@ export function BriefTeaser({
         )}
         {headlines.length ? (
           <p className="mt-4 border-t border-stone-100 pt-3 text-[10px] text-stone-500">
-            Latest available reports. Sentiment uses the shared FinBERT service,
-            which may fall back to rules. Read-through lines provide context,
-            not predictions.
+            Live mix from publishers, Google News, exchanges, and earnings calendar —
+            not RBI-only. Sentiment uses FinBERT (rules fallback). Context only, not
+            predictions.
           </p>
         ) : null}
       </div>

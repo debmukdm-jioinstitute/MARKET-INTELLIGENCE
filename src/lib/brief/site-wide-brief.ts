@@ -5,11 +5,8 @@ import { buildIndiaDashboardQuick } from "@/lib/feeds/india/build-dashboard";
 import { buildLegalRiskHub } from "@/lib/legal-risk/build-hub";
 import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
-import { fetchRbiNews } from "@/lib/feeds/sources/rbi";
-import { fetchNseNews } from "@/lib/feeds/sources/nse";
-import { fetchBseNews } from "@/lib/feeds/sources/bse";
+import { fetchLiveMarketHeadlines } from "@/lib/brief/live-market-headlines";
 import { fetchNseOptionChain } from "@/lib/feeds/india/nse-market";
-import { sortNewsByFreshness } from "@/lib/feeds/news-sort";
 
 export interface IntelligencePillarSneakPeek {
   id: string;
@@ -64,7 +61,7 @@ export interface SiteWideExecutiveBrief {
   }[];
   watchToday: string[];
   pillars: IntelligencePillarSneakPeek[];
-  regulatorHeadlines: { title: string; source: string; link?: string; timeAgo: string }[];
+  regulatorHeadlines: { title: string; source: string; link?: string; timeAgo: string; publishedAt?: string }[];
 }
 
 function fmtChgPct(v: number | null | undefined): string {
@@ -104,18 +101,15 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
   // Real live data: India market pulse, legal/regulatory risk, IPO grey-market premiums, and
   // regulator headlines. Each is independently optional — a failure here degrades to an honest
   // "—" / empty state for that slice, never a fabricated number.
-  const [dashboard, legalRisk, openIpos, rbiNews, nseNews, bseNews, niftyChain] = await Promise.all([
+  const [dashboard, legalRisk, openIpos, liveHeadlines, niftyChain] = await Promise.all([
     buildIndiaDashboardQuick().catch(() => null),
     buildLegalRiskHub().catch(() => null),
     fetchUpstoxIpoList("open")
       .then((ipos) => enrichIpoListWithGmp(ipos, "open"))
       .catch(() => []),
-    fetchRbiNews().catch(() => []),
-    fetchNseNews().catch(() => []),
-    fetchBseNews().catch(() => []),
+    fetchLiveMarketHeadlines(10).catch(() => []),
     fetchNseOptionChain("NIFTY").catch(() => null),
   ]);
-  const regulatorNews = sortNewsByFreshness([...rbiNews, ...nseNews, ...bseNews]);
 
   // 1. Broker research notes — REAL collected notes only (research_reports table).
   // Empty when nothing has been ingested; never synthesized.
@@ -550,12 +544,13 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
     ],
     pillars,
     regulatorHeadlines:
-      regulatorNews.length > 0
-        ? regulatorNews.slice(0, 6).map((n) => ({
+      liveHeadlines.length > 0
+        ? liveHeadlines.slice(0, 8).map((n) => ({
             title: n.title,
-            source: n.source === "rbi" ? "Reserve Bank of India" : n.source === "nse" ? "National Stock Exchange" : n.source === "bse" ? "Bombay Stock Exchange" : n.source,
+            source: n.source,
             link: n.link,
-            timeAgo: timeAgoFrom(n.publishedAt),
+            timeAgo: n.publishedAt ? timeAgoFrom(n.publishedAt) : "recently",
+            publishedAt: n.publishedAt,
           }))
         : REGULATOR_FALLBACK,
   };
