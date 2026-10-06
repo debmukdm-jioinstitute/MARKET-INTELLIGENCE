@@ -71,7 +71,8 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
 
   return (
     <Panel
-      title="Said vs guided"
+      id="concalls"
+      title="Earnings Concalls (Said vs Guided)"
       subtitle="What management guided in the earnings call versus what analysts pushed on afterwards."
       trust={{ source: "Company earnings-call transcript filed on NSE", asOf: s ? `${s.transcriptDate}T00:00:00Z` : null, note: "Automated reading of a transcript — not investment advice" }}
     >

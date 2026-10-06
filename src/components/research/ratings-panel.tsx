@@ -60,6 +60,7 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
 
   return (
     <Panel
+      id="credit-ratings"
       title="Credit ratings radar"
       subtitle="What the big rating agencies say about this company's ability to repay debt."
       trust={{ source: "RetailBonds.in aggregation of CRISIL / CARE / ICRA ratings; CARE rationale list; NSE filings", note: "Ratings are the agencies' own opinions — not investment advice" }}

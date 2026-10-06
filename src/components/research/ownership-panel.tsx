@@ -106,7 +106,8 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
 
   return (
     <Panel
-      title="Who owns it"
+      id="shareholding"
+      title="Who owns it (Shareholding Pattern)"
       subtitle="Promoter, institution and pledge holding from the company's quarterly filings with NSE."
       trust={{ source: "NSE shareholding pattern filings (XBRL)", asOf: l ? `${l.broadcastDate}T00:00:00Z` : null, note: "Filed data shown as filed — not investment advice" }}
     >

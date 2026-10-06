@@ -1,15 +1,21 @@
 "use client";
 
-import { Lines } from "@/components/charts/terminal-charts";
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
+import { Lines } from "@/components/charts/terminal-charts";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
-import { SymbolSearch } from "@/components/research/symbol-search";
-import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
 import { SimilarStocksPanel } from "@/components/hf-ai/similar-stocks-panel";
+import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
+import { SymbolSearch } from "@/components/research/symbol-search";
+import { FinancialsPanel } from "@/components/research/financials-panel";
+import { OwnershipPanel } from "@/components/research/ownership-panel";
+import { DocumentsPanel } from "@/components/research/documents-panel";
+import { RatingsPanel } from "@/components/research/ratings-panel";
+import { ConcallPanel } from "@/components/research/concall-panel";
+import { ResearchSectionNav } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
@@ -19,6 +25,16 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+const NAV_SECTIONS = [
+  { id: "session-overview", label: "Overview & Price" },
+  { id: "financial-statements", label: "Financials & Ratios" },
+  { id: "shareholding", label: "Shareholding Pattern" },
+  { id: "regulatory-documents", label: "Documents & Filings" },
+  { id: "credit-ratings", label: "Credit Ratings" },
+  { id: "concalls", label: "Earnings Concall" },
+  { id: "risk-events", label: "Risk & Catalysts" },
+];
 
 export default function ResearchSymbolPage() {
   const params = useParams();
@@ -56,17 +72,18 @@ export default function ResearchSymbolPage() {
 
   const q = data?.upstoxQuote;
   const us = data?.usDetail;
+  const isIndia = !us;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={data ? `${data.symbol} · ${data.name}` : symbol}
-        subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
+        subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
       {q ? (
         <div className="-mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-3xl tabular-nums">{fmtInr(q.ltp)}</span>
-          <span className={cn("text-sm", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
+          <span className="text-3xl tabular-nums font-bold tracking-tight">{fmtInr(q.ltp)}</span>
+          <span className={cn("text-sm font-semibold", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
             {q.netChange >= 0 ? "+" : ""}
             {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
           </span>
@@ -79,10 +96,15 @@ export default function ResearchSymbolPage() {
           />
         </div>
       ) : null}
+
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
+
+      {/* Sticky section navigation */}
+      {isIndia && !loading ? <ResearchSectionNav sections={NAV_SECTIONS} /> : null}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
-          <Link href="/research" className="text-primary hover:underline">← Research home</Link>
+          <Link href="/research" className="text-primary hover:underline font-medium">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
       </div>
@@ -125,7 +147,7 @@ export default function ResearchSymbolPage() {
             <Badge className="bg-emerald-500/20 text-emerald-600">Upstox live</Badge>
           </div>
           <div className="grid gap-4">
-            <Panel title="Session">
+            <Panel id="session-overview" title="Session Overview">
               <div className="mb-2 flex justify-end">
                 <DataInfo
                   source={{
@@ -163,6 +185,26 @@ export default function ResearchSymbolPage() {
         <UsResearchPanels data={data} />
       ) : null}
 
+      {/* CORE EXTENSIONS REQUESTED: Financial Statements, Shareholding Donut, Documents, Ratings, Concalls */}
+      {isIndia && symbol ? (
+        <>
+          {/* 1. Full Financial Statements & Ratios (P&L, BS, CF, Quarterly Performance, Working Capital) */}
+          <FinancialsPanel symbol={symbol} />
+
+          {/* 2. Shareholding Pattern Donut Chart & Quarterly Trends & Risk Flags */}
+          <OwnershipPanel symbol={symbol} />
+
+          {/* 3. Statutory Document Archive: Announcements, Annual Reports, Credit Ratings, Concalls */}
+          <DocumentsPanel symbol={symbol} />
+
+          {/* 4. Credit Ratings Agency Radar (CRISIL, CARE, ICRA) */}
+          <RatingsPanel symbol={symbol} />
+
+          {/* 5. Earnings Conference Call Transcripts & Management Guidance */}
+          <ConcallPanel symbol={symbol} />
+        </>
+      ) : null}
+
       {data?.intelligence ? (
         <ResearchIntelligencePanels
           corporateActions={data.intelligence.corporateActions}
@@ -173,7 +215,7 @@ export default function ResearchSymbolPage() {
       ) : null}
 
       {symbol ? (
-        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+        <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
           <SecurityRiskPanel symbol={symbol} />
         </Panel>
       ) : null}
