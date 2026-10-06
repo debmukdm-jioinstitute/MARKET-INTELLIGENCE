@@ -22,10 +22,6 @@ import {
   Clock,
   FileText,
   Globe,
-  Flame,
-  Coins,
-  Building2,
-  Newspaper,
   ArrowUpRight,
   Compass,
 } from "lucide-react";
