@@ -192,7 +192,7 @@ async function build(symbol: string): Promise<Leadership> {
 export async function getCompanyLeadership(raw: string): Promise<Leadership> {
   const symbol = raw.trim().toUpperCase();
   if (!/^[A-Z0-9&.\-]{1,20}$/.test(symbol)) throw new Error("Invalid symbol");
-  const key = `leadership:${symbol}`;
+  const key = `leadership:v2:${symbol}`;
   const hit = cache.get(key);
   if (hit && hit.until > Date.now()) return hit.value;
   const running = pending.get(key);
@@ -204,7 +204,8 @@ export async function getCompanyLeadership(raw: string): Promise<Leadership> {
     }
     const value = await build(symbol);
     const rich = Boolean(value.pay || value.holdings || value.dividends || value.people.length);
-    const ttl = rich ? 7 * 86_400_000 : 60_000;
+    // Incomplete results (no pay table) retry hourly; complete ones live a week.
+    const ttl = value.pay ? 7 * 86_400_000 : rich ? 3600_000 : 60_000;
     cache.set(key, { value, until: Date.now() + Math.min(ttl, 3600_000) });
     if (hasDatabase() && rich) await sql()`INSERT INTO transcript_archive_cache (cache_key, payload, expires_at) VALUES (${key}, ${JSON.stringify(value)}::jsonb, ${new Date(Date.now() + ttl).toISOString()}::timestamptz) ON CONFLICT (cache_key) DO UPDATE SET payload = EXCLUDED.payload, expires_at = EXCLUDED.expires_at`.catch(() => {});
     return value;
