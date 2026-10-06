@@ -44,29 +44,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    // The session lives in an httpOnly cookie (real accounts are verified server-side),
-    // so the client has to ask the server who's logged in rather than reading it locally.
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((json) => {
-        if (!cancelled) {
-          setUser(json.user ?? null);
-          setRequireAccount(Boolean(json.requireAccount));
-          // A guest never owns a book: clear anything left in this browser by a previous session.
-          if (isGuestUser(json.user ?? null)) {
-            try {
-              window.localStorage.removeItem("mi_user_holdings_v2");
-              window.dispatchEvent(new Event("mi_portfolio_updated"));
-            } catch {}
-          }
+
+    async function refreshSession(markInitialReady: boolean) {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
+        const json = await res.json();
+        if (cancelled) return;
+        setUser(json.user ?? null);
+        setRequireAccount(Boolean(json.requireAccount));
+        if (isGuestUser(json.user ?? null)) {
+          try {
+            window.localStorage.removeItem("mi_user_holdings_v2");
+            window.dispatchEvent(new Event("mi_portfolio_updated"));
+          } catch {}
         }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setReady(true);
-      });
+      } catch {
+        /* ignore */
+      } finally {
+        if (!cancelled && markInitialReady) setReady(true);
+      }
+    }
+
+    void refreshSession(true);
+    const id = window.setInterval(() => void refreshSession(false), 5_000);
     return () => {
       cancelled = true;
+      window.clearInterval(id);
     };
   }, []);
 
