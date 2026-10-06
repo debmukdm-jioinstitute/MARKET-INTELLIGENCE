@@ -9,6 +9,7 @@ export function IndiaDashboardWarmup() {
   const { mutate } = useSWRConfig();
   useEffect(() => {
     void prefetchIndiaDashboard(mutate);
+    void fetch("/api/homedashboard/headlines", { cache: "no-store" }).catch(() => {});
   }, [mutate]);
   return null;
 }
