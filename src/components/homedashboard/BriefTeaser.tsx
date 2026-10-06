@@ -4,7 +4,7 @@ import { Clock3, ExternalLink, Newspaper } from "lucide-react";
 import type { BriefResponse, HomeHeadline } from "@/lib/homedashboard/brief";
 import { briefHeadlines, mergeHomeHeadlines, mentions } from "@/lib/homedashboard/brief";
 import { useMemo } from "react";
-import { cardClass, fetchOptions, HomeLink, SectionHeading } from "./shared";
+import { cardClass, fetchOptions, homeJson, HomeLink, SectionHeading } from "./shared";
 import { homeActions } from "./useHomeProgress";
 
 type Sentiment = { label: "positive" | "negative" | "neutral" };

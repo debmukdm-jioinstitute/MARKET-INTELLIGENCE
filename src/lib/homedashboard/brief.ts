@@ -35,7 +35,7 @@ export function mentions(text: string, symbol: string, name?: string) {
     )
   );
 }
-function annotate(title: string) {
+export function annotate(title: string) {
   const matches = NIFTY_500.filter(([symbol, name]) =>
     mentions(title, symbol, name),
   );
