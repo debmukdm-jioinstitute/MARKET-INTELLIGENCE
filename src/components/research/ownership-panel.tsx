@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { Fold, Takeaway, Tile, type Tone } from "@/components/guide/explain";
 import { cn } from "@/lib/utils";
 import type { OwnershipFlag, OwnershipRow } from "@/lib/research/ownership";
 import { quarterLabel } from "@/lib/research/ownership";
@@ -123,7 +124,26 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
       ) : null}
 
       {data && !error && l ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {(() => {
+            const pledge = l.pledgePct ?? 0;
+            const high = data.flags.some((f) => f.severity === "high");
+            const tone: Tone = high || pledge >= 25 ? "bad" : data.flags.length || pledge >= 5 ? "watch" : "good";
+            const promoter = l.promoterPct != null ? `${l.promoterPct.toFixed(1)}%` : null;
+            const line =
+              tone === "good"
+                ? `${promoter ? `Founders and promoters own ${promoter}. ` : ""}${pledge > 0 ? `${pledge.toFixed(1)}% of their shares are pledged, which is low.` : "None of their shares are pledged for loans."}`
+                : tone === "watch"
+                  ? `${promoter ? `Promoters own ${promoter}, ` : ""}but ${pledge >= 5 ? `${pledge.toFixed(1)}% of their shares are pledged for loans` : "a recent change in holding is flagged"}. Worth a look.`
+                  : `Warning: ${pledge >= 25 ? `${pledge.toFixed(1)}% of promoter shares are pledged for loans` : "a serious holding change is flagged"}. If those loans go bad, shares can be sold forcibly.`;
+            return <Takeaway tone={tone}>{line}</Takeaway>;
+          })()}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Tile label="Promoters own" value={pct(l.promoterPct)} hint="The people who started or run the company." />
+            <Tile label="Foreign funds own" value={l.fiiPct != null ? pct(l.fiiPct) : "—"} hint={l.fiiPct != null ? "Overseas institutions (FIIs)." : "Not split out in this older filing."} />
+            <Tile label="Indian funds own" value={l.diiPct != null ? pct(l.diiPct) : "—"} hint={l.diiPct != null ? "Mutual funds, insurers and banks (DIIs)." : "Not split out in this older filing."} />
+            <Tile label="Promoter shares pledged" value={pct(l.pledgePct)} hint="Shares given as security for loans. Lower is safer." tone={(l.pledgePct ?? 0) >= 25 ? "bad" : (l.pledgePct ?? 0) >= 5 ? "watch" : "good"} />
+          </div>
           {data.flags.length ? (
             <ul className="space-y-2">
               {data.flags.map((f) => (
@@ -169,6 +189,7 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
             </ul>
           </div>
 
+          <Fold title="How it changed over the last quarters">
           <div className="grid gap-3 sm:grid-cols-2">
             <Sparkline title="Promoter holding" points={data.series.map((p) => p.promoterPct)} color="#1a73e8" flagged={flaggedIdx} />
             <Sparkline title="Promoter shares pledged" points={data.series.map((p) => p.pledgePct)} color="#d93025" flagged={flaggedIdx} />
@@ -178,6 +199,7 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
             <span className="font-semibold text-foreground">Promoter</span> = the people who started or run the company.{" "}
             <span className="font-semibold text-foreground">Pledge</span> = promoter shares given as collateral for loans — a high pledge can mean forced selling if those loans go bad. Red dots mark quarters with a warning.
           </p>
+          </Fold>
         </div>
       ) : null}
     </Panel>

@@ -2,6 +2,7 @@
 
 import type { SecurityRisk } from "@/lib/feeds/security-risk";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { Fold, Takeaway, Tile, type Tone } from "@/components/guide/explain";
 import useSWR from "swr";
 
 const fetcher = async (url: string): Promise<SecurityRisk> => {
@@ -48,8 +49,32 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
   const cur = r.market === "IN" ? "₹" : "$";
   const benchmarkName = r.beta?.benchmark ?? (r.market === "IN" ? "NIFTY 50" : "S&P 500");
 
+  const vol = r.realizedVolPct;
+  const dd = r.maxDrawdownPct;
+  const level: { tone: Tone; word: string; line: string } | null =
+    vol == null && dd == null
+      ? null
+      : (vol ?? 0) >= 40 || (dd ?? 0) >= 40
+        ? { tone: "bad", word: "High risk", line: "This stock has been very bumpy. Prices can jump or fall fast, so only put in money you can leave alone." }
+        : (vol ?? 0) >= 25 || (dd ?? 0) >= 25
+          ? { tone: "watch", word: "Medium risk", line: "A normal share-market ride: expect noticeable ups and downs." }
+          : { tone: "good", word: "Calmer than most", line: "Price moves have been steady over the past year." };
+  const betaWord = r.beta ? (r.beta.value >= 1.15 ? "moves more than the market" : r.beta.value <= 0.85 ? "moves less than the market" : "moves about like the market") : null;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {level ? (
+        <Takeaway tone={level.tone} sub={`Measured on the last year of daily prices. ${betaWord ? `It ${betaWord} (beta ${r.beta!.value.toFixed(2)}).` : ""}`}>
+          {level.word}. {level.line}
+        </Takeaway>
+      ) : null}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Tile label="Typical yearly swing" value={vol != null ? `${vol.toFixed(0)}%` : "—"} hint="How far the price usually moves up or down over a year. Bigger means bumpier." tone={vol != null && vol >= 40 ? "bad" : vol != null && vol >= 25 ? "watch" : "info"} />
+        <Tile label="Worst fall this year" value={dd != null ? `−${Math.abs(dd).toFixed(0)}%` : "—"} hint="The biggest drop from a high to the next low. This is the stress a buyer sat through." tone={dd != null && Math.abs(dd) >= 40 ? "bad" : dd != null && Math.abs(dd) >= 25 ? "watch" : "info"} />
+        <Tile label="Moves vs the market" value={r.beta ? `${r.beta.value.toFixed(2)}×` : "—"} hint={`Compared with ${benchmarkName}. Above 1× it swings more than the market, below 1× it swings less.`} />
+        <Tile label="Where the price sits" value={r.range52w ? `${r.range52w.positionPct.toFixed(0)}%` : "—"} hint="0% = at its 1-year low, 100% = at its 1-year high." />
+      </div>
+      <Fold title="More numbers (for traders)">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <StatCard
           label="Realized vol (1y)"
@@ -112,7 +137,8 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
           asOf={r.asOf}
         />
       </div>
-      <div className="grid gap-3 text-sm sm:grid-cols-2">
+      </Fold>
+      <div className="grid gap-3 text-base sm:grid-cols-2">
         <div className="rounded-lg border border-border/70 p-3">
           <div className="flex items-center justify-between gap-1">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Next earnings</p>

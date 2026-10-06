@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { Fold, Takeaway, type Tone } from "@/components/guide/explain";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import useSWR from "swr";
@@ -86,27 +87,32 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
       {(data?.history?.length ?? 0) > 1 ? <label className="mb-3 block text-sm">Archived calls <select aria-label="Select earnings call" value={s?.sourceUrl ?? ""} onChange={(e) => setSelected(e.target.value)} className="ml-2 rounded border border-border bg-background p-2">{data!.history!.map((r) => <option key={r.sourceUrl} value={r.sourceUrl}>{r.quarter ?? r.transcriptDate ?? "Archived call"}</option>)}</select></label> : null}
       {data?.documents?.length ? <details className="mb-3 text-sm"><summary className="cursor-pointer text-primary">Original transcript archive ({data.documents.length})</summary><ul className="mt-2 space-y-2">{data.documents.map((d) => <li key={d.url}><a href={d.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{d.title} ↗</a></li>)}</ul></details> : null}
       {s ? (
-        <div className="space-y-4">
-          <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{usedModel ? "AI summary of the linked transcript — read the original for exact wording." : "Auto-extracted from the linked transcript — read the original for exact wording."}</span>{" "}
-            {s.quarter ? `${s.quarter} · ` : ""}{s.transcriptDate ? `dated ${fmtDay(s.transcriptDate)}` : "date not verified"} ·{" "}
-            <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
-              Open original transcript ↗
-            </a>{" "}
-            · Method: {s.generatedBy}. {s.generatedBy.includes("prepared-only") ? "Q&A could not be reliably identified; only prepared remarks are shown. " : ""}Text in quotation marks is copied word for word.
-          </p>
+        <div className="space-y-5">
+          {(() => {
+            const tone: Tone = delta === null ? "info" : delta < -DELTA_BAND ? "watch" : delta > DELTA_BAND ? "good" : "info";
+            const line =
+              delta === null
+                ? `Here is what management said on the ${s.quarter ?? "latest"} earnings call.`
+                : delta < -DELTA_BAND
+                  ? "Management sounded confident in the prepared speech, but cooler when analysts asked questions. Read the Q&A themes below."
+                  : delta > DELTA_BAND
+                    ? "Management sounded even more positive when analysts asked questions, a good sign."
+                    : "Management sounded the same in the speech and in the Q&A: steady.";
+            return <Takeaway tone={tone} sub={`${s.quarter ? `${s.quarter} call · ` : ""}${s.transcriptDate ? `dated ${fmtDay(s.transcriptDate)}` : "date not verified"}. Quoted text is copied word for word.`}>{line}</Takeaway>;
+          })()}
 
           <div className="grid gap-4 md:grid-cols-2">
             <section>
-              <h3 className="mb-2 text-sm font-semibold text-foreground">What management guided (quantitative)</h3>
+              <h3 className="mb-2 text-base font-semibold text-foreground">What management promised (numbers)</h3>
               <Bullets items={s.guidance} quoted />
             </section>
             <section>
-              <h3 className="mb-2 text-sm font-semibold text-foreground">What analysts pushed on in Q&amp;A</h3>
+              <h3 className="mb-2 text-base font-semibold text-foreground">What analysts pushed on</h3>
               <Bullets items={s.qaThemes} quoted />
             </section>
           </div>
 
+          <Fold title="Tone of the call, in detail">
           <div className="rounded-lg border border-border p-3">
             <h3 className="mb-2 text-sm font-semibold text-foreground">Tone of the call</h3>
             {s.tonePrepared !== null && s.toneQa !== null ? (
@@ -124,6 +130,11 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
               <p className="text-sm text-muted-foreground">Tone was not scored for this call (the scoring model was unavailable when it was processed).</p>
             )}
           </div>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {usedModel ? "Summary written automatically from the linked transcript" : "Extracted automatically from the linked transcript"}. Method: {s.generatedBy}. {s.generatedBy.includes("prepared-only") ? "Q&A could not be reliably identified, so only prepared remarks are shown. " : ""}
+            <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Open the original transcript ↗</a>
+          </p>
+          </Fold>
 
           <div>
             <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="text-sm font-semibold text-primary hover:underline">

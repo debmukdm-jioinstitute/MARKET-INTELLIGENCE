@@ -9,6 +9,7 @@ import type {
   NewsImpactSummary,
 } from "@/lib/feeds/research-intelligence";
 import { cn } from "@/lib/utils";
+import { Fold, Takeaway, type Tone } from "@/components/guide/explain";
 import { ExternalLink, FileText, Newspaper, TrendingDown, TrendingUp } from "lucide-react";
 
 type Props = {
@@ -29,11 +30,11 @@ export function ResearchIntelligencePanels({
 
   return (
     <div className="space-y-4">
-      <Panel title="News impact (open RSS · rule-based)">
+      <Panel title="News and what it may mean" subtitle="Latest headlines, each tagged positive, negative or neutral by simple keyword rules.">
         <ImpactSummaryBanner summary={newsSummary} />
         {newsFeed.length ? (
           <ul className="mt-4 divide-y divide-border">
-            {newsFeed.map((n) => (
+            {newsFeed.slice(0, 5).map((n) => (
               <li key={n.id} className="flex gap-3 py-3">
                 <ImpactIcon impact={n.impact} />
                 <div className="min-w-0 flex-1">
@@ -50,7 +51,7 @@ export function ResearchIntelligencePanels({
                     href={n.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 block text-sm font-medium hover:text-primary"
+                    className="mt-1 block text-base font-medium hover:text-primary"
                   >
                     {n.title}
                   </a>
@@ -65,14 +66,31 @@ export function ResearchIntelligencePanels({
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">No symbol-specific news returned from open feeds.</p>
+          <p className="mt-2 text-base text-muted-foreground">No symbol-specific news found right now.</p>
         )}
+        {newsFeed.length > 5 ? (
+          <div className="mt-3">
+            <Fold title={`Show ${newsFeed.length - 5} more headlines`}>
+              <ul className="divide-y divide-border">
+                {newsFeed.slice(5).map((n) => (
+                  <li key={n.id} className="flex items-start gap-3 py-3">
+                    <ImpactIcon impact={n.impact} />
+                    <div className="min-w-0 flex-1">
+                      <a href={n.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium hover:text-primary">{n.title}</a>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{n.sourceLabel}{n.publishedAt ? ` · ${new Date(n.publishedAt).toLocaleDateString()}` : ""}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Fold>
+          </div>
+        ) : null}
         <p className="mt-3 text-sm text-muted-foreground">
           Sources: Upstox (India), Google News RSS. Impact labels are keyword heuristics only—not financial advice.
         </p>
       </Panel>
 
-      <Panel title="Corporate actions & filings">
+      <Panel title="Dividends, splits and filings" subtitle="Company announcements that can change what you own or are paid.">
         {corporateActions.length ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -119,11 +137,8 @@ export function ResearchIntelligencePanels({
         )}
       </Panel>
 
-      <Panel title="Brokerage & research (free / open links)">
-        <p className="mb-3 text-sm text-muted-foreground">
-          Curated portals and headline search—open in a new tab or use on-screen view. We do not scrape paid
-          research PDFs.
-        </p>
+      <Panel title="Where to read broker research" subtitle="Free links only. We do not copy paid research.">
+        <Fold title={`Show ${portals.length} research links`}>
         <ul className="space-y-2">
           {portals.map((b) => (
             <li
@@ -155,6 +170,7 @@ export function ResearchIntelligencePanels({
             </li>
           ))}
         </ul>
+        </Fold>
         {headlines.length ? (
           <>
             <h4 className="mb-2 mt-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -183,24 +199,17 @@ export function ResearchIntelligencePanels({
 }
 
 function ImpactSummaryBanner({ summary }: { summary: NewsImpactSummary }) {
+  const tone: Tone = summary.overall === "positive" ? "good" : summary.overall === "negative" ? "bad" : "info";
+  const line =
+    summary.overall === "positive"
+      ? "Recent news leans positive."
+      : summary.overall === "negative"
+        ? "Recent news leans negative."
+        : "Recent news is mixed or neutral.";
   return (
-    <div
-      className={cn(
-        "rounded-lg border px-4 py-3",
-        summary.overall === "positive" && "border-emerald-500/40 bg-emerald-500/10",
-        summary.overall === "negative" && "border-rose-500/40 bg-rose-500/10",
-        summary.overall === "neutral" && "border-border bg-muted/30",
-      )}
-    >
-      <div className="flex flex-wrap items-center gap-2">
-        <ImpactBadge impact={summary.overall} large />
-        <span className="text-sm font-medium">Sentiment scan</span>
-        <span className="text-sm text-muted-foreground">
-          +{summary.positiveCount} / −{summary.negativeCount} / ○{summary.neutralCount}
-        </span>
-      </div>
-      <p className="mt-1 text-sm text-muted-foreground">{summary.headline}</p>
-    </div>
+    <Takeaway tone={tone} sub={`${summary.positiveCount} positive, ${summary.negativeCount} negative, ${summary.neutralCount} neutral headlines. ${summary.headline}`}>
+      {line}
+    </Takeaway>
   );
 }
 

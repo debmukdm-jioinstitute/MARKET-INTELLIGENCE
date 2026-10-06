@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/layout/page-header";
+import { Fold, Takeaway, Tile, type Tone } from "@/components/guide/explain";
 import type { AgencyCell, RatingEvent } from "@/lib/research/ratings";
 import { cn } from "@/lib/utils";
 import useSWR from "swr";
@@ -69,7 +70,28 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
       {error ? <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">Could not load ratings right now. Try again in a moment.</p> : null}
 
       {data && !error ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {(() => {
+            const covered = data.agencies.filter((a) => a.covered && a.rating);
+            const weakest = covered.find((a) => ["BB", "B", "D"].includes(a.notch ?? ""));
+            const negOutlook = covered.some((a) => a.outlook === "negative" || a.watch === "negative");
+            const tone: Tone = data.alert || weakest ? "bad" : negOutlook ? "watch" : covered.length ? "good" : "info";
+            const word = (n: string | null | undefined) => LEGEND.find(([k]) => k === n)?.[1] ?? "rated";
+            const line = data.alert
+              ? "A rating agency cut this company's rating or turned negative in the last 90 days."
+              : covered.length
+                ? `${covered.map((a) => `${a.agency} rates it ${a.rating}`).join(", ")}. ${weakest ? "That is below investment grade, so lenders see real risk." : negOutlook ? "An outlook is negative, which means a downgrade is possible." : "Lenders see it as able to repay its debt."}`
+                : "No agency rating found. Many companies simply have no rated debt, so this is not a warning on its own.";
+            return <Takeaway tone={tone} sub={covered[0] ? `A rating is an agency's opinion of whether the company can repay its debt. ${covered[0].notch ? `${covered[0].notch} means ${word(covered[0].notch)}.` : ""}` : undefined}>{line}</Takeaway>;
+          })()}
+          {data.agencies.some((a) => a.covered && a.rating) ? (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {data.agencies.filter((a) => a.covered && a.rating).map((a) => (
+                <Tile key={a.agency} label={a.agency} value={a.rating} hint={a.watch ? `Watch: ${a.watch}` : a.outlook ? `Outlook: ${cap(a.outlook)}` : undefined} tone={a.outlook === "negative" || a.watch === "negative" ? "bad" : "info"} />
+              ))}
+            </div>
+          ) : null}
+          <Fold title="All agencies, last actions and rationale">
           {!anyCovered && data.events.length === 0 ? <p className="text-sm text-muted-foreground">No agency ratings collected for {symbol} yet — many companies have no rated listed debt.</p> : null}
 
           <div className="overflow-x-auto">
@@ -146,8 +168,10 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
             </div>
           ) : null}
 
+          </Fold>
+          <Fold title="How to read the letters">
           <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            <p className="mb-1 font-semibold text-foreground">How to read the letters</p>
+            <p className="mb-1 font-semibold text-foreground">The scale</p>
             <p className="flex flex-wrap gap-x-3 gap-y-1">
               {LEGEND.map(([k, v]) => (
                 <span key={k}>
@@ -157,6 +181,7 @@ export function RatingsPanel({ symbol }: { symbol: string }) {
             </p>
             <p className="mt-1">A + or − (like AA+) is a finer step within a letter. We link each agency&apos;s own rationale document and never summarise it.</p>
           </div>
+          </Fold>
         </div>
       ) : null}
     </Panel>
