@@ -49,9 +49,6 @@ import {
 } from "@/lib/feeds/sources/upstox";
 import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { listOptionsFlowFlagLog } from "@/lib/options-flow/store";
-import { applyOverrides, deriveAssumptions } from "@/lib/models/assumptions";
-import { buildModel } from "@/lib/models/dcf-engine";
-import { fetchFinancialDataset } from "@/lib/models/yahoo-fundamentals";
 import { ensureSchema, sql } from "@/lib/db";
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
@@ -338,23 +335,6 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const { symbol, range } = z.object({ symbol: SymbolArg.shape.symbol, range: z.enum(["1mo", "3mo", "6mo", "1y"]).default("6mo") }).parse(a);
       return { symbol: symbol.toUpperCase(), range, points: await fetchYahooHistory(symbol.toUpperCase(), range) };
-    },
-  },
-  {
-    name: "get_valuation_model",
-    title: "DCF valuation model",
-    category: "Research",
-    description: "Auto-derived DCF / financial model for a symbol using the site's assumption engine. lookback = years of history used for assumptions (default 3).",
-    inputSchema: {
-      type: "object",
-      properties: { symbol: sym, lookback: { type: "number", description: "Years, default 3" } },
-      required: ["symbol"],
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const { symbol, lookback } = z.object({ symbol: SymbolArg.shape.symbol, lookback: z.number().int().min(1).max(10).default(3) }).parse(a);
-      const dataset = await fetchFinancialDataset(symbol);
-      return buildModel(dataset, applyOverrides(deriveAssumptions(dataset, 10, lookback), {}));
     },
   },
   {

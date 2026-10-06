@@ -12,7 +12,7 @@ A research and portfolio terminal for Indian (NSE) and US markets — live and o
 | **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
-| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, valuation, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; integrated **DCF**, **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder** |
+| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder** |
 | **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor**; **Search-trend Attention Index** ([Google Trends](https://trends.google.com)); institutional flows, legal-risk monitor, company/concall intel, credit & promoter trackers, Reddit retail sentiment |
 | **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, palette, search; read portfolio, alerts, watchlist, brief, stress; add holdings, alerts, watchlist rows (confirmations + audit) ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
@@ -90,7 +90,7 @@ flowchart TD
     P_Markets["/markets/india · breadth · derivatives<br/>(/markets redirects to India)"]
     P_Macro["/macro/*<br/>(Regime, Yields, Commodities, FX, World Indices, Stress)"]
     P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
-    P_Research["/research/*<br/>(Company Dossiers, DCF Model, AI Desk, Options Flow, IPO)"]
+    P_Research["/research/*<br/>(Company Dossiers, AI Desk, Options Flow, IPO)"]
     P_Intel["/intelligence/*<br/>(Brief, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
     P_Alpha["/alpha-league/*<br/>(Virtual 5-day championship · board · paper book)"]
     P_Widgets["Interactive Shell<br/>(Ask Deb Widget, Command Palette ⌘K, MetricInfo Popovers)"]
@@ -127,7 +127,6 @@ flowchart TD
   subgraph Domain["4. Domain Logic & Math Engines (src/lib/*)"]
     ENG_Metrics["Engine A: Written Metrics Spec<br/>(Sharpe, Sortino, Jensen Alpha, VaR, CVaR, HHI)"]
     ENG_Virtual["Engine B: Virtual Portfolio Simulation<br/>(Seeded 5-Factor Stochastic Walk)"]
-    ENG_DCF["Valuation Engine<br/>(Unlevered FCF DCF & Bank Residual Income)"]
     ENG_Optimizer["Mean-Variance Optimizer<br/>(Gradient Descent Iterative Allocator)"]
     ENG_Regime["Macro Regime Engine<br/>(GDP/CPI Quadrants & Transmission Matrix)"]
     ENG_Collector["Collector Pipeline<br/>(RBI Scraper, Cboe VIX, CFTC COT, BLS, ECB)"]
@@ -179,7 +178,6 @@ flowchart TD
   ENG_Collector --> DB_Collector & EXT_Gov & EXT_NSE
   ENG_League --> DB_League
   ENG_Metrics --> EXT_Upstox & EXT_Yahoo
-  ENG_DCF --> EXT_Upstox & EXT_Yahoo
 ```
 
 | Subsystem Layer | Role & Scope | Core Code Paths & Modules |
@@ -187,7 +185,7 @@ flowchart TD
 | **1. UI / Pages** | Client-side App Router views, interactive charts, metric popovers | `src/app/(portal)/*`, `src/components/*`, `src/hooks/*` |
 | **2. API Routes** | Session verification, caching, orchestration, rate limiting | `src/app/api/feeds/*`, `macro/*`, `portfolio/*`, `hf/*`, `ai/*`, `mcp/*` |
 | **3. AI & ML Suite** | FinBERT sentiment, BART summarizer, MiniLM embeddings, Groq multi-agent debate | `src/lib/hf/*`, `src/lib/ai/*`, `src/lib/site-assistant/*` |
-| **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, DCF valuation, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/models/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
+| **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
 | **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base, Alpha League ledger | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`, `competition_*`) |
 | **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
 | **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback |
@@ -303,7 +301,7 @@ flowchart LR
   FE --> U[Upstox · Yahoo · EDGAR]
 ```
 
-**Logic:** **DCF** = pure TypeScript (`research/model`). **AI Desk** = Groq **`openai/gpt-oss-120b`**, news wrapped as untrusted. **Options flow** = deterministic z-score gate **then** LLM narrative only on flagged names; banned trade verbs enforced post-generation. **Cron** `/api/cron/options-flow` builds baseline snapshots daily.
+**Logic:** **AI Desk** = Groq **`openai/gpt-oss-120b`**, news wrapped as untrusted. **Options flow** = deterministic z-score gate **then** LLM narrative only on flagged names; banned trade verbs enforced post-generation. **Cron** `/api/cron/options-flow` builds baseline snapshots daily.
 
 ---
 
@@ -564,43 +562,19 @@ A genuine textbook Brinson decomposition needs a real per-sector benchmark weigh
 
 ## 6. Research Desk
 
-**Path:** `/research`, `/research/[symbol]` (company dossier — **guest-readable**), `/research/model/[symbol]`, `/research/ipo`
+**Path:** `/research`, `/research/[symbol]` (company dossier — **guest-readable**), `/research/ipo`
 
 ### Broker Research Aggregator & Consensus — `/research`
 🟢 **Institutional-style desk** on the research hub: curated **broker research** rows (Motilal Oswal, Kotak, ICICI Sec, HDFC Sec, and peers) with target prices, rating changes, and estimate revisions, plus **Consensus Changed — Why?** synthesis when multiple brokers move on the same name. APIs: `/api/broker-research`, `/api/broker-research/consensus`. Code: `src/lib/broker-research/*`, UI: `src/components/broker-research/*`. Distinct from the scraped headline feed at [`/research-reports`](#9-research-reports) (ET / LiveMint HTML scrape).
 
 ### Company dossier — `/research/[symbol]`
-🟢 Single-page research layout with **sticky section nav** (Overview, Valuation, Radar, Trend, Options when F&O-listed, Fundamentals, Risk, News, Scanner flags, IPO when relevant). Built from `/api/feeds/research/[symbol]` and related intelligence blocks — not a CMIE/Prowess embed.
+🟢 Single-page research layout with **sticky section nav** (Overview, Radar, Trend, Options when F&O-listed, Fundamentals, Risk, News, Scanner flags, IPO when relevant). Built from `/api/feeds/research/[symbol]` and related intelligence blocks — not a CMIE/Prowess embed.
 
 🟢 For an Indian ticker: live Upstox quote, **price history up to 5Y** candles (no separate bid/ask depth ladder on this page). For a US ticker (or if Upstox has no quote): fallback waterfall Massive → Yahoo → Stooq → Alpha Vantage → labeled simulated quote. Source attribution drives the data panel at the bottom.
 
 **News sentiment tagging is rule-based, not an LLM.** Every headline is run through roughly a dozen fixed regular expressions — buyback, dividend, bonus/split, rights issue, analyst upgrade/downgrade, earnings beat/miss, fraud/regulatory action, M&A, contract win, credit stress — each carrying a canned rationale. A negative match always wins over a positive one; no match leaves a headline "neutral" with the note *"No strong keyword signal — treat as general market news."* News comes from Upstox (India) and Google News RSS (both markets), deduplicated by a normalized title key.
 
 **Corporate actions** come from NSE's corporate-actions feed (India) or SEC EDGAR filings filtered to a form whitelist (8-K, 10-K, 10-Q, DEF 14A, S-1, 424B5) via CIK lookup (US). **Brokerage links** are a static set of deep links (Screener, Moneycontrol, Yahoo Finance, SEC EDGAR, a targeted Google search) — not scraped content.
-
-### Financial model (DCF) — `/research/model/[symbol]`
-🧮 A fully deterministic valuation model — no LLM involved anywhere. Non-financials get an **unlevered FCF DCF**; banks, insurers and NBFCs (detected from Yahoo sector/industry) get a **residual-income model**. Run `npm test` for the 60-test suite (hand-calculated cases for beta, WACC, terminal value, bridge, dilution, revolver/NOL, scenarios, reverse DCF, residual income and the Excel export).
-
-**Cost of capital**
-- **Beta**: bottom-up by default — the median *unlevered* beta of up to 6 same-exchange peers (Yahoo "similar companies", Blume-adjusted, unlevered at each peer's D/E), relevered at the target capital structure. Falls back to the stock's own Blume-adjusted monthly regression (raw beta via `use_blume`) when fewer than 3 peers are usable. Financials use the peer median *levered* beta directly (their debt is operating).
-- **Currency-consistent discount rate**: USD uses the live 10Y Treasury; other currencies use the local 10Y government yield **less its sovereign default spread** (Damodaran: a G-sec yield is not default-free, and the CRP already carries that spread — using both double-counts) plus a **country risk premium** (`cost of equity = rf + β × (ERP + CRP)`). The spread is added back to the cost of debt, and terminal growth uses the currency's own long-run nominal growth (e.g. 5% for INR), capped at the default-free rate. The rf and CRP tables are static, approximate Damodaran-style defaults (`src/lib/models/country.ts`) — surfaced in Assumptions and flagged by a currency-mismatch check.
-- **Cost of debt**: synthetic rating from interest coverage (Damodaran-style spread table) + risk-free rate, not interest ÷ book debt. WACC weights use **market value of debt** (coupon/maturity discounting).
-
-**Projection** — a **10-year** explicit forecast by default (5–10 selectable; a 5-year fade truncates high-growth firms and pushes 70%+ of value into the terminal value); revenue by total growth *or* volume × price; **capex is tied to growth** (D&A replacement + the PP&E needed to support extra revenue at constant capital intensity) so investment and growth can't be assumed independently (a '% of revenue' vector is still available); margins, D&A, capex, SBC, working-capital days roll into an integrated balance sheet / income statement / cash flow. Includes an **automatic revolver** (draws to hold minimum cash, repaid from surplus), interest on **average balances** (circularity solved by fixed-point iteration), **NOL carryforward** with a usage cap, an effective tax rate that **converges to the marginal rate**, and optional **EBIT-margin fade** to a long-run target. A 6-year lookback re-derives every average for cyclicals (mid-cycle margins).
-
-**Terminal value** — a separately **normalised year N+1**: NOPAT at the marginal tax rate, reinvestment = `g / ROIC` with `ROIC = WACC + spread` (McKinsey / Damodaran value-driver formula), so growth is never free. Gordon growth (default) or exit multiple; the implied multiple, implied growth, terminal value share of EV and terminal ROIC ≥ WACC are all checked.
-
-**Equity bridge** — EV − debt − minority interest − preferred − pension deficit − other debt-like items + cash + long-term / equity-method investments. **Dilution** via the treasury-stock method (options, RSUs, in-the-money converts), solved at the implied price. Reported lease liabilities are already inside Yahoo's debt figures; add off-balance-sheet operating leases as "other debt-like items".
-
-**Financials** — residual income: `equity = book + Σ PV[(ROE − ke) × opening book] + terminal`, ROE fading to cost of equity + a long-run spread.
-
-**Analytics** — sensitivity grids (WACC × g, WACC × exit multiple, growth × margin), bear/base/bull **scenarios** with probability-weighted value, a seeded **Monte Carlo** (1,500 draws over growth, margin, WACC, terminal growth), **reverse DCF** (growth / margin the market price implies), a **tornado** of value drivers, and a **football field** against peer EV/EBITDA, P/E, P/B and the 52-week range.
-
-**Data robustness (all tickers)** — Yahoo's operating income is cross-checked against its own EBIT line and replaced when they disagree by >50% and >1% of revenue (e.g. Woolworths); per-share value is floored at zero when equity is negative; near-zero local yields (JPY, CHF) are floored at a normalised 2.5% risk-free rate; peers come from the same exchange first and are topped up from other markets (each regressed against its own index, pence/ADR prices converted); 39 currencies are covered with local risk-free rates, country premiums, long-run growth and marginal tax rates.
-
-**Governance** — 15 integrity checks (balance ties, WACC > g, beta source, currency match, revolver/cash, terminal ROIC, TV share, implied exit multiple, incremental ROIC, …), a **data-quality screen** (stale statements, TTM vs annual divergence, one-off tax/earnings, margin outliers, cyclicality), an assumption **change log**, and an **Excel export** whose valuation layer (DCF or residual income, bridge, per-share value and the WACC × g grid) uses **live formulas**, with the assumption audit trail and per-input source citations. The operating projections in the workbook are model outputs pasted as values; TTM figures are used for current multiples but the projection base year is the latest annual statement (calendarisation to a common year-end is not performed).
-
-**Known limits** — Yahoo's free feed has no option/RSU detail (defaults to the reported diluted-vs-basic share gap; enter counts manually), no segment data (volume × price is a decomposition, not segment modelling), and peer lists are Yahoo's "similar companies", not a curated set. Country premiums and risk-free rates for non-USD currencies are static defaults to be refreshed.
 
 ### IPO pipeline — `/research/ipo`
 🟢 Upstox IPO calendar (open/upcoming/listed/closed) — issue size, price band, subscription, timeline, prospectus links — plus **best-effort Grey Market Premium (GMP)** from IPO Watch (unofficial OTC; null when unmatched). 🤖 On-demand **AI DRHP/RHP summary** (five-year financials, management, outlook, key findings, decision-oriented overview) with a rules fallback when Groq is unavailable.
@@ -908,6 +882,12 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 | Fix | Email | Welcome pack: plain-text part + personal sender for deliverability |
 | Improvement | Admin | Alpha League **reopen registration** (guarded), multi-date season picker, admin sidebar link |
 
+### 0.1.10 — 6 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Removal | Research | Retired **Build financial model** / DCF worksheet: `/research/model/[symbol]`, `/api/models/*`, inline valuation panel, MCP `get_valuation_model`, and `src/lib/models/*` engine |
+
 ### 0.1.9 — 2 Oct 2026
 
 | Type | Area | Change |
@@ -956,7 +936,7 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 | Type | Area | Change |
 |---|---|---|
 | Feature | Intelligence | **Search-trend Attention Index** at `/intelligence/search-trends` — Google Trends → Attention Index by topic category; MCP `get_search_trend_attention` |
-| Feature | Research | **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; user-driven DCF template (replaces automated intrinsic quote) |
+| Feature | Research | **Broker Research Aggregator** + **Consensus Intelligence** on `/research` |
 | Feature | Intelligence | Reddit retail sentiment, company/concall intel, institutional, legal-risk, credit & promoter hubs (nav + MCP where wired) |
 | Improvement | UX | Invest mega-menu **full-width grid**; `/research` hero search **typing Nifty-name placeholder** |
 | Removal | Algo | NIFTY Algo Desk portal UI removed; `/algo/*` **301 → `/intelligence/scanner`**; self-host `services/ai-trader/` only ([§14](#14-nifty-algo-desk-removed-from-public-site)) |
@@ -1022,7 +1002,7 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 
 | Type | Area | Change |
 |---|---|---|
-| Feature | Core product | India desk, markets, macro hub, portfolio Engine A/B, research + DCF, AI Desk, options-flow pipeline |
+| Feature | Core product | India desk, markets, macro hub, portfolio Engine A/B, research dossiers, AI Desk, options-flow pipeline |
 | Feature | Intelligence | Daily brief, alerts, scanner, regulatory news sort, search-trend Attention Index |
 | Feature | Algo | *(Removed from hosted site Sep 2026 — optional self-hosted Flask stack only)* |
 | Feature | Admin | Customers, briefs, newsletters, FTS RAG Q&A |

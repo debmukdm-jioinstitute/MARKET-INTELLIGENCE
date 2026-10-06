@@ -71,14 +71,6 @@ export default function ResearchSymbolPage() {
           <Link href="/research" className="text-primary hover:underline">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
-        {symbol ? (
-          <Link
-            href={`/research/model/${encodeURIComponent(symbol)}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
-          >
-            Build financial model →
-          </Link>
-        ) : null}
       </div>
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}

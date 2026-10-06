@@ -47,7 +47,7 @@ export function getPromptMessages(name: string, args: Record<string, string> = {
           role: "user",
           content: {
             type: "text",
-            text: `Perform a comprehensive equity research deep-dive on ${sym}:\n1. Call get_research_pack for symbol="${sym}" to inspect profile, financial ratios, historical price trajectory, and security risk.\n2. Call get_valuation_model for symbol="${sym}" to evaluate DCF multiples and intrinsic valuation range.\n3. Call get_options_flow to inspect any unusual institutional options positioning on ${sym}.\n4. Synthesize your findings into an institutional investment memo covering: (a) Business Quality & Moat, (b) Valuation & Target multiples, (c) Key upside/downside catalysts, and (d) Final recommendation.`,
+            text: `Perform a comprehensive equity research deep-dive on ${sym}:\n1. Call get_research_pack for symbol="${sym}" to inspect profile, financial ratios, historical price trajectory, and security risk.\n2. Call get_key_ratios when ISIN is available for fundamental ratios.\n3. Call get_options_flow to inspect any unusual institutional options positioning on ${sym}.\n4. Synthesize your findings into an institutional investment memo covering: (a) Business Quality & Moat, (b) Valuation context from ratios and price action, (c) Key upside/downside catalysts, and (d) Final recommendation.`,
           },
         },
       ];

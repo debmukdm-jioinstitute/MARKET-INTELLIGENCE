@@ -16,7 +16,6 @@ describe("isAllowedHref", () => {
     expect(isAllowedHref("/intelligence/company")).toBe(true);
     expect(isAllowedHref("/intelligence/reddit")).toBe(true);
     expect(isAllowedHref("/research/offers")).toBe(true);
-    expect(isAllowedHref("/research/model/TCS")).toBe(true);
   });
 
   it("rejects external URLs", () => {

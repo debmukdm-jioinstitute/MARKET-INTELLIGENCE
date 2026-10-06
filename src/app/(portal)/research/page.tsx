@@ -136,7 +136,7 @@ export default async function ResearchPage() {
             <strong className="text-foreground">No estimates:</strong> We do not estimate, simulate, or impute target prices, ratings, or consensus figures. If no notes have been collected for a company, the feed says so explicitly.
           </li>
           <li>
-            <strong className="text-foreground">Valuation Models:</strong> From any company page, access interactive Discounted Cash Flow (DCF), Reverse DCF, and peer multiple benchmarking models.
+            <strong className="text-foreground">Fundamentals:</strong> Company dossiers include key ratios, risk metrics, ownership, and broker research where collected — no automated intrinsic-value or DCF worksheet on the site.
           </li>
         </ul>
       </div>
