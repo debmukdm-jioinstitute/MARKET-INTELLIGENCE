@@ -160,7 +160,8 @@ async function build(symbol: string): Promise<Leadership> {
   const out: Leadership = { symbol, company: null, checkedAt: new Date().toISOString(), people: [], pay: null, dividends: null, holdings: null, annualReportUrl: null, notes };
   const actionsP = nseJson<{ subject?: string; exDate?: string; isin?: string; comp?: string }[]>(`/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}`).catch(() => null);
   const arP = nseJson<{ data?: { fileName?: string }[] }>(`/api/annual-reports?index=equities&symbol=${encodeURIComponent(symbol)}`).then((r) => r.data?.[0]?.fileName ?? null).catch(() => null);
-  const payP = brsrPay(symbol).catch(() => null);
+  let payErr = "";
+  const payP = brsrPay(symbol).catch((e) => { payErr = e instanceof Error ? e.message : String(e); return null; });
   const actions = await actionsP;
   const isin = actions?.find((a) => a.isin)?.isin;
   out.company = actions?.find((a) => a.comp)?.comp ?? null;
@@ -182,7 +183,7 @@ async function build(symbol: string): Promise<Leadership> {
   out.annualReportUrl = ar;
   if (ppl) { out.people = ppl.people; out.company = ppl.company ?? out.company; }
   if (!out.people.length) notes.push("Founder/CEO details are not in the open knowledge base (Wikidata) for this company.");
-  if (!pay) notes.push("This company's BRSR median-pay table could not be read (BRSR is mandatory for the top 1,000 listed companies only).");
+  if (!pay) notes.push(`Median-pay table not read${payErr ? ` (${payErr.slice(0, 120)})` : ""}. BRSR is mandatory for the top 1,000 listed companies only.`);
   if (!holdings) notes.push("Share-count breakdown from the latest shareholding filing was unavailable.");
   notes.push("Named executive pay and individual share holdings sit in the annual report; open it below. Medians are as reported by the company, not averages.");
   return out;
