@@ -165,7 +165,12 @@ export function MarketPulse({
       <SectionHeading
         title="Market Pulse"
         detail="A quick read on India. A little context behind every move."
-        action={<HomeLink href="/markets">Full market board</HomeLink>}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <HomeLink href="/markets/india">India depth</HomeLink>
+            <HomeLink href="/markets">Full market board</HomeLink>
+          </div>
+        }
       />
       <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-stone-500">
         <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 font-medium text-stone-900">

@@ -21,6 +21,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { awardXp } from "@/lib/gamification/client";
+import { recordRecentSymbol } from "@/lib/research/recent-symbols";
 
 // Code-split heavy / below-the-fold UI so it is not parsed and hydrated during page load.
 // Charts are client-only (canvas / SVG measured in the browser), so ssr:false loses nothing.
@@ -68,6 +69,9 @@ const NAV_SECTIONS = [
   { id: "risk-events", label: "Risk & Catalysts" },
 ];
 
+/** Allowlist for hash deep-links: a raw location.hash is never passed to the DOM unvalidated. */
+const SECTION_IDS = new Set(NAV_SECTIONS.map((s) => s.id));
+
 export function ResearchSymbolClient({
   initialData,
   initialAgeMs,
@@ -89,6 +93,50 @@ export function ResearchSymbolClient({
     if (!symbol || deepResearchAwarded.has(symbol)) return;
     deepResearchAwarded.add(symbol);
     void awardXp("company_deep_research", symbol); // fire-and-forget, guests silently no-op
+  }, [symbol]);
+
+  // "Continue where you left off": remember this view for the recents strip.
+  // Re-runs when the company name loads so the stored label is the real name.
+  useEffect(() => {
+    if (!symbol) return;
+    recordRecentSymbol(symbol, data?.name);
+  }, [symbol, data?.name]);
+
+  // Hash deep-links (e.g. /research/RELIANCE#financials): scroll to the
+  // matching section with the same header offset the section nav uses.
+  // The hash is allowlisted against SECTION_IDS before touching the DOM.
+  // Sections are lazy-mounted, so one delayed retry follows in case the
+  // placeholder was replaced and heights shifted — unless the user scrolled.
+  useEffect(() => {
+    let settledY = -1;
+    const scrollToSectionHash = () => {
+      const raw = window.location.hash.replace(/^#/, "");
+      if (!raw) return;
+      let id: string;
+      try {
+        id = decodeURIComponent(raw);
+      } catch {
+        return;
+      }
+      if (!SECTION_IDS.has(id)) return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + (window.innerWidth < 1024 ? -160 : -80);
+      if (settledY >= 0 && Math.abs(window.scrollY - settledY) > 8) return;
+      settledY = y;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    };
+    const onHashChange = () => {
+      settledY = -1;
+      scrollToSectionHash();
+    };
+    scrollToSectionHash();
+    const retry = window.setTimeout(scrollToSectionHash, 1200);
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+      window.clearTimeout(retry);
+    };
   }, [symbol]);
 
   useEffect(() => {
