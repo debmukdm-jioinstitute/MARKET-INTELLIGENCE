@@ -1,4 +1,5 @@
 import { ResearchHomeClient } from "@/app/(portal)/research/research-home-client";
+import { RecentSymbolsStrip } from "@/components/research/recent-symbols-strip";
 import { BrokerResearchHub } from "@/components/broker-research/broker-research-hub";
 import { EarningsCalendarCard } from "@/components/dashboard/earnings-calendar-card";
 import { BROKER_SOURCES } from "@/lib/research/broker-sources";
@@ -56,6 +57,7 @@ export default async function ResearchPage() {
         {/* Global Symbol Search with animated placeholder */}
         <div className="max-w-2xl mx-auto">
           <ResearchHomeClient />
+          <RecentSymbolsStrip />
         </div>
       </div>
 

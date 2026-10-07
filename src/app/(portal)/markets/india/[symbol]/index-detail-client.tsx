@@ -11,6 +11,8 @@ import { useFeedHub } from "@/hooks/use-feed-hub";
 import { useMarketStatus } from "@/hooks/use-market-status";
 import { formatPct } from "@/lib/format";
 import { fmtNum } from "@/lib/format-india";
+import { INDIA_BENCHMARK_DEFS } from "@/lib/feeds/india/indices";
+import { indexSlugFromLabel } from "@/lib/india-index-meta";
 import { cn } from "@/lib/utils";
 
 /** Module-level fetcher (repo rule: never inline an async fetcher in a hook body). */
@@ -30,6 +32,17 @@ type SecurityDetail = {
   details?: { fiftyTwoWeekHigh?: number; fiftyTwoWeekLow?: number };
   history?: HistoryPoint[];
 };
+
+/**
+ * The 26 benchmarks with detail pages, in listing order
+ * (def order = feed-hub fetch order = card order on /markets/india).
+ * Defs without a canonical slug (BSE 100/200/500, Bankex, …) are skipped.
+ */
+const INDEX_SWITCHER: ReadonlyArray<{ slug: string; label: string }> =
+  INDIA_BENCHMARK_DEFS.flatMap((d) => {
+    const s = indexSlugFromLabel(d.label);
+    return s ? [{ slug: s, label: d.label }] : [];
+  });
 
 function AnimatedPrice({ value, format }: { value: number; format: (v: number) => string }) {
   const reduceMotion = useReducedMotion();
@@ -81,6 +94,13 @@ export function IndexDetailClient({
   const { isOpen } = useMarketStatus();
   const [activeTf, setActiveTf] = useState<Timeframe>("1D");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Keep the active pill visible in the switcher strip (mount + slug change).
+  // DOM scroll only — no state, so no render loop.
+  const activePillRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [slug]);
 
   const quote = useMemo(
     () => feedData?.indices.find((q) => q.symbol === label || q.symbol === yahoo) ?? null,
@@ -277,6 +297,31 @@ export function IndexDetailClient({
           ) : null}
         </div>
       </motion.div>
+
+      {/* Index switcher strip — one-tap hop between benchmarks */}
+      <nav aria-label="Switch benchmark index">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto py-1" role="list">
+          {INDEX_SWITCHER.map((idx) => {
+            const isActive = idx.slug === slug;
+            return (
+              <Link
+                key={idx.slug}
+                ref={isActive ? activePillRef : undefined}
+                href={`/markets/india/${idx.slug}`}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex min-h-[44px] shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8]",
+                  isActive
+                    ? "border-[#1a73e8] bg-[#1a73e8] text-white"
+                    : "border-border bg-card text-muted-foreground hover:border-[#1a73e8]/60 hover:text-foreground",
+                )}
+              >
+                {idx.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* Chart */}
       <motion.div {...entrance(0.08)} className="bento-card-shell space-y-3">

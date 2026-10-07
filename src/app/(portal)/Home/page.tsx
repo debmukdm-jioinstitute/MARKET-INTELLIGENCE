@@ -38,6 +38,9 @@ export default function DashboardPage() {
   );
   const now = useHomeClock();
   const progress = useHomeProgress(now);
+  // Signed-in holders see their portfolio right under the market pulse (0-tap glance);
+  // everyone else keeps the existing order with the teaser at the bottom.
+  const portfolioUpTop = authenticated && portfolio.holdings.length > 0;
   return (
     <div
       data-home-dashboard
@@ -65,6 +68,7 @@ export default function DashboardPage() {
       </header>
       <WelcomeStrip progress={progress} />
       <MarketPulse data={data} now={now} />
+      {portfolioUpTop ? <PortfolioTeaser portfolio={visiblePortfolio} /> : null}
       <ChartDesk />
       <BriefTeaser
         data={brief}
@@ -78,7 +82,7 @@ export default function DashboardPage() {
       <MissionsCard progress={progress} now={now} />
       <SmartMoney data={data} />
       <LearnNudge />
-      <PortfolioTeaser portfolio={visiblePortfolio} />
+      {portfolioUpTop ? null : <PortfolioTeaser portfolio={visiblePortfolio} />}
     </div>
   );
 }
