@@ -20,16 +20,16 @@ export function PortalPageTransition({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  if (reduce || compact) {
-    return <div className="min-h-[50vh]">{children}</div>;
-  }
-
+  // Always render the SAME element type. Swapping <div> <-> <motion.div> after the
+  // matchMedia effect ran remounted the whole page on mobile, so every page-level
+  // useEffect fetch fired twice.
+  const still = Boolean(reduce || compact);
   return (
     <motion.div
       key={pathname}
-      initial={{ opacity: 0, y: 12 }}
+      initial={still ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.32, ease: EASE }}
+      transition={still ? { duration: 0 } : { duration: 0.32, ease: EASE }}
       className="min-h-[50vh]"
     >
       {children}
