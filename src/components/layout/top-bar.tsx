@@ -46,7 +46,7 @@ export function TopBar() {
                 <Link
                   href="/Home"
                   aria-label="Go to Home"
-                  className="inline-flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card text-foreground transition-all hover:bg-accent active:scale-95 shadow-xs touch-manipulation"
+                  className="inline-flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card p-1.5 -m-1.5 text-foreground transition-all hover:bg-accent active:scale-95 shadow-xs touch-manipulation"
                   title="Go to Home"
                 >
                   <Home className="size-4 text-primary" aria-hidden />
@@ -89,7 +89,7 @@ export function TopBar() {
               onClick={() => setPaletteOpen(true)}
               aria-label={`Search and commands (${shortcut.label})`}
               title="Search symbols, pages & commands"
-              className="flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation shadow-xs"
+              className="flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card p-1.5 -m-1.5 text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation shadow-xs"
             >
               <Search className="size-4" aria-hidden />
             </button>

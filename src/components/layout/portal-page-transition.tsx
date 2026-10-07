@@ -11,6 +11,11 @@ export function PortalPageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
   const [compact, setCompact] = useState(false);
+  // Once the enter animation completes, drop the transform entirely so
+  // `position: sticky` descendants keep working on mobile Safari/Chrome
+  // (any transformed ancestor breaks sticky). framer-motion clears its own
+  // will-change on completion; the style merge below removes the transform.
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
@@ -19,6 +24,12 @@ export function PortalPageTransition({ children }: { children: ReactNode }) {
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+
+  // The inner motion.div remounts on route change via key={pathname}, but this
+  // component's state does not — reset explicitly so the next page animates.
+  useEffect(() => {
+    setSettled(false);
+  }, [pathname]);
 
   // Always render the SAME element type. Swapping <div> <-> <motion.div> after the
   // matchMedia effect ran remounted the whole page on mobile, so every page-level
@@ -30,7 +41,9 @@ export function PortalPageTransition({ children }: { children: ReactNode }) {
       initial={still ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={still ? { duration: 0 } : { duration: 0.32, ease: EASE }}
-      className="min-h-[50vh]"
+      onAnimationComplete={() => setSettled(true)}
+      className="min-h-[50dvh]"
+      style={settled ? { transform: "none" } : undefined}
     >
       {children}
     </motion.div>
