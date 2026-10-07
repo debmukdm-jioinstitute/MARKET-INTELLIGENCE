@@ -26,7 +26,7 @@ interface StatProps {
 const StatCard = ({ label, value, metricKey, name, explanation, utility, calculation, asOf }: StatProps) => (
   <div className="rounded-lg border border-border/70 p-3 relative group">
     <div className="flex items-center justify-between gap-1">
-      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">{label}</p>
+      <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground truncate">{label}</p>
       <MetricInfo
         id={metricKey}
         name={name}
@@ -141,7 +141,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
       <div className="grid gap-3 text-base sm:grid-cols-2">
         <div className="rounded-lg border border-border/70 p-3">
           <div className="flex items-center justify-between gap-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Next earnings</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Next earnings</p>
             <MetricInfo
               id="earnings_date"
               name="Upcoming Earnings Release Date"
@@ -158,7 +158,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
         </div>
         <div className="rounded-lg border border-border/70 p-3">
           <div className="flex items-center justify-between gap-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent insider filings</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Recent insider filings</p>
             <MetricInfo
               id="insider_filings"
               name="Insider & Promoter Disclosure Filings"

@@ -68,7 +68,7 @@ export function TrustNote({
       : undefined);
 
   return (
-    <p className={cn("text-xs leading-5 text-muted-foreground inline-flex flex-wrap items-center gap-x-1 gap-y-0.5", className)}>
+    <p className={cn("text-sm leading-6 text-muted-foreground inline-flex flex-wrap items-center gap-x-1 gap-y-0.5", className)}>
       <span>
         Source: {source}
         {age ? (

@@ -13,6 +13,7 @@ import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
 import { SimilarStocksPanel } from "@/components/hf-ai/similar-stocks-panel";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { SourceEye } from "@/components/ui/source-eye";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
@@ -124,6 +125,7 @@ export default function ResearchSymbolPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
+                    <SourceEye label={`${data.name} (${symbol}) price`} source="Upstox market data (NSE official feed)" asOf={q.asOf} url={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`} method="Last traded price from the Upstox market-data feed for NSE. During market hours it refreshes every few seconds; after close it is the last trade." />
                     <MetricInfo
                       id={symbol.toLowerCase()}
                       name={`${data.name} (${symbol})`}

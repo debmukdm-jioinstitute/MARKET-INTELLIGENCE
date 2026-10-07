@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import { useMathInspector } from "@/components/providers/math-inspector-provider";
 import { GLOSSARY } from "@/lib/my-portfolio/glossary";
 import { cn } from "@/lib/utils";
@@ -38,9 +39,7 @@ export function MetricInfo({
       aria-label={`View mathematical derivation for ${entry?.label ?? id}`}
       title="Click for full LaTeX mathematical derivation, inputs, and institutional proof"
     >
-      <span className="font-sans italic text-sm font-bold leading-none select-none hover:scale-125 transition-transform">
-        ⓘ
-      </span>
+      <Eye className="size-4 select-none transition-transform hover:scale-125" aria-hidden />
     </button>
   );
 }

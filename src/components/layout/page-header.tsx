@@ -3,6 +3,8 @@
 import { useSiteContent } from "@/components/providers/site-content-provider";
 import { siteContentSlot } from "@/lib/site-content";
 import { TrustNote } from "@/components/ui/trust-note";
+import { SourceEye } from "@/components/ui/source-eye";
+import { panelSource, urlForSource } from "@/lib/panel-sources";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -12,12 +14,15 @@ import { useId, useState } from "react";
 type TrustProps = ComponentProps<typeof TrustNote>;
 
 export function PageHeader({
+  kicker,
   title,
   subtitle,
   className,
   titleAs: TitleTag = "h2",
   trust,
 }: {
+  /** Small label above the title, e.g. "Investment research". */
+  kicker?: string;
   title: string;
   subtitle?: string;
   className?: string;
@@ -34,6 +39,7 @@ export function PageHeader({
 
   return (
     <div className={cn("portal-header-enter mb-4 sm:mb-5", className)}>
+      {kicker ? <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-primary">{kicker}</p> : null}
       <TitleTag
         data-mi-slot={titleSlot}
         data-mi-field="title"
@@ -47,7 +53,7 @@ export function PageHeader({
           data-mi-slot={subtitleSlot}
           data-mi-field="subtitle"
           data-mi-label="Page subtitle"
-          className="mt-1 max-w-3xl text-sm text-muted-foreground"
+          className="mt-1 max-w-3xl text-base text-muted-foreground"
         >
           {displaySubtitle || subtitle}
         </p>
@@ -100,6 +106,12 @@ export function Panel({
   const bodyId = useId();
   const [open, setOpen] = useState(defaultOpen ?? true);
 
+  const known = panelSource(title);
+  const eyeTrust = trust
+    ? { source: trust.source, asOf: trust.asOf, url: trust.fieldSource?.url && trust.fieldSource.url.startsWith("http") ? trust.fieldSource.url : urlForSource(trust.source), method: trust.fieldSource?.fetchMethod ?? trust.fetchPath ?? known?.method, note: trust.note }
+    : known
+      ? { source: known.source, asOf: null, url: known.url, method: known.method, note: known.note }
+      : null;
   const titleSlot = panelSlot(path, id, titleStr, "title");
   const subSlot = panelSlot(path, id, titleStr, "subtitle");
 
@@ -169,8 +181,9 @@ export function Panel({
         ) : (
           <div className="flex min-w-0 flex-1 items-start justify-between gap-2">{headerInner}</div>
         )}
-        {action ? (
-          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+        {action || eyeTrust ? (
+          <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {eyeTrust ? <SourceEye label={titleStr === "Panel" ? undefined : titleStr} source={eyeTrust.source} asOf={eyeTrust.asOf} url={eyeTrust.url} method={eyeTrust.method} note={eyeTrust.note} /> : null}
             {action}
           </div>
         ) : null}
