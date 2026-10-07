@@ -3,14 +3,15 @@ import { feedFetch } from "@/lib/feeds/http";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { isEarningsTranscript, parseNseSortDate } from "./announcements";
-import { detectQuarter, extractHighlights, segmentTone, splitTranscript, TONE_MODEL } from "./concall-nlp";
+import { detectQuarter, extractHighlights, splitTranscript } from "./concall-nlp";
+import { toneScore } from "./concall-tone";
 import { today } from "./http";
 import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./types";
 
 /**
  * Concall "said vs guided". Discovery → download once → PDF→text once → split
- * prepared remarks vs Q&A → source-verbatim highlights (+ optional
- * FinBERT tone). Only highlights and the source link are stored — never the
+ * prepared remarks vs Q&A → source-verbatim highlights + in-house lexicon tone
+ * (no model, no network). Only highlights and the source link are stored — never the
  * transcript text. Already-processed transcripts are skipped by URL hash, so a
  * PDF is never re-downloaded or re-parsed.
  */
@@ -85,8 +86,17 @@ export type ConcallRow = {
   generatedBy: string;
 };
 
+export const TONE_METHOD = "lexicon-tone";
+
+/** Prepared remarks vs Q&A tone, both or neither (a delta needs both). Moderator turns excluded. */
+export function toneOfSplit(split: ReturnType<typeof splitTranscript>): { tonePrepared: number | null; toneQa: number | null } {
+  const tp = toneScore(split.prepared.map((t) => t.text).join(" "));
+  const tq = toneScore(split.qa.filter((t) => t.speaker !== "Moderator").map((t) => t.text).join(" "));
+  return tp !== null && tq !== null ? { tonePrepared: tp, toneQa: tq } : { tonePrepared: null, toneQa: null };
+}
+
 /** Text → summary row, or a reason it cannot be summarised (cover letter only, no Q&A, scanned image…). */
-export async function summarizeTranscript(c: Candidate, text: string, opts: { hf?: boolean } = {}): Promise<{ row: ConcallRow } | { skip: string }> {
+export async function summarizeTranscript(c: Candidate, text: string, _opts: { hf?: boolean } = {}): Promise<{ row: ConcallRow } | { skip: string }> {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length < 4000) return { skip: "no-transcript-text" }; // typically a one-page cover letter linking elsewhere
   const split = splitTranscript(text);
@@ -96,16 +106,8 @@ export async function summarizeTranscript(c: Candidate, text: string, opts: { hf
 
   const generated = ["extractive-rules", ...(!split.found ? ["prepared-only"] : [])];
   const { growthDrivers, risks } = hl;
-  let tonePrepared: number | null = null;
-  let toneQa: number | null = null;
-  if (opts.hf !== false && process.env.HF_TOKEN) {
-    const [tp, tq] = [await segmentTone(split.prepared.map((t) => t.text).join(" ")), await segmentTone(split.qa.filter((t) => t.speaker !== "Moderator").map((t) => t.text).join(" "))];
-    if (tp !== null && tq !== null) {
-      tonePrepared = tp;
-      toneQa = tq;
-      generated.push(TONE_MODEL);
-    }
-  }
+  const { tonePrepared, toneQa } = toneOfSplit(split);
+  if (tonePrepared !== null && toneQa !== null) generated.push(TONE_METHOD);
   return {
     row: {
       symbol: c.symbol,

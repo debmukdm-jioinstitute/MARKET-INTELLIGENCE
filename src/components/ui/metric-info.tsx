@@ -17,6 +17,7 @@ import {
   Calculator,
   Globe,
   Sparkles,
+  Eye,
 } from "lucide-react";
 
 export interface MetricInfoProps {
@@ -87,9 +88,9 @@ export function MetricInfo({
 
   const effectiveSize = iconSize ?? size;
   const sizeClasses = {
-    xs: "text-[10px] size-3.5",
-    sm: "text-[12px] size-4",
-    md: "text-[14px] size-5",
+    xs: "size-5",
+    sm: "size-6",
+    md: "size-7",
   };
 
   let formattedValue: string | null = null;
@@ -132,9 +133,7 @@ export function MetricInfo({
           aria-label={`Source and details for ${title}`}
           title={`Source, timestamp and methodology for ${title}`}
         >
-          <span className="font-sans italic font-bold leading-none select-none hover:scale-125 transition-transform">
-            ⓘ
-          </span>
+          <Eye className="size-4 select-none transition-transform hover:scale-125" aria-hidden />
         </button>
       </PopoverTrigger>
 

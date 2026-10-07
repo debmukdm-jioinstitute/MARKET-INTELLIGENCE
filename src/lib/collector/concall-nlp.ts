@@ -184,39 +184,7 @@ export function detectQuarter(text: string): string | null {
 /* HF (strict) — tone and optional abstractive polish                  */
 /* ------------------------------------------------------------------ */
 
-export const TONE_MODEL = "ProsusAI/finbert";
 export const SUMMARY_MODEL = "sshleifer/distilbart-cnn-12-6";
-type Cls = { label: string; score: number }[][];
-
-function chunkWords(text: string, size: number, maxChunks: number): string[] {
-  const w = text.split(/\s+/).filter(Boolean);
-  const chunks: string[] = [];
-  for (let i = 0; i < w.length; i += size) chunks.push(w.slice(i, i + size).join(" "));
-  if (chunks.length <= maxChunks) return chunks;
-  const step = chunks.length / maxChunks; // evenly spaced sample, keeps beginning-to-end coverage
-  return Array.from({ length: maxChunks }, (_, i) => chunks[Math.floor(i * step)]);
-}
-
-/** Mean (positive − negative) FinBERT score over the segment, −1..+1; null when the model is unavailable. */
-export async function segmentTone(text: string, maxChunks = 10): Promise<number | null> {
-  const chunks = chunkWords(text, 300, maxChunks);
-  if (!chunks.length) return null;
-  try {
-    const scores: number[] = [];
-    for (let i = 0; i < chunks.length; i += 5) {
-      const batch = chunks.slice(i, i + 5);
-      const raw = await hfInfer<string[], Cls>(TONE_MODEL, batch, { ttlMs: 3600_000, maxRetries: 2, cacheKey: `concall-tone::${createHash("sha256").update(JSON.stringify(batch)).digest("hex")}` });
-      for (const c of raw) {
-        const pos = c.find((x) => x.label.toLowerCase() === "positive")?.score ?? 0;
-        const neg = c.find((x) => x.label.toLowerCase() === "negative")?.score ?? 0;
-        scores.push(pos - neg);
-      }
-    }
-    return scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 1000) / 1000 : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Optional abstractive polish: summarises a bucket's source sentences, keeps only

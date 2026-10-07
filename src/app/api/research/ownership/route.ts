@@ -1,6 +1,7 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { computeOwnershipFlags, type OwnershipRow } from "@/lib/research/ownership";
 import { nseJson } from "@/lib/feeds/india/nse-session";
+import { getText } from "@/lib/collector/http";
 import { masterToRows, parseShpXbrl } from "@/lib/collector/shareholding";
 import { NextResponse } from "next/server";
 
@@ -29,6 +30,52 @@ const BROWSER_HEADERS = {
   Referer: "https://www.nseindia.com/",
 };
 
+const inflight = new Map<string, Promise<void>>();
+const settled = new Map<string, number>(); // rows already read (or failed) recently: never re-fetch in a loop
+
+/**
+ * ROOT CAUSE of blank institution / pledge figures: the collector reads each filing's XBRL only within a
+ * per-run budget, so many stocks hold promoter/public % from NSE's list but no foreign / domestic / pledge detail.
+ * Fill the newest filings on demand from the filing's own XBRL (free, deterministic), write them back, and
+ * remember the outcome for 6 hours so a bad file is not retried in a loop.
+ */
+async function backfillDetail(symbol: string, rows: Row[]): Promise<void> {
+  const need = rows.filter((r) => r.xbrl_url && r.fii_pct === null && (settled.get(`${symbol}|${toDateString(r.broadcast_date)}`) ?? 0) < Date.now()).slice(0, 4);
+  await Promise.all(
+    need.map((r) => {
+      const day = toDateString(r.broadcast_date);
+      const key = `${symbol}|${day}`;
+      const existing = inflight.get(key);
+      if (existing) return existing;
+      const run = (async () => {
+        try {
+          const d = parseShpXbrl(await getText(r.xbrl_url!, { headers: BROWSER_HEADERS, timeoutMs: 12_000, attempts: 1 }));
+          if (d.fiiPct === null && d.diiPct === null) throw new Error("no institution facts in filing");
+          await sql()`UPDATE shareholding SET fii_pct = ${d.fiiPct}, dii_pct = ${d.diiPct}, pledge_pct = COALESCE(pledge_pct, ${d.pledgePct}), shareholder_count = COALESCE(shareholder_count, ${d.shareholderCount}), quarter_end = COALESCE(quarter_end, ${d.quarterEnd}) WHERE symbol = ${symbol} AND broadcast_date = ${day}`;
+          r.fii_pct = d.fiiPct === null ? null : String(d.fiiPct);
+          r.dii_pct = d.diiPct === null ? null : String(d.diiPct);
+          r.pledge_pct = r.pledge_pct ?? (d.pledgePct === null ? null : String(d.pledgePct));
+          r.shareholder_count = r.shareholder_count ?? d.shareholderCount;
+        } catch {
+          /* keep the master-only row */
+        } finally {
+          settled.set(key, Date.now() + 6 * 3600_000);
+          inflight.delete(key);
+        }
+      })();
+      inflight.set(key, run);
+      return run;
+    }),
+  );
+}
+
+/** "none" = no promoter group is registered (professionally managed, e.g. HDFC Bank, ITC, Eternal); that is a fact, not a data gap. */
+function promoterStatus(latest: OwnershipRow | undefined, series: OwnershipRow[]): "present" | "none" | "unknown" {
+  if (!latest || latest.promoterPct === null) return "unknown";
+  if (latest.promoterPct > 0) return "present";
+  return series.filter((p) => p.promoterPct === 0).length >= 2 || series.length <= 1 ? "none" : "present";
+}
+
 async function fetchLiveOwnership(symbol: string): Promise<OwnershipRow[]> {
   try {
     type MasterRow = {
@@ -45,25 +92,26 @@ async function fetchLiveOwnership(symbol: string): Promise<OwnershipRow[]> {
     const filings = masterToRows(symbol, master);
     if (!filings.length) return [];
 
-    // Parse the latest XBRL for FII, DII, and pledge details
-    const latest = filings[0];
-    if (latest?.xbrlUrl) {
-      try {
-        const res = await fetch(latest.xbrlUrl, { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(15_000) });
-        if (res.ok) {
+    // Read the newest filings' XBRL (in parallel) for foreign / domestic institutions, pledge and holder count.
+    await Promise.all(
+      filings.slice(0, 5).map(async (f) => {
+        if (!f.xbrlUrl) return;
+        try {
+          const res = await fetch(f.xbrlUrl, { headers: BROWSER_HEADERS, signal: AbortSignal.timeout(15_000) });
+          if (!res.ok) return;
           const detail = parseShpXbrl(await res.text());
-          latest.quarterEnd = detail.quarterEnd ?? latest.quarterEnd;
-          latest.promoterPct = latest.promoterPct ?? detail.promoterPct;
-          latest.publicPct = detail.publicPct ?? latest.publicPct;
-          latest.fiiPct = detail.fiiPct;
-          latest.diiPct = detail.diiPct;
-          latest.pledgePct = detail.pledgePct;
-          latest.shareholderCount = detail.shareholderCount;
+          f.quarterEnd = detail.quarterEnd ?? f.quarterEnd;
+          f.promoterPct = f.promoterPct ?? detail.promoterPct;
+          f.publicPct = detail.publicPct ?? f.publicPct;
+          f.fiiPct = detail.fiiPct;
+          f.diiPct = detail.diiPct;
+          f.pledgePct = detail.pledgePct;
+          f.shareholderCount = detail.shareholderCount;
+        } catch {
+          // keep master data for this quarter
         }
-      } catch {
-        // keep master data
-      }
-    }
+      }),
+    );
 
     return filings
       .slice(0, 9)
@@ -107,6 +155,7 @@ export async function GET(req: Request) {
       `) as Row[];
 
       if (rows.length > 0) {
+        await Promise.race([backfillDetail(symbol, rows), new Promise((r) => setTimeout(r, 14_000))]);
         asc = rows
           .map((r) => ({
             broadcastDate: toDateString(r.broadcast_date),
@@ -142,11 +191,17 @@ export async function GET(req: Request) {
       symbol,
       dbConfigured: hasDatabase(),
       latest: asc[asc.length - 1] ?? null,
+      promoterStatus: promoterStatus(asc[asc.length - 1], last8),
       series: last8.map((r) => ({
         broadcastDate: r.broadcastDate,
         quarterEnd: r.quarterEnd,
         promoterPct: r.promoterPct,
+        fiiPct: r.fiiPct,
+        diiPct: r.diiPct,
+        publicPct: r.publicPct,
         pledgePct: r.pledgePct,
+        shareholderCount: r.shareholderCount,
+        xbrlUrl: r.xbrlUrl,
       })),
       flags: computeOwnershipFlags(asc).filter((f) => f.broadcastDate >= cutoff),
       nseUrl,

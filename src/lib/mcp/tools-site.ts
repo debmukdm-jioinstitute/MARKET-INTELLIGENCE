@@ -17,6 +17,7 @@ import { INDIA_EQUITIES, OPTION_UNDERLYINGS } from "@/lib/feeds/india/instrument
 import { buildFeedHub } from "@/lib/feeds/hub";
 import { getSourceHealth } from "@/lib/health/sources";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
+import { buildDrivers } from "@/lib/guide/drivers-service";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
@@ -344,6 +345,17 @@ export const SITE_TOOLS: Tool[] = [
     description: "Research detail for one stock: quote, price history summary, key stats and the site's research view.",
     inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
     run: async (a) => (await buildResearchDetail(SymbolArg.parse(a).symbol)) ?? { status: "unavailable", reason: "Unknown symbol or no data" },
+  },
+  {
+    name: "get_stock_drivers",
+    title: "What moves this stock",
+    category: "Research",
+    description: "Business-specific drivers for any NSE stock (regulators, government policy, commodities, competition) with the latest headlines on each. Example: PolicyBazaar returns IRDAI commission-cap news.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => {
+      const p = await buildDrivers(SymbolArg.parse(a).symbol.toUpperCase());
+      return { ...p, drivers: p.drivers.map((d) => ({ ...d, evidence: d.evidence.map((e) => ({ title: e.title, source: e.source, link: e.link, publishedAt: e.publishedAt })) })) };
+    },
   },
   {
     name: "get_price_history",

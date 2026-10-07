@@ -177,16 +177,16 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
           const hColors = h.label === "bullish" ? "text-emerald-600" : h.label === "bearish" ? "text-rose-600" : "text-amber-600";
           return (
             <div key={i} className="flex items-start gap-2">
-              <span className={`text-xs font-bold uppercase ${hColors} mt-0.5 shrink-0 w-14`}>
+              <span className={`text-sm font-bold uppercase ${hColors} mt-0.5 shrink-0 w-14`}>
                 {h.label}
               </span>
-              <span className="text-xs text-muted-foreground leading-tight line-clamp-1">{h.text}</span>
+              <span className="text-sm text-muted-foreground leading-tight line-clamp-1">{h.text}</span>
             </div>
           );
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground text-right">
+      <p className="text-sm text-muted-foreground text-right">
         Powered by ProsusAI/FinBERT
       </p>
     </div>

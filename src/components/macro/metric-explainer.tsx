@@ -3,7 +3,7 @@
 import * as React from "react";
 import { METRIC_COPY } from "@/lib/macro/metric-copy";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ExternalLink, Database, Globe, ShieldCheck, Sparkles } from "lucide-react";
+import { ExternalLink, Database, Globe, ShieldCheck, Sparkles, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MetricExplainer({ copyKey, className }: { copyKey: string; className?: string }) {
@@ -40,9 +40,7 @@ export function MetricExplainer({ copyKey, className }: { copyKey: string; class
             e.stopPropagation();
           }}
         >
-          <span className="font-sans italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
-            ⓘ
-          </span>
+          <Eye className="size-4 select-none transition-transform hover:scale-125" aria-hidden />
         </button>
       </PopoverTrigger>
 

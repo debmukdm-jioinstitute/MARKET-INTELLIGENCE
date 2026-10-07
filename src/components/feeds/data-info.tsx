@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ExternalLink, Database, Calendar, Clock, Globe, ShieldCheck } from "lucide-react";
+import { ExternalLink, Database, Calendar, Clock, Globe, ShieldCheck, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function DataInfo({
@@ -53,9 +53,7 @@ export function DataInfo({
             e.stopPropagation();
           }}
         >
-          <span className="font-sans italic font-bold text-[12px] leading-none select-none hover:scale-125 transition-transform">
-            ⓘ
-          </span>
+          <Eye className="size-4 select-none transition-transform hover:scale-125" aria-hidden />
         </button>
       </PopoverTrigger>
 

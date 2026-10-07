@@ -1,0 +1,128 @@
+diff --git a/src/app/api/feeds/ipo/[id]/intelligence/route.ts b/src/app/api/feeds/ipo/[id]/intelligence/route.ts
+index e54dfdc..37138c5 100644
+--- a/src/app/api/feeds/ipo/[id]/intelligence/route.ts
++++ b/src/app/api/feeds/ipo/[id]/intelligence/route.ts
+@@ -2,7 +2,7 @@ import { buildIpoIntelligence } from "@/lib/feeds/ipo/build-intelligence";
+ import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ export const maxDuration = 60;
+ 
+ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+diff --git a/src/app/api/feeds/ipo/[id]/route.ts b/src/app/api/feeds/ipo/[id]/route.ts
+index 15092b5..3fb8e8c 100644
+--- a/src/app/api/feeds/ipo/[id]/route.ts
++++ b/src/app/api/feeds/ipo/[id]/route.ts
+@@ -3,7 +3,7 @@ import { resolveIpoDetail } from "@/lib/feeds/ipo/resolve-detail";
+ import { fetchUpstoxIpoDetail } from "@/lib/feeds/sources/upstox";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ 
+ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+   const { id } = await ctx.params;
+diff --git a/src/app/api/feeds/ipo/route.ts b/src/app/api/feeds/ipo/route.ts
+index 49fd59b..66584dd 100644
+--- a/src/app/api/feeds/ipo/route.ts
++++ b/src/app/api/feeds/ipo/route.ts
+@@ -3,7 +3,7 @@ import type { IpoStatus } from "@/lib/feeds/ipo/types";
+ import { fetchUpstoxIpoList } from "@/lib/feeds/sources/upstox";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ 
+ const VALID_STATUSES: IpoStatus[] = ["open", "closed", "listed", "upcoming"];
+ 
+diff --git a/src/app/api/feeds/search-trends/route.ts b/src/app/api/feeds/search-trends/route.ts
+index a8c680d..62f4b7d 100644
+--- a/src/app/api/feeds/search-trends/route.ts
++++ b/src/app/api/feeds/search-trends/route.ts
+@@ -2,7 +2,7 @@ import { buildSearchTrendHub } from "@/lib/search-trends/build-hub";
+ import type { SearchTrendCategory } from "@/lib/search-trends/types";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ export const maxDuration = 60;
+ 
+ let cache: { key: string; at: number; payload: Awaited<ReturnType<typeof buildSearchTrendHub>> } | null = null;
+diff --git a/src/app/api/feeds/search/symbols/route.ts b/src/app/api/feeds/search/symbols/route.ts
+index 509f7e0..1339607 100644
+--- a/src/app/api/feeds/search/symbols/route.ts
++++ b/src/app/api/feeds/search/symbols/route.ts
+@@ -1,7 +1,7 @@
+ import { searchSymbols } from "@/lib/feeds/symbol-search";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 3600;
+ 
+ export async function GET(req: Request) {
+   const q = new URL(req.url).searchParams.get("q") ?? "";
+diff --git a/src/app/api/feeds/security-risk/route.ts b/src/app/api/feeds/security-risk/route.ts
+index c48829a..9496eb6 100644
+--- a/src/app/api/feeds/security-risk/route.ts
++++ b/src/app/api/feeds/security-risk/route.ts
+@@ -1,7 +1,7 @@
+ import { NextResponse } from "next/server";
+ import { buildSecurityRisk } from "@/lib/feeds/security-risk";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ export const maxDuration = 30;
+ 
+ export async function GET(req: Request) {
+diff --git a/src/app/api/feeds/upstox/option-expiries/route.ts b/src/app/api/feeds/upstox/option-expiries/route.ts
+index e3e9b8c..1db27ba 100644
+--- a/src/app/api/feeds/upstox/option-expiries/route.ts
++++ b/src/app/api/feeds/upstox/option-expiries/route.ts
+@@ -2,7 +2,7 @@ import { findOptionUnderlying } from "@/lib/feeds/india/instruments";
+ import { fetchUpstoxOptionExpiries } from "@/lib/feeds/sources/upstox";
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 3600;
+ 
+ export async function GET(req: Request) {
+   const underlying = new URL(req.url).searchParams.get("underlying");
+diff --git a/src/app/api/prowess/company/route.ts b/src/app/api/prowess/company/route.ts
+index 0ce97e0..8b983f2 100644
+--- a/src/app/api/prowess/company/route.ts
++++ b/src/app/api/prowess/company/route.ts
+@@ -1,6 +1,6 @@
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 3600;
+ 
+ export async function GET() {
+   return NextResponse.json({ status: "disabled", error: "CMIE Prowess data has been removed." }, { status: 410 });
+diff --git a/src/app/api/prowess/status/route.ts b/src/app/api/prowess/status/route.ts
+index a83d828..7c8ebf6 100644
+--- a/src/app/api/prowess/status/route.ts
++++ b/src/app/api/prowess/status/route.ts
+@@ -1,6 +1,6 @@
+ import { NextResponse } from "next/server";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 3600;
+ 
+ export async function GET() {
+   return NextResponse.json({ live: false, configured: false, cachedReports: 0, message: "CMIE Prowess data has been removed." });
+diff --git a/src/app/api/stress/backtest/route.ts b/src/app/api/stress/backtest/route.ts
+index 77e73cb..6c0b072 100644
+--- a/src/app/api/stress/backtest/route.ts
++++ b/src/app/api/stress/backtest/route.ts
+@@ -1,7 +1,7 @@
+ import { NextResponse } from "next/server";
+ import { getBacktest } from "@/lib/stress/backtest";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 900;
+ export const maxDuration = 60;
+ 
+ export async function GET() {

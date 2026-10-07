@@ -206,13 +206,14 @@ async function stored(symbol: string): Promise<Summary[]> {
   if (!hasDatabase()) return [];
   await ensureSchema();
   const rows = await sql()`SELECT * FROM concall_summaries WHERE symbol = ${symbol} ORDER BY transcript_date DESC NULLS LAST, created_at DESC LIMIT 8`;
-  return rows.map((r) => ({ symbol, quarter: r.quarter, transcriptDate: r.transcript_date ? toDateString(r.transcript_date) : null, guidance: r.guidance ?? [], growthDrivers: r.growth_drivers ?? [], risks: r.risks ?? [], qaThemes: r.qa_themes ?? [], tonePrepared: r.tone_prepared == null ? null : Number(r.tone_prepared), toneQa: r.tone_qa == null ? null : Number(r.tone_qa), toneDelta: r.tone_delta == null ? null : Number(r.tone_delta), sourceUrl: r.source_url, generatedBy: r.generated_by ?? "extractive-rules" }));
+  return rows.map((r) => ({ symbol, quarter: r.quarter, transcriptDate: r.transcript_date ? toDateString(r.transcript_date) : null, guidance: r.guidance ?? [], growthDrivers: r.growth_drivers ?? [], risks: r.risks ?? [], qaThemes: r.qa_themes ?? [], tonePrepared: r.tone_prepared == null ? null : Number(r.tone_prepared), toneQa: r.tone_qa == null ? null : Number(r.tone_qa), toneDelta: r.tone_delta == null ? (r.tone_prepared == null || r.tone_qa == null ? null : Math.round((Number(r.tone_qa) - Number(r.tone_prepared)) * 1000) / 1000) : Number(r.tone_delta), sourceUrl: r.source_url, generatedBy: r.generated_by ?? "extractive-rules" }));
 }
 async function persist(r: ConcallRow) {
   if (!hasDatabase()) return;
   await ensureSchema();
   await sql()`INSERT INTO concall_summaries (symbol, quarter, transcript_date, guidance, growth_drivers, risks, qa_themes, tone_prepared, tone_qa, source_url, content_hash, generated_by)
-    VALUES (${r.symbol}, ${r.quarter}, ${r.transcriptDate}, ${r.guidance}, ${r.growthDrivers}, ${r.risks}, ${r.qaThemes}, ${r.tonePrepared}, ${r.toneQa}, ${r.sourceUrl}, ${r.contentHash}, ${r.generatedBy}) ON CONFLICT (content_hash) DO NOTHING`;
+    VALUES (${r.symbol}, ${r.quarter}, ${r.transcriptDate}, ${r.guidance}, ${r.growthDrivers}, ${r.risks}, ${r.qaThemes}, ${r.tonePrepared}, ${r.toneQa}, ${r.sourceUrl}, ${r.contentHash}, ${r.generatedBy}) ON CONFLICT (content_hash) DO UPDATE SET tone_prepared = COALESCE(concall_summaries.tone_prepared, EXCLUDED.tone_prepared), tone_qa = COALESCE(concall_summaries.tone_qa, EXCLUDED.tone_qa),
+      tone_delta = COALESCE(concall_summaries.tone_delta, ${r.tonePrepared !== null && r.toneQa !== null ? Math.round((r.toneQa - r.tonePrepared) * 1000) / 1000 : null}), generated_by = CASE WHEN concall_summaries.tone_prepared IS NULL THEN EXCLUDED.generated_by ELSE concall_summaries.generated_by END`;
 }
 const cache = new Map<string, { until: number; value: Archive }>();
 const pending = new Map<string, Promise<Archive>>();
@@ -241,7 +242,8 @@ export async function getTranscriptArchive(symbol: string, market: Market = "IN"
     const history = await stored(storageSymbol).catch(() => { failures++; return [] as Summary[]; });
     const found = await discover(symbol, market, signal);
     failures += found.failures;
-    const known = new Set(history.map((r) => r.sourceUrl));
+    // Calls stored without a tone (scored before the in-house scorer existed) are re-read once to fill it in.
+    const known = new Set(history.filter((r) => r.tonePrepared !== null).map((r) => r.sourceUrl));
     // Only parsed calls and hard failures use the budget; cover letters/intimations that yield no text are skipped for free.
     let attempted = 0;
     for (const c of found.candidates) {
@@ -257,7 +259,10 @@ export async function getTranscriptArchive(symbol: string, market: Market = "IN"
         await persist({ ...out.row, symbol: storageSymbol }).catch(() => { failures++; });
         const { contentHash: _hash, ...row } = out.row;
         void _hash;
-        history.push({ ...row, toneDelta: null });
+        const delta = row.tonePrepared !== null && row.toneQa !== null ? Math.round((row.toneQa - row.tonePrepared) * 1000) / 1000 : null;
+        const at = history.findIndex((h) => h.sourceUrl === row.sourceUrl);
+        if (at >= 0) history.splice(at, 1); // re-read to fill a missing tone: replace, never duplicate
+        history.push({ ...row, toneDelta: delta });
         known.add(source.url);
       } catch { failures++; attempted++; }
     }
