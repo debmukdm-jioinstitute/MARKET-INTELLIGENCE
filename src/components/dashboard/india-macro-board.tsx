@@ -78,6 +78,11 @@ const fmtVintage = (asOf?: string | null) => {
   return asOf.length > 16 ? asOf.slice(0, 10) : asOf;
 };
 
+/** RBI convention (see fmtLakhCr): negative net ₹ cr = absorption = surplus. */
+const liqSurplus = (netCr: number | null | undefined) => (netCr ?? 0) < 0;
+const liqAmount = (value: string | null) =>
+  value ? value.replace(/\s*(absorbed \(surplus\)|injected \(deficit\))/i, "").trim() || value : "—";
+
 /* ------------------------------ indicator rows ------------------------------ */
 
 type Category = "growth" | "inflation" | "rbi" | "external" | "manufacturing";
@@ -271,7 +276,7 @@ function IndiaMacroIndicators({ data }: { data: IndiaDashboardPayload }) {
   const visible = filter === "all" ? indicators : indicators.filter((i) => i.category === filter);
   const liq = data.rbiLiquidity.systemLiquidity;
   const fx = data.rbiLiquidity.fxReserves;
-  const liqPositive = (liq.netCr ?? 0) >= 0;
+  const surplus = liqSurplus(liq.netCr);
 
   return (
     <section className="rounded-2xl border border-border bg-card p-4 sm:p-5" aria-label="India macro indicators">
@@ -332,9 +337,9 @@ function IndiaMacroIndicators({ data }: { data: IndiaDashboardPayload }) {
           </div>
           <div className="mt-2 flex items-end justify-between gap-2">
             <div>
-              <p className="text-xl font-bold tabular-nums text-foreground">{liq.value ?? "—"}</p>
-              <p className="text-sm text-muted-foreground">{liq.value ? (liqPositive ? "absorbed (surplus)" : "injected (deficit)") : ""}</p>
-              {liq.change7d ? <p className="mt-0.5 text-sm font-medium tabular-nums text-emerald-500">+{liq.change7d} (7D)</p> : null}
+              <p className="text-xl font-bold tabular-nums text-foreground">{liqAmount(liq.value)}</p>
+              <p className="text-sm text-muted-foreground">{liq.value ? (surplus ? "absorbed (surplus)" : "injected (deficit)") : ""}</p>
+              {liq.change7d ? <p className="mt-0.5 text-sm font-medium tabular-nums text-emerald-500">{liq.change7d} (7D)</p> : null}
             </div>
             <MiniBars values={(liq.daily ?? []).slice(-14).map((d) => d.valueCr)} color="#10b981" />
           </div>
@@ -545,7 +550,7 @@ function LiquidityBars({ daily, range }: { daily: { date: string; valueCr: numbe
 function SystemLiquidity({ data }: { data: IndiaDashboardPayload }) {
   const [range, setRange] = useState<7 | 30>(7);
   const liq = data.rbiLiquidity.systemLiquidity;
-  const positive = (liq.netCr ?? 0) >= 0;
+  const surplus = liqSurplus(liq.netCr);
 
   return (
     <section className="rounded-2xl border border-border bg-card p-4 sm:p-5" aria-label="System liquidity">
@@ -570,10 +575,10 @@ function SystemLiquidity({ data }: { data: IndiaDashboardPayload }) {
 
       {liq.value ? (
         <>
-          <p className="mt-3 font-heading text-3xl font-bold tabular-nums text-foreground">{liq.value}</p>
-          <p className="text-sm text-muted-foreground">{positive ? "absorbed (surplus)" : "injected (deficit)"}</p>
+          <p className="mt-3 font-heading text-3xl font-bold tabular-nums text-foreground">{liqAmount(liq.value)}</p>
+          <p className="text-sm text-muted-foreground">{surplus ? "absorbed (surplus)" : "injected (deficit)"}</p>
           {liq.change7d ? (
-            <p className="mt-1 text-sm font-medium tabular-nums text-emerald-500">+{liq.change7d} vs. previous 7D</p>
+            <p className="mt-1 text-sm font-medium tabular-nums text-emerald-500">{liq.change7d} vs. previous 7D</p>
           ) : null}
           <div className="mt-2">
             <LiquidityBars daily={liq.daily ?? []} range={range} />
@@ -603,9 +608,9 @@ function KeyTakeaways({ data }: { data: IndiaDashboardPayload }) {
   const bullets: string[] = [];
   if (repo) bullets.push(`RBI policy repo rate stands at ${repo}.`);
   if (liq.value) {
-    const dir = (liq.netCr ?? 0) >= 0 ? "surplus" : "deficit";
+    const dir = liqSurplus(liq.netCr) ? "surplus" : "deficit";
     bullets.push(
-      `System liquidity is in ${dir} at ${liq.value}${liq.change7d ? `, ${liq.change7d} over the last 7 days` : ""}.`,
+      `System liquidity is in ${dir} at ${liqAmount(liq.value)}${liq.change7d ? `, ${liq.change7d} over the last 7 days` : ""}.`,
     );
   }
   if (cpi?.current != null) {
