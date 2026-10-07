@@ -17,7 +17,7 @@ const count = (n: number) => n.toLocaleString("en-IN");
 
 function Bar({ label, value, max, text, tone = "bg-primary" }: { label: string; value: number; max: number; text: string; tone?: string }) {
   return (
-    <div className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-2 text-xs sm:grid-cols-[14rem_1fr_auto]">
+    <div className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[14rem_1fr_auto]">
       <span className="truncate text-muted-foreground" title={label}>{label}</span>
       <div className="h-3 overflow-hidden rounded bg-muted"><div className={`h-full rounded ${tone}`} style={{ width: `${Math.max(2, (value / max) * 100)}%` }} /></div>
       <span className="tabular-nums font-medium">{text}</span>
@@ -49,7 +49,7 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
                       {p.imageUrl ? (
                         <img src={p.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" loading="lazy" />
                       ) : <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold">{p.name.slice(0, 1)}</span>}
-                      <span className="text-sm"><span className="block font-medium text-primary">{p.name} ↗</span><span className="text-xs text-muted-foreground">{p.role}</span></span>
+                      <span className="text-sm"><span className="block font-medium text-primary">{p.name} ↗</span><span className="text-sm text-muted-foreground">{p.role}</span></span>
                     </a>
                   </li>
                 ))}
@@ -67,11 +67,11 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
                 })}
               </div>
               {data.pay.ratios.length ? (
-                <ul className="mt-3 flex flex-wrap gap-2 text-xs">
+                <ul className="mt-3 flex flex-wrap gap-2 text-sm">
                   {data.pay.ratios.map((x) => <li key={x.label} className="rounded-md bg-muted px-2 py-1"><span className="font-semibold text-foreground">{x.times.toLocaleString("en-IN")}×</span> {x.label}</li>)}
                 </ul>
               ) : null}
-              <p className="mt-2 text-[11px] text-muted-foreground">Source: <a className="text-primary hover:underline" href={data.pay.sourceUrl} target="_blank" rel="noopener noreferrer">Business Responsibility &amp; Sustainability Report (NSE)</a>. Excludes commission and sitting fees for non-executive directors; counts in brackets.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Source: <a className="text-primary hover:underline" href={data.pay.sourceUrl} target="_blank" rel="noopener noreferrer">Business Responsibility &amp; Sustainability Report (NSE)</a>. Excludes commission and sitting fees for non-executive directors; counts in brackets.</p>
             </section>
           ) : null}
 
@@ -81,7 +81,7 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
               <div className="space-y-2">
                 {data.holdings.rows.map((r) => <Bar key={r.label} label={r.label} value={r.shares} max={holdMax} text={`${count(r.shares)} · ${r.pctOfTotal ?? "?"}%${r.dividendIncomeTtm ? ` · ≈${crore(r.dividendIncomeTtm)}` : ""}`} tone="bg-amber-500" />)}
               </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">Share counts from the latest <a className="text-primary hover:underline" href={data.holdings.sourceUrl} target="_blank" rel="noopener noreferrer">shareholding filing (NSE XBRL)</a>{data.holdings.asOf ? `, ${data.holdings.asOf}` : ""}. Dividend income is derived: shares × dividends per share paid in the last 12 months, before tax.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Share counts from the latest <a className="text-primary hover:underline" href={data.holdings.sourceUrl} target="_blank" rel="noopener noreferrer">shareholding filing (NSE XBRL)</a>{data.holdings.asOf ? `, ${data.holdings.asOf}` : ""}. Dividend income is derived: shares × dividends per share paid in the last 12 months, before tax.</p>
             </section>
           ) : null}
 
@@ -89,11 +89,11 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
             <section>
               <h3 className="mb-1 text-sm font-semibold">Dividend per share by financial year{data.dividends.ttmPerShare ? ` · last 12 months ₹${data.dividends.ttmPerShare}` : ""}</h3>
               <div className="space-y-2">{data.dividends.byYear.map((y) => <Bar key={y.fy} label={y.fy} value={y.perShare} max={divMax} text={`₹${Math.round(y.perShare * 100) / 100}`} tone="bg-violet-500" />)}</div>
-              <p className="mt-2 text-[11px] text-muted-foreground">Source: NSE corporate actions (ex-dates).</p>
+              <p className="mt-2 text-sm text-muted-foreground">Source: NSE corporate actions (ex-dates).</p>
             </section>
           ) : null}
 
-          <div className="space-y-1 text-[11px] text-muted-foreground">
+          <div className="space-y-1 text-sm text-muted-foreground">
             {data.annualReportUrl ? <p><a className="text-primary hover:underline" href={data.annualReportUrl} target="_blank" rel="noopener noreferrer">Open the latest annual report ↗</a> for named executive pay and individual holdings.</p> : null}
             {data.notes.map((n) => <p key={n}>{n}</p>)}
           </div>
