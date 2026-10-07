@@ -13,7 +13,8 @@ export type ResearchPanelName =
   | "security-risk";
 
 export const dossierCacheKey = (sym: string) => `dossier:v1:${sym}`;
-export const panelCacheKey = (name: ResearchPanelName, sym: string) => `panel:v1:${name}:${sym}`;
+export const panelCacheKey = (name: ResearchPanelName, sym: string) =>
+  name === "ratings" ? `panel:v2:${name}:${sym}` : `panel:v1:${name}:${sym}`;
 
 export function researchPanelUrls(sym: string): { name: ResearchPanelName; url: string }[] {
   const s = encodeURIComponent(sym);

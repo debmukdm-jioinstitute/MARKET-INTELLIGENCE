@@ -112,11 +112,13 @@ async function crawlNseCreditDisclosures(symbol: string): Promise<FilingDisclosu
       const headline = text || desc || `Credit Rating Disclosure filed by ${symbol}`;
       const combined = `${desc} ${text} ${fileUrl ?? ""}`.toUpperCase();
 
-      let detectedAgency: string | null = null;
-      if (combined.includes("CRISIL")) detectedAgency = "CRISIL";
-      else if (combined.includes("CARE")) detectedAgency = "CARE";
-      else if (combined.includes("ICRA") || combined.includes("SECRA")) detectedAgency = "ICRA";
-      else if (combined.includes("INDIARATING") || combined.includes("INDIA RATINGS") || combined.includes("IND-RA")) detectedAgency = "India Ratings";
+      const detectedAgencies: string[] = [];
+      if (combined.includes("CRISIL")) detectedAgencies.push("CRISIL");
+      if (combined.includes("CARE")) detectedAgencies.push("CARE");
+      if (combined.includes("ICRA") || combined.includes("SECRA")) detectedAgencies.push("ICRA");
+      if (combined.includes("INDIARATING") || combined.includes("INDIA RATINGS") || combined.includes("IND-RA")) detectedAgencies.push("India Ratings");
+
+      const detectedAgency: string | null = detectedAgencies.length > 0 ? detectedAgencies.join(" / ") : null;
 
       const ratingMatch = /\b(AAA|AA\+|AA|AA\-|A\+|A|A\-|BBB\+|BBB|BBB\-|BB\+|BB|B\+|B|A1\+|A1)\b/i.exec(combined);
       const rating = ratingMatch ? ratingMatch[1].toUpperCase() : null;
@@ -300,12 +302,20 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
   }
 
   // 3. Extract agency coverage and ratings from statutory NSE credit rating disclosures
-  if (views.length === 0 && nseDisclosures.length > 0) {
+  // for any agency that is not already covered with a valid rating
+  const coveredAgencies = new Set(
+    views.filter((v) => v.rating !== null).map((v) => v.agency)
+  );
+
+  if (nseDisclosures.length > 0) {
     for (const disc of nseDisclosures) {
       const haystack = `${disc.headline} ${disc.url ?? ""}`.toUpperCase();
       for (const ag of AGENCY_ORDER) {
+        if (coveredAgencies.has(ag)) continue;
+
         const matched =
           disc.agency === ag ||
+          (disc.agency && disc.agency.includes(ag)) ||
           haystack.includes(ag) ||
           (ag === "ICRA" && (haystack.includes("SECRA") || haystack.includes("ICRA")));
 
@@ -325,6 +335,8 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
             rationaleUrl: disc.url ?? agencyVerificationUrl(ag, cleanSymbol, companyName),
             source: "NSE_STATUTORY_DISCLOSURE",
           });
+
+          coveredAgencies.add(ag);
         }
       }
     }
