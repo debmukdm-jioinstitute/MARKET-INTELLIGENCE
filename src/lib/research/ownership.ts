@@ -64,3 +64,21 @@ export function computeOwnershipFlags(rowsAsc: OwnershipRow[]): OwnershipFlag[] 
   }
   return flags.reverse();
 }
+
+const qKey = (r: { quarterEnd: string | null; broadcastDate: string }) => r.quarterEnd ?? r.broadcastDate;
+
+/**
+ * Oldest -> newest by QUARTER, one filing per quarter (the most recently filed). Ordering by filing date alone
+ * made a late re-filing of an old quarter (e.g. TCS March-quarter file posted in September) look like the
+ * latest holding, hiding the newer June quarter.
+ */
+export function byQuarter(rows: OwnershipRow[]): OwnershipRow[] {
+  const best = new Map<string, OwnershipRow>();
+  for (const r of rows) {
+    const k = qKey(r);
+    const cur = best.get(k);
+    if (!cur || r.broadcastDate > cur.broadcastDate) best.set(k, r);
+  }
+  return [...best.values()].sort((a, b) => (qKey(a) < qKey(b) ? -1 : qKey(a) > qKey(b) ? 1 : 0));
+}
+
