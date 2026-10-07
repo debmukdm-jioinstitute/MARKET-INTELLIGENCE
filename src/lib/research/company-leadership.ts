@@ -1,6 +1,8 @@
-import { getDocumentProxy } from "unpdf";
+import { extractBrsrPay, filingDateIso, payRatios } from "./brsr-pay.mjs";
+import { readCompanyPay, type CompanyPay } from "./company-pay";
+export { parseBrsrPay } from "./brsr-pay.mjs";
 import { nseJson } from "@/lib/feeds/india/nse-session";
-import { ensureSchema, hasDatabase, sql } from "@/lib/db";
+import { hasDatabase, sql } from "@/lib/db";
 import { validateSource } from "@/lib/research/transcript-archive";
 
 /**
@@ -17,8 +19,9 @@ export type Leadership = {
   symbol: string;
   company: string | null;
   checkedAt: string;
+  refreshing?: boolean;
   people: Person[];
-  pay: { fy: string; sourceUrl: string; rows: PayRow[]; ratios: { label: string; times: number }[] } | null;
+  pay: CompanyPay | null;
   dividends: { history: Dividend[]; ttmPerShare: number | null; byYear: { fy: string; perShare: number }[] } | null;
   holdings: { asOf: string | null; totalShares: number; sourceUrl: string; rows: Holding[] } | null;
   annualReportUrl: string | null;
@@ -29,33 +32,6 @@ const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 const MAX_BYTES = 30 * 1024 * 1024;
 const cache = new Map<string, { value: Leadership; until: number }>();
 const pending = new Map<string, Promise<Leadership>>();
-
-const num = (s: string, mult = 1) => (/^(nil|na)$/i.test(s) ? null : Math.round(Number(s.replace(/,/g, "")) * mult));
-const NUM = String.raw`([\d,]+(?:\.\d+)?|Nil|NA)`;
-
-/** BRSR Principle 5 Q3(a): "Board of Directors (BoD)* 5 20,00,00,000 Nil NA Key Managerial Personnel# 1 ..." */
-export function parseBrsrPay(text: string): PayRow[] {
-  const t = text.replace(/\s+/g, " ");
-  const start = t.search(/Median remuneration/i);
-  if (start < 0) return [];
-  const seg = t.slice(start, start + 3500);
-  // Companies report in rupees, lakhs, crores or millions; normalise to rupees.
-  const unitText = t.slice(Math.max(0, start - 300), start + 500);
-  const mult = /lakh/i.test(unitText) ? 1e5 : /crore|\bcr\b/i.test(unitText) ? 1e7 : /million/i.test(unitText) ? 1e6 : 1;
-  const labels: [PayRow["category"], RegExp][] = [
-    ["Board of Directors", /Board of Directors(?: \(BoD\))?[*#^\s]*/i],
-    ["Key Managerial Personnel", /Key Managerial Personnel(?: \(KMP\))?[*#^\s]*/i],
-    ["Employees (non-board, non-KMP)", /Employees other than BoD and KMP[*#^\s]*/i],
-    ["Workers", /Workers[*#^\s]*/i],
-  ];
-  const rows: PayRow[] = [];
-  for (const [category, re] of labels) {
-    const m = new RegExp(`${re.source}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}`, "i").exec(seg);
-    if (!m) continue;
-    rows.push({ category, maleCount: num(m[1]), maleMedian: num(m[2], mult), femaleCount: num(m[3]), femaleMedian: num(m[4], mult) });
-  }
-  return rows;
-}
 
 export function parseDividends(actions: { subject?: string; exDate?: string }[]): Dividend[] {
   const out: Dividend[] = [];
@@ -74,9 +50,9 @@ export function parseDividends(actions: { subject?: string; exDate?: string }[])
 
 const fyOf = (iso: string) => { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); const s = m >= 4 ? y : y - 1; return `FY${String(s + 1).slice(2)}`; };
 
-async function wikidata(isin: string): Promise<{ company: string | null; people: Person[] }> {
+async function wikidata(isin: string, signal?: AbortSignal): Promise<{ company: string | null; people: Person[] }> {
   const query = `SELECT ?coLabel ?prop ?vLabel ?art ?img WHERE { ?co wdt:P946 "${isin}" . VALUES ?prop { wdt:P112 wdt:P169 wdt:P488 } OPTIONAL { ?co ?prop ?v . OPTIONAL { ?art schema:about ?v ; schema:isPartOf <https://en.wikipedia.org/> } OPTIONAL { ?v wdt:P18 ?img } } SERVICE wikibase:label { bd:serviceParam wikibase:language "en". } }`;
-  const res = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`, { headers: { "User-Agent": "MarketIntelligence/1.0 (https://getmarketintelligence.in)", Accept: "application/sparql-results+json" }, signal: AbortSignal.timeout(12_000) });
+  const res = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`, { headers: { "User-Agent": "MarketIntelligence/1.0 (https://getmarketintelligence.in)", Accept: "application/sparql-results+json" }, signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12_000)]) : AbortSignal.timeout(12_000) });
   if (!res.ok) throw new Error(`Wikidata HTTP ${res.status}`);
   const rows = ((await res.json()) as { results: { bindings: Record<string, { value: string }>[] } }).results.bindings;
   const roles: Record<string, Person["role"]> = { P112: "Founder", P169: "CEO", P488: "Chair" };
@@ -93,9 +69,9 @@ async function wikidata(isin: string): Promise<{ company: string | null; people:
   return { company: rows[0]?.coLabel?.value ?? null, people };
 }
 
-async function fetchBytes(url: string): Promise<Uint8Array> {
+async function fetchBytes(url: string, signal?: AbortSignal): Promise<Uint8Array> {
   await validateSource(url);
-  const res = await fetch(url, { headers: { "User-Agent": UA, Referer: "https://www.nseindia.com/" }, signal: AbortSignal.timeout(25_000) });
+  const res = await fetch(url, { headers: { "User-Agent": UA, Referer: "https://www.nseindia.com/" }, signal: signal ?? AbortSignal.timeout(25_000) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   if (Number(res.headers.get("content-length")) > MAX_BYTES) throw new Error("Source too large");
   const buf = new Uint8Array(await res.arrayBuffer());
@@ -103,66 +79,48 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
   return buf;
 }
 
-async function fetchRetry(url: string): Promise<Uint8Array> {
+async function fetchRetry(url: string, signal?: AbortSignal): Promise<Uint8Array> {
   let last: unknown;
   for (let i = 0; i < 3; i++) {
-    try { return await fetchBytes(url); } catch (e) { last = e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); }
+    try { return await fetchBytes(url, signal); } catch (e) { if (signal?.aborted) throw e; last = e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); }
   }
   throw last;
 }
 
-/** Scan pages in order and stop at the median-pay table (it sits in the first ~60 pages of long reports). */
+/** Only a short fallback; the offline batch performs the full scan. */
 async function payFromPdf(bytes: Uint8Array) {
-  const proxy = await getDocumentProxy(bytes, { stopAtErrors: false } as never);
-  try {
-    const limit = Math.min(proxy.numPages, 220);
-    const deadline = Date.now() + 25_000;
-    let prev = "";
-    for (let i = 1; i <= limit && Date.now() < deadline; i++) {
-      const content = await (await proxy.getPage(i)).getTextContent();
-      const page = content.items.map((it) => ("str" in it ? it.str : "")).join(" ");
-      // The table can spill onto the next page, so test the previous page joined with this one as well.
-      for (const text of [page, `${prev} ${page}`]) {
-        if (!/median remuneration/i.test(text)) continue;
-        const rows = parseBrsrPay(text);
-        if (rows.length >= 2) return rows;
-      }
-      prev = page;
-    }
-    return null;
-  } finally { await (proxy as unknown as { destroy?: () => Promise<void> }).destroy?.(); }
+  const out = await extractBrsrPay(bytes, { maxPages: 220, timeoutMs: 5000 });
+  return out.rows.length >= 2 ? out.rows : null;
 }
 
-async function brsrPay(symbol: string) {
-  const r = await nseJson<{ data?: { attachmentFile?: string; fyFrom?: number; fyTo?: number }[] }>(`/api/corporate-bussiness-sustainabilitiy?index=equities&symbol=${encodeURIComponent(symbol)}`);
+async function brsrPay(symbol: string, signal?: AbortSignal) {
+  const r = await nseJson<{ data?: { attachmentFile?: string; fyFrom?: number; fyTo?: number; submissionDate?: string; revisionDate?: string }[] }>(`/api/corporate-bussiness-sustainabilitiy?index=equities&symbol=${encodeURIComponent(symbol)}`, { signal });
   const files = (r.data ?? []).filter((d) => d.attachmentFile && /\.pdf$/i.test(d.attachmentFile)).sort((a, b) => (b.fyTo ?? 0) - (a.fyTo ?? 0)).slice(0, 2);
   let lastErr: unknown = new Error("No BRSR filing listed");
   // Newest filing first; fall back to the prior year only if the newest file is dead or unreadable (labelled with its FY).
   for (const f of files) {
     try {
-      const rows = await payFromPdf(await fetchRetry(f.attachmentFile!));
+      const rows = await payFromPdf(await fetchRetry(f.attachmentFile!, signal));
       if (!rows) { lastErr = new Error("Pay table not found in BRSR"); continue; }
-      const emp = rows.find((x) => x.category.startsWith("Employees"));
-      const empMedian = emp?.maleMedian ?? emp?.femaleMedian ?? null;
-      const ratios: { label: string; times: number }[] = [];
-      if (empMedian) {
-        for (const x of rows) {
-          if (x === emp || x.category === "Workers") continue;
-          const top = Math.max(x.maleMedian ?? 0, x.femaleMedian ?? 0);
-          if (top > 0) ratios.push({ label: `${x.category} vs employee median`, times: Math.round((top / empMedian) * 10) / 10 });
-        }
-      }
-      return { fy: `FY${String(f.fyTo ?? "").slice(2) || "?"}`, sourceUrl: f.attachmentFile!, rows, ratios };
+      return { symbol, fy: `FY${String(f.fyTo ?? "").slice(2) || "?"}`, sourceUrl: f.attachmentFile!, rows, ratios: payRatios(rows), status: "ok" as const, extractedBy: "rules" as const, reason: null, filingDate: filingDateIso(f.revisionDate) ?? filingDateIso(f.submissionDate), updatedAt: new Date().toISOString() };
     } catch (e) { lastErr = e; }
   }
   throw lastErr;
 }
 
-async function holdingsAndIsin(symbol: string, ttm: number | null) {
-  const master = await nseJson<{ xbrl?: string; date?: string }[]>(`/api/corporate-share-holdings-master?index=equities&symbol=${encodeURIComponent(symbol)}`);
+async function boundedLivePay(symbol: string): Promise<CompanyPay | null> {
+  // Do not let the legacy live path hold a research request beyond ten seconds.
+  // The public page will use batch data on the next request after ingestion.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try { return await Promise.race([brsrPay(symbol, AbortSignal.timeout(10000)), new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), 10000); })]); }
+  finally { if (timer) clearTimeout(timer); }
+}
+
+async function holdingsAndIsin(symbol: string, ttm: number | null, signal?: AbortSignal) {
+  const master = await nseJson<{ xbrl?: string; date?: string }[]>(`/api/corporate-share-holdings-master?index=equities&symbol=${encodeURIComponent(symbol)}`, { signal });
   const url = (Array.isArray(master) ? master : []).find((m) => m.xbrl)?.xbrl;
   if (!url) return null;
-  const xml = new TextDecoder().decode(await fetchBytes(url));
+  const xml = new TextDecoder().decode(await fetchBytes(url, signal));
   const shares = (ctx: string) => { const m = new RegExp(`<in-bse-shp:NumberOfShares contextRef="${ctx}"[^>]*>(\\d+)<`).exec(xml); return m ? Number(m[1]) : null; };
   const total = shares("ShareholdingPattern_ContextI");
   if (!total) return null;
@@ -181,17 +139,18 @@ async function holdingsAndIsin(symbol: string, ttm: number | null) {
   return { asOf: master.find((m) => m.xbrl)?.date ?? null, totalShares: total, sourceUrl: url, rows };
 }
 
-async function build(symbol: string): Promise<Leadership> {
+async function build(symbol: string, precomputed: CompanyPay | null): Promise<Leadership> {
+  const signal = AbortSignal.timeout(25000);
   const notes: string[] = [];
   const out: Leadership = { symbol, company: null, checkedAt: new Date().toISOString(), people: [], pay: null, dividends: null, holdings: null, annualReportUrl: null, notes };
-  const actionsP = nseJson<{ subject?: string; exDate?: string; isin?: string; comp?: string }[]>(`/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}`).catch(() => null);
-  const arP = nseJson<{ data?: { fileName?: string }[] }>(`/api/annual-reports?index=equities&symbol=${encodeURIComponent(symbol)}`).then((r) => r.data?.[0]?.fileName ?? null).catch(() => null);
+  const actionsP = nseJson<{ subject?: string; exDate?: string; isin?: string; comp?: string }[]>(`/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}`, { signal }).catch(() => null);
+  const arP = nseJson<{ data?: { fileName?: string }[] }>(`/api/annual-reports?index=equities&symbol=${encodeURIComponent(symbol)}`, { signal }).then((r) => r.data?.[0]?.fileName ?? null).catch(() => null);
   let payErr = "";
-  const payP = brsrPay(symbol).catch((e) => { payErr = e instanceof Error ? e.message : String(e); return null; });
+  const payP = precomputed ? Promise.resolve(precomputed) : boundedLivePay(symbol).catch((e) => { payErr = e instanceof Error ? e.message : String(e); return null; });
   const actions = await actionsP;
   const isin = actions?.find((a) => a.isin)?.isin;
   out.company = actions?.find((a) => a.comp)?.comp ?? null;
-  const people = isin ? wikidata(isin).catch(() => null) : Promise.resolve(null);
+  const people = isin ? wikidata(isin, signal).catch(() => null) : Promise.resolve(null);
 
   let ttm: number | null = null;
   if (actions) {
@@ -203,39 +162,58 @@ async function build(symbol: string): Promise<Leadership> {
     out.dividends = { history: history.slice(0, 12), ttmPerShare: ttm, byYear: [...byYear].slice(0, 8).map(([fy, perShare]) => ({ fy, perShare })).reverse() };
   } else notes.push("Dividend history could not be fetched from NSE just now.");
 
-  const [holdings, pay, ppl, ar] = await Promise.all([holdingsAndIsin(symbol, ttm).catch(() => null), payP, people, arP]);
+  const [holdings, pay, ppl, ar] = await Promise.all([holdingsAndIsin(symbol, ttm, signal).catch(() => null), payP, people, arP]);
   out.holdings = holdings;
   out.pay = pay;
   out.annualReportUrl = ar;
   if (ppl) { out.people = ppl.people; out.company = ppl.company ?? out.company; }
   if (!out.people.length) notes.push("Founder/CEO details are not in the open knowledge base (Wikidata) for this company.");
-  if (!pay) notes.push(`Median-pay table not read${payErr ? ` (${payErr.slice(0, 120)})` : ""}. BRSR is mandatory for the top 1,000 listed companies only.`);
+  if (!pay || pay.status !== "ok") notes.push(`Median-pay table not read${payErr ? ` (${payErr.slice(0, 120)})` : ""}. BRSR is mandatory for the top 1,000 listed companies only.`);
   if (!holdings) notes.push("Share-count breakdown from the latest shareholding filing was unavailable.");
   notes.push("Named executive pay and individual share holdings sit in the annual report; open it below. Medians are as reported by the company, not averages.");
   return out;
 }
 
-export async function getCompanyLeadership(raw: string): Promise<Leadership> {
+export async function getCompanyLeadership(raw: string, options: { defer?: (task: () => Promise<void>) => void } = {}): Promise<Leadership> {
   const symbol = raw.trim().toUpperCase();
   if (!/^[A-Z0-9&.\-]{1,20}$/.test(symbol)) throw new Error("Invalid symbol");
-  const key = `leadership:v2:${symbol}`;
+  const precomputed = await readCompanyPay(symbol).catch(() => null);
+  const overlay = (value: Leadership): Leadership => ({ ...value, pay: precomputed ?? value.pay, notes: precomputed?.status === "ok" ? value.notes.filter((n) => !n.startsWith("Median-pay table not read")) : value.notes });
+  const snapshot = (refreshing: boolean): Leadership => ({ symbol, company: null, checkedAt: new Date().toISOString(), refreshing, people: [], pay: precomputed, dividends: null, holdings: null, annualReportUrl: null, notes: [refreshing ? "Other leadership information is being checked." : "Other leadership information could not be checked just now."] });
+  const key = `leadership:v3:${symbol}`;
   const hit = cache.get(key);
-  if (hit && hit.until > Date.now()) return hit.value;
-  const running = pending.get(key);
-  if (running) return running;
-  const job = (async () => {
-    if (hasDatabase()) {
-      const disk = await (async () => { await ensureSchema(); const rows = await sql()`SELECT payload FROM transcript_archive_cache WHERE cache_key = ${key} AND expires_at > now()`; return rows[0]?.payload as Leadership | undefined; })().catch(() => undefined);
-      if (disk) { cache.set(key, { value: disk, until: Date.now() + 3600_000 }); return disk; }
-    }
-    const value = await build(symbol);
-    const rich = Boolean(value.pay || value.holdings || value.dividends || value.people.length);
-    // Incomplete results (no pay table) retry hourly; complete ones live a week.
-    const ttl = value.pay ? 7 * 86_400_000 : rich ? 3600_000 : 60_000;
-    cache.set(key, { value, until: Date.now() + Math.min(ttl, 3600_000) });
-    if (hasDatabase() && rich) await sql()`INSERT INTO transcript_archive_cache (cache_key, payload, expires_at) VALUES (${key}, ${JSON.stringify(value)}::jsonb, ${new Date(Date.now() + ttl).toISOString()}::timestamptz) ON CONFLICT (cache_key) DO UPDATE SET payload = EXCLUDED.payload, expires_at = EXCLUDED.expires_at`.catch(() => {});
-    return value;
-  })();
-  pending.set(key, job);
-  try { return await job; } finally { pending.delete(key); }
+  if (hit && hit.until > Date.now()) return overlay(hit.value);
+  let job = pending.get(key);
+  if (!job && hasDatabase()) {
+    // Reuse rollout metadata only when validated batch pay replaces legacy pay.
+    const legacyKey = `leadership:v2:${symbol}`;
+    const disk = await sql()`SELECT payload FROM transcript_archive_cache WHERE (cache_key = ${key} OR (cache_key = ${legacyKey} AND ${Boolean(precomputed)})) AND expires_at > now() ORDER BY CASE WHEN cache_key = ${key} THEN 0 ELSE 1 END LIMIT 1`.then((rows) => rows[0]?.payload as Leadership | undefined).catch(() => undefined);
+    if (disk) { cache.set(key, { value: disk, until: Date.now() + 3600_000 }); return overlay(disk); }
+    // Another request may have begun the refresh during the database lookup.
+    job = pending.get(key);
+  }
+  if (!job) {
+    job = (async () => {
+      try {
+        const value = await build(symbol, precomputed);
+        const rich = Boolean(value.pay || value.holdings || value.dividends || value.people.length);
+        const ttl = value.pay?.status === "ok" ? 3600_000 : rich ? 300_000 : 60_000;
+        cache.set(key, { value, until: Date.now() + ttl });
+        if (hasDatabase() && rich) await sql()`INSERT INTO transcript_archive_cache (cache_key, payload, expires_at) VALUES (${key}, ${JSON.stringify(value)}::jsonb, ${new Date(Date.now() + ttl).toISOString()}::timestamptz) ON CONFLICT (cache_key) DO UPDATE SET payload = EXCLUDED.payload, expires_at = EXCLUDED.expires_at`.catch(() => {});
+        return value;
+      } catch (error) {
+        if (!precomputed) throw error;
+        const value = snapshot(false);
+        cache.set(key, { value, until: Date.now() + 60_000 });
+        return value;
+      } finally { pending.delete(key); }
+    })();
+    pending.set(key, job);
+  }
+  if (precomputed && options.defer) {
+    const refresh = job;
+    options.defer(async () => { await refresh; });
+    return snapshot(true);
+  }
+  return overlay(await job);
 }

@@ -1,6 +1,7 @@
 import { readInsightCards } from "@/lib/insights/store";
 import { getCompanyLeadership } from "@/lib/research/company-leadership";
 import { getTranscriptArchive } from "@/lib/research/transcript-archive";
+import { after } from "next/server";
 import { currentCompetition,leaderboard } from "@/lib/competition/store";
 import { DISCLAIMER } from "@/lib/competition/config";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
@@ -346,9 +347,9 @@ export const SITE_TOOLS: Tool[] = [
     name: "get_company_leadership",
     title: "Founders, pay disparity, holdings and dividends",
     category: "Research",
-    description: "Indian company founders/CEO (Wikidata), median pay by group from the BRSR, promoter/director share counts from the shareholding filing, and dividend history with derived dividend income.",
+    description: "Indian company founders/CEO (Wikidata), precomputed BRSR median pay with FY, filing date, extraction method and availability status, promoter/director share counts from the shareholding filing, and dividend history with derived dividend income.",
     inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
-    run: async (a) => getCompanyLeadership(SymbolArg.parse(a).symbol),
+    run: async (a) => getCompanyLeadership(SymbolArg.parse(a).symbol, { defer: (task) => after(task) }),
   },
   {
     name: "get_research_pack",
