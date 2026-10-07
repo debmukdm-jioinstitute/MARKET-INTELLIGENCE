@@ -1,5 +1,7 @@
+import { cachedSWR } from "@/lib/cache/redis";
 import { getCompanyFinancials } from "@/lib/financials/service";
-import { NextResponse } from "next/server";
+import { panelCacheKey } from "@/lib/research/panel-cache";
+import { after, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 900;
@@ -11,13 +13,19 @@ export async function GET(req: Request) {
   }
 
   try {
-    const payload = await getCompanyFinancials(symbol);
+    const { value: payload, cache } = await cachedSWR(
+      panelCacheKey("financials", symbol),
+      { freshMs: 6 * 60 * 60_000, ttlSec: 3 * 24 * 60 * 60 },
+      () => getCompanyFinancials(symbol),
+      (task) => after(task),
+    );
     if (!payload) {
       return NextResponse.json({ error: `No financial statements found for ${symbol}` }, { status: 404 });
     }
     return NextResponse.json(payload, {
       headers: {
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+        "x-mi-cache": cache,
       },
     });
   } catch (e) {
