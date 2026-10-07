@@ -25,7 +25,7 @@ export default function LearnHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-3xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-foreground w-full">
         <JsonLd data={itemList} />

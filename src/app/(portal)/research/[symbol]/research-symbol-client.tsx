@@ -117,7 +117,7 @@ export function ResearchSymbolClient({
 
   return (
     <SWRConfig value={{ fallback: initialPanels }}>
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-clip">
       <PageHeader
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."

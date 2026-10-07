@@ -19,7 +19,7 @@ export const metadata = pageMetadata({
 export default function HelpPage() {
   const tools = buildHelpMcpToolRows();
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-6xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed text-foreground w-full">
         <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">Help center</h1>

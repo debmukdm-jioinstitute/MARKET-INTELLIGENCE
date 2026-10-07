@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-muted px-5">
+    <main className="grid min-h-dvh place-items-center bg-muted px-5">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-border bg-white p-6 shadow-[var(--shadow-lg)]">
         <div>
           <h1 className="mt-1 text-xl font-semibold text-foreground">Backend sign-in</h1>

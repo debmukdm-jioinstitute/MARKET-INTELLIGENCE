@@ -7,7 +7,7 @@ export default function AlphaLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="alpha-brand min-h-screen bg-background text-foreground">
+    <div className="alpha-brand min-h-dvh bg-background text-foreground">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">

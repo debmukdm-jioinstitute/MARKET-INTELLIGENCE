@@ -5,7 +5,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
   return (
     <html lang="en">
       <body className="font-sans antialiased bg-background text-foreground">
-        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-primary">Market Intelligence</p>
           <h1 className="text-xl font-semibold">This page couldn&apos;t load</h1>
           <p className="text-sm text-muted-foreground">
