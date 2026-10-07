@@ -37,7 +37,7 @@ A research and portfolio terminal for Indian (NSE) and US markets: live and open
 |---|---|---|
 | **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner); **portfolio teaser** for holders, **India depth** link to the India board, recently-viewed continuity |
 | **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). **Clickable index cards** → live constituent drill-down (`/markets/india/[slug]`): live chart, sector treemap, searchable/sortable constituent table linking to `/research/[symbol]`; index switcher strip; Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
-| **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
+| **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (50 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
 | **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder**; **recently-viewed** chips; **hash deep-links** to sections (e.g. `/research/RELIANCE#financial-statements`) |
 | **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT, one tap from the Trade tab sibling strip), scanner, custom alert rules, backtesting UI, **World Monitor**; **Search-trend Attention Index** ([Google Trends](https://trends.google.com)); institutional flows, legal-risk monitor, company/concall intel, credit & promoter trackers, Reddit retail sentiment |
@@ -1078,6 +1078,12 @@ npx vercel --prod --yes
 ## Release history
 
 Package version in `package.json` is **`0.1.0`** (semver tracks architecture; release sections below track shipped features). The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
+
+### Unreleased
+
+| Type | Area | Change |
+|---|---|---|
+| Improvement | Macro | **All India indices on `/macro/indices?focus=india`**: India section grew 5 → 24 benchmarks (all 24 Yahoo symbols verified live, name-checked; indices with no working Yahoo quote — NIFTY 500, Midcap 50, GS 10Y, BSE 100/200/500, BANKEX — deliberately excluded, never fabricated); terminal `get_world_indices` picks it up automatically |
 
 ### 0.1.11 — 7 Oct 2026
 
