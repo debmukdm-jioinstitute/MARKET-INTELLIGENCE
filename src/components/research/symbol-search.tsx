@@ -354,10 +354,10 @@ function ResearchNudgeRow({ hit, index, onSelect }: { hit: SymbolSearchHit; inde
           <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
           <span className="min-w-0">
             <span className="block truncate font-medium">Do deep research on {name}</span>
-            <span className="block text-sm text-muted-foreground">Full AI research + earn XP</span>
+            <span className="block text-xs text-muted-foreground">Full AI research + earn XP</span>
           </span>
         </span>
-        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-800">+10 XP</span>
+        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">+10 XP</span>
       </button>
     </li>
   );

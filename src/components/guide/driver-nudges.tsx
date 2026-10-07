@@ -39,7 +39,7 @@ const fmtAgo = (iso: string | null) => {
 
 /** One-glance "what moves this stock" card: the driver, today's move and the implied effect, one click from the analysis. */
 export function DriverNudges({ symbol, name }: { symbol: string; name: string }) {
-  const { nudges, sectorLabel, loading } = useDriverNudges(symbol, name);
+  const { nudges, loading } = useDriverNudges(symbol, name);
   const top = nudges[0];
   const { data: biz } = useSWR<DriversResponse>(`/api/research/drivers?symbol=${encodeURIComponent(symbol)}&name=${encodeURIComponent(name)}`, loadDrivers, { revalidateOnFocus: false, dedupingInterval: 300_000 });
   const cards = biz?.drivers ?? [];
