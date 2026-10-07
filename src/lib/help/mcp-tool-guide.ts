@@ -16,6 +16,7 @@ const ASK: Partial<Record<string, string>> = {
   get_world_indices: "How are global markets?",
   get_currency_quotes: "Show USD/INR and major FX pairs with day change.",
   get_commodity_quotes: "How are gold, crude and India commodity proxies trading?",
+  get_india_board_quotes: "Show Nifty 50 day range, volume and 52-week range.",
   get_world_monitor: "Where is the World Monitor global dashboard in Market Intelligence?",
   get_market_holidays: "When is the next market holiday?",
   search_symbols: "Find the ticker for JP Power.",

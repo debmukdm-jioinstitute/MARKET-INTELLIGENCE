@@ -4,7 +4,9 @@ import { SecuritySheet } from "@/components/india-markets/security-sheet";
 import { MarketsBoard } from "@/components/markets-board/markets-board";
 import type { MarketsBoardRow, MarketsBoardTab } from "@/components/markets-board/types";
 import { useFeedHub } from "@/hooks/use-feed-hub";
+import { useIndiaBoardQuotes } from "@/hooks/use-india-board-quotes";
 import { useIndiaEquities } from "@/hooks/use-india-equities";
+import { overlayIndiaBoardFields } from "@/lib/macro/build-india-board-quotes";
 import { INDIA_EQUITIES, findIndiaInstrument, type IndiaInstrument } from "@/lib/feeds/india/instruments";
 import { INDIA_BENCHMARK_DEFS } from "@/lib/feeds/india/indices";
 import { indexSlugFromLabel } from "@/lib/india-index-meta";
@@ -18,6 +20,7 @@ const TABS: MarketsBoardTab[] = [
 ];
 
 const TAB_IDS = TABS.map((t) => t.id);
+const EMPTY_YAHOO = {};
 
 function tabFromUrl(raw: string | null): string {
   if (raw === "equities" || raw === "indices") return raw;
@@ -30,6 +33,7 @@ export default function IndiaMarketsPage() {
   const searchParams = useSearchParams();
   const { quotes, loading: eqLoading, error: eqError, reload: reloadEq } = useIndiaEquities();
   const { data: feedData, loading: hubLoading, error: hubError, reload: reloadHub } = useFeedHub(30_000);
+  const { data: boardYahoo, reload: reloadYahoo } = useIndiaBoardQuotes();
   const [selected, setSelected] = useState<IndiaInstrument | null>(null);
 
   const tab = pickControlledString(TAB_IDS, tabFromUrl(searchParams.get("focus")));
@@ -46,11 +50,13 @@ export default function IndiaMarketsPage() {
   );
 
   const live = useMemo(() => new Map(quotes.map((q) => [q.symbol, q])), [quotes]);
+  const yahooBySymbol = boardYahoo?.bySymbol ?? EMPTY_YAHOO;
 
   const rows: MarketsBoardRow[] = useMemo(() => {
     const indexRows: MarketsBoardRow[] = (feedData?.indices ?? []).map((idx) => {
       const def = INDIA_BENCHMARK_DEFS.find((d) => d.label === idx.symbol);
       const slug = indexSlugFromLabel(idx.symbol);
+      const ranges = overlayIndiaBoardFields(def?.yahoo, yahooBySymbol);
       return {
         id: `idx:${idx.symbol}`,
         label: idx.symbol,
@@ -62,11 +68,11 @@ export default function IndiaMarketsPage() {
         price: idx.price,
         change: idx.change,
         changePct: idx.changePct,
-        volume: null,
-        dayLow: null,
-        dayHigh: null,
-        week52Low: null,
-        week52High: null,
+        volume: ranges.volume,
+        dayLow: ranges.dayLow,
+        dayHigh: ranges.dayHigh,
+        week52Low: ranges.week52Low,
+        week52High: ranges.week52High,
         decimals: 2,
         formattedPrice: idx.price.toLocaleString("en-IN", {
           maximumFractionDigits: 2,
@@ -79,6 +85,7 @@ export default function IndiaMarketsPage() {
 
     const equityRows: MarketsBoardRow[] = INDIA_EQUITIES.map((inst) => {
       const q = live.get(inst.symbol);
+      const ranges = overlayIndiaBoardFields(`${inst.symbol}.NS`, yahooBySymbol);
       return {
         id: `eq:${inst.symbol}`,
         label: inst.name,
@@ -91,11 +98,11 @@ export default function IndiaMarketsPage() {
         price: q?.price ?? null,
         change: q?.change ?? null,
         changePct: q?.changePct ?? null,
-        volume: null,
-        dayLow: null,
-        dayHigh: null,
-        week52Low: null,
-        week52High: null,
+        volume: ranges.volume,
+        dayLow: ranges.dayLow,
+        dayHigh: ranges.dayHigh,
+        week52Low: ranges.week52Low,
+        week52High: ranges.week52High,
         decimals: 2,
         formattedPrice:
           q != null
@@ -106,7 +113,7 @@ export default function IndiaMarketsPage() {
     });
 
     return [...indexRows, ...equityRows];
-  }, [feedData?.indices, live]);
+  }, [feedData?.indices, live, yahooBySymbol]);
 
   const onOpenOverview = useCallback((row: MarketsBoardRow) => {
     if (row.tab !== "equities") return false;
@@ -134,6 +141,7 @@ export default function IndiaMarketsPage() {
         onRefresh={() => {
           void reloadEq();
           void reloadHub();
+          void reloadYahoo();
         }}
         searchPlaceholder="Search stocks"
         filterLabel="Filter by sector"
