@@ -18,6 +18,12 @@ console.log("🚀 Running database migrations for Market Intelligence...");
 async function migrate() {
   const sql = neon(conn);
   const start = Date.now();
+  await sql`CREATE TABLE IF NOT EXISTS company_pay (
+        symbol text NOT NULL, fy text NOT NULL, source_url text, rows jsonb NOT NULL DEFAULT '[]'::jsonb,
+        extracted_by text NOT NULL, status text NOT NULL CHECK (status IN ('ok','unreadable','dead_link','not_filed')),
+        reason text, filing_date date, updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (symbol, fy)
+      )`;
+
   await sql`CREATE TABLE IF NOT EXISTS transcript_archive_cache (
     cache_key text PRIMARY KEY, payload jsonb NOT NULL, expires_at timestamptz NOT NULL
   )`;

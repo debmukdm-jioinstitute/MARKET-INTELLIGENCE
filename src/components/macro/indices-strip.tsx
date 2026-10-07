@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtChgPts } from "@/lib/format-india";
 import { MetricExplainer } from "@/components/macro/metric-explainer";
 import { Panel } from "@/components/layout/page-header";
 import type { WorldIndexQuote } from "@/lib/macro/build-world-indices";
@@ -64,8 +65,9 @@ function IndexRow({ row, emphasized }: { row: WorldIndexQuote; emphasized?: bool
         {def ? formatIndexPrice(def, row.price) : row.price?.toFixed(2) ?? "—"}
         {row.changePct != null ? (
           <span className={cn("text-sm", row.changePct >= 0 ? "text-emerald-600" : "text-rose-600")}>
+            {row.change != null ? `${fmtChgPts(row.change, def?.decimals ?? 2)} (` : ""}
             {row.changePct >= 0 ? "+" : ""}
-            {(row.changePct * 100).toFixed(2)}%
+            {(row.changePct * 100).toFixed(2)}%{row.change != null ? ")" : ""}
           </span>
         ) : null}
       </span>

@@ -1,0 +1,59 @@
+name: company-pay-batch
+on:
+  schedule:
+    - cron: "0 3 * 6-8 *" # Daily June-August, 08:30 IST
+    - cron: "0 3 * 1-5,9-12 0" # Weekly Sunday otherwise
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Optional comma-separated NSE symbols"
+        default: ""
+      dry_run:
+        type: boolean
+        description: "Extract and save JSON without uploading"
+        default: false
+concurrency:
+  group: company-pay-batch
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: actions/cache/restore@v4
+        with:
+          path: out/pay-state.json
+          key: company-pay-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: company-pay-v1-
+      - name: Extract and ingest company pay
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ONLY: ${{ inputs.only }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        shell: bash
+        run: |
+          args=(--budget-min 300)
+          if [[ -n "$ONLY" ]]; then args+=(--only "$ONLY"); fi
+          if [[ "$DRY_RUN" == "true" ]]; then args+=(--dry-run); fi
+          node scripts/build-pay-table.mjs "${args[@]}"
+      - uses: actions/cache/save@v4
+        if: always() && hashFiles('out/pay-state.json') != ''
+        with:
+          path: out/pay-state.json
+          key: company-pay-v1-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: company-pay-results
+          path: out/pay-*.json
+          retention-days: 14
+          if-no-files-found: warn

@@ -2,7 +2,7 @@
 
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { IndiaDashboardPayload, QuoteField } from "@/lib/feeds/india/types";
-import { fmtChgPct, fmtInr, fmtNum, fmtUsd } from "@/lib/format-india";
+import { fmtInr, fmtMove, fmtNum, fmtUsd } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 
 export function GlobalRadar({ data }: { data: IndiaDashboardPayload }) {
@@ -96,7 +96,7 @@ function Cell({
       </div>
       <p className="text-sm">{display}</p>
       <p className={cn("text-sm", up ? "text-emerald-600" : "text-rose-600")}>
-        {raw && q.changePct == null ? "" : fmtChgPct(q.changePct ?? null)}
+        {raw && q.changePct == null ? "" : fmtMove(q.change, q.changePct)}
       </p>
     </div>
   );

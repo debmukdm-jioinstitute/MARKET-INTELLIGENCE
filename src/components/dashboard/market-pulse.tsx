@@ -2,7 +2,7 @@
 
 import { DataInfo } from "@/components/feeds/data-info";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
-import { fmtChgPct, fmtNum } from "@/lib/format-india";
+import { fmtMove, fmtNum } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 
 export function MarketPulse({ data }: { data: IndiaDashboardPayload }) {
@@ -58,7 +58,7 @@ function PulseCell({
       </p>
       <p className={cn("text-sm", up ? "text-emerald-600" : "text-rose-600")}>
         <span aria-hidden>{q.changePct == null ? "" : up ? "▲ " : "▼ "}</span>
-        {fmtChgPct(q.changePct ?? null)}
+        {fmtMove(q.change, q.changePct)}
       </p>
       <DataInfo source={q.source} hubSyncedAt={hubSyncedAt} />
     </div>

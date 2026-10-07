@@ -2,26 +2,54 @@
 
 **Live:** [getmarketintelligence.in](https://getmarketintelligence.in) · [Vercel preview](https://getmarketintelligence.vercel.app)
 
-A research and portfolio terminal for Indian (NSE) and US markets — live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, **broker research aggregation**, **Google Trends Attention Index**, institutional and legal-risk monitors, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, **The Alpha League** virtual portfolio championship (Jio Institute co-brand), and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+A research and portfolio terminal for Indian (NSE) and US markets: live and open-data feeds, per-symbol **company dossiers**, watchlist + holdings, a written quantitative metrics specification, macro regime analytics, Yahoo-style **commodity / FX / world-indices** dashboards, an NSE F&O options-flow screener, LLM research agents, **broker research aggregation**, **Google Trends Attention Index**, institutional and legal-risk monitors, a floating **Ask Deb** site assistant (portfolio-aware), **World Monitor** on the portal, **Data360** macro mirror, **The Alpha League** virtual portfolio championship (Jio Institute co-brand), **XP rewards** for engaging with the platform, a **mobile-friendly** design that works on any phone, and **Claude / MCP** connectors. Formulas and data paths are documented here and in `docs/`. Production deploys track **`main`** on [getmarketintelligence.in](https://getmarketintelligence.in); see [Release history](#release-history) for versioned changes.
+
+## What you can do
+
+### Follow the market
+- Tap any of the 26 India benchmark cards (Nifty 50, SENSEX, Bank Nifty, India VIX, ...) to open a live drill-down: price chart, sector treemap, and a full constituent stock table where every row opens that company's dossier.
+- Watch the India desk for the market pulse, FII/DII flows, global radar, and macro headlines in one view.
+- Browse commodities, currencies, and world indices with live charts and transmission heuristics.
+
+### Research any company
+- Open a company dossier for any NSE stock: overview, fundamentals, trend, options snapshot, risk flags, news, and broker research with consensus intelligence.
+- Use the AI Desk for LLM-powered research write-ups, and the options-flow screener for F&O activity.
+- Pick up where you left off: recently viewed stocks appear as chips, and every research section has a shareable deep link.
+
+### Manage your portfolio
+- Track holdings with live NAV and P&L, run allocation, risk, and optimizer tools, or import your broker (Zerodha, Dhan, Upstox) in one step.
+- Keep a watchlist of names you are studying, and read a daily brief grounded in your own data.
+
+### Get alerts and signals
+- Set custom alert rules and get notified on the site, through Telegram alerts, or in the twice-daily market-data brief.
+- Follow AI signals (Nifty models, BTST/STBT calls) from the Trade tab, and test any scanner in the backtesting UI before trusting it.
+
+### Earn rewards and compete
+- Earn XP for engaging with the site, keep daily streaks, and redeem 300 XP for a free month of Plus; invite friends with referral codes and earn when they join.
+- Compete in The Alpha League, the virtual NSE portfolio championship, on a ₹10L paper book.
+
+### Learn and get help
+- Read beginner-friendly guides in Learn, and ask Deb, the floating site assistant, anything about the site or your portfolio.
 
 ## Product capabilities (summary)
 
 | Area | Routes | What it does |
 |---|---|---|
-| **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner) |
-| **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
+| **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner); **portfolio teaser** for holders, **India depth** link to the India board, recently-viewed continuity |
+| **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). **Clickable index cards** → live constituent drill-down (`/markets/india/[slug]`): live chart, sector treemap, searchable/sortable constituent table linking to `/research/[symbol]`; index switcher strip; Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (32 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |
-| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder** |
-| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT), scanner, custom alert rules, backtesting UI, **World Monitor**; **Search-trend Attention Index** ([Google Trends](https://trends.google.com)); institutional flows, legal-risk monitor, company/concall intel, credit & promoter trackers, Reddit retail sentiment |
+| **Research** | `/research/*` | **Company dossier** per symbol (guest-readable): overview, radar, trend, options snapshot (F&O), fundamentals, risk, news, scanner flags, IPO context; **Broker Research Aggregator** + **Consensus Intelligence** on `/research`; **AI Desk**, **options-flow** screener; hero search with **typing Nifty-name placeholder**; **recently-viewed** chips; **hash deep-links** to sections (e.g. `/research/RELIANCE#financial-statements`) |
+| **Intelligence** | `/intelligence/*` | News stream, **regulatory & exchange headlines** (NSE / BSE / RBI), daily brief, **AI signals** (Nifty models + BTST/STBT, one tap from the Trade tab sibling strip), scanner, custom alert rules, backtesting UI, **World Monitor**; **Search-trend Attention Index** ([Google Trends](https://trends.google.com)); institutional flows, legal-risk monitor, company/concall intel, credit & promoter trackers, Reddit retail sentiment |
 | **Site assistant (Ask Deb)** | Floating widget | OmniRoute / Groq chat with tools: navigate, palette, search; read portfolio, alerts, watchlist, brief, stress; add holdings, alerts, watchlist rows (confirmations + audit) ([docs/OMNIROUTE.md](docs/OMNIROUTE.md)) |
 | **World Monitor** | `/intelligence/world-monitor` | Curated global RSS / open feeds dashboard; same-origin proxy for WM APIs ([`services/worldmonitor`](services/worldmonitor)) |
 | **Claude connector** | `/connect/claude`, Help | Custom MCP connector with OAuth DCR — read-only + signed-in account tools; MCP protocol resources/prompts, composite tools, rate limits ([docs/MCP.md](docs/MCP.md)) |
 | **Methodology** | `/methodology` | Data coverage, freshness rules, formulas, AI methodology, corrections (listed in public sitemap) |
 | **Pricing & Pro** | `/pricing`, `/profile#plans` | Day / monthly / yearly plans via **Razorpay Standard Checkout**; free tier quotas on AI Desk & Options Flow ([§18](#18-environment-variables)) |
 | **The Alpha League** | `/alpha-league`, `/alpha-league/board`, `/alpha-league/portfolio` | Five-day **virtual** NSE cash equity championship (Market Intelligence × Jio Institute): ₹10L paper book, leaderboard, certificates, institute-domain registration. Ops: `/admin/competition` · Runbook: [docs/alpha-league.md](docs/alpha-league.md) · MCP: `get_alpha_league_preview` (public standings only) |
+| **Rewards (XP)** | `/profile` | Engagement XP via server heartbeat (5 XP at 5 min + 5 XP at 10 min, 60-min/day cap), streak bonuses (7/14/21/30d = 25/50/75/100 XP); **300 XP = 1 month Plus free**; referral codes (`signup?ref=CODE`), referrer earns on referee's first paid purchase; fraud rules in `/admin/security` |
 | **Auth** | `/login`, `/signup` | Email/password sessions; **Continue with Google** when OAuth env is set ([docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md)) |
-| **Data & ops** | `/data`, `/data/feeds`, `/data/health`, `/data/data360`, `/data/export`, `/admin` | `/data` = illustrative provider table (banner points to live feeds); `/data/feeds` = real hub health; `/data/health` = collector freshness; **Data360 Explorer** = stored World Bank macro mirror; Excel export; admin ops + FTS RAG Q&A |
+| **Data & ops** | `/data`, `/data/feeds`, `/data/health`, `/data/data360`, `/data/export`, `/admin` | `/data` = illustrative provider table (banner points to live feeds); `/data/feeds` = real hub health; `/data/health` = collector freshness; **Data360 Explorer** = stored World Bank macro mirror; Excel export; **Admin Mission Control**: `/admin/data-audit` (per-source freshness, cron run log), `/admin/referrals`, `/admin/payments`, user dossiers, `/admin/security` (6-rule fraud engine), `/admin/intelligence` (health score, anomaly detection, AI ops brief); FTS RAG Q&A |
 | **Integrations** | `/api/mcp` | Read-only site tools + session-scoped portfolio/watchlist tools; `MCP_API_KEYS` for higher limits |
 | **SEO & errors** | `/robots.txt`, `/sitemap.xml`, branded 404 | Sitemap: `/`, `/help`, `/methodology`, legal, `/connect/claude`; unknown URLs get Market Intelligence 404 with Home + Help links |
 
@@ -87,12 +115,14 @@ The platform is designed as an end-to-end, multi-layered quantitative and resear
 flowchart TD
   subgraph Client["1. Browser Client & UI Layer (Next.js 16 React App Router)"]
     P_Home["/Home<br/>(India Desk & 5 AI Agent Cards)"]
-    P_Markets["/markets/india · breadth · derivatives<br/>(/markets redirects to India)"]
+    P_Markets["/markets/india · [slug] drill-down · breadth · derivatives<br/>(/markets redirects to India)"]
     P_Macro["/macro/*<br/>(Regime, Yields, Commodities, FX, World Indices, Stress)"]
     P_Portfolio["/portfolio/*<br/>(Overview, Watchlist, Quant, Risk, Alloc, Optimizer)"]
     P_Research["/research/*<br/>(Company Dossiers, AI Desk, Options Flow, IPO)"]
-    P_Intel["/intelligence/*<br/>(Brief, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
+    P_Intel["/intelligence/*<br/>(Brief, AI Signals, Reddit FinBERT, Credit, Promoters, Legal, Trends, WM)"]
     P_Alpha["/alpha-league/*<br/>(Virtual 5-day championship · board · paper book)"]
+    P_Rewards["/profile<br/>(XP, streaks, redeem Plus, referrals)"]
+    P_Admin["/admin/*<br/>(Mission Control: data audit, referrals, payments, intelligence)"]
     P_Widgets["Interactive Shell<br/>(Ask Deb Widget, Command Palette ⌘K, MetricInfo Popovers)"]
   end
 
@@ -107,6 +137,9 @@ flowchart TD
     API_MCP["/api/mcp<br/>(Claude Connector & OAuth DCR Protocol)"]
     API_Comp["/api/competition/*<br/>(Register, orders, leaderboard, certificates)"]
     API_Broker["/api/broker-research<br/>(Institutional note aggregator)"]
+    API_Indices["/api/indices/[slug]/constituents<br/>(NSE index CSVs + Yahoo quotes)"]
+    API_Gamify["/api/gamification/*<br/>(XP, streaks, redeem, referrals)"]
+    API_Admin["/api/admin/*<br/>(Data audit, referrals, payments, security, intelligence)"]
   end
 
   subgraph AI_Engine["3. AI & Natural Language Processing Suite"]
@@ -131,6 +164,7 @@ flowchart TD
     ENG_Regime["Macro Regime Engine<br/>(GDP/CPI Quadrants & Transmission Matrix)"]
     ENG_Collector["Collector Pipeline<br/>(RBI Scraper, Cboe VIX, CFTC COT, BLS, ECB)"]
     ENG_League["Alpha League ledger<br/>(Append-only trades · daily snapshots · scoring)"]
+    ENG_XP["Gamification Engine<br/>(XP accrual, streaks, fraud rules)"]
   end
 
   subgraph External["5. External Data Feeds & External AI APIs"]
@@ -150,10 +184,12 @@ flowchart TD
     DB_RAG[("rag_documents (FTS Knowledge Base)")]
     DB_Alerts[("alert_rules & notification_prefs")]
     DB_League[("competition_* · season · trades · snapshots")]
+    DB_XP[("daily_engagement · referrals · xp_events")]
   end
 
   subgraph Ops["7. Scheduled jobs (GitHub Actions — not Vercel Cron)"]
     GH_Cron[".github/workflows/cron-*.yml<br/>scripts/crons/run-*.ts"]
+    ORA["Oracle Always Free VM<br/>(planned, not live)"]
   end
 
   %% Relationships
@@ -170,6 +206,13 @@ flowchart TD
   API_Comp --> ENG_League & EXT_Upstox
   API_Broker --> EXT_NSE
   P_Research --> API_Broker
+  P_Markets --> API_Indices
+  P_Admin --> API_Admin
+  P_Rewards --> API_Gamify
+  API_Indices --> EXT_NSE & EXT_Yahoo
+  API_Gamify --> ENG_XP & DB_XP
+  API_Admin --> DB_Collector & DB_Alerts & DB_XP
+  GH_Cron -.-> ORA
 
   HF_Models --> EXT_HF_API
   Groq_Agents --> EXT_Groq_API
@@ -188,7 +231,144 @@ flowchart TD
 | **4. Domain Logic** | Metrics Spec Engine A, Virtual Engine B, gradient-descent optimizer | `src/lib/my-portfolio/*`, `src/lib/macro/*`, `src/lib/optimizer.ts` |
 | **5. Storage** | User portfolio holdings, daily options snapshots, macro series, FTS knowledge base, Alpha League ledger | Neon Serverless Postgres (`portfolio_holdings`, `collected_series`, `rag_documents`, `competition_*`) |
 | **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
-| **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback |
+| **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback; Oracle Always Free VM migration pack built, not yet live |
+
+### Full website sitemap
+
+Every page on getmarketintelligence.in, grouped by section. The labeled arrows show the most common journeys across sections.
+
+```mermaid
+flowchart TD
+  subgraph Entry["Entry"]
+    E_Landing["Landing<br/>/"]
+    E_Login["Log in<br/>/login"]
+    E_Signup["Sign up<br/>/signup"]
+    E_Forgot["Forgot password<br/>/forgot-password"]
+    E_Reset["Reset password<br/>/reset-password"]
+    E_Onboard["Onboarding<br/>/onboarding"]
+    E_Claude["Claude connector<br/>/connect/claude"]
+  end
+  subgraph Home["Home"]
+    H_Home["India desk<br/>/Home"]
+  end
+  subgraph Markets["Markets"]
+    M_Overview["Market overview (redirect)<br/>/markets"]
+    M_India["India benchmarks<br/>/markets/india"]
+    M_IndexDetail["Index drill-down<br/>/markets/india/[symbol]"]
+    M_Breadth["Breadth & Momentum<br/>/markets/breadth"]
+    M_Deriv["Derivatives<br/>/markets/derivatives"]
+    M_Sectors["Sector Map<br/>/markets/sectors"]
+  end
+  subgraph Macro["Macro"]
+    MA_Board["Global Board<br/>/macro"]
+    MA_Section["Macro section<br/>/macro/[section]"]
+    MA_Cal["Economic Calendar<br/>/macro/calendar"]
+    MA_Com["Commodities<br/>/macro/commodities"]
+    MA_Cur["Currency<br/>/macro/currency"]
+    MA_Glob["Global Data<br/>/macro/global"]
+    MA_India["India Macro<br/>/macro/india"]
+    MA_Idx["World Indices<br/>/macro/indices"]
+    MA_RBI["RBI & Liquidity<br/>/macro/rbi"]
+    MA_Scen["Scenarios<br/>/macro/scenarios"]
+    MA_Stress["Stress Index<br/>/macro/stress"]
+    MA_StressBT["Stress backtest<br/>/macro/stress/backtest"]
+    MA_Trans["How Shocks Spread<br/>/macro/transmission"]
+    MA_Yields["Yields<br/>/macro/yields"]
+  end
+  subgraph Portfolio["Portfolio"]
+    P_Main["Overview<br/>/portfolio"]
+    P_Act["Activity<br/>/portfolio/activity"]
+    P_Alloc["Allocation<br/>/portfolio/allocation"]
+    P_Attr["Attribution<br/>/portfolio/attribution"]
+    P_Opt["Optimizer<br/>/portfolio/optimizer"]
+    P_Quant["Factor Exposure<br/>/portfolio/quant"]
+    P_Risk["Risk<br/>/portfolio/risk"]
+    P_Tax["Tax<br/>/portfolio/tax"]
+    P_Watch["Watchlist<br/>/portfolio/watchlist"]
+  end
+  subgraph Research["Research"]
+    R_Home["Broker Consensus<br/>/research"]
+    R_Reports["MI Research Notes<br/>/research-reports"]
+    R_Symbol["Company dossier<br/>/research/[symbol]"]
+    R_AIDesk["AI Desk<br/>/research/ai-desk"]
+    R_IPO["IPO Pipeline<br/>/research/ipo"]
+    R_Offers["Bonds, Rights & Buybacks<br/>/research/offers"]
+    R_OptFlow["Options Flow<br/>/research/options-flow"]
+  end
+  subgraph Intelligence["Intelligence"]
+    I_Feed["Intelligence Feed<br/>/intelligence"]
+    I_Signals["AI Signals<br/>/intelligence/ai-signals"]
+    I_Alerts["Alerts<br/>/intelligence/alerts"]
+    I_Backtest["Backtesting<br/>/intelligence/backtesting"]
+    I_Brief["Daily Brief<br/>/intelligence/brief"]
+    I_Company["Company Page<br/>/intelligence/company"]
+    I_Credit["Credit Radar<br/>/intelligence/credit"]
+    I_Inst["Institutional Flows<br/>/intelligence/institutional"]
+    I_Legal["Legal Risk<br/>/intelligence/legal-risk"]
+    I_Prom["Promoter Tracker<br/>/intelligence/promoters"]
+    I_Reddit["Retail Sentiment<br/>/intelligence/reddit"]
+    I_Scanner["Stock Scanner<br/>/intelligence/scanner"]
+    I_Trends["Search Trends<br/>/intelligence/search-trends"]
+    I_TradeLab["Trade Lab<br/>/intelligence/trade-lab"]
+    I_WM["World Monitor<br/>/intelligence/world-monitor"]
+  end
+  subgraph Data & Feeds["Data & Feeds"]
+    D_Main["Sources & Status<br/>/data"]
+    D_360["World Bank Data<br/>/data/data360"]
+    D_Export["Data Export<br/>/data/export"]
+    D_Feeds["Data Feeds<br/>/data/feeds"]
+    D_Health["Data Health<br/>/data/health"]
+  end
+  subgraph Alpha League["Alpha League"]
+    A_Main["Alpha League<br/>/alpha-league"]
+    A_BT["Backtest<br/>/alpha-league/backtest"]
+    A_Board["Leaderboard<br/>/alpha-league/board"]
+    A_Port["Paper portfolio<br/>/alpha-league/portfolio"]
+    A_Verify["Certificate verify<br/>/alpha-league/verify/[id]"]
+  end
+  subgraph Learn & Help["Learn & Help"]
+    L_Learn["Learn<br/>/learn"]
+    L_Guide["Guide<br/>/learn/[slug]"]
+    L_Help["Help<br/>/help"]
+    L_Method["Methodology<br/>/methodology"]
+    L_Privacy["Privacy<br/>/privacy"]
+  end
+  subgraph Profile & Pricing["Profile & Pricing"]
+    PF_Profile["Profile & plans<br/>/profile"]
+    PF_Pricing["Pricing<br/>/pricing"]
+  end
+  subgraph Admin["Admin"]
+    AD_Alerts["Alerts<br/>/admin/alerts"]
+    AD_Analytics["Analytics<br/>/admin/analytics"]
+    AD_Brief["Brief<br/>/admin/brief"]
+    AD_Comp["Competition<br/>/admin/competition"]
+    AD_Customers["Customers<br/>/admin/customers"]
+    AD_DataAudit["Data Audit<br/>/admin/data-audit"]
+    AD_Feeds["Feeds<br/>/admin/feeds"]
+    AD_Intel["Intelligence<br/>/admin/intelligence"]
+    AD_KB["Knowledge Base<br/>/admin/knowledge-base"]
+    AD_LiveEdit["Live Editor<br/>/admin/live-editor"]
+    AD_Login["Admin login<br/>/admin/login"]
+    AD_News["Newsletters<br/>/admin/newsletters"]
+    AD_Notif["Notifications<br/>/admin/notifications"]
+    AD_Pages["Pages<br/>/admin/pages"]
+    AD_Pay["Payments<br/>/admin/payments"]
+    AD_Ref["Referrals<br/>/admin/referrals"]
+    AD_Retarget["Retargeting<br/>/admin/retargeting"]
+    AD_Sec["Security<br/>/admin/security"]
+    AD_Sys["System<br/>/admin/system"]
+    AD_Tabs["Tabs<br/>/admin/tabs"]
+    AD_Updates["Updates<br/>/admin/updates"]
+    AD_User["User dossier<br/>/admin/users/[email]"]
+  end
+
+  E_Landing -->|sign in| H_Home
+  M_India -->|tap a card| M_IndexDetail
+  M_IndexDetail -->|tap a stock| R_Symbol
+  H_Home -->|TopBar search| R_Symbol
+  H_Home -->|Trade tab| I_Scanner
+  I_Alerts -->|tap an alert| R_Symbol
+```
 
 ---
 
@@ -222,6 +402,9 @@ flowchart LR
   H["/Home · /markets/india · …"] --> ID["/api/feeds/india-dashboard"]
   H --> SEC["/api/feeds/security/[symbol]"]
   H --> UQ[Upstox quote · candles · depth]
+  H --> CONS["/api/indices/[slug]/constituents"]
+  CONS --> NCSV[NSE index archives CSV · official constituent lists]
+  CONS --> YQ[Yahoo batch quotes]
   ID --> B[build-dashboard.ts]
   B --> Y[Yahoo chart quotes]
   B --> U[Upstox override India indices]
@@ -343,6 +526,32 @@ flowchart LR
 **Logic:** **Scheduled collectors** run on GitHub Actions (direct Neon writes); `/api/cron/*` remains for manual triggers. **Collector** scrapes RBI, CFTC, BLS, etc. into Postgres for macro sections and stress index. **MCP** disabled without API keys. **Excel export** bundles tape, macro, portfolio snapshots server-side.
 
 ---
+
+## Chart colour & change invariants (DO NOT CHANGE)
+
+Applies to every index / quote chart and quote header (e.g. `/markets/india/[symbol]`). AI coding tools and humans: do not alter this behaviour.
+
+1. **Colour follows the headline move.** If the day's change vs **previous close** is negative the chart, fill and "1D move" are **red**; positive/zero is **green**. A day that closed −0.13% can never show a green chart.
+2. **1D baseline = previous close** (`quote.price − quote.change`), *not* the first intraday point. 1W/1M/1Y baseline = first point of the series. All of this lives in one place: `src/lib/chart-direction.ts::computeChartMove` (tests: `src/lib/chart-direction.test.ts`). Never re-derive `isUp` inline from `first`/`last` points.
+3. **Always show points AND percent** together, e.g. `−71.95 (−0.13%)`, using `fmtMove(change, pctFraction)` / `fmtChgPts` (`src/lib/format-india.ts`). This covers the detail header, index cards, Market Pulse, Global Radar, Hero, home ticker and indices strip. `changePct` is a FRACTION (0.0013 = 0.13%) — never `.toFixed(2)` it directly. Never show % alone for an index quote when `change` is available. Negative numbers use the true minus sign `−`.
+4. The "N points" in "Hover to inspect (N points)" is the number of samples in the plotted series (e.g. 75 five-minute bars for a full NSE session), not a percentage.
+
+## Price bento (DO NOT CHANGE THE DESIGN LANGUAGE)
+
+Every price/quote detail page uses the one shared `PriceBento` (`src/components/price-bento/price-bento.tsx`): coral (down) / mint (up) / ivory (flat) hero on the left, large chart on the right, then Day range, black Previous-close tile and a factual Takeaway tile, on a warm-ivory surface with ink borders, in the site's Google Sans (`font-sans`). Consumers: `/markets/india/[symbol]` (index detail, via `useBentoSeries`) and `/research/[symbol]` (any searched/clicked stock, via `StockPriceBento`; India + US). Do not re-introduce a different chart/card on those pages and do not fork the component.
+
+- All state maths lives in `src/lib/price-bento/model.ts` (tested): daily direction/colour/words from the **unrounded** `close − previousClose` (signed zero normalised), previous close via `derivePrevClose` (handles Yahoo fallbacks that report `change = 0` with a real `changePct`), range-marker `(v−low)/(high−low)` clamped, unit-aware formatting (index → `points`, India → ₹, US → $), takeaway sentence. Never inline this logic in a page.
+- 1D chart baseline = previous close (dashed line + label); 1W/1M/1Y colour by the range's own first→last and say so ("Past week: +0.91%") — never imply the daily change is a range return.
+- No tiny uppercase eyebrow labels on tiles (semantic `sr-only` headings only). Missing data renders honest states with Retry; never coerce null to 0, never ship the brief's example prices as fallback.
+- Provider credit ("Data: …") stays. The surrounding page keeps the official Mi header/logo; do not redraw it inside the component.
+
+## Home five-tool bento (DO NOT CHANGE THE DESIGN LANGUAGE)
+
+`/Home` → "Five ways to find your edge" is `src/components/homedashboard/SignatureFive.tsx` with artwork in `tool-art.tsx`. Layout: coral **AI Desk** card spanning two rows (≈45%) + blue **Stock Scanner**, lavender **Trade Lab**, yellow **Alerts**, mint **Options Flow** in a 2×2 grid; 2-column under 1100px, 1-column under 700px. Warm ivory canvas, ink 1px borders, black Google Sans (`font-sans`) text, white inset strips, tinted full-width CTAs with arrows. Do not revert to the old equal white cards, add black cards/emoji/photos, or redraw the Mi logo here (the site header carries it).
+
+- Routes/actions are fixed: `/research/ai-desk`, `/intelligence/scanner`, `/intelligence/trade-lab`, `/intelligence/alerts?new=1`, `/research/options-flow` (with the existing `homeActions` mission/bonus hooks).
+- Strips bind to real data only (trending debate, 52-week breakout count, the user's own virtual P&L, active alert count, today's option flags). No fixture numbers ("CHALET", "−₹1,56,968", "0 flags") ship; missing data shows neutral copy, never a fake zero.
+- Artwork is decorative inline SVG (`aria-hidden`, pointer-inert); keep it clear of text at every breakpoint.
 
 ## 1. How to read this document
 
@@ -870,6 +1079,19 @@ npx vercel --prod --yes
 
 Package version in `package.json` is **`0.1.0`** (semver tracks architecture; release sections below track shipped features). The tables below track what shipped on **`main`** (and **Unreleased** work on the branch). Categories: **Feature**, **Improvement**, **Fix**.
 
+### 0.1.11 — 7 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Feature | Markets | **Clickable India index cards** (PR #89): all 26 `/markets/india` cards → live constituent drill-down `/markets/india/[slug]` with live chart, sector treemap, searchable/sortable constituent table linking to `/research/[symbol]`; new `GET /api/indices/[slug]/constituents` (official NSE CSVs + batched Yahoo quotes, never fabricates); SENSEX via pinned 30-stock snapshot; legacy slug redirects |
+| Feature | Rewards | **XP economy + referrals** (PR #73): engagement XP via server heartbeat, streak bonuses, **300 XP = 1 month Plus free** (race-safe redeem); referral codes with referrer rewards on first paid purchase; admin fraud engine |
+| Feature | Admin | **Admin Mission Control** (PR #75): `/admin/data-audit` (per-source freshness, `cron_run_log`), `/admin/referrals`, `/admin/payments`, user dossiers, `/admin/security` (6-rule fraud engine), `/admin/intelligence` (health score, anomaly detection, AI ops brief); fixed collect-market-data 500s via 45s stress race with stale fallback |
+| Fix | Mobile | **Phone compatibility pass** (PR #91): iOS Safari auto-zoom fix (16px inputs + CSS backstop), dvh units sitewide, sticky navs freed from framer-motion transform wrappers, single blur layer on mobile chrome, 44px touch targets; tables overflow-guarded |
+| Improvement | Mobile | **Phone card layouts for 9 dense tables** (PR #95): AI Signals, index constituents (+ sticky mobile sort/search bar), portfolio holdings, backtest tables, research reports, IPO offers, financial statements (latest 2 years + "Show full history" expander), institutional + legal-risk monitors, RatioRadar label legibility; desktop unchanged, no data hidden |
+| Improvement | UX | **Fewer-clicks wins** (PR #104): AI Signals in the Trade sibling strip (3 taps → 2), recently-viewed stocks (`mi-recent-symbols`, last 8), research hash deep-links (`/research/RELIANCE#financial-statements`), PortfolioTeaser reorder for holders, "India depth" link on Home, index switcher strip (26 pills) on index detail pages |
+| Improvement | Ops | **Oracle migration pack built** (PR #72): 16-file pack for Oracle Always Free VM (in progress, VM not yet provisioned); GitHub Actions remains the live cron runner |
+| Fix | Performance | **Polling fixes** (PR #71): notification polling skips signed-in guest polling; `/api/portal/pages` uses `revalidate=30` |
+
 ### 0.1.10 — 5 Oct 2026
 
 | Type | Area | Change |
@@ -881,6 +1103,14 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 | Fix | Home | Index **day-change %** scaling and Upstox **source info** on home dashboard cards |
 | Fix | Email | Welcome pack: plain-text part + personal sender for deliverability |
 | Improvement | Admin | Alpha League **reopen registration** (guarded), multi-date season picker, admin sidebar link |
+
+### 0.1.10 — 3 Oct 2026
+
+| Type | Area | Change |
+|---|---|---|
+| Improvement | Sitemap | **Signature page revamps** (PR #40): AI Desk, Scanner, Trade Lab, Alerts, Options Flow |
+| Feature | Rewards | **Gamified points** (PR #41): engagement XP, streaks, and referrals economy (expanded in PR #73 on 7 Oct) |
+| Improvement | Email | **Email deliverability** (PR #42): DNS audit, authenticated `send.` subdomain, RFC 8058 one-click unsubscribe, plain-text welcome, Kit primary-inbox playbook |
 
 ### 0.1.10 — 6 Oct 2026
 

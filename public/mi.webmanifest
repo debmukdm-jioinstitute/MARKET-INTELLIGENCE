@@ -1,0 +1,24 @@
+{
+  "id": "/Home",
+  "name": "Market Intelligence",
+  "short_name": "Market Intel",
+  "description": "Free research terminal for Indian investors: NSE/BSE quotes, charts, fundamentals, screeners and portfolio tools.",
+  "start_url": "/Home?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "en-IN",
+  "categories": ["finance", "business"],
+  "icons": [
+    { "src": "/logo-mark-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/logo-mark-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Research", "url": "/research", "icons": [{ "src": "/logo-mark-192.png", "sizes": "192x192" }] },
+    { "name": "Portfolio", "url": "/portfolio", "icons": [{ "src": "/logo-mark-192.png", "sizes": "192x192" }] }
+  ]
+}

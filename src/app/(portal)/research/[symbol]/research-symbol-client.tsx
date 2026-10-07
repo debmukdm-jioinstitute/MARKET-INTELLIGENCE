@@ -1,35 +1,48 @@
 "use client";
 
-import { CandlestickChart } from "@/components/charts/candlestick-chart";
-import { Lines } from "@/components/charts/terminal-charts";
 import { DriverNudges } from "@/components/guide/driver-nudges";
 import { DataInfo } from "@/components/feeds/data-info";
-import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
-import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
-import { SimilarStocksPanel } from "@/components/hf-ai/similar-stocks-panel";
 import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
-import { FinancialsPanel } from "@/components/research/financials-panel";
-import { OwnershipPanel } from "@/components/research/ownership-panel";
-import { DocumentsPanel } from "@/components/research/documents-panel";
-import { RatingsPanel } from "@/components/research/ratings-panel";
-import { ConcallPanel } from "@/components/research/concall-panel";
 import { LeadershipPanel } from "@/components/research/leadership-panel";
 import { InsightCardsPanel } from "@/components/research/insight-cards-panel";
 import { ResearchSectionNav } from "@/components/research/research-section-nav";
+import { StockPriceBento } from "@/components/price-bento/stock-price-bento";
+import { LazyMount } from "@/components/research/lazy-mount";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
-import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
+import { fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { awardXp } from "@/lib/gamification/client";
+import { recordRecentSymbol } from "@/lib/research/recent-symbols";
+
+// Code-split heavy / below-the-fold UI so it is not parsed and hydrated during page load.
+// Charts are client-only (canvas / SVG measured in the browser), so ssr:false loses nothing.
+const chartBox = (h: number) =>
+  function ChartSkeleton() {
+    return <div className="w-full animate-pulse rounded-lg bg-muted/30" style={{ height: h }} />;
+  };
+const KeyRatiosPanel = dynamic(
+  () => import("@/components/fundamentals/key-ratios-panel").then((m) => m.KeyRatiosPanel),
+  { ssr: false, loading: chartBox(240) },
+);
+const FinancialsPanel = dynamic(() => import("@/components/research/financials-panel").then((m) => m.FinancialsPanel));
+const OwnershipPanel = dynamic(() => import("@/components/research/ownership-panel").then((m) => m.OwnershipPanel));
+const DocumentsPanel = dynamic(() => import("@/components/research/documents-panel").then((m) => m.DocumentsPanel));
+const RatingsPanel = dynamic(() => import("@/components/research/ratings-panel").then((m) => m.RatingsPanel));
+const ConcallPanel = dynamic(() => import("@/components/research/concall-panel").then((m) => m.ConcallPanel));
+const ResearchIntelligencePanels = dynamic(() =>
+  import("@/components/research/research-intelligence-panels").then((m) => m.ResearchIntelligencePanels),
+);
+const SecurityRiskPanel = dynamic(() => import("@/components/research/security-risk-panel").then((m) => m.SecurityRiskPanel));
+const SimilarStocksPanel = dynamic(() => import("@/components/hf-ai/similar-stocks-panel").then((m) => m.SimilarStocksPanel));
 
 /**
  * Session-level guard so a StrictMode double-mount (dev) doesn't fire the
@@ -47,6 +60,9 @@ const NAV_SECTIONS = [
   { id: "concalls", label: "Earnings Concall" },
   { id: "risk-events", label: "Risk & Catalysts" },
 ];
+
+/** Allowlist for hash deep-links: a raw location.hash is never passed to the DOM unvalidated. */
+const SECTION_IDS = new Set(NAV_SECTIONS.map((s) => s.id));
 
 export function ResearchSymbolClient({
   initialData,
@@ -69,6 +85,50 @@ export function ResearchSymbolClient({
     if (!symbol || deepResearchAwarded.has(symbol)) return;
     deepResearchAwarded.add(symbol);
     void awardXp("company_deep_research", symbol); // fire-and-forget, guests silently no-op
+  }, [symbol]);
+
+  // "Continue where you left off": remember this view for the recents strip.
+  // Re-runs when the company name loads so the stored label is the real name.
+  useEffect(() => {
+    if (!symbol) return;
+    recordRecentSymbol(symbol, data?.name);
+  }, [symbol, data?.name]);
+
+  // Hash deep-links (e.g. /research/RELIANCE#financials): scroll to the
+  // matching section with the same header offset the section nav uses.
+  // The hash is allowlisted against SECTION_IDS before touching the DOM.
+  // Sections are lazy-mounted, so one delayed retry follows in case the
+  // placeholder was replaced and heights shifted — unless the user scrolled.
+  useEffect(() => {
+    let settledY = -1;
+    const scrollToSectionHash = () => {
+      const raw = window.location.hash.replace(/^#/, "");
+      if (!raw) return;
+      let id: string;
+      try {
+        id = decodeURIComponent(raw);
+      } catch {
+        return;
+      }
+      if (!SECTION_IDS.has(id)) return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + (window.innerWidth < 1024 ? -160 : -80);
+      if (settledY >= 0 && Math.abs(window.scrollY - settledY) > 8) return;
+      settledY = y;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    };
+    const onHashChange = () => {
+      settledY = -1;
+      scrollToSectionHash();
+    };
+    scrollToSectionHash();
+    const retry = window.setTimeout(scrollToSectionHash, 1200);
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+      window.clearTimeout(retry);
+    };
   }, [symbol]);
 
   useEffect(() => {
@@ -122,24 +182,9 @@ export function ResearchSymbolClient({
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
-      {q ? (
-        <div className="-mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-3xl tabular-nums font-bold tracking-tight">{fmtInr(q.ltp)}</span>
-          <span className={cn("text-sm font-semibold", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
-            {q.netChange >= 0 ? "+" : ""}
-            {fmtInr(q.netChange)} ({fmtChgPct(prevClose ? q.netChange / prevClose : 0)})
-          </span>
-          <MetricInfo
-            id={symbol.toLowerCase()}
-            name={`${data!.name} (${symbol})`}
-            provider="Upstox / NSE Official Tick Stream"
-            sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
-            asOf={q.asOf}
-          />
-        </div>
-      ) : null}
-
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
+
+      {data ? <StockPriceBento data={data} /> : null}
 
       {/* Sticky section navigation */}
       {isIndia && !loading ? <ResearchSectionNav sections={NAV_SECTIONS} /> : null}
@@ -214,11 +259,6 @@ export function ResearchSymbolClient({
               </dl>
             </Panel>
           </div>
-          {data.candles.length > 1 ? (
-            <Panel title="Price history (1Y · Upstox daily)">
-              <CandlestickChart candles={data.candles} />
-            </Panel>
-          ) : null}
           {data.fundamentals ? (
             <Panel title="Fundamentals (Upstox key ratios)">
               <KeyRatiosPanel snapshot={data.fundamentals} />
@@ -234,36 +274,51 @@ export function ResearchSymbolClient({
       {/* CORE EXTENSIONS REQUESTED: Financial Statements, Shareholding Donut, Documents, Ratings, Concalls */}
       {isIndia && symbol ? (
         <>
+          {/* Below the fold: each panel mounts (JS + fetch + render) only when scrolled near. */}
           {/* 1. Full Financial Statements & Ratios (P&L, BS, CF, Quarterly Performance, Working Capital) */}
-          <FinancialsPanel symbol={symbol} />
+          <LazyMount anchorId="financial-statements" minHeight={480}>
+            <FinancialsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 2. Shareholding Pattern Donut Chart & Quarterly Trends & Risk Flags */}
-          <OwnershipPanel symbol={symbol} />
+          <LazyMount anchorId="shareholding" minHeight={420}>
+            <OwnershipPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 3. Statutory Document Archive: Announcements, Annual Reports, Credit Ratings, Concalls */}
-          <DocumentsPanel symbol={symbol} />
+          <LazyMount anchorId="regulatory-documents" minHeight={360}>
+            <DocumentsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 4. Credit Ratings Agency Radar (CRISIL, CARE, ICRA) */}
-          <RatingsPanel symbol={symbol} />
+          <LazyMount anchorId="credit-ratings" minHeight={240}>
+            <RatingsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 5. Earnings Conference Call Transcripts & Management Guidance */}
-          <ConcallPanel symbol={symbol} />
+          <LazyMount anchorId="concalls" minHeight={280}>
+            <ConcallPanel symbol={symbol} />
+          </LazyMount>
         </>
       ) : null}
 
       {data?.intelligence ? (
-        <ResearchIntelligencePanels
-          corporateActions={data.intelligence.corporateActions}
-          newsFeed={data.intelligence.newsFeed}
-          newsSummary={data.intelligence.newsSummary}
-          brokerResearch={data.intelligence.brokerResearch}
-        />
+        <LazyMount minHeight={400}>
+          <ResearchIntelligencePanels
+            corporateActions={data.intelligence.corporateActions}
+            newsFeed={data.intelligence.newsFeed}
+            newsSummary={data.intelligence.newsSummary}
+            brokerResearch={data.intelligence.brokerResearch}
+          />
+        </LazyMount>
       ) : null}
 
       {symbol ? (
-        <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
-          <SecurityRiskPanel symbol={symbol} />
-        </Panel>
+        <LazyMount anchorId="risk-events" minHeight={280}>
+          <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+            <SecurityRiskPanel symbol={symbol} />
+          </Panel>
+        </LazyMount>
       ) : null}
 
       {data?.sources.length ? (
@@ -283,7 +338,9 @@ export function ResearchSymbolClient({
       ) : null}
 
       {/* Semantic similar companies — MiniLM-L6-v2 */}
-      <SimilarStocksPanel symbol={symbol} />
+      <LazyMount minHeight={160}>
+        <SimilarStocksPanel symbol={symbol} />
+      </LazyMount>
     </div>
     </SWRConfig>
   );
@@ -291,19 +348,13 @@ export function ResearchSymbolClient({
 
 function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
   const us = data.usDetail!;
-  const chart = data.history.map((p) => ({ date: p.date, px: p.value }));
   return (
     <>
       <div className="flex flex-wrap gap-2">
         <Badge variant="secondary">US</Badge>
         <Badge variant="secondary">{us.quote.provider}</Badge>
       </div>
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Panel title="Price" className="xl:col-span-2">
-          <div className="h-[280px]">
-            <Lines data={chart} keys={[{ key: "px", color: "#1a73e8", name: data.symbol }]} />
-          </div>
-        </Panel>
+      <div className="grid gap-4">
         <Panel title="Snapshot">
           <dl className="space-y-3 text-sm">
             <Row metricId="nav" k="Last" v={fmtNum(us.quote.price)} />

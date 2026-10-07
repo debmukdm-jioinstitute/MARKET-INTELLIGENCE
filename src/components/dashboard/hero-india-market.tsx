@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtChgPts } from "@/lib/format-india";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -84,6 +85,11 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
                     ? niftyVal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     : "Connecting to live feed…"}
                 </span>
+                {nifty?.change != null ? (
+                  <span className={cn("text-sm font-semibold tabular-nums", nifty.change >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                    {fmtChgPts(nifty.change)}
+                  </span>
+                ) : null}
                 {niftyChg != null ? (
                   <SignedPct value={niftyChg} label="today" className="rounded bg-muted/40 px-2 py-0.5 text-sm font-semibold" />
                 ) : null}

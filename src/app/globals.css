@@ -721,3 +721,292 @@
   --alpha-red-soft: #3a1418;
   --alpha-ink: #f5f5f5;
 }
+
+/* Install-app bottom sheet: Google Material 3 style. Transform/opacity only. */
+.pwa-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-family: var(--font-sans), sans-serif;
+}
+.pwa-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(32, 33, 36, 0.4);
+  animation: pwa-fade 0.25s ease-out both;
+}
+.pwa-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 28px 28px 0 0;
+  background: #fff;
+  color: #202124;
+  padding: 12px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -2px 6px rgba(60, 64, 67, 0.3), 0 -8px 24px 6px rgba(60, 64, 67, 0.15);
+  animation: pwa-up 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.pwa-root[data-closing="true"] .pwa-sheet {
+  animation: pwa-down 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+}
+.pwa-root[data-closing="true"] .pwa-scrim {
+  animation: pwa-fade-out 0.22s ease-in both;
+}
+.pwa-handle {
+  display: block;
+  width: 32px;
+  height: 4px;
+  margin: 0 auto 16px;
+  border-radius: 2px;
+  background: #dadce0;
+}
+.pwa-hero {
+  text-align: center;
+}
+.pwa-icon-wrap {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: 16px;
+  animation: pwa-pop 0.6s 0.15s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.pwa-icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  animation: pwa-float 3.2s 0.8s ease-in-out infinite;
+}
+.pwa-icon-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: #1a73e8;
+  opacity: 0;
+  animation: pwa-ring 2.4s 0.9s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.pwa-hero h2,
+.pwa-done h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  color: #202124;
+}
+.pwa-sub,
+.pwa-done p {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: #3c4043;
+}
+.pwa-list {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+.pwa-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: pwa-rise 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+  animation-delay: calc(0.25s + var(--i, 0) * 80ms);
+}
+.pwa-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+.pwa-tile[data-tone="green"] {
+  background: #e6f4ea;
+  color: #1e8e3e;
+}
+.pwa-tile[data-tone="yellow"] {
+  background: #fef7e0;
+  color: #b06000;
+}
+.pwa-li-text {
+  font-size: 14px;
+  line-height: 20px;
+  color: #5f6368;
+}
+.pwa-li-text b {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #202124;
+}
+.pwa-actions {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+  animation: pwa-rise 0.45s 0.55s cubic-bezier(0.2, 0, 0, 1) both;
+}
+.pwa-btn {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.pwa-btn:active {
+  transform: scale(0.97);
+}
+.pwa-btn-primary {
+  background: #1a73e8;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+.pwa-btn-primary:hover {
+  background: #1b66c9;
+}
+.pwa-btn-text {
+  background: transparent;
+  color: #1a73e8;
+}
+.pwa-btn-text:hover {
+  background: #e8f0fe;
+}
+.pwa-btn:focus-visible {
+  outline: 3px solid #a8c7fa;
+  outline-offset: 2px;
+}
+.pwa-done {
+  display: grid;
+  justify-items: center;
+  padding: 24px 0 12px;
+  text-align: center;
+}
+.pwa-done-badge {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: #1e8e3e;
+  color: #fff;
+  animation: pwa-pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes pwa-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes pwa-down {
+  to { transform: translateY(100%); }
+}
+@keyframes pwa-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pwa-fade-out {
+  to { opacity: 0; }
+}
+@keyframes pwa-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pwa-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pwa-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes pwa-ring {
+  0% { opacity: 0.35; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pwa-scrim,
+  .pwa-sheet,
+  .pwa-icon-wrap,
+  .pwa-icon,
+  .pwa-icon-ring,
+  .pwa-list li,
+  .pwa-actions,
+  .pwa-done-badge {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Global markets bento dashboard */
+.global-markets {
+  --canvas: #F6F5F1;
+  --surface: #FCFCFA;
+  --ink: #151515;
+  --secondary: #62656B;
+  --line: #151515;
+  --divider: #E5E5E1;
+  --coral: #FEE2E2;
+  --light-red: #FEE2E2;
+  --light-green: #DCFCE7;
+  --down: #A52F38;
+  --up: #26713D;
+  --selected-row: #FCEDEA;
+  font-family: var(--font-sans), 'Google Sans', sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 8px 16px;
+}
+.global-markets * {
+  box-sizing: border-box;
+}
+.main-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  gap: 10px;
+  align-items: stretch;
+}
+.metrics-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 37fr) minmax(0, 24fr) minmax(0, 39fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.market-card {
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1099px) {
+  .main-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 699px) {
+  .global-markets {
+    padding: 16px;
+  }
+  .metrics-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -154,8 +154,18 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
             News Sentiment · {symbol}
           </span>
         </div>
-        <span className={`text-sm font-bold uppercase ${colors.text}`}>
-          {state.overall} · {Math.round(state.confidence * 100)}%
+        <span className="flex items-center gap-2">
+          {state.fallback ? (
+            <span
+              className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+              title="FinBERT model unavailable right now; scored with finance keyword rules"
+            >
+              Keyword estimate
+            </span>
+          ) : null}
+          <span className={`text-sm font-bold uppercase ${colors.text}`}>
+            {state.overall} · {Math.round(state.confidence * 100)}%
+          </span>
         </span>
       </div>
 
@@ -191,7 +201,9 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
       </div>
 
       <p className="text-sm text-muted-foreground text-right">
-        Powered by ProsusAI/FinBERT
+        {state.fallback
+          ? "Keyword estimate (FinBERT model unavailable right now)"
+          : "Powered by ProsusAI/FinBERT"}
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
@@ -21,6 +22,12 @@ import {
 import { fetchOptions, homeJson } from "@/components/homedashboard/shared";
 import type { BriefResponse } from "@/lib/homedashboard/brief";
 
+// Client-only, loaded after the dashboard so it never competes with first paint.
+const InstallAppPrompt = dynamic(
+  () => import("@/components/pwa/install-app-prompt").then((m) => m.InstallAppPrompt),
+  { ssr: false },
+);
+
 export default function DashboardPage() {
   const { data } = useIndiaDashboard(45_000);
   const portfolio = useMyPortfolio();
@@ -38,6 +45,9 @@ export default function DashboardPage() {
   );
   const now = useHomeClock();
   const progress = useHomeProgress(now);
+  // Signed-in holders see their portfolio right under the market pulse (0-tap glance);
+  // everyone else keeps the existing order with the teaser at the bottom.
+  const portfolioUpTop = authenticated && portfolio.holdings.length > 0;
   return (
     <div
       data-home-dashboard
@@ -65,6 +75,7 @@ export default function DashboardPage() {
       </header>
       <WelcomeStrip progress={progress} />
       <MarketPulse data={data} now={now} />
+      {portfolioUpTop ? <PortfolioTeaser portfolio={visiblePortfolio} /> : null}
       <ChartDesk />
       <BriefTeaser
         data={brief}
@@ -78,7 +89,8 @@ export default function DashboardPage() {
       <MissionsCard progress={progress} now={now} />
       <SmartMoney data={data} />
       <LearnNudge />
-      <PortfolioTeaser portfolio={visiblePortfolio} />
+      {portfolioUpTop ? null : <PortfolioTeaser portfolio={visiblePortfolio} />}
+      {authenticated ? <InstallAppPrompt /> : null}
     </div>
   );
 }
