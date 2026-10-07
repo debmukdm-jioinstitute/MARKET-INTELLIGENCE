@@ -145,9 +145,9 @@ export function GlobalMarketsDashboard({
   }, [fetchedAt]);
 
   return (
-    <div className="global-markets flex flex-col justify-between lg:h-full lg:max-h-full">
+    <div className="global-markets flex min-h-0 flex-1 flex-col gap-2 min-[1100px]:h-full min-[1100px]:max-h-full">
       {/* Top Header Row */}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-1 pt-1">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-0.5">
         {/* Left: Brand lockup and Global markets title */}
         <div className="flex items-center gap-2.5">
           <BrandLogo variant="lockup" size="sm" href="/macro" priority invertOnDark={false} />
@@ -229,7 +229,7 @@ export function GlobalMarketsDashboard({
       ) : null}
 
       {/* Main Row: Coral/Mint/Ivory hero on left (~30%), Large table on right (~70%) */}
-      <div className="main-bento flex-1">
+      <div className="main-bento min-h-[220px] flex-1 min-[1100px]:min-h-0">
         <HeroCard item={selectedQuote} className="h-full" />
         <TableCard
           items={regionalQuotes}
@@ -254,7 +254,7 @@ export function GlobalMarketsDashboard({
           }
         }}
         onOpenOverview={() => setIsOverviewOpen(true)}
-        className="mt-4"
+        className="shrink-0"
       />
 
       {/* Comparison Modal */}

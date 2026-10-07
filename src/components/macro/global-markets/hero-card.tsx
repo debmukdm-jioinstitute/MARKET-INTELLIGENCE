@@ -21,7 +21,7 @@ export function HeroCard({ item, className }: HeroCardProps) {
     return (
       <div
         className={cn(
-          "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-5 text-[#151515] shadow-[3px_3px_0px_#151515]",
+          "market-card flex min-h-0 flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-4 text-[#151515] shadow-[3px_3px_0px_#151515] sm:p-5",
           className,
         )}
       >
@@ -53,7 +53,7 @@ export function HeroCard({ item, className }: HeroCardProps) {
     <article
       aria-labelledby="hero-index-name"
       className={cn(
-        "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-4 sm:p-4.5 lg:p-5 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
+        "market-card flex min-h-0 flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-4 sm:p-5 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
         bgClass,
         className,
       )}

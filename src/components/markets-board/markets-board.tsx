@@ -194,9 +194,9 @@ export function MarketsBoard({
     .filter((r): r is MarketsBoardRow => r != null);
 
   return (
-    <div className="-m-3 flex min-h-[calc(100vh-64px)] flex-col justify-between bg-[#F6F5F1] p-3 sm:-m-4 sm:p-4 md:-m-5 md:p-4 lg:h-[calc(100dvh-5.25rem)] lg:max-h-[calc(100dvh-5.25rem)] lg:overflow-hidden lg:p-5">
-      <div className="global-markets flex flex-col justify-between lg:h-full lg:max-h-full">
-        <header className="flex flex-wrap items-center justify-between gap-3 pb-1">
+    <div className="-mx-3 -mt-3 mb-0 flex min-h-[calc(100dvh-8.5rem)] min-w-0 flex-col bg-[#F6F5F1] p-2 sm:-mx-4 sm:-mt-4 sm:p-2 md:-mx-5 md:-mt-5 md:p-2 min-[1100px]:h-[calc(100dvh-10.75rem)] min-[1100px]:max-h-[calc(100dvh-10.75rem)] min-[1100px]:overflow-hidden">
+      <div className="global-markets flex min-h-0 flex-1 flex-col gap-2 min-[1100px]:h-full min-[1100px]:max-h-full">
+        <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           <div className="flex items-center">
             <Link
               href="/macro"
@@ -231,7 +231,7 @@ export function MarketsBoard({
           </div>
         </header>
 
-        <div className="my-1.5 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           <h1 className="text-2xl font-bold leading-tight tracking-tight text-[#151515] sm:text-3xl lg:text-[32px]">
             {title}
           </h1>
@@ -261,11 +261,11 @@ export function MarketsBoard({
 
         {error ? <p className="mb-2 text-sm text-[#A52F38]">{error}</p> : null}
 
-        <div className="main-bento min-h-[290px] max-h-[380px] flex-1 lg:max-h-[420px]">
+        <div className="main-bento min-h-[240px] flex-1 min-[1100px]:min-h-0">
           <article
             aria-labelledby="hero-index-name"
             className={cn(
-              "market-card flex h-full flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-5 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200 lg:p-6",
+              "market-card flex h-full min-h-0 flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-4 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200 sm:p-5",
               down && "hero-down",
               up && "hero-up",
             )}
@@ -344,7 +344,7 @@ export function MarketsBoard({
 
           <section
             aria-label={`Regional ${noun} data table`}
-            className="market-card flex h-full flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-3.5 text-[#151515] sm:p-4"
+            className="market-card flex h-full min-h-0 flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-3 text-[#151515] sm:p-3.5"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-[#151515]/10 pb-2.5">
@@ -445,7 +445,7 @@ export function MarketsBoard({
                 </div>
               </div>
 
-              <div className="max-h-[300px] flex-1 overflow-auto lg:max-h-[340px]">
+              <div className="min-h-0 flex-1 overflow-auto">
                 <table className="w-full min-w-[580px] border-separate border-spacing-0 text-left">
                   <thead>
                     <tr className="sticky top-0 z-10 border-b border-[#151515]/15 bg-[#FCFCFA] text-[13px] font-semibold text-[#62656B]">
@@ -595,7 +595,7 @@ export function MarketsBoard({
           </section>
         </div>
 
-        <div className="mt-2 space-y-2">
+        <div className="mt-0 shrink-0 space-y-2">
           <div className="metrics-bento">
             <section
               aria-labelledby="day-range-heading"

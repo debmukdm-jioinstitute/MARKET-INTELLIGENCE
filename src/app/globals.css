@@ -952,7 +952,7 @@
   }
 }
 
-/* Global markets bento dashboard */
+/* Global markets bento dashboard — full content width, tight gaps */
 .global-markets {
   --canvas: #F6F5F1;
   --surface: #FCFCFA;
@@ -966,12 +966,14 @@
   --down: #A52F38;
   --up: #26713D;
   --selected-row: #FCEDEA;
-  font-family: var(--font-sans), 'Google Sans', sans-serif;
+  font-family: var(--font-sans), "Google Sans", sans-serif;
   background: var(--canvas);
   color: var(--ink);
-  max-width: 1600px;
-  margin-inline: auto;
-  padding: 16px 20px 24px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-inline: 0;
+  padding: 0;
 }
 .global-markets * {
   box-sizing: border-box;
@@ -979,14 +981,15 @@
 .main-bento {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
-  gap: 16px;
+  gap: 8px;
   align-items: stretch;
+  min-height: 0;
 }
 .metrics-bento {
   display: grid;
   grid-template-columns: minmax(0, 37fr) minmax(0, 24fr) minmax(0, 39fr);
-  gap: 16px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 0;
 }
 .market-card {
   min-width: 0;
@@ -1005,10 +1008,5 @@
 @media (max-width: 899px) {
   .metrics-bento {
     grid-template-columns: minmax(0, 1fr);
-  }
-}
-@media (max-width: 699px) {
-  .global-markets {
-    padding: 16px 16px 24px;
   }
 }

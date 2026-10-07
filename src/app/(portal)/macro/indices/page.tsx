@@ -39,9 +39,9 @@ export default function WorldIndicesPage() {
   );
 
   return (
-    <div className="-m-3 bg-[#F6F5F1] p-2.5 sm:-m-4 sm:p-3 md:-m-5 md:p-3.5 lg:p-4 flex flex-col">
+    <div className="-mx-3 -mt-3 mb-0 flex min-h-[calc(100dvh-8.5rem)] min-w-0 flex-col bg-[#F6F5F1] p-2 sm:-mx-4 sm:-mt-4 sm:p-2 md:-mx-5 md:-mt-5 md:p-2 min-[1100px]:h-[calc(100dvh-10.75rem)] min-[1100px]:max-h-[calc(100dvh-10.75rem)] min-[1100px]:overflow-hidden">
       {loading && !data && !isFixtureMode ? (
-        <div className="mx-auto max-w-[1600px] space-y-4 pt-4">
+        <div className="w-full space-y-3 pt-2">
           <MacroTapeSkeleton count={6} />
         </div>
       ) : (
