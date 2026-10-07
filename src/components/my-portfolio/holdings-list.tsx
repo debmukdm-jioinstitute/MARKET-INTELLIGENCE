@@ -102,6 +102,8 @@ export function HoldingsList({
           Export CSV
         </button>
       </div>
+      {/* Desktop table */}
+      <div className="hidden md:block">
       <Table>
         <TableHeader>
           <TableRow>
@@ -189,6 +191,99 @@ export function HoldingsList({
           ))}
         </TableBody>
       </Table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="space-y-2 px-4 py-3 md:hidden">
+        {filtered.map((row) => (
+          <article key={row.id} className="rounded-xl border border-border bg-card p-3 shadow-sm">
+            <button
+              type="button"
+              onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
+              className="flex min-h-[44px] w-full items-center justify-between gap-2 text-left"
+            >
+              <span className="min-w-0">
+                <span className="font-medium text-primary">{row.symbol}</span>
+                <span className="ml-1.5 text-xs text-muted-foreground">{row.market}</span>
+                <span className="block truncate text-xs text-muted-foreground">{row.name}</span>
+              </span>
+              <span
+                className={cn(
+                  "shrink-0 rounded-full px-2 py-1 text-xs font-bold tabular-nums",
+                  row.dayPct >= 0 ? "bg-emerald-500/15 text-emerald-700" : "bg-rose-500/15 text-rose-700",
+                )}
+              >
+                {formatPct(row.dayPct)}
+              </span>
+            </button>
+            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Last</dt>
+                <dd className="tabular-nums text-foreground">
+                  {row.currency === "USD" ? "$" : "₹"}
+                  {row.last.toFixed(2)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Avg cost</dt>
+                <dd className="tabular-nums text-foreground">
+                  {row.currency === "USD" ? "$" : "₹"}
+                  {row.avgCost.toFixed(2)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Shares</dt>
+                <dd className="tabular-nums text-foreground">{row.shares}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Market value</dt>
+                <dd className="tabular-nums text-foreground">{inr(row.marketValueInr)}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Weight</dt>
+                <dd className="tabular-nums text-foreground">{formatPct(row.weight, 1, false)}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Total P&amp;L</dt>
+                <dd className={cn("tabular-nums font-semibold", row.pnlInr >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                  {inr(row.pnlInr)}
+                </dd>
+              </div>
+            </dl>
+            {!readOnly ? (
+              <div className="mt-2 flex flex-wrap gap-2 border-t border-border/60 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditRow(row)}
+                  className="min-h-[44px] rounded-lg border border-border px-4 text-sm font-semibold text-blue-600"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSellRow(row)}
+                  className="min-h-[44px] rounded-lg border border-border px-4 text-sm font-semibold text-amber-700"
+                >
+                  Sell
+                </button>
+                <Link
+                  href={`/intelligence/alerts?symbol=${encodeURIComponent(row.symbol)}`}
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-border px-4 text-sm font-semibold text-muted-foreground"
+                >
+                  Alert
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onRemove(row.id)}
+                  className="min-h-[44px] rounded-lg border border-border px-4 text-sm font-semibold text-muted-foreground"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : null}
+          </article>
+        ))}
+      </div>
       <EditHoldingDialog
         row={editRow}
         open={Boolean(editRow)}

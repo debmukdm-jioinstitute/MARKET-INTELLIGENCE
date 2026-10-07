@@ -199,7 +199,8 @@ export function InstitutionalIntelligenceDashboard() {
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Investor trackers</h2>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-border">
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -239,6 +240,40 @@ export function InstitutionalIntelligenceDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="space-y-2 md:hidden">
+              {data.trackers.map((t) => (
+                <article key={t.id} className="rounded-xl border border-border bg-card p-3 shadow-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-foreground">{t.label}</p>
+                    {coveragePill(t.coverage)}
+                  </div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t.summary}</p>
+                  {t.href ? (
+                    t.href.startsWith("/") ? (
+                      <Link
+                        href={t.href}
+                        className="mt-2 inline-flex min-h-[44px] w-full items-center justify-center rounded-lg border border-border text-sm font-semibold text-primary"
+                      >
+                        View
+                      </Link>
+                    ) : (
+                      <a
+                        href={t.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex min-h-[44px] w-full items-center justify-center gap-1 rounded-lg border border-border text-sm font-semibold text-primary"
+                      >
+                        Source <ExternalLink className="size-3.5" />
+                      </a>
+                    )
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">—</p>
+                  )}
+                </article>
+              ))}
             </div>
           </section>
 

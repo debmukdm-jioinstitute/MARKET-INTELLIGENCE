@@ -16,6 +16,14 @@ const COLORS = ["#1a73e8", "#e8710a", "#188038", "#a142f4", "#d93025"];
 const biasCls = { buy: "text-emerald-600", sell: "text-rose-600", watch: "text-blue-600" } as const;
 const fmt = (n: number, d = 2) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 
+/** Shared by the desktop table and the mobile cards below — same data, no duplication. */
+const EDGE_WINDOWS: Array<[string, string, string, string, string]> = [
+  ["2017–2022 (unseen by search)", "3 sessions", "+0.92%", "4.0", "+0.62%"],
+  ["2017–2022 (unseen by search)", "5 sessions", "+1.04%", "3.1", "+0.74%"],
+  ["2022–2026", "3 sessions", "+0.54%", "3.7", "+0.24%"],
+  ["2022–2026", "5 sessions", "+0.58%", "2.8", "+0.28%"],
+];
+
 export function BacktestDashboard() {
   const { data, error, isLoading } = useSWR("/api/backtest", fetcher);
   const run = data?.run ?? null;
@@ -103,7 +111,7 @@ export function BacktestDashboard() {
             </button>
           ))}
         </div>
-        <div className="overflow-x-auto">
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
@@ -138,6 +146,56 @@ export function BacktestDashboard() {
             </tbody>
           </table>
         </div>
+        <div className="space-y-2 md:hidden">
+          {rows.map(({ s, h }) => (
+            <div key={s.id} className="rounded-xl border border-border bg-card p-3">
+              <div className="min-w-0">
+                <span className={cn("mr-2 text-xs font-semibold uppercase", biasCls[s.bias])}>{s.bias}</span>
+                <span className="font-semibold">{s.label}</span>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2 text-center">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Win rate</p>
+                  <p className="text-base font-bold tabular-nums">{h.signals ? `${h.winRate.toFixed(1)}%` : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Edge</p>
+                  <p className={cn("text-base font-bold tabular-nums", h.edge >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                    {h.signals ? fmt(h.edge) : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Avg return</p>
+                  <p className={cn("text-base font-bold tabular-nums", h.avgRet >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                    {h.signals ? fmt(h.avgRet) : "—"}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 text-xs">
+                <div>
+                  <p className="text-muted-foreground">Signals</p>
+                  <p className="font-semibold tabular-nums">{h.signals ? h.signals.toLocaleString("en-IN") : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Median</p>
+                  <p className="font-semibold tabular-nums">{h.signals ? fmt(h.medRet) : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">All stocks</p>
+                  <p className="font-semibold tabular-nums">{fmt(h.bench)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Worst</p>
+                  <p className="font-semibold tabular-nums">{h.signals ? fmt(h.worst, 1) : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Best</p>
+                  <p className="font-semibold tabular-nums">{h.signals ? fmt(h.best, 1) : "—"}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Panel>
 
 
@@ -152,7 +210,7 @@ export function BacktestDashboard() {
           <p>
             <span className="font-semibold text-foreground">One rule held up.</span> "Oversold dip in an uptrend" (RSI below 30 while above the 200-day average), checked on 2017–2022 data the search never used, and again on 2022–2026:
           </p>
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
@@ -164,12 +222,7 @@ export function BacktestDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["2017–2022 (unseen by search)", "3 sessions", "+0.92%", "4.0", "+0.62%"],
-                  ["2017–2022 (unseen by search)", "5 sessions", "+1.04%", "3.1", "+0.74%"],
-                  ["2022–2026", "3 sessions", "+0.54%", "3.7", "+0.24%"],
-                  ["2022–2026", "5 sessions", "+0.58%", "2.8", "+0.28%"],
-                ].map((r, i) => (
+                {EDGE_WINDOWS.map((r, i) => (
                   <tr key={i} className="border-t border-border/50">
                     <td className="px-2 py-1.5">{r[0]}</td>
                     <td className="px-2 py-1.5">{r[1]}</td>
@@ -180,6 +233,30 @@ export function BacktestDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="space-y-2 md:hidden">
+            {EDGE_WINDOWS.map((r, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold">{r[0]}</p>
+                  <p className="shrink-0 text-xs text-muted-foreground">Hold {r[1]}</p>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Excess vs avg stock</p>
+                    <p className="text-sm font-bold tabular-nums text-emerald-600">{r[2]}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">t-stat</p>
+                    <p className="text-sm font-semibold tabular-nums">{r[3]}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Net of 0.3% cost</p>
+                    <p className="text-sm font-semibold tabular-nums">{r[4]}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           <p>
             <span className="font-semibold text-foreground">Read this cautiously.</span> The edge is modest, fires about 3 times a day across 500 stocks, and clusters in market sell-offs. The older window is flattered by survivorship (stocks that kept falling were delisted and are missing), and the recent net-of-cost figure is small. It is a hypothesis that has survived three tests, not a proven strategy.

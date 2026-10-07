@@ -94,7 +94,7 @@ function OffersMetrics({ counts, total }: { counts: Record<OfferStatusBucket, nu
 
 function OffersDataTable({ rows, cols }: { rows: OfferRow[]; cols: string[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
+    <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
       <table className="w-full min-w-[720px] text-sm">
         <thead className="border-b border-border bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
@@ -146,6 +146,62 @@ function OffersDataTable({ rows, cols }: { rows: OfferRow[]; cols: string[] }) {
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function OfferCards({ rows, cols }: { rows: OfferRow[]; cols: string[] }) {
+  return (
+    <div className="grid gap-2 md:hidden">
+      {rows.map((row) => {
+        const bucket = classifyOfferStatus(row);
+        const body = (
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 font-semibold text-foreground">{row.name}</p>
+              <span
+                className={cn(
+                  "inline-flex shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium",
+                  statusBadgeClass(bucket),
+                )}
+              >
+                {offerStatusLabel(bucket)}
+              </span>
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
+              {cols.map((c) => {
+                const v = row.fields[c];
+                return (
+                  <div key={c} className="min-w-0">
+                    <dt className="text-xs text-muted-foreground">{c}</dt>
+                    <dd
+                      className="truncate text-sm font-medium tabular-nums text-foreground"
+                      title={v == null ? undefined : String(v)}
+                    >
+                      {v ?? "—"}
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </>
+        );
+        return row.detailUrl ? (
+          <a
+            key={row.id}
+            href={row.detailUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block min-h-[44px] w-full rounded-xl border border-border bg-card p-4 active:bg-muted/50"
+          >
+            {body}
+          </a>
+        ) : (
+          <div key={row.id} className="rounded-xl border border-border bg-card p-4">
+            {body}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -254,6 +310,7 @@ export function OffersTable({
               defaultOpen={section.bucket === "open" || section.bucket === "listing"}
             >
               <OffersDataTable rows={sectionRows} cols={cols} />
+              <OfferCards rows={sectionRows} cols={cols} />
             </Panel>
           );
         })}

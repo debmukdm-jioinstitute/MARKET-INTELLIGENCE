@@ -177,7 +177,7 @@ export function RatioRadar({ data }: { data: { metric: string; company: number; 
       <RadarChart data={data}>
         <PolarGrid stroke="#e8eaed" />
         <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: "#8b93a1" }} />
-        <PolarRadiusAxis tick={{ fontSize: 9, fill: "#8b93a1" }} />
+        <PolarRadiusAxis tick={{ fontSize: 11, fill: "#8b93a1" }} />
         <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e8eaed", fontSize: 14 }} />
         <Legend wrapperStyle={{ fontSize: 13 }} />
         <Radar name="Sector (baseline)" dataKey="sector" stroke="#8b93a1" fill="#8b93a1" fillOpacity={0.1} />

@@ -176,6 +176,9 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
   const [sectorFilter, setSectorFilter] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  // Clears the entrance-animation transform once settled so position: sticky
+  // descendants (mobile search/sort bar) keep working (repo pattern).
+  const [settled, setSettled] = useState(false);
 
   const constituents = useMemo(
     () => (data?.constituents ?? []).map(normalizeConstituent).filter((c) => c.symbol),
@@ -396,7 +399,9 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.45 }}
-      className="bento-card-shell space-y-5"
+      onAnimationComplete={() => setSettled(true)}
+      style={settled ? { transform: "none" } : undefined}
+      className="bento-card-shell space-y-5 overflow-x-clip overflow-y-visible"
       aria-label={`${data?.label ?? "Index"} constituents`}
     >
       {/* Summary strip */}
@@ -473,7 +478,67 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
 
       {/* Search + table */}
       <div>
-        <div className="mb-3 flex flex-wrap items-center gap-2">
+        {/* Mobile sticky controls: search + sort. Sticks directly under the
+            sticky TopBar (~105px tall on phones); z-30 keeps it below the
+            TopBar (z-40). Full-bleed so scrolling cards pass cleanly under it. */}
+        <div className="sticky top-[105px] z-30 -mx-3.5 border-b border-border/50 bg-background/95 px-3.5 py-2 backdrop-blur sm:-mx-4 sm:px-4 md:hidden">
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShowAll(false);
+                }}
+                placeholder="Search stocks…"
+                className="min-h-[44px] w-full rounded-lg border border-border/80 bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
+                aria-label="Search constituents"
+              />
+            </div>
+            <select
+              value={sortKey}
+              onChange={(e) => {
+                const key = e.target.value as SortKey;
+                if (key !== sortKey) {
+                  setSortKey(key);
+                  setSortDir(key === "name" ? 1 : -1);
+                }
+              }}
+              aria-label="Sort constituents"
+              className="min-h-[44px] shrink-0 rounded-lg border border-border/80 bg-background px-2 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
+            >
+              <option value="changePct">Change %</option>
+              <option value="price">Price</option>
+              <option value="marketCap">Mkt cap</option>
+              <option value="name">Name</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => setSortDir((d) => (d === 1 ? -1 : 1))}
+              aria-label={sortDir === 1 ? "Sorted ascending — tap for descending" : "Sorted descending — tap for ascending"}
+              className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-border/80 bg-secondary/50 text-sm font-bold text-foreground"
+            >
+              {sortDir === 1 ? "▲" : "▼"}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile show-all toggle (normal flow, just under the sticky bar) */}
+        {isLarge && !query.trim() && !sectorFilter ? (
+          <button
+            type="button"
+            onClick={() => setShowAll((s) => !s)}
+            className="mb-2 flex min-h-[44px] w-full items-center justify-center gap-1 rounded-lg border border-border/80 bg-secondary/50 px-3 py-1.5 text-sm font-bold text-foreground hover:bg-secondary md:hidden"
+          >
+            {showAll ? "Show top 20 movers" : `Show all ${constituents.length}`}
+            <ChevronDown className={cn("size-3.5 transition-transform", showAll && "rotate-180")} />
+          </button>
+        ) : null}
+
+        {/* Desktop search row (unchanged) */}
+        <div className="mb-3 hidden flex-wrap items-center gap-2 md:flex">
           <div className="relative min-w-52 flex-1">
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -506,7 +571,7 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
           </p>
         ) : null}
 
-        <div className="overflow-x-auto rounded-lg border border-border/60">
+        <div className="hidden overflow-x-auto rounded-lg border border-border/60 md:block">
           <table className="w-full min-w-[640px] text-left text-xs sm:text-sm">
             <thead className="border-b border-border bg-muted/40 text-[11px] uppercase text-muted-foreground">
               <tr>
@@ -582,6 +647,90 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards — every desktop column is represented: symbol/name +
+            change-% badge in the header; price + sector; day range (with the
+            same range bar) + market cap. Whole card opens /research/[symbol],
+            the same page the desktop row opens. */}
+        <div className="space-y-2 md:hidden">
+          {visible.map((c) => {
+            const up = (c.changePct ?? 0) >= 0;
+            const lo = c.dayLow ?? null;
+            const hi = c.dayHigh ?? null;
+            const span = lo != null && hi != null && hi > lo ? hi - lo : null;
+            const pos =
+              c.price != null && span
+                ? Math.min(100, Math.max(0, ((c.price - lo!) / span) * 100))
+                : null;
+            return (
+              <button
+                key={c.symbol}
+                type="button"
+                onClick={() => router.push(`/research/${encodeURIComponent(c.symbol)}`)}
+                aria-label={`${c.name} — open full research`}
+                className="w-full rounded-xl border border-border/60 bg-card p-3 text-left shadow-sm transition-colors active:bg-accent/40"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-foreground">{c.symbol}</p>
+                    <p className="truncate text-xs text-muted-foreground">{c.name}</p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums",
+                      up ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600",
+                    )}
+                  >
+                    {c.changePct != null ? formatPct(c.changePct) : "—"}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-end justify-between gap-2">
+                  <p className="text-lg font-extrabold tabular-nums text-foreground">
+                    {c.price != null ? fmtInr(c.price) : "—"}
+                  </p>
+                  <p className="max-w-[45%] truncate text-right text-xs text-muted-foreground">
+                    {c.industry}
+                  </p>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-3 border-t border-border/40 pt-2">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Day range
+                    </p>
+                    {lo != null && hi != null ? (
+                      <>
+                        <div className="relative mt-1.5 h-1 rounded-full bg-secondary/80">
+                          {pos != null ? (
+                            <span
+                              className={cn(
+                                "absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                                up ? "bg-emerald-500" : "bg-rose-500",
+                              )}
+                              style={{ left: `${pos}%` }}
+                            />
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-xs tabular-nums text-foreground">
+                          {fmtNum(lo, 2)} – {fmtNum(hi, 2)}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="mt-1 text-xs text-muted-foreground">—</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Mkt cap
+                    </p>
+                    <p className="mt-1 text-xs font-bold tabular-nums text-foreground">
+                      {c.marketCap != null ? fmtCr(c.marketCap / 1e7) : "—"}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {visible.length === 0 ? (
