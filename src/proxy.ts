@@ -22,6 +22,7 @@ const PUBLIC = new Set([
   "/connect/claude",
   "/alpha-league",
   "/alpha-league/board",
+  "/learn",
 ]);
 
 function parseSession(raw: string | undefined) {
@@ -85,7 +86,12 @@ export async function proxy(request: NextRequest) {
     isWorldMonitorApiRoute(realPathname);
   const requireAccount = !session || session.guest ? await isRequireAccountEnabled() : false;
   const isPortalPublic = !requireAccount && isGuestReadablePortalPath(realPathname);
-  const isPublic = PUBLIC.has(realPathname) || realPathname.startsWith("/alpha-league/verify/") || isWorldMonitorAsset || isPortalPublic;
+  const isPublic =
+    PUBLIC.has(realPathname) ||
+    realPathname.startsWith("/learn/") ||
+    realPathname.startsWith("/alpha-league/verify/") ||
+    isWorldMonitorAsset ||
+    isPortalPublic;
   const staleSession = Boolean(sessionRaw && !session);
 
   if (requireAccount && session?.guest) {

@@ -12,6 +12,7 @@ const GUEST_PORTAL_PREFIXES = [
   "/loader-preview",
   "/research",
   "/research-reports",
+  "/markets",
   "/macro",
   "/intelligence",
   "/data",
