@@ -15,9 +15,10 @@ import {
 } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, TrendingUp, X } from "lucide-react";
+import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, Search, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -40,6 +41,7 @@ const ACCENTS: Record<string, Accent> = {
   "Macro & Flows": { text: "text-cyan-600", dot: "bg-cyan-500", hoverBg: "hover:bg-cyan-50", ring: "border-cyan-200" },
   Portfolio: { text: "text-violet-600", dot: "bg-violet-500", hoverBg: "hover:bg-violet-50", ring: "border-violet-200" },
   "Data & Tools": { text: "text-amber-600", dot: "bg-amber-500", hoverBg: "hover:bg-amber-50", ring: "border-amber-200" },
+  Profile: { text: "text-indigo-600", dot: "bg-indigo-500", hoverBg: "hover:bg-indigo-50", ring: "border-indigo-200" },
 };
 const DEFAULT_ACCENT: Accent = { text: "text-blue-600", dot: "bg-blue-500", hoverBg: "hover:bg-blue-50", ring: "border-blue-200" };
 const SECTION_ICONS: Record<string, typeof CalendarDays> = {
@@ -290,67 +292,148 @@ export function AppNavTrigger() {
 /** Sections pinned to the phone bottom bar; everything else lives behind "More" (the full menu). */
 const BOTTOM_TAB_TITLES = ["Today", "Stocks", "Trade", "Portfolio"];
 
-/** Phone/tablet bottom tab bar: Today · Stocks · Trade · Portfolio · More. One tap navigates to the section landing page. */
+/** Phone/tablet bottom tab bar (liquid-glass): Today · Stocks · Trade · [Search] · Portfolio · More · Profile. Search sits exactly in the middle as a raised glass button opening the global command palette. */
 export function BottomTabBar() {
   const allSections = useNavSections();
   const sections = allSections.filter((s) => BOTTOM_TAB_TITLES.includes(s.title));
   const path = usePathname();
   const { setOpen, openSection } = useMobileNav();
+  const { setOpen: setPaletteOpen } = useCommandPalette();
   const { hrefAllowed } = usePortalPages();
   const current = findGroup(sections, path);
+  const profileOn = path === "/profile" || path.startsWith("/profile/") || path.startsWith("/profile?");
+  const profileAccent = ACCENTS["Profile"] ?? DEFAULT_ACCENT;
+
+  const tabClass = (on: boolean, accent: Accent) =>
+    cn(
+      "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-0.5 text-[10px] font-medium transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95",
+      on ? accent.text : "text-muted-foreground",
+    );
+
+  const renderSectionTab = (sec: NavSection) => {
+    const Icon = SECTION_ICONS[sec.title] ?? BarChart3;
+    const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
+    const landing = sectionLandingHref(sec, hrefAllowed);
+    const on =
+      current?.section.title === sec.title ||
+      path === landing ||
+      (landing.length > 1 && path.startsWith(`${landing}/`));
+    return (
+      <Link
+        key={sec.title}
+        id={`nav-bottom-${slug(sec.title)}`}
+        href={landing}
+        onClick={() => {
+          openSection(null);
+          setOpen(false);
+        }}
+        aria-current={on ? "page" : undefined}
+        className={tabClass(on, accent)}
+      >
+        {on ? (
+          <motion.span
+            layoutId="bottom-tab-glass-pill"
+            className={cn("absolute inset-x-1 top-1 bottom-1 rounded-2xl", accent.dot, "opacity-15")}
+            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+          />
+        ) : null}
+        <Icon className={cn("relative size-5 transition-transform duration-200", on && "scale-110")} />
+        <span className="relative max-w-full truncate">{sec.title}</span>
+      </Link>
+    );
+  };
+
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-[55] grid border-t border-border bg-background dark:bg-card pb-safe md:bg-background/95 md:dark:bg-card/95 md:backdrop-blur lg:hidden"
-      style={{ gridTemplateColumns: `repeat(${sections.length + 1}, minmax(0, 1fr))` }}
+      className="fixed inset-x-3 bottom-[calc(0.625rem+env(safe-area-inset-bottom,0px))] z-[55] lg:hidden"
     >
-      {sections.map((sec) => {
-        const Icon = SECTION_ICONS[sec.title] ?? BarChart3;
-        const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
-        const landing = sectionLandingHref(sec, hrefAllowed);
-        const on =
-          current?.section.title === sec.title ||
-          path === landing ||
-          (landing.length > 1 && path.startsWith(`${landing}/`));
-        return (
-          <Link
-            key={sec.title}
-            id={`nav-bottom-${slug(sec.title)}`}
-            href={landing}
-            onClick={() => {
-              openSection(null);
-              setOpen(false);
-            }}
-            aria-current={on ? "page" : undefined}
-            className={cn(
-              "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95",
-              on ? accent.text : "text-muted-foreground",
-            )}
-          >
-            {on ? (
-              <motion.span
-                layoutId="bottom-tab-indicator"
-                className={cn("absolute inset-x-2 top-0 h-0.5 rounded-full", accent.dot)}
-                transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              />
-            ) : null}
-            <Icon className={cn("size-5 transition-transform duration-200", on && "scale-110")} />
-            <span className="max-w-full truncate">{sec.title === "Data & Tools" ? "Tools" : sec.title}</span>
-          </Link>
-        );
-      })}
-      <button
-        type="button"
-        id="nav-bottom-more"
-        onClick={() => {
-          openSection(null);
-          setOpen(true);
-        }}
-        className="relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium text-muted-foreground transition-[color,transform] duration-200 ease-out touch-manipulation active:scale-95"
+      <div
+        className={cn(
+          "relative grid grid-cols-7 overflow-visible rounded-[1.75rem] border px-1 py-1",
+          "border-white/50 bg-white/60 shadow-[0_16px_44px_-12px_rgba(30,64,175,0.35),0_2px_10px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)]",
+          "backdrop-blur-2xl backdrop-saturate-150",
+          "dark:border-white/10 dark:bg-zinc-950/55 dark:shadow-[0_16px_44px_-12px_rgba(0,0,0,0.8),0_2px_10px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.12)]",
+        )}
       >
-        <MoreHorizontal className="size-5" />
-        <span className="max-w-full truncate">More</span>
-      </button>
+        {/* Liquid-glass top sheen */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent dark:via-white/25"
+        />
+        {sections.slice(0, 3).map(renderSectionTab)}
+
+        {/* Center search — raised liquid-glass button, opens the global palette */}
+        <div className="relative flex items-start justify-center">
+          <motion.div
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative -mt-5"
+          >
+            <motion.span
+              aria-hidden
+              className="absolute inset-0 rounded-full bg-indigo-400/40 blur-md"
+              animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0.15, 0.5] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <button
+              type="button"
+              id="nav-bottom-search"
+              aria-label="Search stocks, pages and more"
+              onClick={() => setPaletteOpen(true)}
+              className={cn(
+                "relative flex size-14 items-center justify-center rounded-full text-white touch-manipulation",
+                "bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-600",
+                "shadow-[0_10px_24px_-6px_rgba(59,90,246,0.65),inset_0_1px_1px_rgba(255,255,255,0.5),inset_0_-2px_6px_rgba(0,0,0,0.25)]",
+                "ring-4 ring-white/70 dark:ring-zinc-950/70",
+                "transition-transform duration-150 active:scale-90",
+              )}
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-transparent"
+              />
+              <Search className="relative size-6" strokeWidth={2.25} />
+            </button>
+          </motion.div>
+        </div>
+
+        {sections.slice(3).map(renderSectionTab)}
+
+        <button
+          type="button"
+          id="nav-bottom-more"
+          onClick={() => {
+            openSection(null);
+            setOpen(true);
+          }}
+          className={tabClass(false, DEFAULT_ACCENT)}
+        >
+          <MoreHorizontal className="relative size-5" />
+          <span className="relative max-w-full truncate">More</span>
+        </button>
+
+        <Link
+          id="nav-bottom-profile"
+          href="/profile"
+          onClick={() => {
+            openSection(null);
+            setOpen(false);
+          }}
+          aria-current={profileOn ? "page" : undefined}
+          className={tabClass(profileOn, profileAccent)}
+        >
+          {profileOn ? (
+            <motion.span
+              layoutId="bottom-tab-glass-pill"
+              className={cn("absolute inset-x-1 top-1 bottom-1 rounded-2xl", profileAccent.dot, "opacity-15")}
+              transition={{ type: "spring", stiffness: 420, damping: 32 }}
+            />
+          ) : null}
+          <UserRound className={cn("relative size-5 transition-transform duration-200", profileOn && "scale-110")} />
+          <span className="relative max-w-full truncate">Profile</span>
+        </Link>
+      </div>
     </nav>
   );
 }
