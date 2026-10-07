@@ -960,7 +960,9 @@
   --secondary: #62656B;
   --line: #151515;
   --divider: #E5E5E1;
-  --coral: #FF837C;
+  --coral: #FEE2E2;
+  --light-red: #FEE2E2;
+  --light-green: #DCFCE7;
   --down: #A52F38;
   --up: #26713D;
   --selected-row: #FCEDEA;
@@ -969,7 +971,7 @@
   color: var(--ink);
   max-width: 1600px;
   margin-inline: auto;
-  padding: 24px;
+  padding: 16px 20px;
 }
 .global-markets * {
   box-sizing: border-box;

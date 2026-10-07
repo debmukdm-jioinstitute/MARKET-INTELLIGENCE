@@ -21,7 +21,7 @@ export function HeroCard({ item, className }: HeroCardProps) {
     return (
       <div
         className={cn(
-          "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-[28px] text-[#151515] shadow-[3px_3px_0px_#151515]",
+          "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-5 text-[#151515] shadow-[3px_3px_0px_#151515]",
           className,
         )}
       >
@@ -32,13 +32,13 @@ export function HeroCard({ item, className }: HeroCardProps) {
 
   const direction = getDirection(item.change, item.changePct);
 
-  // Semantic background exclusively for hero: Coral for negative, Mint for positive, Ivory for neutral/unavailable
+  // Semantic background: Light green for positive change, Light red for negative change, Ivory for flat/unavailable
   const bgClass =
     direction === "down"
-      ? "bg-[#FF837C]"
+      ? "bg-[#FEE2E2]" // Light red
       : direction === "up"
-        ? "bg-[#B7F5A3]"
-        : "bg-[#FCFCFA]";
+        ? "bg-[#DCFCE7]" // Light green
+        : "bg-[#FCFCFA]"; // Ivory neutral
 
   const headline =
     direction === "down"
@@ -53,54 +53,54 @@ export function HeroCard({ item, className }: HeroCardProps) {
     <article
       aria-labelledby="hero-index-name"
       className={cn(
-        "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-[28px] text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
+        "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-5 lg:p-6 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
         bgClass,
         className,
       )}
     >
       <div>
         {/* Top: rectangular flag + selected index name */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <CountryFlag country={item.region} isDecorative />
           <h2
             id="hero-index-name"
-            className="text-[26px] font-bold tracking-tight text-[#151515] sm:text-[28px]"
+            className="text-[20px] font-bold tracking-tight text-[#151515] sm:text-[22px] lg:text-[24px]"
           >
             {item.label}
           </h2>
         </div>
 
         {/* Two-line direction headline */}
-        <div className="my-5 flex flex-col text-[72px] font-bold leading-[0.96] tracking-tight text-[#151515] sm:text-[80px] lg:text-[88px]">
+        <div className="my-2.5 sm:my-3.5 flex flex-col text-[44px] font-bold leading-[0.96] tracking-tight text-[#151515] sm:text-[52px] lg:text-[58px]">
           <span>{headline.first}</span>
           <span>{headline.second}</span>
         </div>
 
         {/* Level, capsule and absolute change */}
-        <div className="space-y-3">
-          <div className="break-words text-[48px] font-bold tabular-nums tracking-tight text-[#151515] sm:text-[56px] lg:text-[64px]">
+        <div className="space-y-2">
+          <div className="break-words text-[36px] font-bold tabular-nums tracking-tight text-[#151515] sm:text-[42px] lg:text-[48px]">
             {formatPrice(item.price, item.decimals)}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Pale matching capsule with vector icon */}
             <div
-              className="inline-flex items-center gap-1.5 rounded-full bg-black/10 px-4 py-1.5 text-[22px] font-bold tabular-nums text-[#151515] sm:text-[26px]"
+              className="inline-flex items-center gap-1 rounded-full border border-black/5 bg-black/5 px-2.5 py-0.5 text-[15px] font-bold tabular-nums text-[#151515] sm:text-[17px]"
               aria-label={`Daily change percent: ${formatSignedPct(item.changePct)}`}
             >
               {direction === "down" ? (
-                <ArrowDownRight className="size-6 shrink-0 stroke-[2.75]" aria-hidden="true" />
+                <ArrowDownRight className="size-4 shrink-0 stroke-[2.75]" aria-hidden="true" />
               ) : direction === "up" ? (
-                <ArrowUpRight className="size-6 shrink-0 stroke-[2.75]" aria-hidden="true" />
+                <ArrowUpRight className="size-4 shrink-0 stroke-[2.75]" aria-hidden="true" />
               ) : direction === "flat" ? (
-                <Minus className="size-6 shrink-0 stroke-[2.75]" aria-hidden="true" />
+                <Minus className="size-4 shrink-0 stroke-[2.75]" aria-hidden="true" />
               ) : null}
               <span>{formatSignedPct(item.changePct)}</span>
             </div>
 
             {/* Absolute points change */}
             <div
-              className="text-[24px] font-bold tabular-nums text-[#151515] sm:text-[28px]"
+              className="text-[16px] font-bold tabular-nums text-[#151515] sm:text-[18px]"
               aria-label={`Absolute points change: ${formatSignedPoints(item.change, item.decimals)}`}
             >
               {formatSignedPoints(item.change, item.decimals)}
@@ -110,11 +110,11 @@ export function HeroCard({ item, className }: HeroCardProps) {
       </div>
 
       {/* Subdued divider & country / ticker metadata */}
-      <div className="mt-8 border-t border-[#151515]/20 pt-4">
-        <div className="text-[15px] font-medium text-[#151515] sm:text-base">
+      <div className="mt-4 border-t border-[#151515]/15 pt-2.5">
+        <div className="text-[13px] font-semibold text-[#151515] sm:text-[14px]">
           {item.region} · {item.symbol}
         </div>
-        <p className="mt-0.5 text-xs text-[#151515]/80">Compared with previous close.</p>
+        <p className="mt-0.5 text-[11px] text-[#151515]/75">Compared with previous close.</p>
       </div>
     </article>
   );

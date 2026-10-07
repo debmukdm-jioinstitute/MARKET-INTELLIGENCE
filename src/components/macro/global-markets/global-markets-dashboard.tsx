@@ -145,27 +145,27 @@ export function GlobalMarketsDashboard({
   }, [fetchedAt]);
 
   return (
-    <div className="global-markets">
+    <div className="global-markets flex flex-col justify-between lg:h-full lg:max-h-full">
       {/* Top Header Row */}
-      <header className="flex flex-wrap items-center justify-between gap-4 pb-2">
+      <header className="flex flex-wrap items-center justify-between gap-3 pb-1">
         {/* Official logo lockup */}
         <div className="flex items-center">
-          <BrandLogo variant="lockup" size="md" href="/macro" priority invertOnDark={false} />
+          <BrandLogo variant="lockup" size="sm" href="/macro" priority invertOnDark={false} />
         </div>
 
         {/* Refresh control and honest data freshness status */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {isFixtureMode ? (
             <span
               role="status"
-              className="rounded-full border border-[#151515]/20 bg-[#FCFCFA] px-3 py-1 text-xs font-semibold text-[#151515]"
+              className="rounded-full border border-[#151515]/20 bg-[#FCFCFA] px-2.5 py-0.5 text-[11px] font-semibold text-[#151515]"
             >
               Sample snapshot · not live
             </span>
           ) : (
-            <div className="flex flex-col text-right text-xs text-[#62656B]">
+            <div className="flex flex-col text-right text-[11px] text-[#62656B]">
               <span className="font-semibold text-[#151515]">{formattedFreshness}</span>
-              <span className="text-[11px]">Delayed quotes · Closed markets show last close</span>
+              <span className="text-[10px]">Delayed quotes · Closed markets show last close</span>
             </div>
           )}
 
@@ -175,12 +175,12 @@ export function GlobalMarketsDashboard({
             disabled={isRefreshing || loading}
             aria-label="Refresh quotes"
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-4 py-2 text-sm font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95",
+              "inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-3 py-1.5 text-xs font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95",
               (isRefreshing || loading) && "opacity-70",
             )}
           >
             <RefreshCw
-              className={cn("size-4 stroke-[2.25]", (isRefreshing || loading) && "animate-spin")}
+              className={cn("size-3.5 stroke-[2.25]", (isRefreshing || loading) && "animate-spin")}
               aria-hidden="true"
             />
             <span>Refresh</span>
@@ -188,51 +188,52 @@ export function GlobalMarketsDashboard({
         </div>
       </header>
 
-      {/* Main Title: 60-68px desktop, weight 700, line-height 1.05 */}
-      <h1 className="my-4 text-[36px] font-bold leading-[1.05] tracking-tight text-[#151515] sm:my-6 sm:text-[48px] lg:text-[64px]">
-        Global markets
-      </h1>
+      {/* Main Title & Region Tabs on a shared compact row for desktop single-view */}
+      <div className="my-1.5 flex flex-wrap items-center justify-between gap-2.5">
+        <h1 className="text-2xl font-bold tracking-tight text-[#151515] sm:text-3xl lg:text-[32px] leading-tight">
+          Global markets
+        </h1>
 
-      {/* Region Tabs */}
-      <nav aria-label="Market regions" className="mb-6 flex flex-wrap items-center gap-2">
-        <div
-          role="tablist"
-          className="inline-flex flex-wrap rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] p-1 shadow-2xs"
-        >
-          {REGION_TABS.map((tab) => {
-            const isSelected = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => handleTabChange(tab.id)}
-                className={cn(
-                  "rounded-full px-5 py-2 text-sm font-bold transition-all",
-                  isSelected
-                    ? "bg-[#151515] text-white"
-                    : "text-[#151515] hover:bg-black/5",
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+        <nav aria-label="Market regions" className="flex items-center gap-1.5">
+          <div
+            role="tablist"
+            className="inline-flex flex-wrap rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] p-0.5 shadow-2xs"
+          >
+            {REGION_TABS.map((tab) => {
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={cn(
+                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all",
+                    isSelected
+                      ? "bg-[#151515] text-white"
+                      : "text-[#151515] hover:bg-black/5",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
 
       {error ? (
         <div
           role="alert"
-          className="mb-4 rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900"
+          className="mb-2 rounded-xl border border-rose-300 bg-rose-50 p-2.5 text-xs text-rose-900"
         >
           {error}
         </div>
       ) : null}
 
-      {/* Main Row: Coral hero on left (~30%), Large table on right (~70%) */}
-      <div className="main-bento">
-        <HeroCard item={selectedQuote} className="h-full min-h-[460px]" />
+      {/* Main Row: Coral/Mint/Ivory hero on left (~30%), Large table on right (~70%) */}
+      <div className="main-bento flex-1 min-h-[290px] max-h-[380px] lg:max-h-[420px]">
+        <HeroCard item={selectedQuote} className="h-full" />
         <TableCard
           items={regionalQuotes}
           selectedId={selectedId}
@@ -242,7 +243,7 @@ export function GlobalMarketsDashboard({
           onOpenCompare={() => setIsCompareOpen(true)}
           isWatchlisted={isWatchlisted}
           onToggleWatchlist={toggleWatchlist}
-          className="h-full min-h-[460px]"
+          className="h-full"
         />
       </div>
 
@@ -256,7 +257,7 @@ export function GlobalMarketsDashboard({
           }
         }}
         onOpenOverview={() => setIsOverviewOpen(true)}
-        className="mt-3"
+        className="mt-2"
       />
 
       {/* Comparison Modal */}
