@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Fold, Takeaway, Tile, type Tone } from "@/components/guide/explain";
 import { cn } from "@/lib/utils";
 import type { FinancialRatioMetrics, StatementColumn, StatementRow, WorkingCapitalMetrics } from "@/lib/financials/types";
@@ -141,6 +142,27 @@ function StatementTable({ rows, cols, caption, onlyTotals }: { rows: StatementRo
   );
 }
 
+/** Mobile key-lines view: the two latest periods first, full history one tap away. */
+function MobileKeyLines({ rows, cols, name }: { rows: StatementRow[]; cols: StatementColumn[]; name: string }) {
+  const [showAll, setShowAll] = useState(false);
+  const recent = cols.slice(-2);
+  return (
+    <div className="space-y-2">
+      <StatementTable rows={rows} cols={showAll ? cols : recent} caption={`${name}: key lines`} onlyTotals />
+      {cols.length > 2 ? (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          aria-expanded={showAll}
+          className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 text-sm font-medium text-primary active:bg-muted/50"
+        >
+          {showAll ? "Show latest 2 years" : `Show full history (${cols.length} years)`}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 /** Profit & loss, balance sheet or cash flow: what it says first, key lines next, every line item folded. */
 export function StatementView({ kind, rows, cols }: { kind: "pl" | "bs" | "cf"; rows: StatementRow[]; cols: StatementColumn[] }) {
   if (!cols.length || !rows.length) return <p className="text-base text-muted-foreground">No statement filed for this period type yet.</p>;
@@ -209,7 +231,14 @@ export function StatementView({ kind, rows, cols }: { kind: "pl" | "bs" | "cf"; 
   return (
     <div className="space-y-5">
       {head}
-      <StatementTable rows={rows} cols={cols} caption={`${name}: key lines`} onlyTotals />
+      {/* Desktop: full-width key-lines table, unchanged */}
+      <div className="hidden md:block">
+        <StatementTable rows={rows} cols={cols} caption={`${name}: key lines`} onlyTotals />
+      </div>
+      {/* Mobile: latest two periods first, full history one tap away */}
+      <div className="md:hidden">
+        <MobileKeyLines rows={rows} cols={cols} name={name} />
+      </div>
       <Fold title={`Every line of the ${name.toLowerCase()}`}>
         <StatementTable rows={rows} cols={cols} caption={name} />
       </Fold>

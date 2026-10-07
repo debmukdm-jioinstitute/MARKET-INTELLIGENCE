@@ -75,22 +75,26 @@ function RiskChain({ c }: { c: CorporateRiskCase }) {
   );
 }
 
+function coverageBadge(coverage: LegalMonitor["coverage"]) {
+  return (
+    <span
+      className={cn(
+        "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+        coverage === "live" && "bg-emerald-500/15 text-emerald-700",
+        coverage === "partial" && "bg-amber-500/15 text-amber-800",
+        coverage === "planned" && "bg-muted text-muted-foreground",
+      )}
+    >
+      {coverage}
+    </span>
+  );
+}
+
 function MonitorRow({ m }: { m: LegalMonitor }) {
   return (
     <tr className="border-b border-border/60 last:border-0">
       <td className="px-3 py-2.5 font-semibold text-foreground">{m.label}</td>
-      <td className="px-3 py-2.5">
-        <span
-          className={cn(
-            "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-            m.coverage === "live" && "bg-emerald-500/15 text-emerald-700",
-            m.coverage === "partial" && "bg-amber-500/15 text-amber-800",
-            m.coverage === "planned" && "bg-muted text-muted-foreground",
-          )}
-        >
-          {m.coverage}
-        </span>
-      </td>
+      <td className="px-3 py-2.5">{coverageBadge(m.coverage)}</td>
       <td className="px-3 py-2.5 text-xs text-muted-foreground">{m.summary}</td>
       <td className="px-3 py-2.5 tabular-nums text-sm">{m.recentCaseCount}</td>
       <td className="px-3 py-2.5">
@@ -99,6 +103,30 @@ function MonitorRow({ m }: { m: LegalMonitor }) {
         </a>
       </td>
     </tr>
+  );
+}
+
+function MonitorCard({ m }: { m: LegalMonitor }) {
+  return (
+    <article className="rounded-xl border border-border bg-card p-3 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold text-foreground">{m.label}</p>
+        {coverageBadge(m.coverage)}
+      </div>
+      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{m.summary}</p>
+      <p className="mt-2 text-sm tabular-nums text-foreground">
+        <span className="font-bold">{m.recentCaseCount}</span>{" "}
+        <span className="text-xs text-muted-foreground">recent hits</span>
+      </p>
+      <a
+        href={m.portalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex min-h-[44px] w-full items-center justify-center gap-1 rounded-lg border border-border text-sm font-semibold text-primary"
+      >
+        Open portal <ExternalLink className="size-3.5" />
+      </a>
+    </article>
   );
 }
 
@@ -169,7 +197,8 @@ export function LegalRiskDashboard() {
 
           <section>
             <h2 className="mb-3 text-xs font-bold uppercase tracking-wider">Regulator monitors</h2>
-            <div className="overflow-x-auto rounded-xl border border-border">
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
@@ -186,6 +215,13 @@ export function LegalRiskDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="space-y-2 md:hidden">
+              {data.monitors.map((m) => (
+                <MonitorCard key={m.id} m={m} />
+              ))}
             </div>
           </section>
 
