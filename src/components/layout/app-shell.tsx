@@ -20,7 +20,6 @@ import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PortalDocumentTitle } from "@/components/layout/portal-document-title";
 import { IndiaDashboardWarmup } from "@/components/providers/india-dashboard-warmup";
-import { PortalMascot } from "@/components/mascot/portal-mascot";
 import { Suspense } from "react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -48,7 +47,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <CommandPalette />
             <SiteAssistantWidget />
-            <PortalMascot />
             <GuidedTour />
             <Suspense fallback={null}>
               <PortalDocumentTitle />

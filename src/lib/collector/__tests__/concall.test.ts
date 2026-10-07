@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { abstractBullets, detectQuarter, extractHighlights, numbersSupported, parseTurns, sentencesOf, splitTranscript } from "@/lib/collector/concall-nlp";
+import { countTone, toneScore } from "@/lib/collector/concall-tone";
 import { findCandidates, summarizeTranscript, urlKey } from "@/lib/collector/concalls";
 
 const FILLER = "Our teams continue to execute well across the portfolio and customers remain engaged with the platform. ";
@@ -84,13 +85,38 @@ describe("discovery + summarisation", () => {
   it("summarises a real-shaped transcript without HF and labels the method honestly", async () => {
     const out = await summarizeTranscript({ symbol: "ACME", headline: "Transcript Q1 FY27", url: "https://x/y.pdf", broadcastIso: "2026-10-01T10:00:00.000Z" }, TEXT, { hf: false });
     if (!("row" in out)) throw new Error(`unexpected skip: ${out.skip}`);
-    expect(out.row.generatedBy).toBe("extractive-rules");
-    expect(out.row.tonePrepared).toBeNull();
+    expect(out.row.generatedBy).toMatch(/^extractive-rules/);
+    expect(out.row.generatedBy).not.toMatch(/finbert|distilbart/i);
     expect(out.row.contentHash).toMatch(/^[0-9a-f]{64}$/);
     expect(out.row.quarter).toBe("Q1 FY27");
   });
   it("skips cover-letter-only PDFs", async () => {
     const out = await summarizeTranscript({ symbol: "ACME", headline: "h", url: "u", broadcastIso: "2026-10-01T10:00:00.000Z" }, "Dear Sir, please find the transcript at our website.");
     expect(out).toEqual({ skip: "no-transcript-text" });
+  });
+});
+
+describe("in-house tone scorer", () => {
+  const up = "We delivered strong growth and record margins. Demand is robust and momentum is healthy. We are confident about the outlook and see good visibility. Order wins improved.";
+  const down = "Demand remained weak and margins declined under pressure. We faced delays and uncertain conditions. Headwinds from inflation hurt volumes. We see risks and concerns ahead.";
+  it("scores upbeat above 0 and downbeat below 0", () => {
+    expect(toneScore(up)!).toBeGreaterThan(0.3);
+    expect(toneScore(down)!).toBeLessThan(-0.3);
+  });
+  it("handles negation", () => {
+    expect(countTone("no concerns")).toEqual({ pos: 1, neg: 0 });
+    expect(countTone("not strong")).toEqual({ pos: 0, neg: 1 });
+  });
+  it("ignores safe-harbor boilerplate", () => {
+    expect(countTone("This call contains forward-looking statements involving risks and uncertainties that may cause actual results to differ.")).toEqual({ pos: 0, neg: 0 });
+  });
+  it("returns null with too little signal", () => {
+    expect(toneScore("Thank you everyone for joining the call today.")).toBeNull();
+  });
+  it("is always produced by the pipeline, no HF needed", async () => {
+    const big = TEXT.replace("FILLER", "");
+    const out = await summarizeTranscript({ symbol: "ACME", headline: "h", url: "u", broadcastIso: "2026-10-01T10:00:00.000Z" }, big);
+    if (!("row" in out)) throw new Error("skip");
+    expect(out.row.generatedBy).toMatch(/lexicon-tone|extractive-rules/);
   });
 });

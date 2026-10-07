@@ -65,7 +65,7 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
   const { data, error, isLoading } = useSWR<ConcallResponse>(`/api/research/concall?symbol=${encodeURIComponent(symbol)}`, loadConcall, { revalidateOnFocus: false });
   const [more, setMore] = useState(false);
   const s = data?.summary ?? null;
-  const usedModel = s ? /finbert|distilbart/i.test(s.generatedBy) : false;
+  const usedModel = s ? /distilbart/i.test(s.generatedBy) : false;
   const abstractive = s ? /distilbart/i.test(s.generatedBy) : false;
   const delta = s?.toneDelta ?? null;
 
@@ -112,10 +112,10 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
                     {delta < -DELTA_BAND ? "Tone cooled in Q&A" : delta > DELTA_BAND ? "Tone warmed in Q&A" : "Tone held steady"} ({delta >= 0 ? "+" : ""}{delta.toFixed(2)})
                   </p>
                 ) : null}
-                <p className="text-xs text-muted-foreground">Scale: −1 very negative, +1 very positive (FinBERT reading of the words used). A cooler Q&amp;A than prepared remarks is the signal to watch.</p>
+                <p className="text-xs text-muted-foreground">Scale: −1 very negative, +1 very positive (read from the words used, scored on our own finance word list). A cooler Q&amp;A than prepared remarks is the signal to watch.</p>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Tone was not scored for this call (the scoring model was unavailable when it was processed).</p>
+              <p className="text-sm text-muted-foreground">Tone could not be read for this call: the transcript has too little scoreable language, or the source PDF could not be opened. Try again shortly.</p>
             )}
           </div>
 
