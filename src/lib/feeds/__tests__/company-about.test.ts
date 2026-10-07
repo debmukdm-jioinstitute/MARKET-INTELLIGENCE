@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchCompanyAbout } from "../company-about";
 afterEach(() => vi.unstubAllGlobals());
 
@@ -19,4 +19,20 @@ it("accepts a Wikipedia page only when the title is the company and it is Indian
     return new Response("{}", { status: 404 });
   }));
   expect((await fetchCompanyAbout("ZED INDUSTRIES LTD", { market: "IN" }))?.title).toBe("Zed Industries");
+});
+
+import { dropStaleFigures, isStale, statedYear } from "@/lib/feeds/company-about";
+describe("stale filing blurbs", () => {
+  const zomato = "Incorporated in 2010, Zomato Limited is one of the leading online Food Service platforms. As of December 31, 2020, Zomato has established a strong footprint across 23 countries with 131,233 restaurants.";
+  it("finds the stated as-of year", () => {
+    expect(statedYear(zomato)).toBe(2020);
+    expect(statedYear("No dates here.")).toBeNull();
+  });
+  it("flags blurbs older than two years and drops the stale-figure sentence", () => {
+    expect(isStale(zomato, 2026)).toBe(true);
+    expect(isStale("As of March 31, 2026, we had 40 plants.", 2026)).toBe(false);
+    const out = dropStaleFigures(zomato, 2026);
+    expect(out).toContain("leading online Food Service platforms");
+    expect(out).not.toContain("131,233");
+  });
 });
