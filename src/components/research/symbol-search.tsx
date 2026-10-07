@@ -15,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Search, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { awardXp } from "@/lib/gamification/client";
 
 /**
  * One entry in the merged, keyboard-navigable results list. This is the
@@ -84,6 +85,11 @@ export function SymbolSearch({
 
   const prominent = variant === "hero" || variant === "bar";
   const items = buildItems(result);
+  // Top company match (for the deep-research nudge) and the index of the last
+  // company row so the nudge lands right after all company rows.
+  const topSymbolItem = items.find((i): i is Extract<ResultItem, { kind: "symbol" }> => i.kind === "symbol") ?? null;
+  const topSymbolHit = topSymbolItem?.hit ?? null;
+  const lastSymbolIdx = items.reduce((acc, item, idx) => (item.kind === "symbol" ? idx : acc), -1);
 
   const typingActive = typingPlaceholder && !q.trim() && !hasUserTypedRef.current && !isFocused;
   const animatedPlaceholder = useTypingPlaceholder({
@@ -143,6 +149,8 @@ export function SymbolSearch({
     (item: ResultItem) => {
       if (item.kind === "symbol") {
         setOpen(false);
+        // Fire-and-forget: silently no-ops for guests/offline.
+        void awardXp("search_used", item.hit.symbol);
         router.push(`/research/${encodeURIComponent(item.hit.symbol)}`);
         return;
       }
@@ -245,6 +253,7 @@ export function SymbolSearch({
                 hasUserTypedRef.current = false;
                 setIsFocused(false);
                 setOpen(false);
+                void awardXp("search_used", trimmed.toUpperCase());
                 router.push(`/research/${encodeURIComponent(trimmed.toUpperCase())}`);
               }
               return;
@@ -294,14 +303,29 @@ export function SymbolSearch({
             <li className="px-3 py-2 text-sm text-muted-foreground">Searching…</li>
           ) : null}
           {items.map((item, i) => (
-            <ResultRow
-              key={itemKey(item)}
-              item={item}
-              index={i}
-              active={i === active}
-              onHover={() => setActive(i)}
-              onSelect={() => selectItem(item)}
-            />
+            <Fragment key={itemKey(item)}>
+              <ResultRow
+                item={item}
+                index={i}
+                active={i === active}
+                onHover={() => setActive(i)}
+                onSelect={() => selectItem(item)}
+              />
+              {/* Deep-research nudge, right after the company rows. Not part of
+                  keyboard nav (mouse/tap only) so the existing selection model
+                  is untouched. */}
+              {i === lastSymbolIdx && topSymbolHit ? (
+                <ResearchNudgeRow
+                  hit={topSymbolHit}
+                  index={i}
+                  onSelect={() => {
+                    setOpen(false);
+                    void awardXp("search_used", topSymbolHit.symbol);
+                    router.push(`/research/${encodeURIComponent(topSymbolHit.symbol)}`);
+                  }}
+                />
+              ) : null}
+            </Fragment>
           ))}
         </ul>
       ) : null}
@@ -314,6 +338,29 @@ function itemKey(item: ResultItem): string {
   if (item.kind === "page") return `page-${item.href}`;
   if (item.kind === "help") return `help-${item.topic.id}`;
   return "ask";
+}
+
+function ResearchNudgeRow({ hit, index, onSelect }: { hit: SymbolSearchHit; index: number; onSelect: () => void }) {
+  const name = hit.name?.trim() || hit.symbol;
+  return (
+    <li className="animate-dropdown-item px-1.5" style={{ animationDelay: `${Math.min(index + 1, 8) * 22}ms` }}>
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={`Do deep research on ${name}`}
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-dashed border-border px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-primary/5"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
+          <span className="min-w-0">
+            <span className="block truncate font-medium">Do deep research on {name}</span>
+            <span className="block text-xs text-muted-foreground">Full AI research + earn XP</span>
+          </span>
+        </span>
+        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">+10 XP</span>
+      </button>
+    </li>
+  );
 }
 
 function ResultRow({

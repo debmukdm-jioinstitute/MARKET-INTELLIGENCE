@@ -10,30 +10,20 @@ function connectionString() {
   );
 }
 
-function isValidConnectionString(conn: string): boolean {
-  if (!conn) return false;
-  try {
-    const u = new URL(conn);
-    return (u.protocol === "postgres:" || u.protocol === "postgresql:") && Boolean(u.hostname);
-  } catch {
-    return false;
-  }
-}
-
 let sqlClient: NeonQueryFunction<false, false> | null = null;
 
 /** Lazily-created Neon client — throws only when actually queried without a DB configured. */
 export function sql(): NeonQueryFunction<false, false> {
   if (!sqlClient) {
     const conn = connectionString();
-    if (!isValidConnectionString(conn)) throw new Error("No database configured (DATABASE_URL / POSTGRES_URL unset or invalid)");
+    if (!conn) throw new Error("No database configured (DATABASE_URL / POSTGRES_URL unset)");
     sqlClient = neon(conn);
   }
   return sqlClient;
 }
 
 export function hasDatabase() {
-  return isValidConnectionString(connectionString());
+  return Boolean(connectionString());
 }
 
 /**
@@ -570,11 +560,6 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_credit_ratings_symbol_date ON credit_ratings (symbol, action_date DESC)`;
 
-      // Persistent archive cache prevents repeated scraping/PDF parsing on serverless cold starts.
-      await db`CREATE TABLE IF NOT EXISTS transcript_archive_cache (
-        cache_key text PRIMARY KEY, payload jsonb NOT NULL, expires_at timestamptz NOT NULL
-      )`;
-
       // Concall "said vs guided" summaries. Transcript text itself is never stored — only extracted highlights + link.
       await db`
         CREATE TABLE IF NOT EXISTS concall_summaries (
@@ -715,6 +700,33 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_email)`;
+
+      // -- Gamification XP economy: daily engagement minutes + referrals --
+      await db`
+        CREATE TABLE IF NOT EXISTS daily_engagement (
+          user_email text NOT NULL,
+          day date NOT NULL,
+          minutes int NOT NULL DEFAULT 0,
+          last_ping timestamptz,
+          PRIMARY KEY (user_email, day)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_daily_engagement_day ON daily_engagement(day)`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code text UNIQUE`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by text`;
+      await db`ALTER TABLE signup_otps ADD COLUMN IF NOT EXISTS referral_code text`;
+      await db`
+        CREATE TABLE IF NOT EXISTS referrals (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          referrer_email text NOT NULL,
+          referee_email text NOT NULL UNIQUE,
+          referral_code text NOT NULL,
+          status text NOT NULL DEFAULT 'pending',
+          created_at timestamptz NOT NULL DEFAULT now(),
+          converted_at timestamptz
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_email)`;
 
       await ensureCompetitionSchema(db);
       schemaReady = true;

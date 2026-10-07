@@ -1,6 +1,7 @@
 import { hashPassword, isBootstrapAdmin } from "@/lib/admin/auth";
 import { setSessionCookie } from "@/lib/admin/session-cookie";
 import { sql } from "@/lib/db";
+import { attributeReferral } from "@/lib/referrals/attribute";
 import { tagCustomerInKit } from "@/lib/kit";
 import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
 import { after } from "next/server";
@@ -12,6 +13,8 @@ export async function completeEmailSignup(input: {
   name: string;
   passwordHash: string;
   origin: string;
+  /** Referral code from ?ref= / signup body — attributed best-effort. */
+  referralCode?: string | null;
 }): Promise<NextResponse> {
   const role = isBootstrapAdmin(input.email) ? "admin" : "user";
   const db = sql();
@@ -19,6 +22,13 @@ export async function completeEmailSignup(input: {
     INSERT INTO users (email, name, password_hash, role, last_login_at, privacy_accepted_at, email_verified_at)
     VALUES (${input.email}, ${input.name}, ${input.passwordHash}, ${role}, now(), now(), now())
   `;
+  if (input.referralCode) {
+    try {
+      await attributeReferral(input.email, input.referralCode);
+    } catch (e) {
+      console.warn("[referral] signup attribution failed:", e);
+    }
+  }
   const sessionUser = { email: input.email, name: input.name, role: role as "admin" | "user", guest: false as const };
   const res = NextResponse.json({ ok: true, user: { email: input.email, name: input.name, role } });
   const out = setSessionCookie(res, sessionUser);

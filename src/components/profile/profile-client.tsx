@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { ProfilePlanBilling } from "@/components/profile/profile-plan-billing";
 import { TelegramAlertsSetupPanel } from "@/components/telegram/telegram-alerts-setup-panel";
 import { useXpSummary, type XpSummary } from "@/lib/gamification/client";
+import { XpJourneyCard } from "@/components/gamification/xp-journey-card";
+import { ReferralCard } from "@/components/gamification/referral-card";
 import { SmartNotifPrefs } from "@/components/profile/smart-notif-prefs";
 import { Bug, FileText, LogOut, Mail, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import Link from "next/link";
@@ -494,6 +496,10 @@ export function ProfileClient() {
       ) : null}
 
       <XpPointsSection />
+
+      <XpJourneyCard />
+
+      <ReferralCard />
 
       <Section
         id="telegram"
