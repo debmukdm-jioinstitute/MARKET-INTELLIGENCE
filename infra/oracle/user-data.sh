@@ -61,6 +61,9 @@ APIFY_TOKEN="PASTE_HERE"               # optional — Google Trends via the Apif
 YOUTUBE_API_KEY="PASTE_HERE"           # optional — YouTube Data API v3 (sentiment comments)
 BLS_API_KEY="PASTE_HERE"               # optional — BLS macro series
 FEED_USER_AGENT="PASTE_HERE"           # optional — User-Agent for RSS/open feeds
+UPSTASH_REDIS_REST_URL="PASTE_HERE"    # P3 snapshot writer (same Upstash DB as Vercel)
+UPSTASH_REDIS_REST_TOKEN="PASTE_HERE"  # P3 snapshot writer
+GROQ_API_KEY="PASTE_HERE"              # optional — P4 insight cards (rules-only without it)
 
 # Per-collector budget/backfill knobs — ALL optional, every one has a sane
 # default in code (see infra/oracle/env-inventory.md). Leave them PASTE_HERE
@@ -126,6 +129,9 @@ write_env APIFY_TOKEN               "$APIFY_TOKEN"
 write_env YOUTUBE_API_KEY           "$YOUTUBE_API_KEY"
 write_env BLS_API_KEY               "$BLS_API_KEY"
 write_env FEED_USER_AGENT           "$FEED_USER_AGENT"
+write_env UPSTASH_REDIS_REST_URL    "$UPSTASH_REDIS_REST_URL"
+write_env UPSTASH_REDIS_REST_TOKEN  "$UPSTASH_REDIS_REST_TOKEN"
+write_env GROQ_API_KEY              "$GROQ_API_KEY"
 write_env SHAREHOLDING_BUDGET_MS    "$SHAREHOLDING_BUDGET_MS"
 write_env SENTIMENT_BUDGET_MS       "$SENTIMENT_BUDGET_MS"
 write_env CONCALL_BUDGET_MS         "$CONCALL_BUDGET_MS"
@@ -243,6 +249,9 @@ HOME=/home/mi
 # --- telegram data brief: 01:05 + 13:05 UTC (5 min after collectors' worst case; endpoint dedups per AM/PM IST slot) ---
 5 1 * * * mi /opt/mi/bin/run.sh scripts/oracle/run-telegram-data-brief.ts >>/opt/mi/logs/run-telegram-data-brief.log 2>&1
 5 13 * * * mi /opt/mi/bin/run.sh scripts/oracle/run-telegram-data-brief.ts >>/opt/mi/logs/run-telegram-data-brief.log 2>&1
+# --- P3 snapshot writer: dossiers every 15 min in market hours; panels nightly ---
+*/15 3-10 * * 1-5 mi /opt/mi/bin/run.sh scripts/oracle/run-warm-dossiers.ts --limit=60 >>/opt/mi/logs/run-warm-dossiers.log 2>&1
+30 20 * * 0-4 mi /opt/mi/bin/run.sh scripts/oracle/run-warm-dossiers.ts --panels --limit=60 >>/opt/mi/logs/run-warm-dossiers-panels.log 2>&1
 # --- heartbeat: every 5 min (liveness dead-man's-switch; see heartbeat-wrapper.sh) ---
 */5 * * * * mi /opt/mi/bin/heartbeat-wrapper.sh >>/opt/mi/logs/heartbeat.log 2>&1
 CRONEOF
