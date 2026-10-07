@@ -1,5 +1,5 @@
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
-import { computeOwnershipFlags, type OwnershipRow } from "@/lib/research/ownership";
+import { byQuarter, computeOwnershipFlags, type OwnershipRow } from "@/lib/research/ownership";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { getText } from "@/lib/collector/http";
 import { masterToRows, parseShpXbrl } from "@/lib/collector/shareholding";
@@ -40,7 +40,9 @@ const settled = new Map<string, number>(); // rows already read (or failed) rece
  * remember the outcome for 6 hours so a bad file is not retried in a loop.
  */
 async function backfillDetail(symbol: string, rows: Row[]): Promise<void> {
-  const need = rows.filter((r) => r.xbrl_url && r.fii_pct === null && (settled.get(`${symbol}|${toDateString(r.broadcast_date)}`) ?? 0) < Date.now()).slice(0, 4);
+  // Older filings predate the institution facts in the XBRL, so only the newest two quarters are worth reading.
+  const newest = [...rows].sort((a, b) => ((b.quarter_end ? toDateString(b.quarter_end) : toDateString(b.broadcast_date)) > (a.quarter_end ? toDateString(a.quarter_end) : toDateString(a.broadcast_date)) ? 1 : -1)).slice(0, 2);
+  const need = newest.filter((r) => r.xbrl_url && r.fii_pct === null && (settled.get(`${symbol}|${toDateString(r.broadcast_date)}`) ?? 0) < Date.now());
   await Promise.all(
     need.map((r) => {
       const day = toDateString(r.broadcast_date);
@@ -113,8 +115,8 @@ async function fetchLiveOwnership(symbol: string): Promise<OwnershipRow[]> {
       }),
     );
 
-    return filings
-      .slice(0, 9)
+    return byQuarter(filings
+      .slice(0, 12)
       .map((f) => ({
         broadcastDate: f.broadcastDate,
         quarterEnd: f.quarterEnd,
@@ -125,8 +127,7 @@ async function fetchLiveOwnership(symbol: string): Promise<OwnershipRow[]> {
         pledgePct: f.pledgePct,
         shareholderCount: f.shareholderCount,
         xbrlUrl: f.xbrlUrl,
-      }))
-      .reverse();
+      })));
   } catch {
     return [];
   }
@@ -151,12 +152,12 @@ export async function GET(req: Request) {
       await ensureSchema();
       const rows = (await sql()`
         SELECT broadcast_date, quarter_end, promoter_pct, fii_pct, dii_pct, public_pct, pledge_pct, shareholder_count, xbrl_url
-        FROM shareholding WHERE symbol = ${symbol} ORDER BY broadcast_date DESC LIMIT 9
+        FROM shareholding WHERE symbol = ${symbol} ORDER BY broadcast_date DESC LIMIT 14
       `) as Row[];
 
       if (rows.length > 0) {
-        await Promise.race([backfillDetail(symbol, rows), new Promise((r) => setTimeout(r, 14_000))]);
-        asc = rows
+        await Promise.race([backfillDetail(symbol, rows), new Promise((r) => setTimeout(r, 8_000))]);
+        asc = byQuarter(rows
           .map((r) => ({
             broadcastDate: toDateString(r.broadcast_date),
             quarterEnd: r.quarter_end ? toDateString(r.quarter_end) : null,
@@ -167,8 +168,7 @@ export async function GET(req: Request) {
             pledgePct: num(r.pledge_pct),
             shareholderCount: r.shareholder_count === null ? null : Number(r.shareholder_count),
             xbrlUrl: r.xbrl_url,
-          }))
-          .reverse();
+          })));
       }
     } catch {
       // fallback to live
