@@ -80,7 +80,7 @@ export function SymbolSearch({
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const hasUserTypedRef = useRef(false);
+  const [hasUserTyped, setHasUserTyped] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
   const prominent = variant === "hero" || variant === "bar";
@@ -91,7 +91,7 @@ export function SymbolSearch({
   const topSymbolHit = topSymbolItem?.hit ?? null;
   const lastSymbolIdx = items.reduce((acc, item, idx) => (item.kind === "symbol" ? idx : acc), -1);
 
-  const typingActive = typingPlaceholder && !q.trim() && !hasUserTypedRef.current && !isFocused;
+  const typingActive = typingPlaceholder && !q.trim() && !hasUserTyped && !isFocused;
   const animatedPlaceholder = useTypingPlaceholder({
     enabled: typingActive,
     prefix: RESEARCH_SEARCH_PLACEHOLDER_PREFIX,
@@ -107,14 +107,14 @@ export function SymbolSearch({
 
   useEffect(() => {
     setQ(initialQuery);
-    hasUserTypedRef.current = false;
+    setHasUserTyped(false);
     setResult(EMPTY_RESULT);
     setOpen(false);
   }, [initialQuery]);
 
   useEffect(() => {
     // Only search and show dropdown when the user has actively typed into this input
-    if (!hasUserTypedRef.current) {
+    if (!hasUserTyped) {
       setResult(EMPTY_RESULT);
       setOpen(false);
       return;
@@ -143,7 +143,7 @@ export function SymbolSearch({
       }
     }, 200);
     return () => window.clearTimeout(id);
-  }, [q]);
+  }, [q, hasUserTyped]);
 
   const selectItem = useCallback(
     (item: ResultItem) => {
@@ -224,12 +224,12 @@ export function SymbolSearch({
           autoFocus={autoFocus}
           value={q}
           onChange={(e) => {
-            hasUserTypedRef.current = true;
+            setHasUserTyped(true);
             setQ(e.target.value);
           }}
           onFocus={() => {
             setIsFocused(true);
-            if (hasUserTypedRef.current && items.length > 0) {
+            if (hasUserTyped && items.length > 0) {
               setOpen(true);
             }
           }}
@@ -250,7 +250,7 @@ export function SymbolSearch({
               // the raw ticker route, even mid-debounce.
               const trimmed = q.trim();
               if (e.key === "Enter" && trimmed && !isNaturalLanguageQuery(trimmed)) {
-                hasUserTypedRef.current = false;
+                setHasUserTyped(false);
                 setIsFocused(false);
                 setOpen(false);
                 void awardXp("search_used", trimmed.toUpperCase());
