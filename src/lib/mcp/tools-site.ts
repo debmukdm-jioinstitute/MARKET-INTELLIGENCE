@@ -12,6 +12,8 @@ import { hasDatabase } from "@/lib/db";
 import { buildIndiaMacroHub } from "@/lib/macro/build-hub";
 import { buildMacroTape } from "@/lib/macro/build-tape";
 import { buildWorldIndices } from "@/lib/macro/build-world-indices";
+import { buildCurrencyQuotes } from "@/lib/macro/build-currency-quotes";
+import { buildCommodityQuotes } from "@/lib/macro/build-commodity-quotes";
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
 import { getMarketShiftsCached } from "@/lib/feeds/what-changed/cache";
 import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
@@ -214,6 +216,22 @@ export const SITE_TOOLS: Tool[] = [
     description: "Major global equity indices with levels and 1-day changes.",
     inputSchema: empty,
     run: () => buildWorldIndices(),
+  },
+  {
+    name: "get_currency_quotes",
+    title: "Currency quotes",
+    category: "Macro",
+    description: "FX pairs on the currency board: last price, day change, volume and ranges (Yahoo Finance).",
+    inputSchema: empty,
+    run: () => buildCurrencyQuotes(),
+  },
+  {
+    name: "get_commodity_quotes",
+    title: "Commodity quotes",
+    category: "Macro",
+    description: "Energy, metals and agriculture on the commodities board: last price, day change, volume and ranges (Yahoo Finance).",
+    inputSchema: empty,
+    run: () => buildCommodityQuotes(),
   },
   {
     name: "get_market_holidays",

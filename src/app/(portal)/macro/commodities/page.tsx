@@ -1,216 +1,84 @@
 "use client";
 
-import { Lines } from "@/components/charts/terminal-charts";
-import { PageHeader, Panel } from "@/components/layout/page-header";
-import {
-  CommodityFocusToggle,
-  type CommodityFocusFilter,
-} from "@/components/macro/commodity-focus-toggle";
-import { MacroTapeSkeleton } from "@/components/macro/macro-tape-skeleton";
-import { MetricExplainer } from "@/components/macro/metric-explainer";
-import { useMacroTape } from "@/hooks/use-macro-tape";
-import type { TapeQuote } from "@/lib/macro/build-tape";
-import {
-  COMMODITY_CATEGORY_LABEL,
-  COMMODITY_FOCUS_LABEL,
-  COMMODITY_UNIVERSE,
-  commodityFocusCounts,
-  formatCommodityPrice,
-  parseCommodityFocusParam,
-  type CommodityCategory,
-  type CommodityDef,
-} from "@/lib/macro/commodity-universe";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
+import { MarketsBoard } from "@/components/markets-board/markets-board";
+import type { MarketsBoardRow, MarketsBoardTab } from "@/components/markets-board/types";
+import { useCommodityQuotes } from "@/hooks/use-commodity-quotes";
+import { parseCommodityFocusParam } from "@/lib/macro/commodity-universe";
+import { pickControlledString } from "@/lib/react/pick-controlled-list-item";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 
-const CATEGORY_ORDER: CommodityCategory[] = [
-  "energy",
-  "precious",
-  "industrial",
-  "agriculture",
-  "us_benchmarks",
-  "india_benchmarks",
+const TABS: MarketsBoardTab[] = [
+  { id: "all", label: "All markets" },
+  { id: "global", label: "Global futures" },
+  { id: "us", label: "United States" },
+  { id: "india", label: "India" },
 ];
 
-/** Categories shown per focus toggle (logic map). */
-const CATEGORIES_BY_FOCUS: Record<CommodityFocusFilter, CommodityCategory[] | "all"> = {
-  all: "all",
-  global: ["energy", "precious", "industrial", "agriculture"],
-  us: ["us_benchmarks"],
-  india: ["india_benchmarks"],
-};
-
-function changePctClass(pct: number | null) {
-  if (pct == null) return "text-muted-foreground";
-  return pct >= 0 ? "text-chart-2" : "text-destructive";
-}
-
-function CommodityCard({
-  def,
-  quote,
-  hist,
-}: {
-  def: CommodityDef;
-  quote?: TapeQuote;
-  hist?: { date: string; v: number }[];
-}) {
-  const price = quote?.price ?? null;
-  const changePct = quote?.changePct ?? null;
-  const sourceUrl = quote?.source.url ?? `https://finance.yahoo.com/quote/${encodeURIComponent(def.sym)}`;
-  const provider = quote?.source.provider ?? "Yahoo Finance";
-
-  return (
-    <Panel id={def.id} title={def.label} subtitle={`${def.unit} · ${COMMODITY_FOCUS_LABEL[def.focus]}`}>
-      <div className="flex flex-wrap items-baseline gap-3">
-        <p className="text-2xl font-semibold tabular-nums">{formatCommodityPrice(def, price)}</p>
-        <span className={cn("text-sm font-medium tabular-nums", changePctClass(changePct))}>
-          {changePct != null ? `${changePct >= 0 ? "+" : ""}${(changePct * 100).toFixed(2)}%` : "—"}
-        </span>
-        <MetricExplainer copyKey={def.copyKey} />
-        <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary">
-          {provider}
-        </a>
-      </div>
-      {hist?.length ? (
-        <div className="mt-4 h-[180px]">
-          <Lines data={hist} keys={[{ key: "v", color: "var(--primary)", name: def.label }]} />
-        </div>
-      ) : price != null ? (
-        <p className="mt-3 text-xs text-muted-foreground">6-month chart loading…</p>
-      ) : (
-        <p className="mt-3 text-xs text-muted-foreground">Quote unavailable — retry after refresh.</p>
-      )}
-    </Panel>
-  );
-}
+const TAB_IDS = TABS.map((t) => t.id);
 
 export default function CommoditiesMacroPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data, loading, error, reload } = useMacroTape();
-  const [hist, setHist] = useState<Record<string, { date: string; v: number }[]>>({});
+  const { data, loading, error, reload } = useCommodityQuotes();
 
-  const focusFromUrl = parseCommodityFocusParam(searchParams.get("focus"));
-  const [focus, setFocusState] = useState<CommodityFocusFilter>(focusFromUrl ?? "all");
+  const tab = pickControlledString(TAB_IDS, parseCommodityFocusParam(searchParams.get("focus")) ?? "all");
 
-  useEffect(() => {
-    const parsed = parseCommodityFocusParam(searchParams.get("focus"));
-    if (parsed) setFocusState(parsed);
-  }, [searchParams]);
-
-  const setFocus = useCallback(
-    (next: CommodityFocusFilter) => {
-      setFocusState(next);
+  const setTab = useCallback(
+    (id: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (next === "all") params.delete("focus");
-      else params.set("focus", next);
+      if (id === "all") params.delete("focus");
+      else params.set("focus", id);
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );
 
-  const focusCounts = useMemo(() => commodityFocusCounts(), []);
-
-  const quoteById = useMemo(() => new Map((data?.commodities ?? []).map((q) => [q.id, q])), [data?.commodities]);
-
-  const visibleDefs = useMemo(() => {
-    const byFocus = focus === "all" ? COMMODITY_UNIVERSE : COMMODITY_UNIVERSE.filter((d) => d.focus === focus);
-    const catFilter = CATEGORIES_BY_FOCUS[focus];
-    if (catFilter === "all") return byFocus;
-    return byFocus.filter((d) => catFilter.includes(d.category));
-  }, [focus]);
-
-  const defsByCategory = useMemo(() => {
-    const map = new Map<CommodityCategory, CommodityDef[]>();
-    for (const cat of CATEGORY_ORDER) map.set(cat, []);
-    for (const d of visibleDefs) {
-      map.get(d.category)?.push(d);
-    }
-    return map;
-  }, [visibleDefs]);
-
-  const categoriesToRender = useMemo(() => {
-    const allowed = CATEGORIES_BY_FOCUS[focus];
-    if (allowed === "all") return CATEGORY_ORDER;
-    return CATEGORY_ORDER.filter((c) => allowed.includes(c));
-  }, [focus]);
-
-  useEffect(() => {
-    if (!visibleDefs.length) return;
-    let cancelled = false;
-    (async () => {
-      const results = await Promise.all(
-        visibleDefs.map(async (def) => {
-          try {
-            const res = await fetch(`/api/feeds/yahoo/history?symbol=${encodeURIComponent(def.sym)}&range=6mo`);
-            if (!res.ok) return [def.id, [] as { date: string; v: number }[]] as const;
-            const json = (await res.json()) as { points?: { date: string; value: number }[] };
-            return [def.id, (json.points ?? []).map((p) => ({ date: p.date, v: p.value }))] as const;
-          } catch {
-            return [def.id, [] as { date: string; v: number }[]] as const;
-          }
-        }),
-      );
-      if (cancelled) return;
-      setHist((prev) => {
-        const out = { ...prev };
-        for (const [id, points] of results) out[id] = points;
-        return out;
-      });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [visibleDefs]);
-
-  const { global: globalCount, us: usCount, india: indiaCount } = focusCounts;
+  const rows: MarketsBoardRow[] = useMemo(
+    () =>
+      (data?.quotes ?? []).map((q) => ({
+        id: q.id,
+        label: q.label,
+        subtitle: q.unit,
+        region: q.region,
+        symbol: q.symbol,
+        yahooSymbol: q.symbol,
+        tab: q.focus,
+        price: q.price,
+        change: q.change,
+        changePct: q.changePct,
+        volume: q.volume,
+        dayLow: q.dayLow,
+        dayHigh: q.dayHigh,
+        week52Low: q.week52Low,
+        week52High: q.week52High,
+        decimals: q.decimals,
+        formattedPrice: q.formattedPrice,
+        sourceUrl: q.source.url,
+      })),
+    [data?.quotes],
+  );
 
   return (
-    <div className="portal-page pb-10">
-      <PageHeader
-
-        title="Commodity dashboard"
-        subtitle={`${focusCounts.all} instruments — ${globalCount} global futures, ${usCount} US ETFs, ${indiaCount} India NSE proxies. Yahoo Finance; MCX live requires exchange licence.`}
-        trust={{ source: "FRED, RBI, Yahoo Finance", asOf: data?.fetchedAt, delayed: "Quotes may be delayed" }}
-        />
-
-      <CommodityFocusToggle value={focus} onChange={setFocus} counts={focusCounts} className="mt-4" />
-
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <Link href="/macro" className="text-sm text-primary hover:underline">
-          ← Macro home
-        </Link>
-        <button type="button" onClick={() => reload()} className="text-sm text-muted-foreground hover:text-primary">
-          Refresh tape
-        </button>
-        {focus !== "all" ? (
-          <span className="text-xs text-muted-foreground">
-            Showing {COMMODITY_FOCUS_LABEL[focus]} only · {visibleDefs.length} cards
-          </span>
-        ) : null}
-      </div>
-
-      {loading && !data ? <MacroTapeSkeleton count={6} /> : null}
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-      {categoriesToRender.map((cat) => {
-        const defs = defsByCategory.get(cat) ?? [];
-        if (!defs.length) return null;
-        return (
-          <section key={cat} className="mt-8 space-y-4">
-            <h2 className="font-heading text-lg font-bold text-foreground">{COMMODITY_CATEGORY_LABEL[cat]}</h2>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {defs.map((def) => (
-                <CommodityCard key={def.id} def={def} quote={quoteById.get(def.id)} hist={hist[def.id]} />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+    <MarketsBoard
+      title="Commodities"
+      tabs={TABS}
+      activeTab={tab}
+      onTabChange={setTab}
+      rows={rows}
+      loading={loading}
+      error={error}
+      fetchedAt={data?.fetchedAt}
+      onRefresh={reload}
+      searchPlaceholder="Search commodities"
+      filterLabel="Filter by region"
+      allFilterLabel="All regions"
+      universeAllLabel="All commodities"
+      noun="commodities"
+      changeSuffix=""
+      watchStorageKey="mi-board-watch:commodities"
+    />
   );
 }
