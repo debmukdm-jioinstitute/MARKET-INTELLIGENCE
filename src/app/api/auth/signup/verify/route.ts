@@ -39,11 +39,11 @@ export async function POST(req: Request) {
   }
 
   const rows = await db`
-    SELECT email, name, password_hash, code_hash, attempts, expires_at
+    SELECT email, name, password_hash, code_hash, attempts, expires_at, referral_code
     FROM signup_otps WHERE email = ${email}
   `;
   const pending = rows[0] as
-    | { email: string; name: string; password_hash: string; code_hash: string; attempts: number; expires_at: Date | string }
+    | { email: string; name: string; password_hash: string; code_hash: string; attempts: number; expires_at: Date | string; referral_code: string | null }
     | undefined;
   if (!pending) {
     return NextResponse.json({ error: "No pending sign-up for that email. Start again." }, { status: 404 });
@@ -65,5 +65,6 @@ export async function POST(req: Request) {
     name: pending.name,
     passwordHash: pending.password_hash,
     origin: new URL(req.url).origin,
+    referralCode: pending.referral_code,
   });
 }
