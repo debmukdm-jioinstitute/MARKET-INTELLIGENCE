@@ -147,7 +147,7 @@ export function GlobalMarketsDashboard({
   return (
     <div className="global-markets flex flex-col justify-between lg:h-full lg:max-h-full">
       {/* Top Header Row */}
-      <header className="flex flex-wrap items-center justify-between gap-2 pb-1 pt-0.5">
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-1 pt-1">
         {/* Left: Brand lockup and Global markets title */}
         <div className="flex items-center gap-2.5">
           <BrandLogo variant="lockup" size="sm" href="/macro" priority invertOnDark={false} />
@@ -171,7 +171,7 @@ export function GlobalMarketsDashboard({
                   aria-selected={isSelected}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "rounded-full px-3 py-0.5 text-xs font-bold transition-all",
+                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all",
                     isSelected
                       ? "bg-[#151515] text-white"
                       : "text-[#151515] hover:bg-black/5",
@@ -222,14 +222,14 @@ export function GlobalMarketsDashboard({
       {error ? (
         <div
           role="alert"
-          className="mb-2 rounded-xl border border-rose-300 bg-rose-50 p-2.5 text-xs text-rose-900"
+          className="mb-4 rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900"
         >
           {error}
         </div>
       ) : null}
 
       {/* Main Row: Coral/Mint/Ivory hero on left (~30%), Large table on right (~70%) */}
-      <div className="main-bento flex-1 min-h-[230px] max-h-[275px] lg:max-h-[285px]">
+      <div className="main-bento flex-1">
         <HeroCard item={selectedQuote} className="h-full" />
         <TableCard
           items={regionalQuotes}
@@ -254,7 +254,7 @@ export function GlobalMarketsDashboard({
           }
         }}
         onOpenOverview={() => setIsOverviewOpen(true)}
-        className="mt-2"
+        className="mt-4"
       />
 
       {/* Comparison Modal */}

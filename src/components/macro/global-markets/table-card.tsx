@@ -138,7 +138,7 @@ export function TableCard({
     >
       <div className="flex flex-1 flex-col min-h-0">
         {/* Compact Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#151515]/10 pb-2.5 mb-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#151515]/10 pb-3 mb-2">
           <div className="flex flex-wrap items-center gap-2">
             {/* Search input */}
             <div className="relative min-w-[170px] sm:min-w-[200px]">
@@ -252,7 +252,7 @@ export function TableCard({
         </div>
 
         {/* Table container with contained scroll */}
-        <div className="flex-1 overflow-auto max-h-[175px] lg:max-h-[195px]">
+        <div className="min-h-[200px] max-h-[300px] flex-1 overflow-auto">
           <table className="w-full min-w-[580px] border-separate border-spacing-0 text-left">
             <thead>
               <tr className="sticky top-0 z-10 border-b border-[#151515]/15 bg-[#FCFCFA] text-[13px] font-semibold text-[#62656B]">
