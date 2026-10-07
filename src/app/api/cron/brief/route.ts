@@ -1,4 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
+import { withCronRun } from "@/lib/admin/cron-log";
 import { NextResponse } from "next/server";
 import { hasOutboundEmailConfigured, listUnsubscribeHeaders, sendNewsletter } from "@/lib/admin/email";
 import { hasDatabase } from "@/lib/db";
@@ -14,6 +15,7 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
+  return withCronRun("brief", req, async () => {
   const sp = new URL(req.url).searchParams;
   const kind = sp.get("kind") === "post" ? "post" : "pre";
   try {
@@ -34,4 +36,7 @@ export async function GET(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
+  },
+    (b) => ((b as { persisted?: boolean }).persisted ? 1 : 0),
+  );
 }
