@@ -1,4 +1,5 @@
 import { findIndiaInstrument, INDIA_INDEX_INSTRUMENT_KEYS } from "@/lib/feeds/india/instruments";
+import { INDIA_BENCHMARK_DEFS } from "@/lib/feeds/india/indices";
 import {
   candleRangeToDates,
   fetchUpstoxHistoricalCandles,
@@ -19,6 +20,22 @@ const INDEX_ALIASES: Record<string, { symbol: string; instrumentKey: string }> =
   BANKNIFTY: { symbol: "BANK NIFTY", instrumentKey: INDIA_INDEX_INSTRUMENT_KEYS.BANKNIFTY },
   SENSEX: { symbol: "SENSEX", instrumentKey: "BSE_INDEX|SENSEX" },
 };
+
+/**
+ * Every NSE/BSE benchmark with an Upstox instrument key, addressable by its
+ * full Upstox key ("NSE_INDEX|NIFTY BANK"), its label ("NIFTY BANK"), the
+ * key's trailing segment, and its TrueData name — so index detail pages can
+ * request candles with any of those forms.
+ */
+for (const def of INDIA_BENCHMARK_DEFS) {
+  if (!def.upstoxKey) continue;
+  const entry = { symbol: def.label, instrumentKey: def.upstoxKey };
+  INDEX_ALIASES[def.upstoxKey.toUpperCase()] ??= entry;
+  INDEX_ALIASES[def.label.toUpperCase()] ??= entry;
+  const tail = def.upstoxKey.split("|").pop();
+  if (tail) INDEX_ALIASES[tail.toUpperCase()] ??= entry;
+  if (def.trueData) INDEX_ALIASES[def.trueData.toUpperCase()] ??= entry;
+}
 
 export async function GET(req: Request) {
   const params = new URL(req.url).searchParams;

@@ -46,8 +46,9 @@ function acquireSlot(host: string, max: number): Promise<() => void> {
     return Promise.resolve(() => releaseSlot(host));
   }
   return new Promise<() => void>((resolve) => {
+    // Handoff: the waiter takes over this exact slot, so `active` stays
+    // unchanged (do NOT increment — the releaser's slot transfers directly).
     slot!.queue.push(() => {
-      slot!.active += 1;
       resolve(() => releaseSlot(host));
     });
   });

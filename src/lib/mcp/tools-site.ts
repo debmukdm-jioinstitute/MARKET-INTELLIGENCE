@@ -70,6 +70,7 @@ import { breadthInsight, flowInsight, marketStatus, vixInsight } from "@/lib/hom
 import { sessionFromToken } from "@/lib/mcp/context";
 import { getXpSummary } from "@/lib/gamification/store";
 import { getMinutesToday, getStreak } from "@/lib/gamification/engagement";
+import { getIndexConstituents, listIndexSlugs, type IndexConstituent } from "@/lib/india-index-constituents";
 
 /**
  * Read-only MCP tools that mirror the website's public data features (the terminal app `mi` builds its menu from
@@ -168,6 +169,41 @@ export const SITE_TOOLS: Tool[] = [
       const res = { quotes, cachedAt: new Date().toISOString() };
       quotesCache = { data: res, timestamp: Date.now() };
       return res;
+    },
+  },
+  {
+    name: "get_index_constituents",
+    title: "Index constituents with live prices",
+    category: "Markets",
+    description: "Constituent stocks of an NSE/BSE index (Nifty 50, SENSEX, Nifty Bank, …) with live prices, day change and sector. Lists come from NSE's official CSVs (SENSEX is a pinned Oct-2026 snapshot — BSE publishes no free feed); quotes from Yahoo Finance. Never invents prices: missing quotes come back quote-less.",
+    inputSchema: { type: "object", properties: { slug: { type: "string", description: "Index slug, e.g. nifty-50, sensex, nifty-bank, nifty-it. Valid: " + listIndexSlugs().join(", ") } }, required: ["slug"], additionalProperties: false },
+    run: async (a) => {
+      const slug = z.object({ slug: z.string().min(1).max(40) }).parse(a).slug;
+      const { status, body } = await getIndexConstituents(slug);
+      if (body.constituents === null) {
+        return { slug: body.slug, label: body.label, constituents: null, reason: body.reason, message: body.message };
+      }
+      const rows = body.constituents.map((c: IndexConstituent) =>
+        "quote" in c
+          ? { symbol: c.symbol, name: c.name, industry: c.industry, price: null, changePct: null }
+          : { symbol: c.symbol, name: c.name, industry: c.industry, price: c.price, changePct: c.changePct },
+      );
+      const quoted = body.constituents.filter((c): c is Extract<IndexConstituent, { price: number }> => !("quote" in c) && c.changePct != null);
+      return {
+        slug: body.slug,
+        label: body.label,
+        count: body.count,
+        constituentsSource: body.constituentsSource,
+        quotesSource: body.quotesSource,
+        quotesStatus: body.quotesStatus,
+        breadth: {
+          advancers: quoted.filter((c) => (c.changePct as number) > 0).length,
+          decliners: quoted.filter((c) => (c.changePct as number) < 0).length,
+          unchanged: quoted.filter((c) => (c.changePct as number) === 0).length,
+        },
+        constituents: rows,
+        httpStatus: status,
+      };
     },
   },
   {
