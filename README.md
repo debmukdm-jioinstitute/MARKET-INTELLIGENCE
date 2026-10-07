@@ -1083,7 +1083,8 @@ Package version in `package.json` is **`0.1.0`** (semver tracks architecture; re
 
 | Type | Area | Change |
 |---|---|---|
-| Improvement | Macro | **All India indices on `/macro/indices?focus=india`**: India section grew 5 → 24 benchmarks (all 24 Yahoo symbols verified live, name-checked; indices with no working Yahoo quote — NIFTY 500, Midcap 50, GS 10Y, BSE 100/200/500, BANKEX — deliberately excluded, never fabricated); terminal `get_world_indices` picks it up automatically |
+| Improvement | Macro | **All India indices on `/macro/indices?focus=india`**: India section grew 5 → 26 benchmarks (every Yahoo symbol verified live, name-checked; indices with no working Yahoo quote — NIFTY 500, Midcap 50, GS 10Y, BSE 100/200/500, BANKEX — deliberately excluded, never fabricated); terminal `get_world_indices` picks it up automatically |
+| Improvement | Mobile | **Liquid-glass bottom tab bar** (PR #111): floating frosted-glass pill with top sheen + soft glow; raised center **Search** button (exactly middle) opening the global command palette; new **Profile** tab at the end (Today · Stocks · Trade · [Search] · Portfolio · More · Profile); springy active pill indicator, gentle float/pulse on the search button |
 
 ### 0.1.11 — 7 Oct 2026
 
