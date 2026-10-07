@@ -244,6 +244,7 @@ function emptyShell(): IndiaDashboardPayload {
         value: null,
         change7d: null,
         trend30d: [],
+        daily: [],
         source: { provider: "RBI", url: "https://www.rbi.org.in/" },
       },
     },

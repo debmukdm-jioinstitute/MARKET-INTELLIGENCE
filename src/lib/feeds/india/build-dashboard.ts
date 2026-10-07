@@ -409,14 +409,19 @@ async function buildMoneyFlow(fiiDii: FiiDiiLike[]): Promise<IndiaDashboardPaylo
   };
 }
 
-function buildSystemLiquidity(
+async function buildSystemLiquidity(
   rbiLiq: Awaited<ReturnType<typeof getRbiLiquidity>>,
-): IndiaDashboardPayload["rbiLiquidity"]["systemLiquidity"] {
+): Promise<IndiaDashboardPayload["rbiLiquidity"]["systemLiquidity"]> {
+  // Daily history for the liquidity bar chart; empty when the collector DB is unavailable.
+  const daily = await seriesHistory("rbi_net_liquidity", 45)
+    .then((pts) => pts.map((p) => ({ date: p.date, valueCr: p.value })))
+    .catch(() => [] as { date: string; valueCr: number }[]);
   return {
     netCr: rbiLiq?.netCr ?? null,
     value: rbiLiq ? fmtLakhCr(rbiLiq.netCr) : null,
     change7d: rbiLiq?.prev != null ? fmtLakhCr(rbiLiq.netCr - rbiLiq.prev, true) : null,
     trend30d: [],
+    daily,
     source: {
       provider: "Reserve Bank of India (Money Market Operations)",
       url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx",
@@ -516,6 +521,9 @@ async function buildIndiaMacroLite() {
     const last = pts[pts.length - 1];
     if (last && last.value > 0) fxReservePt = { value: last.value / 1000, date: String(last.date).slice(0, 10) };
   }
+  const fxHist = await seriesHistory("india_fx_reserves_ex_gold", 14).catch(
+    () => [] as { date: string; value: number }[],
+  );
 
   const rbiPoints = new Map(rbiPointRows.map((p) => [p.id, p.value]));
   const pct = (id: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : null);
@@ -586,10 +594,11 @@ async function buildIndiaMacroLite() {
             ]
           : []),
       ],
-      systemLiquidity: buildSystemLiquidity(rbiLiq),
+      systemLiquidity: await buildSystemLiquidity(rbiLiq),
       fxReserves: {
         value: fxReservePt ? `$${fxReservePt.value.toFixed(1)} B (excl. gold)` : null,
         asOf: fxReservePt?.date ?? null,
+        history: fxHist,
         source: {
           provider: "IMF via FRED (monthly, lagged)",
           url: "https://fred.stlouisfed.org/series/TRESEGINM052N",
@@ -791,6 +800,9 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
     const last = pts[pts.length - 1];
     if (last && last.value > 0) fxReservePt = { value: last.value / 1000, date: String(last.date).slice(0, 10) };
   }
+  const fxHist = await seriesHistory("india_fx_reserves_ex_gold", 14).catch(
+    () => [] as { date: string; value: number }[],
+  );
   const rbiPoints = new Map((await latestPoints(["rbi_repo", "rbi_sdf", "rbi_msf", "rbi_crr", "rbi_slr", "rbi_bank_rate", "rbi_reverse_repo"])).map((p) => [p.id, p.value]));
   const pct = (id: string) => (rbiPoints.has(id) ? `${rbiPoints.get(id)!.toFixed(2)}%` : null);
   const repoPct = pct("rbi_repo") ?? (repo.current != null ? `${repo.current.toFixed(2)}%` : null);
@@ -848,13 +860,15 @@ export async function buildIndiaDashboard(): Promise<IndiaDashboardPayload> {
         {
           label: "10Y G-Sec (live)",
           value: pulse.gsec10y.value != null ? `${pulse.gsec10y.value.toFixed(2)}%` : null,
+          history: gsecHist.slice(-12),
           source: pulse.gsec10y.source,
         },
       ],
-      systemLiquidity: buildSystemLiquidity(rbiLiq),
+      systemLiquidity: await buildSystemLiquidity(rbiLiq),
       fxReserves: {
         value: fxReservePt ? `$${fxReservePt.value.toFixed(1)} B (excl. gold)` : null,
         asOf: fxReservePt?.date ?? null,
+        history: fxHist,
         source: { provider: "IMF via FRED (monthly, lagged)", url: "https://fred.stlouisfed.org/series/TRESEGINM052N", asOf: fxReservePt?.date },
       },
     },
