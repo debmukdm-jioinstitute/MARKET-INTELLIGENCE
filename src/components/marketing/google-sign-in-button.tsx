@@ -8,15 +8,18 @@ export function GoogleSignInButton({
   disabled,
   privacyAccepted,
   onPrivacyRequired,
+  referralCode,
 }: {
   next: string;
   disabled?: boolean;
   /** Sign-up only: when false, block navigation and call onPrivacyRequired. Omit on login. */
   privacyAccepted?: boolean;
   onPrivacyRequired?: () => void;
+  /** Referral code carried through the OAuth round-trip. */
+  referralCode?: string;
 }) {
   const dest = next.startsWith("/") ? next : "/Home";
-  const href = `/api/auth/google?next=${encodeURIComponent(dest)}${privacyAccepted ? "&privacy=1" : ""}`;
+  const href = `/api/auth/google?next=${encodeURIComponent(dest)}${privacyAccepted ? "&privacy=1" : ""}${referralCode ? `&ref=${encodeURIComponent(referralCode)}` : ""}`;
 
   if (disabled) {
     return (
