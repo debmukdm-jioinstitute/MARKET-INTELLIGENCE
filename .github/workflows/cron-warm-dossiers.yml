@@ -1,0 +1,57 @@
+name: cron-warm-dossiers
+
+# P3 snapshot writer: pre-builds research dossiers into Upstash Redis so
+# /research/[symbol] and /api/feeds/research/* only READ. Zero Vercel compute.
+# Market hours only: every 15 min, 03:00-10:59 UTC (08:30-16:29 IST), Mon-Fri,
+# plus a nightly --panels run (leadership + financials) at 20:30 UTC.
+#
+# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
+#   UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN   (same DB as Vercel)
+#   UPSTOX_ACCESS_TOKEN                                 (quotes / candles)
+# OPTIONAL: DATABASE_URL (adds most-held symbols), WARM_SYMBOLS (repo variable)
+
+on:
+  schedule:
+    - cron: "*/15 3-10 * * 1-5"
+    - cron: "30 20 * * 0-4"
+  workflow_dispatch:
+
+concurrency:
+  group: cron-warm-dossiers
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - name: Check required secrets
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: |
+          test -n "${UPSTASH_REDIS_REST_URL}" && test -n "${UPSTASH_REDIS_REST_TOKEN}" || { echo "::error::UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN secrets are not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Warm dossiers
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          WARM_SYMBOLS: ${{ vars.WARM_SYMBOLS }}
+        run: |
+          if [ "${{ github.event.schedule }}" = "30 20 * * 0-4" ]; then
+            npx --yes tsx@4 scripts/oracle/run-warm-dossiers.ts --panels --limit=60
+          else
+            npx --yes tsx@4 scripts/oracle/run-warm-dossiers.ts --limit=60
+          fi
