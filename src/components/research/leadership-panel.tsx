@@ -14,6 +14,7 @@ async function loadLeadership(url: string): Promise<Leadership> {
 
 const crore = (n: number) => (n >= 1e7 ? `₹${(n / 1e7).toFixed(n >= 1e9 ? 0 : 1)} Cr` : n >= 1e5 ? `₹${(n / 1e5).toFixed(1)} L` : `₹${Math.round(n).toLocaleString("en-IN")}`);
 const count = (n: number) => n.toLocaleString("en-IN");
+const leadershipRefreshInterval = (data?: Leadership) => data?.refreshing ? 2000 : 0;
 
 function Bar({ label, value, max, text, tone = "bg-primary" }: { label: string; value: number; max: number; text: string; tone?: string }) {
   return (
@@ -26,7 +27,7 @@ function Bar({ label, value, max, text, tone = "bg-primary" }: { label: string; 
 }
 
 export function LeadershipPanel({ symbol }: { symbol: string }) {
-  const { data, error, isLoading } = useSWR<Leadership>(`/api/research/leadership?symbol=${encodeURIComponent(symbol)}`, loadLeadership, { revalidateOnFocus: false });
+  const { data, error, isLoading } = useSWR<Leadership>(`/api/research/leadership?symbol=${encodeURIComponent(symbol)}`, loadLeadership, { revalidateOnFocus: false, refreshInterval: leadershipRefreshInterval });
   const payMax = Math.max(0, ...(data?.pay?.rows.map((r) => Math.max(r.maleMedian ?? 0, r.femaleMedian ?? 0)) ?? [0]));
   const divMax = Math.max(0, ...(data?.dividends?.byYear.map((y) => y.perShare) ?? [0]));
   const holdMax = Math.max(0, ...(data?.holdings?.rows.map((r) => r.shares) ?? [0]));
@@ -57,13 +58,15 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
             </section>
           ) : null}
 
-          {data.pay ? (
+          {data.pay?.status === "ok" ? (
             <section>
               <h3 className="mb-1 text-sm font-semibold">Median pay by group ({data.pay.fy}, company-reported)</h3>
+              <p className="mb-2 text-xs text-muted-foreground">{data.pay.fy}{data.pay.filingDate ? `, filed ${data.pay.filingDate}` : ", filing date not supplied"}{data.pay.extractedBy === "model" ? " · machine-read" : ""}. Last checked {data.pay.updatedAt.slice(0, 10)}.</p>
+              {data.pay.latestAttempt ? <p className="mb-2 text-xs text-amber-700">Showing {data.pay.fy}. {data.pay.latestAttempt.status === "not_filed" ? `No ${data.pay.latestAttempt.fy} BRSR filing was listed.` : `The newer ${data.pay.latestAttempt.fy} pay table could not be read.`}{data.pay.latestAttempt.sourceUrl ? <> <a href={data.pay.latestAttempt.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">Open the newer filing</a></> : null}</p> : null}
               <div className="space-y-2">
                 {data.pay.rows.map((r) => {
                   const v = Math.max(r.maleMedian ?? 0, r.femaleMedian ?? 0);
-                  return v ? <Bar key={r.category} label={`${r.category} (${count((r.maleCount ?? 0) + (r.femaleCount ?? 0))})`} value={v} max={payMax} text={crore(v)} tone={r.category.startsWith("Employees") ? "bg-emerald-500" : r.category === "Workers" ? "bg-sky-500" : "bg-primary"} /> : null;
+                  return v ? <Bar key={r.category} label={`${r.category} (male ${r.maleCount === null ? "not reported" : count(r.maleCount)}, female ${r.femaleCount === null ? "not reported" : count(r.femaleCount)})`} value={v} max={payMax} text={crore(v)} tone={r.category.startsWith("Employees") ? "bg-emerald-500" : r.category === "Workers" ? "bg-sky-500" : "bg-primary"} /> : null;
                 })}
               </div>
               {data.pay.ratios.length ? (
@@ -71,7 +74,15 @@ export function LeadershipPanel({ symbol }: { symbol: string }) {
                   {data.pay.ratios.map((x) => <li key={x.label} className="rounded-md bg-muted px-2 py-1"><span className="font-semibold text-foreground">{x.times.toLocaleString("en-IN")}×</span> {x.label}</li>)}
                 </ul>
               ) : null}
-              <p className="mt-2 text-sm text-muted-foreground">Source: <a className="text-primary hover:underline" href={data.pay.sourceUrl} target="_blank" rel="noopener noreferrer">Business Responsibility &amp; Sustainability Report (NSE)</a>. Excludes commission and sitting fees for non-executive directors; counts in brackets.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Source: <a className="text-primary hover:underline" href={data.pay.sourceUrl ?? undefined} target="_blank" rel="noopener noreferrer">Business Responsibility &amp; Sustainability Report (NSE)</a>. Bars show the higher reported male or female median, with reported counts in brackets. Multiples use the male employee median when available, otherwise the female median. Directors' figures may include commission or sitting fees as reported.</p>
+            </section>
+          ) : null}
+
+          {data.pay && data.pay.status !== "ok" ? (
+            <section>
+              <h3 className="mb-1 text-sm font-semibold">Median pay by group</h3>
+              <p className="text-sm text-muted-foreground">{data.pay.status === "not_filed" ? "No BRSR filing was listed in the sources checked for this company." : "Pay table could not be read from this company's filing."}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{data.pay.fy}{data.pay.filingDate ? `, filed ${data.pay.filingDate}` : ""}{data.pay.sourceUrl ? <> · <a href={data.pay.sourceUrl ?? undefined} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Open filing ↗</a></> : null}</p>
             </section>
           ) : null}
 
