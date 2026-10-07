@@ -63,11 +63,65 @@ function Lean({ p }: { p: number | null }) {
   );
 }
 
+/** Risk:reward from the ATR-based target and stop — same math as the desktop table below. */
+function rr(r: StockSignal) {
+  return (Math.abs(r.target - r.entry) / Math.abs(r.entry - r.stop)).toFixed(2);
+}
+
+const thirdLabel = (i: number) => (i === 0 ? "Oldest third" : i === 1 ? "Middle third" : "Most recent third");
+
+/** Mobile card for one stock signal — every desktop-table column appears here, never hidden. */
+function StockCard({ r, side }: { r: StockSignal; side: "buy" | "sell" }) {
+  const levels: Array<[string, string]> = [
+    ["Entry", `₹${r.entry.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`],
+    ["Target", `₹${r.target.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`],
+    ["Stop", `₹${r.stop.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`],
+  ];
+  return (
+    <Link
+      href={`/research/${encodeURIComponent(r.symbol)}`}
+      className="block w-full rounded-xl border border-border bg-card p-3 active:bg-accent"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <span className="font-bold text-primary">{r.symbol}</span>
+          <span className="ml-1.5 truncate text-xs text-muted-foreground">{r.industry}</span>
+        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+            side === "buy" ? "bg-emerald-500/15 text-emerald-700" : "bg-rose-500/15 text-rose-700",
+          )}
+        >
+          {(r.pUp * 100).toFixed(0)}% P(up)
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {levels.map(([k, v]) => (
+          <div key={k}>
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k}</p>
+            <p className="text-sm font-semibold tabular-nums">{v}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2 text-sm">
+        <span className="text-muted-foreground">
+          R:R <strong className="font-semibold tabular-nums text-foreground">{rr(r)}</strong>
+        </span>
+        <span className="text-muted-foreground">
+          RSI <strong className="font-semibold tabular-nums text-foreground">{r.rsi == null ? "—" : r.rsi.toFixed(0)}</strong>
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 function StockTable({ rows, side }: { rows: StockSignal[]; side: "buy" | "sell" }) {
   if (!rows.length) return <p className="text-sm text-muted-foreground">No stock clears the {side === "buy" ? "65%" : "35%"} threshold in the latest session.</p>;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <>
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-muted-foreground">
             <th className="px-2 py-1 font-medium">Stock</th>
@@ -90,13 +144,19 @@ function StockTable({ rows, side }: { rows: StockSignal[]; side: "buy" | "sell" 
               <td className="px-2 py-1.5 text-right tabular-nums">{r.entry.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
               <td className="px-2 py-1.5 text-right tabular-nums">{r.target.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
               <td className="px-2 py-1.5 text-right tabular-nums">{r.stop.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
-              <td className="px-2 py-1.5 text-right tabular-nums">{(Math.abs(r.target - r.entry) / Math.abs(r.entry - r.stop)).toFixed(2)}</td>
+              <td className="px-2 py-1.5 text-right tabular-nums">{rr(r)}</td>
               <td className="px-2 py-1.5 text-right tabular-nums">{r.rsi == null ? "—" : r.rsi.toFixed(0)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+      <div className="space-y-2 md:hidden">
+        {rows.map((r) => (
+          <StockCard key={r.symbol} r={r} side={side} />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -187,13 +247,14 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
           </ResponsiveContainer>
         </div>
         {v.regimeBreakdown?.length ? (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4">
             <p className="mb-1 text-sm font-semibold">Stress test — same model, three separate time slices</p>
             <p className="mb-2 text-xs text-muted-foreground">
               The OOS window split into three equal, non-overlapping chronological thirds. A model whose edge only shows up
               in one slice has no demonstrated edge overall — this is the honest version of "how would it have done in
               different conditions" using only this instrument's own real history (no synthetic regime labels).
             </p>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
@@ -207,7 +268,7 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
               <tbody>
                 {v.regimeBreakdown.map((s, i) => (
                   <tr key={s.from + s.to} className="border-t border-border/50">
-                    <td className="px-2 py-1.5">{i === 0 ? "Oldest third" : i === 1 ? "Middle third" : "Most recent third"}</td>
+                    <td className="px-2 py-1.5">{thirdLabel(i)}</td>
                     <td className="px-2 py-1.5 tabular-nums text-muted-foreground">{s.from} → {s.to}</td>
                     <td className="px-2 py-1.5 text-right tabular-nums">{s.n}</td>
                     <td className="px-2 py-1.5 text-right tabular-nums">{s.leanHitRate == null ? "n/a" : `${s.leanHitRate.toFixed(1)}%`}</td>
@@ -216,10 +277,36 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                 ))}
               </tbody>
             </table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {v.regimeBreakdown.map((s, i) => (
+                <div key={s.from + s.to} className="rounded-xl border border-border bg-card p-3">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-semibold">{thirdLabel(i)}</p>
+                    <p className="shrink-0 text-xs tabular-nums text-muted-foreground">{s.from} → {s.to}</p>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Leans</p>
+                      <p className="text-sm font-semibold tabular-nums">{s.n}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Lean hit rate</p>
+                      <p className="text-sm font-semibold tabular-nums">{s.leanHitRate == null ? "n/a" : `${s.leanHitRate.toFixed(1)}%`}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Buy &amp; hold</p>
+                      <p className="text-sm font-semibold tabular-nums">{pct(s.buyHoldReturn, 1)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          <div className="overflow-x-auto">
+          <div>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
@@ -240,9 +327,32 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                 ))}
               </tbody>
             </table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {v.buckets.map((b) => (
+                <div key={b.label} className="rounded-xl border border-border bg-card p-3">
+                  <p className="font-semibold">{b.label}</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Days</p>
+                      <p className="text-sm font-semibold tabular-nums">{b.n}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Right</p>
+                      <p className="text-sm font-semibold tabular-nums">{b.hitRate == null ? "—" : `${b.hitRate.toFixed(1)}%`}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Avg move</p>
+                      <p className="text-sm font-semibold tabular-nums">{b.avgRet == null ? "—" : pct(b.avgRet, 2)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">&quot;Right&quot; = the call&apos;s direction was correct over the selected horizon.</p>
           </div>
-          <div className="overflow-x-auto">
+          <div>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
@@ -269,6 +379,38 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
                 ))}
               </tbody>
             </table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {v.recent.map((r) => (
+                <div key={r.d} className="rounded-xl border border-border bg-card p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold tabular-nums">{r.d}</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">{r.call} → </span>
+                      <span className={cn("font-semibold", r.call === r.actual ? "text-emerald-600" : "text-rose-600")}>
+                        {r.actual}{r.call === r.actual ? " ✓" : " ✗"}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">P(up)</p>
+                      <p className="text-sm font-semibold tabular-nums">{(r.pUp * 100).toFixed(0)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Return</p>
+                      <p className="text-sm font-semibold tabular-nums">{pct(r.retPct, 2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Exit</p>
+                      <p className="text-sm font-semibold">
+                        {r.barrierExit === "upper" ? "Profit target" : r.barrierExit === "lower" ? "Stop-loss" : "Time limit"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Most recent 15 predictions, scored against a triple-barrier exit (ATR-scaled profit target / stop-loss, or
               the {horizon === 1 ? "1-session" : `${horizon}-session`} time limit if neither is touched first) rather than

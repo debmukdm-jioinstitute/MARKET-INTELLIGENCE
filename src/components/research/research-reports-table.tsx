@@ -66,7 +66,9 @@ export function ConsensusBar({
 
 export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
+    <>
+      {/* Desktop table */}
+      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
       <table className="w-full min-w-[960px] text-sm">
         <thead className="border-b border-border bg-muted/40 text-left text-sm uppercase tracking-wide text-muted-foreground">
           <tr>
@@ -116,6 +118,56 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="space-y-2 md:hidden">
+        {rows.map((r) => (
+          <article key={r.id || r.url} className="rounded-xl border border-border bg-card p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+                {r.recommendation ?? "—"}
+              </span>
+              <span className={cn("shrink-0 text-sm font-bold tabular-nums", signClass(r.upside_pct))}>
+                {r.upside_pct != null ? `${r.upside_pct >= 0 ? "+" : ""}${r.upside_pct.toFixed(1)}%` : "—"}
+              </span>
+            </div>
+            <a
+              href={r.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1.5 block py-1 text-sm font-medium leading-snug line-clamp-2 hover:text-primary"
+            >
+              {r.title}
+            </a>
+            {r.consensus ? (
+              <div className="mt-1.5">
+                <ConsensusBar consensus={r.consensus} />
+              </div>
+            ) : null}
+            <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span className="min-w-0 truncate">
+                {RESEARCH_SOURCE_LABELS[r.source] ?? r.source} · {r.broker ?? "—"}
+              </span>
+              <span className="shrink-0 tabular-nums text-foreground">
+                Target {fmtPrice(r.target_price)}
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              {r.symbol ? (
+                <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="min-h-[44px] inline-flex items-center font-semibold text-primary hover:underline">
+                  {r.symbol}
+                </Link>
+              ) : (
+                <span>—</span>
+              )}
+              <span className="shrink-0 tabular-nums">
+                {r.published_at ? new Date(r.published_at).toLocaleDateString("en-IN") : "—"}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </>
   );
 }
