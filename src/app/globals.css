@@ -971,7 +971,7 @@
   color: var(--ink);
   max-width: 1600px;
   margin-inline: auto;
-  padding: 16px 20px;
+  padding: 8px 16px;
 }
 .global-markets * {
   box-sizing: border-box;
@@ -979,14 +979,14 @@
 .main-bento {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
-  gap: 12px;
+  gap: 10px;
   align-items: stretch;
 }
 .metrics-bento {
   display: grid;
   grid-template-columns: minmax(0, 37fr) minmax(0, 24fr) minmax(0, 39fr);
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 8px;
 }
 .market-card {
   min-width: 0;

@@ -45,13 +45,13 @@ export function LowerCards({
         {/* Card 1: Day Range (37% width) */}
         <section
           aria-labelledby="day-range-heading"
-          className="market-card flex min-h-[120px] max-h-[145px] lg:h-[130px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-3.5 sm:p-4 text-[#151515]"
+          className="market-card flex min-h-[96px] max-h-[112px] lg:h-[104px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-2.5 sm:p-3 text-[#151515]"
         >
           <div>
             <div className="flex items-center justify-between gap-1.5">
               <h3
                 id="day-range-heading"
-                className="text-[16px] font-bold tracking-tight text-[#151515] sm:text-[17px]"
+                className="text-[14px] font-bold tracking-tight text-[#151515]"
               >
                 {item.label} day range
               </h3>
@@ -63,7 +63,7 @@ export function LowerCards({
             </div>
 
             {/* Low and High numbers */}
-            <div className="mt-1 flex items-baseline justify-between text-[16px] font-bold tabular-nums text-[#151515] sm:text-[18px]">
+            <div className="mt-1 flex items-baseline justify-between text-[14px] font-bold tabular-nums text-[#151515]">
               <div>
                 <span className="mr-1 text-[11px] font-medium text-[#62656B]">Low</span>
                 <span>{formatPrice(item.dayLow, item.decimals)}</span>
@@ -105,13 +105,13 @@ export function LowerCards({
         {/* Card 2: Trading Volume (24% width) - LIGHT CARD */}
         <section
           aria-labelledby="volume-heading"
-          className="market-card flex min-h-[120px] max-h-[145px] lg:h-[130px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-3.5 sm:p-4 text-[#151515]"
+          className="market-card flex min-h-[96px] max-h-[112px] lg:h-[104px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-2.5 sm:p-3 text-[#151515]"
         >
           <div>
             <div className="flex items-center justify-between gap-1.5">
               <h3
                 id="volume-heading"
-                className="text-[16px] font-bold tracking-tight text-[#151515] sm:text-[17px]"
+                className="text-[14px] font-bold tracking-tight text-[#151515]"
               >
                 {item.label} volume
               </h3>
@@ -120,7 +120,7 @@ export function LowerCards({
 
             {/* Visible Large Dark Trading Volume on Light Card */}
             <div className="mt-1">
-              <div className="text-[26px] font-bold tabular-nums tracking-tight text-[#151515] sm:text-[32px]">
+              <div className="text-[22px] font-bold tabular-nums tracking-tight text-[#151515]">
                 {volumeInfo.short}
               </div>
               <div className="text-xs font-medium text-[#62656B]">
@@ -135,13 +135,13 @@ export function LowerCards({
         {/* Card 3: 52-Week Range (39% width) */}
         <section
           aria-labelledby="week52-range-heading"
-          className="market-card flex min-h-[120px] max-h-[145px] lg:h-[130px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-3.5 sm:p-4 text-[#151515]"
+          className="market-card flex min-h-[96px] max-h-[112px] lg:h-[104px] flex-col justify-between rounded-[20px] border-[1.5px] border-[#151515] bg-[#FCFCFA] p-2.5 sm:p-3 text-[#151515]"
         >
           <div>
             <div className="flex items-center justify-between gap-1.5">
               <h3
                 id="week52-range-heading"
-                className="text-[16px] font-bold tracking-tight text-[#151515] sm:text-[17px]"
+                className="text-[14px] font-bold tracking-tight text-[#151515]"
               >
                 {item.label} · 52-week range
               </h3>
@@ -153,7 +153,7 @@ export function LowerCards({
             </div>
 
             {/* 52-week endpoints */}
-            <div className="mt-1 flex items-baseline justify-between text-[16px] font-bold tabular-nums text-[#151515] sm:text-[18px]">
+            <div className="mt-1 flex items-baseline justify-between text-[14px] font-bold tabular-nums text-[#151515]">
               <div>
                 <span className="mr-1 text-[11px] font-medium text-[#62656B]">52W Low</span>
                 <span>{formatPrice(item.week52Low, item.decimals)}</span>
@@ -199,7 +199,7 @@ export function LowerCards({
           type="button"
           onClick={onToggleWatchlist}
           aria-pressed={isWatchlisted}
-          className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-4 py-1.5 text-xs font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95"
+          className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-3 py-1 text-[11px] font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95"
         >
           <Star
             className={cn(
@@ -213,7 +213,7 @@ export function LowerCards({
         <button
           type="button"
           onClick={onOpenOverview}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#151515] bg-[#151515] px-4 py-1.5 text-xs font-bold text-white shadow-2xs transition-all hover:bg-black active:scale-95"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#151515] bg-[#151515] px-3 py-1 text-[11px] font-bold text-white shadow-2xs transition-all hover:bg-black active:scale-95"
         >
           <span>Open overview</span>
           <ArrowRight className="size-3.5 stroke-[2.5]" aria-hidden="true" />

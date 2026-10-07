@@ -175,7 +175,7 @@ export function TableCard({
               id={countrySelectId}
               value={countryFilter}
               onChange={(e) => setCountryFilter(e.target.value)}
-              className="h-8 rounded-full border border-[#151515]/30 bg-white px-2.5 text-xs text-[#151515] focus:border-[#151515] focus:outline-none focus:ring-1 focus:ring-[#151515]"
+              className="h-7.5 rounded-full border border-[#151515]/30 bg-white px-2.5 text-xs text-[#151515] focus:border-[#151515] focus:outline-none focus:ring-1 focus:ring-[#151515]"
             >
               <option value="all">All countries</option>
               {availableCountries.map((c) => (
@@ -231,7 +231,7 @@ export function TableCard({
                 disabled={!canCompare}
                 aria-label={`Compare ${compareSet.size} selected indices`}
                 className={cn(
-                  "h-8 rounded-full border px-3 text-[11px] font-bold transition-all",
+                  "h-7.5 rounded-full border px-2.5 text-[11px] font-bold transition-all",
                   canCompare
                     ? "border-[#151515] bg-[#151515] text-white hover:bg-black/90 active:scale-95"
                     : "cursor-not-allowed border-[#151515]/20 bg-black/5 text-[#62656B]/60",
@@ -252,7 +252,7 @@ export function TableCard({
         </div>
 
         {/* Table container with contained scroll */}
-        <div className="flex-1 overflow-auto max-h-[300px] lg:max-h-[340px]">
+        <div className="flex-1 overflow-auto max-h-[175px] lg:max-h-[195px]">
           <table className="w-full min-w-[580px] border-separate border-spacing-0 text-left">
             <thead>
               <tr className="sticky top-0 z-10 border-b border-[#151515]/15 bg-[#FCFCFA] text-[13px] font-semibold text-[#62656B]">

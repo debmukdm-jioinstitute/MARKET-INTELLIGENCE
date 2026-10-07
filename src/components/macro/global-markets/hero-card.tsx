@@ -53,7 +53,7 @@ export function HeroCard({ item, className }: HeroCardProps) {
     <article
       aria-labelledby="hero-index-name"
       className={cn(
-        "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-5 lg:p-6 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
+        "market-card flex flex-col justify-between rounded-[22px] border-[1.5px] border-[#151515] p-4 sm:p-4.5 lg:p-5 text-[#151515] shadow-[3px_3px_0px_#151515] transition-colors duration-200",
         bgClass,
         className,
       )}
@@ -64,28 +64,28 @@ export function HeroCard({ item, className }: HeroCardProps) {
           <CountryFlag country={item.region} isDecorative />
           <h2
             id="hero-index-name"
-            className="text-[20px] font-bold tracking-tight text-[#151515] sm:text-[22px] lg:text-[24px]"
+            className="text-[17px] font-bold tracking-tight text-[#151515] sm:text-[19px] lg:text-[20px]"
           >
             {item.label}
           </h2>
         </div>
 
         {/* Two-line direction headline */}
-        <div className="my-2.5 sm:my-3.5 flex flex-col text-[44px] font-bold leading-[0.96] tracking-tight text-[#151515] sm:text-[52px] lg:text-[58px]">
+        <div className="my-1.5 sm:my-2 flex flex-col text-[32px] font-bold leading-[0.96] tracking-tight text-[#151515] sm:text-[38px] lg:text-[42px]">
           <span>{headline.first}</span>
           <span>{headline.second}</span>
         </div>
 
         {/* Level, capsule and absolute change */}
         <div className="space-y-2">
-          <div className="break-words text-[36px] font-bold tabular-nums tracking-tight text-[#151515] sm:text-[42px] lg:text-[48px]">
+          <div className="break-words text-[28px] font-bold tabular-nums tracking-tight text-[#151515] sm:text-[32px] lg:text-[36px]">
             {formatPrice(item.price, item.decimals)}
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Pale matching capsule with vector icon */}
             <div
-              className="inline-flex items-center gap-1 rounded-full border border-black/5 bg-black/5 px-2.5 py-0.5 text-[15px] font-bold tabular-nums text-[#151515] sm:text-[17px]"
+              className="inline-flex items-center gap-1 rounded-full border border-black/5 bg-black/5 px-2.5 py-0.5 text-xs font-bold tabular-nums text-[#151515] sm:text-[13px]"
               aria-label={`Daily change percent: ${formatSignedPct(item.changePct)}`}
             >
               {direction === "down" ? (
@@ -100,7 +100,7 @@ export function HeroCard({ item, className }: HeroCardProps) {
 
             {/* Absolute points change */}
             <div
-              className="text-[16px] font-bold tabular-nums text-[#151515] sm:text-[18px]"
+              className="text-xs font-bold tabular-nums text-[#151515] sm:text-[13px]"
               aria-label={`Absolute points change: ${formatSignedPoints(item.change, item.decimals)}`}
             >
               {formatSignedPoints(item.change, item.decimals)}
@@ -110,11 +110,11 @@ export function HeroCard({ item, className }: HeroCardProps) {
       </div>
 
       {/* Subdued divider & country / ticker metadata */}
-      <div className="mt-4 border-t border-[#151515]/15 pt-2.5">
-        <div className="text-[13px] font-semibold text-[#151515] sm:text-[14px]">
+      <div className="mt-2.5 border-t border-[#151515]/15 pt-2">
+        <div className="text-[12px] font-semibold text-[#151515] sm:text-[13px]">
           {item.region} · {item.symbol}
         </div>
-        <p className="mt-0.5 text-[11px] text-[#151515]/75">Compared with previous close.</p>
+        <p className="mt-0.5 text-[10.5px] text-[#151515]/75">Compared with previous close.</p>
       </div>
     </article>
   );

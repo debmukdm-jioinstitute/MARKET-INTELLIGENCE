@@ -39,7 +39,7 @@ export default function WorldIndicesPage() {
   );
 
   return (
-    <div className="-m-3 min-h-[calc(100vh-64px)] bg-[#F6F5F1] p-3 sm:-m-4 sm:p-4 md:-m-5 md:p-4 lg:p-5 lg:h-[calc(100dvh-5.25rem)] lg:max-h-[calc(100dvh-5.25rem)] lg:overflow-hidden flex flex-col justify-between">
+    <div className="-m-3 bg-[#F6F5F1] p-2.5 sm:-m-4 sm:p-3 md:-m-5 md:p-3.5 lg:p-4 flex flex-col">
       {loading && !data && !isFixtureMode ? (
         <div className="mx-auto max-w-[1600px] space-y-4 pt-4">
           <MacroTapeSkeleton count={6} />

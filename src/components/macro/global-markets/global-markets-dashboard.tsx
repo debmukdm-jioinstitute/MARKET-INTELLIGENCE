@@ -147,53 +147,16 @@ export function GlobalMarketsDashboard({
   return (
     <div className="global-markets flex flex-col justify-between lg:h-full lg:max-h-full">
       {/* Top Header Row */}
-      <header className="flex flex-wrap items-center justify-between gap-3 pb-1">
-        {/* Official logo lockup */}
-        <div className="flex items-center">
+      <header className="flex flex-wrap items-center justify-between gap-2 pb-1 pt-0.5">
+        {/* Left: Brand lockup and Global markets title */}
+        <div className="flex items-center gap-2.5">
           <BrandLogo variant="lockup" size="sm" href="/macro" priority invertOnDark={false} />
+          <h1 className="text-xl font-bold tracking-tight text-[#151515] sm:text-2xl lg:text-[24px] leading-tight">
+            Global markets
+          </h1>
         </div>
 
-        {/* Refresh control and honest data freshness status */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {isFixtureMode ? (
-            <span
-              role="status"
-              className="rounded-full border border-[#151515]/20 bg-[#FCFCFA] px-2.5 py-0.5 text-[11px] font-semibold text-[#151515]"
-            >
-              Sample snapshot · not live
-            </span>
-          ) : (
-            <div className="flex flex-col text-right text-[11px] text-[#62656B]">
-              <span className="font-semibold text-[#151515]">{formattedFreshness}</span>
-              <span className="text-[10px]">Delayed quotes · Closed markets show last close</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleRefreshClick}
-            disabled={isRefreshing || loading}
-            aria-label="Refresh quotes"
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-3 py-1.5 text-xs font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95",
-              (isRefreshing || loading) && "opacity-70",
-            )}
-          >
-            <RefreshCw
-              className={cn("size-3.5 stroke-[2.25]", (isRefreshing || loading) && "animate-spin")}
-              aria-hidden="true"
-            />
-            <span>Refresh</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Title & Region Tabs on a shared compact row for desktop single-view */}
-      <div className="my-1.5 flex flex-wrap items-center justify-between gap-2.5">
-        <h1 className="text-2xl font-bold tracking-tight text-[#151515] sm:text-3xl lg:text-[32px] leading-tight">
-          Global markets
-        </h1>
-
+        {/* Center: Region Tabs */}
         <nav aria-label="Market regions" className="flex items-center gap-1.5">
           <div
             role="tablist"
@@ -208,7 +171,7 @@ export function GlobalMarketsDashboard({
                   aria-selected={isSelected}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all",
+                    "rounded-full px-3 py-0.5 text-xs font-bold transition-all",
                     isSelected
                       ? "bg-[#151515] text-white"
                       : "text-[#151515] hover:bg-black/5",
@@ -220,7 +183,41 @@ export function GlobalMarketsDashboard({
             })}
           </div>
         </nav>
-      </div>
+
+        {/* Right: Freshness and Refresh button */}
+        <div className="flex items-center gap-2">
+          {isFixtureMode ? (
+            <span
+              role="status"
+              className="rounded-full border border-[#151515]/20 bg-[#FCFCFA] px-2 py-0.5 text-[10px] font-semibold text-[#151515]"
+            >
+              Sample snapshot · not live
+            </span>
+          ) : (
+            <div className="hidden sm:flex flex-col text-right text-[10px] text-[#62656B]">
+              <span className="font-semibold text-[#151515]">{formattedFreshness}</span>
+              <span className="text-[9px]">Delayed quotes · Last close</span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleRefreshClick}
+            disabled={isRefreshing || loading}
+            aria-label="Refresh quotes"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-2.5 py-1 text-xs font-bold text-[#151515] shadow-2xs transition-all hover:bg-[#F6F5F1] active:scale-95",
+              (isRefreshing || loading) && "opacity-70",
+            )}
+          >
+            <RefreshCw
+              className={cn("size-3 stroke-[2.25]", (isRefreshing || loading) && "animate-spin")}
+              aria-hidden="true"
+            />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </header>
 
       {error ? (
         <div
@@ -232,7 +229,7 @@ export function GlobalMarketsDashboard({
       ) : null}
 
       {/* Main Row: Coral/Mint/Ivory hero on left (~30%), Large table on right (~70%) */}
-      <div className="main-bento flex-1 min-h-[290px] max-h-[380px] lg:max-h-[420px]">
+      <div className="main-bento flex-1 min-h-[230px] max-h-[275px] lg:max-h-[285px]">
         <HeroCard item={selectedQuote} className="h-full" />
         <TableCard
           items={regionalQuotes}
