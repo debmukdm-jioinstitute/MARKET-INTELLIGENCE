@@ -20,11 +20,15 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const next = sanitizeAuthNext(searchParams.get("next"));
   const privacyAccepted = searchParams.get("privacy") === "1";
+  // Referral code carried through the OAuth round-trip (validated format only).
+  const rawRef = (searchParams.get("ref") ?? "").trim().toUpperCase();
+  const ref = /^[A-Z0-9-]{3,16}$/.test(rawRef) ? rawRef : undefined;
   const state = newOAuthState();
   const oauthCookie = signSessionPayload({
     state,
     next,
     privacyAccepted,
+    ref,
     exp: Date.now() + 10 * 60 * 1000,
   });
 

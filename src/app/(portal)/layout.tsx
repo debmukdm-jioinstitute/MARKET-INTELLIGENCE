@@ -3,12 +3,14 @@ import { PortalPageProvider } from "@/components/providers/portal-page-provider"
 import { SiteContentProvider } from "@/components/providers/site-content-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { LiveEditOverlay } from "@/components/site/live-edit-overlay";
+import { HeartbeatMount } from "@/components/gamification/heartbeat-mount";
 import { Suspense } from "react";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-full bg-background text-foreground">
       <AuthGate>
+        <HeartbeatMount />
         <PortalPageProvider>
           <Suspense
             fallback={

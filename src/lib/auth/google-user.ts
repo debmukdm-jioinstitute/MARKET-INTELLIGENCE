@@ -5,6 +5,7 @@ import type { SessionUser } from "@/lib/auth";
 import { googleOnlyPasswordPlaceholder, type GoogleUserInfo } from "@/lib/auth/google-oauth";
 import { tagCustomerInKit } from "@/lib/kit";
 import { sendWelcomePackToUser } from "@/lib/onboarding/send-welcome-pack";
+import { attributeReferral } from "@/lib/referrals/attribute";
 import { NextResponse } from "next/server";
 
 type UserRow = {
@@ -20,7 +21,7 @@ export async function sessionResponseForGoogleUser(
   profile: GoogleUserInfo,
   redirectTo: string,
   requestUrl: string,
-  opts?: { privacyAccepted?: boolean },
+  opts?: { privacyAccepted?: boolean; referralCode?: string },
 ): Promise<NextResponse> {
   await ensureSchema();
   const db = sql();
@@ -59,6 +60,14 @@ export async function sessionResponseForGoogleUser(
         VALUES (${email}, ${name}, ${passwordHash}, ${role}, ${sub}, now(), now(), now())
       `;
       row = { email, name, password_hash: passwordHash, role, google_sub: sub };
+      // Best-effort referral attribution for Google signups (never breaks signup).
+      if (opts?.referralCode) {
+        try {
+          await attributeReferral(email, opts.referralCode);
+        } catch (e) {
+          console.warn("[referral] google signup attribution failed:", e);
+        }
+      }
       const sessionUser = { email, name, role: role as "admin" | "user", guest: false as const };
       void sendWelcomePackToUser(sessionUser, new URL(requestUrl).origin).catch((err) => {
         console.error("[welcome-pack]", email, err);
