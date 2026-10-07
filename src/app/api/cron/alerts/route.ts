@@ -1,4 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
+import { withCronRun } from "@/lib/admin/cron-log";
 import { NextResponse } from "next/server";
 import { hasDatabase } from "@/lib/db";
 import { evaluateRules } from "@/lib/alerts/evaluate";
@@ -14,6 +15,7 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
+  return withCronRun("alerts", req, async () => {
   if (!hasDatabase()) return NextResponse.json({ ok: false, error: "No database configured" }, { status: 503 });
   try {
     const snap = await buildSnapshot();
@@ -32,4 +34,7 @@ export async function GET(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
+  },
+    (b) => { const x = b as { fired?: unknown }; return Array.isArray(x?.fired) ? x.fired.length : (typeof x?.fired === "number" ? x.fired : 0); },
+  );
 }

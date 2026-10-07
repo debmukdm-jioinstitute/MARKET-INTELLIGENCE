@@ -1,4 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
+import { withCronRun } from "@/lib/admin/cron-log";
 import { NextResponse } from "next/server";
 import { DataGovAuthError, hasPersonalKey } from "@/lib/datagov/client";
 import { discoverTracked, syncCatalog, syncTracked } from "@/lib/datagov/sync";
@@ -14,6 +15,7 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
+  return withCronRun("datagov", req, async () => {
   const sp = new URL(req.url).searchParams;
   try {
     const mode = sp.get("mode");
@@ -28,4 +30,7 @@ export async function GET(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e), needsKey: e instanceof DataGovAuthError }, { status: 500 });
   }
+  },
+    (b) => { const r = (b as { results?: unknown[] }).results; return Array.isArray(r) ? r.length : 0; },
+  );
 }

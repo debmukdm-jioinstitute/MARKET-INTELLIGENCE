@@ -19,6 +19,11 @@ import {
   Target,
   Trophy,
   Users,
+  Activity,
+  Share2,
+  CreditCard,
+  ShieldAlert,
+  Brain,
 } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
@@ -40,6 +45,11 @@ const NAV = [
   { href: "/admin/brief", label: "Daily Brief", icon: Newspaper },
   { href: "/admin/alerts", label: "Alert Rules", icon: BellRing },
   { href: "/admin/feeds", label: "Data Feeds", icon: Rss },
+  { href: "/admin/data-audit", label: "Data Audit", icon: Activity },
+  { href: "/admin/referrals", label: "Referrals", icon: Share2 },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/security", label: "Security", icon: ShieldAlert },
+  { href: "/admin/intelligence", label: "AI Insights", icon: Brain },
   { href: "/admin/system", label: "System & Jobs", icon: Server },
 ];
 

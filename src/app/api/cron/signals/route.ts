@@ -1,4 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
+import { withCronRun } from "@/lib/admin/cron-log";
 import { NextResponse } from "next/server";
 import { mergeFnoIntoRun } from "@/lib/scanner/fno-index-model";
 import { runSignals } from "@/lib/scanner/signals";
@@ -11,6 +12,7 @@ export const maxDuration = 120;
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
+  return withCronRun("signals", req, async () => {
   const sp = new URL(req.url).searchParams;
   const symbols = sp.get("symbols")?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
   const indicesOnly = sp.get("indicesOnly") === "1";
@@ -39,4 +41,7 @@ export async function GET(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
+  },
+    (b) => Number((b as { scanned?: number }).scanned) || 0,
+  );
 }
