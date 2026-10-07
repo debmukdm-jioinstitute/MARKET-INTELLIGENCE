@@ -20,11 +20,11 @@ export function LearnNudge() {
             <h2 className="font-semibold text-stone-900">
               New here? Start here.
             </h2>
-            <p className="mt-1 text-sm text-stone-500">
+            <p className="mt-1 text-sm text-[#5f6368]">
               Three simple guides for your next five minutes.
             </p>
           </div>
-          <ChevronDown className="size-4 shrink-0 text-stone-500 transition-transform group-open:rotate-180" />
+          <ChevronDown className="size-4 shrink-0 text-[#5f6368] transition-transform group-open:rotate-180" />
         </summary>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {slugs
@@ -36,13 +36,13 @@ export function LearnNudge() {
                 href={`/learn/${a.slug}`}
                 className="rounded-xl border border-stone-200 bg-stone-50 p-4 hover:border-teal-300"
               >
-                <p className="text-[10px] font-medium text-teal-600">
+                <p className="text-xs font-medium text-teal-600">
                   5 min read
                 </p>
                 <h3 className="mt-2 text-sm font-semibold text-stone-900">
                   {a.title}
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                <p className="mt-2 text-xs leading-relaxed text-[#5f6368]">
                   {a.description}
                 </p>
               </Link>

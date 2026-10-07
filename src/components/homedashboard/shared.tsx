@@ -3,9 +3,9 @@ import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 export const cardClass =
-  "rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6";
+  "rounded-3xl border border-[#dadce0] bg-white p-5 shadow-[0_1px_2px_rgba(60,64,67,0.15)] transition-shadow duration-200 hover:shadow-[0_1px_3px_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] sm:p-6";
 export const linkClass =
-  "inline-flex min-h-10 items-center gap-1.5 rounded-lg text-sm font-semibold text-teal-600 transition-colors hover:text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600";
+  "inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-[#1a73e8] transition-colors hover:bg-[#e8f0fe] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a73e8]";
 export const fetchOptions = {
   revalidateOnFocus: false,
   refreshInterval: 0,
@@ -29,10 +29,10 @@ export function SectionHeading({
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl">
+        <h2 className="text-2xl font-medium tracking-tight text-[#202124] sm:text-[28px]">
           {title}
         </h2>
-        <p className="mt-1 text-sm text-stone-500">{detail}</p>
+        <p className="mt-1 text-sm text-[#5f6368]">{detail}</p>
       </div>
       {action}
     </div>

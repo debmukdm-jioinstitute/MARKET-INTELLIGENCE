@@ -62,7 +62,7 @@ export function MissionsCard({
               <span className="text-sm font-semibold text-stone-900">
                 {level.name}
               </span>
-              <span className="text-xs font-medium text-stone-500">
+              <span className="text-xs font-medium text-[#5f6368]">
                 {store.xp} XP
                 {level.next
                   ? ` · ${level.next - store.xp} to next level`
@@ -110,12 +110,12 @@ export function MissionsCard({
                   <p className="text-sm font-medium text-stone-900">
                     {m.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-stone-500">
+                  <p className="mt-0.5 text-xs text-[#5f6368]">
                     {checked ? "Done for today. See you tomorrow." : m.detail}
                   </p>
                 </div>
                 <span
-                  className={`shrink-0 text-xs font-semibold ${checked ? "text-teal-600" : "text-stone-500"}`}
+                  className={`shrink-0 text-xs font-semibold ${checked ? "text-teal-600" : "text-[#5f6368]"}`}
                 >
                   {checked ? "Complete" : "+20 XP"}
                 </span>
@@ -124,7 +124,7 @@ export function MissionsCard({
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-stone-500" aria-live="polite">
+        <p className="mt-3 text-xs text-[#5f6368]" aria-live="polite">
           {done.length === 3
             ? "Come back tomorrow to keep your streak."
             : `${done.length} of 3 completed · resets at midnight IST · +10 XP for your daily visit.`}
@@ -136,7 +136,7 @@ export function MissionsCard({
               .map((b) => (
                 <span
                   key={b}
-                  className="inline-flex items-center gap-1 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-medium text-teal-600"
+                  className="inline-flex items-center gap-1 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-600"
                 >
                   <Trophy className="size-3" />
                   {badges[b]}
@@ -144,7 +144,7 @@ export function MissionsCard({
               ))}
           </div>
         ) : null}
-        <p className="mt-3 text-[10px] text-stone-500">
+        <p className="mt-3 text-xs text-[#5f6368]">
           Homepage XP is earned when you open a tool and stays in this browser.
           Account XP is tracked separately on your profile.
         </p>

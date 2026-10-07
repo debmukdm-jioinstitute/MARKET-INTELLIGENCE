@@ -71,7 +71,7 @@ export function BriefTeaser({
                   : "/intelligence/brief";
               return (
                 <article key={h.title} className="py-4 first:pt-0 last:pb-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-stone-500">
+                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-[#5f6368]">
                     <span className="font-medium">{h.source}</span>
                     <span className="flex items-center gap-1">
                       <Clock3 className="size-3" />
@@ -85,7 +85,7 @@ export function BriefTeaser({
                       </span>
                     ) : null}
                     <span
-                      className={`rounded-full px-2 py-0.5 font-medium ${label === "positive" ? "bg-emerald-50 text-emerald-600" : label === "negative" ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-stone-500"}`}
+                      className={`rounded-full px-2 py-0.5 font-medium ${label === "positive" ? "bg-emerald-50 text-emerald-600" : label === "negative" ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-[#5f6368]"}`}
                     >
                       {label
                         ? label[0].toUpperCase() + label.slice(1)
@@ -101,14 +101,14 @@ export function BriefTeaser({
                     <span className="flex-1">{h.title}</span>
                     <ExternalLink className="mt-0.5 size-4 shrink-0 text-stone-400" />
                   </a>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-500">
+                  <p className="mt-2 text-sm leading-relaxed text-[#5f6368]">
                     <span className="font-medium text-stone-700">
                       Why it matters:{" "}
                     </span>
                     {h.why}
                   </p>
                   <span
-                    className={`mt-2 inline-block rounded-md px-2 py-1 text-[10px] font-medium ${onWatchlist ? "bg-teal-50 text-teal-600" : "bg-stone-100 text-stone-500"}`}
+                    className={`mt-2 inline-block rounded-md px-2 py-1 text-xs font-medium ${onWatchlist ? "bg-teal-50 text-teal-600" : "bg-stone-100 text-[#5f6368]"}`}
                   >
                     {onWatchlist ? "On your watchlist" : h.sector}
                   </span>
@@ -123,7 +123,7 @@ export function BriefTeaser({
               <h3 className="font-semibold text-stone-900">
                 Your next market read starts here.
               </h3>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-[#5f6368]">
                 Live headlines are unavailable. Open the full brief for the
                 latest published market context.
               </p>
@@ -137,7 +137,7 @@ export function BriefTeaser({
           </div>
         )}
         {headlines.length ? (
-          <p className="mt-4 border-t border-stone-100 pt-3 text-[10px] text-stone-500">
+          <p className="mt-4 border-t border-stone-100 pt-3 text-xs text-[#5f6368]">
             Live mix from publishers, Google News, exchanges, and earnings calendar —
             not RBI-only. Sentiment uses FinBERT (rules fallback). Context only, not
             predictions.

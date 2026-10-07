@@ -714,3 +714,174 @@
   --alpha-red-soft: #3a1418;
   --alpha-ink: #f5f5f5;
 }
+
+/* Signature Five cards: Google Material 3 style. Transform/opacity only. */
+.g-card {
+  --g-accent: #1a73e8;
+  --g-tint: #e8f0fe;
+  --g-ink: #174ea6;
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  padding: 24px;
+  color: #202124;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15);
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.2s;
+  animation: g-card-in 0.5s cubic-bezier(0.2, 0, 0, 1) both;
+  animation-delay: calc(var(--g-i, 0) * 70ms);
+}
+.g-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--g-accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.g-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--g-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+.g-card:hover,
+.g-card:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--g-accent);
+  box-shadow:
+    0 1px 3px rgba(60, 64, 67, 0.3),
+    0 8px 20px 4px rgba(60, 64, 67, 0.15);
+}
+.g-card:hover::before {
+  opacity: 0.04;
+}
+.g-card:hover::after,
+.g-card:focus-within::after {
+  transform: scaleX(1);
+}
+.g-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--g-tint);
+  color: var(--g-accent);
+  transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.g-card:hover .g-icon {
+  transform: scale(1.12) rotate(-6deg);
+}
+.g-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 12px;
+  background: var(--g-tint);
+  color: var(--g-ink);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.g-chip[data-live="false"] {
+  background: #f1f3f4;
+  color: #3c4043;
+}
+.g-dot {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #9aa0a6;
+}
+.g-chip[data-live="true"] .g-dot {
+  background: #1e8e3e;
+}
+.g-chip[data-live="true"] .g-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #1e8e3e;
+  animation: g-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.g-cta {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid #dadce0;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--g-accent);
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.g-cta svg {
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.g-card:hover .g-cta,
+.g-cta:focus-visible {
+  background: var(--g-accent);
+  border-color: var(--g-accent);
+  color: #fff;
+}
+.g-cta:hover svg {
+  transform: translateX(4px);
+}
+.g-cta:focus-visible {
+  outline: 3px solid var(--g-tint);
+  outline-offset: 2px;
+}
+@keyframes g-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes g-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .g-card,
+  .g-icon,
+  .g-cta svg,
+  .g-chip .g-dot::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .g-card:hover {
+    transform: none;
+  }
+}

@@ -28,7 +28,7 @@ export function WelcomeStrip({ progress }: { progress: HomeProgress }) {
             <h2 className="font-semibold">
               First Steps unlocked. Nicely done!
             </h2>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-[#5f6368]">
               +60 XP for exploring your brief, scanner and watchlist.
             </p>
           </div>
@@ -71,14 +71,14 @@ export function WelcomeStrip({ progress }: { progress: HomeProgress }) {
         aria-label="Dismiss welcome"
         type="button"
         onClick={actions.dismiss}
-        className="absolute right-3 top-3 rounded-lg p-2 text-stone-500 hover:bg-white"
+        className="absolute right-3 top-3 rounded-lg p-2 text-[#5f6368] hover:bg-white"
       >
         <X className="size-4" />
       </button>
       <h2 className="pr-8 max-w-2xl text-xl font-semibold tracking-tight text-stone-900">
         Welcome to Market Intelligence — your free investing terminal.
       </h2>
-      <p className="mt-2 text-sm text-stone-500">
+      <p className="mt-2 text-sm text-[#5f6368]">
         Three small steps. A clearer view of the market. Complete them to unlock
         First Steps +60 XP.
       </p>

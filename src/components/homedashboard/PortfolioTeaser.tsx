@@ -31,11 +31,11 @@ export function PortfolioTeaser({
                 <h3 className="font-semibold text-stone-900">
                   Track your first stock
                 </h3>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-[#5f6368]">
                   Prices move. We’ll remember them for you.
                 </p>
                 {!locked && !data ? (
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-[#5f6368]">
                     Portfolio values are unavailable right now.
                   </p>
                 ) : null}
@@ -52,7 +52,7 @@ export function PortfolioTeaser({
           <>
             <div className="flex flex-wrap items-end justify-between gap-5">
               <div>
-                <p className="text-xs text-stone-500">Total portfolio value</p>
+                <p className="text-xs text-[#5f6368]">Total portfolio value</p>
                 <p className="mt-1 text-2xl font-semibold text-stone-900">
                   {rupees(data.navInr)}
                 </p>
@@ -77,7 +77,7 @@ export function PortfolioTeaser({
                       {rupees(p.marketValueInr)}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-[#5f6368]">
                     {(p.weight * 100).toFixed(1)}% of your portfolio
                   </p>
                 </div>

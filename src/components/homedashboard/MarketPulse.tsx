@@ -21,6 +21,19 @@ import {
   SectionHeading,
 } from "./shared";
 
+function formatAsOf(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  }) + " IST";
+}
+
 function IndexCard({
   name,
   quote,
@@ -75,9 +88,9 @@ function IndexCard({
           : "text-rose-600";
 
   return (
-    <article className="min-w-0 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
+    <article className="min-w-0 rounded-2xl border border-[#dadce0] bg-white p-4 shadow-[0_1px_2px_rgba(60,64,67,0.15)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_1px_3px_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)]">
       <div className="flex items-center justify-between gap-1.5">
-        <h3 className="text-xs font-semibold tracking-wide text-stone-500">
+        <h3 className="text-xs font-semibold tracking-wide text-[#5f6368]">
           {name}
         </h3>
         {quote?.source ? (
@@ -99,7 +112,7 @@ function IndexCard({
       <p
         className={`mt-1 flex items-center gap-1 text-xs font-semibold ${
           !pct || (!isPositive && !isNegative)
-            ? "text-stone-500"
+            ? "text-[#5f6368]"
             : isPositive
               ? "text-emerald-600"
               : "text-rose-600"
@@ -126,14 +139,14 @@ function IndexCard({
           />
         </svg>
       ) : (
-        <p className="mt-3 flex h-10 items-center text-xs text-stone-500">
+        <p className="mt-3 flex h-10 items-center text-xs text-[#5f6368]">
           Intraday chart unavailable
         </p>
       )}
-      <p className="mt-2 text-xs leading-relaxed text-stone-500">{meaning}</p>
+      <p className="mt-2 text-xs leading-relaxed text-[#5f6368]">{meaning}</p>
       {quote?.source.asOf ? (
-        <p className="mt-2 break-words text-[10px] text-stone-500">
-          Quote as of {quote.source.asOf}
+        <p className="mt-2 break-words text-xs text-[#5f6368]">
+          Updated {formatAsOf(quote.source.asOf)}
         </p>
       ) : null}
     </article>
@@ -167,7 +180,7 @@ export function MarketPulse({
         detail="A quick read on India. A little context behind every move."
         action={<HomeLink href="/markets">Full market board</HomeLink>}
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-stone-500">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-[#5f6368]">
         <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 font-medium text-stone-900">
           <span
             className={`size-1.5 rounded-full ${status.state === "live" ? "motion-safe:animate-pulse bg-emerald-600" : status.state === "pre-open" ? "bg-amber-600" : "bg-stone-400"}`}
@@ -217,7 +230,7 @@ export function MarketPulse({
               />
             ) : null}
           </div>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-[#5f6368]">
             {adv != null && dec != null
               ? `${adv.toLocaleString("en-IN")} advancing · ${dec.toLocaleString("en-IN")} declining`
               : "Advances / declines unavailable"}
@@ -236,7 +249,7 @@ export function MarketPulse({
             <div className="flex-1 bg-rose-600" />
           </div>
         ) : null}
-        <p className="mt-3 text-sm text-stone-500">
+        <p className="mt-3 text-sm text-[#5f6368]">
           {breadthInsight(adv, dec)}
         </p>
       </div>

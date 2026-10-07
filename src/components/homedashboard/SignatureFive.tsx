@@ -1,6 +1,8 @@
 "use client";
 import useSWR from "swr";
+import Link from "next/link";
 import {
+  ArrowRight,
   BellRing,
   FlaskConical,
   MessagesSquare,
@@ -14,7 +16,6 @@ import type { PortfolioAnalysis } from "@/lib/my-portfolio/types";
 import {
   fetchOptions,
   homeJson,
-  HomeLink,
   rupees,
   SectionHeading,
 } from "./shared";
@@ -67,6 +68,7 @@ export function SignatureFive({
   const cards = [
     {
       name: "AI Desk",
+      accent: ["#1a73e8", "#e8f0fe", "#174ea6"],
       icon: MessagesSquare,
       desc: "Five AI analysts debate a stock — bull vs bear, with sources.",
       teaser: trending
@@ -79,6 +81,7 @@ export function SignatureFive({
     },
     {
       name: "Stock Scanner",
+      accent: ["#d93025", "#fce8e6", "#a50e0e"],
       icon: ScanLine,
       desc: "Find stocks breaking out right now.",
       teaser:
@@ -92,6 +95,7 @@ export function SignatureFive({
     },
     {
       name: "Trade Lab",
+      accent: ["#e37400", "#fef7e0", "#b06000"],
       icon: FlaskConical,
       desc: "Practise trading with real data. Zero risk.",
       teaser:
@@ -105,6 +109,7 @@ export function SignatureFive({
     },
     {
       name: "Alerts",
+      accent: ["#1e8e3e", "#e6f4ea", "#137333"],
       icon: BellRing,
       desc: "The market taps you on the shoulder.",
       teaser: alertCount
@@ -117,6 +122,7 @@ export function SignatureFive({
     },
     {
       name: "Options Flow",
+      accent: ["#9334e6", "#f3e8fd", "#7627bb"],
       icon: Waves,
       desc: "Follow the big options money.",
       teaser:
@@ -135,28 +141,41 @@ export function SignatureFive({
         title="Five ways to find your edge"
         detail="Follow your curiosity. Every tool gives you somewhere useful to start."
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {cards.map((c) => (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {cards.map((c, i) => (
           <article
             key={c.name}
-            className="flex min-w-0 flex-col rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-colors hover:border-teal-300"
+            className="g-card"
+            style={
+              {
+                "--g-i": i,
+                "--g-accent": c.accent[0],
+                "--g-tint": c.accent[1],
+                "--g-ink": c.accent[2],
+              } as React.CSSProperties
+            }
           >
-            <span className="mb-5 grid size-10 place-items-center rounded-xl border border-teal-100 bg-teal-50 text-teal-600">
-              <c.icon className="size-5" />
+            <span className="g-icon mb-6">
+              <c.icon className="size-6" aria-hidden />
             </span>
-            <h3 className="text-base font-semibold text-stone-900">{c.name}</h3>
-            <p className="mt-2 min-h-10 text-sm leading-relaxed text-stone-500">
+            <h3 className="text-xl font-medium text-[#202124]">{c.name}</h3>
+            <p className="mt-2 min-h-12 text-base leading-6 text-[#3c4043]">
               {c.desc}
             </p>
-            <div className="mb-4 mt-4 rounded-lg bg-stone-50 p-3">
-              <p className="text-xs font-medium leading-relaxed text-stone-700">
-                {c.teaser}
-              </p>
+            <div className="g-chip my-5" data-live={c.live}>
+              <span className="g-dot" aria-hidden />
+              <span>{c.teaser}</span>
             </div>
             <div className="mt-auto">
-              <HomeLink href={c.href} onClick={c.run}>
+              <Link
+                prefetch={false}
+                href={c.href}
+                onClick={c.run}
+                className="g-cta after:absolute after:inset-0 after:content-['']"
+              >
                 {c.cta}
-              </HomeLink>
+                <ArrowRight aria-hidden className="size-4" />
+              </Link>
             </div>
           </article>
         ))}

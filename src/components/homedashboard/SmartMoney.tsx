@@ -37,7 +37,7 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
                       />
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-[#5f6368]">
                     {row?.source.asOf
                       ? `Reported ${row.source.asOf}`
                       : "Latest cash-market report"}
@@ -50,7 +50,7 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
                       : "—"}
                   </p>
                   <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${value == null || value === 0 ? "bg-stone-100 text-stone-500" : value > 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${value == null || value === 0 ? "bg-stone-100 text-[#5f6368]" : value > 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}
                   >
                     {value == null
                       ? "Unavailable"
@@ -62,7 +62,7 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
                   </span>
                 </div>
               </div>
-              <p className="mt-3 text-sm text-stone-500">
+              <p className="mt-3 text-sm text-[#5f6368]">
                 {flowInsight(
                   key === "fii" ? "FIIs" : "DIIs",
                   row?.history,
