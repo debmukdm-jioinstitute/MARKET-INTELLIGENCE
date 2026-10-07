@@ -2,6 +2,7 @@
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   Mail,
@@ -461,8 +462,10 @@ export default function AdminCustomersPage() {
                   return (
                     <tr key={c.email} className="border-b border-gray-100 hover:bg-gray-50/50">
                       <td className="py-2.5 pr-3">
-                        <div className="font-medium text-gray-900">{c.name || "—"}</div>
-                        <div className="text-xs text-gray-500">{c.email}</div>
+                        <Link href={`/admin/users/${encodeURIComponent(c.email)}`}>
+                          <div className="font-medium text-gray-900 hover:underline">{c.name || "—"}</div>
+                          <div className="text-xs text-gray-500 hover:underline">{c.email}</div>
+                        </Link>
                       </td>
                       <td className="py-2.5 pr-3">
                         <span
