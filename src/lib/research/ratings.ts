@@ -42,7 +42,13 @@ export type RatingEvent = {
   source: string;
 };
 
-export type FilingDisclosure = { date: string; headline: string; url: string | null };
+export type FilingDisclosure = {
+  date: string;
+  headline: string;
+  url: string | null;
+  agency?: string | null;
+  rating?: string | null;
+};
 
 const isAction = (r: RatingRowView) => r.action !== "current" && r.action !== "rationale";
 
@@ -76,7 +82,17 @@ export function buildRatingEvents(rows: RatingRowView[], disclosures: FilingDisc
     else if (r.watch === "negative") events.push({ ...base, type: "watch-negative", detail: `${r.agency} placed the rating on negative credit watch${r.rating ? ` (${r.rating})` : ""}.` });
     else if (r.outlook === "negative") events.push({ ...base, type: "negative-outlook", detail: `${r.agency} gave a negative outlook${r.rating ? ` on ${r.rating}` : ""}.` });
   }
-  for (const d of disclosures) events.push({ type: "disclosure", agency: null, date: d.date, rating: null, detail: d.headline, link: d.url, source: "NSE_FILING" });
+  for (const d of disclosures) {
+    events.push({
+      type: "disclosure",
+      agency: d.agency ?? null,
+      date: d.date,
+      rating: d.rating ?? null,
+      detail: d.headline,
+      link: d.url,
+      source: "NSE_FILING",
+    });
+  }
   return events.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 }
 

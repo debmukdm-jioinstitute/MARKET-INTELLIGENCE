@@ -1,7 +1,9 @@
+import { cacheGetJson, cacheSetJson } from "@/lib/cache/redis";
 import { parseIssuerPage, type IssuerParse, type Notch } from "@/lib/collector/credit-ratings";
 import { hasDatabase, sql, toDateString } from "@/lib/db";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
+import { panelCacheKey } from "@/lib/research/panel-cache";
 import {
   AGENCY_ORDER,
   buildAgencyGrid,
@@ -100,22 +102,34 @@ async function crawlNseCreditDisclosures(symbol: string): Promise<FilingDisclosu
     for (const r of raw) {
       const desc = r.desc?.trim() ?? "";
       const text = r.attchmntText?.trim() ?? "";
-      const isCredit = /credit rating/i.test(desc) || /credit rating/i.test(text);
+      const fileUrl = r.attchmntFile?.trim() || null;
+      const isCredit = /credit rating/i.test(desc) || /credit rating/i.test(text) || /credit rating/i.test(fileUrl ?? "");
       if (!isCredit) continue;
 
       const dateStr = r.sort_date ? r.sort_date.slice(0, 10) : "";
       if (!dateStr) continue;
 
-      const fileUrl = r.attchmntFile?.trim() || null;
       const headline = text || desc || `Credit Rating Disclosure filed by ${symbol}`;
+      const combined = `${desc} ${text} ${fileUrl ?? ""}`.toUpperCase();
+
+      let detectedAgency: string | null = null;
+      if (combined.includes("CRISIL")) detectedAgency = "CRISIL";
+      else if (combined.includes("CARE")) detectedAgency = "CARE";
+      else if (combined.includes("ICRA") || combined.includes("SECRA")) detectedAgency = "ICRA";
+      else if (combined.includes("INDIARATING") || combined.includes("INDIA RATINGS") || combined.includes("IND-RA")) detectedAgency = "India Ratings";
+
+      const ratingMatch = /\b(AAA|AA\+|AA|AA\-|A\+|A|A\-|BBB\+|BBB|BBB\-|BB\+|BB|B\+|B|A1\+|A1)\b/i.exec(combined);
+      const rating = ratingMatch ? ratingMatch[1].toUpperCase() : null;
 
       disclosures.push({
         date: dateStr,
         headline,
         url: fileUrl,
+        agency: detectedAgency,
+        rating,
       });
 
-      if (disclosures.length >= 20) break;
+      if (disclosures.length >= 25) break;
     }
 
     return disclosures;
@@ -152,6 +166,14 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
   const cached = memoryCache.get(cleanSymbol);
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
     return cached.data;
+  }
+
+  // Fast Redis lookup (~15ms)
+  const redisKey = panelCacheKey("ratings", cleanSymbol);
+  const fromRedis = await cacheGetJson<CompanyRatingsResult>(redisKey);
+  if (fromRedis?.value) {
+    memoryCache.set(cleanSymbol, { at: Date.now(), data: fromRedis.value });
+    return fromRedis.value;
   }
 
   const companyName = resolveCompanyName(cleanSymbol);
@@ -218,6 +240,7 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
         };
 
         memoryCache.set(cleanSymbol, { at: Date.now(), data: result });
+        void cacheSetJson(redisKey, result, 7200).catch(() => {});
         return result;
       }
     } catch {
@@ -276,16 +299,20 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
     }
   }
 
-  // 3. If RetailBonds had no data or was unrated on RetailBonds, attempt extraction from official NSE credit rating disclosures
+  // 3. Extract agency coverage and ratings from statutory NSE credit rating disclosures
   if (views.length === 0 && nseDisclosures.length > 0) {
     for (const disc of nseDisclosures) {
-      const text = disc.headline.toUpperCase();
+      const haystack = `${disc.headline} ${disc.url ?? ""}`.toUpperCase();
       for (const ag of AGENCY_ORDER) {
-        if (text.includes(ag)) {
-          // Detect rating pattern e.g. "AAA" or "AA+"
-          const ratingMatch = /\b(AAA|AA\+|AA|AA\-|A\+|A|BBB\+|BBB)\b/.exec(text);
-          const rating = ratingMatch ? ratingMatch[1] : "AAA";
-          const notch = rating.replace(/[^A-Z]/g, "") as Notch;
+        const matched =
+          disc.agency === ag ||
+          haystack.includes(ag) ||
+          (ag === "ICRA" && (haystack.includes("SECRA") || haystack.includes("ICRA")));
+
+        if (matched) {
+          const ratingMatch = /\b(AAA|AA\+|AA|AA\-|A\+|A|A\-|BBB\+|BBB|BBB\-|BB\+|BB|B\+|B|A1\+|A1)\b/.exec(haystack);
+          const rating = ratingMatch ? ratingMatch[1].toUpperCase() : disc.rating ?? "AAA";
+          const notch = (rating.replace(/[^A-Z]/g, "") || "AAA") as Notch;
 
           views.push({
             agency: ag,
@@ -293,7 +320,7 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
             notch,
             outlook: "stable",
             watch: null,
-            action: "reaffirmation",
+            action: /reaffirm|affirm/i.test(haystack) ? "reaffirmation" : "update",
             actionDate: disc.date,
             rationaleUrl: disc.url ?? agencyVerificationUrl(ag, cleanSymbol, companyName),
             source: "NSE_STATUTORY_DISCLOSURE",
@@ -320,9 +347,12 @@ export async function getCompanyCreditRatings(symbol: string): Promise<CompanyRa
     agencies,
     events,
     alert: hasRecentAlert(events),
-    source: "LIVE_CRAWLER",
+    source: views.some((v) => v.source === "NSE_STATUTORY_DISCLOSURE")
+      ? "NSE_DISCLOSURES_CRAWLER"
+      : "LIVE_CRAWLER",
   };
 
   memoryCache.set(cleanSymbol, { at: Date.now(), data: result });
+  void cacheSetJson(redisKey, result, 7200).catch(() => {});
   return result;
 }

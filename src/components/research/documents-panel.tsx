@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Fold, Takeaway, Tile } from "@/components/guide/explain";
 import { cn } from "@/lib/utils";
 import type { AnnualReportDoc } from "@/lib/financials/types";
-import { Bell, Download, ExternalLink, FileSpreadsheet } from "lucide-react";
+import { Bell, Download, ExternalLink, FileSpreadsheet, Headphones, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -25,6 +25,33 @@ type AnnouncementsResponse = {
   nseUrl: string;
 };
 
+type RatingsDocResponse = {
+  symbol: string;
+  agencies: {
+    agency: string;
+    covered: boolean;
+    rating: string | null;
+    rationaleUrl: string | null;
+    lastActionDate: string | null;
+  }[];
+  events: {
+    type: string;
+    agency: string | null;
+    date: string;
+    rating: string | null;
+    detail: string;
+    link: string | null;
+    source: string;
+  }[];
+};
+
+type ConcallDocResponse = {
+  symbol: string;
+  documents?: { title: string; url: string }[];
+  history?: { quarter: string | null; transcriptDate: string | null; sourceUrl: string }[];
+};
+
+/** Module-level fetchers — never inline an async fn in useSWR (React #185). */
 async function loadAnnouncements(url: string): Promise<AnnouncementsResponse> {
   const res = await fetch(url);
   const json = (await res.json()) as AnnouncementsResponse & { error?: string };
@@ -36,6 +63,18 @@ async function loadFinancialsJson(url: string): Promise<{ annualReports?: Annual
   const res = await fetch(url);
   if (!res.ok) return {};
   return (await res.json()) as { annualReports?: AnnualReportDoc[] };
+}
+
+async function loadRatingsJson(url: string): Promise<RatingsDocResponse> {
+  const res = await fetch(url);
+  if (!res.ok) return { symbol: "", agencies: [], events: [] };
+  return (await res.json()) as RatingsDocResponse;
+}
+
+async function loadConcallJson(url: string): Promise<ConcallDocResponse> {
+  const res = await fetch(url);
+  if (!res.ok) return { symbol: "" };
+  return (await res.json()) as ConcallDocResponse;
 }
 
 const fmtDate = (iso: string) => {
@@ -59,7 +98,7 @@ export function DocumentsPanel({
 }) {
   const { data: finData } = useSWR(`/api/research/financials?symbol=${encodeURIComponent(symbol)}`, loadFinancialsJson, { revalidateOnFocus: false });
   const annualReports: AnnualReportDoc[] = initialAnnualReports ?? (finData?.annualReports as AnnualReportDoc[] | undefined) ?? [];
-  const [activeTab, setActiveTab] = useState<"annual_reports" | "announcements">("annual_reports");
+  const [activeTab, setActiveTab] = useState<"annual_reports" | "announcements" | "credit_ratings" | "concalls">("annual_reports");
   const [announcementCategory, setAnnouncementCategory] = useState<string | null>(null);
 
   const announcementsUrl = `/api/research/announcements?symbol=${encodeURIComponent(symbol)}&limit=25${
@@ -67,9 +106,24 @@ export function DocumentsPanel({
   }`;
   const { data: annData, isLoading: annLoading } = useSWR<AnnouncementsResponse>(announcementsUrl, loadAnnouncements, { revalidateOnFocus: false });
 
+  const { data: ratingsData, isLoading: ratingsLoading } = useSWR<RatingsDocResponse>(
+    `/api/research/ratings?symbol=${encodeURIComponent(symbol)}`,
+    loadRatingsJson,
+    { revalidateOnFocus: false },
+  );
+
+  const { data: concallData, isLoading: concallLoading } = useSWR<ConcallDocResponse>(
+    `/api/research/concall?symbol=${encodeURIComponent(symbol)}&market=IN`,
+    loadConcallJson,
+    { revalidateOnFocus: false },
+  );
+
   const latestReport = annualReports[0] ?? null;
   const latestNotice = annData?.items?.[0] ?? null;
   const items = annData?.items ?? [];
+
+  const ratingDocs = (ratingsData?.events ?? []).filter((e) => e.link);
+  const concallDocs = concallData?.documents ?? [];
 
   const NoticeRow = ({ item }: { item: Announcement }) => (
     <li className="flex flex-col justify-between gap-2 p-4 sm:flex-row sm:items-center">
@@ -92,16 +146,16 @@ export function DocumentsPanel({
     <Panel
       id="regulatory-documents"
       title="Company documents and notices"
-      subtitle="The official papers a company files: yearly reports and notices to the stock exchange."
+      subtitle="The official papers a company files: yearly reports, stock exchange notices, credit rating intimations, and earnings call transcripts."
       trust={{
-        source: "NSE India (Regulation 30, 33 & 34)",
-        note: "Every link opens the original document as filed by the company.",
+        source: "NSE India (Regulation 30, 33 & 34) & Official Agency Portals",
+        note: "Every link opens the original statutory document as filed by the company.",
       }}
     >
       <div className="space-y-5">
         <Takeaway
           tone="info"
-          sub="Looking for ratings or earnings-call summaries? They have their own sections on this page: Credit ratings radar and Earnings concalls."
+          sub="Official statutory archives: Annual reports, exchange notices, credit rating rationales, and earnings conference call transcripts."
         >
           {latestReport && latestNotice
             ? `Start with the ${latestReport.financialYear} annual report. The latest notice to the exchange was on ${fmtDate(latestNotice.broadcastDate)}.`
@@ -112,18 +166,25 @@ export function DocumentsPanel({
                 : "Official filings for this company will appear here as they are collected."}
         </Takeaway>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Tile
             label="Annual reports"
             value={annualReports.length}
-            hint="A long yearly report: business, accounts and risks. Best place to learn what the company really does."
-            footer={latestReport ? <a href={latestReport.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-base font-semibold text-primary hover:underline"><Download className="size-4" /> Latest ({latestReport.financialYear})</a> : null}
+            hint="Comprehensive yearly business accounts and audited financial statements."
+            footer={latestReport ? <a href={latestReport.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"><Download className="size-4" /> Latest ({latestReport.financialYear})</a> : null}
           />
-          <Tile label="Company notices" value={annData?.count ?? "…"} hint="Short updates to the exchange: results, dividends, meetings, big orders." />
+          <Tile label="Company notices" value={annData?.count ?? "…"} hint="Short exchange updates: quarterly results, dividends, board meetings." />
           <Tile
-            label="Latest notice"
-            value={latestNotice ? fmtDate(latestNotice.broadcastDate) : "—"}
-            hint={latestNotice ? `${latestNotice.category}: ${latestNotice.headline.slice(0, 90)}${latestNotice.headline.length > 90 ? "…" : ""}` : "Nothing collected yet."}
+            label="Credit rating filings"
+            value={ratingDocs.length}
+            hint="Statutory intimations from CRISIL, CARE, ICRA & India Ratings."
+            footer={<a href="#credit-ratings" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">View Radar →</a>}
+          />
+          <Tile
+            label="Concall transcripts"
+            value={concallDocs.length}
+            hint="Official quarterly earnings call recordings and transcript filings."
+            footer={<a href="#concalls" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">View Tone →</a>}
           />
         </div>
 
@@ -131,6 +192,8 @@ export function DocumentsPanel({
           {([
             { id: "annual_reports", label: `Annual reports (${annualReports.length})`, icon: FileSpreadsheet },
             { id: "announcements", label: `Company notices (${annData?.count ?? "…"})`, icon: Bell },
+            { id: "credit_ratings", label: `Credit ratings (${ratingDocs.length})`, icon: ShieldCheck },
+            { id: "concalls", label: `Earnings concalls (${concallDocs.length})`, icon: Headphones },
           ] as const).map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -239,6 +302,106 @@ export function DocumentsPanel({
                 Listed companies must tell the stock exchange about anything that could affect the share price: quarterly results, dividends, board meetings, new orders, rating changes and leadership moves. They are posted here as filed.
               </p>
             </Fold>
+          </div>
+        )}
+
+        {activeTab === "credit_ratings" && (
+          <div className="space-y-4">
+            {ratingsLoading ? (
+              <p className="py-6 text-center text-base text-muted-foreground">Loading credit rating filings…</p>
+            ) : ratingDocs.length ? (
+              <>
+                <ul className="divide-y divide-border/50 overflow-hidden rounded-xl border border-border bg-card">
+                  {ratingDocs.map((r, idx) => (
+                    <li key={idx} className="flex flex-col justify-between gap-2 p-4 sm:flex-row sm:items-center">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {r.agency ? (
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
+                              {r.agency}
+                            </Badge>
+                          ) : null}
+                          {r.rating ? (
+                            <Badge variant="outline" className="text-xs font-semibold">
+                              {r.rating}
+                            </Badge>
+                          ) : null}
+                          <span className="text-sm tabular-nums text-muted-foreground">{fmtDate(r.date)}</span>
+                          <span className="text-xs text-muted-foreground">({r.source})</span>
+                        </div>
+                        <p className="text-base font-medium leading-snug text-foreground">{r.detail}</p>
+                      </div>
+                      {r.link ? (
+                        <a
+                          href={r.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex shrink-0 items-center gap-1 text-base font-semibold text-primary hover:underline"
+                        >
+                          Read filing <ExternalLink className="size-4" />
+                        </a>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Looking for rating matrix comparison and agency credit outlook?
+                  </p>
+                  <a href="#credit-ratings" className="text-sm font-semibold text-primary hover:underline">
+                    Open Credit Ratings Radar →
+                  </a>
+                </div>
+              </>
+            ) : (
+              <p className="py-6 text-center text-base text-muted-foreground">
+                No statutory credit rating intimations filed recently for {symbol}.
+              </p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "concalls" && (
+          <div className="space-y-4">
+            {concallLoading ? (
+              <p className="py-6 text-center text-base text-muted-foreground">Loading concall archives…</p>
+            ) : concallDocs.length ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {concallDocs.map((doc, idx) => (
+                    <div key={idx} className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Headphones className="size-4 text-primary" />
+                          <p className="text-base font-bold text-foreground">{doc.title || "Earnings Call Transcript"}</p>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">Official Exchange Submission</p>
+                      </div>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+                      >
+                        <ExternalLink className="size-4" /> Read transcript PDF
+                      </a>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Want AI management tone tracking and Q&A sentiment analysis?
+                  </p>
+                  <a href="#concalls" className="text-sm font-semibold text-primary hover:underline">
+                    Open Concall Tone Analysis →
+                  </a>
+                </div>
+              </>
+            ) : (
+              <p className="py-6 text-center text-base text-muted-foreground">
+                No earnings call transcripts recorded for {symbol}.
+              </p>
+            )}
           </div>
         )}
       </div>
