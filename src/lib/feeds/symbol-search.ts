@@ -1,4 +1,5 @@
 import { gunzipSync } from "node:zlib";
+import { cacheGetJson, cacheSetJson } from "@/lib/cache/redis";
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
 import { feedFetch } from "@/lib/feeds/http";
 import {
@@ -65,7 +66,24 @@ async function loadNseEquityIndex(): Promise<SymbolSearchHit[]> {
   return nseLoading;
 }
 
+/** Compact Redis form: [symbol, name, instrumentKey, isin] (~240 KB gzipped). */
+type NseTuple = [string, string, string, string | null];
+const NSE_REDIS_KEY = "instruments:nse_eq:v1";
+
 async function downloadNseEquityIndex(): Promise<SymbolSearchHit[]> {
+  const cached = await cacheGetJson<NseTuple[]>(NSE_REDIS_KEY);
+  if (cached && cached.ageMs < NSE_TTL_MS && cached.value.length > 1000) {
+    nseEquityIndex = cached.value.map(([symbol, name, instrumentKey, isin]) => ({
+      symbol,
+      name,
+      market: "IN" as const,
+      instrumentKey,
+      isin: isin ?? undefined,
+      exchange: "NSE",
+    }));
+    nseLoadedAt = Date.now();
+    return nseEquityIndex;
+  }
   const res = await feedFetch(NSE_GZ, { timeoutMs: 45_000 });
   if (!res.ok) throw new Error(`NSE instrument master HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -81,6 +99,8 @@ async function downloadNseEquityIndex(): Promise<SymbolSearchHit[]> {
       exchange: "NSE",
     }));
   nseLoadedAt = Date.now();
+  const tuples: NseTuple[] = nseEquityIndex.map((h) => [h.symbol, h.name, h.instrumentKey ?? "", h.isin ?? null]);
+  await cacheSetJson(NSE_REDIS_KEY, tuples, 24 * 60 * 60);
   return nseEquityIndex;
 }
 
