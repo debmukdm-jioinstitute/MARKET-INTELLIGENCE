@@ -274,7 +274,7 @@ export function SymbolSearch({
           placeholder={placeholder}
           className={cn(
             "border-0 bg-transparent shadow-none focus-visible:ring-0",
-            variant === "hero" ? "h-14 text-lg md:text-xl" : "h-9 text-sm",
+            variant === "hero" ? "h-14 text-lg md:text-xl" : "h-9 text-base sm:text-sm",
           )}
           aria-autocomplete="list"
           aria-expanded={open}

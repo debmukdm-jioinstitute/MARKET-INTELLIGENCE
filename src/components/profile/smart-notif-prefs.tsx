@@ -133,13 +133,13 @@ export function SmartNotifPrefs() {
           <button
             type="button" disabled={saving || prefs.max_push_per_day <= 0}
             onClick={() => void save({ ...prefs, max_push_per_day: prefs.max_push_per_day - 1 })}
-            className="size-8 rounded-full border border-border text-lg leading-none hover:bg-accent disabled:opacity-40" aria-label="Fewer alerts"
+            className="size-8 rounded-full border border-border p-2 -m-2 text-lg leading-none hover:bg-accent disabled:opacity-40" aria-label="Fewer alerts"
           >−</button>
           <span className="w-6 text-center text-sm font-semibold">{prefs.max_push_per_day}</span>
           <button
             type="button" disabled={saving || prefs.max_push_per_day >= 10}
             onClick={() => void save({ ...prefs, max_push_per_day: prefs.max_push_per_day + 1 })}
-            className="size-8 rounded-full border border-border text-lg leading-none hover:bg-accent disabled:opacity-40" aria-label="More alerts"
+            className="size-8 rounded-full border border-border p-2 -m-2 text-lg leading-none hover:bg-accent disabled:opacity-40" aria-label="More alerts"
           >+</button>
         </div>
       </div>

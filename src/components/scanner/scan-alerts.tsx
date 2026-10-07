@@ -96,7 +96,7 @@ export function ScanAlerts() {
             run(cmd);
           }}
         >
-          <input value={cmd} onChange={(e) => setCmd(e.target.value)} placeholder="/vcp  ·  /golden-cross  ·  INFY" className="min-w-64 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm" />
+          <input value={cmd} onChange={(e) => setCmd(e.target.value)} placeholder="/vcp  ·  /golden-cross  ·  INFY" className="min-w-64 flex-1 rounded-md border border-border bg-background px-3 py-2 text-base sm:text-sm" />
           <button type="submit" disabled={busy || !data} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
             {busy ? "Running…" : "Run"}
           </button>

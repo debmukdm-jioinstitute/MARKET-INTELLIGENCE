@@ -44,7 +44,9 @@ export function ResearchSectionNav({ sections }: ResearchSectionNavProps) {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const yOffset = -80;
+    // Mobile TopBar is two rows tall (~105px incl. border); desktop is one row (~53px).
+    // Keep the section title clear of the sticky header + this nav on both.
+    const yOffset = typeof window !== "undefined" && window.innerWidth < 1024 ? -160 : -80;
     const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
   };
@@ -52,7 +54,7 @@ export function ResearchSectionNav({ sections }: ResearchSectionNavProps) {
   return (
     <nav
       aria-label="Research sections"
-      className="sticky top-14 z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 bg-background/95 backdrop-blur border-b border-border/50 mb-6 transition-all"
+      className="sticky top-[105px] lg:top-14 z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 bg-background/95 backdrop-blur border-b border-border/50 mb-6 transition-all"
     >
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
         {sections.map((s) => {

@@ -131,7 +131,7 @@ function UsdInrCard({ rate: r, others }: { rate: RefRate | null; others: RefRate
       <p className="text-sm text-muted-foreground">Official reference rate for 1 US dollar · {dayLabel(r.date)}</p>
       <div className="mt-1">{change !== null ? <Delta pct={change} suffix="vs the day before" /> : null}</div>
       <Spark data={r.series.map((p) => ({ x: dayLabel(p.date), y: p.value }))} />
-      <ul className="mt-2 grid grid-cols-3 gap-2 text-xs">
+      <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
         {others.map((o) => (
           <li key={o.code} className="rounded-lg bg-muted/40 px-2 py-1.5">
             <span className="text-muted-foreground">{o.code}</span>{" "}
@@ -180,7 +180,7 @@ function MoneyMarketCard({ d }: { d: NonNullable<ReturnType<typeof useFbilRates>
     <Panel title="Short-term borrowing costs">
       <p className="mb-3 text-sm text-muted-foreground">What banks pay to borrow money for a day, a month or a few years — the base for most loan and deposit rates.</p>
       {singles.length ? (
-        <div className="mb-3 grid grid-cols-3 gap-2">
+        <div className="mb-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
           {singles.map((s) => (
             <Stat key={s.label} label={s.label} value={`${n2.format(s.r.value)}%`} href={s.r.url} sub={<span className="text-xs text-muted-foreground">{dayLabel(s.r.date)}</span>} />
           ))}
