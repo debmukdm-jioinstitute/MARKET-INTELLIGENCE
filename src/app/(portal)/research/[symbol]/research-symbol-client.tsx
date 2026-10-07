@@ -17,6 +17,7 @@ import { DocumentsPanel } from "@/components/research/documents-panel";
 import { RatingsPanel } from "@/components/research/ratings-panel";
 import { ConcallPanel } from "@/components/research/concall-panel";
 import { LeadershipPanel } from "@/components/research/leadership-panel";
+import { InsightCardsPanel } from "@/components/research/insight-cards-panel";
 import { ResearchSectionNav } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -171,6 +172,8 @@ export function ResearchSymbolClient({
           </div>
         </Panel>
       ) : null}
+
+      {symbol ? <InsightCardsPanel symbol={symbol} /> : null}
 
       {isIndia && symbol ? <LeadershipPanel symbol={symbol} /> : null}
 

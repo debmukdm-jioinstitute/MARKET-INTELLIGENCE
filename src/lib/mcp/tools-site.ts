@@ -1,3 +1,4 @@
+import { readInsightCards } from "@/lib/insights/store";
 import { getCompanyLeadership } from "@/lib/research/company-leadership";
 import { getTranscriptArchive } from "@/lib/research/transcript-archive";
 import { currentCompetition,leaderboard } from "@/lib/competition/store";
@@ -292,6 +293,17 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const input = z.object({ symbol: SymbolArg.shape.symbol, market: z.enum(["IN", "US"]).default("IN") }).parse(a);
       return getTranscriptArchive(input.symbol, input.market);
+    },
+  },
+  {
+    name: "get_insight_cards",
+    title: "What changed (insight cards)",
+    category: "Research",
+    description: "Cited, confidence-scored 'what changed' cards for one company (price move, news flow, corporate actions, valuation). Every reason lists the facts it relies on. Research only, not advice.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => {
+      const cards = await readInsightCards([SymbolArg.parse(a).symbol.toUpperCase()]);
+      return { cards: cards.map(({ facts: _facts, ...c }) => c) };
     },
   },
   {
