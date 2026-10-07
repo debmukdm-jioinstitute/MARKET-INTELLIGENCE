@@ -33,10 +33,14 @@ async function main() {
     fail("DATABASE_URL/POSTGRES_URL is not set — the data.gov.in sync writes straight to Neon");
   }
   if (!hasPersonalKey()) {
-    fail(
-      "DATA_GOV_IN_API_KEY is not set (or is the sample key) — data.gov.in row sync needs a personal API key. " +
-        "Configure it in the repo's Actions secrets/variables; do not run row sync against the sample key.",
+    console.log(
+      JSON.stringify({
+        level: "warn",
+        msg: "DATA_GOV_IN_API_KEY is not set (or is the sample key) — skipping data.gov.in row sync. " +
+          "Configure it in repo Actions secrets when a personal key is available.",
+      }),
     );
+    return;
   }
   console.log(JSON.stringify({ level: "info", msg: "starting data.gov.in tracked sync" }));
   const t0 = Date.now();

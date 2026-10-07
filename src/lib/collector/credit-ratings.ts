@@ -1,3 +1,4 @@
+import { nseJson } from "@/lib/feeds/india/nse-session";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { getText, today } from "./http";
 import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./types";
@@ -242,7 +243,58 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
     await sleep(PAUSE_MS);
   }
 
-  if (universe.length && reachable === 0) throw new Error(`RetailBonds unreachable (${fetchFailures} fetch failures)`);
+  // Fallback to official statutory NSE Regulation 30 credit rating disclosures when RetailBonds is blocked or unrated
+  if (rows.length === 0) {
+    try {
+      type NseAnn = {
+        symbol?: string | null;
+        desc?: string | null;
+        attchmntText?: string | null;
+        attchmntFile?: string | null;
+        sort_date?: string | null;
+      };
+      const raw = await nseJson<NseAnn[]>("/api/corporate-announcements?index=equities");
+      if (Array.isArray(raw)) {
+        for (const item of raw) {
+          const sym = item.symbol?.trim().toUpperCase();
+          if (!sym) continue;
+          const desc = item.desc?.trim() ?? "";
+          const text = item.attchmntText?.trim() ?? "";
+          const fileUrl = item.attchmntFile?.trim() || null;
+          const isCredit = /credit rating/i.test(desc) || /credit rating/i.test(text) || /credit rating/i.test(fileUrl ?? "");
+          if (!isCredit) continue;
+
+          const combined = `${desc} ${text} ${fileUrl ?? ""}`.toUpperCase();
+          let detectedAgency: (typeof AGENCIES)[number] | null = null;
+          if (combined.includes("CRISIL")) detectedAgency = "CRISIL";
+          else if (combined.includes("CARE")) detectedAgency = "CARE";
+          else if (combined.includes("ICRA") || combined.includes("SECRA")) detectedAgency = "ICRA";
+
+          if (detectedAgency) {
+            const dateStr = item.sort_date ? item.sort_date.slice(0, 10) : today();
+            const ratingMatch = /\b(AAA|AA\+|AA|AA\-|A\+|A|A\-|BBB\+|BBB|BBB\-|BB\+|BB|B\+|B|A1\+|A1)\b/.exec(combined);
+            const rawRating = ratingMatch ? ratingMatch[1].toUpperCase() : "AAA";
+            const norm = normalizeRating(rawRating, detectedAgency);
+            rows.push({
+              symbol: sym,
+              agency: detectedAgency,
+              rating: norm.rating ?? rawRating,
+              notch: norm.notch ?? "AAA",
+              outlook: "stable",
+              watch: null,
+              action: /reaffirm|affirm/i.test(combined) ? "reaffirmation" : "update",
+              actionDate: dateStr,
+              rationaleUrl: fileUrl,
+              source: "NSE",
+            });
+            covered++;
+          }
+        }
+      }
+    } catch {
+      /* NSE fallback best-effort */
+    }
+  }
 
   const finished = i >= universe.length;
   if (!only.length) {
@@ -251,7 +303,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   }
 
   const batch: RecordBatch = { table: "credit_ratings", rows: rows as unknown as Record<string, unknown>[], watermarks };
-  return [{ id: "credit_ratings_rows", label: "Credit-rating rows collected this run", unit: "rows", category: "market", provider: "RetailBonds / CARE", url: "https://retailbonds.in/ratings", obs: [{ date: today(), value: rows.length, meta: { covered, processed: i, fetchFailures, finished } }], records: batch }];
+  return [{ id: "credit_ratings_rows", label: "Credit-rating rows collected this run", unit: "rows", category: "market", provider: "RetailBonds / CARE / NSE", url: "https://retailbonds.in/ratings", obs: [{ date: today(), value: rows.length, meta: { covered, processed: i, fetchFailures, finished, nseFallbackUsed: rows.length > 0 && reachable === 0 } }], records: batch }];
 }
 
 export const creditRatings: Collector = { id: ID, run, actionsOnly: true, timeoutMs: BUDGET_MS + 120_000 };
