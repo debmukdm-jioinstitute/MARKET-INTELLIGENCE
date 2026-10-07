@@ -1,35 +1,55 @@
 "use client";
 
-import { CandlestickChart } from "@/components/charts/candlestick-chart";
-import { Lines } from "@/components/charts/terminal-charts";
 import { DriverNudges } from "@/components/guide/driver-nudges";
 import { DataInfo } from "@/components/feeds/data-info";
-import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
-import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
-import { SimilarStocksPanel } from "@/components/hf-ai/similar-stocks-panel";
 import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
 import { SymbolSearch } from "@/components/research/symbol-search";
-import { FinancialsPanel } from "@/components/research/financials-panel";
-import { OwnershipPanel } from "@/components/research/ownership-panel";
-import { DocumentsPanel } from "@/components/research/documents-panel";
-import { RatingsPanel } from "@/components/research/ratings-panel";
-import { ConcallPanel } from "@/components/research/concall-panel";
 import { LeadershipPanel } from "@/components/research/leadership-panel";
 import { InsightCardsPanel } from "@/components/research/insight-cards-panel";
 import { ResearchSectionNav } from "@/components/research/research-section-nav";
+import { LazyMount } from "@/components/research/lazy-mount";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { awardXp } from "@/lib/gamification/client";
+
+// Code-split heavy / below-the-fold UI so it is not parsed and hydrated during page load.
+// Charts are client-only (canvas / SVG measured in the browser), so ssr:false loses nothing.
+const chartBox = (h: number) =>
+  function ChartSkeleton() {
+    return <div className="w-full animate-pulse rounded-lg bg-muted/30" style={{ height: h }} />;
+  };
+const CandlestickChart = dynamic(
+  () => import("@/components/charts/candlestick-chart").then((m) => m.CandlestickChart),
+  { ssr: false, loading: chartBox(360) },
+);
+const Lines = dynamic(() => import("@/components/charts/terminal-charts").then((m) => m.Lines), {
+  ssr: false,
+  loading: chartBox(280),
+});
+const KeyRatiosPanel = dynamic(
+  () => import("@/components/fundamentals/key-ratios-panel").then((m) => m.KeyRatiosPanel),
+  { ssr: false, loading: chartBox(240) },
+);
+const FinancialsPanel = dynamic(() => import("@/components/research/financials-panel").then((m) => m.FinancialsPanel));
+const OwnershipPanel = dynamic(() => import("@/components/research/ownership-panel").then((m) => m.OwnershipPanel));
+const DocumentsPanel = dynamic(() => import("@/components/research/documents-panel").then((m) => m.DocumentsPanel));
+const RatingsPanel = dynamic(() => import("@/components/research/ratings-panel").then((m) => m.RatingsPanel));
+const ConcallPanel = dynamic(() => import("@/components/research/concall-panel").then((m) => m.ConcallPanel));
+const ResearchIntelligencePanels = dynamic(() =>
+  import("@/components/research/research-intelligence-panels").then((m) => m.ResearchIntelligencePanels),
+);
+const SecurityRiskPanel = dynamic(() => import("@/components/research/security-risk-panel").then((m) => m.SecurityRiskPanel));
+const SimilarStocksPanel = dynamic(() => import("@/components/hf-ai/similar-stocks-panel").then((m) => m.SimilarStocksPanel));
 
 /**
  * Session-level guard so a StrictMode double-mount (dev) doesn't fire the
@@ -234,36 +254,51 @@ export function ResearchSymbolClient({
       {/* CORE EXTENSIONS REQUESTED: Financial Statements, Shareholding Donut, Documents, Ratings, Concalls */}
       {isIndia && symbol ? (
         <>
+          {/* Below the fold: each panel mounts (JS + fetch + render) only when scrolled near. */}
           {/* 1. Full Financial Statements & Ratios (P&L, BS, CF, Quarterly Performance, Working Capital) */}
-          <FinancialsPanel symbol={symbol} />
+          <LazyMount anchorId="financial-statements" minHeight={480}>
+            <FinancialsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 2. Shareholding Pattern Donut Chart & Quarterly Trends & Risk Flags */}
-          <OwnershipPanel symbol={symbol} />
+          <LazyMount anchorId="shareholding" minHeight={420}>
+            <OwnershipPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 3. Statutory Document Archive: Announcements, Annual Reports, Credit Ratings, Concalls */}
-          <DocumentsPanel symbol={symbol} />
+          <LazyMount anchorId="regulatory-documents" minHeight={360}>
+            <DocumentsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 4. Credit Ratings Agency Radar (CRISIL, CARE, ICRA) */}
-          <RatingsPanel symbol={symbol} />
+          <LazyMount anchorId="credit-ratings" minHeight={240}>
+            <RatingsPanel symbol={symbol} />
+          </LazyMount>
 
           {/* 5. Earnings Conference Call Transcripts & Management Guidance */}
-          <ConcallPanel symbol={symbol} />
+          <LazyMount anchorId="concalls" minHeight={280}>
+            <ConcallPanel symbol={symbol} />
+          </LazyMount>
         </>
       ) : null}
 
       {data?.intelligence ? (
-        <ResearchIntelligencePanels
-          corporateActions={data.intelligence.corporateActions}
-          newsFeed={data.intelligence.newsFeed}
-          newsSummary={data.intelligence.newsSummary}
-          brokerResearch={data.intelligence.brokerResearch}
-        />
+        <LazyMount minHeight={400}>
+          <ResearchIntelligencePanels
+            corporateActions={data.intelligence.corporateActions}
+            newsFeed={data.intelligence.newsFeed}
+            newsSummary={data.intelligence.newsSummary}
+            brokerResearch={data.intelligence.brokerResearch}
+          />
+        </LazyMount>
       ) : null}
 
       {symbol ? (
-        <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
-          <SecurityRiskPanel symbol={symbol} />
-        </Panel>
+        <LazyMount anchorId="risk-events" minHeight={280}>
+          <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+            <SecurityRiskPanel symbol={symbol} />
+          </Panel>
+        </LazyMount>
       ) : null}
 
       {data?.sources.length ? (
@@ -283,7 +318,9 @@ export function ResearchSymbolClient({
       ) : null}
 
       {/* Semantic similar companies — MiniLM-L6-v2 */}
-      <SimilarStocksPanel symbol={symbol} />
+      <LazyMount minHeight={160}>
+        <SimilarStocksPanel symbol={symbol} />
+      </LazyMount>
     </div>
     </SWRConfig>
   );

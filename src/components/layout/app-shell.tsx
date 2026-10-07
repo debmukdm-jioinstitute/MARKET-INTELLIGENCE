@@ -1,6 +1,5 @@
 "use client";
 
-import { CommandPalette } from "@/components/command-palette/command-palette";
 import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
 import { GuestBanner } from "@/components/layout/guest-banner";
 import { MobileNavProvider } from "@/components/layout/mobile-nav-provider";
@@ -12,15 +11,23 @@ import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
 import { TopBar } from "@/components/layout/top-bar";
 import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { GuidedTour } from "@/components/guided-tour";
 import { PortalPageGuard } from "@/components/layout/portal-page-guard";
 import { PortalPageTransition } from "@/components/layout/portal-page-transition";
 import { RouteProvenanceBar } from "@/components/feeds/route-provenance-bar";
-import { SiteAssistantWidget } from "@/components/site-assistant/site-assistant-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PortalDocumentTitle } from "@/components/layout/portal-document-title";
 import { IndiaDashboardWarmup } from "@/components/providers/india-dashboard-warmup";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
+// Overlay widgets that are closed on first paint: load them as separate client-only chunks
+// so their JS (assistant/AI SDK, driver.js, cmdk) is not parsed or hydrated with the page.
+const CommandPalette = dynamic(() => import("@/components/command-palette/command-palette").then((m) => m.CommandPalette), { ssr: false });
+const SiteAssistantWidget = dynamic(
+  () => import("@/components/site-assistant/site-assistant-panel").then((m) => m.SiteAssistantWidget),
+  { ssr: false },
+);
+const GuidedTour = dynamic(() => import("@/components/guided-tour").then((m) => m.GuidedTour), { ssr: false });
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
