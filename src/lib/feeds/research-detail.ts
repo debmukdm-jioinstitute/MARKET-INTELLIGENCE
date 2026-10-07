@@ -40,37 +40,69 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
 
   const fetchedAt = new Date().toISOString();
   const sources: SourceLink[] = [];
-  let upstoxQuote: FullMarketQuote | null = null;
-  let fundamentals: FundamentalsSnapshot | null = null;
-  let news: NewsItem[] = [];
-  let history: { date: string; value: number }[] = [];
-  let candles: Candle[] = [];
-  let usDetail: Awaited<ReturnType<typeof buildSecurityDetail>> | null = null;
+  const isIndiaUpstox = resolved.market === "IN" && Boolean(resolved.instrumentKey);
+  const instrumentKey = resolved.instrumentKey ?? "";
 
-  if (resolved.market === "IN" && resolved.instrumentKey) {
-    const [quotes, newsRows] = await Promise.all([
-      fetchUpstoxFullQuotes([{ instrumentKey: resolved.instrumentKey, symbol: resolved.symbol }]),
-      fetchUpstoxNews([resolved.instrumentKey]).catch(() => []),
-    ]);
-    upstoxQuote = quotes[0] ?? null;
-    news = newsRows;
+  const instrument = UNIVERSE.find((u) => u.symbol === resolved.symbol);
+  const name = resolved.name || instrument?.name || resolved.symbol;
 
-    if (resolved.isin) {
-      fundamentals = await fetchUpstoxKeyRatios(resolved.isin).catch(() => null);
-    }
+  const to = new Date();
+  const from = new Date();
+  from.setFullYear(from.getFullYear() - 5);
 
-    const to = new Date();
-    const from = new Date();
-    from.setFullYear(from.getFullYear() - 5);
-    candles = await fetchUpstoxHistoricalCandles(
-      resolved.instrumentKey,
-      "days",
-      "1",
-      from.toISOString().slice(0, 10),
-      to.toISOString().slice(0, 10),
-    ).catch(() => []);
-    history = candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+  // Everything below depends only on `resolved`, so it all starts at once
+  // (previously 5 sequential network stages).
+  const quoteP: Promise<FullMarketQuote | null> = isIndiaUpstox
+    ? fetchUpstoxFullQuotes([{ instrumentKey, symbol: resolved.symbol }])
+        .then((rows) => rows[0] ?? null)
+        .catch(() => null)
+    : Promise.resolve(null);
+  const upstoxNewsP: Promise<NewsItem[]> = isIndiaUpstox
+    ? fetchUpstoxNews([instrumentKey]).catch(() => [] as NewsItem[])
+    : Promise.resolve([] as NewsItem[]);
+  const fundamentalsP: Promise<FundamentalsSnapshot | null> =
+    isIndiaUpstox && resolved.isin
+      ? fetchUpstoxKeyRatios(resolved.isin).catch(() => null)
+      : Promise.resolve(null);
+  const candlesP: Promise<Candle[]> = isIndiaUpstox
+    ? fetchUpstoxHistoricalCandles(
+        instrumentKey,
+        "days",
+        "1",
+        from.toISOString().slice(0, 10),
+        to.toISOString().slice(0, 10),
+      ).catch(() => [] as Candle[])
+    : Promise.resolve([] as Candle[]);
+  // US names, or India names whose Upstox quote failed, use the security-detail waterfall.
+  const usDetailP = quoteP.then((q) =>
+    resolved.market === "US" || !q ? buildSecurityDetail(resolved.symbol) : null,
+  );
+  // Intelligence only needs the Upstox headlines, so it chains on that one call.
+  const intelligenceP = upstoxNewsP.then((upstoxNews) =>
+    buildResearchIntelligence({
+      symbol: resolved.symbol,
+      name,
+      market: resolved.market,
+      isin: resolved.isin,
+      upstoxNews: resolved.market === "US" ? [] : upstoxNews,
+    }),
+  );
+  const aboutP = fetchCompanyAbout(name, { isin: resolved.isin, symbol: resolved.symbol, market: resolved.market });
 
+  const [upstoxQuote, upstoxNews, fundamentals, candles, usDetail, intelligence, about] = await Promise.all([
+    quoteP,
+    upstoxNewsP,
+    fundamentalsP,
+    candlesP,
+    usDetailP,
+    intelligenceP,
+    aboutP,
+  ]);
+
+  let news: NewsItem[] = upstoxNews;
+  let history: { date: string; value: number }[] = candles.map((c) => ({ date: c.ts.slice(0, 10), value: c.close }));
+
+  if (isIndiaUpstox) {
     sources.push({
       id: "upstox-quote",
       label: "Upstox",
@@ -95,8 +127,7 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
     }
   }
 
-  if (resolved.market === "US" || !upstoxQuote) {
-    usDetail = await buildSecurityDetail(resolved.symbol);
+  if (usDetail) {
     if (!history.length) history = usDetail.history;
     sources.push(...usDetail.sources);
     if (resolved.market === "US") {
@@ -104,19 +135,6 @@ export async function buildResearchDetail(symbol: string): Promise<ResearchDetai
     }
   }
 
-  const instrument = UNIVERSE.find((u) => u.symbol === resolved.symbol);
-  const name = resolved.name || instrument?.name || resolved.symbol;
-
-  const aboutPromise = fetchCompanyAbout(name, { isin: resolved.isin, symbol: resolved.symbol, market: resolved.market });
-  const intelligence = await buildResearchIntelligence({
-    symbol: resolved.symbol,
-    name,
-    market: resolved.market,
-    isin: resolved.isin,
-    upstoxNews: news,
-  });
-
-  const about = await aboutPromise;
   if (about) {
     sources.push({ id: "wikipedia-about", label: about.source, url: about.url, usedFor: "Company overview" });
   }
