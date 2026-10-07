@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
@@ -20,6 +21,12 @@ import {
 } from "@/components/homedashboard/useHomeProgress";
 import { fetchOptions, homeJson } from "@/components/homedashboard/shared";
 import type { BriefResponse } from "@/lib/homedashboard/brief";
+
+// Client-only, loaded after the dashboard so it never competes with first paint.
+const InstallAppPrompt = dynamic(
+  () => import("@/components/pwa/install-app-prompt").then((m) => m.InstallAppPrompt),
+  { ssr: false },
+);
 
 export default function DashboardPage() {
   const { data } = useIndiaDashboard(45_000);
@@ -83,6 +90,7 @@ export default function DashboardPage() {
       <SmartMoney data={data} />
       <LearnNudge />
       {portfolioUpTop ? null : <PortfolioTeaser portfolio={visiblePortfolio} />}
+      {authenticated ? <InstallAppPrompt /> : null}
     </div>
   );
 }

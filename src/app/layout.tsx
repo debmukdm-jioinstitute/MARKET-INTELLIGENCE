@@ -20,8 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(absoluteUrl("/")),
   icons: {
     icon: [{ url: "/logo-mark-32.png", sizes: "32x32", type: "image/png" }],
-    apple: [{ url: "/logo-mark-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  manifest: "/mi.webmanifest",
+  appleWebApp: { capable: true, title: "Market Intel", statusBarStyle: "black-translucent" },
   ...pageMetadata({
     title: "Free Indian Stock Market Research & Portfolio Tools",
     description:
