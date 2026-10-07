@@ -61,7 +61,7 @@
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 899px) {
   .metrics-bento {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -171,7 +171,7 @@ export function GlobalMarketsDashboard({
                   aria-selected={isSelected}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "rounded-full px-3 py-0.5 text-xs font-bold transition-all",
+                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all",
                     isSelected
                       ? "bg-[#151515] text-white"
                       : "text-[#151515] hover:bg-black/5",
@@ -222,7 +222,7 @@ export function GlobalMarketsDashboard({
       {error ? (
         <div
           role="alert"
-          className="mb-2 rounded-xl border border-rose-300 bg-rose-50 p-2.5 text-xs text-rose-900"
+          className="mb-4 rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900"
         >
           {error}
         </div>

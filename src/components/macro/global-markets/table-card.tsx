@@ -138,7 +138,7 @@ export function TableCard({
     >
       <div className="flex flex-1 flex-col min-h-0">
         {/* Compact Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#151515]/10 pb-2.5 mb-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#151515]/10 pb-3 mb-2">
           <div className="flex flex-wrap items-center gap-2">
             {/* Search input */}
             <div className="relative min-w-[170px] sm:min-w-[200px]">
