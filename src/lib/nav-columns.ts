@@ -107,13 +107,13 @@ export const NAV_SECTIONS: NavSection[] = [
           { label: "Trade Lab", href: "/intelligence/trade-lab", desc: "RSI, MACD and 13 more indicators, chart patterns and backtests for any index or F&O stock.", badge: "NEW" },
           { label: "Alerts", href: "/intelligence/alerts", desc: "Breakout and scan alerts on your schedule." },
           { label: "Options Flow", href: "/research/options-flow", desc: "Unusual activity across the options tape.", badge: "AI" },
+          { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Next-day model with its published track record.", badge: "AI" },
         ],
       },
       {
         label: "Signals & Tests",
         desc: "Model signals, backtests and derivatives.",
         items: [
-          { label: "AI Signals", href: "/intelligence/ai-signals", desc: "Next-day model with its published track record.", badge: "AI" },
           { label: "Backtesting", href: "/intelligence/backtesting", desc: "Test scanner ideas against history." },
           { label: "Derivatives", href: "/markets/derivatives", desc: "F&O open interest and positioning." },
           { label: "Breadth & Momentum", href: "/markets/breadth", desc: "Advance/decline and trend leaders in one view." },

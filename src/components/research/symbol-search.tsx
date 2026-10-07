@@ -11,6 +11,7 @@ import {
   RESEARCH_SEARCH_TYPING_SAMPLES,
 } from "@/lib/research/search-typing-samples";
 import { useTypingPlaceholder } from "@/hooks/use-typing-placeholder";
+import { getRecentSymbols, type RecentSymbol } from "@/lib/research/recent-symbols";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Search, Sparkles } from "lucide-react";
@@ -82,6 +83,9 @@ export function SymbolSearch({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hasUserTyped, setHasUserTyped] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  // "Continue where you left off": recent symbols shown when the box is focused but empty.
+  const [recents, setRecents] = useState<RecentSymbol[]>([]);
+  const [recentsOpen, setRecentsOpen] = useState(false);
 
   const prominent = variant === "hero" || variant === "bar";
   const items = buildItems(result);
@@ -122,10 +126,16 @@ export function SymbolSearch({
 
     const trimmed = q.trim();
     if (trimmed.length < 1) {
+      // Query cleared: fall back to the recently-viewed list while focused.
       setResult(EMPTY_RESULT);
       setOpen(false);
+      const r = getRecentSymbols();
+      setRecents(r);
+      setActive(0);
+      setRecentsOpen(r.length > 0 && isFocused);
       return;
     }
+    setRecentsOpen(false);
     const id = window.setTimeout(async () => {
       setLoading(true);
       try {
@@ -143,7 +153,7 @@ export function SymbolSearch({
       }
     }, 200);
     return () => window.clearTimeout(id);
-  }, [q, hasUserTyped]);
+  }, [q, hasUserTyped, isFocused]);
 
   const selectItem = useCallback(
     (item: ResultItem) => {
@@ -170,7 +180,10 @@ export function SymbolSearch({
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrapRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+        setRecentsOpen(false);
+      }
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -231,12 +244,38 @@ export function SymbolSearch({
             setIsFocused(true);
             if (hasUserTyped && items.length > 0) {
               setOpen(true);
+            } else if (!q.trim()) {
+              const r = getRecentSymbols();
+              setRecents(r);
+              setActive(0);
+              setRecentsOpen(r.length > 0);
             }
           }}
           onBlur={() => {
             setIsFocused(false);
           }}
           onKeyDown={(e) => {
+            // Recently-viewed mode: its own small keyboard model (list is not
+            // part of the unified ResultItem selection above).
+            if (recentsOpen && !open && recents.length > 0) {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setActive((i) => Math.min(i + 1, recents.length - 1));
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setActive((i) => Math.max(i - 1, 0));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                const r = recents[active];
+                if (r) {
+                  setRecentsOpen(false);
+                  router.push(`/research/${encodeURIComponent(r.symbol)}`);
+                }
+              } else if (e.key === "Escape") {
+                setRecentsOpen(false);
+              }
+              return;
+            }
             if (!open || !items.length) {
               // The debounced fetch (200ms) may not have resolved yet — a
               // fast typist can hit Enter before `items` populates. This is
@@ -326,6 +365,44 @@ export function SymbolSearch({
                 />
               ) : null}
             </Fragment>
+          ))}
+        </ul>
+      ) : null}
+      {recentsOpen && !open ? (
+        <ul
+          className={cn(
+            "animate-dropdown-pop absolute z-50 mt-2 w-full overflow-auto rounded-2xl border border-[#1a73e8]/50 bg-popover/85 py-1.5 shadow-[0_0_0_1px_rgba(26,115,232,0.12),0_20px_60px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150",
+            variant === "hero" ? "max-h-96" : "max-h-72",
+          )}
+          role="listbox"
+          aria-label="Recently viewed"
+        >
+          <li className="px-3 pt-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Recently viewed
+          </li>
+          {recents.map((r, i) => (
+            <li key={r.symbol} className="animate-dropdown-item px-1.5">
+              <button
+                type="button"
+                role="option"
+                aria-selected={i === active}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => {
+                  setRecentsOpen(false);
+                  router.push(`/research/${encodeURIComponent(r.symbol)}`);
+                }}
+                className={cn(
+                  "flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition-all duration-150 will-change-transform hover:-translate-y-0.5 hover:bg-[#1a73e8]/10 hover:shadow-[0_6px_16px_-4px_rgba(26,115,232,0.25)]",
+                  i === active && "-translate-y-0.5 bg-[#1a73e8]/10 shadow-[0_6px_16px_-4px_rgba(26,115,232,0.25)]",
+                )}
+              >
+                <span className="min-w-0">
+                  <span className="font-medium">{r.symbol}</span>
+                  <span className="ml-2 truncate text-muted-foreground">{r.name}</span>
+                </span>
+                <span className="shrink-0 text-sm text-muted-foreground">Recent</span>
+              </button>
+            </li>
           ))}
         </ul>
       ) : null}
