@@ -45,12 +45,28 @@ export async function GET(req: Request) {
   if (!symbol) {
     return NextResponse.json({ error: "symbol query param required" }, { status: 400 });
   }
-  const instrument = INDEX_ALIASES[symbol.toUpperCase()] ?? findIndiaInstrument(symbol);
-  if (!instrument) {
-    return NextResponse.json({ error: `Unknown India symbol: ${symbol}` }, { status: 404 });
-  }
   if (!VALID_RANGES.includes(range)) {
     return NextResponse.json({ error: `Invalid range: ${range}` }, { status: 400 });
+  }
+  const instrument = INDEX_ALIASES[symbol.toUpperCase()] ?? findIndiaInstrument(symbol);
+  if (!instrument) {
+    // Not in the curated Upstox list: any plain NSE ticker still charts via Yahoo.
+    if (!/^[A-Z0-9&-]{1,20}$/i.test(symbol)) {
+      return NextResponse.json({ error: `Unknown India symbol: ${symbol}` }, { status: 404 });
+    }
+    try {
+      const candles = await fetchYahooCandles(yahooTickerForIndiaSymbol(symbol, symbol), range);
+      const cache =
+        range === "1D"
+          ? "public, max-age=30, stale-while-revalidate=60"
+          : "public, max-age=300, stale-while-revalidate=600";
+      return NextResponse.json(
+        { symbol: symbol.toUpperCase(), range, candles, source: "yahoo" },
+        { headers: { "Cache-Control": cache } },
+      );
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : "Yahoo candles failed" }, { status: 502 });
+    }
   }
 
   try {
