@@ -107,7 +107,7 @@ export function DocumentsPanel({
   const { data: annData, isLoading: annLoading } = useSWR<AnnouncementsResponse>(announcementsUrl, loadAnnouncements, { revalidateOnFocus: false });
 
   const { data: ratingsData, isLoading: ratingsLoading } = useSWR<RatingsDocResponse>(
-    `/api/research/ratings?symbol=${encodeURIComponent(symbol)}`,
+    `/api/research/ratings?symbol=${encodeURIComponent(symbol)}&v=2`,
     loadRatingsJson,
     { revalidateOnFocus: false },
   );

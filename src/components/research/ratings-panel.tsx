@@ -15,7 +15,7 @@ export async function loadRatings(url: string): Promise<RatingsResponse> {
   if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
   return json;
 }
-export const ratingsKey = (symbol: string) => `/api/research/ratings?symbol=${encodeURIComponent(symbol)}`;
+export const ratingsKey = (symbol: string) => `/api/research/ratings?symbol=${encodeURIComponent(symbol)}&v=2`;
 
 const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

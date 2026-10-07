@@ -23,7 +23,7 @@ export function researchPanelUrls(sym: string): { name: ResearchPanelName; url: 
     { name: "financials", url: `/api/research/financials?symbol=${s}` },
     { name: "ownership", url: `/api/research/ownership?symbol=${s}&v=3` },
     { name: "announcements", url: `/api/research/announcements?symbol=${s}&limit=25` },
-    { name: "ratings", url: `/api/research/ratings?symbol=${s}` },
+    { name: "ratings", url: `/api/research/ratings?symbol=${s}&v=2` },
     { name: "concall", url: `/api/research/concall?symbol=${s}&market=IN` },
     { name: "security-risk", url: `/api/feeds/security-risk?symbol=${s}` },
   ];
