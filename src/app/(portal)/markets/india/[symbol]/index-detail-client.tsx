@@ -55,7 +55,7 @@ export function IndexDetailClient({
   yahoo: string;
   upstoxKey?: string;
 }) {
-  const { data: feedData, reload: refetchFeed } = useFeedHub(30_000);
+  const { data: feedData, loading: feedLoading, reload: refetchFeed } = useFeedHub(30_000);
   const { isOpen } = useMarketStatus();
   const [tfRaw, setTf] = useState<BentoTf>("1D");
   // Indices without an Upstox key have daily history only — never offer a fake intraday view.
@@ -152,6 +152,7 @@ export function IndexDetailClient({
         seriesError={s.error}
         onRetrySeries={s.retry}
         onRetryQuote={() => void refetchFeed()}
+        quoteLoading={feedLoading && !quote}
         source={s.source ?? (quote ? quote.provider : null)}
       />
 

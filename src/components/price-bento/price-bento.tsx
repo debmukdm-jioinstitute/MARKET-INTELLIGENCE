@@ -70,6 +70,8 @@ export type PriceBentoProps = {
   seriesError: string | null;
   onRetrySeries: () => void;
   onRetryQuote?: () => void;
+  /** Quote request still in flight — show a loading state, not "unavailable". */
+  quoteLoading?: boolean;
   /** Mandatory provider credit, e.g. "Upstox". */
   source: string | null;
   sourceUrl?: string;
@@ -144,8 +146,8 @@ export function PriceBento(props: PriceBentoProps) {
               </>
             ) : (
               <div className="space-y-3">
-                <p className="text-2xl font-bold">Quote unavailable right now.</p>
-                {props.onRetryQuote ? (
+                <p className="text-2xl font-bold">{props.quoteLoading ? "Loading quote…" : "Quote unavailable right now."}</p>
+                {props.onRetryQuote && !props.quoteLoading ? (
                   <button
                     type="button"
                     onClick={props.onRetryQuote}
@@ -158,7 +160,7 @@ export function PriceBento(props: PriceBentoProps) {
             )}
             <hr className="border-0 border-t border-[#151515]/25" />
             <p className="text-base font-medium leading-snug sm:text-lg">
-              {sessionLine ?? "Timestamp unavailable"}
+              {sessionLine ?? (props.quoteLoading ? "Fetching latest quote…" : "Timestamp unavailable")}
               {stale ? " · delayed" : ""}
             </p>
           </div>

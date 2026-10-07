@@ -148,7 +148,7 @@ export function fmtSessionLine(asOf: string | number | null | undefined, session
   const time = d.toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
   const date = d.toLocaleDateString("en-GB", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
   const zone = tz === "Asia/Kolkata" ? "IST" : "ET";
-  return `${session === "open" ? "Updated" : "Market closed"} ${time} ${zone} · ${date}`;
+  return `${session === "open" ? "Updated" : "Market closed · as of"} ${time} ${zone} · ${date}`;
 }
 
 /** US regular session (Mon–Fri 09:30–16:00 ET) AND data fresh (<20 min). No holiday calendar for US exists in-repo. */
