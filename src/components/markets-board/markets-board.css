@@ -14,9 +14,11 @@
   font-family: var(--font-sans), "Google Sans", sans-serif;
   background: var(--canvas);
   color: var(--ink);
-  max-width: 1600px;
-  margin-inline: auto;
-  padding: 16px 20px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-inline: 0;
+  padding: 0;
 }
 
 .global-markets * {
@@ -27,14 +29,15 @@
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
   align-items: stretch;
-  gap: 12px;
+  gap: 8px;
+  min-height: 0;
 }
 
 .metrics-bento {
   display: grid;
   grid-template-columns: minmax(0, 37fr) minmax(0, 24fr) minmax(0, 39fr);
-  gap: 12px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 0;
 }
 
 .market-card {
@@ -59,9 +62,6 @@
 }
 
 @media (max-width: 699px) {
-  .global-markets {
-    padding: 16px;
-  }
   .metrics-bento {
     grid-template-columns: minmax(0, 1fr);
   }
