@@ -1,27 +1,48 @@
 name: cron-warm-dossiers
 
-# P3 snapshot writer: pre-builds research dossiers into Upstash Redis so
-# /research/[symbol] and /api/feeds/research/* only READ. Zero Vercel compute.
-# Market hours only: every 15 min, 03:00-10:59 UTC (08:30-16:29 IST), Mon-Fri,
-# plus a nightly --panels run (leadership + financials) at 20:30 UTC.
+# P3 snapshot writer + endpoint warmer. Zero Vercel compute for the dossier builds.
+#  - dossiers:  every 15 min in market hours (03:00-10:59 UTC = 08:30-16:29 IST), Mon-Fri
+#  - panels:    nightly 20:30 UTC (02:00 IST) adds leadership + financials panels
+#  - endpoints: every 30 min, curls the slow public APIs so their Redis
+#               stale-while-revalidate copies never expire (brief, macro, search-trends)
 #
-# REQUIRED SECRETS — repo Settings → Secrets and variables → Actions:
-#   UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN   (same DB as Vercel)
-#   UPSTOX_ACCESS_TOKEN                                 (quotes / candles)
-# OPTIONAL: DATABASE_URL (adds most-held symbols), WARM_SYMBOLS (repo variable)
+# NOT A DUPLICATE OF THE ORACLE VM: infra/oracle/user-data.sh has the same two
+# dossier cron lines. If (and only if) the Oracle VM is running WITH the Upstash
+# vars filled in, set the repo variable WARM_RUNNER=oracle and the two dossier
+# jobs here are skipped (the endpoint warmer still runs).
+#
+# REQUIRED SECRETS (repo Settings -> Secrets and variables -> Actions -> Secrets):
+#   UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN   same Upstash DB as Vercel
+#   UPSTOX_ACCESS_TOKEN                                 quotes / candles
+#   SITE_URL                                            already exists (https://getmarketintelligence.in)
+# OPTIONAL: DATABASE_URL secret (adds most-held symbols)
+# OPTIONAL VARIABLES (same page -> Variables): WARM_SYMBOLS (comma list), WARM_RUNNER
 
 on:
   schedule:
     - cron: "*/15 3-10 * * 1-5"
     - cron: "30 20 * * 0-4"
+    - cron: "7,37 * * * *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "dossiers | panels | endpoints"
+        required: false
+        default: "dossiers"
 
 concurrency:
-  group: cron-warm-dossiers
+  group: cron-warm-dossiers-${{ github.event.schedule || inputs.mode }}
   cancel-in-progress: false
 
+env:
+  DEFAULT_WARM_SYMBOLS: "ETERNAL,DIXON,BEL,HAL,TRENT,JIOFIN,IRFC,PAYTM,NYKAA,POLICYBZR,TATASTEEL,VEDL,SUZLON,ADANIENT,TATAPOWER,COALINDIA,NTPC,ONGC,TMPV,SWIGGY,INDIGO,DMART"
+
 jobs:
-  warm:
+  dossiers:
+    if: >-
+      vars.WARM_RUNNER != 'oracle' &&
+      (github.event.schedule == '*/15 3-10 * * 1-5' || github.event.schedule == '30 20 * * 0-4' ||
+       (github.event_name == 'workflow_dispatch' && inputs.mode != 'endpoints'))
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -48,10 +69,24 @@ jobs:
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          WARM_SYMBOLS: ${{ vars.WARM_SYMBOLS }}
+          WARM_SYMBOLS: ${{ vars.WARM_SYMBOLS || env.DEFAULT_WARM_SYMBOLS }}
         run: |
-          if [ "${{ github.event.schedule }}" = "30 20 * * 0-4" ]; then
+          if [ "${{ github.event.schedule }}" = "30 20 * * 0-4" ] || [ "${{ inputs.mode }}" = "panels" ]; then
             npx --yes tsx@4 scripts/oracle/run-warm-dossiers.ts --panels --limit=60
           else
             npx --yes tsx@4 scripts/oracle/run-warm-dossiers.ts --limit=60
           fi
+
+  endpoints:
+    if: github.event.schedule == '7,37 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'endpoints')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Warm slow public endpoints
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          test -n "${SITE_URL}" || { echo "::error::SITE_URL secret is not set"; exit 1; }
+          for path in /api/health/cache /api/brief /api/macro/india /api/feeds/search-trends "/api/feeds/india-dashboard?quick=1"; do
+            curl -s -o /dev/null --max-time 60 -w "%{http_code} %{time_total}s ${path}\n" "${SITE_URL%/}${path}" || echo "timeout ${path}"
+          done
