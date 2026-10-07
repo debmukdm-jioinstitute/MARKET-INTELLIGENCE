@@ -1,7 +1,9 @@
 import { getRazorpayPlan, PAID_PLAN_IDS, type RazorpayPlanId } from "@/lib/payments/plans";
-import { grantProSubscription, getRazorpayOrderMeta } from "@/lib/payments/pro-entitlement";
+import { grantProSubscription, grantProDays, getRazorpayOrderMeta } from "@/lib/payments/pro-entitlement";
 import { createRazorpayOrder, isRazorpayConfigured, verifyRazorpayPaymentSignature } from "@/lib/payments/razorpay";
 import { markRazorpayOrderPaid, recordRazorpayOrderCreated } from "@/lib/payments/razorpay-store";
+import { ensureSchema, sql } from "@/lib/db";
+import { awardXp } from "@/lib/gamification/store";
 import type { SessionUser } from "@/lib/auth";
 import { z } from "zod";
 
@@ -108,6 +110,38 @@ export type VerifyPaymentResult =
   | { ok: true; orderId: string; paymentId: string; message: string; pro?: unknown }
   | { ok: false; status: number; error: string };
 
+/**
+ * Converts a pending referral when the referee makes their FIRST paid
+ * purchase: marks the referral converted, grants the referrer 30 days of
+ * Plus, and awards XP to both sides. Idempotent and fully guarded — a failure
+ * here must never break payment verification.
+ */
+async function convertReferralOnFirstPurchase(buyerEmail: string): Promise<void> {
+  await ensureSchema();
+  const db = sql();
+
+  const userRows = (await db`
+    SELECT referred_by FROM users WHERE email = ${buyerEmail}
+  `) as { referred_by: string | null }[];
+  const referrerEmail = userRows[0]?.referred_by?.trim().toLowerCase();
+  if (!referrerEmail) return;
+
+  const pending = (await db`
+    SELECT id FROM referrals
+    WHERE referee_email = ${buyerEmail} AND status = 'pending'
+    LIMIT 1
+  `) as { id: string }[];
+  if (pending.length === 0) return;
+
+  await db`
+    UPDATE referrals SET status = 'converted', converted_at = now()
+    WHERE id = ${pending[0].id} AND status = 'pending'
+  `;
+  await grantProDays(referrerEmail, 30, "pro_monthly");
+  await awardXp(referrerEmail, "referral_converted", buyerEmail);
+  await awardXp(buyerEmail, "referral_bonus_buyer", null);
+}
+
 export async function handleVerifyRazorpayPayment(
   user: SessionUser,
   body: unknown,
@@ -134,7 +168,30 @@ export async function handleVerifyRazorpayPayment(
     paymentId: razorpay_payment_id,
   });
 
+  // Capture the buyer's pre-grant Pro state: referral conversion applies only
+  // to the very first paid purchase (self-referral is already impossible —
+  // signup rejects attributing a code to its owner's own email).
+  let hadProBefore = false;
+  try {
+    await ensureSchema();
+    const before = (await sql()`
+      SELECT pro_expires_at FROM users WHERE email = ${user.email}
+    `) as { pro_expires_at: Date | string | null }[];
+    const exp = before[0]?.pro_expires_at ?? null;
+    hadProBefore = exp !== null && new Date(exp).getTime() > Date.now();
+  } catch {
+    // Non-fatal: a failed read just skips the referral hook.
+  }
+
   const pro = meta.planId ? await grantProSubscription(user.email, meta.planId) : null;
+
+  if (meta.planId && pro?.active && !hadProBefore) {
+    try {
+      await convertReferralOnFirstPurchase(user.email);
+    } catch (e) {
+      console.warn("[referral] post-purchase conversion failed:", e);
+    }
+  }
 
   return {
     ok: true,
