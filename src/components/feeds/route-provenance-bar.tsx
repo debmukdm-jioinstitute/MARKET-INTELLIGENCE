@@ -4,7 +4,6 @@ import { DataInfo } from "@/components/feeds/data-info";
 import { FeedSourceInfo } from "@/components/feeds/feed-source-info";
 import {
   chipLabel,
-  chipToFieldSource,
   resolvePageProvenance,
 } from "@/lib/feeds/page-provenance";
 import Link from "next/link";
@@ -18,7 +17,7 @@ export function RouteProvenanceBar() {
 
   return (
     <div
-      className="portal-header-enter mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-border/70 bg-muted/25 px-3 py-2 text-xs text-muted-foreground"
+      className="portal-header-enter mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-border/70 bg-muted/25 px-3 py-2 text-sm text-muted-foreground"
       role="region"
       aria-label="External data sources on this page"
     >

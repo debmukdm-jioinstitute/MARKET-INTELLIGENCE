@@ -58,15 +58,15 @@ function CountUp({ value, decimals = 2, suffix = "%" }: { value: number; decimal
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const reduce = useReducedMotion();
-  const [shown, setShown] = useState(reduce ? value : 0);
+  // Starts at the true value so the number is always right (no-JS, hidden tab); counts up from 0 only once seen.
+  const [shown, setShown] = useState(value);
   useEffect(() => {
-    if (!inView) return;
-    if (reduce) {
-      setShown(value);
-      return;
-    }
+    if (!inView || reduce) return;
     const c = animate(0, value, { duration: 1.1, ease: "easeOut", onUpdate: setShown });
-    return () => c.stop();
+    return () => {
+      c.stop();
+      setShown(value);
+    };
   }, [inView, value, reduce]);
   return (
     <span ref={ref} className="tabular-nums">
@@ -143,7 +143,7 @@ function TrendChart({ series }: { series: SeriesPoint[] }) {
   const rows = series.map((p) => {
     const s = slicesOf(p);
     const get = (k: string) => s.find((x) => x.key === k)?.value ?? 0;
-    return { q: quarterLabel(p), Promoters: get("promoter"), "Foreign funds": get("foreign"), "Indian funds": get("domestic"), "Everyone else": get("other") };
+    return { q: labelFor(p, series), Promoters: get("promoter"), "Foreign funds": get("foreign"), "Indian funds": get("domestic"), "Everyone else": get("other") };
   });
   const detailed = series.some((p) => p.fiiPct != null && p.diiPct != null);
   const layers = detailed
@@ -164,6 +164,13 @@ function TrendChart({ series }: { series: SeriesPoint[] }) {
       </ResponsiveContainer>
     </div>
   );
+}
+
+/** "Jun 2026", or the full date when two filings share a month (e.g. a one-off Dec 2 and the Dec 31 quarter). */
+function labelFor(p: SeriesPoint, all: SeriesPoint[]): string {
+  const base = quarterLabel(p);
+  const dup = all.filter((x) => quarterLabel(x) === base).length > 1;
+  return dup && p.quarterEnd ? fmtDay(p.quarterEnd) : base;
 }
 
 const arrow = (cur: number | null, prev: number | null) => {
@@ -199,12 +206,12 @@ function QuarterTable({ series, noPromoter }: { series: SeriesPoint[]; noPromote
             const hasSplit = p.fiiPct != null && p.diiPct != null;
             return (
               <tr key={p.broadcastDate} className={cn("border-t border-border", i === 0 && "bg-primary/5 font-medium")}>
-                <td className="px-3 py-2.5 font-semibold text-foreground">{quarterLabel(p)}</td>
+                <td className="px-3 py-2.5 font-semibold text-foreground">{labelFor(p, series)}</td>
                 <td className="px-3 py-2.5 text-muted-foreground">{fmtDay(p.broadcastDate)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{noPromoter && !p.promoterPct ? <span className="text-muted-foreground">None</span> : pct(p.promoterPct)}{arrow(p.promoterPct, prev?.promoterPct ?? null)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{pct(p.fiiPct)}{arrow(p.fiiPct, prev?.fiiPct ?? null)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{pct(p.diiPct)}{arrow(p.diiPct, prev?.diiPct ?? null)}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{hasSplit ? pct(other) : pct(p.publicPct)}</td>
+                <td className="px-3 py-2.5 text-right tabular-nums">{hasSplit ? pct(other) : <span className="text-muted-foreground" title="This older filing does not split foreign and Indian funds">—</span>}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{noPromoter ? <span className="text-muted-foreground">N/A</span> : pct(p.pledgePct)}</td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{p.shareholderCount ? p.shareholderCount.toLocaleString("en-IN") : "—"}</td>
                 <td className="px-3 py-2.5 text-right">{p.xbrlUrl ? <a href={p.xbrlUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Open ↗</a> : <span className="text-muted-foreground">—</span>}</td>
@@ -321,6 +328,7 @@ export function OwnershipPanel({ symbol }: { symbol: string }) {
               <h4 className="text-lg font-bold text-foreground">How the owners changed, quarter by quarter</h4>
               <TrendChart series={data.series} />
               <QuarterTable series={data.series} noPromoter={noPromoter} />
+              {data.series.some((p) => p.fiiPct == null || p.diiPct == null) ? <p className="text-sm text-muted-foreground">A dash means that older filing does not split out foreign and Indian funds, so "everyone else" cannot be worked out for it.</p> : null}
             </div>
           ) : null}
 
