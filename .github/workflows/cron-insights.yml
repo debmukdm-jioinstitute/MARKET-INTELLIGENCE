@@ -1,0 +1,59 @@
+name: cron-insights
+
+# P4: writes cited insight cards into Neon (insight_cards) via scripts/oracle/run-insights.ts.
+# Reads dossiers from Redis (written by cron-warm-dossiers), else builds them. One Groq call
+# per symbol, max (rules-only cards without GROQ_API_KEY).
+# Schedule: 04:30 UTC (10:00 IST) and 10:15 UTC (15:45 IST), Mon-Fri.
+# Backfill: Actions -> cron-insights -> Run workflow (limit 100) once after merge.
+# No Oracle cron line exists for run-insights, so this does not duplicate the VM.
+#
+# REQUIRED SECRETS: DATABASE_URL (already exists)
+# OPTIONAL SECRETS: GROQ_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, UPSTOX_ACCESS_TOKEN
+# OPTIONAL VARIABLE: WARM_SYMBOLS
+
+on:
+  schedule:
+    - cron: "30 4 * * 1-5"
+    - cron: "15 10 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "How many symbols (backfill: 100)"
+        required: false
+        default: "60"
+
+concurrency:
+  group: cron-insights
+  cancel-in-progress: false
+
+jobs:
+  insights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "${DATABASE_URL}" || { echo "::error::DATABASE_URL secret is not set"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate insight cards
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          WARM_SYMBOLS: ${{ vars.WARM_SYMBOLS || 'ETERNAL,DIXON,BEL,HAL,TRENT,JIOFIN,IRFC,PAYTM,NYKAA,POLICYBZR,TATASTEEL,VEDL,SUZLON,ADANIENT,TATAPOWER,COALINDIA,NTPC,ONGC,TMPV,SWIGGY,INDIGO,DMART' }}
+          LIMIT: ${{ inputs.limit || '60' }}
+        run: npx --yes tsx@4 scripts/oracle/run-insights.ts --limit="${LIMIT}"
