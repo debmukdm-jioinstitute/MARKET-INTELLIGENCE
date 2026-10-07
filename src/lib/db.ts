@@ -10,20 +10,30 @@ function connectionString() {
   );
 }
 
+function isValidConnectionString(conn: string): boolean {
+  if (!conn) return false;
+  try {
+    const u = new URL(conn);
+    return (u.protocol === "postgres:" || u.protocol === "postgresql:") && Boolean(u.hostname);
+  } catch {
+    return false;
+  }
+}
+
 let sqlClient: NeonQueryFunction<false, false> | null = null;
 
 /** Lazily-created Neon client — throws only when actually queried without a DB configured. */
 export function sql(): NeonQueryFunction<false, false> {
   if (!sqlClient) {
     const conn = connectionString();
-    if (!conn) throw new Error("No database configured (DATABASE_URL / POSTGRES_URL unset)");
+    if (!isValidConnectionString(conn)) throw new Error("No database configured (DATABASE_URL / POSTGRES_URL unset or invalid)");
     sqlClient = neon(conn);
   }
   return sqlClient;
 }
 
 export function hasDatabase() {
-  return Boolean(connectionString());
+  return isValidConnectionString(connectionString());
 }
 
 /**
@@ -559,6 +569,11 @@ export async function ensureSchema(): Promise<void> {
         )
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_credit_ratings_symbol_date ON credit_ratings (symbol, action_date DESC)`;
+
+      // Persistent archive cache prevents repeated scraping/PDF parsing on serverless cold starts.
+      await db`CREATE TABLE IF NOT EXISTS transcript_archive_cache (
+        cache_key text PRIMARY KEY, payload jsonb NOT NULL, expires_at timestamptz NOT NULL
+      )`;
 
       // Concall "said vs guided" summaries. Transcript text itself is never stored — only extracted highlights + link.
       await db`

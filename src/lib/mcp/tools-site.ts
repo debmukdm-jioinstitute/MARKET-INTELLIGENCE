@@ -1,3 +1,5 @@
+import { getCompanyLeadership } from "@/lib/research/company-leadership";
+import { getTranscriptArchive } from "@/lib/research/transcript-archive";
 import { currentCompetition,leaderboard } from "@/lib/competition/store";
 import { DISCLAIMER } from "@/lib/competition/config";
 import { buildSiteWideExecutiveBrief } from "@/lib/brief/site-wide-brief";
@@ -49,9 +51,6 @@ import {
 } from "@/lib/feeds/sources/upstox";
 import { listFoUniverse } from "@/lib/options-flow/fo-universe";
 import { listOptionsFlowFlagLog } from "@/lib/options-flow/store";
-import { applyOverrides, deriveAssumptions } from "@/lib/models/assumptions";
-import { buildModel } from "@/lib/models/dcf-engine";
-import { fetchFinancialDataset } from "@/lib/models/yahoo-fundamentals";
 import { ensureSchema, sql } from "@/lib/db";
 import { buildAnalystCredibility } from "@/lib/research/analyst-credibility";
 import { SCANNERS } from "@/lib/scanner/scanners";
@@ -284,6 +283,25 @@ export const SITE_TOOLS: Tool[] = [
 
   // ---- Research ----
   {
+    name: "get_earnings_transcripts",
+    title: "Earnings call transcript archive",
+    category: "Research",
+    description: "Source-linked earnings-call highlights and archived calls. Indian exchange/IR sources and publicly accessible US transcripts where available; unavailable never means no transcript exists.",
+    inputSchema: { type: "object", properties: { symbol: sym, market: { type: "string", enum: ["IN", "US"], default: "IN" } }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => {
+      const input = z.object({ symbol: SymbolArg.shape.symbol, market: z.enum(["IN", "US"]).default("IN") }).parse(a);
+      return getTranscriptArchive(input.symbol, input.market);
+    },
+  },
+  {
+    name: "get_company_leadership",
+    title: "Founders, pay disparity, holdings and dividends",
+    category: "Research",
+    description: "Indian company founders/CEO (Wikidata), median pay by group from the BRSR, promoter/director share counts from the shareholding filing, and dividend history with derived dividend income.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => getCompanyLeadership(SymbolArg.parse(a).symbol),
+  },
+  {
     name: "get_research_pack",
     title: "Stock research pack (composite)",
     category: "Research",
@@ -341,23 +359,6 @@ export const SITE_TOOLS: Tool[] = [
     run: async (a) => {
       const { symbol, range } = z.object({ symbol: SymbolArg.shape.symbol, range: z.enum(["1mo", "3mo", "6mo", "1y"]).default("6mo") }).parse(a);
       return { symbol: symbol.toUpperCase(), range, points: await fetchYahooHistory(symbol.toUpperCase(), range) };
-    },
-  },
-  {
-    name: "get_valuation_model",
-    title: "DCF valuation model",
-    category: "Research",
-    description: "Auto-derived DCF / financial model for a symbol using the site's assumption engine. lookback = years of history used for assumptions (default 3).",
-    inputSchema: {
-      type: "object",
-      properties: { symbol: sym, lookback: { type: "number", description: "Years, default 3" } },
-      required: ["symbol"],
-      additionalProperties: false,
-    },
-    run: async (a) => {
-      const { symbol, lookback } = z.object({ symbol: SymbolArg.shape.symbol, lookback: z.number().int().min(1).max(10).default(3) }).parse(a);
-      const dataset = await fetchFinancialDataset(symbol);
-      return buildModel(dataset, applyOverrides(deriveAssumptions(dataset, 10, lookback), {}));
     },
   },
   {
