@@ -165,6 +165,7 @@ export function ResearchSymbolClient({
                 <p className="font-medium capitalize">{data.about.description}</p>
               ) : null}
               <p className="text-muted-foreground leading-relaxed">{data.about.extract}</p>
+              {data.about.stale ? <p className="rounded-md bg-muted p-2.5 text-sm text-muted-foreground">This description comes from an older company filing, so it may use a former company name. Sentences quoting figures more than two years old have been left out.</p> : null}
               <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
                 Source: {data.about.source}
               </a>
