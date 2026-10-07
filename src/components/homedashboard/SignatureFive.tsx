@@ -91,39 +91,30 @@ function Strip({
   );
 }
 
-function Cta({
-  href,
-  onClick,
-  bg,
-  children,
-  pill,
-}: {
-  href: string;
-  onClick?: () => void;
-  bg: string;
-  children: React.ReactNode;
-  pill?: boolean;
-}) {
+/**
+ * Visual CTA pill only — NOT a link. The whole card is the link now
+ * (card-level <Link>), so this renders as a styled span to avoid nested
+ * anchors. aria-hidden because the parent link already names the card.
+ */
+function CtaButton({ bg, children, pill }: { bg: string; children: React.ReactNode; pill?: boolean }) {
   return (
-    <Link
-      prefetch={false}
-      href={href}
-      onClick={onClick}
+    <span
+      aria-hidden
       style={{ background: bg }}
       className={cn(
-        "flex w-full items-center justify-between font-semibold text-[#151515] transition-[filter] hover:brightness-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151515]",
+        "flex w-full items-center justify-between font-semibold text-[#151515]",
         pill
           ? "min-h-[60px] rounded-full px-7 text-xl sm:min-h-[66px] sm:max-w-[350px] sm:text-[22px]"
           : "min-h-[54px] rounded-2xl px-5 text-base sm:min-h-[58px] sm:text-lg",
       )}
     >
-      {children}
+      <span>{children}</span>
       <ArrowRight
         aria-hidden
         className="size-5 shrink-0 transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-safe:group-focus-within:translate-x-1 sm:size-6"
         strokeWidth={2}
       />
-    </Link>
+    </span>
   );
 }
 
@@ -136,6 +127,8 @@ function SmallCard({
   artClass,
   strip,
   cta,
+  href,
+  onNavigate,
   className,
 }: {
   tone: Tone;
@@ -146,10 +139,24 @@ function SmallCard({
   artClass: string;
   strip: React.ReactNode;
   cta: React.ReactNode;
+  href: string;
+  onNavigate?: () => void;
   className?: string;
 }) {
   return (
-    <article className={cn(cardBase, "p-5 sm:p-[26px]", className)} style={{ background: tone.bg }}>
+    <Link
+      prefetch={false}
+      href={href}
+      onClick={onNavigate}
+      aria-label={`${name} — ${desc}`}
+      className={cn(
+        cardBase,
+        "p-5 sm:p-[26px]",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151515]",
+        className,
+      )}
+      style={{ background: tone.bg }}
+    >
       <div className={cn("absolute right-4 top-4 sm:right-5 sm:top-5", artClass)}>{art}</div>
       <Badge icon={icon} accent={tone.accent} />
       <h3 className="mt-3 text-[26px] font-bold leading-tight tracking-[-0.01em] text-[#151515] sm:mt-4 sm:text-[clamp(26px,2vw,30px)]">
@@ -158,7 +165,7 @@ function SmallCard({
       <p className="mt-1 text-[17px] leading-snug text-[#62656B] sm:text-[clamp(17px,1.3vw,20px)]">{desc}</p>
       <div className="mt-4">{strip}</div>
       <div className="mt-auto pt-4">{cta}</div>
-    </article>
+    </Link>
   );
 }
 
@@ -200,10 +207,15 @@ export function SignatureFive({
 
       <div className="grid grid-cols-1 gap-3.5 min-[700px]:grid-cols-2 min-[1100px]:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)_minmax(0,1.04fr)] min-[1100px]:grid-rows-[repeat(2,minmax(300px,auto))] sm:gap-4">
         {/* AI Desk — featured, spans both rows */}
-        <article
+        <Link
+          prefetch={false}
+          href="/research/ai-desk"
+          onClick={() => homeActions.mission("open-debate")}
+          aria-label="AI Desk — Five AI analysts debate a stock, bull vs bear, with sources"
           className={cn(
             cardBase,
             "p-6 min-[700px]:col-span-2 sm:p-8 min-[1100px]:col-span-1 min-[1100px]:row-span-2 min-[1100px]:p-10",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151515]",
           )}
           style={{ background: TONES.desk.bg }}
         >
@@ -228,17 +240,19 @@ export function SignatureFive({
             )}
           </Strip>
           <div className="mt-auto pt-6">
-            <Cta href="/research/ai-desk" onClick={() => homeActions.mission("open-debate")} bg={TONES.desk.action} pill>
+            <CtaButton bg={TONES.desk.action} pill>
               Open AI Desk
-            </Cta>
+            </CtaButton>
           </div>
-        </article>
+        </Link>
 
         <SmallCard
           tone={TONES.scanner}
           icon={ScanLine}
           name="Stock Scanner"
           desc="Find stocks breaking out right now."
+          href="/intelligence/scanner"
+          onNavigate={() => homeActions.mission("run-scan")}
           art={<ScannerArt className="w-[104px] sm:w-[120px] min-[1100px]:w-[132px]" />}
           artClass=""
           strip={
@@ -249,9 +263,9 @@ export function SignatureFive({
             </Strip>
           }
           cta={
-            <Cta href="/intelligence/scanner" onClick={() => homeActions.mission("run-scan")} bg={TONES.scanner.action}>
+            <CtaButton bg={TONES.scanner.action}>
               Find your next idea
-            </Cta>
+            </CtaButton>
           }
         />
 
@@ -260,6 +274,8 @@ export function SignatureFive({
           icon={FlaskConical}
           name="Trade Lab"
           desc="Practise trading with real data. Zero risk."
+          href="/intelligence/trade-lab"
+          onNavigate={() => homeActions.bonus("paper-trader")}
           art={<LabArt className="w-[88px] sm:w-[104px] min-[1100px]:w-[116px]" />}
           artClass=""
           strip={
@@ -270,9 +286,9 @@ export function SignatureFive({
             </Strip>
           }
           cta={
-            <Cta href="/intelligence/trade-lab" onClick={() => homeActions.bonus("paper-trader")} bg={TONES.lab.action}>
+            <CtaButton bg={TONES.lab.action}>
               Try an idea
-            </Cta>
+            </CtaButton>
           }
         />
 
@@ -281,6 +297,8 @@ export function SignatureFive({
           icon={Bell}
           name="Alerts"
           desc="The market taps you on the shoulder."
+          href="/intelligence/alerts?new=1"
+          onNavigate={() => homeActions.bonus("first-alert")}
           art={<BellArt className="w-[104px] sm:w-[120px] min-[1100px]:w-[132px]" />}
           artClass=""
           strip={
@@ -289,9 +307,9 @@ export function SignatureFive({
             </Strip>
           }
           cta={
-            <Cta href="/intelligence/alerts?new=1" onClick={() => homeActions.bonus("first-alert")} bg={TONES.alerts.action}>
+            <CtaButton bg={TONES.alerts.action}>
               {alertCount ? "Manage your alerts" : "Set your first alert"}
-            </Cta>
+            </CtaButton>
           }
         />
 
@@ -300,6 +318,7 @@ export function SignatureFive({
           icon={Waves}
           name="Options Flow"
           desc="Follow the big options money."
+          href="/research/options-flow"
           art={<FlowArt className="w-[132px] sm:w-[160px] min-[1100px]:w-[180px]" />}
           artClass=""
           strip={
@@ -310,9 +329,9 @@ export function SignatureFive({
             </Strip>
           }
           cta={
-            <Cta href="/research/options-flow" bg={TONES.flow.action}>
+            <CtaButton bg={TONES.flow.action}>
               See the activity
-            </Cta>
+            </CtaButton>
           }
         />
       </div>
