@@ -37,6 +37,16 @@ import "./markets-board.css";
 type SortKey = "label" | "price" | "changePct";
 type UniverseFilter = "all" | "watch";
 
+function rowHasOverviewAction(
+  row: MarketsBoardRow,
+  onOpenOverview?: MarketsBoardProps["onOpenOverview"],
+): boolean {
+  if (row.href?.startsWith("/")) return true;
+  if (onOpenOverview && row.tab === "equities") return true;
+  if (row.sourceUrl) return true;
+  return false;
+}
+
 export function MarketsBoard({
   title,
   tabs,
@@ -193,6 +203,9 @@ export function MarketsBoard({
     .map((id) => rows.find((r) => r.id === id))
     .filter((r): r is MarketsBoardRow => r != null);
 
+  const showOverviewHint =
+    selected != null && rowHasOverviewAction(selected, onOpenOverview);
+
   return (
     <div className="-mx-3 -mt-3 mb-0 flex min-h-[calc(100dvh-8.5rem)] min-w-0 flex-col bg-[#F6F5F1] p-2 sm:-mx-4 sm:-mt-4 sm:p-2 md:-mx-5 md:-mt-5 md:p-2 min-[1100px]:h-[calc(100dvh-10.75rem)] min-[1100px]:max-h-[calc(100dvh-10.75rem)] min-[1100px]:overflow-hidden">
       <div className="global-markets flex min-h-0 flex-1 flex-col gap-2 min-[1100px]:h-full min-[1100px]:max-h-full">
@@ -273,7 +286,7 @@ export function MarketsBoard({
             {selected ? (
               <>
                 <div>
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
                     <RegionFlag region={selected.flagRegion ?? selected.region} />
                     <h2
                       id="hero-index-name"
@@ -281,6 +294,16 @@ export function MarketsBoard({
                     >
                       {selected.label}
                     </h2>
+                    {showOverviewHint ? (
+                      <button
+                        type="button"
+                        onClick={() => openOverview(selected)}
+                        className="inline-flex max-w-full items-center gap-1.5 rounded-[14px] border-[1.5px] border-[#151515] bg-white px-2.5 py-1.5 text-left text-[11px] font-bold leading-snug text-[#151515] shadow-[2px_2px_0px_#151515] transition-all hover:bg-[#F6F5F1] active:scale-[0.98] sm:text-xs"
+                      >
+                        <span>Open overview to see the details</span>
+                        <ArrowRight className="size-3.5 shrink-0 stroke-[2.5]" aria-hidden />
+                      </button>
+                    ) : null}
                   </div>
                   <div className="my-2.5 flex flex-col text-[44px] font-bold leading-[0.96] tracking-tight text-[#151515] sm:my-3.5 sm:text-[52px] lg:text-[58px]">
                     {selected.changePct == null && selected.price == null ? (
@@ -683,32 +706,22 @@ export function MarketsBoard({
             </section>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-1">
-            {selected ? (
-              <>
-                <button
-                  type="button"
-                  aria-pressed={watched(selected.id)}
-                  onClick={() => toggleWatch(selected.id)}
-                  className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-4 py-1.5 text-xs font-bold text-[#151515] shadow-xs transition-all hover:bg-[#F6F5F1] active:scale-95"
-                >
-                  <Star
-                    className={cn("size-3.5 stroke-[2.25] text-[#151515]", watched(selected.id) && "fill-[#151515]")}
-                    aria-hidden
-                  />
-                  <span>{watched(selected.id) ? "Remove from watchlist" : "Add to watchlist"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openOverview(selected)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#151515] bg-[#151515] px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-black active:scale-95"
-                >
-                  <span>Open overview</span>
-                  <ArrowRight className="size-3.5 stroke-[2.5]" aria-hidden />
-                </button>
-              </>
-            ) : null}
-          </div>
+          {selected ? (
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                aria-pressed={watched(selected.id)}
+                onClick={() => toggleWatch(selected.id)}
+                className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#151515] bg-[#FCFCFA] px-4 py-1.5 text-xs font-bold text-[#151515] shadow-xs transition-all hover:bg-[#F6F5F1] active:scale-95"
+              >
+                <Star
+                  className={cn("size-3.5 stroke-[2.25] text-[#151515]", watched(selected.id) && "fill-[#151515]")}
+                  aria-hidden
+                />
+                <span>{watched(selected.id) ? "Remove from watchlist" : "Add to watchlist"}</span>
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

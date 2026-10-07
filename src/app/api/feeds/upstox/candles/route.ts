@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 
 export const revalidate = 300;
 
-const VALID_RANGES: CandleRange[] = ["1D", "1W", "1M", "3M", "6M", "1Y"];
+const VALID_RANGES: CandleRange[] = ["1D", "1W", "1M", "3M", "6M", "1Y", "5Y"];
 
 const INDEX_ALIASES: Record<string, { symbol: string; instrumentKey: string }> = {
   "NIFTY 50": { symbol: "NIFTY 50", instrumentKey: INDIA_INDEX_INSTRUMENT_KEYS.NIFTY },
