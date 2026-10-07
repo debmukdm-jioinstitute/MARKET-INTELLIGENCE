@@ -89,6 +89,14 @@ export default function ResearchSymbolPage() {
   const q = data?.upstoxQuote;
   const us = data?.usDetail;
   const isIndia = !us;
+  // Upstox `ohlc.close` is the current session's running close (== LTP intraday), NOT the
+  // previous close. Previous close = LTP − net change.
+  const prevClose = q ? q.ltp - q.netChange : 0;
+  // Sentiment input: merged Upstox + Google News feed (Upstox news alone is often empty).
+  const sentimentHeadlines = (data?.intelligence?.newsFeed?.length ? data.intelligence.newsFeed : data?.news ?? [])
+    .slice(0, 5)
+    .map((n) => n.title)
+    .filter(Boolean);
 
   return (
     <div className="space-y-6">
@@ -101,7 +109,7 @@ export default function ResearchSymbolPage() {
           <span className="text-3xl tabular-nums font-bold tracking-tight">{fmtInr(q.ltp)}</span>
           <span className={cn("text-sm font-semibold", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
             {q.netChange >= 0 ? "+" : ""}
-            {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
+            {fmtInr(q.netChange)} ({fmtChgPct(prevClose ? q.netChange / prevClose : 0)})
           </span>
           <MetricInfo
             id={symbol.toLowerCase()}
@@ -153,11 +161,8 @@ export default function ResearchSymbolPage() {
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {/* FinBERT AI News Sentiment for this stock */}
-      {data?.news?.length ? (
-        <StockSentimentPanel
-          symbol={symbol}
-          newsHeadlines={data.news.slice(0, 5).map((n) => n.title).filter(Boolean)}
-        />
+      {sentimentHeadlines.length ? (
+        <StockSentimentPanel symbol={symbol} newsHeadlines={sentimentHeadlines} />
       ) : null}
 
       {data && q ? (
@@ -179,10 +184,10 @@ export default function ResearchSymbolPage() {
                 />
               </div>
               <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
-                <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
-                <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
-                <Stat metricId="low52w" k="Low" v={fmtInr(q.ohlc.low)} />
+                <Stat k="Open" v={fmtInr(q.ohlc.open)} />
+                <Stat k="Prev close" v={fmtInr(prevClose)} />
+                <Stat k="Day high" v={fmtInr(q.ohlc.high)} />
+                <Stat k="Day low" v={fmtInr(q.ohlc.low)} />
                 <Stat metricId="turnover" k="Volume" v={q.volume.toLocaleString("en-IN")} />
                 <Stat metricId="vwap" k="Avg" v={fmtInr(q.avgPrice)} />
               </dl>

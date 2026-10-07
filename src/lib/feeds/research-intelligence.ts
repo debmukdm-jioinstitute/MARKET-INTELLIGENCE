@@ -154,6 +154,7 @@ export async function fetchNseCorporateActions(symbol: string): Promise<Corporat
   try {
     const rows = await nseJson<NseCorpRow[]>(
       `/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}`,
+      { timeoutMs: 5_000, attempts: 1 },
     );
     if (!Array.isArray(rows)) return [];
     return rows.slice(0, 20).map((r) => ({
@@ -241,7 +242,7 @@ export async function fetchSymbolGoogleNews(
       : `${symbol} ${name} stock`;
   const url = googleNewsRssUrl(query, market);
   try {
-    const res = await feedFetch(url, { timeoutMs: 18_000 });
+    const res = await feedFetch(url, { timeoutMs: 6_000, attempts: 2 });
     if (!res.ok) return [];
     const xml = await res.text();
     return parseRss(xml, "googlenews", limit).map((n) => ({
@@ -265,7 +266,7 @@ export async function fetchAnalystHeadlinesRss(
       : `${symbol} analyst upgrade downgrade price target`;
   const url = googleNewsRssUrl(query, market);
   try {
-    const res = await feedFetch(url, { timeoutMs: 18_000 });
+    const res = await feedFetch(url, { timeoutMs: 6_000, attempts: 2 });
     if (!res.ok) return [];
     const xml = await res.text();
     return parseRss(xml, "yahoo", 10);

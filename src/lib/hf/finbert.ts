@@ -17,6 +17,8 @@ export interface FinBertResult {
   score: number; // 0..1, confidence of the top label
   /** All three class scores, sorted descending */
   scores: { label: SentimentLabel; score: number }[];
+  /** "finbert" = real model output; "rules" = keyword fallback (HF unavailable). */
+  engine?: "finbert" | "rules";
 }
 
 /** Raw HF response shape for classification pipelines */
@@ -41,6 +43,8 @@ export async function classifyFinancialSentiment(texts: string[]): Promise<FinBe
     const raw = await hfInfer<string[], HfClassResponse>(MODEL, safe, {
       ttlMs: TTL_MS,
       cacheKey: `finbert::${safe.join("|")}`,
+      maxRetries: 1,
+      timeoutMs: 8_000,
     });
 
     return raw.map((candidates) => {
@@ -49,11 +53,12 @@ export async function classifyFinancialSentiment(texts: string[]): Promise<FinBe
         label: sorted[0]!.label as SentimentLabel,
         score: sorted[0]!.score,
         scores: sorted,
+        engine: "finbert" as const,
       };
     });
   } catch (err) {
     console.warn("[FinBERT] API unavailable, using rule-based fallback:", err instanceof Error ? err.message : err);
-    return safe.map((text) => ruleBasedSentimentFallback(text));
+    return safe.map((text) => ({ ...ruleBasedSentimentFallback(text), engine: "rules" as const }));
   }
 }
 

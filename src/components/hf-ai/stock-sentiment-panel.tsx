@@ -15,6 +15,7 @@ interface SentimentScore {
   label: "positive" | "negative" | "neutral";
   score: number;
   scores: { label: string; score: number }[];
+  engine?: "finbert" | "rules";
 }
 
 interface FinBertApiResponse {
@@ -28,6 +29,8 @@ interface StockSentimentState {
   overallScore: number;
   confidence: number;
   headlines: { text: string; label: string; score: number }[];
+  /** true when the server fell back to keyword rules (FinBERT unavailable). */
+  fallback?: boolean;
   error?: string;
 }
 
@@ -110,7 +113,8 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
           overallScore,
           confidence,
           headlines: enriched,
-        });
+            fallback: results.some((r) => r.engine === "rules"),
+          });
       })
       .catch((err: unknown) => {
         setState((s) => ({

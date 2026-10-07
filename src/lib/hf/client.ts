@@ -57,9 +57,9 @@ export class HfApiError extends Error {
 export async function hfInfer<TIn, TOut>(
   model: string,
   inputs: TIn,
-  opts: { ttlMs?: number; cacheKey?: string; maxRetries?: number } = {},
+  opts: { ttlMs?: number; cacheKey?: string; maxRetries?: number; timeoutMs?: number } = {},
 ): Promise<TOut> {
-  const { ttlMs = DEFAULT_TTL_MS, cacheKey, maxRetries = 4 } = opts;
+  const { ttlMs = DEFAULT_TTL_MS, cacheKey, maxRetries = 4, timeoutMs = 10_000 } = opts;
   const key = cacheKey ?? `${model}::${JSON.stringify(inputs)}`;
 
   const cached = cacheGet<TOut>(key);
@@ -85,6 +85,7 @@ export async function hfInfer<TIn, TOut>(
       method: "POST",
       headers,
       body: JSON.stringify(bodyObj),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (res.status === 503) {

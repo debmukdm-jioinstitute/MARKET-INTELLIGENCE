@@ -2,6 +2,7 @@ import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { NextResponse } from "next/server";
 
 export const revalidate = 900;
+export const maxDuration = 30;
 
 export async function GET(
   _req: Request,

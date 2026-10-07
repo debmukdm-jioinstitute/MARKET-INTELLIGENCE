@@ -1,5 +1,6 @@
 import type { FeedSourceId, NewsItem } from "@/lib/feeds/types";
 import { normalizeNewsPublishedAt } from "@/lib/feeds/news-sort";
+import { createHash } from "node:crypto";
 
 function tag(block: string, name: string) {
   const cdata = new RegExp(`<${name}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${name}>`, "i").exec(
@@ -29,7 +30,9 @@ export function parseRss(xml: string, source: FeedSourceId, limit = 12): NewsIte
     if (!title || !link) continue;
     const publishedRaw = tag(block, "pubDate") || tag(block, "updated") || undefined;
     const publishedAt = normalizeNewsPublishedAt(publishedRaw);
-    const id = `${source}-${Buffer.from(link).toString("base64url").slice(0, 24)}`;
+    // Hash the FULL link: Google News links share a long common prefix, so a sliced
+    // base64 of the raw link gave every item the same id (duplicate React keys).
+    const id = `${source}-${createHash("sha1").update(link).digest("base64url").slice(0, 16)}`;
     items.push({ id, source, title, link, publishedAt });
   }
   return items;

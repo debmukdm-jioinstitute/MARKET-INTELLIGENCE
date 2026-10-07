@@ -31,26 +31,32 @@ function mergeSetCookie(res: Response) {
   }
 }
 
-async function ensureNseSession() {
+/** Per-call budget. Defaults keep the old cron-friendly behaviour (20 s x 3 attempts). */
+export type NseFetchOpts = { timeoutMs?: number; attempts?: number };
+
+async function ensureNseSession(opts: NseFetchOpts = {}) {
   if (cookieHeader && Date.now() - cookieAt < COOKIE_TTL_MS) return;
-  const res = await feedFetch(NSE_HOME, { headers: BROWSER_HEADERS, timeoutMs: 20_000 });
+  const { timeoutMs = 20_000, attempts } = opts;
+  const res = await feedFetch(NSE_HOME, { headers: BROWSER_HEADERS, timeoutMs, attempts });
   mergeSetCookie(res);
   if (!cookieHeader) {
     await feedFetch(`${NSE_HOME}/market-data/live-equity-market`, {
       headers: BROWSER_HEADERS,
-      timeoutMs: 20_000,
+      timeoutMs,
+      attempts,
     }).then(mergeSetCookie);
   }
 }
 
-export async function nseJson<T>(path: string): Promise<T> {
-  await ensureNseSession();
+export async function nseJson<T>(path: string, opts: NseFetchOpts = {}): Promise<T> {
+  await ensureNseSession(opts);
   const res = await feedFetch(`${NSE_HOME}${path}`, {
     headers: {
       ...BROWSER_HEADERS,
       ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
-    timeoutMs: 20_000,
+    timeoutMs: opts.timeoutMs ?? 20_000,
+    attempts: opts.attempts,
   });
   mergeSetCookie(res);
   if (!res.ok) throw new Error(`NSE ${path} HTTP ${res.status}`);

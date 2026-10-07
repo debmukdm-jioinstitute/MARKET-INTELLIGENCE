@@ -68,10 +68,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void refreshSession(true);
-    const id = window.setInterval(() => void refreshSession(false), 5_000);
+    // Was every 5 s (12 function invocations + DB reads per open tab per minute).
+    // 60 s while visible, plus an immediate refresh when the tab regains focus.
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refreshSession(false);
+    }, 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refreshSession(false);
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

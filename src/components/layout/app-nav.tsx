@@ -69,6 +69,25 @@ function filterSections(sections: NavSection[], hrefAllowed: (href: string) => b
     .filter((s) => s.groups.length > 0);
 }
 
+// One shared /api/tabs request for every useNavSections() caller (was 4 identical requests).
+let dynamicTabsCache: { at: number; promise: Promise<DynamicTab[]> } | null = null;
+const DYNAMIC_TABS_TTL_MS = 60_000;
+
+function loadDynamicTabs(): Promise<DynamicTab[]> {
+  if (dynamicTabsCache && Date.now() - dynamicTabsCache.at < DYNAMIC_TABS_TTL_MS) {
+    return dynamicTabsCache.promise;
+  }
+  const promise = fetch("/api/tabs")
+    .then((r) => r.json())
+    .then((json: { tabs?: DynamicTab[] }) => json.tabs ?? [])
+    .catch(() => {
+      dynamicTabsCache = null;
+      return [] as DynamicTab[];
+    });
+  dynamicTabsCache = { at: Date.now(), promise };
+  return promise;
+}
+
 /** Static sections plus any admin-created tabs from /api/tabs (each becomes its own single-page group). Shared by the desktop bar, the full menu and the bottom bar. */
 export function useNavSections(): NavSection[] {
   const { hrefAllowed } = usePortalPages();
@@ -76,12 +95,9 @@ export function useNavSections(): NavSection[] {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/tabs")
-      .then((r) => r.json())
-      .then((json) => {
-        if (!cancelled) setDynamicTabs(json.tabs ?? []);
-      })
-      .catch(() => {});
+    void loadDynamicTabs().then((tabs) => {
+      if (!cancelled) setDynamicTabs(tabs);
+    });
     return () => {
       cancelled = true;
     };

@@ -21,7 +21,7 @@ export function SymbolSeoHeader({ data }: { data: ResearchDetailPayload }) {
           <p className="text-3xl font-bold tabular-nums">{fmtInr(q.ltp)}</p>
           <p className={`text-sm font-semibold tabular-nums ${q.netChange >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
             {q.netChange >= 0 ? "+" : ""}
-            {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
+            {fmtInr(q.netChange)} ({fmtChgPct(q.ltp - q.netChange ? q.netChange / (q.ltp - q.netChange) : 0)})
           </p>
         </div>
       ) : data.usDetail?.quote?.price != null ? (
