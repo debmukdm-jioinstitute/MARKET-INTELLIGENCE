@@ -20,6 +20,8 @@ function yahooChartParams(range: CandleRange): { yahooRange: string; interval: s
       return { yahooRange: "6mo", interval: "1d" };
     case "1Y":
       return { yahooRange: "1y", interval: "1d" };
+    case "5Y":
+      return { yahooRange: "5y", interval: "1wk" };
   }
 }
 
