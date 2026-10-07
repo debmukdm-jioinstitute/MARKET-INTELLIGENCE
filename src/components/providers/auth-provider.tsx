@@ -1,5 +1,7 @@
 "use client";
 
+import { prefetchIndiaDashboard } from "@/hooks/use-india-dashboard";
+import { prefetchPortfolioAnalysis } from "@/hooks/use-my-portfolio";
 import { isGuestUser, type SessionUser } from "@/lib/auth";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
@@ -26,7 +28,14 @@ async function postJson(url: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  if (!res.ok) {
+    const errBody = json as { error?: string; code?: string };
+    const err = new Error(errBody.error ?? `Request failed (${res.status})`) as Error & {
+      code?: string;
+    };
+    err.code = errBody.code;
+    throw err;
+  }
   return json;
 }
 
@@ -37,31 +46,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    // The session lives in an httpOnly cookie (real accounts are verified server-side),
-    // so the client has to ask the server who's logged in rather than reading it locally.
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((json) => {
-        if (!cancelled) {
-          setUser(json.user ?? null);
-          setRequireAccount(Boolean(json.requireAccount));
-          // A guest never owns a book: clear anything left in this browser by a previous session.
-          if (isGuestUser(json.user ?? null)) {
-            try {
-              window.localStorage.removeItem("mi_user_holdings_v2");
-              window.dispatchEvent(new Event("mi_portfolio_updated"));
-            } catch {}
-          }
+
+    async function refreshSession(markInitialReady: boolean) {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
+        const json = await res.json();
+        if (cancelled) return;
+        setUser(json.user ?? null);
+        setRequireAccount(Boolean(json.requireAccount));
+        if (isGuestUser(json.user ?? null)) {
+          try {
+            window.localStorage.removeItem("mi_user_holdings_v2");
+            window.dispatchEvent(new Event("mi_portfolio_updated"));
+          } catch {}
         }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setReady(true);
-      });
+      } catch {
+        /* ignore */
+      } finally {
+        if (!cancelled && markInitialReady) setReady(true);
+      }
+    }
+
+    void refreshSession(true);
+    const id = window.setInterval(() => void refreshSession(false), 5_000);
     return () => {
       cancelled = true;
+      window.clearInterval(id);
     };
   }, []);
+
+  useEffect(() => {
+    if (!ready || isGuestUser(user)) return;
+    void prefetchPortfolioAnalysis();
+  }, [ready, user?.email]);
 
   const value = useMemo<AuthCtx>(
     () => ({
@@ -82,6 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(typeof json.error === "string" ? json.error : `Request failed (${res.status})`);
         }
         setUser(json.user);
+        void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async signup({ name, email, password, acceptPrivacy }) {
         // Carry a referral code (?ref=) through email signup when present.
@@ -95,11 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const json = await postJson("/api/auth/signup", { name, email, password, acceptPrivacy, ...(ref ? { ref } : {}) });
         if (json.pending) return { pending: true };
         setUser(json.user);
+        void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
         return { pending: false };
       },
       async verifySignup({ email, code }) {
         const json = await postJson("/api/auth/signup/verify", { email, code });
         setUser(json.user);
+        void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async resendSignupOtp(email) {
         await postJson("/api/auth/signup/resend", { email });
@@ -107,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async login({ email, password }) {
         const json = await postJson("/api/auth/login", { email, password });
         setUser(json.user);
+        void prefetchIndiaDashboard();
+        void prefetchPortfolioAnalysis();
       },
       async logout() {
         await fetch("/api/auth/session", { method: "DELETE" });

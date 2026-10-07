@@ -1,19 +1,25 @@
 "use client";
 
-import { Lines } from "@/components/charts/terminal-charts";
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
-import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
+import { Lines } from "@/components/charts/terminal-charts";
+import { DriverNudges } from "@/components/guide/driver-nudges";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { ResearchIntelligencePanels } from "@/components/research/research-intelligence-panels";
 import { SecurityRiskPanel } from "@/components/research/security-risk-panel";
-import { SymbolSearch } from "@/components/research/symbol-search";
-import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
 import { SimilarStocksPanel } from "@/components/hf-ai/similar-stocks-panel";
+import { StockSentimentPanel } from "@/components/hf-ai/stock-sentiment-panel";
+import { SymbolSearch } from "@/components/research/symbol-search";
+import { FinancialsPanel } from "@/components/research/financials-panel";
+import { OwnershipPanel } from "@/components/research/ownership-panel";
+import { DocumentsPanel } from "@/components/research/documents-panel";
+import { RatingsPanel } from "@/components/research/ratings-panel";
+import { ConcallPanel } from "@/components/research/concall-panel";
+import { LeadershipPanel } from "@/components/research/leadership-panel";
+import { ResearchSectionNav } from "@/components/research/research-section-nav";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
-import { SourceEye } from "@/components/ui/source-eye";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
@@ -29,6 +35,16 @@ import { awardXp } from "@/lib/gamification/client";
  * extra request.
  */
 const deepResearchAwarded = new Set<string>();
+
+const NAV_SECTIONS = [
+  { id: "session-overview", label: "Overview & Price" },
+  { id: "financial-statements", label: "Financials & Ratios" },
+  { id: "shareholding", label: "Shareholding Pattern" },
+  { id: "regulatory-documents", label: "Documents & Filings" },
+  { id: "credit-ratings", label: "Credit Ratings" },
+  { id: "concalls", label: "Earnings Concall" },
+  { id: "risk-events", label: "Risk & Catalysts" },
+];
 
 export default function ResearchSymbolPage() {
   const params = useParams();
@@ -72,38 +88,69 @@ export default function ResearchSymbolPage() {
 
   const q = data?.upstoxQuote;
   const us = data?.usDetail;
+  const isIndia = !us;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Investment research"
         title={data ? `${data.symbol} · ${data.name}` : symbol}
-        subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
+        subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
+      {q ? (
+        <div className="-mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="text-3xl tabular-nums font-bold tracking-tight">{fmtInr(q.ltp)}</span>
+          <span className={cn("text-sm font-semibold", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
+            {q.netChange >= 0 ? "+" : ""}
+            {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
+          </span>
+          <MetricInfo
+            id={symbol.toLowerCase()}
+            name={`${data!.name} (${symbol})`}
+            provider="Upstox / NSE Official Tick Stream"
+            sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
+            asOf={q.asOf}
+          />
+        </div>
+      ) : null}
+
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
+
+      {/* Sticky section navigation */}
+      {isIndia && !loading ? <ResearchSectionNav sections={NAV_SECTIONS} /> : null}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
-          <Link href="/research" className="text-primary hover:underline">← Research home</Link>
+          <Link href="/research" className="text-primary hover:underline font-medium">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
-        {symbol ? (
-          <Link
-            href={`/research/model/${encodeURIComponent(symbol)}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
-          >
-            Build financial model →
-          </Link>
-        ) : null}
       </div>
+
+      {data ? <DriverNudges symbol={symbol} name={data.name} /> : null}
+
+      {data?.about ? (
+        <Panel title="About">
+          <div className="flex gap-4">
+            {data.about.thumbnail ? (
+               
+              <img src={data.about.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded object-contain" />
+            ) : null}
+            <div className="space-y-2 text-sm">
+              {data.about.description ? (
+                <p className="font-medium capitalize">{data.about.description}</p>
+              ) : null}
+              <p className="text-muted-foreground leading-relaxed">{data.about.extract}</p>
+              <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
+                Source: {data.about.source}
+              </a>
+            </div>
+          </div>
+        </Panel>
+      ) : null}
+
+      {isIndia && symbol ? <LeadershipPanel symbol={symbol} /> : null}
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-
-      {symbol ? (
-        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
-          <SecurityRiskPanel symbol={symbol} />
-        </Panel>
-      ) : null}
 
       {/* FinBERT AI News Sentiment for this stock */}
       {data?.news?.length ? (
@@ -119,31 +166,9 @@ export default function ResearchSymbolPage() {
             <Badge variant="secondary">India · NSE</Badge>
             <Badge className="bg-emerald-500/20 text-emerald-600">Upstox live</Badge>
           </div>
-          <div className="grid gap-4 xl:grid-cols-3">
-            <Panel title="Quote & depth" className="xl:col-span-2">
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
-                    <SourceEye label={`${data.name} (${symbol}) price`} source="Upstox market data (NSE official feed)" asOf={q.asOf} url={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`} method="Last traded price from the Upstox market-data feed for NSE. During market hours it refreshes every few seconds; after close it is the last trade." />
-                    <MetricInfo
-                      id={symbol.toLowerCase()}
-                      name={`${data.name} (${symbol})`}
-                      provider="Upstox / NSE Official Tick Stream"
-                      sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
-                      asOf={q.asOf}
-                    />
-                  </div>
-                  <p
-                    className={cn(
-                      "text-sm",
-                      q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
-                    )}
-                  >
-                    {q.netChange >= 0 ? "+" : ""}
-                    {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
-                  </p>
-                </div>
+          <div className="grid gap-4">
+            <Panel id="session-overview" title="Session Overview">
+              <div className="mb-2 flex justify-end">
                 <DataInfo
                   source={{
                     provider: "Upstox",
@@ -153,10 +178,7 @@ export default function ResearchSymbolPage() {
                   hubSyncedAt={data.fetchedAt}
                 />
               </div>
-              <MarketDepthLadder buy={q.depth.buy} sell={q.depth.sell} />
-            </Panel>
-            <Panel title="Session">
-              <dl className="grid grid-cols-2 gap-2 text-sm">
+              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
                 <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
                 <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
                 <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
@@ -183,6 +205,26 @@ export default function ResearchSymbolPage() {
         <UsResearchPanels data={data} />
       ) : null}
 
+      {/* CORE EXTENSIONS REQUESTED: Financial Statements, Shareholding Donut, Documents, Ratings, Concalls */}
+      {isIndia && symbol ? (
+        <>
+          {/* 1. Full Financial Statements & Ratios (P&L, BS, CF, Quarterly Performance, Working Capital) */}
+          <FinancialsPanel symbol={symbol} />
+
+          {/* 2. Shareholding Pattern Donut Chart & Quarterly Trends & Risk Flags */}
+          <OwnershipPanel symbol={symbol} />
+
+          {/* 3. Statutory Document Archive: Announcements, Annual Reports, Credit Ratings, Concalls */}
+          <DocumentsPanel symbol={symbol} />
+
+          {/* 4. Credit Ratings Agency Radar (CRISIL, CARE, ICRA) */}
+          <RatingsPanel symbol={symbol} />
+
+          {/* 5. Earnings Conference Call Transcripts & Management Guidance */}
+          <ConcallPanel symbol={symbol} />
+        </>
+      ) : null}
+
       {data?.intelligence ? (
         <ResearchIntelligencePanels
           corporateActions={data.intelligence.corporateActions}
@@ -190,6 +232,12 @@ export default function ResearchSymbolPage() {
           newsSummary={data.intelligence.newsSummary}
           brokerResearch={data.intelligence.brokerResearch}
         />
+      ) : null}
+
+      {symbol ? (
+        <Panel id="risk-events" title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+          <SecurityRiskPanel symbol={symbol} />
+        </Panel>
       ) : null}
 
       {data?.sources.length ? (

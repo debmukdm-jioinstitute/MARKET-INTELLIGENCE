@@ -1,12 +1,12 @@
 import { hashPassword } from "@/lib/admin/auth";
-import { hasEmailConfigured } from "@/lib/admin/email";
-import { isFeatureEnabled, rateLimited } from "@/lib/api-guard";
+import { rateLimited } from "@/lib/api-guard";
 import { completeEmailSignup, hashSignupPassword } from "@/lib/auth/complete-signup";
 import { generateSignupOtp, hashSignupOtp, sendSignupOtpEmail, shouldChallengeSignupOtp, SIGNUP_OTP_TTL_MIN } from "@/lib/auth/signup-otp";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 function clientIp(req: Request) {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
@@ -46,11 +46,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
   }
 
-  const otpOn = await isFeatureEnabled("signup-otp");
-  if (otpOn && !hasEmailConfigured() && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Email verification is not configured on this deployment yet." }, { status: 503 });
-  }
-
   if (await shouldChallengeSignupOtp()) {
     if (await rateLimited(`signup-otp:${email}:${clientIp(req)}`, 5, 3600)) {
       return NextResponse.json({ error: "Too many codes. Try again later." }, { status: 429 });
@@ -58,6 +53,10 @@ export async function POST(req: Request) {
     const passwordHash = await hashSignupPassword(password);
     const code = generateSignupOtp();
     const codeHash = hashSignupOtp(email, code);
+    const sent = await sendSignupOtpEmail(email, code);
+    if (!sent.ok) {
+      return NextResponse.json({ error: sent.error ?? "Could not send the verification code." }, { status: 502 });
+    }
     await db`
       INSERT INTO signup_otps (email, name, password_hash, code_hash, attempts, created_at, expires_at, referral_code)
       VALUES (${email}, ${name}, ${passwordHash}, ${codeHash}, 0, now(), now() + make_interval(mins => ${SIGNUP_OTP_TTL_MIN}), ${refCode})
@@ -70,10 +69,6 @@ export async function POST(req: Request) {
         expires_at = EXCLUDED.expires_at,
         referral_code = EXCLUDED.referral_code
     `;
-    const sent = await sendSignupOtpEmail(email, code);
-    if (!sent.ok) {
-      return NextResponse.json({ error: sent.error ?? "Could not send the verification code." }, { status: 502 });
-    }
     return NextResponse.json({ ok: true, pending: true, email });
   }
 
