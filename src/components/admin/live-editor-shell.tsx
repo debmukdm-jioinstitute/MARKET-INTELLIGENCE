@@ -178,7 +178,7 @@ export function LiveEditorShell() {
   const pendingCount = Object.keys(pending).length;
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] min-h-[640px] flex-col gap-3">
+    <div className="flex h-[calc(100dvh-3rem)] min-h-[640px] flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-gray-900">Live editor</h1>
