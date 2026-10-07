@@ -1,40 +1,59 @@
 "use client";
 import Link from "next/link";
-import { Check, Flame, ArrowUpRight, Trophy } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  FileText,
+  Flame,
+  MessageCircle,
+  Search,
+} from "lucide-react";
 import {
   computeStreak,
   levelForXP,
   missionsOn,
+  type MissionId,
 } from "@/lib/gamification/missions";
 import type { HomeProgress } from "./useHomeProgress";
-import { cardClass, SectionHeading } from "./shared";
 
-const missions = [
+const missions: {
+  id: MissionId;
+  title: string;
+  detail: string;
+  href: string;
+  iconClass: string;
+  tileClass: string;
+  Icon: typeof FileText;
+}[] = [
   {
-    id: "read-brief" as const,
+    id: "read-brief",
     title: "Read today’s brief",
     detail: "Get the story behind the session",
     href: "/intelligence/brief",
+    iconClass: "text-blue-600",
+    tileClass: "bg-blue-50",
+    Icon: FileText,
   },
   {
-    id: "run-scan" as const,
+    id: "run-scan",
     title: "Run the stock scanner",
     detail: "Discover a new name to research",
     href: "/intelligence/scanner",
+    iconClass: "text-purple-600",
+    tileClass: "bg-purple-50",
+    Icon: Search,
   },
   {
-    id: "open-debate" as const,
+    id: "open-debate",
     title: "Open an AI Desk debate",
     detail: "Hear the bull case and the bear case",
     href: "/research/ai-desk",
+    iconClass: "text-gray-500",
+    tileClass: "bg-gray-100",
+    Icon: MessageCircle,
   },
 ];
-const badges: Record<string, string> = {
-  "first-steps": "First Steps",
-  "streak-7": "Seven-day streak",
-  "paper-trader": "Paper Trader",
-  debater: "Debater",
-};
+
 export function MissionsCard({
   progress,
   now,
@@ -50,47 +69,69 @@ export function MissionsCard({
     ? ((store.xp - level.min) / (level.next - level.min)) * 100
     : 100;
   return (
-    <section aria-label="Daily Missions">
-      <SectionHeading
-        title="Today’s missions"
-        detail="Three useful stops. One step a day keeps your streak going."
-      />
-      <div className={cardClass}>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0 flex-1 sm:max-w-sm">
-            <div className="mb-2 flex items-center justify-between gap-4">
-              <span className="text-sm font-semibold text-stone-900">
-                {level.name}
-              </span>
-              <span className="text-xs font-medium text-stone-500">
-                {store.xp} XP
-                {level.next
-                  ? ` · ${level.next - store.xp} to next level`
-                  : " · highest level"}
-              </span>
-            </div>
-            <div
-              role="progressbar"
-              aria-label="Experience toward next level"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(percent)}
-              className="h-1.5 overflow-hidden rounded-full bg-stone-100"
+    <section aria-label="Daily missions">
+      <div className="rounded-[20px] border border-gray-200 bg-white p-6 sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <span
+              className="grid size-14 shrink-0 place-items-center rounded-2xl bg-blue-100"
+              aria-hidden
             >
-              <div
-                className="h-full rounded-full bg-teal-600 transition-[width]"
-                style={{ width: `${percent}%` }}
-              />
+              <span className="grid size-8 place-items-center rounded-lg bg-blue-600">
+                <Check className="size-5 text-white" strokeWidth={3} />
+              </span>
+            </span>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                Today’s missions
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Three useful stops. One step a day keeps your streak going.
+              </p>
             </div>
           </div>
-          <span className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-600">
-            <Flame className="size-4" />
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-500">
+            <Flame
+              className="size-5 fill-orange-500 text-orange-500"
+              aria-hidden
+            />
             {streak}-day streak
+            <ChevronRight className="size-4" aria-hidden />
           </span>
         </div>
-        <div className="divide-y divide-stone-100">
+
+        <div className="mt-7 flex items-center gap-5">
+          <div className="shrink-0">
+            <p className="text-base font-bold text-gray-900">{level.name}</p>
+            <p className="mt-0.5 text-[13px] text-gray-500">
+              {store.xp} XP
+              {level.next
+                ? ` · ${level.next - store.xp} to next level`
+                : " · highest level"}
+            </p>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Experience toward next level"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(percent)}
+            className="h-2.5 flex-1 overflow-hidden rounded-full bg-gray-100"
+          >
+            <div
+              className="h-full rounded-full bg-blue-600"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+          <p className="w-12 shrink-0 text-right text-base font-bold text-gray-900">
+            {Math.round(percent)}%
+          </p>
+        </div>
+
+        <div className="mt-6 space-y-3">
           {missions.map((m) => {
             const checked = done.includes(m.id);
+            const Icon = m.Icon;
             return (
               <Link
                 prefetch={false}
@@ -98,53 +139,70 @@ export function MissionsCard({
                 href={m.href}
                 onClick={() => actions.mission(m.id)}
                 aria-label={`${m.title}, ${checked ? "completed" : "earn 20 XP"}`}
-                className="group flex items-center gap-3 rounded-lg py-4 hover:bg-stone-50"
+                className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white px-4 py-4 transition-colors hover:bg-gray-50 sm:px-5"
               >
                 <span
-                  className={`grid size-5 shrink-0 place-items-center rounded border ${checked ? "border-teal-600 bg-teal-600 text-white" : "border-stone-300 bg-white"}`}
+                  className={`grid size-6 shrink-0 place-items-center rounded-md border-2 ${
+                    checked
+                      ? "border-blue-600 bg-blue-600"
+                      : "border-gray-200 bg-white"
+                  }`}
                   aria-hidden
                 >
-                  {checked ? <Check className="size-3.5" /> : null}
+                  {checked ? (
+                    <Check className="size-4 text-white" strokeWidth={3.5} />
+                  ) : null}
                 </span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-stone-900">
-                    {m.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-stone-500">
-                    {checked ? "Done for today. See you tomorrow." : m.detail}
-                  </p>
-                </div>
                 <span
-                  className={`shrink-0 text-xs font-semibold ${checked ? "text-teal-600" : "text-stone-500"}`}
+                  className={`grid size-12 shrink-0 place-items-center rounded-xl ${m.tileClass}`}
+                  aria-hidden
                 >
-                  {checked ? "Complete" : "+20 XP"}
+                  <Icon className={`size-6 ${m.iconClass}`} />
                 </span>
-                <ArrowUpRight className="size-4 text-stone-400" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-semibold text-gray-900">
+                    {m.title}
+                  </span>
+                  <span className="mt-0.5 block text-sm text-gray-500">
+                    {checked ? "Done for today. See you tomorrow." : m.detail}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold ${
+                    checked
+                      ? "bg-gray-100 text-gray-500"
+                      : "bg-blue-50 text-blue-600"
+                  }`}
+                >
+                  {checked ? "Completed" : "+20 XP"}
+                </span>
+                <ChevronRight
+                  className="size-5 shrink-0 text-gray-400"
+                  aria-hidden
+                />
               </Link>
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-stone-500" aria-live="polite">
-          {done.length === 3
-            ? "Come back tomorrow to keep your streak."
-            : `${done.length} of 3 completed · resets at midnight IST · +10 XP for your daily visit.`}
+
+        <p className="mt-5 text-sm" aria-live="polite">
+          <span className="font-semibold text-gray-900">
+            {done.length} of 3 completed
+          </span>
+          <span className="text-gray-400"> · </span>
+          {done.length === 3 ? (
+            <span className="text-gray-500">
+              Come back tomorrow to keep your streak.
+            </span>
+          ) : (
+            <span className="text-gray-500">
+              Resets at midnight IST
+              <span className="text-gray-400"> · </span>
+              +10 XP for your daily visit
+            </span>
+          )}
         </p>
-        {store.badges.length ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {store.badges
-              .filter((b) => badges[b])
-              .map((b) => (
-                <span
-                  key={b}
-                  className="inline-flex items-center gap-1 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-medium text-teal-600"
-                >
-                  <Trophy className="size-3" />
-                  {badges[b]}
-                </span>
-              ))}
-          </div>
-        ) : null}
-        <p className="mt-3 text-[10px] text-stone-500">
+        <p className="mt-2 text-[13px] leading-relaxed text-gray-500">
           Homepage XP is earned when you open a tool and stays in this browser.
           Account XP is tracked separately on your profile.
         </p>
