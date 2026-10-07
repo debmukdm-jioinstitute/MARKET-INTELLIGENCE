@@ -233,6 +233,143 @@ flowchart TD
 | **6. Data Providers** | Live quotes, option chains, FII/DII flows, macro indicators, search trends | Upstox Pro, NSE India, Yahoo Finance, FRED, World Bank, Google Trends |
 | **7. Scheduled jobs** | Collector, scan, options-flow baseline, research scrape, instruments sync, Alpha League close snapshot | GitHub Actions → `scripts/crons/run-*.ts` (see [Scheduled jobs](#scheduled-jobs--developer-notes)); `/api/cron/*` manual fallback; Oracle Always Free VM migration pack built, not yet live |
 
+### Full website sitemap
+
+Every page on getmarketintelligence.in, grouped by section. The labeled arrows show the most common journeys across sections.
+
+```mermaid
+flowchart TD
+  subgraph Entry["Entry"]
+    E_Landing["Landing<br/>/"]
+    E_Login["Log in<br/>/login"]
+    E_Signup["Sign up<br/>/signup"]
+    E_Forgot["Forgot password<br/>/forgot-password"]
+    E_Reset["Reset password<br/>/reset-password"]
+    E_Onboard["Onboarding<br/>/onboarding"]
+    E_Claude["Claude connector<br/>/connect/claude"]
+  end
+  subgraph Home["Home"]
+    H_Home["India desk<br/>/Home"]
+  end
+  subgraph Markets["Markets"]
+    M_Overview["Market overview (redirect)<br/>/markets"]
+    M_India["India benchmarks<br/>/markets/india"]
+    M_IndexDetail["Index drill-down<br/>/markets/india/[symbol]"]
+    M_Breadth["Breadth & Momentum<br/>/markets/breadth"]
+    M_Deriv["Derivatives<br/>/markets/derivatives"]
+    M_Sectors["Sector Map<br/>/markets/sectors"]
+  end
+  subgraph Macro["Macro"]
+    MA_Board["Global Board<br/>/macro"]
+    MA_Section["Macro section<br/>/macro/[section]"]
+    MA_Cal["Economic Calendar<br/>/macro/calendar"]
+    MA_Com["Commodities<br/>/macro/commodities"]
+    MA_Cur["Currency<br/>/macro/currency"]
+    MA_Glob["Global Data<br/>/macro/global"]
+    MA_India["India Macro<br/>/macro/india"]
+    MA_Idx["World Indices<br/>/macro/indices"]
+    MA_RBI["RBI & Liquidity<br/>/macro/rbi"]
+    MA_Scen["Scenarios<br/>/macro/scenarios"]
+    MA_Stress["Stress Index<br/>/macro/stress"]
+    MA_StressBT["Stress backtest<br/>/macro/stress/backtest"]
+    MA_Trans["How Shocks Spread<br/>/macro/transmission"]
+    MA_Yields["Yields<br/>/macro/yields"]
+  end
+  subgraph Portfolio["Portfolio"]
+    P_Main["Overview<br/>/portfolio"]
+    P_Act["Activity<br/>/portfolio/activity"]
+    P_Alloc["Allocation<br/>/portfolio/allocation"]
+    P_Attr["Attribution<br/>/portfolio/attribution"]
+    P_Opt["Optimizer<br/>/portfolio/optimizer"]
+    P_Quant["Factor Exposure<br/>/portfolio/quant"]
+    P_Risk["Risk<br/>/portfolio/risk"]
+    P_Tax["Tax<br/>/portfolio/tax"]
+    P_Watch["Watchlist<br/>/portfolio/watchlist"]
+  end
+  subgraph Research["Research"]
+    R_Home["Broker Consensus<br/>/research"]
+    R_Reports["MI Research Notes<br/>/research-reports"]
+    R_Symbol["Company dossier<br/>/research/[symbol]"]
+    R_AIDesk["AI Desk<br/>/research/ai-desk"]
+    R_IPO["IPO Pipeline<br/>/research/ipo"]
+    R_Offers["Bonds, Rights & Buybacks<br/>/research/offers"]
+    R_OptFlow["Options Flow<br/>/research/options-flow"]
+  end
+  subgraph Intelligence["Intelligence"]
+    I_Feed["Intelligence Feed<br/>/intelligence"]
+    I_Signals["AI Signals<br/>/intelligence/ai-signals"]
+    I_Alerts["Alerts<br/>/intelligence/alerts"]
+    I_Backtest["Backtesting<br/>/intelligence/backtesting"]
+    I_Brief["Daily Brief<br/>/intelligence/brief"]
+    I_Company["Company Page<br/>/intelligence/company"]
+    I_Credit["Credit Radar<br/>/intelligence/credit"]
+    I_Inst["Institutional Flows<br/>/intelligence/institutional"]
+    I_Legal["Legal Risk<br/>/intelligence/legal-risk"]
+    I_Prom["Promoter Tracker<br/>/intelligence/promoters"]
+    I_Reddit["Retail Sentiment<br/>/intelligence/reddit"]
+    I_Scanner["Stock Scanner<br/>/intelligence/scanner"]
+    I_Trends["Search Trends<br/>/intelligence/search-trends"]
+    I_TradeLab["Trade Lab<br/>/intelligence/trade-lab"]
+    I_WM["World Monitor<br/>/intelligence/world-monitor"]
+  end
+  subgraph Data & Feeds["Data & Feeds"]
+    D_Main["Sources & Status<br/>/data"]
+    D_360["World Bank Data<br/>/data/data360"]
+    D_Export["Data Export<br/>/data/export"]
+    D_Feeds["Data Feeds<br/>/data/feeds"]
+    D_Health["Data Health<br/>/data/health"]
+  end
+  subgraph Alpha League["Alpha League"]
+    A_Main["Alpha League<br/>/alpha-league"]
+    A_BT["Backtest<br/>/alpha-league/backtest"]
+    A_Board["Leaderboard<br/>/alpha-league/board"]
+    A_Port["Paper portfolio<br/>/alpha-league/portfolio"]
+    A_Verify["Certificate verify<br/>/alpha-league/verify/[id]"]
+  end
+  subgraph Learn & Help["Learn & Help"]
+    L_Learn["Learn<br/>/learn"]
+    L_Guide["Guide<br/>/learn/[slug]"]
+    L_Help["Help<br/>/help"]
+    L_Method["Methodology<br/>/methodology"]
+    L_Privacy["Privacy<br/>/privacy"]
+  end
+  subgraph Profile & Pricing["Profile & Pricing"]
+    PF_Profile["Profile & plans<br/>/profile"]
+    PF_Pricing["Pricing<br/>/pricing"]
+  end
+  subgraph Admin["Admin"]
+    AD_Alerts["Alerts<br/>/admin/alerts"]
+    AD_Analytics["Analytics<br/>/admin/analytics"]
+    AD_Brief["Brief<br/>/admin/brief"]
+    AD_Comp["Competition<br/>/admin/competition"]
+    AD_Customers["Customers<br/>/admin/customers"]
+    AD_DataAudit["Data Audit<br/>/admin/data-audit"]
+    AD_Feeds["Feeds<br/>/admin/feeds"]
+    AD_Intel["Intelligence<br/>/admin/intelligence"]
+    AD_KB["Knowledge Base<br/>/admin/knowledge-base"]
+    AD_LiveEdit["Live Editor<br/>/admin/live-editor"]
+    AD_Login["Admin login<br/>/admin/login"]
+    AD_News["Newsletters<br/>/admin/newsletters"]
+    AD_Notif["Notifications<br/>/admin/notifications"]
+    AD_Pages["Pages<br/>/admin/pages"]
+    AD_Pay["Payments<br/>/admin/payments"]
+    AD_Ref["Referrals<br/>/admin/referrals"]
+    AD_Retarget["Retargeting<br/>/admin/retargeting"]
+    AD_Sec["Security<br/>/admin/security"]
+    AD_Sys["System<br/>/admin/system"]
+    AD_Tabs["Tabs<br/>/admin/tabs"]
+    AD_Updates["Updates<br/>/admin/updates"]
+    AD_User["User dossier<br/>/admin/users/[email]"]
+  end
+
+  E_Landing -->|sign in| H_Home
+  M_India -->|tap a card| M_IndexDetail
+  M_IndexDetail -->|tap a stock| R_Symbol
+  H_Home -->|TopBar search| R_Symbol
+  H_Home -->|Trade tab| I_Scanner
+  I_Alerts -->|tap an alert| R_Symbol
+```
+
 ---
 
 ### Site assistant (floating help)
