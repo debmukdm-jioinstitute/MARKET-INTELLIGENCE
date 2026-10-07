@@ -8,13 +8,13 @@ import { SymbolSearch } from "@/components/research/symbol-search";
 import { LeadershipPanel } from "@/components/research/leadership-panel";
 import { InsightCardsPanel } from "@/components/research/insight-cards-panel";
 import { ResearchSectionNav } from "@/components/research/research-section-nav";
+import { StockPriceBento } from "@/components/price-bento/stock-price-bento";
 import { LazyMount } from "@/components/research/lazy-mount";
 import { Badge } from "@/components/ui/badge";
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
-import { fmtChgPct, fmtInr, fmtNum } from "@/lib/format-india";
+import { fmtInr, fmtNum } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -29,14 +29,6 @@ const chartBox = (h: number) =>
   function ChartSkeleton() {
     return <div className="w-full animate-pulse rounded-lg bg-muted/30" style={{ height: h }} />;
   };
-const CandlestickChart = dynamic(
-  () => import("@/components/charts/candlestick-chart").then((m) => m.CandlestickChart),
-  { ssr: false, loading: chartBox(360) },
-);
-const Lines = dynamic(() => import("@/components/charts/terminal-charts").then((m) => m.Lines), {
-  ssr: false,
-  loading: chartBox(280),
-});
 const KeyRatiosPanel = dynamic(
   () => import("@/components/fundamentals/key-ratios-panel").then((m) => m.KeyRatiosPanel),
   { ssr: false, loading: chartBox(240) },
@@ -190,24 +182,9 @@ export function ResearchSymbolClient({
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
-      {q ? (
-        <div className="-mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-3xl tabular-nums font-bold tracking-tight">{fmtInr(q.ltp)}</span>
-          <span className={cn("text-sm font-semibold", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
-            {q.netChange >= 0 ? "+" : ""}
-            {fmtInr(q.netChange)} ({fmtChgPct(prevClose ? q.netChange / prevClose : 0)})
-          </span>
-          <MetricInfo
-            id={symbol.toLowerCase()}
-            name={`${data!.name} (${symbol})`}
-            provider="Upstox / NSE Official Tick Stream"
-            sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
-            asOf={q.asOf}
-          />
-        </div>
-      ) : null}
-
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
+
+      {data ? <StockPriceBento data={data} /> : null}
 
       {/* Sticky section navigation */}
       {isIndia && !loading ? <ResearchSectionNav sections={NAV_SECTIONS} /> : null}
@@ -282,11 +259,6 @@ export function ResearchSymbolClient({
               </dl>
             </Panel>
           </div>
-          {data.candles.length > 1 ? (
-            <Panel title="Price history (1Y · Upstox daily)">
-              <CandlestickChart candles={data.candles} />
-            </Panel>
-          ) : null}
           {data.fundamentals ? (
             <Panel title="Fundamentals (Upstox key ratios)">
               <KeyRatiosPanel snapshot={data.fundamentals} />
@@ -376,19 +348,13 @@ export function ResearchSymbolClient({
 
 function UsResearchPanels({ data }: { data: ResearchDetailPayload }) {
   const us = data.usDetail!;
-  const chart = data.history.map((p) => ({ date: p.date, px: p.value }));
   return (
     <>
       <div className="flex flex-wrap gap-2">
         <Badge variant="secondary">US</Badge>
         <Badge variant="secondary">{us.quote.provider}</Badge>
       </div>
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Panel title="Price" className="xl:col-span-2">
-          <div className="h-[280px]">
-            <Lines data={chart} keys={[{ key: "px", color: "#1a73e8", name: data.symbol }]} />
-          </div>
-        </Panel>
+      <div className="grid gap-4">
         <Panel title="Snapshot">
           <dl className="space-y-3 text-sm">
             <Row metricId="nav" k="Last" v={fmtNum(us.quote.price)} />
