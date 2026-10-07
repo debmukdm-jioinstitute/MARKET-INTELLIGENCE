@@ -18,3 +18,11 @@ Every price/quote detail page uses the one shared `PriceBento` (`src/components/
 - No tiny uppercase eyebrow labels on tiles (semantic `sr-only` headings only). Missing data renders honest states with Retry; never coerce null to 0, never ship the brief's example prices as fallback.
 - Provider credit ("Data: …") stays. The surrounding page keeps the official Mi header/logo; do not redraw it inside the component.
 
+## Home five-tool bento (DO NOT CHANGE THE DESIGN LANGUAGE)
+
+`/Home` → "Five ways to find your edge" is `src/components/homedashboard/SignatureFive.tsx` with artwork in `tool-art.tsx`. Layout: coral **AI Desk** card spanning two rows (≈45%) + blue **Stock Scanner**, lavender **Trade Lab**, yellow **Alerts**, mint **Options Flow** in a 2×2 grid; 2-column under 1100px, 1-column under 700px. Warm ivory canvas, ink 1px borders, black Google Sans (`font-sans`) text, white inset strips, tinted full-width CTAs with arrows. Do not revert to the old equal white cards, add black cards/emoji/photos, or redraw the Mi logo here (the site header carries it).
+
+- Routes/actions are fixed: `/research/ai-desk`, `/intelligence/scanner`, `/intelligence/trade-lab`, `/intelligence/alerts?new=1`, `/research/options-flow` (with the existing `homeActions` mission/bonus hooks).
+- Strips bind to real data only (trending debate, 52-week breakout count, the user's own virtual P&L, active alert count, today's option flags). No fixture numbers ("CHALET", "−₹1,56,968", "0 flags") ship; missing data shows neutral copy, never a fake zero.
+- Artwork is decorative inline SVG (`aria-hidden`, pointer-inert); keep it clear of text at every breakpoint.
+
