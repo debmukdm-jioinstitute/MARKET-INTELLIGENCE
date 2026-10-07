@@ -44,6 +44,8 @@ const INDIA_CURATED: SymbolSearchHit[] = INDIA_EQUITIES.map((i) => ({
   exchange: "NSE",
 }));
 
+const POPULAR = new Set<SymbolSearchHit>([...US_INDEX, ...INDIA_CURATED]);
+
 type UpstoxInstrumentRow = {
   segment?: string;
   name?: string;
@@ -104,6 +106,24 @@ async function downloadNseEquityIndex(): Promise<SymbolSearchHit[]> {
   return nseEquityIndex;
 }
 
+type HitNorm = { sym: string; nameSpaced: string; nameCompact: string; nameTokenList: string[] };
+const hitNormCache = new WeakMap<SymbolSearchHit, HitNorm>();
+
+/** Normalized hit fields are query-independent — compute once per hit, not once per keystroke. */
+function normFor(hit: SymbolSearchHit): HitNorm {
+  let n = hitNormCache.get(hit);
+  if (!n) {
+    n = {
+      sym: hit.symbol.toUpperCase(),
+      nameSpaced: normalizeSymbolQuery(hit.name),
+      nameCompact: compactToken(hit.name),
+      nameTokenList: queryTokens(hit.name),
+    };
+    hitNormCache.set(hit, n);
+  }
+  return n;
+}
+
 /**
  * Score a hit against a natural-language query.
  * Handles spacing ("JP POWER" → JPPOWER), aliases, token overlap, and light typos.
@@ -113,9 +133,7 @@ export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
   const compact = compactToken(rawQuery);
   if (!spaced && !compact) return 0;
 
-  const sym = hit.symbol.toUpperCase();
-  const nameSpaced = normalizeSymbolQuery(hit.name);
-  const nameCompact = compactToken(hit.name);
+  const { sym, nameSpaced, nameCompact, nameTokenList } = normFor(hit);
   const alias = aliasSymbol(rawQuery);
 
   if (alias && alias === sym) return 1100;
@@ -127,9 +145,12 @@ export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
   if (spaced && nameSpaced.includes(spaced)) return 480;
   if (compact && nameCompact.includes(compact)) return 460;
 
+  // Token-overlap and symbol-typo tiers are both candidates; the best wins. Returning from the
+  // token tier early let "relaince" tie RCOM / RELCHEMQ / RELIANCE at 305 (name-token typo match)
+  // and lose the alphabetical tie-break, even though RELIANCE is a 1-edit symbol match (320).
+  let best = 0;
   const tokens = queryTokens(rawQuery);
   if (tokens.length) {
-    const nameTokenList = queryTokens(hit.name);
     const nameTokens = new Set(nameTokenList);
     // Exact-or-substring hit first; if that fails, allow one bounded-edit-
     // distance typo per token (>=5 chars only, to avoid false positives on
@@ -149,7 +170,7 @@ export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
       );
     }).length;
     if (hitCount === tokens.length && tokens.length >= 2) return 420 + hitCount * 20;
-    if (hitCount > 0 && hitCount >= Math.ceil(tokens.length * 0.6)) return 280 + hitCount * 25;
+    if (hitCount > 0 && hitCount >= Math.ceil(tokens.length * 0.6)) best = 280 + hitCount * 25;
     // Weak tier: a full sentence ("is it safe to invest in adani") carries
     // mostly grammatical filler that will never appear in a company name, so
     // the 60%-overlap bar above is nearly impossible to clear even when the
@@ -160,20 +181,20 @@ export function scoreHit(rawQuery: string, hit: SymbolSearchHit): number {
     // symbol-search.tsx) surfaces the symbol as a low-confidence suggestion
     // instead of nothing, without letting a single stray token outrank a
     // real ticker/company match anywhere above.
-    if (hitCount > 0) return 60 + hitCount * 15;
+    else if (hitCount > 0) best = 60 + hitCount * 15;
   }
 
   // Light typo tolerance on compact symbol / primary name token (short queries only).
   if (compact.length >= 4 && compact.length <= 12) {
     const dSym = editDistance(compact, sym, 2);
-    if (dSym <= 1) return 360 - dSym * 40;
-    if (dSym === 2 && Math.abs(compact.length - sym.length) <= 1) return 220;
+    if (dSym <= 1) best = Math.max(best, 360 - dSym * 40);
+    else if (dSym === 2 && Math.abs(compact.length - sym.length) <= 1) best = Math.max(best, 220);
     const primary = nameCompact.slice(0, Math.max(compact.length + 2, 8));
     const dName = editDistance(compact, primary.slice(0, compact.length), 2);
-    if (dName <= 1) return 300 - dName * 30;
+    if (dName <= 1) best = Math.max(best, 300 - dName * 30);
   }
 
-  return 0;
+  return best;
 }
 
 export async function searchSymbols(query: string, limit = 16): Promise<SymbolSearchHit[]> {
@@ -194,7 +215,11 @@ export async function searchSymbols(query: string, limit = 16): Promise<SymbolSe
 
   const pool = [...US_INDEX, ...indiaMap.values()];
   const scored = pool
-    .map((h) => ({ h, s: scoreHit(q, h) }))
+    .map((h) => {
+      const s = scoreHit(q, h);
+      // Curated large caps / US universe win ties over obscure listings with a similar name.
+      return { h, s: s > 0 && POPULAR.has(h) ? s + 12 : s };
+    })
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s || a.h.symbol.localeCompare(b.h.symbol));
 

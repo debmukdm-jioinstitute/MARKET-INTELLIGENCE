@@ -9,6 +9,7 @@ import { ChevronLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export function TopBar() {
   const pathname = usePathname();
@@ -16,6 +17,32 @@ export function TopBar() {
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const shortcut = usePlatformShortcut();
   const isHome = pathname === "/Home";
+  const hasSearchRow = pathname !== "/research";
+  // < lg: the search bar row is collapsed until the magnifier is tapped.
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const searchRowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Close after navigating (a result was picked).
+    setMobileSearchOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return;
+    // Focus after the row is revealed so the keyboard opens and the dropdown is ready.
+    const id = window.requestAnimationFrame(() => {
+      searchRowRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [mobileSearchOpen]);
+
+  const onMobileSearchClick = () => {
+    if (!hasSearchRow) {
+      setPaletteOpen(true);
+      return;
+    }
+    setMobileSearchOpen((v) => !v);
+  };
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -86,9 +113,10 @@ export function TopBar() {
           <div className="flex items-center gap-1 sm:gap-1.5 lg:hidden">
             <button
               type="button"
-              onClick={() => setPaletteOpen(true)}
-              aria-label={`Search and commands (${shortcut.label})`}
-              title="Search symbols, pages & commands"
+              onClick={onMobileSearchClick}
+              aria-expanded={hasSearchRow ? mobileSearchOpen : undefined}
+              aria-label="Search stocks, pages and help"
+              title="Search stocks, pages & help"
               className="flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card p-1.5 -m-1.5 text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95 touch-manipulation shadow-xs"
             >
               <Search className="size-4" aria-hidden />
@@ -99,8 +127,12 @@ export function TopBar() {
         </div>
 
         {/* Search bar row */}
-        {pathname !== "/research" ? (
-          <div id="tour-search" className="min-w-0 flex-1">
+        {hasSearchRow ? (
+          <div
+            id="tour-search"
+            ref={searchRowRef}
+            className={mobileSearchOpen ? "min-w-0 flex-1" : "hidden min-w-0 flex-1 lg:block"}
+          >
             <SymbolSearch variant="bar" className="w-full min-w-0" />
           </div>
         ) : (

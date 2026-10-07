@@ -18,6 +18,22 @@ import { Search, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { awardXp } from "@/lib/gamification/client";
+import { usePortalPages } from "@/components/providers/portal-page-provider";
+
+/** Per-session result cache: backspacing / retyping a query is instant, no network. */
+const RESULT_CACHE = new Map<string, UnifiedSearchResult>();
+const RESULT_CACHE_MAX = 200;
+const DEBOUNCE_MS = 60;
+let warmed = false;
+
+/** Fire one throwaway query so a cold server instance loads its symbol index before the first real keystroke. */
+function warmSearch() {
+  if (warmed) return;
+  warmed = true;
+  void fetch("/api/search/unified?q=nse").catch(() => {
+    warmed = false;
+  });
+}
 
 /**
  * One entry in the merged, keyboard-navigable results list. This is the
@@ -75,6 +91,7 @@ export function SymbolSearch({
   showShortcut?: boolean;
 }) {
   const router = useRouter();
+  const { hrefAllowed } = usePortalPages();
   const [q, setQ] = useState(initialQuery);
   const [result, setResult] = useState<UnifiedSearchResult>(EMPTY_RESULT);
   const [open, setOpen] = useState(false);
@@ -88,7 +105,10 @@ export function SymbolSearch({
   const [recentsOpen, setRecentsOpen] = useState(false);
 
   const prominent = variant === "hero" || variant === "bar";
-  const items = buildItems(result);
+  const items = buildItems(
+    // Locked/disabled portal pages stay out of the dropdown (same rule as the ⌘K palette).
+    { ...result, pages: result.pages.filter((p) => hrefAllowed(p.href)) },
+  );
   // Top company match (for the deep-research nudge) and the index of the last
   // company row so the nudge lands right after all company rows.
   const topSymbolItem = items.find((i): i is Extract<ResultItem, { kind: "symbol" }> => i.kind === "symbol") ?? null;
@@ -136,23 +156,46 @@ export function SymbolSearch({
       return;
     }
     setRecentsOpen(false);
+
+    const apply = (json: UnifiedSearchResult) => {
+      setResult(json);
+      const hasAny = json.symbols.length > 0 || json.pages.length > 0 || json.help.length > 0 || json.suggestAsk;
+      setOpen(hasAny);
+      setActive(0);
+    };
+
+    const key = trimmed.toLowerCase();
+    const hit = RESULT_CACHE.get(key);
+    if (hit) {
+      apply(hit);
+      return;
+    }
+
+    // Abort the in-flight request when the query changes so a slow earlier response can never
+    // overwrite the newer one (and never keeps the spinner state wrong).
+    const ctrl = new AbortController();
     const id = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search/unified?q=${encodeURIComponent(trimmed)}`);
+        const res = await fetch(`/api/search/unified?q=${encodeURIComponent(trimmed)}`, { signal: ctrl.signal });
         const json = (await res.json()) as UnifiedSearchResult;
-        setResult(json);
-        const hasAny = json.symbols.length > 0 || json.pages.length > 0 || json.help.length > 0 || json.suggestAsk;
-        setOpen(hasAny);
-        setActive(0);
-      } catch {
+        if (res.ok) {
+          if (RESULT_CACHE.size >= RESULT_CACHE_MAX) RESULT_CACHE.delete(RESULT_CACHE.keys().next().value as string);
+          RESULT_CACHE.set(key, json);
+        }
+        apply(json);
+        setLoading(false);
+      } catch (e) {
+        if ((e as { name?: string }).name === "AbortError") return;
         setResult(EMPTY_RESULT);
         setOpen(false);
-      } finally {
         setLoading(false);
       }
-    }, 200);
-    return () => window.clearTimeout(id);
+    }, DEBOUNCE_MS);
+    return () => {
+      window.clearTimeout(id);
+      ctrl.abort();
+    };
   }, [q, hasUserTyped, isFocused]);
 
   const selectItem = useCallback(
@@ -242,6 +285,7 @@ export function SymbolSearch({
           }}
           onFocus={() => {
             setIsFocused(true);
+            warmSearch();
             if (hasUserTyped && items.length > 0) {
               setOpen(true);
             } else if (!q.trim()) {

@@ -32,6 +32,12 @@ describe("scoreHit fuzzy matching", () => {
     expect(scoreHit("jaiprakash power", jpPower)).toBeGreaterThan(200);
   });
 
+  it("ranks a transposed-typo symbol above an unrelated name-token match", () => {
+    const rcom: SymbolSearchHit = { symbol: "RCOM", name: "RELIANCE COMMUNICATIONS L", market: "IN", exchange: "NSE" };
+    // "relaince" is 1 transposition from RELIANCE; RCOM only matches via a name token.
+    expect(scoreHit("relaince", reliance)).toBeGreaterThan(scoreHit("relaince", rcom));
+  });
+
   it("matches common aliases", () => {
     expect(scoreHit("RIL", reliance)).toBeGreaterThan(400);
     expect(scoreHit("reliance industries", reliance)).toBeGreaterThan(400);
