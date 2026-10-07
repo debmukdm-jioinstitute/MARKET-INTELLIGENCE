@@ -127,7 +127,7 @@ export function CommandPalette() {
               onClick={close}
               aria-label="Close search"
               title="Close (Esc)"
-              className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground touch-manipulation active:scale-95 transition-all"
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg p-2 -m-2 text-muted-foreground hover:bg-accent hover:text-foreground touch-manipulation active:scale-95 transition-all"
             >
               <X className="size-4" />
             </button>

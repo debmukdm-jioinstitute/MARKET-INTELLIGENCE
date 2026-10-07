@@ -61,7 +61,7 @@ export function SecuritySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+      <SheetContent className="w-full overflow-y-auto max-h-[100dvh] sm:max-w-lg">
         <SheetHeader>
           <SheetTitle className="">{instrument?.symbol}</SheetTitle>
           <SheetDescription>

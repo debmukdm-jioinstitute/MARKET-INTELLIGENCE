@@ -322,7 +322,7 @@ function TradeLab() {
               ))}
             </div>
             <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); const v = draft.trim().toUpperCase(); if (v) { pick(v); setDraft(""); } }}>
-              <input list="trade-lab-fo" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={`F&O stock or any NSE symbol${uni ? ` (${uni.stocks.length} F&O names)` : ""}`} aria-label="Search symbol" className="min-w-[16rem] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+              <input list="trade-lab-fo" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={`F&O stock or any NSE symbol${uni ? ` (${uni.stocks.length} F&O names)` : ""}`} aria-label="Search symbol" className="min-w-[16rem] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-base sm:text-sm" />
               <datalist id="trade-lab-fo">{uni?.stocks.map((s) => <option key={s.symbol} value={s.symbol}>{s.name}</option>)}</datalist>
               <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Load</button>
             </form>

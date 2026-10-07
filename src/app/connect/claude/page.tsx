@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function ConnectClaudePage() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/" backLabel="Home" />
       <main className="mx-auto max-w-2xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-sm leading-relaxed w-full">
       <h1 className="mt-2 text-3xl font-semibold">Add Market Intelligence to Claude</h1>

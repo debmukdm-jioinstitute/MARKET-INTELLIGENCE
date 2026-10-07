@@ -212,7 +212,7 @@ export function NotificationBell() {
           type="button"
           aria-label={totalUnread ? `Notifications, ${totalUnread} unread` : "Notifications"}
           title="What's changed on the site"
-          className="relative inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="relative inline-flex size-8 shrink-0 items-center justify-center rounded-full p-2 -m-2 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Bell className="size-4" />
           {totalUnread ? (

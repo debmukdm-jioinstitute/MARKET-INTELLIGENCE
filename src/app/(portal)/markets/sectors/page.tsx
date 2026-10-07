@@ -315,7 +315,7 @@ function SectorsView() {
         id={`sectors-panel-${activeTab}`}
         role="tabpanel"
         aria-labelledby={`sectors-tab-${activeTab}`}
-        className="overflow-hidden rounded-xl border border-border bg-card shadow-sm min-h-[320px]"
+        className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm min-h-[320px]"
       >
         <Table>
           <TableHeader>

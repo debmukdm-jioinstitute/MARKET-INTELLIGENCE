@@ -7,7 +7,7 @@ export default async function ResetPasswordPage({
 }) {
   const { token } = await searchParams;
   return (
-    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-muted px-5 py-16">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-muted px-5 py-16">
       <PasswordResetForm token={token} />
     </main>
   );

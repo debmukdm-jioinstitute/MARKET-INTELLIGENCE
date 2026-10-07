@@ -9,6 +9,12 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
+    // Lenis smooth-wheel is a desktop enhancement: on touch devices the
+    // browser's native momentum scrolling is smoother and Lenis fights it,
+    // causing scroll jank. Skip entirely for coarse pointers.
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
     // Initialize Lenis
     const lenis = new Lenis({
       duration: 1.2,
