@@ -52,8 +52,20 @@ type UpstoxInstrumentRow = {
   exchange?: string;
 };
 
+let nseLoading: Promise<SymbolSearchHit[]> | null = null;
+
 async function loadNseEquityIndex(): Promise<SymbolSearchHit[]> {
   if (nseEquityIndex && Date.now() - nseLoadedAt < NSE_TTL_MS) return nseEquityIndex;
+  // Coalesce concurrent cold-start loads: one 1.9 MB download per instance, not one per request.
+  if (!nseLoading) {
+    nseLoading = downloadNseEquityIndex().finally(() => {
+      nseLoading = null;
+    });
+  }
+  return nseLoading;
+}
+
+async function downloadNseEquityIndex(): Promise<SymbolSearchHit[]> {
   const res = await feedFetch(NSE_GZ, { timeoutMs: 45_000 });
   if (!res.ok) throw new Error(`NSE instrument master HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());

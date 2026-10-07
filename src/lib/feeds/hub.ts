@@ -1,7 +1,7 @@
 import { timed } from "@/lib/feeds/http";
 import { fetchAlphaVantageQuote } from "@/lib/feeds/sources/alphavantage";
 import { fetchBiquoteIndices } from "@/lib/feeds/sources/biquote";
-import { fetchBseNews } from "@/lib/feeds/sources/bse";
+import { fetchBseNewsWithOrigin } from "@/lib/feeds/sources/bse";
 import { fetchFredMacro } from "@/lib/feeds/sources/fred";
 import { fetchGoogleNewsIndiaMacro } from "@/lib/feeds/sources/google-news-india";
 import { fetchImfMacro } from "@/lib/feeds/sources/imf";
@@ -57,7 +57,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
   const [nse, bse, rbi, sec, upstoxNews, quoteBundle, av, fred, wb, imf, oecd, mospi, biquote, d360, openRss, reddit, googleMacro] =
     await Promise.all([
       timed(() => fetchNseNews()),
-      timed(() => fetchBseNews()),
+      timed(() => fetchBseNewsWithOrigin()),
       timed(() => fetchRbiNews()),
       timed(() => fetchSecFilings()),
       timed(() => fetchUpstoxNews(INDIA_EQUITIES.map((i) => i.instrumentKey))),
@@ -101,7 +101,7 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
 
   const news = sortNewsByFreshness([
     ...(nse.value ?? []),
-    ...(bse.value ?? []),
+    ...(bse.value?.items ?? []),
     ...(rbi.value ?? []),
     ...(sec.value ?? []),
     ...(upstoxNews.value ?? []),
@@ -131,8 +131,14 @@ export async function buildFeedHub(): Promise<FeedHubPayload> {
     };
   };
   const healthRows: FeedHealth[] = [
-    health("nse", "NSE RSS", nse, (v) => Array.isArray(v) && v.length > 0),
-    health("bse", "BSE RSS", bse, (v) => Array.isArray(v) && v.length > 0),
+    // NSE's own RSS URLs are dead (404); this row is Google News, so say so.
+    health("nse", "NSE news (Google News fallback)", nse, (v) => Array.isArray(v) && v.length > 0),
+    health(
+      "bse",
+      bse.value?.via === "fallback" ? "BSE RSS (Google News fallback)" : "BSE RSS",
+      bse,
+      () => (bse.value?.items.length ?? 0) > 0,
+    ),
     health("rbi", "RBI RSS", rbi, (v) => Array.isArray(v) && v.length > 0),
     health("sec", "SEC EDGAR", sec, (v) => Array.isArray(v) && v.length > 0),
     health(

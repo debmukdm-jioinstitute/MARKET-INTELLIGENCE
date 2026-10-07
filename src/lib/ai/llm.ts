@@ -28,14 +28,25 @@ type LlmArgs = {
   prompt: string;
   maxTokens?: number;
   json?: boolean;
+  /** Abort the Groq call after this many ms. Default GROQ_TIMEOUT_MS env or 30000. */
+  timeoutMs?: number;
 };
 
-export async function callLlm({ system, prompt, maxTokens = 900, json = false }: LlmArgs): Promise<string> {
+const DEFAULT_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 30_000;
+
+export async function callLlm({
+  system,
+  prompt,
+  maxTokens = 900,
+  json = false,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+}: LlmArgs): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new AiKeyMissingError();
 
   const res = await fetch(GROQ_URL, {
     method: "POST",
+    signal: AbortSignal.timeout(timeoutMs),
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${apiKey}`,
