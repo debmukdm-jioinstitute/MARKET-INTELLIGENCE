@@ -1,0 +1,68 @@
+.global-markets {
+  --canvas: #f6f5f1;
+  --surface: #fcfcfa;
+  --ink: #151515;
+  --secondary: #62656b;
+  --line: #151515;
+  --divider: #e5e5e1;
+  --coral: #fee2e2;
+  --light-red: #fee2e2;
+  --light-green: #dcfce7;
+  --down: #a52f38;
+  --up: #26713d;
+  --selected-row: #fcedea;
+  font-family: var(--font-sans), "Google Sans", sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 16px 20px;
+}
+
+.global-markets * {
+  box-sizing: border-box;
+}
+
+.main-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  align-items: stretch;
+  gap: 12px;
+}
+
+.metrics-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 37fr) minmax(0, 24fr) minmax(0, 39fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.market-card {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: 22px;
+  min-width: 0;
+}
+
+.market-card.hero-down {
+  background: var(--coral);
+}
+
+.market-card.hero-up {
+  background: var(--light-green);
+}
+
+@media (max-width: 1099px) {
+  .main-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 699px) {
+  .global-markets {
+    padding: 16px;
+  }
+  .metrics-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
