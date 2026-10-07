@@ -218,7 +218,7 @@ function QuarterTable({ series, noPromoter }: { series: SeriesPoint[]; noPromote
 }
 
 export function OwnershipPanel({ symbol }: { symbol: string }) {
-  const { data, error, isLoading } = useSWR<OwnershipResponse>(`/api/research/ownership?symbol=${encodeURIComponent(symbol)}&v=2`, loadOwnership, { revalidateOnFocus: false });
+  const { data, error, isLoading } = useSWR<OwnershipResponse>(`/api/research/ownership?symbol=${encodeURIComponent(symbol)}&v=3`, loadOwnership, { revalidateOnFocus: false });
   const l = data?.latest ?? null;
   const noPromoter = data?.promoterStatus === "none";
   const asOf = l ? `${l.broadcastDate}T00:00:00Z` : null;
