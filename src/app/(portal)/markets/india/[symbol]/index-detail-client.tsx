@@ -10,7 +10,8 @@ import { MarketStatusBadge } from "@/components/feeds/market-status-badge";
 import { useFeedHub } from "@/hooks/use-feed-hub";
 import { useMarketStatus } from "@/hooks/use-market-status";
 import { formatPct } from "@/lib/format";
-import { fmtNum } from "@/lib/format-india";
+import { fmtChgPts, fmtNum } from "@/lib/format-india";
+import { computeChartMove } from "@/lib/chart-direction";
 import { INDIA_BENCHMARK_DEFS } from "@/lib/feeds/india/indices";
 import { indexSlugFromLabel } from "@/lib/india-index-meta";
 import { cn } from "@/lib/utils";
@@ -201,18 +202,19 @@ export function IndexDetailClient({
       "",
     );
     const areaData = `${pathData} L ${width},${height} L 0,${height} Z`;
-    const start = pts[0]?.value ?? 0;
-    const end = pts[pts.length - 1]?.value ?? 0;
+    // INVARIANT: colour + move come from computeChartMove (1D baseline = previous close). See README.
+    const move = computeChartMove(values, { isIntraday: activeTf === "1D", quote });
     return {
       coords,
       pathData,
       areaData,
       minVal,
       maxVal,
-      isUp: end >= start,
-      periodReturnPct: start > 0 ? (end - start) / start : 0,
+      isUp: move?.isUp ?? true,
+      periodReturnPct: move?.changePct ?? 0,
+      periodChange: move?.change ?? 0,
     };
-  }, [history]);
+  }, [history, activeTf, quote]);
 
   const fmtPrice = (v: number) =>
     v < 100 ? v.toFixed(2) : v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -266,7 +268,7 @@ export function IndexDetailClient({
                       : "bg-rose-500/15 text-rose-600",
                   )}
                 >
-                  {formatPct(quote.changePct)}
+                  {fmtChgPts(quote.change)} ({formatPct(quote.changePct)})
                 </span>
               </div>
             ) : (
@@ -342,7 +344,7 @@ export function IndexDetailClient({
               <div className="text-sm">
                 <span className="mr-1.5 text-muted-foreground">{activeTf} move:</span>
                 <span className={cn("font-bold", chart.isUp ? "text-emerald-600" : "text-rose-600")}>
-                  {formatPct(chart.periodReturnPct)}
+                  {fmtChgPts(chart.periodChange)} ({formatPct(chart.periodReturnPct)})
                 </span>
               </div>
             ) : null}

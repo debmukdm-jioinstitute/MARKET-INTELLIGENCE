@@ -11,6 +11,7 @@ import { useMarketStatus } from "@/hooks/use-market-status";
 import { INDIA_EQUITIES, type IndiaInstrument } from "@/lib/feeds/india/instruments";
 import { indexSlugFromLabel } from "@/lib/india-index-meta";
 import { formatPct } from "@/lib/format";
+import { fmtChgPts } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -87,7 +88,7 @@ export default function IndiaMarketsPage() {
                         isPos ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
                       )}
                     >
-                      {formatPct(idx.changePct)}
+                      {fmtChgPts(idx.change)} ({formatPct(idx.changePct)})
                     </span>
                   </div>
                   <p className="text-base font-bold tabular-nums text-foreground">{idx.price.toFixed(2)}</p>

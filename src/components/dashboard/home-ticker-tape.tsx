@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
+import { fmtMove } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
 
 interface HomeTickerTapeProps {
@@ -33,7 +34,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "nifty",
       name: "NIFTY 50",
       value: pulse?.nifty?.value ? pulse.nifty.value.toLocaleString("en-IN", { maximumFractionDigits: 1 }) : "—",
-      change: pulse?.nifty?.changePct != null ? `${pulse.nifty.changePct >= 0 ? "+" : ""}${pulse.nifty.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.nifty?.change, pulse?.nifty?.changePct),
       isUp: (pulse?.nifty?.changePct ?? 0) >= 0,
       neutral: pulse?.nifty?.changePct == null,
       href: "/markets/india",
@@ -43,7 +44,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "sensex",
       name: "SENSEX",
       value: pulse?.sensex?.value ? pulse.sensex.value.toLocaleString("en-IN", { maximumFractionDigits: 1 }) : "—",
-      change: pulse?.sensex?.changePct != null ? `${pulse.sensex.changePct >= 0 ? "+" : ""}${pulse.sensex.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.sensex?.change, pulse?.sensex?.changePct),
       isUp: (pulse?.sensex?.changePct ?? 0) >= 0,
       neutral: pulse?.sensex?.changePct == null,
       href: "/markets/india",
@@ -53,7 +54,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "banknifty",
       name: "BANK NIFTY",
       value: pulse?.bankNifty?.value ? pulse.bankNifty.value.toLocaleString("en-IN", { maximumFractionDigits: 1 }) : "—",
-      change: pulse?.bankNifty?.changePct != null ? `${pulse.bankNifty.changePct >= 0 ? "+" : ""}${pulse.bankNifty.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.bankNifty?.change, pulse?.bankNifty?.changePct),
       isUp: (pulse?.bankNifty?.changePct ?? 0) >= 0,
       neutral: pulse?.bankNifty?.changePct == null,
       href: "/markets/india",
@@ -63,7 +64,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "vix",
       name: "INDIA VIX",
       value: pulse?.indiaVix?.value ? pulse.indiaVix.value.toFixed(2) : "—",
-      change: pulse?.indiaVix?.changePct != null ? `${pulse.indiaVix.changePct >= 0 ? "+" : ""}${pulse.indiaVix.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.indiaVix?.change, pulse?.indiaVix?.changePct),
       isUp: (pulse?.indiaVix?.changePct ?? 0) < 0, // lower VIX is green for equity
       neutral: pulse?.indiaVix?.changePct == null,
       href: "/markets/india",
@@ -73,7 +74,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "sp500",
       name: "S&P 500",
       value: spx?.value ? spx.value.toLocaleString("en-US", { maximumFractionDigits: 1 }) : "—",
-      change: spx?.changePct != null ? `${spx.changePct >= 0 ? "+" : ""}${spx.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(spx?.change, spx?.changePct),
       isUp: (spx?.changePct ?? 0) >= 0,
       neutral: spx?.changePct == null,
       href: "/macro/indices",
@@ -83,7 +84,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "nasdaq",
       name: "NASDAQ 100",
       value: ndx?.value ? ndx.value.toLocaleString("en-US", { maximumFractionDigits: 1 }) : "—",
-      change: ndx?.changePct != null ? `${ndx.changePct >= 0 ? "+" : ""}${ndx.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(ndx?.change, ndx?.changePct),
       isUp: (ndx?.changePct ?? 0) >= 0,
       neutral: ndx?.changePct == null,
       href: "/macro/indices",
@@ -103,7 +104,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "us10y",
       name: "US 10Y YIELD",
       value: us10y?.value ? `${us10y.value.toFixed(2)}%` : "—",
-      change: us10y?.changePct != null ? `${us10y.changePct >= 0 ? "+" : ""}${us10y.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(us10y?.change, us10y?.changePct),
       isUp: (us10y?.changePct ?? 0) <= 0,
       neutral: us10y?.changePct == null,
       href: "/macro/yields",
@@ -113,7 +114,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "usdinr",
       name: "USD / INR",
       value: pulse?.usdInr?.value ? `₹${pulse.usdInr.value.toFixed(2)}` : "—",
-      change: pulse?.usdInr?.changePct != null ? `${pulse.usdInr.changePct >= 0 ? "+" : ""}${pulse.usdInr.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.usdInr?.change, pulse?.usdInr?.changePct),
       isUp: (pulse?.usdInr?.changePct ?? 0) <= 0, // lower USDINR is stronger Rupee
       neutral: pulse?.usdInr?.changePct == null,
       href: "/macro/currency",
@@ -123,7 +124,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "brent",
       name: "BRENT CRUDE",
       value: pulse?.brent?.value ? `$${pulse.brent.value.toFixed(2)}` : "—",
-      change: pulse?.brent?.changePct != null ? `${pulse.brent.changePct >= 0 ? "+" : ""}${pulse.brent.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.brent?.change, pulse?.brent?.changePct),
       isUp: (pulse?.brent?.changePct ?? 0) <= 0, // lower crude is positive for India
       neutral: pulse?.brent?.changePct == null,
       href: "/macro/commodities",
@@ -133,7 +134,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       id: "gold",
       name: "MCX GOLD",
       value: pulse?.gold?.value ? `₹${pulse.gold.value.toLocaleString("en-IN")}` : "—",
-      change: pulse?.gold?.changePct != null ? `${pulse.gold.changePct >= 0 ? "+" : ""}${pulse.gold.changePct.toFixed(2)}%` : "—",
+      change: fmtMove(pulse?.gold?.change, pulse?.gold?.changePct),
       isUp: (pulse?.gold?.changePct ?? 0) >= 0,
       neutral: pulse?.gold?.changePct == null,
       href: "/macro/commodities",
