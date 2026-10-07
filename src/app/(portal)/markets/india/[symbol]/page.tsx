@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { MetricInfo } from "@/components/ui/metric-info";
+import { MarketDriverNudges } from "@/components/guide/market-driver-nudges";
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
@@ -515,6 +516,8 @@ export default function TickerDetailPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+
+      <MarketDriverNudges marketKey={normalizedKey} name={meta.name} sectors={meta.sectors.length ? meta.sectors : NIFTY50_ALL_SECTORS} />
 
       {/* 2. Interactive Authentic Chart */}
       <div className="bento-card-shell space-y-3">

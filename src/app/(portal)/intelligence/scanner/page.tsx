@@ -12,6 +12,7 @@ import { ScannerQuotaBanner, ScannerQuotaUpgradePanel } from "@/components/payme
 import { useScannerQuota } from "@/hooks/use-scanner-quota";
 import { AuthRequiredError, fetchJsonAuth, isAuthRequiredError, isScannerQuotaError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
+import { BookDriverNudges } from "@/components/guide/book-driver-nudges";
 import { ScanPresets } from "@/components/scanner/scan-presets";
 import { ScanResults, type ScanRow } from "@/components/scanner/scan-results";
 import { StockDrawer } from "@/components/scanner/stock-drawer";
@@ -48,6 +49,7 @@ export default function ScannerPage() {
       void refreshQuota();
     },
   });
+  const scanItems = useMemo(() => (data?.results ?? []).map((r) => ({ symbol: r.symbol, name: r.name, weight: 1 })), [data?.results]);
   const needsAuth = isAuthRequiredError(error);
   const quotaBlocked = isScannerQuotaError(error);
   const current = data?.scanners.find((s) => s.id === active);
@@ -203,6 +205,7 @@ export default function ScannerPage() {
             ) : null}
           </div>
         ) : null}
+        {data?.results?.length ? <BookDriverNudges items={scanItems} scope="scan" title="What these stocks lean on" /> : null}
         {data?.results?.length ? (
           <ScanResults
             rows={data.results}

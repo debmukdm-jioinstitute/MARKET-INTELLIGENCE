@@ -3,15 +3,15 @@ import { feedFetch } from "@/lib/feeds/http";
 import { nseJson } from "@/lib/feeds/india/nse-session";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { isEarningsTranscript, parseNseSortDate } from "./announcements";
-import { abstractBullets, detectQuarter, extractHighlights, splitTranscript, SUMMARY_MODEL } from "./concall-nlp";
+import { detectQuarter, extractHighlights, splitTranscript } from "./concall-nlp";
 import { toneScore } from "./concall-tone";
 import { today } from "./http";
 import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./types";
 
 /**
  * Concall "said vs guided". Discovery → download once → PDF→text once → split
- * prepared remarks vs Q&A → extractive highlights + in-house lexicon tone (no model,
- * no network; optional abstractive polish only when CONCALL_HF=1). Only highlights and the source link are stored — never the
+ * prepared remarks vs Q&A → source-verbatim highlights + in-house lexicon tone
+ * (no model, no network). Only highlights and the source link are stored — never the
  * transcript text. Already-processed transcripts are skipped by URL hash, so a
  * PDF is never re-downloaded or re-parsed.
  */
@@ -31,13 +31,13 @@ const BROWSER_HEADERS = {
   Referer: "https://www.nseindia.com/",
 };
 
-type Raw = { symbol?: string | null; desc?: string | null; attchmntText?: string | null; attchmntFile?: string | null; sort_date?: string | null };
+export type Raw = { symbol?: string | null; desc?: string | null; attchmntText?: string | null; attchmntFile?: string | null; sort_date?: string | null };
 export type Candidate = { symbol: string; headline: string; url: string; broadcastIso: string };
 
 export const urlKey = (url: string) => `concall:${createHash("sha256").update(url).digest("hex").slice(0, 40)}`;
 
 /** Earnings-call transcripts for Nifty-500 names, max 2 per company, PDFs only, newest first. */
-export function findCandidates(raw: Raw[], seen: Record<string, string> = {}, universe: Set<string> = NIFTY): Candidate[] {
+export function findCandidates(raw: Raw[], seen: Record<string, string> = {}, universe: Set<string> | null = NIFTY, perCompanyLimit = PER_COMPANY): Candidate[] {
   const perCompany = new Map<string, number>();
   const out: Candidate[] = [];
   const sorted = [...raw].sort((a, b) => String(b.sort_date).localeCompare(String(a.sort_date)));
@@ -46,10 +46,10 @@ export function findCandidates(raw: Raw[], seen: Record<string, string> = {}, un
     const headline = (r.attchmntText ?? "").replace(/\s+/g, " ").trim();
     const url = r.attchmntFile?.trim();
     const broadcastIso = r.sort_date ? parseNseSortDate(r.sort_date) : null;
-    if (!symbol || !universe.has(symbol) || !url || !/\.pdf($|\?)/i.test(url) || !broadcastIso) continue;
+    if (!symbol || (universe !== null && !universe.has(symbol)) || !url || !/\.pdf($|\?)/i.test(url) || !broadcastIso) continue;
     if (!isEarningsTranscript(`${r.desc ?? ""} ${headline}`)) continue;
-    if (seen[urlKey(url)]) continue;
-    if ((perCompany.get(symbol) ?? 0) >= PER_COMPANY) continue;
+    if (seen[urlKey(url)] && !["no-transcript-text", "no-qa-split", "nothing-extractable", "no-speaker-structure"].includes(seen[urlKey(url)])) continue;
+    if ((perCompany.get(symbol) ?? 0) >= perCompanyLimit) continue;
     perCompany.set(symbol, (perCompany.get(symbol) ?? 0) + 1);
     out.push({ symbol, headline, url, broadcastIso });
   }
@@ -61,7 +61,7 @@ const istDmy = (ms: number) => {
   return `${String(d.getUTCDate()).padStart(2, "0")}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${d.getUTCFullYear()}`;
 };
 
-export async function pdfText(url: string): Promise<string> {
+async function pdfText(url: string): Promise<string> {
   const res = await feedFetch(url, { headers: BROWSER_HEADERS, timeoutMs: 60_000, attempts: 2 });
   if (!res.ok) throw new Error(`PDF HTTP ${res.status}`);
   const buf = new Uint8Array(await res.arrayBuffer());
@@ -74,7 +74,7 @@ export async function pdfText(url: string): Promise<string> {
 export type ConcallRow = {
   symbol: string;
   quarter: string | null;
-  transcriptDate: string;
+  transcriptDate: string | null;
   guidance: string[];
   growthDrivers: string[];
   risks: string[];
@@ -96,26 +96,18 @@ export function toneOfSplit(split: ReturnType<typeof splitTranscript>): { tonePr
 }
 
 /** Text → summary row, or a reason it cannot be summarised (cover letter only, no Q&A, scanned image…). */
-export async function summarizeTranscript(c: Candidate, text: string, opts: { hf?: boolean } = {}): Promise<{ row: ConcallRow } | { skip: string }> {
+export async function summarizeTranscript(c: Candidate, text: string, _opts: { hf?: boolean } = {}): Promise<{ row: ConcallRow } | { skip: string }> {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length < 4000) return { skip: "no-transcript-text" }; // typically a one-page cover letter linking elsewhere
   const split = splitTranscript(text);
-  if (!split.found || split.prepared.length === 0) return { skip: "no-qa-split" };
+  if (split.prepared.length === 0) return { skip: "no-speaker-structure" };
   const hl = extractHighlights(split);
   if (!hl.guidance.length && !hl.growthDrivers.length && !hl.risks.length && !hl.qaThemes.length) return { skip: "nothing-extractable" };
 
-  const generated = ["extractive-rules"];
-  let { growthDrivers, risks } = hl;
+  const generated = ["extractive-rules", ...(!split.found ? ["prepared-only"] : [])];
+  const { growthDrivers, risks } = hl;
   const { tonePrepared, toneQa } = toneOfSplit(split);
   if (tonePrepared !== null && toneQa !== null) generated.push(TONE_METHOD);
-  if (opts.hf ?? process.env.CONCALL_HF === "1") {
-    const [gd, rk] = [await abstractBullets(hl.growthDrivers), await abstractBullets(hl.risks)];
-    if (gd || rk) {
-      growthDrivers = gd ?? growthDrivers;
-      risks = rk ?? risks;
-      generated.push(SUMMARY_MODEL);
-    }
-  }
   return {
     row: {
       symbol: c.symbol,
@@ -140,7 +132,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
   const raw = await nseJson<Raw[]>(`/api/corporate-announcements?index=equities&from_date=${istDmy(now - LOOKBACK_DAYS * 86_400_000)}&to_date=${istDmy(now)}`);
   if (!Array.isArray(raw)) throw new Error("NSE corporate-announcements returned a non-array payload");
 
-  const candidates = findCandidates(raw, seen);
+  const candidates = findCandidates(raw, seen, null);
   const deadline = Date.now() + BUDGET_MS;
   const rows: ConcallRow[] = [];
   const watermarks: Record<string, string> = {};
@@ -156,7 +148,7 @@ async function run(ctx?: CollectorContext): Promise<SeriesResult[]> {
         watermarks[urlKey(c.url)] = out.row.contentHash;
       } else {
         skipped[out.skip] = (skipped[out.skip] ?? 0) + 1;
-        watermarks[urlKey(c.url)] = out.skip; // parsed once, nothing usable: never download it again
+        // Do not permanently blacklist cover letters or previously unsupported formats.
       }
     } catch {
       failed++; // transient (network / PDF): no watermark, retried next run

@@ -3,7 +3,10 @@
  * Clients only ever send the action name; point values from the client are ignored.
  */
 
-export type XpFrequency = "once" | "daily" | "repeat";
+export type XpFrequency = "once" | "daily" | "repeat" | "once_per_page" | "always";
+
+/** XP cost of one month of Plus redeemed with points. */
+export const PLUS_MONTHLY_XP_COST = 300;
 
 export interface XpActionDef {
   points: number;
@@ -22,6 +25,21 @@ export const XP_CATALOG: Record<string, XpActionDef> = {
   alert_coverage_3: { points: 20, label: "Have 3 rules watching the market", frequency: "once" },
   first_flag_spotted: { points: 10, label: "Spotted your first options flag", frequency: "once" },
   daily_checkin: { points: 5, label: "Checked the daily options flags", frequency: "daily" },
+  // -- XP economy: engagement --
+  daily_active_5: { points: 5, label: "Used Market Intelligence for 5+ minutes today", frequency: "daily" },
+  daily_active_10: { points: 5, label: "Used Market Intelligence for 10+ minutes today", frequency: "daily" },
+  streak_7: { points: 25, label: "7-day activity streak", frequency: "once_per_page" },
+  streak_14: { points: 50, label: "14-day activity streak", frequency: "once_per_page" },
+  streak_21: { points: 75, label: "21-day activity streak", frequency: "once_per_page" },
+  streak_30: { points: 100, label: "30-day activity streak", frequency: "once_per_page" },
+  search_used: { points: 5, label: "Used global search", frequency: "daily" },
+  company_deep_research: { points: 10, label: "Researched a company in depth", frequency: "daily" },
+  // -- XP economy: referrals --
+  referred_welcome: { points: 25, label: "Joined via a friend's referral", frequency: "once" },
+  referral_converted: { points: 50, label: "A friend you referred became a Plus member", frequency: "once_per_page" },
+  referral_bonus_buyer: { points: 25, label: "First Plus purchase as a referred member", frequency: "once" },
+  // -- XP economy: redemption (negative points; never deduped) --
+  redeem_plus_monthly: { points: -300, label: "Redeemed 300 XP for 1 month of Plus", frequency: "always" },
 };
 
 export interface XpLevel {

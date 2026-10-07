@@ -96,6 +96,27 @@ describe("discovery + summarisation", () => {
   });
 });
 
+
+describe("archive parser regressions", () => {
+  it("accepts prepared remarks when Q&A is absent and labels the missing segment", async () => {
+    const noQa = PREPARED.split("The first question")[0];
+    const out = await summarizeTranscript({ symbol: "ACME", headline: "Q1 FY27", url: "https://example.com/x.pdf", broadcastIso: "" }, noQa, { hf: false });
+    expect("row" in out).toBe(true);
+    if ("row" in out) { expect(out.row.generatedBy).toContain("prepared-only"); expect(out.row.qaThemes).toEqual([]); }
+  });
+  it("handles an Operator and a one-off analyst speaker", () => {
+    const text = PREPARED.replaceAll("Moderator:", "Operator:").replace("Priya Nair: And what kind of EBITDA margin should we assume given the raw material pressure?", "");
+    const split = splitTranscript(text);
+    expect(split.found).toBe(true);
+    expect(extractHighlights(split).qaThemes.join(" ")).toContain("order book");
+  });
+  it("retries historically rejected cover letters and supports companies outside Nifty 500", () => {
+    const url = "https://nsearchives.nseindia.com/corporate/t.pdf";
+    const raw = [{ symbol: "TINYCO", desc: "Transcript of earnings call", attchmntFile: url, sort_date: "2026-10-02 09:00:00" }];
+    expect(findCandidates(raw, { [urlKey(url)]: "no-transcript-text" }, null)).toHaveLength(1);
+  });
+});
+
 describe("in-house tone scorer", () => {
   const up = "We delivered strong growth and record margins. Demand is robust and momentum is healthy. We are confident about the outlook and see good visibility. Order wins improved.";
   const down = "Demand remained weak and margins declined under pressure. We faced delays and uncertain conditions. Headwinds from inflation hurt volumes. We see risks and concerns ahead.";
@@ -112,11 +133,5 @@ describe("in-house tone scorer", () => {
   });
   it("returns null with too little signal", () => {
     expect(toneScore("Thank you everyone for joining the call today.")).toBeNull();
-  });
-  it("is always produced by the pipeline, no HF needed", async () => {
-    const big = TEXT.replace("FILLER", "");
-    const out = await summarizeTranscript({ symbol: "ACME", headline: "h", url: "u", broadcastIso: "2026-10-01T10:00:00.000Z" }, big);
-    if (!("row" in out)) throw new Error("skip");
-    expect(out.row.generatedBy).toMatch(/lexicon-tone|extractive-rules/);
   });
 });

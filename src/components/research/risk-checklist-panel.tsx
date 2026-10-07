@@ -46,25 +46,25 @@ export function RiskChecklistPanel({ symbol }: { symbol: string }) {
               {data.items.map((i) => (
                 <li key={i.id} className={cn("rounded-md border p-3 text-sm", CHIP[i.severity].row)}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", CHIP[i.severity].cls)}>{CHIP[i.severity].text}</span>
+                    <span className={cn("rounded-full px-2.5 py-0.5 text-sm font-semibold", CHIP[i.severity].cls)}>{CHIP[i.severity].text}</span>
                     <span className="font-semibold text-foreground">{i.label}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {fmtDay(i.date)} · {i.source}
                     </span>
                     {i.link ? (
-                      <a href={i.link} target="_blank" rel="noopener noreferrer" className="ml-auto text-xs font-semibold text-primary hover:underline">
+                      <a href={i.link} target="_blank" rel="noopener noreferrer" className="ml-auto text-sm font-semibold text-primary hover:underline">
                         Open document ↗
                       </a>
                     ) : null}
                   </div>
                   <p className="mt-1 text-foreground">{i.explanation}</p>
-                  {i.quote ? <p className="mt-1 text-xs text-muted-foreground">Title: “{i.quote}”</p> : null}
+                  {i.quote ? <p className="mt-1 text-sm text-muted-foreground">Title: “{i.quote}”</p> : null}
                 </li>
               ))}
             </ul>
           )}
 
-          <div className="grid gap-3 text-xs text-muted-foreground sm:grid-cols-2">
+          <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
             <div className="rounded-md bg-muted p-3">
               <p className="mb-1 font-semibold text-foreground">What we check</p>
               <ul className="list-disc space-y-0.5 pl-4">

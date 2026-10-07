@@ -80,7 +80,7 @@ export function AnalystCredibilityPanel() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-sm uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 pr-3 font-semibold">Broker / house</th>
                 <th className="py-2 pr-3 font-semibold">Hit rate</th>
                 <th className="py-2 pr-3 font-semibold">Avg return</th>
@@ -102,17 +102,17 @@ export function AnalystCredibilityPanel() {
                     ) : (
                       <span className="text-muted-foreground">n/a</span>
                     )}
-                    <span className="ml-1 text-xs text-muted-foreground">({b.scored} scored)</span>
+                    <span className="ml-1 text-sm text-muted-foreground">({b.scored} scored)</span>
                   </td>
                   <td className={cn("py-2.5 pr-3 tabular-nums", signClass(b.avgReturnPct))}>
                     {b.avgReturnPct != null ? `${b.avgReturnPct >= 0 ? "+" : ""}${b.avgReturnPct}%` : "—"}
                   </td>
                   <td className="py-2.5 pr-3 tabular-nums">{b.sampleSize}</td>
-                  <td className="py-2.5 pr-3 text-xs text-muted-foreground">
+                  <td className="py-2.5 pr-3 text-sm text-muted-foreground">
                     B{b.buyCount} / S{b.sellCount} / H{b.holdCount}
                   </td>
-                  <td className="py-2.5 pr-3 text-xs text-muted-foreground">{b.topBasis ?? "—"}</td>
-                  <td className="py-2.5 text-xs text-muted-foreground">{b.typicalHorizon ?? "—"}</td>
+                  <td className="py-2.5 pr-3 text-sm text-muted-foreground">{b.topBasis ?? "—"}</td>
+                  <td className="py-2.5 text-sm text-muted-foreground">{b.typicalHorizon ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -122,12 +122,12 @@ export function AnalystCredibilityPanel() {
 
       {!loading && !error && recos.length > 0 ? (
         <div className="overflow-x-auto">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Recommendation detail (basis &amp; horizon)
           </p>
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-sm uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 pr-3 font-semibold">Broker</th>
                 <th className="py-2 pr-3 font-semibold">Call</th>
                 <th className="py-2 pr-3 font-semibold">Symbol</th>
@@ -140,30 +140,30 @@ export function AnalystCredibilityPanel() {
             <tbody>
               {recos.slice(0, 100).map((r) => (
                 <tr key={r.id} className="border-b border-border/60 align-top">
-                  <td className="py-2 pr-3 text-xs font-semibold">{r.broker ?? "—"}</td>
+                  <td className="py-2 pr-3 text-sm font-semibold">{r.broker ?? "—"}</td>
                   <td className="py-2 pr-3">
-                    <span className="mr-1 rounded bg-accent/50 px-1.5 py-0.5 text-xs font-bold uppercase">
+                    <span className="mr-1 rounded bg-accent/50 px-1.5 py-0.5 text-sm font-bold uppercase">
                       {r.rating}
                     </span>
                     <a
                       href={r.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline"
+                      className="text-sm text-primary hover:underline"
                     >
                       {r.title.length > 72 ? `${r.title.slice(0, 72)}…` : r.title}
                       <ExternalLink className="ml-1 inline size-3" />
                     </a>
                   </td>
-                  <td className="py-2 pr-3 tabular-nums text-xs">{r.symbol ?? "—"}</td>
-                  <td className="py-2 pr-3 tabular-nums text-xs">
+                  <td className="py-2 pr-3 tabular-nums text-sm">{r.symbol ?? "—"}</td>
+                  <td className="py-2 pr-3 tabular-nums text-sm">
                     {r.targetPrice != null ? `₹${r.targetPrice.toLocaleString("en-IN")}` : "—"}
                   </td>
-                  <td className="py-2 pr-3 text-xs text-muted-foreground">{r.basis ?? "—"}</td>
-                  <td className="py-2 pr-3 text-xs text-muted-foreground">{r.horizon}</td>
+                  <td className="py-2 pr-3 text-sm text-muted-foreground">{r.basis ?? "—"}</td>
+                  <td className="py-2 pr-3 text-sm text-muted-foreground">{r.horizon}</td>
                   <td
                     className={cn(
-                      "py-2 text-xs",
+                      "py-2 text-sm",
                       r.hit === true ? "text-emerald-700" : r.hit === false ? "text-rose-700" : "text-muted-foreground",
                     )}
                   >

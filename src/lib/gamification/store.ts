@@ -39,7 +39,7 @@ async function totalFor(email: string): Promise<number> {
   return total;
 }
 
-async function alreadyAwarded(email: string, action: string): Promise<boolean> {
+async function alreadyAwarded(email: string, action: string, page: string | null): Promise<boolean> {
   const db = sql();
   const freq = XP_CATALOG[action].frequency;
   if (freq === "once") {
@@ -58,18 +58,32 @@ async function alreadyAwarded(email: string, action: string): Promise<boolean> {
     `) as { one: number }[];
     return rows.length > 0;
   }
+  if (freq === "once_per_page") {
+    // Once per (action, page) pair — e.g. one streak_7 award per streak start
+    // date, one referral_converted award per referee email.
+    const rows = (await db`
+      SELECT 1 AS one FROM xp_events
+      WHERE user_email = ${email}
+        AND action = ${action}
+        AND page IS NOT DISTINCT FROM ${page}
+      LIMIT 1
+    `) as { one: number }[];
+    return rows.length > 0;
+  }
+  // "repeat" and "always" are never deduped.
   return false;
 }
 
 /**
  * Award XP for an action. Never trusts client-sent point values — points come
- * from the server catalog. Applies the once-ever / once-per-IST-day rules.
+ * from the server catalog. Applies the once-ever / once-per-IST-day /
+ * once-per-(action,page) rules; "repeat" and "always" actions bypass dedup.
  */
 export async function awardXp(email: string, action: string, page: string | null): Promise<AwardResult> {
   const def = XP_CATALOG[action];
   if (!def) throw new Error(`Unknown XP action: ${action}`);
   const total = await totalFor(email);
-  if (await alreadyAwarded(email, action)) {
+  if (await alreadyAwarded(email, action, page)) {
     return { awarded: false, points: 0, total, level: levelFor(total) };
   }
   const db = sql();

@@ -91,6 +91,44 @@ export async function grantProSubscription(email: string, planId: RazorpayPlanId
   };
 }
 
+/**
+ * Grant an explicit number of Plus days, stacking onto the later of now and
+ * the current expiry. Unlike grantProSubscription this never applies the
+ * launch-offer multiplier — used for XP redemptions and referral rewards,
+ * which are always exactly N days.
+ */
+export async function grantProDays(
+  email: string,
+  days: number,
+  planId: RazorpayPlanId = "pro_monthly",
+): Promise<ProEntitlement> {
+  if (!hasDatabase()) {
+    return { active: false, planId: null, expiresAt: null };
+  }
+  await ensureSchema();
+
+  const rows = (await sql()`
+    SELECT pro_expires_at FROM users WHERE email = ${email}
+  `) as { pro_expires_at: Date | string | null }[];
+
+  const existing = rows[0]?.pro_expires_at ? new Date(rows[0].pro_expires_at) : null;
+  const now = new Date();
+  const base = existing && existing.getTime() > now.getTime() ? existing : now;
+  const expires = new Date(base.getTime() + days * DAY_MS);
+
+  await sql()`
+    UPDATE users
+    SET pro_plan = ${planId}, pro_expires_at = ${expires.toISOString()}
+    WHERE email = ${email}
+  `;
+
+  return {
+    active: true,
+    planId,
+    expiresAt: expires.toISOString(),
+  };
+}
+
 export async function getRazorpayOrderMeta(
   orderId: string,
 ): Promise<{ planId: RazorpayPlanId | null; userEmail: string | null }> {

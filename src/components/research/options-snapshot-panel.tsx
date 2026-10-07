@@ -91,7 +91,7 @@ function OptionsSnapshotLoader({ symbol, underlyingKey }: { symbol: string; unde
       action={
         <Link
           href={`/markets/derivatives?underlying=${encodeURIComponent(underlyingKey)}&expiry=${encodeURIComponent(expiry)}`}
-          className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
         >
           Open full option chain & Greeks →
         </Link>
@@ -100,31 +100,31 @@ function OptionsSnapshotLoader({ symbol, underlyingKey }: { symbol: string; unde
       <div className="space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Put-Call Ratio (PCR)</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Put-Call Ratio (PCR)</span>
             <p className="text-2xl font-bold tabular-nums text-foreground mt-1">{pcr.toFixed(2)}</p>
-            <span className="text-xs text-muted-foreground">Total Put OI / Call OI</span>
+            <span className="text-sm text-muted-foreground">Total Put OI / Call OI</span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Max Pain Strike</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Max Pain Strike</span>
             <p className="text-2xl font-bold tabular-nums text-foreground mt-1">
               {maxPain != null ? fmtInr(maxPain) : "—"}
             </p>
-            <span className="text-xs text-muted-foreground">Minimal option writer loss strike</span>
+            <span className="text-sm text-muted-foreground">Minimal option writer loss strike</span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Total Call OI</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Total Call OI</span>
             <p className="text-2xl font-bold tabular-nums text-emerald-600 mt-1">{fmtNum(totalCallOi)}</p>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {topCall ? `Peak strike: ${fmtInr(topCall.strike)}` : "Across all strikes"}
             </span>
           </div>
 
           <div className="rounded-lg border border-border/60 bg-card p-3">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">Total Put OI</span>
+            <span className="text-sm uppercase tracking-wide text-muted-foreground">Total Put OI</span>
             <p className="text-2xl font-bold tabular-nums text-rose-600 mt-1">{fmtNum(totalPutOi)}</p>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {topPut ? `Peak strike: ${fmtInr(topPut.strike)}` : "Across all strikes"}
             </span>
           </div>
@@ -132,7 +132,7 @@ function OptionsSnapshotLoader({ symbol, underlyingKey }: { symbol: string; unde
 
         {/* Visual Call vs Put OI ratio bar */}
         <div>
-          <div className="flex justify-between text-xs text-muted-foreground mb-1.5 font-medium">
+          <div className="flex justify-between text-sm text-muted-foreground mb-1.5 font-medium">
             <span>Calls: {callPct.toFixed(1)}% ({fmtNum(totalCallOi)})</span>
             <span>Puts: {putPct.toFixed(1)}% ({fmtNum(totalPutOi)})</span>
           </div>
@@ -143,7 +143,7 @@ function OptionsSnapshotLoader({ symbol, underlyingKey }: { symbol: string; unde
         </div>
 
         {/* Neutral methodology note */}
-        <p className="text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-2">
+        <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-2">
           {pcrNote}
         </p>
       </div>

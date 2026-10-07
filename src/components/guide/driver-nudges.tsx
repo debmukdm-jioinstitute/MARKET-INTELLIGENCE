@@ -6,7 +6,7 @@ import { useDriverNudges } from "@/hooks/use-driver-nudges";
 import { usePublishMascotTip } from "@/components/mascot/mascot-bus";
 import { cn } from "@/lib/utils";
 import useSWR from "swr";
-import type { DriverCard } from "@/app/api/research/drivers/route";
+import type { DriverCard } from "@/lib/guide/drivers-service";
 import type { DriverKind } from "@/lib/guide/business-lines";
 
 const sign = (n: number, d = 2) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}`;
@@ -61,7 +61,7 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
       : null,
   );
 
-  if (!nudges.length && !cards.length) return loading ? <p className="text-xs text-muted-foreground">Checking what moves {symbol}…</p> : null;
+  if (!nudges.length && !cards.length) return loading ? <p className="text-sm text-muted-foreground">Checking what moves {symbol}…</p> : null;
 
   return (
     <Panel
@@ -73,16 +73,16 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
           {cards.map((c) => (
             <li key={c.id} className="rounded-lg border border-border bg-card/50 p-3 text-sm">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className={cn("rounded px-1.5 py-0.5 text-[11px] font-semibold", KIND_STYLE[c.kind])}>{KIND_LABEL[c.kind]}</span>
-                {c.active ? <span className="rounded bg-rose-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">In the news</span> : null}
+                <span className={cn("rounded px-1.5 py-0.5 text-xs font-semibold", KIND_STYLE[c.kind])}>{KIND_LABEL[c.kind]}</span>
+                {c.active ? <span className="rounded bg-rose-600 px-1.5 py-0.5 text-xs font-semibold text-white">In the news</span> : null}
               </div>
               <p className="mt-1.5 font-semibold">{c.label}</p>
               <p className="mt-1 text-muted-foreground">{c.why}</p>
               {c.evidence.length ? (
                 <ul className="mt-2 space-y-1.5 border-t border-border pt-2">
                   {c.evidence.slice(0, 2).map((e) => (
-                    <li key={e.link} className="text-xs">
-                      {e.company ? <span className="mr-1 rounded bg-primary/10 px-1 py-0.5 text-[10px] font-semibold text-primary">About {symbol}</span> : null}
+                    <li key={e.link} className="text-sm">
+                      {e.company ? <span className="mr-1 rounded bg-primary/10 px-1 py-0.5 text-xs font-semibold text-primary">About {symbol}</span> : null}
                       <a href={e.link} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                         {e.title}
                       </a>
@@ -94,10 +94,10 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">No fresh headline on this in the last 30 days.</p>
+                <p className="mt-2 border-t border-border pt-2 text-sm text-muted-foreground">No fresh headline on this in the last 30 days.</p>
               )}
               {c.authorityUrl ? (
-                <a href={c.authorityUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+                <a href={c.authorityUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
                   Source of truth: {c.authority} ↗
                 </a>
               ) : null}
@@ -105,7 +105,7 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
           ))}
         </ul>
       ) : null}
-      {nudges.length ? <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Market-wide sensitivities (measured)</h3> : null}
+      {nudges.length ? <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Market-wide sensitivities (measured)</h3> : null}
       <ul className="grid gap-3 md:grid-cols-3">
         {nudges.map((n) => {
           const imp = n.impliedPct;
@@ -114,14 +114,14 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-semibold">{n.label}</span>
                 {n.todayMove != null ? (
-                  <span className={cn("tabular-nums text-xs", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                  <span className={cn("tabular-nums text-sm", n.todayMove >= 0 ? "text-emerald-600" : "text-rose-600")}>
                     {sign(n.todayMove, 1)}
                     {n.todayUnit} today
                   </span>
                 ) : null}
               </div>
               <p className="mt-1 text-muted-foreground">{n.reason ?? n.headline}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Sector sensitivity {sign(n.beta)}
                 {n.significant ? " (statistically significant)" : ""}
                 {imp != null ? (
@@ -132,7 +132,7 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
                   </>
                 ) : null}
               </p>
-              <Link href={n.href} className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">
+              <Link href={n.href} className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
                 {n.cta} →
               </Link>
             </li>

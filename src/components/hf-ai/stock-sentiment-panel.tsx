@@ -146,11 +146,11 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${colors.dot} animate-pulse`} />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             News Sentiment · {symbol}
           </span>
         </div>
-        <span className={`text-xs font-bold uppercase ${colors.text}`}>
+        <span className={`text-sm font-bold uppercase ${colors.text}`}>
           {state.overall} · {Math.round(state.confidence * 100)}%
         </span>
       </div>
@@ -177,16 +177,16 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
           const hColors = h.label === "bullish" ? "text-emerald-600" : h.label === "bearish" ? "text-rose-600" : "text-amber-600";
           return (
             <div key={i} className="flex items-start gap-2">
-              <span className={`text-[10px] font-bold uppercase ${hColors} mt-0.5 shrink-0 w-14`}>
+              <span className={`text-xs font-bold uppercase ${hColors} mt-0.5 shrink-0 w-14`}>
                 {h.label}
               </span>
-              <span className="text-[11px] text-muted-foreground leading-tight line-clamp-1">{h.text}</span>
+              <span className="text-xs text-muted-foreground leading-tight line-clamp-1">{h.text}</span>
             </div>
           );
         })}
       </div>
 
-      <p className="text-[10px] text-muted-foreground text-right">
+      <p className="text-xs text-muted-foreground text-right">
         Powered by ProsusAI/FinBERT
       </p>
     </div>

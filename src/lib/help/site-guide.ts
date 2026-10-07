@@ -27,6 +27,7 @@ export const MCP_ACCOUNT_TOOLS: { name: string; label: string; note: string }[] 
   { name: "ask_site_assistant", label: "Site assistant", note: "One-shot Q&A." },
   { name: "get_data_export_info", label: "Data export", note: "Excel download path." },
   { name: "get_admin_system", label: "Admin console", note: "Admin role only." },
+  { name: "get_xp_summary", label: "XP summary", note: "XP balance, level, streak." },
 ];
 
 /** Still browser-first (streaming UI, OAuth, live order buttons). */

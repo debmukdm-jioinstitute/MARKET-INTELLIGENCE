@@ -130,17 +130,17 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
       action={
         <div className="flex items-center gap-2">
           {isStale ? (
-            <Badge variant="outline" className="border-amber-500/40 text-amber-600 bg-amber-500/10 text-xs">
+            <Badge variant="outline" className="border-amber-500/40 text-amber-600 bg-amber-500/10 text-sm">
               Stale scan ({asOfDate?.toLocaleDateString()})
             </Badge>
           ) : asOfDate ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               Scan run: {asOfDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           ) : null}
           <Link
             href="/intelligence/scanner"
-            className="text-xs font-semibold text-primary hover:underline ml-2"
+            className="text-sm font-semibold text-primary hover:underline ml-2"
           >
             All scanners →
           </Link>
@@ -151,7 +151,7 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
         {state.status === "empty" ? (
           <div className="rounded-lg border border-border/60 bg-muted/10 p-4">
             <p className="text-sm text-foreground font-medium">No active scanner triggers</p>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               {symbol} is not currently flagged by any of the 14 momentum, breakout, or reversal scanners in the latest universe scan ({run?.scanned ?? "400+"} symbols scanned).
             </p>
           </div>
@@ -177,7 +177,7 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-[10px] uppercase font-bold px-1.5 py-0",
+                            "text-xs uppercase font-bold px-1.5 py-0",
                             hit.bias === "positive" && "border-emerald-500 text-emerald-600",
                             hit.bias === "negative" && "border-rose-500 text-rose-600",
                             hit.bias === "watch" && "border-blue-500 text-blue-600",
@@ -187,16 +187,16 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
                         </Badge>
                       </div>
                       {hit.trigger ? (
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{hit.trigger}</p>
+                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{hit.trigger}</p>
                       ) : null}
                     </div>
                     {hit.changePct != null ? (
-                      <span className={cn("text-xs font-bold tabular-nums", hit.changePct >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                      <span className={cn("text-sm font-bold tabular-nums", hit.changePct >= 0 ? "text-emerald-600" : "text-rose-600")}>
                         {hit.changePct >= 0 ? "+" : ""}{hit.changePct.toFixed(2)}%
                       </span>
                     ) : null}
                   </div>
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/30 text-xs">
+                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/30 text-sm">
                     <span className="text-muted-foreground">Scanner ID: {hit.scanner}</span>
                     <Link
                       href={`/intelligence/scanner?scanner=${encodeURIComponent(hit.scanner)}`}
@@ -213,7 +213,7 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
 
         {/* Intentional Guest vs Signed-in state difference (Handbook Page 5 & 8) */}
         {!authenticated ? (
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
             <span className="text-muted-foreground">
               <strong>Guest mode:</strong> Showing public radar highlights. Sign in to create automated webhook/email alerts whenever {symbol} triggers any scanner.
             </span>
@@ -225,7 +225,7 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
             </Link>
           </div>
         ) : (
-          <div className="flex justify-end text-xs">
+          <div className="flex justify-end text-sm">
             <Link href="/alerts" className="text-primary hover:underline font-medium">
               Configure alert notification rules for {symbol} →
             </Link>

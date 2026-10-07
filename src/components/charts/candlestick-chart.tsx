@@ -1,6 +1,7 @@
 "use client";
 
 import type { Candle } from "@/lib/feeds/sources/upstox";
+import { chartFontFamily } from "@/lib/chart-font";
 import {
   CandlestickSeries,
   ColorType,
@@ -32,7 +33,8 @@ export function CandlestickChart({ candles, height = 280 }: { candles: Candle[];
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: "#5f6368",
-        fontSize: 11,
+        fontSize: 13,
+        fontFamily: chartFontFamily(),
       },
       grid: {
         vertLines: { color: "#e8eaed" },

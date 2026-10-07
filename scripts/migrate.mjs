@@ -18,6 +18,9 @@ console.log("🚀 Running database migrations for Market Intelligence...");
 async function migrate() {
   const sql = neon(conn);
   const start = Date.now();
+  await sql`CREATE TABLE IF NOT EXISTS transcript_archive_cache (
+    cache_key text PRIMARY KEY, payload jsonb NOT NULL, expires_at timestamptz NOT NULL
+  )`;
 
   console.log("  → Ensuring table: portfolio_settings...");
   await sql`

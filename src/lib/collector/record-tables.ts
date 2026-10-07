@@ -174,7 +174,7 @@ export const TABLES: TableSpec[] = [
     cols: [
       { f: "symbol", k: "text", req: true },
       { f: "quarter", k: "text" },
-      { f: "transcriptDate", k: "date", req: true },
+      { f: "transcriptDate", k: "date" },
       { f: "guidance", k: "textarr" },
       { f: "growthDrivers", k: "textarr" },
       { f: "risks", k: "textarr" },

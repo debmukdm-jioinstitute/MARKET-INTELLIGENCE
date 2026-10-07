@@ -43,7 +43,7 @@ export async function GET(req: Request) {
   const store = await cookies();
   const raw = store.get("mi_google_oauth")?.value;
   const pending = raw
-    ? verifySessionToken<{ state?: string; next?: string; exp?: number; privacyAccepted?: boolean }>(raw)
+    ? verifySessionToken<{ state?: string; next?: string; exp?: number; privacyAccepted?: boolean; ref?: string }>(raw)
     : null;
   if (!pending?.state || pending.state !== state || !pending.exp || pending.exp < Date.now()) {
     return authErrorRedirect(req, "google_state_invalid");
@@ -56,6 +56,7 @@ export async function GET(req: Request) {
     const profile = await fetchGoogleUserInfo(accessToken);
     const res = await sessionResponseForGoogleUser(profile, next, req.url, {
       privacyAccepted: pending.privacyAccepted === true,
+      referralCode: pending.ref,
     });
     res.cookies.set("mi_google_oauth", "", { httpOnly: true, path: "/", maxAge: 0 });
     return res;

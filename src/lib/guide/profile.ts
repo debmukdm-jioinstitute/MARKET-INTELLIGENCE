@@ -44,7 +44,7 @@ let nextSlot = 0;
 let pausedUntil = 0;
 const MIN_GAP_MS = 1_200;
 
-const STATIC = INDUSTRY_MAP as Record<string, [string, string] | null>;
+const STATIC = INDUSTRY_MAP as unknown as Record<string, [string, string] | null>;
 
 export function fetchStockProfile(symbol: string): Promise<StockProfile | null> {
   const key = symbol.toUpperCase();

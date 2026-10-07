@@ -701,6 +701,33 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_email)`;
 
+      // -- Gamification XP economy: daily engagement minutes + referrals --
+      await db`
+        CREATE TABLE IF NOT EXISTS daily_engagement (
+          user_email text NOT NULL,
+          day date NOT NULL,
+          minutes int NOT NULL DEFAULT 0,
+          last_ping timestamptz,
+          PRIMARY KEY (user_email, day)
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_daily_engagement_day ON daily_engagement(day)`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code text UNIQUE`;
+      await db`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by text`;
+      await db`ALTER TABLE signup_otps ADD COLUMN IF NOT EXISTS referral_code text`;
+      await db`
+        CREATE TABLE IF NOT EXISTS referrals (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          referrer_email text NOT NULL,
+          referee_email text NOT NULL UNIQUE,
+          referral_code text NOT NULL,
+          status text NOT NULL DEFAULT 'pending',
+          created_at timestamptz NOT NULL DEFAULT now(),
+          converted_at timestamptz
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_email)`;
+
       await ensureCompetitionSchema(db);
       schemaReady = true;
     } catch (e) {

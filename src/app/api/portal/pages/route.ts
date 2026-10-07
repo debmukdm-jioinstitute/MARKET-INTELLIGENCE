@@ -3,7 +3,12 @@ import { syncPortalPageRegistry, type PortalPageControlRow } from "@/lib/portal-
 import { buildPortalPageRegistry, DEFAULT_LOCK_MESSAGE } from "@/lib/portal-page-registry";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+// Served identically to every visitor (no session/cookie read anywhere in this
+// route), so it is ISR-cached instead of recomputed per request. Previously
+// force-dynamic: every open tab polled it every 60s and each hit was a billed
+// function invocation. The in-memory + public Cache-Control layers below stay
+// as second layers; admin control changes propagate within ~30s.
+export const revalidate = 30;
 
 const TTL_MS = 30_000;
 let cache: { at: number; payload: unknown } | null = null;

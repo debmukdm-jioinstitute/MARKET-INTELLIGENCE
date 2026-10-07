@@ -48,17 +48,17 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
             {r.broker ? (
-              <span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+              <span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 text-sm font-bold text-primary">
                 {r.broker}
               </span>
             ) : null}
 
             {r.report_type ? (
-              <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                 {r.report_type}
               </span>
             ) : (
-              <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <span className="rounded-md bg-accent/60 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                 {SOURCE_LABELS[r.source] ?? r.source}
               </span>
             )}
@@ -66,7 +66,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
             {reco ? (
               <span
                 className={cn(
-                  "rounded-md px-1.5 py-0.5 text-[11px] font-bold uppercase",
+                  "rounded-md px-1.5 py-0.5 text-xs font-bold uppercase",
                   reco === "BUY" && "border border-emerald-500/30 bg-emerald-500/15 text-emerald-600",
                   reco === "ACCUMULATE" && "border border-sky-500/30 bg-sky-500/15 text-sky-600",
                   reco === "HOLD" && "border border-amber-500/30 bg-amber-500/15 text-amber-600",
@@ -79,7 +79,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
           </div>
 
           <span
-            className="flex shrink-0 items-center gap-1 text-xs tabular-nums text-muted-foreground"
+            className="flex shrink-0 items-center gap-1 text-sm tabular-nums text-muted-foreground"
             title={r.published_at ? fmtDate(r.published_at) : undefined}
           >
             <Calendar className="size-3 opacity-60" />
@@ -91,7 +91,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
           {r.symbol ? (
             <Link
               href={`/research/${encodeURIComponent(r.symbol)}`}
-              className="mb-1 inline-block text-xs font-bold uppercase tracking-wider text-primary hover:underline"
+              className="mb-1 inline-block text-sm font-bold uppercase tracking-wider text-primary hover:underline"
             >
               {r.symbol} →
             </Link>
@@ -102,7 +102,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
         </div>
 
         {r.target_price || upside !== null ? (
-          <div className="flex flex-wrap items-center gap-2 border-t border-border/50 pt-1 text-xs">
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/50 pt-1 text-sm">
             {r.target_price ? (
               <div className="rounded bg-accent/40 px-2 py-1">
                 <span className="text-muted-foreground">Target: </span>
@@ -135,7 +135,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
         {r.consensus ? <ConsensusBar consensus={r.consensus} /> : null}
 
         {r.summary ? (
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{r.summary}</p>
+          <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{r.summary}</p>
         ) : null}
       </div>
 
@@ -145,7 +145,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
             href={effectivePdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-rose-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700"
           >
             <Download className="size-3.5" />
             Download PDF
@@ -155,7 +155,7 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
             href={r.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
           >
             Read note <ExternalLink className="size-3" />
           </a>
@@ -164,12 +164,12 @@ export function ResearchReportCard({ r }: { r: ResearchReportRow }) {
         {r.symbol ? (
           <Link
             href={`/research/${encodeURIComponent(r.symbol)}`}
-            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Company dossier →
           </Link>
         ) : (
-          <span className="text-[11px] text-muted-foreground">Source: {SOURCE_LABELS[r.source] ?? r.source}</span>
+          <span className="text-xs text-muted-foreground">Source: {SOURCE_LABELS[r.source] ?? r.source}</span>
         )}
       </div>
     </div>

@@ -59,7 +59,7 @@ function TargetRangeBar({ d }: { d: BrokerCallsResponse }) {
         <div className="absolute top-1/2 h-5 w-0.5 -translate-y-1/2 bg-primary" style={{ left: at(med) }} title={`Median target ${fmtInr(med)}`} />
         {cmp !== null ? <div className="absolute top-0 h-8 w-0.5 bg-foreground/70" style={{ left: at(cmp) }} title={`Current price ${fmtInr(cmp)}`} /> : null}
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-muted-foreground">
         <span>Lowest {fmtInr(lo)}</span>
         <span>
           <span className="font-semibold text-primary">| Median {fmtInr(med)}</span>
@@ -96,7 +96,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
           <div className="rounded-lg border border-border bg-card p-4">
             <p className="text-sm font-semibold text-foreground">{verdictText(data)}</p>
             {data.medianImpliedUpsidePct !== null ? (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Median target is {data.medianImpliedUpsidePct >= 0 ? "above" : "below"} the current price by {Math.abs(data.medianImpliedUpsidePct).toFixed(1)}% (a broker view, not a forecast).
               </p>
             ) : null}
@@ -104,7 +104,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
               {(Object.keys(BUCKET_LABEL) as RatingBucket[])
                 .filter((b) => data.distribution[b] > 0)
                 .map((b) => (
-                  <span key={b} className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", BUCKET_TONE[b])}>
+                  <span key={b} className={cn("rounded-full px-2.5 py-0.5 text-sm font-medium", BUCKET_TONE[b])}>
                     {BUCKET_LABEL[b]} · {data.distribution[b]}
                   </span>
                 ))}
@@ -117,7 +117,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="text-xs font-semibold text-primary hover:underline"
+            className="text-sm font-semibold text-primary hover:underline"
           >
             {open ? "Hide" : "Show"} per-broker table ({data.count})
           </button>
@@ -125,7 +125,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
           {open ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[34rem] text-left text-sm">
-                <thead className="text-xs text-muted-foreground">
+                <thead className="text-sm text-muted-foreground">
                   <tr className="border-b border-border">
                     <th className="py-2 pr-3 font-medium">Broker</th>
                     <th className="py-2 pr-3 font-medium">Rating</th>
@@ -140,7 +140,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
                     <tr key={c.sourceUrl} className="border-b border-border/60 last:border-0">
                       <td className="py-2 pr-3 font-medium text-foreground">{c.broker}</td>
                       <td className="py-2 pr-3">
-                        <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", BUCKET_TONE[c.bucket])}>{c.action}</span>
+                        <span className={cn("rounded-full px-2 py-0.5 text-sm font-medium", BUCKET_TONE[c.bucket])}>{c.action}</span>
                       </td>
                       <td className="py-2 pr-3 text-right tabular-nums">{c.targetPrice ? fmtInr(c.targetPrice) : "—"}</td>
                       <td className={cn("py-2 pr-3 text-right tabular-nums", c.impliedUpsidePct === null ? "text-muted-foreground" : c.impliedUpsidePct >= 0 ? "text-emerald-700" : "text-rose-700")}>
@@ -148,7 +148,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
                       </td>
                       <td className="py-2 pr-3 text-muted-foreground">{fmtDay(c.reportDate)}</td>
                       <td className="py-2">
-                        <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                        <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                           Article ↗
                         </a>
                       </td>
@@ -159,7 +159,7 @@ export function BrokerCallsPanel({ symbol }: { symbol: string }) {
             </div>
           ) : null}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Source:{" "}
             <a href={data.source.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
               {data.source.label} ↗

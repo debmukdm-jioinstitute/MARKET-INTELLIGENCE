@@ -2,7 +2,7 @@
 
 import { Lines } from "@/components/charts/terminal-charts";
 import { CandlestickChart } from "@/components/charts/candlestick-chart";
-import { DriverNudges } from "@/components/guide/driver-nudges";
+import { MarketDepthLadder } from "@/components/feeds/market-depth-ladder";
 import { DataInfo } from "@/components/feeds/data-info";
 import { KeyRatiosPanel } from "@/components/fundamentals/key-ratios-panel";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -20,6 +20,14 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { awardXp } from "@/lib/gamification/client";
+
+/**
+ * Session-level guard so a StrictMode double-mount (dev) doesn't fire the
+ * award twice. The server enforces the daily cap anyway; this just avoids the
+ * extra request.
+ */
+const deepResearchAwarded = new Set<string>();
 
 export default function ResearchSymbolPage() {
   const params = useParams();
@@ -27,6 +35,12 @@ export default function ResearchSymbolPage() {
   const [data, setData] = useState<ResearchDetailPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!symbol || deepResearchAwarded.has(symbol)) return;
+    deepResearchAwarded.add(symbol);
+    void awardXp("company_deep_research", symbol); // fire-and-forget, guests silently no-op
+  }, [symbol]);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,57 +75,34 @@ export default function ResearchSymbolPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        kicker="Investment research"
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox (India) with Yahoo / Massive / SEC fallbacks for US names."
       />
-      {q ? (
-        <div className="-mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-3xl tabular-nums">{fmtInr(q.ltp)}</span>
-          <span className={cn("text-sm", q.netChange >= 0 ? "text-emerald-600" : "text-rose-600")}>
-            {q.netChange >= 0 ? "+" : ""}
-            {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
-          </span>
-          <MetricInfo
-            id={symbol.toLowerCase()}
-            name={`${data!.name} (${symbol})`}
-            provider="Upstox / NSE Official Tick Stream"
-            sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
-            asOf={q.asOf}
-          />
-        </div>
-      ) : null}
       <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
           <Link href="/research" className="text-primary hover:underline">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
+        {symbol ? (
+          <Link
+            href={`/research/model/${encodeURIComponent(symbol)}`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-blue-600/40 bg-blue-600/10 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
+          >
+            Build financial model →
+          </Link>
+        ) : null}
       </div>
-
-      {data ? <DriverNudges symbol={symbol} name={data.name} /> : null}
-
-      {data?.about ? (
-        <Panel title="About">
-          <div className="flex gap-4">
-            {data.about.thumbnail ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={data.about.thumbnail} alt="" className="h-14 w-14 shrink-0 rounded object-contain" />
-            ) : null}
-            <div className="space-y-2 text-sm">
-              {data.about.description ? (
-                <p className="font-medium capitalize">{data.about.description}</p>
-              ) : null}
-              <p className="text-muted-foreground leading-relaxed">{data.about.extract}</p>
-              <a href={data.about.url} target="_blank" rel="noopener noreferrer" className="text-primary text-xs hover:underline">
-                Source: Wikipedia
-              </a>
-            </div>
-          </div>
-        </Panel>
-      ) : null}
 
       {loading ? <p className="text-sm text-muted-foreground">Loading research…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+
+      {symbol ? (
+        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
+          <SecurityRiskPanel symbol={symbol} />
+        </Panel>
+      ) : null}
 
       {/* FinBERT AI News Sentiment for this stock */}
       {data?.news?.length ? (
@@ -127,9 +118,30 @@ export default function ResearchSymbolPage() {
             <Badge variant="secondary">India · NSE</Badge>
             <Badge className="bg-emerald-500/20 text-emerald-600">Upstox live</Badge>
           </div>
-          <div className="grid gap-4">
-            <Panel title="Session">
-              <div className="mb-2 flex justify-end">
+          <div className="grid gap-4 xl:grid-cols-3">
+            <Panel title="Quote & depth" className="xl:col-span-2">
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-3xl tabular-nums">{fmtInr(q.ltp)}</p>
+                    <MetricInfo
+                      id={symbol.toLowerCase()}
+                      name={`${data.name} (${symbol})`}
+                      provider="Upstox / NSE Official Tick Stream"
+                      sourceUrl={`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(symbol)}`}
+                      asOf={q.asOf}
+                    />
+                  </div>
+                  <p
+                    className={cn(
+                      "text-sm",
+                      q.netChange >= 0 ? "text-emerald-600" : "text-rose-600",
+                    )}
+                  >
+                    {q.netChange >= 0 ? "+" : ""}
+                    {fmtInr(q.netChange)} ({fmtChgPct(q.ohlc.close ? q.netChange / q.ohlc.close : 0)})
+                  </p>
+                </div>
                 <DataInfo
                   source={{
                     provider: "Upstox",
@@ -139,7 +151,10 @@ export default function ResearchSymbolPage() {
                   hubSyncedAt={data.fetchedAt}
                 />
               </div>
-              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+              <MarketDepthLadder buy={q.depth.buy} sell={q.depth.sell} />
+            </Panel>
+            <Panel title="Session">
+              <dl className="grid grid-cols-2 gap-2 text-sm">
                 <Stat metricId="nav" k="Open" v={fmtInr(q.ohlc.open)} />
                 <Stat metricId="nav" k="Prev close" v={fmtInr(q.ohlc.close)} />
                 <Stat metricId="high52w" k="High" v={fmtInr(q.ohlc.high)} />
@@ -173,12 +188,6 @@ export default function ResearchSymbolPage() {
           newsSummary={data.intelligence.newsSummary}
           brokerResearch={data.intelligence.brokerResearch}
         />
-      ) : null}
-
-      {symbol ? (
-        <Panel title="Risk & events" subtitle="Volatility, drawdown, beta and upcoming events computed from the last year of daily prices.">
-          <SecurityRiskPanel symbol={symbol} />
-        </Panel>
       ) : null}
 
       {data?.sources.length ? (

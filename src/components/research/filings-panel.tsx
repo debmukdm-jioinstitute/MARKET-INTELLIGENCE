@@ -40,7 +40,7 @@ export function FilingsPanel({ symbol }: { symbol: string }) {
       subtitle="Material NSE announcements: results, board outcomes, ratings, management changes, deals, dividends, pledges."
       trust={{ source: "NSE India corporate announcements", note: "Exchange filings shown as filed — not investment advice" }}
       action={
-        <div className="inline-flex rounded-md border border-border p-0.5 text-xs font-semibold" role="group" aria-label="View">
+        <div className="inline-flex rounded-md border border-border p-0.5 text-sm font-semibold" role="group" aria-label="View">
           {(["cards", "timeline"] as const).map((v) => (
             <button
               key={v}
@@ -81,8 +81,8 @@ export function FilingsPanel({ symbol }: { symbol: string }) {
               {data.items.map((a) => (
                 <li key={`${a.broadcastDate}-${a.headline}`} className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">{a.category}</span>
-                    <time dateTime={a.broadcastDate} className="text-xs text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-sm font-medium text-foreground">{a.category}</span>
+                    <time dateTime={a.broadcastDate} className="text-sm text-muted-foreground">
                       {istDate(a.broadcastDate)}
                     </time>
                   </div>
@@ -96,7 +96,7 @@ export function FilingsPanel({ symbol }: { symbol: string }) {
               {data.items.map((a) => (
                 <li key={`${a.broadcastDate}-${a.headline}`} className="relative">
                   <span className="absolute -left-[1.62rem] top-1.5 size-2.5 rounded-full border-2 border-card bg-primary" aria-hidden />
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                     <time dateTime={a.broadcastDate}>{istDate(a.broadcastDate)}</time>
                     <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-foreground">{a.category}</span>
                   </div>
@@ -107,7 +107,7 @@ export function FilingsPanel({ symbol }: { symbol: string }) {
             </ol>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Source:{" "}
             <a href={data.nseUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
               NSE corporate announcements ↗
@@ -127,7 +127,7 @@ function Chip({ active, onClick, label }: { active: boolean; onClick: () => void
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
+        "rounded-full border px-2.5 py-0.5 text-sm font-medium transition-colors",
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground",
       )}
     >
@@ -139,7 +139,7 @@ function Chip({ active, onClick, label }: { active: boolean; onClick: () => void
 function SourceLink({ a, nseUrl }: { a: Announcement; nseUrl: string }) {
   const href = a.attachmentUrl ?? nseUrl;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="w-fit text-xs font-semibold text-primary hover:underline">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="w-fit text-sm font-semibold text-primary hover:underline">
       {a.attachmentUrl ? `${linkLabel(a.attachmentUrl)} ↗` : "NSE source ↗"}
     </a>
   );
