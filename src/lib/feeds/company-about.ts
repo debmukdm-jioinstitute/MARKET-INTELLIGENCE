@@ -5,6 +5,8 @@ export type CompanyAbout = {
   url: string;
   thumbnail: string | null;
   source: "Wikipedia" | "Screener.in";
+  /** Filing blurb quoting figures from more than two years ago. */
+  stale?: boolean;
 };
 
 export type AboutHints = { isin?: string | null; symbol?: string | null; market?: "IN" | "US" | string | null };
@@ -50,6 +52,29 @@ async function wikipediaByIsin(isin: string): Promise<CompanyAbout | null> {
 
 const decodeHtml = (s: string) => s.replace(/<sup>[\s\S]*?<\/sup>/g, "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
+/** Newest "as of <date>, <year>" year stated in a blurb, or null. Business descriptions often freeze figures from a long-ago filing. */
+export function statedYear(text: string): number | null {
+  const years = [...text.matchAll(/\b(?:as of|as on|as at)\b[^.]{0,40}?\b((?:19|20)\d{2})\b/gi)].map((m) => Number(m[1]));
+  return years.length ? Math.max(...years) : null;
+}
+
+export const isStale = (text: string, now = new Date().getFullYear()): boolean => {
+  const y = statedYear(text);
+  return y !== null && y < now - 2;
+};
+
+/** Drop sentences carrying figures dated more than two years ago ("As of December 31, 2020, X has 131,233 restaurants..."). */
+export function dropStaleFigures(text: string, now = new Date().getFullYear()): string {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => {
+      const y = statedYear(sentence);
+      return y === null || y >= now - 2;
+    })
+    .join(" ")
+    .trim();
+}
+
 /** Company-written business description from Screener (covers new listings and small caps Wikipedia lacks). */
 async function screenerAbout(symbol: string): Promise<CompanyAbout | null> {
   for (const path of ["consolidated/", ""]) {
@@ -59,7 +84,7 @@ async function screenerAbout(symbol: string): Promise<CompanyAbout | null> {
     const about = /<div class="sub show-more-box about"[^>]*>([\s\S]*?)<\/div>/.exec(html)?.[1];
     const overview = /<strong>Business Overview<\/strong>[\s\S]*?<br>([\s\S]*?)<\/p>/.exec(html)?.[1];
     const text = [about, overview].filter(Boolean).map((x) => decodeHtml(x!)).filter((x) => x.length > 40).join(" ");
-    if (text) return { title: symbol, description: "Business description (company filings, via Screener)", extract: text.slice(0, 900), url: `https://www.screener.in/company/${encodeURIComponent(symbol)}/`, thumbnail: null, source: "Screener.in" };
+    if (text) return { title: symbol, description: "Business description (company filings, via Screener)", extract: (dropStaleFigures(text) || text).slice(0, 900), stale: isStale(text), url: `https://www.screener.in/company/${encodeURIComponent(symbol)}/`, thumbnail: null, source: "Screener.in" };
   }
   return null;
 }
@@ -92,8 +117,12 @@ export async function fetchCompanyAbout(name: string, hints: AboutHints = {}): P
   if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
   let value: CompanyAbout | null = null;
   try { if (hints.isin) value = await wikipediaByIsin(hints.isin); } catch { value = null; }
-  if (!value && market === "IN" && hints.symbol) { try { value = await screenerAbout(hints.symbol); } catch { value = null; } }
+  let screener: CompanyAbout | null = null;
+  if (!value && market === "IN" && hints.symbol) { try { screener = await screenerAbout(hints.symbol); } catch { screener = null; } }
+  // A filing blurb that still quotes figures from years ago (or a former company name) loses to a current encyclopedia entry.
+  if (!value && screener && !screener.stale) value = screener;
   if (!value) { try { value = await wikipediaByName(name, market); } catch { value = null; } }
+  if (!value && screener) value = screener;
   cache.set(key, { at: Date.now(), value });
   return value;
 }
