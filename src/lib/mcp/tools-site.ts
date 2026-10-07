@@ -14,6 +14,7 @@ import { buildMacroTape } from "@/lib/macro/build-tape";
 import { buildWorldIndices } from "@/lib/macro/build-world-indices";
 import { buildCurrencyQuotes } from "@/lib/macro/build-currency-quotes";
 import { buildCommodityQuotes } from "@/lib/macro/build-commodity-quotes";
+import { buildIndiaBoardQuotes } from "@/lib/macro/build-india-board-quotes";
 import { buildIndiaDashboard } from "@/lib/feeds/india/build-dashboard";
 import { getMarketShiftsCached } from "@/lib/feeds/what-changed/cache";
 import { fetchLiveBreadth } from "@/lib/feeds/india/upstox-breadth";
@@ -232,6 +233,15 @@ export const SITE_TOOLS: Tool[] = [
     description: "Energy, metals and agriculture on the commodities board: last price, day change, volume and ranges (Yahoo Finance).",
     inputSchema: empty,
     run: () => buildCommodityQuotes(),
+  },
+  {
+    name: "get_india_board_quotes",
+    title: "India board quotes",
+    category: "Markets",
+    description:
+      "Day range, volume and 52-week range for India indices and the curated equity board (Yahoo Finance).",
+    inputSchema: empty,
+    run: () => buildIndiaBoardQuotes(),
   },
   {
     name: "get_market_holidays",
