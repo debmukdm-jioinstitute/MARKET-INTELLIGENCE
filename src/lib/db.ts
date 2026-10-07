@@ -743,6 +743,21 @@ export async function ensureSchema(): Promise<void> {
       `;
       await db`CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_email)`;
 
+      // -- Admin mission control: cron run journal --
+      await db`
+        CREATE TABLE IF NOT EXISTS cron_run_log (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          job_name text NOT NULL,
+          started_at timestamptz NOT NULL DEFAULT now(),
+          finished_at timestamptz,
+          status text NOT NULL DEFAULT 'running',
+          rows_written int NOT NULL DEFAULT 0,
+          error text,
+          trigger text NOT NULL DEFAULT 'schedule'
+        )
+      `;
+      await db`CREATE INDEX IF NOT EXISTS idx_cron_run_log_job ON cron_run_log(job_name, started_at DESC)`;
+
       await ensureCompetitionSchema(db);
       schemaReady = true;
     } catch (e) {
