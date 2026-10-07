@@ -1,4 +1,5 @@
 import { cronUnauthorized } from "@/lib/api-guard";
+import { withCronRun } from "@/lib/admin/cron-log";
 import { syncAllIndicatorCatalogs, syncStatus, syncTrackedData } from "@/lib/data360/sync";
 import { NextResponse } from "next/server";
 
@@ -13,6 +14,7 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const denied = cronUnauthorized(req);
   if (denied) return denied;
+  return withCronRun("data360", req, async () => {
   const mode = new URL(req.url).searchParams.get("mode");
   try {
     if (mode === "catalog") {
@@ -23,4 +25,7 @@ export async function GET(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
+  },
+    (b) => { const r = (b as { results?: unknown[] }).results; return Array.isArray(r) ? r.length : 0; },
+  );
 }
