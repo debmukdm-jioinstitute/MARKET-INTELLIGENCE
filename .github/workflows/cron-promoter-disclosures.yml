@@ -3,7 +3,7 @@ name: cron-promoter-disclosures
 # Moved off Vercel (Fluid Active CPU over quota). Deep-fetches the
 # promoter-disclosure feed and persists new items straight to Neon via the
 # shared lib code — zero Vercel compute.
-# Same UTC schedule the old vercel.json cron used: daily 05:00 UTC (10:30 IST).
+# Every 3h (was daily): NSE SAST / bulk-block / pledge APIs + news RSS, one batched upsert to Neon.
 #
 # NOTE: the Vercel route also warmed an in-memory feed cache
 # (setPromoterFeedSnapshot) — skipped here on purpose; an in-memory cache is
@@ -14,8 +14,12 @@ name: cron-promoter-disclosures
 
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "20 */3 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: promoter-disclosures
+  cancel-in-progress: false
 
 jobs:
   promoter-disclosures:

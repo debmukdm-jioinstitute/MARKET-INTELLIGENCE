@@ -1,6 +1,6 @@
 import type { PromoterActivityType } from "@/lib/promoters/types";
 
-export type PromoterFeedCollector = "google-news" | "native" | "firecrawl" | "crawl4ai";
+export type PromoterFeedCollector = "google-news" | "nse-api" | "native" | "firecrawl" | "crawl4ai";
 
 export type PromoterFeedChannel =
   | "NSE disclosures"
