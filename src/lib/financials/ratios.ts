@@ -78,7 +78,8 @@ export function deriveFinancialRatios(
   const pbt = pl.ProfitBeforeTax ?? pl.ProfitLossFromOrdinaryActivitiesBeforeTax ?? null;
   const ebit = pbt !== null && financeCosts !== null ? pbt + financeCosts : pbt;
 
-  // Operating profit: Revenue - operating expenses before interest and tax
+  // Operating profit, EBITDA-style (PBDIT convention, as on Screener.in):
+  // Revenue - operating expenses before interest AND depreciation.
   const exp = pl.Expenses ?? pl.OperatingExpenses ?? null;
   const dep = pl.DepreciationDepletionAndAmortisationExpense ?? 0;
   const opProfit =
@@ -112,8 +113,13 @@ export function deriveFinancialRatios(
       : null;
 
   // Leverage: Total Debt / Equity
-  const totalDebt =
-    (bs?.BorrowingsNoncurrent ?? 0) + (bs?.BorrowingsCurrent ?? 0) || (bs?.Borrowings ?? null);
+  // L1: use ?? not || — a zero-debt company (0 + 0) is genuinely 0.00x, not null.
+  // The old `||` made 0 falsy, killing both the value and the forensic
+  // "virtually debt-free" flag.
+  const hasSplitBorrowings = bs?.BorrowingsNoncurrent != null || bs?.BorrowingsCurrent != null;
+  const totalDebt = hasSplitBorrowings
+    ? (bs!.BorrowingsNoncurrent ?? 0) + (bs!.BorrowingsCurrent ?? 0)
+    : (bs?.Borrowings ?? null);
   const debtToEquity =
     totalDebt !== null && equity && equity > 0 ? totalDebt / equity : totalDebt === 0 ? 0 : null;
 

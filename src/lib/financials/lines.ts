@@ -134,7 +134,9 @@ export const GENERAL_CF: LineDef[] = [
   OUT("DividendsPaidClassifiedAsFinancingActivities", "Dividends paid"),
   T("CashFlowsFromUsedInFinancingActivities", "Net cash from financing activities"),
   T("IncreaseDecreaseInCashAndCashEquivalentsBeforeEffectOfExchangeRateChanges", "Net change in cash before FX"),
-  L("EffectOfExchangeRateChangesOnCashAndCashEquivalents", "Effect of exchange rate changes"),
+  // L10: FX effect is a "total" so it shows in the key-lines view — otherwise the
+  // before-FX → net-change reconciliation is invisible without opening the fold.
+  T("EffectOfExchangeRateChangesOnCashAndCashEquivalents", "Effect of exchange rate changes"),
   T("IncreaseDecreaseInCashAndCashEquivalents", "Net change in cash"),
 ];
 
@@ -185,7 +187,11 @@ export const BANK_BS: LineDef[] = [
 
 export const LAYOUT_LINES: Record<Layout, { pl: LineDef[]; bs: LineDef[]; cf: LineDef[] }> = {
   general: { pl: GENERAL_PL, bs: GENERAL_BS, cf: GENERAL_CF },
-  bank: { pl: BANK_PL, bs: BANK_BS, cf: [] },
+  // L11: bank cash-flow filings use the same in-capmkt/in-bse-fin element names
+  // (verified live against HDFCBANK's consolidated FY24 audited XBRL), so the
+  // general CF line defs apply. Quarterly bank filings carry no CF tags, so
+  // bank CF columns only appear where the filing actually has them.
+  bank: { pl: BANK_PL, bs: BANK_BS, cf: GENERAL_CF },
 };
 
 export const lineLabel = (layout: Layout, tag: string): string | null => {

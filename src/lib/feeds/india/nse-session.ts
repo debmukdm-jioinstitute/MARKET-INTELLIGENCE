@@ -64,3 +64,33 @@ export async function nseJson<T>(path: string, opts: NseFetchOpts = {}): Promise
   if (!res.ok) throw new Error(`NSE ${path} HTTP ${res.status}`);
   return res.json() as Promise<T>;
 }
+
+const XML_HEADERS = {
+  ...BROWSER_HEADERS,
+  Accept: "application/xml,text/xml,*/*",
+};
+
+/**
+ * Text fetch for NSE archive files (XBRL). Reuses the session cookie and
+ * retries like nseJson — the old single-attempt bare fetch dropped filings
+ * that a second attempt would have delivered.
+ */
+export async function nseText(url: string, opts: NseFetchOpts = {}): Promise<string | null> {
+  await ensureNseSession(opts);
+  try {
+    const res = await feedFetch(url, {
+      headers: {
+        ...XML_HEADERS,
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+      timeoutMs: opts.timeoutMs ?? 20_000,
+      attempts: opts.attempts ?? 2,
+      signal: opts.signal,
+    });
+    mergeSetCookie(res);
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}

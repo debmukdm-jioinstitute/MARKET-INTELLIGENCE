@@ -39,6 +39,25 @@ const DAY = 86_400_000;
 const day = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Quarterly filings carry the balance sheet and cash flow in YTD duration
+ * contexts; the service drops YTD periods to avoid double-counting P&L, so
+ * without this the quarterly BS/CF (and quarterly ROE, D/E, current ratio,
+ * CFO/NP) would be empty for every stock. Moves YTD balance-sheet and cash
+ * flow onto the quarter ending on the same date. P&L is untouched.
+ */
+export function attachYtdStatements(periods: ParsedPeriod[]): ParsedPeriod[] {
+  const quarters = periods.filter((p) => p.kind === "quarter");
+  for (const y of periods) {
+    if (y.kind !== "ytd") continue;
+    const q = quarters.find((p) => p.end === y.end);
+    if (!q) continue;
+    if (q.bs === null && y.bs !== null) q.bs = y.bs;
+    if (q.cf === null && y.cf !== null) q.cf = y.cf;
+  }
+  return periods;
+}
+
 export function periodKind(start: string, end: string): PeriodKind {
   const days = Math.round((day(end) - day(start)) / DAY) + 1;
   if (days <= 100) return "quarter";
@@ -146,6 +165,11 @@ export function parseResultsXbrl(xml: string): ParsedResults | null {
     const ending = periods.filter((p) => p.end === instant).sort((a, b) => day(a.start) - day(b.start));
     if (ending[0]) ending[0].bs = bs;
   }
+
+  // Quarterly filings carry the balance sheet and cash flow in YTD duration
+  // contexts; the service drops YTD periods to avoid double-counting P&L,
+  // so attach YTD balance-sheet and cash flow onto the matching quarter.
+  attachYtdStatements(periods);
 
   const nature = textFact(xml, "NatureOfReportStandaloneConsolidated")?.toLowerCase() ?? "";
   const basis: Basis = nature.startsWith("consolidated") ? "consolidated" : "standalone";
