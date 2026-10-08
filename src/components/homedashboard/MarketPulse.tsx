@@ -149,7 +149,7 @@ function PulseIndexCard({
       isIntraday: tf === "1D",
       quote: dayQuote,
     });
-  }, [values, tf, quote?.value, quote?.change]);
+  }, [values, tf, quote]);
 
   const chartUp = rangeMove?.isUp ?? dailyUp;
   const chartDown = rangeMove != null ? !rangeMove.isUp && rangeMove.change !== 0 : dailyDown;
