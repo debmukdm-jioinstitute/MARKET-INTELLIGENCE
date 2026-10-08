@@ -9,6 +9,7 @@
  */
 
 import { hfInfer } from "@/lib/hf/client";
+import { scoreTextRules } from "@/lib/hf/rules-sentiment";
 
 export type SentimentLabel = "positive" | "negative" | "neutral";
 
@@ -62,49 +63,21 @@ export async function classifyFinancialSentiment(texts: string[]): Promise<FinBe
   }
 }
 
+/**
+ * Rule-based fallback when the FinBERT API is unavailable.
+ *
+ * Delegates to the weighted finance-phrase engine in ./rules-sentiment
+ * (whole-word matching, negation handling, percent-move scaling) and tags
+ * the result so the UI can keep the honest "Keyword estimate" label.
+ */
 function ruleBasedSentimentFallback(text: string): FinBertResult {
-  const lower = text.toLowerCase();
-  const posWords = ["profit", "gain", "surge", "growth", "beat", "record", "jump", "bullish", "buy", "up", "high", "positive", "expansion", "dividend"];
-  const negWords = ["loss", "fall", "drop", "decline", "miss", "plunge", "down", "bearish", "sell", "fraud", "downgrade", "negative", "debt", "risk", "warning"];
-
-  let posCount = 0;
-  let negCount = 0;
-  for (const w of posWords) if (lower.includes(w)) posCount++;
-  for (const w of negWords) if (lower.includes(w)) negCount++;
-
-  if (posCount > negCount) {
-    const score = Math.min(0.6 + posCount * 0.1, 0.95);
-    return {
-      label: "positive",
-      score,
-      scores: [
-        { label: "positive", score },
-        { label: "neutral", score: (1 - score) * 0.7 },
-        { label: "negative", score: (1 - score) * 0.3 },
-      ],
-    };
-  } else if (negCount > posCount) {
-    const score = Math.min(0.6 + negCount * 0.1, 0.95);
-    return {
-      label: "negative",
-      score,
-      scores: [
-        { label: "negative", score },
-        { label: "neutral", score: (1 - score) * 0.7 },
-        { label: "positive", score: (1 - score) * 0.3 },
-      ],
-    };
-  } else {
-    return {
-      label: "neutral",
-      score: 0.8,
-      scores: [
-        { label: "neutral", score: 0.8 },
-        { label: "positive", score: 0.1 },
-        { label: "negative", score: 0.1 },
-      ],
-    };
-  }
+  const r = scoreTextRules(text);
+  return {
+    label: r.label,
+    score: r.score,
+    scores: r.scores,
+    engine: "rules" as const,
+  };
 }
 
 /**

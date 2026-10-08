@@ -81,6 +81,9 @@ export const SYMBOL_NEGATIVE_ALIASES: Record<string, string[]> = {
   ADANIPORTS: ["adani power", "adani green", "adani enterprise", "adani total gas", "adani wilmar", "adani energy"],
   BAJFINANCE: ["bajaj auto", "bajaj electricals", "bajaj hindusthan"],
   BAJAJFINSV: ["bajaj auto", "bajaj electricals", "bajaj hindusthan"],
+  // 2-letter ticker "LT" matches "LT Foods" (a different listed company) via word boundary —
+  // must be excluded or Larsen & Toubro's feed fills with food-company news.
+  LT: ["lt foods"],
 };
 
 export function isNewsArticleRelevantForSymbol(
