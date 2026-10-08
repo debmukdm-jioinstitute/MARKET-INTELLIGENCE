@@ -4,6 +4,7 @@ import { nseJson } from "@/lib/feeds/india/nse-session";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { isEarningsTranscript, parseNseSortDate } from "./announcements";
 import { detectQuarter, extractHighlights, splitTranscript } from "./concall-nlp";
+import type { QaItem } from "@/lib/research/concall-qa";
 import { toneScore } from "./concall-tone";
 import { today } from "./http";
 import type { Collector, CollectorContext, RecordBatch, SeriesResult } from "./types";
@@ -79,6 +80,7 @@ export type ConcallRow = {
   growthDrivers: string[];
   risks: string[];
   qaThemes: string[];
+  qaPairs?: QaItem[];
   tonePrepared: number | null;
   toneQa: number | null;
   sourceUrl: string;
@@ -117,6 +119,7 @@ export async function summarizeTranscript(c: Candidate, text: string, _opts: { h
       growthDrivers,
       risks,
       qaThemes: hl.qaThemes,
+      qaPairs: hl.qaPairs,
       tonePrepared,
       toneQa,
       sourceUrl: c.url,

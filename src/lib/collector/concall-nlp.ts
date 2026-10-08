@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { hfInfer } from "@/lib/hf/client";
+import { analyzeAnswerSentiment, type QaItem } from "@/lib/research/concall-qa";
 
 /**
  * Concall transcript → "said vs guided" structure.
@@ -129,7 +130,13 @@ function top(sents: string[], weights: Map<string, number>, total: number, k: nu
   return picked;
 }
 
-export type Highlights = { guidance: string[]; growthDrivers: string[]; risks: string[]; qaThemes: string[] };
+export type Highlights = {
+  guidance: string[];
+  growthDrivers: string[];
+  risks: string[];
+  qaThemes: string[];
+  qaPairs?: QaItem[];
+};
 
 /**
  * Pure highlight extraction. Guidance must be quantitative (a number with a unit, percent, rupee or period).
@@ -154,7 +161,55 @@ export function extractHighlights(split: Split): Highlights {
   const asked = split.qa.filter((t) => t.speaker !== "Moderator" && split.analysts.has(t.speaker)).flatMap((t) => sentencesOf(t.text)).filter((s) => QUESTION.test(s));
   const qaPos = new Map(asked.map((s, i) => [s, i]));
   const qaThemes = top(asked, termWeights(asked), asked.length, 5, qaPos);
-  return { guidance: g, growthDrivers, risks, qaThemes };
+
+  // Extract management answers corresponding to each asked question
+  const qaPairs: QaItem[] = [];
+  for (const q of qaThemes) {
+    const qPrefix = q.slice(0, 35).toLowerCase();
+    const qTurnIdx = split.qa.findIndex((t) => t.text.toLowerCase().includes(qPrefix));
+    if (qTurnIdx >= 0) {
+      const qTurn = split.qa[qTurnIdx];
+      let mgmtSpeaker;
+      const ansParts = [];
+      for (let j = qTurnIdx + 1; j < split.qa.length; j++) {
+        const nextTurn = split.qa[j];
+        if (/^(Moderator|Operator)$/i.test(nextTurn.speaker)) continue;
+        if (split.analysts.has(nextTurn.speaker) && ansParts.length > 0) break;
+        if (!mgmtSpeaker && !split.analysts.has(nextTurn.speaker)) {
+          mgmtSpeaker = nextTurn.speaker;
+        }
+        const cleanText = nextTurn.text.replace(PAGE_NOISE, " ").replace(/\s+/g, " ").trim();
+        if (cleanText.length < 25) {
+          ansParts.push(cleanText);
+          continue;
+        }
+        const sents = sentencesOf(cleanText);
+        if (sents.length > 0) {
+          ansParts.push(sents.slice(0, 3).join(" "));
+          break;
+        } else {
+          ansParts.push(cleanText);
+          break;
+        }
+      }
+      const fullAnswer = ansParts.join(" ").trim();
+      if (fullAnswer) {
+        const sentiment = analyzeAnswerSentiment(fullAnswer);
+        qaPairs.push({
+          question: q,
+          answer: fullAnswer,
+          analystSpeaker: qTurn.speaker,
+          managementSpeaker: mgmtSpeaker ?? "Management Response",
+          tone: sentiment.tone,
+          toneScore: sentiment.score,
+          posCues: sentiment.posCues,
+          negCues: sentiment.negCues,
+        });
+      }
+    }
+  }
+
+  return { guidance: g, growthDrivers, risks, qaThemes, qaPairs };
 }
 
 /* ------------------------------------------------------------------ */

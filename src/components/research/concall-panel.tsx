@@ -2,8 +2,9 @@
 
 import { Panel } from "@/components/layout/page-header";
 import { Fold, Takeaway, type Tone } from "@/components/guide/explain";
+import { resolveQaPairsForSummary, type QaItem } from "@/lib/research/concall-qa";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 type Summary = {
@@ -13,6 +14,7 @@ type Summary = {
   growthDrivers: string[];
   risks: string[];
   qaThemes: string[];
+  qaPairs?: QaItem[];
   tonePrepared: number | null;
   toneQa: number | null;
   toneDelta: number | null;
@@ -62,6 +64,97 @@ function Bullets({ items, quoted }: { items: string[]; quoted: boolean }) {
   );
 }
 
+function QaBentoList({ items }: { items: QaItem[] }) {
+  if (!items.length) return <p className="text-sm text-muted-foreground">None picked out of this call.</p>;
+
+  return (
+    <div className="space-y-3.5">
+      {items.map((item, idx) => {
+        const isPositive = item.tone === "positive";
+        const isNegative = item.tone === "negative";
+
+        return (
+          <div
+            key={idx}
+            className={cn(
+              "group relative flex flex-col justify-between overflow-hidden rounded-xl p-4 transition-all duration-200",
+              // Positive tone: light green tinted subtle
+              isPositive && "border border-emerald-300/70 bg-emerald-50/50 shadow-xs hover:border-emerald-400 hover:shadow-[0_8px_20px_-6px_rgba(16,185,129,0.18)] dark:border-emerald-800/50 dark:bg-emerald-950/20",
+              // Negative tone: light red subtle glass morphism 3D design
+              isNegative && "backdrop-blur-md border border-rose-300/80 bg-rose-50/65 shadow-[0_10px_25px_-4px_rgba(244,63,94,0.18),0_2px_4px_-1px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.85)] hover:shadow-[0_14px_32px_-6px_rgba(244,63,94,0.28),inset_0_1px_1px_rgba(255,255,255,0.95)] hover:-translate-y-0.5 ring-1 ring-white/60 dark:border-rose-800/60 dark:bg-rose-950/30 dark:shadow-[0_10px_25px_-4px_rgba(244,63,94,0.3),inset_0_1px_1px_rgba(255,255,255,0.08)] dark:ring-rose-500/10",
+              // Neutral tone: subtle neutral card
+              !isPositive && !isNegative && "border border-border/80 bg-card/75 shadow-xs hover:border-border hover:shadow-md backdrop-blur-xs"
+            )}
+          >
+            {/* Top row: Analyst attribution & Sentiment pill badge */}
+            <div className="flex items-center justify-between gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium tracking-wide",
+                  isPositive && "bg-emerald-100/90 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
+                  isNegative && "bg-rose-100/90 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
+                  !isPositive && !isNegative && "bg-muted text-muted-foreground"
+                )}
+              >
+                <span className="text-[11px]">❓</span>
+                <span className="truncate max-w-[240px]">{item.analystSpeaker || `Analyst Question ${idx + 1}`}</span>
+              </span>
+
+              {/* Predefined Sentiment Badge */}
+              {isPositive ? (
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 shadow-xs">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Positive tone {typeof item.toneScore === "number" && item.toneScore !== 0 ? `(${item.toneScore > 0 ? "+" : ""}${item.toneScore.toFixed(2)})` : ""}
+                </span>
+              ) : isNegative ? (
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300 shadow-xs">
+                  <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  Cautious tone {typeof item.toneScore === "number" && item.toneScore !== 0 ? `(${item.toneScore.toFixed(2)})` : ""}
+                </span>
+              ) : (
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted/70 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  Neutral tone
+                </span>
+              )}
+            </div>
+
+            {/* Analyst Question Body */}
+            <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
+              “{item.question}”
+            </p>
+
+            {/* Management Answer Nested Bento Box */}
+            <div className="mt-3.5 pt-3 border-t border-border/40">
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground/90">
+                  <span className="inline-flex size-4.5 items-center justify-center rounded-full bg-primary/10 text-xs">
+                    👔
+                  </span>
+                  <span>{item.managementSpeaker || "Management Response"}</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                  Management Answer
+                </span>
+              </div>
+              <div
+                className={cn(
+                  "rounded-lg p-3 text-sm leading-relaxed",
+                  isPositive && "bg-white/80 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/40 text-foreground shadow-xs",
+                  isNegative && "bg-white/85 dark:bg-rose-950/35 border border-rose-200/70 dark:border-rose-800/40 text-foreground shadow-xs backdrop-blur-xs",
+                  !isPositive && !isNegative && "bg-muted/40 border border-border/40 text-foreground"
+                )}
+              >
+                <p>{item.answer}</p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ConcallPanel({ symbol }: { symbol: string }) {
   const [market, setMarket] = useState<"IN" | "US">("IN");
   const { data, error, isLoading } = useSWR<ConcallResponse>(`/api/research/concall?symbol=${encodeURIComponent(symbol)}&market=${market}`, loadConcall, { revalidateOnFocus: false });
@@ -71,6 +164,8 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
   const usedModel = s ? /finbert|distilbart/i.test(s.generatedBy) : false;
   const abstractive = s ? /distilbart/i.test(s.generatedBy) : false;
   const delta = s?.toneDelta ?? null;
+
+  const qaItems = useMemo(() => (s ? resolveQaPairsForSummary(s) : []), [s]);
 
   return (
     <Panel
@@ -107,8 +202,15 @@ export function ConcallPanel({ symbol }: { symbol: string }) {
               <Bullets items={s.guidance} quoted />
             </section>
             <section>
-              <h3 className="mb-2 text-base font-semibold text-foreground">What analysts pushed on</h3>
-              <Bullets items={s.qaThemes} quoted />
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-base font-semibold text-foreground">What analysts pushed on</h3>
+                {qaItems.length > 0 ? (
+                  <span className="rounded-full bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    {qaItems.length} Q&amp;A highlights
+                  </span>
+                ) : null}
+              </div>
+              <QaBentoList items={qaItems} />
             </section>
           </div>
 

@@ -3,9 +3,10 @@ import { BlockList, isIP } from "node:net";
 import { ensureSchema, hasDatabase, sql, toDateString } from "@/lib/db";
 import { findCandidates, summarizeTranscript, type Candidate, type ConcallRow } from "@/lib/collector/concalls";
 import { detectQuarter } from "@/lib/collector/concall-nlp";
+import { resolveQaPairsForSummary, type QaItem } from "@/lib/research/concall-qa";
 
 export type Market = "IN" | "US";
-export type Summary = Omit<ConcallRow, "contentHash"> & { toneDelta: number | null };
+export type Summary = Omit<ConcallRow, "contentHash"> & { toneDelta: number | null; qaPairs?: QaItem[] };
 export type Archive = {
   symbol: string; market: Market; dbConfigured: boolean;
   summary: Summary | null; history: Summary[];
@@ -206,7 +207,10 @@ async function stored(symbol: string): Promise<Summary[]> {
   if (!hasDatabase()) return [];
   await ensureSchema();
   const rows = await sql()`SELECT * FROM concall_summaries WHERE symbol = ${symbol} ORDER BY transcript_date DESC NULLS LAST, created_at DESC LIMIT 8`;
-  return rows.map((r) => ({ symbol, quarter: r.quarter, transcriptDate: r.transcript_date ? toDateString(r.transcript_date) : null, guidance: r.guidance ?? [], growthDrivers: r.growth_drivers ?? [], risks: r.risks ?? [], qaThemes: r.qa_themes ?? [], tonePrepared: r.tone_prepared == null ? null : Number(r.tone_prepared), toneQa: r.tone_qa == null ? null : Number(r.tone_qa), toneDelta: r.tone_delta == null ? (r.tone_prepared == null || r.tone_qa == null ? null : Math.round((Number(r.tone_qa) - Number(r.tone_prepared)) * 1000) / 1000) : Number(r.tone_delta), sourceUrl: r.source_url, generatedBy: r.generated_by ?? "extractive-rules" }));
+  return rows.map((r) => {
+    const row = { symbol, quarter: r.quarter, transcriptDate: r.transcript_date ? toDateString(r.transcript_date) : null, guidance: r.guidance ?? [], growthDrivers: r.growth_drivers ?? [], risks: r.risks ?? [], qaThemes: r.qa_themes ?? [], tonePrepared: r.tone_prepared == null ? null : Number(r.tone_prepared), toneQa: r.tone_qa == null ? null : Number(r.tone_qa), toneDelta: r.tone_delta == null ? (r.tone_prepared == null || r.tone_qa == null ? null : Math.round((Number(r.tone_qa) - Number(r.tone_prepared)) * 1000) / 1000) : Number(r.tone_delta), sourceUrl: r.source_url, generatedBy: r.generated_by ?? "extractive-rules" };
+    return { ...row, qaPairs: resolveQaPairsForSummary(row) };
+  });
 }
 async function persist(r: ConcallRow) {
   if (!hasDatabase()) return;
@@ -267,7 +271,7 @@ export async function getTranscriptArchive(symbol: string, market: Market = "IN"
       } catch { failures++; attempted++; }
     }
     history.sort((a, b) => (b.transcriptDate ?? "").localeCompare(a.transcriptDate ?? "") || quarterRank(b.quarter ?? "") - quarterRank(a.quarter ?? ""));
-    const publicHistory = history.slice(0, 8).map((r) => ({ ...r, symbol }));
+    const publicHistory = history.slice(0, 8).map((r) => ({ ...r, symbol, qaPairs: resolveQaPairsForSummary(r) }));
     const value: Archive = { symbol, market, dbConfigured: hasDatabase(), summary: publicHistory[0] ?? null, history: publicHistory, documents: found.documents, status: history.length ? "ready" : failures ? "source_error" : "unavailable", message: history.length ? "Highlights extracted from linked earnings-call transcripts." : failures ? "Some archive sources could not be reached. This does not mean the company has no transcripts. Try again shortly or open the archive links." : found.documents.length ? "Transcript links found, but readable call text could not be extracted. Open the originals below." : "No accessible transcript was found in the sources checked. This is not a claim that no transcript exists.", checkedAt: new Date().toISOString() };
     if (cache.size >= 200) cache.delete(cache.keys().next().value!);
     // Confirmed absence is cached for hours so thousands of small caps do not re-crawl on every visit; transient failures retry within a minute.
