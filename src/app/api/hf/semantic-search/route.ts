@@ -25,7 +25,7 @@ function helpDocs(): Doc[] {
 }
 
 function learnDocs(): Doc[] {
-  return LEARN_ARTICLES.map((a) => ({ title: a.title, blurb: a.description, href: `/learn/${a.slug}`, text: `${a.title}. ${a.description}` }));
+  return LEARN_ARTICLES.map((a) => ({ title: a.title, blurb: a.description, href: a.href, text: `${a.title}. ${a.description}` }));
 }
 
 function feedDocs(): Doc[] {

@@ -33,7 +33,7 @@ export function LearnNudge() {
             .map((a) => (
               <Link
                 key={a.slug}
-                href={`/learn/${a.slug}`}
+                href={a.href}
                 className="rounded-xl border border-stone-200 bg-stone-50 p-4 hover:border-teal-300"
               >
                 <p className="text-[10px] font-medium text-teal-600">
