@@ -107,9 +107,9 @@ export type IndiaDashboardPayload = {
   indiaImpact: IndiaImpact;
   indiaMacro: MacroRow[];
   rbiLiquidity: {
-    rows: { label: string; value: string | null; source: FieldSource }[];
-    systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; netCr?: number | null; source: FieldSource };
-    fxReserves?: { value: string | null; asOf: string | null; source: FieldSource };
+    rows: { label: string; value: string | null; history?: { date: string; value: number }[]; source: FieldSource }[];
+    systemLiquidity: { value: string | null; change7d: string | null; trend30d: number[]; netCr?: number | null; daily: { date: string; valueCr: number }[]; source: FieldSource };
+    fxReserves?: { value: string | null; asOf: string | null; history: { date: string; value: number }[]; source: FieldSource };
     corridor?: {
       repo: string | null;
       sdf: string | null;

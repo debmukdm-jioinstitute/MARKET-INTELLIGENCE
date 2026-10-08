@@ -72,11 +72,36 @@ export const INDEX_UNIVERSE: IndexDef[] = [
   { id: "nz50", label: "S&P/NZX 50", sym: "^NZ50", copyKey: "index_nz50", category: "asia_pacific", focus: AP, decimals: 2, region: "New Zealand" },
 
   // —— India ——
+  // All symbols below were verified live against Yahoo Finance (2026-10-08):
+  // each resolves and its Yahoo name matches the label. Indices with no
+  // working Yahoo quote (NIFTY 500, NIFTY Midcap 50, NIFTY GS 10Y, BSE
+  // 100/200/500, BSE BANKEX) are deliberately excluded — never fabricate.
   { id: "nifty", label: "NIFTY 50", sym: "^NSEI", copyKey: "ticker_nifty", category: "india", focus: IN, decimals: 2, region: "India" },
   { id: "sensex", label: "S&P BSE SENSEX", sym: "^BSESN", copyKey: "ticker_sensex", category: "india", focus: IN, decimals: 2, region: "India" },
   { id: "banknifty", label: "NIFTY Bank", sym: "^NSEBANK", copyKey: "ticker_banknifty", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_finsrv2550", label: "NIFTY Financial Services 25/50", sym: "^CNXFIN", copyKey: "ticker_nifty_finsrv2550", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_finservice", label: "NIFTY Financial Services", sym: "NIFTY_FIN_SERVICE.NS", copyKey: "ticker_nifty_finservice", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_100", label: "NIFTY 100", sym: "^CNX100", copyKey: "ticker_nifty_100", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_200", label: "NIFTY 200", sym: "^CNX200", copyKey: "ticker_nifty_200", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_next50", label: "NIFTY Next 50", sym: "^NSMIDCP", copyKey: "ticker_nifty_next50", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_midcap100", label: "NIFTY Midcap 100", sym: "NIFTY_MIDCAP_100.NS", copyKey: "ticker_nifty_midcap100", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_midcap_select", label: "NIFTY Midcap Select", sym: "NIFTY_MID_SELECT.NS", copyKey: "ticker_nifty_midcap_select", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_smallcap100", label: "NIFTY Smallcap 100", sym: "^CNXSC", copyKey: "ticker_nifty_smallcap100", category: "india", focus: IN, decimals: 2, region: "India" },
   { id: "nifty_it", label: "NIFTY IT", sym: "^CNXIT", copyKey: "ticker_nifty_it", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_pharma", label: "NIFTY Pharma", sym: "^CNXPHARMA", copyKey: "ticker_nifty_pharma", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_auto", label: "NIFTY Auto", sym: "^CNXAUTO", copyKey: "ticker_nifty_auto", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_fmcg", label: "NIFTY FMCG", sym: "^CNXFMCG", copyKey: "ticker_nifty_fmcg", category: "india", focus: IN, decimals: 2, region: "India" },
   { id: "nifty_metal", label: "NIFTY Metal", sym: "^CNXMETAL", copyKey: "ticker_nifty_metal", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_energy", label: "NIFTY Energy", sym: "^CNXENERGY", copyKey: "ticker_nifty_energy", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_realty", label: "NIFTY Realty", sym: "^CNXREALTY", copyKey: "ticker_nifty_realty", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_pse", label: "NIFTY PSE", sym: "^CNXPSE", copyKey: "ticker_nifty_pse", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_psu_bank", label: "NIFTY PSU Bank", sym: "^CNXPSUBANK", copyKey: "ticker_nifty_psu_bank", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_pvt_bank", label: "NIFTY Private Bank", sym: "NIFTY_PVT_BANK.NS", copyKey: "ticker_nifty_pvt_bank", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_infra", label: "NIFTY Infrastructure", sym: "^CNXINFRA", copyKey: "ticker_nifty_infra", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_consumption", label: "NIFTY India Consumption", sym: "^CNXCONSUM", copyKey: "ticker_nifty_consumption", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_media", label: "NIFTY Media", sym: "^CNXMEDIA", copyKey: "ticker_nifty_media", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_commodities", label: "NIFTY Commodities", sym: "^CNXCMDT", copyKey: "ticker_nifty_commodities", category: "india", focus: IN, decimals: 2, region: "India" },
+  { id: "nifty_healthcare", label: "NIFTY Healthcare", sym: "NIFTY_HEALTHCARE.NS", copyKey: "ticker_nifty_healthcare", category: "india", focus: IN, decimals: 2, region: "India" },
 
   // —— Volatility ——
   { id: "vix", label: "CBOE VIX", sym: "^VIX", copyKey: "ticker_vix", category: "volatility", focus: VOL, decimals: 2, region: "United States" },
