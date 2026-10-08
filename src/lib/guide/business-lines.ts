@@ -659,6 +659,19 @@ const OVERRIDES: Record<string, string[]> = {
   SWIGGY: ["consumer-internet"],
   NYKAA: ["consumer-internet"],
   DMART: ["consumer-internet", "retail-apparel"],
+  // US big-tech: name rules and NSE industry labels miss these, so pin them to
+  // it-services — the H-1B/visa, client IT budget, genAI and USD-INR drivers fit
+  // these employers and AI players better than the generic broad-market line.
+  ADBE: ["it-services"],
+  AMZN: ["it-services"],
+  CRM: ["it-services"],
+  GOOG: ["it-services"],
+  GOOGL: ["it-services"],
+  IBM: ["it-services"],
+  META: ["it-services"],
+  MSFT: ["it-services"],
+  NVDA: ["it-services"],
+  ORCL: ["it-services"],
 };
 
 const BY_ID = new Map(BUSINESS_LINES.map((l) => [l.id, l]));
