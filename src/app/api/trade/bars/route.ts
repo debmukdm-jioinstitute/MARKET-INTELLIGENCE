@@ -1,4 +1,5 @@
 import { rateLimited } from "@/lib/api-guard";
+import { clientIp } from "@/lib/client-ip";
 import { fetchBars, resolveInstrument } from "@/lib/trade-lab/data";
 import { TIMEFRAMES, type Timeframe } from "@/lib/trade-lab/types";
 import { NextResponse } from "next/server";
@@ -7,10 +8,6 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const MAX_BARS = 500;
-
-function ip(req: Request) {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
-}
 
 /** GET ?symbol=NIFTY&tf=1d → raw OHLCV bars. The chart computes the selected indicators client-side from these. */
 export async function GET(req: Request) {
@@ -21,7 +18,7 @@ export async function GET(req: Request) {
   const inst = resolveInstrument(sp.get("symbol") ?? "NIFTY");
   if (!inst) return NextResponse.json({ error: "Invalid symbol" }, { status: 400 });
   // Never let a slow limiter store stall the chart: after 2s, fail open.
-  const limited = await Promise.race([rateLimited(`trade-bars:${ip(req)}`, 120, 60), new Promise<boolean>((r) => setTimeout(() => r(false), 2000))]);
+  const limited = await Promise.race([rateLimited(`trade-bars:${clientIp(req)}`, 120, 60), new Promise<boolean>((r) => setTimeout(() => r(false), 2000))]);
   if (limited) {
     return NextResponse.json({ error: "Too many requests, try again in a minute." }, { status: 429 });
   }

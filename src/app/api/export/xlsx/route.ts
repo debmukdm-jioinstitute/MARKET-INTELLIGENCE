@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp } from "@/lib/client-ip";
 import { buildExport } from "@/lib/export/build";
 import { getSessionUser } from "@/lib/session";
 
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
   if (url.searchParams.get("agree") !== "1") return NextResponse.json({ error: "You must accept the terms of use to download." }, { status: 400 });
 
   const who = user.guest ? "Guest" : user.email;
-  if (limited(user.guest ? `ip:${req.headers.get("x-forwarded-for") ?? "unknown"}` : who)) {
+  if (limited(user.guest ? `ip:${clientIp(req, "unknown")}` : who)) {
     return NextResponse.json({ error: "Download limit reached (4 per hour). Please try again later." }, { status: 429 });
   }
 

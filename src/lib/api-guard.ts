@@ -1,4 +1,5 @@
 import { defaultFlagEnabled } from "@/lib/admin/system";
+import { clientIp } from "@/lib/client-ip";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { NextResponse } from "next/server";
@@ -16,10 +17,6 @@ export function cronUnauthorized(req: Request): NextResponse | null {
     return null;
   }
   return req.headers.get("authorization") === `Bearer ${secret}` ? null : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-}
-
-function clientIp(req: Request) {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
 }
 
 const memHits = new Map<string, number[]>();
