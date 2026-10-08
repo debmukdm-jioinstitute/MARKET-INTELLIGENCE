@@ -55,6 +55,7 @@ describe("Research Dossier Trust & Semantics Gates", () => {
       expect(SYMBOL_NEGATIVE_ALIASES.RELIANCE).toBeDefined();
       expect(SYMBOL_NEGATIVE_ALIASES.TCS).toBeDefined();
       expect(SYMBOL_NEGATIVE_ALIASES.TATAMOTORS).toBeDefined();
+      expect(SYMBOL_NEGATIVE_ALIASES.LT).toContain("lt foods");
     });
 
     it("rejects Tata Motors news when searching for TCS", () => {
@@ -65,6 +66,24 @@ describe("Research Dossier Trust & Semantics Gates", () => {
           "Tata Consultancy Services",
         ),
       ).toBe(false);
+    });
+
+    it("rejects LT Foods headlines for LT (Larsen & Toubro)", () => {
+      expect(
+        isNewsArticleRelevantForSymbol(
+          "Here's what drove LT Foods share price higher by 7% in trade on Feb 23",
+          "LT",
+          "Larsen & Toubro Limited",
+        ),
+      ).toBe(false);
+
+      expect(
+        isNewsArticleRelevantForSymbol(
+          "Larsen & Toubro wins ₹5,000 crore metro rail order",
+          "LT",
+          "Larsen & Toubro Limited",
+        ),
+      ).toBe(true);
     });
   });
 

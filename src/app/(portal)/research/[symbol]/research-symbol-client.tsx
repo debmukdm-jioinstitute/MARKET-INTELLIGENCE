@@ -193,10 +193,11 @@ export function ResearchSymbolClient({
   // previous close. Previous close = LTP − net change.
   const prevClose = q ? q.ltp - q.netChange : 0;
   // Sentiment input: merged Upstox + Google News feed (Upstox news alone is often empty).
-  const sentimentHeadlines = (data?.intelligence?.newsFeed?.length ? data.intelligence.newsFeed : data?.news ?? [])
+  // Titles travel with their source URL + publisher so the sentiment panel can link out.
+  const sentimentItems = (data?.intelligence?.newsFeed?.length ? data.intelligence.newsFeed : data?.news ?? [])
     .slice(0, 5)
-    .map((n) => n.title)
-    .filter(Boolean);
+    .map((n) => ({ title: n.title, url: n.link || undefined, publisher: n.publisher }))
+    .filter((n) => n.title);
 
   return (
     <SWRConfig value={{ fallback: initialPanels }}>
@@ -251,8 +252,8 @@ export function ResearchSymbolClient({
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
       {/* FinBERT AI News Sentiment for this stock */}
-      {sentimentHeadlines.length ? (
-        <StockSentimentPanel symbol={symbol} newsHeadlines={sentimentHeadlines} />
+      {sentimentItems.length ? (
+        <StockSentimentPanel symbol={symbol} newsItems={sentimentItems} />
       ) : null}
 
       {data && q ? (

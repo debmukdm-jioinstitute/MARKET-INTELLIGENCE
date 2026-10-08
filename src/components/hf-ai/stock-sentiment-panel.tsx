@@ -5,6 +5,7 @@
  *
  * Fetches recent news headlines for a given stock symbol (via the research feed)
  * and runs them through /api/hf/sentiment to get finance-domain sentiment scores.
+ * Each headline links out to its source article so the reader can verify.
  *
  * Used on the Research [symbol] page.
  */
@@ -23,12 +24,21 @@ interface FinBertApiResponse {
   error?: string;
 }
 
+/** A headline with its source link. Plain strings are still tolerated. */
+export interface SentimentNewsItem {
+  title: string;
+  url?: string;
+  /** Publisher name, e.g. "Kalkine India" (from the feed's <source> tag). */
+  publisher?: string;
+}
+
 interface StockSentimentState {
   status: "idle" | "loading" | "done" | "error";
   overall: "bullish" | "bearish" | "neutral" | null;
   overallScore: number;
-  confidence: number;
-  headlines: { text: string; label: string; score: number }[];
+  /** Winning side's share of total confidence weight, 0..100 */
+  sharePct: number;
+  headlines: { title: string; url?: string; publisher?: string; label: string; score: number }[];
   /** true when the server fell back to keyword rules (FinBERT unavailable). */
   fallback?: boolean;
   error?: string;
@@ -38,6 +48,32 @@ function scoreToLabel(score: number): "bullish" | "bearish" | "neutral" {
   if (score > 0.1) return "bullish";
   if (score < -0.1) return "bearish";
   return "neutral";
+}
+
+/** Defensive entity decode — the RSS layer decodes too, but never trust the wire. */
+function decodeEntities(s: string): string {
+  if (!s || !s.includes("&")) return s;
+  return s
+    .replace(/&#(\d+);/g, (_m, d: string) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, h: string) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&(amp|lt|gt|quot|apos|nbsp);/gi, (_m, n: string) => {
+      const map: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+      return map[n.toLowerCase()] ?? _m;
+    });
+}
+
+/** Google News appends " - Publisher" to titles; show the publisher separately instead. */
+function cleanTitle(title: string, publisher?: string): string {
+  const decoded = decodeEntities(title);
+  if (publisher) {
+    const suffix = ` - ${publisher}`;
+    if (decoded.endsWith(suffix)) return decoded.slice(0, -suffix.length).trim();
+  }
+  return decoded;
+}
+
+function normalizeItems(items: (string | SentimentNewsItem)[] | undefined): SentimentNewsItem[] {
+  return (items ?? []).map((it) => (typeof it === "string" ? { title: it } : it)).filter((it) => it.title);
 }
 
 const LABEL_COLORS = {
@@ -52,19 +88,29 @@ const SENTIMENT_MAP = {
   neutral: "neutral",
 } as const;
 
-export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string; newsHeadlines?: string[] }) {
+export function StockSentimentPanel({
+  symbol,
+  newsItems,
+}: {
+  symbol: string;
+  newsItems?: (string | SentimentNewsItem)[];
+}) {
   const [state, setState] = useState<StockSentimentState>({
     status: "idle",
     overall: null,
     overallScore: 0,
-    confidence: 0,
+    sharePct: 0,
     headlines: [],
   });
 
-  useEffect(() => {
-    if (!newsHeadlines?.length && !symbol) return;
+  const items = normalizeItems(newsItems);
+  // Stable primitive key — avoids re-running the effect on every render.
+  const itemsKey = items.map((i) => i.title).join("|");
 
-    const texts = (newsHeadlines ?? []).slice(0, 5);
+  useEffect(() => {
+    if (!items.length && !symbol) return;
+
+    const texts = items.slice(0, 5).map((it) => it.title);
     if (texts.length === 0) {
       setState((s) => ({ ...s, status: "idle" }));
       return;
@@ -83,38 +129,43 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
 
         const results = data.results ?? [];
         if (!results.length) {
-          setState((s) => ({ ...s, status: "done", overall: "neutral", overallScore: 0, confidence: 0 }));
+          setState((s) => ({ ...s, status: "done", overall: "neutral", overallScore: 0, sharePct: 0 }));
           return;
         }
 
-        // Aggregate
-        let posSum = 0, negSum = 0, neuSum = 0;
+        // Confidence-weighted aggregation: each headline contributes its full
+        // class distribution, so a 95%-confident call counts more than a shrug.
+        let bullW = 0, bearW = 0, neuW = 0;
         const enriched = results.map((r, i) => {
           const pScore = r.scores.find((s) => s.label === "positive")?.score ?? 0;
           const nScore = r.scores.find((s) => s.label === "negative")?.score ?? 0;
           const eScore = r.scores.find((s) => s.label === "neutral")?.score ?? 0;
-          posSum += pScore;
-          negSum += nScore;
-          neuSum += eScore;
+          bullW += pScore;
+          bearW += nScore;
+          neuW += eScore;
+          const item = items[i] ?? { title: texts[i] ?? "" };
           return {
-            text: texts[i] ?? "",
+            title: cleanTitle(item.title, item.publisher),
+            url: item.url,
+            publisher: item.publisher ? decodeEntities(item.publisher) : undefined,
             label: SENTIMENT_MAP[r.label],
             score: r.score,
           };
         });
 
-        const n = results.length;
-        const overallScore = posSum / n - negSum / n;
-        const confidence = Math.max(posSum, negSum, neuSum) / n;
+        const totalW = bullW + bearW + neuW || 1;
+        const overallScore = (bullW - bearW) / totalW;
+        const overall = scoreToLabel(overallScore);
+        const winningW = overall === "bullish" ? bullW : overall === "bearish" ? bearW : neuW;
 
         setState({
           status: "done",
-          overall: scoreToLabel(overallScore),
+          overall,
           overallScore,
-          confidence,
+          sharePct: Math.round((winningW / totalW) * 100),
           headlines: enriched,
-            fallback: results.some((r) => r.engine === "rules"),
-          });
+          fallback: results.some((r) => r.engine === "rules"),
+        });
       })
       .catch((err: unknown) => {
         setState((s) => ({
@@ -123,9 +174,11 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
           error: err instanceof Error ? err.message : "Sentiment analysis failed",
         }));
       });
-  }, [symbol, newsHeadlines?.join("|")]);
+    // itemsKey is a stable primitive derived from the headlines.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, itemsKey]);
 
-  if (!newsHeadlines?.length) return null;
+  if (!items.length) return null;
 
   if (state.status === "loading" || state.status === "idle") {
     return (
@@ -164,7 +217,7 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
             </span>
           ) : null}
           <span className={`text-sm font-bold uppercase ${colors.text}`}>
-            {state.overall} · {Math.round(state.confidence * 100)}%
+            {state.overall} · {state.sharePct}%
           </span>
         </span>
       </div>
@@ -185,16 +238,33 @@ export function StockSentimentPanel({ symbol, newsHeadlines }: { symbol: string;
         <div className="absolute left-1/2 top-0 w-px h-full bg-border/60" />
       </div>
 
-      {/* Per-headline scores */}
-      <div className="space-y-1">
+      {/* Per-headline scores — each links to its source article */}
+      <div className="space-y-1.5">
         {state.headlines.map((h, i) => {
           const hColors = h.label === "bullish" ? "text-emerald-600" : h.label === "bearish" ? "text-rose-600" : "text-amber-600";
           return (
-            <div key={i} className="flex items-start gap-2">
-              <span className={`text-sm font-bold uppercase ${hColors} mt-0.5 shrink-0 w-14`}>
+            <div key={i} className="flex items-baseline gap-3">
+              <span className={`text-xs font-bold uppercase tracking-wide ${hColors} shrink-0 w-[74px]`}>
                 {h.label}
               </span>
-              <span className="text-sm text-muted-foreground leading-tight line-clamp-1">{h.text}</span>
+              <span className="text-sm text-muted-foreground leading-snug line-clamp-1 min-w-0">
+                {h.url ? (
+                  <a
+                    href={h.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline hover:text-foreground"
+                    title={`Open source article${h.publisher ? ` — ${h.publisher}` : ""}`}
+                  >
+                    {h.title}
+                  </a>
+                ) : (
+                  h.title
+                )}
+                {h.publisher ? (
+                  <span className="text-xs text-muted-foreground/70"> · {h.publisher}</span>
+                ) : null}
+              </span>
             </div>
           );
         })}

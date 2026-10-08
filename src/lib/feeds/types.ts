@@ -37,6 +37,8 @@ export type NewsItem = {
   title: string;
   link: string;
   publishedAt?: string;
+  /** Publisher name from the feed's <source> tag (Google News RSS populates this). */
+  publisher?: string;
 };
 
 export type LiveQuote = {
