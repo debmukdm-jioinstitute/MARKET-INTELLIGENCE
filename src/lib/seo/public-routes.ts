@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
-import { LEARN_ARTICLES } from "@/lib/learn/articles";
+import { LEARN_MODULES } from "@/lib/learn/curriculum";
 import { siteUrl } from "@/lib/seo/site-url";
 
 type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
@@ -65,7 +65,7 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const now = new Date();
   const paths = [
     ...PUBLIC_SITEMAP_STATIC.map((s) => s.path),
-    ...LEARN_ARTICLES.map((a) => `/learn/${a.slug}`),
+    ...LEARN_MODULES.flatMap((m) => [`/learn/${m.slug}`, ...m.chapters.map((c) => `/learn/${m.slug}/${c.slug}`)]),
     ...sitemapSymbolPaths(),
   ];
 

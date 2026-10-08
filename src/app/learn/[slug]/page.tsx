@@ -1,77 +1,97 @@
 import { PublicHeader } from "@/components/layout/public-header";
 import { JsonLd } from "@/components/seo/json-ld";
-import { getLearnArticle, LEARN_ARTICLES } from "@/lib/learn/articles";
+import { LearnSidebar } from "@/components/learn/learn-sidebar";
+import { LEARN_MODULES, chapterHref, getModule, legacyRedirect } from "@/lib/learn/curriculum";
 import { absoluteUrl, pageMetadata } from "@/lib/seo/metadata";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 export function generateStaticParams() {
-  return LEARN_ARTICLES.map((a) => ({ slug: a.slug }));
+  return LEARN_MODULES.map((m) => ({ slug: m.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = getLearnArticle(slug);
-  if (!article) return { title: "Article not found" };
-  return pageMetadata({
-    title: article.title,
-    description: article.description,
-    path: `/learn/${slug}`,
-  });
+  const m = getModule(slug);
+  if (!m) return { title: "Learn" };
+  return pageMetadata({ title: `${m.title}: Learn`, description: m.description, path: `/learn/${slug}` });
 }
 
-export default async function LearnArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+/** /learn/<module> is a module page; any pre-curriculum article slug redirects to its chapter. */
+export default async function LearnModulePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = getLearnArticle(slug);
-  if (!article) notFound();
-
+  const m = getModule(slug);
+  if (!m) {
+    const target = legacyRedirect(slug);
+    if (target) permanentRedirect(target);
+    notFound();
+  }
+  const idx = LEARN_MODULES.findIndex((x) => x.slug === m.slug);
+  const prev = LEARN_MODULES[idx - 1];
+  const next = LEARN_MODULES[idx + 1];
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.description,
-    datePublished: article.published,
-    dateModified: article.updated,
-    author: { "@type": "Organization", name: "Market Intelligence" },
-    publisher: { "@type": "Organization", name: "Market Intelligence", url: absoluteUrl("/") },
-    mainEntityOfPage: absoluteUrl(`/learn/${slug}`),
+    "@type": "Course",
+    name: m.title,
+    description: m.description,
+    provider: { "@type": "Organization", name: "Market Intelligence", url: absoluteUrl("/") },
+    hasPart: m.chapters.map((c) => ({ "@type": "LearningResource", name: c.title, url: absoluteUrl(chapterHref(m.slug, c.slug)) })),
   };
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <PublicHeader backHref="/learn" backLabel="Learn" />
-      <main className="mx-auto max-w-3xl flex-1 px-4 sm:px-6 py-10 sm:py-16 text-foreground w-full">
+      <main className="mx-auto max-w-6xl flex-1 px-4 sm:px-6 py-10 sm:py-14 w-full">
         <JsonLd data={jsonLd} />
-      <h1 className="mt-4 text-3xl font-semibold">{article.title}</h1>
-      <p className="mt-2 text-xs text-muted-foreground">
-        Published {article.published} · Updated {article.updated}
-      </p>
-      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{article.description}</p>
-      {article.sections.map((sec, i) => (
-        <section key={i} className="mt-8 space-y-3 text-sm leading-relaxed">
-          {sec.heading ? <h2 className="text-lg font-semibold text-foreground">{sec.heading}</h2> : null}
-          {sec.paragraphs.map((p) => (
-            <p key={p.slice(0, 24)} className="text-muted-foreground">
-              {p}
+        <div className="grid gap-8 lg:grid-cols-[17rem_1fr]">
+          <aside className="hidden lg:block lg:sticky lg:top-20 lg:self-start">
+            <LearnSidebar module={m} />
+          </aside>
+          <div>
+            <p className={cn("text-sm font-semibold", m.accent.text)}>
+              Module {String(idx + 1).padStart(2, "0")} · {m.level}
             </p>
-          ))}
-        </section>
-      ))}
-      <p className="mt-10 rounded-lg border border-border bg-muted/40 p-4 text-sm">
-        Try it on the site:{" "}
-        <Link href={article.productHref} className="font-semibold text-primary hover:underline">
-          {article.productLabel} →
-        </Link>
-      </p>
-      <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4">
-        <Link href="/learn" className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
-          ← Back to Learn Guides
-        </Link>
-        <Link href="/Home" className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-600/90 transition-all hover:scale-105 active:scale-95">
-          Open Terminal →
-        </Link>
-      </div>
-    </main>
-  </div>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">{m.title}</h1>
+            <p className="mt-3 text-muted-foreground">{m.description}</p>
+            <ol className="mt-8 space-y-3">
+              {m.chapters.map((c, i) => (
+                <li key={c.slug}>
+                  <Link
+                    href={chapterHref(m.slug, c.slug)}
+                    className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                  >
+                    <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg text-sm font-semibold tabular-nums", m.accent.bg, m.accent.text)}>
+                      {i + 1}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-semibold">{c.title}</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">{c.summary}</span>
+                      <span className="mt-2 block text-xs text-muted-foreground">
+                        {c.minutes} min read · Try it: {c.tools.map((t) => t.label).slice(0, 2).join(", ")}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-12 flex flex-wrap justify-between gap-3 border-t border-border pt-6 text-sm">
+              {prev ? (
+                <Link href={`/learn/${prev.slug}`} className="font-semibold text-primary hover:underline">
+                  ← {prev.title}
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next ? (
+                <Link href={`/learn/${next.slug}`} className="font-semibold text-primary hover:underline">
+                  {next.title} →
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
