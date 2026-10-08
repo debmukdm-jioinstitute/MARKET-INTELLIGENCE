@@ -9,9 +9,21 @@ import type { FinancialRatioMetrics, StatementColumn, StatementRow, WorkingCapit
 const money = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : `${n < 0 ? "−" : ""}₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })} cr`);
 const cr1 = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : n.toLocaleString("en-IN", { maximumFractionDigits: 1, minimumFractionDigits: 1 }));
 const x2 = (n: number | null | undefined, u = "") => (n == null || !Number.isFinite(n) ? "—" : `${n.toFixed(2)}${u}`);
-const days = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : `${Math.round(n)} days`);
+const days = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : `${n < 0 ? "−" : ""}${Math.abs(Math.round(n))} days`);
 const pct = (a: number | null | undefined, b: number | null | undefined) => (a == null || b == null || !(b > 0) ? null : ((a - b) / b) * 100);
 const sgn = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+/** M6: never assert "Reviewed" when the filing didn't say; null = not disclosed. */
+const auditLabel = (a: boolean | null | undefined) =>
+  a === true ? "Audited" : a === false ? "Reviewed (unaudited)" : "Audit status not disclosed";
+const auditSentence = (a: boolean | null | undefined) =>
+  a === true ? "Audited" : a === false ? "Reviewed (unaudited)" : "audit status not disclosed by the filing";
+/** H1: the winning filing basis, shown per column. */
+const basisLabel = (b: string | null | undefined) =>
+  b === "consolidated" ? "Consolidated" : b === "standalone" ? "Standalone" : "";
+/** L2: never render "₹— cr". */
+const moneyCr = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : `₹${cr1(n)} cr`);
+/** L3: per-share values use the repo's Unicode minus convention. */
+const ps = (n: number | null | undefined) => (n == null || !Number.isFinite(n) ? "—" : `₹${n < 0 ? "−" : ""}${Math.abs(n).toFixed(2)}`);
 
 const findRow = (rows: StatementRow[], tags: string[]) => {
   for (const t of tags) {
@@ -71,11 +83,11 @@ export function QuarterlyView({ quarters, plRows, ratios }: { quarters: Statemen
 
   return (
     <div className="space-y-5">
-      <Takeaway tone={tone} sub={`${cur.audited ? "Audited" : "Reviewed, not yet audited"} figures filed with the exchange. Amounts in ₹ crore (1 crore = 10 million).`}>{line}</Takeaway>
+      <Takeaway tone={tone} sub={`${auditSentence(cur.audited)} figures filed with the exchange${basisLabel(cur.basis) ? ` (${basisLabel(cur.basis).toLowerCase()})` : ""}. Amounts in ₹ crore (1 crore = 10 million).`}>{line}</Takeaway>
       <div className="grid gap-3 sm:grid-cols-3">
         <Tile label="Sales" value={`${money(val(rev, cur))}`} hint="Money the business earned from customers this quarter." footer={revC != null ? <span className={cn("text-sm font-medium", chgTone(revC))}>{sgn(revC)} vs last quarter</span> : null} />
         <Tile label="Profit" value={`${money(val(pat, cur))}`} hint="What is left after all costs and tax." footer={patC != null ? <span className={cn("text-sm font-medium", chgTone(patC))}>{sgn(patC)} vs last quarter</span> : null} />
-        <Tile label="Profit on each ₹100 of sales" value={opm != null ? `₹${opm.toFixed(1)}` : "—"} hint="Operating margin: profit from the core business before interest and tax." />
+        <Tile label="Profit on each ₹100 of sales" value={opm != null ? `₹${opm.toFixed(1)}` : "—"} hint="EBITDA margin: profit before interest, tax and depreciation, per ₹100 of sales." />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Bars label="Sales, last quarters (₹ cr)" values={last4.map((q) => val(rev, q))} labels={last4.map((q) => q.label)} color="bg-primary/70" />
@@ -91,10 +103,10 @@ export function QuarterlyView({ quarters, plRows, ratios }: { quarters: Statemen
               <div key={q.key} className="rounded-xl border border-border p-4 text-base">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">{q.label}</span>
-                  <span className="text-sm text-muted-foreground">{q.audited ? "Audited" : "Reviewed"}</span>
+                  <span className="text-sm text-muted-foreground">{[basisLabel(q.basis), auditLabel(q.audited)].filter(Boolean).join(" · ")}</span>
                 </div>
-                <p className="mt-2">Sales <span className="font-semibold tabular-nums">₹{cr1(val(rev, q))} cr</span> {rc != null ? <span className={cn("text-sm", chgTone(rc))}>{sgn(rc)}</span> : null}</p>
-                <p>Profit <span className="font-semibold tabular-nums">₹{cr1(val(pat, q))} cr</span> {pc != null ? <span className={cn("text-sm", chgTone(pc))}>{sgn(pc)}</span> : null}</p>
+                <p className="mt-2">Sales <span className="font-semibold tabular-nums">{moneyCr(val(rev, q))}</span> {rc != null ? <span className={cn("text-sm", chgTone(rc))}>{sgn(rc)}</span> : null}</p>
+                <p>Profit <span className="font-semibold tabular-nums">{moneyCr(val(pat, q))}</span> {pc != null ? <span className={cn("text-sm", chgTone(pc))}>{sgn(pc)}</span> : null}</p>
                 {q.xbrlUrl ? <a href={q.xbrlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">Official filing (XML) ↗</a> : null}
               </div>
             );
@@ -117,7 +129,8 @@ function StatementTable({ rows, cols, caption, onlyTotals }: { rows: StatementRo
             {cols.map((c) => (
               <th key={c.key} className="whitespace-nowrap px-3 py-2.5 text-right">
                 <div>{c.label}</div>
-                <div className="text-sm font-normal text-muted-foreground">{c.audited ? "Audited" : "Reviewed"}</div>
+                {basisLabel(c.basis) ? <div className="text-sm font-normal text-muted-foreground">{basisLabel(c.basis)}</div> : null}
+                <div className="text-sm font-normal text-muted-foreground">{auditLabel(c.audited)}</div>
               </th>
             ))}
           </tr>
@@ -130,7 +143,7 @@ function StatementTable({ rows, cols, caption, onlyTotals }: { rows: StatementRo
                 const v = row.values[c.key];
                 return (
                   <td key={c.key} className={cn("whitespace-nowrap px-3 py-2 text-right tabular-nums", v != null && v < 0 && "text-rose-600")}>
-                    {row.unit === "ps" ? (v != null ? `₹${v.toFixed(2)}` : "—") : cr1(v)}
+                    {row.unit === "ps" ? ps(v) : cr1(v)}
                   </td>
                 );
               })}
@@ -184,7 +197,7 @@ export function StatementView({ kind, rows, cols }: { kind: "pl" | "bs" | "cf"; 
         <div className="grid gap-3 sm:grid-cols-3">
           <Tile label="Sales" value={`${money(rev.cur)}`} hint="What customers paid the company." footer={rc != null ? <span className={cn("text-sm font-medium", chgTone(rc))}>{sgn(rc)} vs previous period</span> : null} />
           <Tile label="Profit" value={`${money(pat.cur)}`} hint="What is left after all costs and tax." footer={pc != null ? <span className={cn("text-sm font-medium", chgTone(pc))}>{sgn(pc)} vs previous period</span> : null} />
-          <Tile label="Profit per share" value={eps.cur != null ? `₹${eps.cur.toFixed(2)}` : "—"} hint="Profit divided by the number of shares (EPS). Higher is better." />
+          <Tile label="Profit per share" value={ps(eps.cur)} hint="Profit divided by the number of shares (EPS). Higher is better." />
         </div>
       </>
     );
@@ -228,9 +241,20 @@ export function StatementView({ kind, rows, cols }: { kind: "pl" | "bs" | "cf"; 
     );
   }
 
+  // 5-year history: show only the years NSE actually delivered XBRL for, with an honest note.
+  const annualCols = cols.filter((c) => c.periodKind === "annual");
+  const cfHistoryNote =
+    kind === "cf" && annualCols.length > 0 && annualCols.length < 5 ? (
+      <p className="text-sm text-muted-foreground">
+        Showing {annualCols.length} of the last 5 financial years — only these had XBRL filings available on NSE.
+        No figures are estimated or filled in; a year appears here only when its filing was actually parsed.
+      </p>
+    ) : null;
+
   return (
     <div className="space-y-5">
       {head}
+      {cfHistoryNote}
       {/* Desktop: full-width key-lines table, unchanged */}
       <div className="hidden md:block">
         <StatementTable rows={rows} cols={cols} caption={`${name}: key lines`} onlyTotals />
@@ -252,12 +276,13 @@ const GLOSSARY: [string, string][] = [
   ["Debt to equity", "Borrowed money divided by owners' money. Under 1× is comfortable."],
   ["Interest coverage", "How many times profit covers the yearly interest bill. Above 3× is comfortable."],
   ["Current ratio", "Short-term assets divided by short-term bills. Above 1× means it can pay what is due soon."],
-  ["Cash conversion cycle", "Days between paying for stock and getting paid. Fewer days is better."],
+  ["Cash conversion cycle", "Days between paying for stock and getting paid. Positive means cash is tied up; a negative number means suppliers fund the business."],
   ["DSO / DIO / DPO", "Days customers take to pay / days stock sits unsold / days the company takes to pay suppliers."],
+  ["EBITDA margin", "Profit before interest, tax and depreciation as a share of sales (PBDIT convention)."],
 ];
 
 /** Working capital and ratios: the five numbers that matter, then the full tables and a glossary. */
-export function RatiosView({ wc, ratios }: { wc: WorkingCapitalMetrics[]; ratios: FinancialRatioMetrics[] }) {
+export function RatiosView({ wc, ratios, cols, annualized }: { wc: WorkingCapitalMetrics[]; ratios: FinancialRatioMetrics[]; cols?: StatementColumn[]; annualized?: boolean }) {
   const r = ratios[ratios.length - 1];
   const w = wc[wc.length - 1];
   if (!r && !w) return <p className="text-base text-muted-foreground">No ratios available yet.</p>;
@@ -272,14 +297,14 @@ export function RatiosView({ wc, ratios }: { wc: WorkingCapitalMetrics[]; ratios
 
   return (
     <div className="space-y-5">
-      <Takeaway tone={tone} sub={r ? `Latest period: ${r.periodLabel}.` : undefined}>{line}</Takeaway>
+      <Takeaway tone={tone} sub={r ? `Latest period: ${r.periodLabel}${annualized ? " (return ratios annualized ×4 from the quarter)" : ""}.` : undefined}>{line}</Takeaway>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Tile label="Return on owners' money (ROE)" value={r?.roePct != null ? `${r.roePct.toFixed(1)}%` : "—"} hint="Profit for every ₹100 the owners put in." />
-        <Tile label="Return on all capital (ROCE)" value={r?.rocePct != null ? `${r.rocePct.toFixed(1)}%` : "—"} hint="Profit for every ₹100 invested, including loans." tone={r?.rocePct != null ? (r.rocePct >= 15 ? "good" : r.rocePct < 8 ? "watch" : "info") : "info"} />
+        <Tile label={`Return on owners' money (ROE)${annualized ? " (annualized)" : ""}`} value={r?.roePct != null ? `${r.roePct.toFixed(1)}%` : "—"} hint={`Profit for every ₹100 the owners put in.${annualized ? " Annualized (×4) from the quarterly figure." : ""}`} />
+        <Tile label={`Return on all capital (ROCE)${annualized ? " (annualized)" : ""}`} value={r?.rocePct != null ? `${r.rocePct.toFixed(1)}%` : "—"} hint={`Profit for every ₹100 invested, including loans.${annualized ? " Annualized (×4) from the quarterly figure." : ""}`} tone={r?.rocePct != null ? (r.rocePct >= 15 ? "good" : r.rocePct < 8 ? "watch" : "info") : "info"} />
         <Tile label="Debt vs own money" value={x2(r?.debtToEquity, "×")} hint="Borrowed money per ₹1 of owners' money. Lower is safer." tone={r?.debtToEquity != null ? (r.debtToEquity < 0.5 ? "good" : r.debtToEquity > 2 ? "bad" : "info") : "info"} />
         <Tile label="Interest cover" value={x2(r?.interestCoverage, "×")} hint="Times profit covers the interest bill. Under 1.5× is thin." tone={r?.interestCoverage != null ? (r.interestCoverage < 1.5 ? "bad" : r.interestCoverage >= 3 ? "good" : "info") : "info"} />
         <Tile label="Short-term bills cover" value={x2(r?.currentRatio, "×")} hint="Above 1× means it can pay what is due soon." tone={r?.currentRatio != null ? (r.currentRatio < 1 ? "watch" : "info") : "info"} />
-        <Tile label="Cash locked in business" value={days(w?.ccc)} hint="Days between paying for stock and getting paid. Fewer is better." />
+        <Tile label="Cash conversion cycle" value={days(w?.ccc)} hint={w?.ccc == null ? "Days between paying for stock and getting paid." : w.ccc < 0 ? "Negative: suppliers fund the business; no cash is locked up." : "Days between paying for stock and getting paid. Fewer is better."} />
       </div>
 
       {wc.length ? (
@@ -289,7 +314,15 @@ export function RatiosView({ wc, ratios }: { wc: WorkingCapitalMetrics[]; ratios
               <thead>
                 <tr className="border-b border-border bg-muted/40 font-semibold">
                   <th className="py-2 pl-3 pr-2">Measure</th>
-                  {wc.map((x) => <th key={x.periodKey} className="px-3 py-2 text-right">{x.periodLabel}</th>)}
+                  {wc.map((x) => {
+                    const c = cols?.find((col) => col.key === x.periodKey);
+                    return (
+                      <th key={x.periodKey} className="px-3 py-2 text-right">
+                        <div>{x.periodLabel}</div>
+                        {c && basisLabel(c.basis) ? <div className="text-sm font-normal text-muted-foreground">{basisLabel(c.basis)}</div> : null}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -302,6 +335,7 @@ export function RatiosView({ wc, ratios }: { wc: WorkingCapitalMetrics[]; ratios
               </tbody>
             </table>
           </div>
+          <p className="px-1 pt-2 text-sm text-muted-foreground">DPO = trade payables ÷ cost of goods sold (materials + stock-in-trade + inventory changes). For contractors, site and subcontracting costs sit in other expenses, so DPO reads higher than the cash reality.</p>
         </Fold>
       ) : null}
 
@@ -312,11 +346,19 @@ export function RatiosView({ wc, ratios }: { wc: WorkingCapitalMetrics[]; ratios
               <thead>
                 <tr className="border-b border-border bg-muted/40 font-semibold">
                   <th className="py-2 pl-3 pr-2">Ratio</th>
-                  {ratios.map((x) => <th key={x.periodKey} className="px-3 py-2 text-right">{x.periodLabel}</th>)}
+                  {ratios.map((x) => {
+                    const c = cols?.find((col) => col.key === x.periodKey);
+                    return (
+                      <th key={x.periodKey} className="px-3 py-2 text-right">
+                        <div>{x.periodLabel}</div>
+                        {c && basisLabel(c.basis) ? <div className="text-sm font-normal text-muted-foreground">{basisLabel(c.basis)}</div> : null}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {([["Operating margin", "opmPct", "%"], ["Net profit margin", "npmPct", "%"], ["Return on equity", "roePct", "%"], ["Return on capital employed", "rocePct", "%"], ["Debt to equity", "debtToEquity", "×"], ["Current ratio", "currentRatio", "×"], ["Interest coverage", "interestCoverage", "×"], ["Operating cash flow / net profit", "cfoToNetProfit", "×"]] as const).map(([label, k, u]) => (
+                {([["EBITDA margin", "opmPct", "%"], ["Net profit margin", "npmPct", "%"], [`Return on equity${annualized ? " (annualized)" : ""}`, "roePct", "%"], [`Return on capital employed${annualized ? " (annualized)" : ""}`, "rocePct", "%"], ["Debt to equity", "debtToEquity", "×"], ["Current ratio", "currentRatio", "×"], ["Interest coverage", "interestCoverage", "×"], ["Operating cash flow / net profit", "cfoToNetProfit", "×"]] as const).map(([label, k, u]) => (
                   <tr key={k}>
                     <td className="py-2 pl-3">{label}</td>
                     {ratios.map((x) => <td key={x.periodKey} className="px-3 py-2 text-right tabular-nums">{x2(x[k], u)}</td>)}

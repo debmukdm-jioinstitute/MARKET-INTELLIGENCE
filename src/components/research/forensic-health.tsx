@@ -20,13 +20,16 @@ type Kind = "debt" | "cash-cycle" | "margin" | "cash-backing" | "other";
 /** What each tile means in plain words. Keyed off the unit of the metric the analysis produced. */
 const KIND_COPY: Record<Kind, { label: string; meaning: string }> = {
   debt: { label: "Debt vs own money", meaning: "For every ₹1 the owners put in, how much is borrowed. Lower is safer." },
-  "cash-cycle": { label: "Cash locked in business", meaning: "Days between paying for stock and getting paid by customers. Fewer days is better." },
-  margin: { label: "Profit on each ₹100 of sales", meaning: "What the company keeps from core operations before interest and tax." },
+  "cash-cycle": { label: "Cash conversion cycle", meaning: "Days between paying for stock and getting paid by customers. A negative number means suppliers fund the business — no cash is locked up." },
+  margin: { label: "Profit on each ₹100 of sales", meaning: "EBITDA: what the company keeps before interest, tax and depreciation." },
   "cash-backing": { label: "Profit backed by real cash", meaning: "Above 100% means reported profit turned into actual cash, not just paper." },
   other: { label: "Key figure", meaning: "" },
 };
 
 function kindOf(flag: Flag): Kind {
+  // L4: stable metricId from the service; the old suffix-regex heuristics stay
+  // only as a fallback for flags built without one.
+  if (flag.metricId && flag.metricId !== "other") return flag.metricId;
   const v = flag.metricValue ?? "";
   const t = `${flag.title} ${flag.detail}`.toLowerCase();
   if (/x$/i.test(v) || /leverage|debt|equity/.test(t)) return "debt";
@@ -42,7 +45,7 @@ const GLOSSARY: [string, string][] = [
   ["DPO (days payables outstanding)", "How many days the company takes to pay its own suppliers."],
   ["Cash conversion cycle", "DSO + DIO − DPO. The days cash stays tied up. Shorter is better."],
   ["Debt to equity (D/E)", "Borrowed money divided by the owners' money. Under 1x is usually comfortable."],
-  ["Operating margin", "Profit from the core business as a share of sales, before interest and tax."],
+  ["EBITDA margin", "Profit before interest, tax and depreciation as a share of sales (PBDIT convention)."],
   ["Earnings quality", "Whether profit is backed by cash coming in. Cash profit above 100% is a good sign."],
 ];
 
@@ -65,7 +68,24 @@ function Ring({ score, ring }: { score: number; ring: string }) {
 }
 
 /** Beginner-first view of the solvency analysis: verdict, four labelled numbers, everything else folded away. */
-export function ForensicHealth({ analysis }: { analysis: ExecutiveForensicAnalysis }) {
+export function ForensicHealth({ analysis, companyName }: { analysis: ExecutiveForensicAnalysis; companyName?: string }) {
+  // M4: never render a manufactured verdict. When the filings yielded no
+  // statements, say so plainly instead of showing a 75/100 "Adequate".
+  if (analysis.insufficientData) {
+    return (
+      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Financial health check</p>
+        <p className="mt-2 text-lg leading-snug text-foreground">
+          Not enough filed financial statements are available{companyName ? ` for ${companyName}` : ""} to run the
+          automated health check.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          We only score companies from their actual exchange filings — nothing is estimated. The official annual
+          reports below are the authoritative record.
+        </p>
+      </div>
+    );
+  }
   const v = VERDICT[analysis.rating];
   // One tile per kind (first flag wins), always in the same order so pages look alike.
   const order: Kind[] = ["debt", "cash-cycle", "margin", "cash-backing"];
