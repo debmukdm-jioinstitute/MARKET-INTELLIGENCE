@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { awardXp } from "@/lib/gamification/client";
 import { usePortalPages } from "@/components/providers/portal-page-provider";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 /** Per-session result cache: backspacing / retyping a query is instant, no network. */
 const RESULT_CACHE = new Map<string, UnifiedSearchResult>();
@@ -440,9 +441,12 @@ export function SymbolSearch({
                   i === active && "-translate-y-0.5 bg-[#1a73e8]/10 shadow-[0_6px_16px_-4px_rgba(26,115,232,0.25)]",
                 )}
               >
-                <span className="min-w-0">
-                  <span className="font-medium">{r.symbol}</span>
-                  <span className="ml-2 truncate text-muted-foreground">{r.name}</span>
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <CompanyLogo symbol={r.symbol} name={r.name || r.symbol} size={24} />
+                  <span className="min-w-0">
+                    <span className="font-medium">{r.symbol}</span>
+                    <span className="ml-2 truncate text-muted-foreground">{r.name}</span>
+                  </span>
                 </span>
                 <span className="shrink-0 text-sm text-muted-foreground">Recent</span>
               </button>
@@ -507,9 +511,12 @@ function ResultRow({
       <button type="button" role="option" aria-selected={active} className={rowClass} onMouseEnter={onHover} onClick={onSelect}>
         {item.kind === "symbol" ? (
           <>
-            <span>
-              <span className="font-medium">{item.hit.symbol}</span>
-              <span className="ml-2 text-muted-foreground">{item.hit.name}</span>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <CompanyLogo symbol={item.hit.market === "IN" ? item.hit.symbol : null} name={item.hit.name || item.hit.symbol} size={24} />
+              <span className="min-w-0">
+                <span className="font-medium">{item.hit.symbol}</span>
+                <span className="ml-2 text-muted-foreground">{item.hit.name}</span>
+              </span>
             </span>
             <span className="shrink-0 text-sm uppercase text-primary">{item.hit.market === "IN" ? "India" : "US"}</span>
           </>

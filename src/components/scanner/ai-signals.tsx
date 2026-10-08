@@ -19,6 +19,7 @@ import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner"
 import { OptionStratPanel } from "@/components/scanner/optionstrat-panel";
 import { fetchJsonAuth, isAuthRequiredError } from "@/lib/scanner/auth-fetcher";
 import useSWR from "swr";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 const fetcher = (url: string) => fetchJsonAuth<{ run: SignalsRun | null }>(url);
 const pct = (n: number, d = 1) => `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
@@ -83,9 +84,12 @@ function StockCard({ r, side }: { r: StockSignal; side: "buy" | "sell" }) {
       className="block w-full rounded-xl border border-border bg-card p-3 active:bg-accent"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <span className="font-bold text-primary">{r.symbol}</span>
-          <span className="ml-1.5 truncate text-xs text-muted-foreground">{r.industry}</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <CompanyLogo symbol={r.symbol} name={r.symbol} size={24} />
+          <span className="min-w-0 truncate">
+            <span className="font-bold text-primary">{r.symbol}</span>
+            <span className="ml-1.5 text-xs text-muted-foreground">{r.industry}</span>
+          </span>
         </div>
         <span
           className={cn(
@@ -137,8 +141,11 @@ function StockTable({ rows, side }: { rows: StockSignal[]; side: "buy" | "sell" 
           {rows.map((r) => (
             <tr key={r.symbol} className="border-t border-border/50">
               <td className="whitespace-nowrap px-2 py-1.5">
-                <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="font-semibold text-primary hover:underline">{r.symbol}</Link>
-                <span className="ml-2 text-muted-foreground">{r.industry}</span>
+                <span className="inline-flex items-center gap-2 align-middle">
+                  <CompanyLogo symbol={r.symbol} name={r.symbol} size={24} />
+                  <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="font-semibold text-primary hover:underline">{r.symbol}</Link>
+                  <span className="text-muted-foreground">{r.industry}</span>
+                </span>
               </td>
               <td className={cn("px-2 py-1.5 text-right tabular-nums", side === "buy" ? "text-emerald-600" : "text-rose-600")}>{(r.pUp * 100).toFixed(0)}%</td>
               <td className="px-2 py-1.5 text-right tabular-nums">{r.entry.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>

@@ -11,6 +11,7 @@ import useSWR from "swr";
 import type { TradeLogRow } from "@/lib/my-portfolio/types";
 import Link from "next/link";
 import { useMemo } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -108,7 +109,7 @@ export default function PortfolioTaxPage() {
                 <tbody>
                   {summary.unrealizedRows.map((r) => (
                     <tr key={r.symbol} className="border-b border-border/60">
-                      <td className="py-2 pr-3 font-medium">{r.symbol}</td>
+                      <td className="py-2 pr-3 font-medium"><span className="inline-flex items-center gap-2"><CompanyLogo symbol={r.symbol} name={r.symbol} size={24} />{r.symbol}</span></td>
                       <td className="py-2 pr-3">{r.bucket}</td>
                       <td className="py-2 pr-3 text-right tabular-nums">{r.holdingDays}</td>
                       <td className="py-2 text-right tabular-nums">{formatInr(r.gainInr)}</td>
@@ -136,7 +137,7 @@ export default function PortfolioTaxPage() {
                     {summary.realizedRows.map((r, i) => (
                       <tr key={`${r.symbol}-${r.tradeDate}-${i}`} className="border-b border-border/60">
                         <td className="py-2 pr-3">{r.tradeDate}</td>
-                        <td className="py-2 pr-3">{r.symbol}</td>
+                        <td className="py-2 pr-3"><span className="inline-flex items-center gap-2"><CompanyLogo symbol={r.symbol} name={r.symbol} size={24} />{r.symbol}</span></td>
                         <td className="py-2 pr-3 text-right tabular-nums">{r.shares}</td>
                         <td className="py-2 text-right tabular-nums">{formatInr(r.gainInr)}</td>
                       </tr>

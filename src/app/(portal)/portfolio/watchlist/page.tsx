@@ -6,6 +6,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import Link from "next/link";
 import { useState } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function fmtAddedIst(iso: string): string {
   try {
@@ -55,12 +56,13 @@ export default function WatchlistPage() {
                 label: "Symbol",
                 value: (r) => r.symbol,
                 render: (r) => (
-                  <>
+                  <span className="inline-flex items-center gap-2">
+                    <CompanyLogo symbol={r.market === "IN" ? r.symbol : null} name={r.name || r.symbol} size={24} />
                     <Link href={`/research/${encodeURIComponent(r.symbol)}`} className="font-semibold text-primary hover:underline">
                       {r.symbol} ›
                     </Link>
-                    <span className="ml-2 text-muted-foreground">{r.name}</span>
-                  </>
+                    <span className="text-muted-foreground">{r.name}</span>
+                  </span>
                 ),
               },
               { key: "market", label: "Market", value: (r) => r.market },

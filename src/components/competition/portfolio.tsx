@@ -32,6 +32,7 @@ import {
   percent,
   StatusMessage,
 } from "./shared";
+import { CompanyLogo } from "@/components/CompanyLogo";
 type Portfolio = {
   competition: Competition;
   participant: Participant | null;
@@ -240,7 +241,12 @@ export function AlphaPortfolio() {
                         timeZone: "Asia/Kolkata",
                       })}
                     </TableCell>
-                    <TableCell>{t.symbol}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-2">
+                        <CompanyLogo symbol={t.symbol} name={t.symbol} size={24} />
+                        {t.symbol}
+                      </span>
+                    </TableCell>
                     <TableCell>{t.side}</TableCell>
                     <TableCell>{t.shares}</TableCell>
                     <TableCell>{money(t.price)}</TableCell>

@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export function AttributionPanel({
   attribution,
@@ -14,7 +15,7 @@ export function AttributionPanel({
     <div className="space-y-1.5 text-sm">
       {attribution.map((row) => (
         <div key={row.symbol} className="flex items-center justify-between">
-          <span className="text-muted-foreground">{row.symbol}</span>
+          <span className="inline-flex items-center gap-2 text-muted-foreground"><CompanyLogo symbol={row.symbol} name={row.symbol} size={20} />{row.symbol}</span>
           <span className={cn("", row.contributionPct >= 0 ? "text-emerald-600" : "text-rose-600")}>
             {row.contributionPct >= 0 ? "+" : ""}
             {(row.contributionPct * 100).toFixed(2)}%

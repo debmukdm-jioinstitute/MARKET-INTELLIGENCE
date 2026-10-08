@@ -10,6 +10,7 @@ A research and portfolio terminal for Indian (NSE) and US markets: live and open
 - Tap any of the 26 India benchmark cards (Nifty 50, SENSEX, Bank Nifty, India VIX, ...) to open a live drill-down: price chart, sector treemap, and a full constituent stock table where every row opens that company's dossier.
 - Watch the India desk for the market pulse, FII/DII flows, global radar, and macro headlines in one view.
 - Browse commodities, currencies, and world indices with live charts and transmission heuristics.
+- Spot companies at a glance: official NSE company logos appear next to stock names across tables, search, research headers, portfolio, and watchlist.
 
 ### Research any company
 - Open a company dossier for any NSE stock: overview, fundamentals, trend, options snapshot, risk flags, news, and broker research with consensus intelligence.
@@ -36,6 +37,7 @@ A research and portfolio terminal for Indian (NSE) and US markets: live and open
 | Area | Routes | What it does |
 |---|---|---|
 | **India desk** | `/Home` | Market pulse, global radar, India-impact score, FII/DII, macro strip, corporate events; **five AI agent** cards (Ask Deb, daily brief, market signals, options flow, scanner); **portfolio teaser** for holders, **India depth** link to the India board, recently-viewed continuity |
+| **Company logos** | Site-wide | Official logos for ~450 NSE companies shown left of the company name on index constituents, research headers, search / command palette, portfolio, watchlist, scanner, AI signals, earnings and promoter cards. Static, self-hosted files (`nifty500-logos*.zip` → `public/logos/` on build via `scripts/extract-logos.mjs`); plain `<img>`, no image optimizer; letter-avatar fallback when a logo is missing |
 | **Markets** | `/markets/india`, `/markets/breadth`, … | **Entry:** India cockpit (`/markets` permanently redirects here). **Clickable index cards** → live constituent drill-down (`/markets/india/[slug]`): live chart, sector treemap, searchable/sortable constituent table linking to `/research/[symbol]`; index switcher strip; Upstox quotes + security sheet; live NSE breadth; derivatives (Greeks, PCR, max pain); static teaching mockups on momentum / sectors / valuation (called out below) |
 | **Macro hub** | `/macro`, `/macro/*` | Regime quadrant, India/US yield curves, **commodities** (47 instruments), **currency** (29 pairs), **world indices** (50 benchmarks), transmission heuristics, stress index, scenarios, RBI, calendar, global macro cards |
 | **Portfolio** | `/portfolio/*` | **Overview** (live NAV/P&L), **Watchlist** (track names without a position), allocation/attribution/optimizer/quant/risk; real holdings + full metrics catalog; broker import (Zerodha / Dhan / Upstox API or CSV); quant subpages still use Engine B simulated tape |

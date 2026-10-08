@@ -8,6 +8,7 @@ import { MetricInfo } from "@/components/ui/metric-info";
 import { cn } from "@/lib/utils";
 import type { EarningsCalendarItem, EarningsCalendarPeriod } from "@/lib/feeds/earnings/build-calendar";
 import { signClass } from "@/lib/sign-color";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 type Panel = {
   asOf: string;
@@ -124,6 +125,7 @@ export function EarningsCalendarCard() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                        <CompanyLogo symbol={item.symbol} name={item.symbol} size={24} />
                         <span className="font-bold text-foreground text-sm">{item.symbol}</span>
                         <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground tabular-nums">
                           {item.date}

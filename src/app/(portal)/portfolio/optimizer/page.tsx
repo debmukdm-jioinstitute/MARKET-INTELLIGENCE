@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { signClass } from "@/lib/sign-color";
 import { cn } from "@/lib/utils";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function yahooSymbol(market: string, symbol: string) {
   return market === "IN" ? `${symbol}.NS` : symbol;
@@ -160,7 +161,7 @@ export default function OptimizerPage() {
                       const delta = w.weight - cur;
                       return (
                         <tr key={w.symbol} className="border-b border-border/60">
-                          <td className="py-2 pr-3 font-medium">{w.symbol}</td>
+                          <td className="py-2 pr-3 font-medium"><span className="inline-flex items-center gap-2"><CompanyLogo symbol={w.symbol} name={w.symbol} size={24} />{w.symbol}</span></td>
                           <td className="py-2 pr-3 text-right tabular-nums">{formatPct(cur, 1, false)}</td>
                           <td className="py-2 pr-3 text-right tabular-nums">{formatPct(w.weight, 1, false)}</td>
                           <td className={cn("py-2 text-right tabular-nums", signClass(delta))}>{formatPct(delta, 1, true)}</td>

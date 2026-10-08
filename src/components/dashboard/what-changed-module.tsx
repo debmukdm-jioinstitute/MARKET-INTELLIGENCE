@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useWhatChanged } from "@/hooks/use-what-changed";
 import type { MarketShiftItem } from "@/lib/feeds/what-changed/types";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 const summaryFetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -206,6 +207,7 @@ export function WhatChangedModule() {
                             key={`${item.id}-${sec.symbol}`}
                             className="group flex items-center gap-2 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-sm hover:bg-accent hover:border-accent-foreground/30 transition-colors cursor-pointer"
                           >
+                            {isEquity ? <CompanyLogo symbol={sec.symbol} name={sec.symbol} size={20} /> : null}
                             <span className="font-bold text-foreground group-hover:text-blue-600 transition-colors">
                               {sec.symbol}
                             </span>

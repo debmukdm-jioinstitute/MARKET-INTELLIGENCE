@@ -13,6 +13,7 @@ import {
 import { BACKTEST_UNIVERSE } from "@/lib/competition/universe";
 import type { BacktestRule, SandboxResult } from "@/lib/competition/backtest";
 import { sendCompetition, percent, StatusMessage } from "./shared";
+import { CompanyLogo } from "@/components/CompanyLogo";
 // The UI only needs the reference symbols; server data and rule execution stay in server module below.
 const templates = [
   { label: "Momentum", condition: "momentum" },
@@ -204,7 +205,12 @@ export function AlphaBacktest() {
               <TableBody>
                 {results.map((r) => (
                   <TableRow key={r.symbol}>
-                    <TableCell>{r.symbol}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-2">
+                        <CompanyLogo symbol={r.symbol} name={r.symbol} size={24} />
+                        {r.symbol}
+                      </span>
+                    </TableCell>
                     <TableCell>{percent(r.totalReturnPct)}</TableCell>
                     <TableCell>{percent(r.maxDrawdownPct)}</TableCell>
                     <TableCell>{percent(r.winRate)}</TableCell>

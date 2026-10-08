@@ -25,6 +25,7 @@ import { positionRows } from "@/lib/analytics";
 import { UNIVERSE } from "@/lib/universe";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export function HoldingsTable() {
   const { active, trade } = usePortfolio();
@@ -133,8 +134,9 @@ export function HoldingsTable() {
                 <button
                   type="button"
                   onClick={() => openDetail(row.symbol)}
-                  className="w-full px-4 py-2 text-left font-medium text-primary hover:underline"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left font-medium text-primary hover:underline"
                 >
+                  <CompanyLogo symbol={row.symbol} name={row.name} size={24} />
                   {row.symbol}
                   {row.live ? (
                     <span className="ml-1 text-xs font-bold text-emerald-600">● LIVE</span>
