@@ -4,6 +4,7 @@ import { SignedPct } from "@/components/ui/signed-value";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { METRIC_MEANINGS, SETUP_SCORE_TOOLTIP, setupScore, type ScanBias } from "./setup-score";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export interface ScanRow {
   symbol: string;
@@ -190,8 +191,11 @@ export function ScanResults({
                 className="cursor-pointer border-t border-stone-100 bg-white hover:bg-blue-50/60 focus:bg-blue-50/60 focus:outline-none"
               >
                 <td className="whitespace-nowrap px-2 py-2">
-                  <span className="font-bold text-blue-700">{r.symbol}</span>
-                  <span className="ml-2 text-stone-500">{r.name}</span>
+                  <span className="inline-flex items-center gap-2 align-middle">
+                    <CompanyLogo symbol={r.symbol} name={r.name} size={24} />
+                    <span className="font-bold text-blue-700">{r.symbol}</span>
+                    <span className="text-stone-500">{r.name}</span>
+                  </span>
                 </td>
                 {showIndustry ? <td className="whitespace-nowrap px-2 py-2 text-stone-500">{r.industry}</td> : null}
                 <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums" title={METRIC_MEANINGS.ltp}>
@@ -232,9 +236,12 @@ export function ScanResults({
             className="w-full rounded-xl border border-stone-200 bg-white p-3 text-left shadow-sm active:bg-blue-50/60"
           >
             <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <span className="font-bold text-blue-700">{r.symbol}</span>
-                <span className="ml-1.5 truncate text-xs text-stone-500">{r.name}</span>
+              <div className="flex min-w-0 items-center gap-2">
+                <CompanyLogo symbol={r.symbol} name={r.name} size={24} />
+                <span className="min-w-0 truncate">
+                  <span className="font-bold text-blue-700">{r.symbol}</span>
+                  <span className="ml-1.5 text-xs text-stone-500">{r.name}</span>
+                </span>
               </div>
               <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums", scoreChipClass(score))} title={SETUP_SCORE_TOOLTIP}>
                 {score}

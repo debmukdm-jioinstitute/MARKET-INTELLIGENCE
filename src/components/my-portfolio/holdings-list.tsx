@@ -12,6 +12,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function inr(v: number) {
   if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(2)} Cr`;
@@ -132,6 +133,7 @@ export function HoldingsList({
               onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
             >
               <TableCell className="font-medium text-primary flex items-center gap-1">
+                <span className="mr-1.5 inline-flex"><CompanyLogo symbol={row.symbol} name={row.name} size={24} /></span>
                 <span className="group-hover:underline underline-offset-2">{row.symbol}</span>
                 <span className="text-sm text-muted-foreground">{row.market}</span>
                 <ArrowUpRight className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
@@ -202,10 +204,13 @@ export function HoldingsList({
               onClick={() => router.push(`/research/${encodeURIComponent(row.symbol)}`)}
               className="flex min-h-[44px] w-full items-center justify-between gap-2 text-left"
             >
-              <span className="min-w-0">
-                <span className="font-medium text-primary">{row.symbol}</span>
-                <span className="ml-1.5 text-xs text-muted-foreground">{row.market}</span>
-                <span className="block truncate text-xs text-muted-foreground">{row.name}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <CompanyLogo symbol={row.symbol} name={row.name} size={28} />
+                <span className="min-w-0">
+                  <span className="font-medium text-primary">{row.symbol}</span>
+                  <span className="ml-1.5 text-xs text-muted-foreground">{row.market}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{row.name}</span>
+                </span>
               </span>
               <span
                 className={cn(

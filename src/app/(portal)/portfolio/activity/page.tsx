@@ -8,6 +8,7 @@ import type { TradeLogRow } from "@/lib/my-portfolio/types";
 import Link from "next/link";
 import { signClass } from "@/lib/sign-color";
 import { cn } from "@/lib/utils";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -80,7 +81,7 @@ export default function PortfolioActivityPage() {
                     {trades.map((t, i) => (
                       <tr key={`${t.symbol}-${t.date}-${i}`} className="border-b border-border/60">
                         <td className="py-2 pr-3">{t.date}</td>
-                        <td className="py-2 pr-3 font-medium">{t.symbol}</td>
+                        <td className="py-2 pr-3 font-medium"><span className="inline-flex items-center gap-2"><CompanyLogo symbol={t.symbol} name={t.symbol} size={24} />{t.symbol}</span></td>
                         <td className="py-2 pr-3">{t.side}</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{t.shares}</td>
                         <td className="py-2 text-right tabular-nums">{t.price.toFixed(2)}</td>

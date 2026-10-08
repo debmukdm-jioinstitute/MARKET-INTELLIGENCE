@@ -10,6 +10,7 @@ import { useMarketStatus } from "@/hooks/use-market-status";
 import { formatPct } from "@/lib/format";
 import { fmtCr, fmtInr, fmtNum } from "@/lib/format-india";
 import { cn } from "@/lib/utils";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 /* ------------------------------------------------------------------ */
 /* Types (defensive — matches the /api/indices/[slug]/constituents    */
@@ -610,8 +611,13 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
                     className="cursor-pointer transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1a73e8]"
                   >
                     <td className="px-2 py-2.5">
-                      <p className="font-bold text-foreground">{c.symbol}</p>
-                      <p className="max-w-[220px] truncate text-muted-foreground">{c.name}</p>
+                      <div className="flex items-center gap-2.5">
+                        <CompanyLogo symbol={c.symbol} name={c.name} size={28} />
+                        <div className="min-w-0">
+                          <p className="font-bold text-foreground">{c.symbol}</p>
+                          <p className="max-w-[220px] truncate text-muted-foreground">{c.name}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-2 py-2.5 text-muted-foreground">{c.industry}</td>
                     <td className="px-2 py-2.5 text-right font-bold tabular-nums text-foreground">
@@ -672,9 +678,12 @@ export function IndexConstituentsPanel({ slug }: { slug: string }) {
                 className="w-full rounded-xl border border-border/60 bg-card p-3 text-left shadow-sm transition-colors active:bg-accent/40"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-foreground">{c.symbol}</p>
-                    <p className="truncate text-xs text-muted-foreground">{c.name}</p>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <CompanyLogo symbol={c.symbol} name={c.name} size={28} />
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-foreground">{c.symbol}</p>
+                      <p className="truncate text-xs text-muted-foreground">{c.name}</p>
+                    </div>
                   </div>
                   <span
                     className={cn(

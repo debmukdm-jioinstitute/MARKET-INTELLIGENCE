@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { awardXp } from "@/lib/gamification/client";
 import { recordRecentSymbol } from "@/lib/research/recent-symbols";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 // Code-split heavy / below-the-fold UI so it is not parsed and hydrated during page load.
 // Charts are client-only (canvas / SVG measured in the browser), so ssr:false loses nothing.
@@ -202,6 +203,7 @@ export function ResearchSymbolClient({
     <div className="space-y-6 overflow-x-clip">
       <PageHeader
         title={data ? `${data.symbol} · ${data.name}` : symbol}
+        leading={data && data.market === "IN" ? <CompanyLogo symbol={data.symbol} name={data.name} size={40} /> : undefined}
         subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
       <SymbolSearch initialQuery={symbol} variant="bar" showShortcut={false} className="max-w-3xl" />

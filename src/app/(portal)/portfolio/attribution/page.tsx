@@ -10,6 +10,7 @@ import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { signClass } from "@/lib/sign-color";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export default function AttributionPage() {
   const { data, loading, error, locked } = useMyPortfolio();
@@ -83,7 +84,7 @@ export default function AttributionPage() {
                 <TableBody>
                   {stockRows.map((row) => (
                     <TableRow key={row.symbol}>
-                      <TableCell>{row.symbol}</TableCell>
+                      <TableCell><span className="inline-flex items-center gap-2"><CompanyLogo symbol={row.symbol} name={row.name} size={24} />{row.symbol}</span></TableCell>
                       <TableCell className="text-muted-foreground">{row.name}</TableCell>
                       <Cell v={row.contributionPct} />
                     </TableRow>

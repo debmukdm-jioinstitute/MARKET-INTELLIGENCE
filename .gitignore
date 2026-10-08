@@ -20,6 +20,9 @@
 # production
 /build
 
+# extracted from nifty500-logos*.zip by scripts/extract-logos.mjs
+/public/logos/
+
 # misc
 .tools/
 .DS_Store

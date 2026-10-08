@@ -8,7 +8,7 @@ import { panelSource, urlForSource } from "@/lib/panel-sources";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useId, useState } from "react";
 
 type TrustProps = ComponentProps<typeof TrustNote>;
@@ -20,6 +20,7 @@ export function PageHeader({
   className,
   titleAs: TitleTag = "h2",
   trust,
+  leading,
 }: {
   /** Small label above the title, e.g. "Investment research". */
   kicker?: string;
@@ -29,6 +30,8 @@ export function PageHeader({
   titleAs?: "h1" | "h2";
   /** Source / freshness / methodology line shown under the subtitle. */
   trust?: TrustProps;
+  /** Optional node (e.g. a company logo) rendered to the left of the title. */
+  leading?: ReactNode;
 }) {
   const path = usePathname();
   const titleSlot = siteContentSlot(path, "page-header.title");
@@ -40,6 +43,19 @@ export function PageHeader({
   return (
     <div className={cn("portal-header-enter mb-4 sm:mb-5", className)}>
       {kicker ? <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-primary">{kicker}</p> : null}
+      {leading ? (
+        <div className="flex items-center gap-3">
+          {leading}
+        <TitleTag
+          data-mi-slot={titleSlot}
+          data-mi-field="title"
+          data-mi-label="Page title"
+          className="font-heading text-2xl font-bold tracking-tight text-foreground"
+        >
+          {displayTitle}
+        </TitleTag>
+        </div>
+      ) : (
       <TitleTag
         data-mi-slot={titleSlot}
         data-mi-field="title"
@@ -48,6 +64,7 @@ export function PageHeader({
       >
         {displayTitle}
       </TitleTag>
+      )}
       {(displaySubtitle || subtitle) ? (
         <p
           data-mi-slot={subtitleSlot}

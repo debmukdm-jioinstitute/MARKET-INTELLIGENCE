@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "extract-logos": "node scripts/extract-logos.mjs",
+    "predev": "node scripts/extract-logos.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/extract-logos.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "npm run check:typography && npm run check:react-loops && npm run check:mcp-tools && eslint",

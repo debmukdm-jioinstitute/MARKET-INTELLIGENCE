@@ -1,6 +1,7 @@
 import type { ResearchDetailPayload } from "@/lib/feeds/research-detail";
 import { fmtChgPct, fmtInr } from "@/lib/format-india";
 import { formatSeoDate } from "@/lib/seo/metadata";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export function SymbolSeoHeader({ data }: { data: ResearchDetailPayload }) {
   const q = data.upstoxQuote;
@@ -9,9 +10,12 @@ export function SymbolSeoHeader({ data }: { data: ResearchDetailPayload }) {
 
   return (
     <header className="portal-page border-b border-border/60 pb-4">
-      <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-        {data.name} ({data.symbol}) — share price &amp; research
-      </h1>
+      <div className="flex items-center gap-3">
+        {data.market === "IN" ? <CompanyLogo symbol={data.symbol} name={data.name} size={40} /> : null}
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          {data.name} ({data.symbol}) — share price &amp; research
+        </h1>
+      </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {marketLabel} · updated {formatSeoDate(asOf)}
         {data.market === "IN" ? " · India quote via configured market feeds when available" : ""}

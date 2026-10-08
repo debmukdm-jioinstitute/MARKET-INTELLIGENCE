@@ -10,6 +10,7 @@ import { fmtChgPct, fmtInr } from "@/lib/format-india";
 import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function ChangeTag({ value }: { value: number }) {
   return (
@@ -25,11 +26,14 @@ export function IndiaQuoteResultView({ instrument }: { instrument: IndiaInstrume
   const { data: quote, loading, error } = useUpstoxQuote(instrument.symbol, true);
   return (
     <div className="space-y-3 p-4 text-sm">
-      <div>
+      <div className="flex items-center gap-3">
+        <CompanyLogo symbol={instrument.symbol} name={instrument.name} size={36} />
+        <div className="min-w-0">
         <p className="text-base font-semibold">{instrument.name}</p>
         <p className="text-sm text-muted-foreground">
           {instrument.symbol} · {instrument.sector} · Upstox
         </p>
+        </div>
       </div>
       {loading && !quote ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
@@ -103,11 +107,14 @@ export function GlobalQuoteResultView({ instrument }: { instrument: Instrument }
   const q = data?.quotes.find((r) => r.symbol === instrument.symbol);
   return (
     <div className="space-y-3 p-4 text-sm">
-      <div>
+      <div className="flex items-center gap-3">
+        <CompanyLogo symbol={instrument.symbol} name={instrument.name} size={36} />
+        <div className="min-w-0">
         <p className="text-base font-semibold">{instrument.name}</p>
         <p className="text-sm text-muted-foreground">
           {instrument.symbol} · {instrument.sector} · {q?.provider ?? "—"}
         </p>
+        </div>
       </div>
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
       {q ? (

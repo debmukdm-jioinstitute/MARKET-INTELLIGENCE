@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function MetricTile({
   label,
@@ -82,7 +83,8 @@ function PromoterRow({ item }: { item: PromoterFeedItem }) {
           Verify filing <ExternalLink className="size-3" />
         </a>
         {item.symbol ? (
-          <Link href={`/research/${encodeURIComponent(item.symbol)}`} className="text-xs text-muted-foreground hover:text-foreground">
+          <Link href={`/research/${encodeURIComponent(item.symbol)}`} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <CompanyLogo symbol={item.symbol} name={item.companyName ?? item.symbol} size={20} />
             {item.symbol} →
           </Link>
         ) : null}

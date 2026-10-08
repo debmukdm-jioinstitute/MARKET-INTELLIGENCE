@@ -33,6 +33,11 @@ async function main() {
   const t0 = Date.now();
   const snapshot = await fetchPromoterDisclosureFeed({ deep: true });
   if (snapshot.items.length) await persistPromoterFeedItems(snapshot.items);
+  // Fail the run (-> red in Actions) when the official NSE source produced nothing, so a silent
+  // breakage can't hide behind news-RSS rows.
+  if (!snapshot.collectorsUsed.includes("nse-api")) {
+    fail("NSE API returned no items — collector degraded to news RSS only", { collectorsUsed: snapshot.collectorsUsed });
+  }
   console.log(
     JSON.stringify({
       level: "info",
@@ -40,6 +45,7 @@ async function main() {
       ok: snapshot.dataStatus === "AVAILABLE",
       count: snapshot.items.length,
       collectorsUsed: snapshot.collectorsUsed,
+      message: snapshot.message,
       ms: Date.now() - t0,
     }),
   );

@@ -33,6 +33,7 @@ import { ArrowLeft, HelpCircle, X } from "lucide-react";
 import { usePlatformShortcut } from "@/hooks/use-platform-shortcut";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 type DataSource = "all" | "india" | "global";
 
@@ -192,6 +193,7 @@ export function CommandPalette() {
                       value={`${i.symbol} ${i.name}`}
                       onSelect={() => setView({ type: "india-quote", symbol: i.symbol })}
                     >
+                      <CompanyLogo symbol={i.symbol} name={i.name} size={24} />
                       <span className="font-medium">{i.symbol}</span>
                       <span className="ml-2 text-sm text-muted-foreground">{i.name} — quote</span>
                     </CommandItem>
@@ -202,6 +204,7 @@ export function CommandPalette() {
                       value={`${i.symbol} ${i.name} fundamentals ratios`}
                       onSelect={() => setView({ type: "india-fundamentals", symbol: i.symbol })}
                     >
+                      <CompanyLogo symbol={i.symbol} name={i.name} size={24} />
                       <span className="font-medium">{i.symbol}</span>
                       <span className="ml-2 text-sm text-muted-foreground">fundamentals</span>
                     </CommandItem>

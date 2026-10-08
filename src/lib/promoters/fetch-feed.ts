@@ -15,8 +15,30 @@ import { feedFetch } from "@/lib/feeds/http";
 import { normalizeNewsPublishedAt } from "@/lib/feeds/news-sort";
 import { parseRss } from "@/lib/feeds/rss";
 import { createHash } from "node:crypto";
+import { fetchNseNative } from "@/lib/promoters/nse-native";
 
-const RSS_LIMIT = 14;
+const RSS_LIMIT = 25;
+const MAX_AGE_DAYS = 30;
+const PER_CHANNEL_CAP = 60; // keeps 100+ daily bulk rows from crowding out promoter filings and news
+const MAX_ITEMS = 240;
+
+/** Titles that are site chrome / raw filing letters rather than news about a promoter event. */
+const JUNK_TITLE = [
+  /^untitled\b/i,
+  /^(the )?(corporate service|listing) department/i,
+  /^to,?\s+the (manager|general manager)/i,
+  /\bexchange rate\b|\bforecast, chart\b/i,
+  /^(market watch|national stock exchange of india)\b/i,
+  /^(bse|nse)\b.*\b(home|india)\s*$/i,
+  /^\w+ \d{1,2}, \d{4}\s+(to|the)\b/i,
+];
+
+export function isUsefulRssItem(title: string, transactionDate: string, now = Date.now()): boolean {
+  if (title.trim().length < 15) return false;
+  if (JUNK_TITLE.some((re) => re.test(title.trim()))) return false;
+  const age = (now - Date.parse(transactionDate)) / 86_400_000;
+  return Number.isFinite(age) && age <= MAX_AGE_DAYS && age >= -1;
+}
 
 function googleNewsRssUrl(query: string) {
   return `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-IN&gl=IN&ceid=IN:en`;
@@ -37,9 +59,10 @@ async function fetchChannelRss(channel: PromoterFeedChannel, rssQuery: string): 
     if (!res.ok) return [];
     const xml = await res.text();
     const rows = parseRss(xml, "googlenews", RSS_LIMIT);
-    return rows.map((row) => {
+    return rows.flatMap((row) => {
       const transactionDate = toDate(row.publishedAt);
-      return {
+      if (!isUsefulRssItem(row.title, transactionDate)) return [];
+      return [{
         id: stableId(channel, row.title, transactionDate, row.link),
         channel,
         title: row.title,
@@ -50,7 +73,7 @@ async function fetchChannelRss(channel: PromoterFeedChannel, rssQuery: string): 
         sourceUrl: row.link,
         snippet: null,
         collector: "google-news" as const,
-      };
+      }];
     });
   } catch {
     return [];
@@ -86,23 +109,30 @@ async function fetchCrawlerSupplement(
 function dedupe(items: PromoterFeedItem[]): PromoterFeedItem[] {
   const seen = new Set<string>();
   const out: PromoterFeedItem[] = [];
+  const perChannel = new Map<string, number>();
   for (const item of items.sort((a, b) => b.transactionDate.localeCompare(a.transactionDate))) {
-    const key = `${item.channel}|${item.title.toLowerCase().slice(0, 72)}|${item.transactionDate}`;
+    const key = `${item.channel}|${item.title.toLowerCase().slice(0, 140)}|${item.transactionDate}`;
     if (seen.has(key)) continue;
     seen.add(key);
+    const n = perChannel.get(item.channel) ?? 0;
+    if (n >= PER_CHANNEL_CAP) continue;
+    perChannel.set(item.channel, n + 1);
     out.push(item);
   }
   return out;
 }
 
-export type FetchPromoterFeedOptions = { deep?: boolean };
+/** `native: false` skips the NSE API calls (user-request path — keep it light; the cron does the heavy pull). */
+export type FetchPromoterFeedOptions = { deep?: boolean; native?: boolean };
 
 export async function fetchPromoterDisclosureFeed(opts?: FetchPromoterFeedOptions): Promise<PromoterFeedSnapshot> {
   const collectorsUsed = new Set<PromoterFeedCollector>(["google-news"]);
-  const rssBatches = await Promise.all(
-    PROMOTER_DISCLOSURE_SOURCES.map((s) => fetchChannelRss(s.channel, s.rssQuery)),
-  );
-  let items = rssBatches.flat();
+  const [rssBatches, native] = await Promise.all([
+    Promise.all(PROMOTER_DISCLOSURE_SOURCES.map((s) => fetchChannelRss(s.channel, s.rssQuery))),
+    opts?.native === false ? Promise.resolve({ items: [], failed: [] as string[] }) : fetchNseNative(),
+  ]);
+  let items = [...native.items, ...rssBatches.flat()];
+  if (native.items.length) collectorsUsed.add("nse-api");
 
   if (opts?.deep && (process.env.FIRECRAWL_API_KEY || process.env.CRAWL4AI_API_URL)) {
     for (const src of PROMOTER_DISCLOSURE_SOURCES.slice(0, 2)) {
@@ -112,7 +142,7 @@ export async function fetchPromoterDisclosureFeed(opts?: FetchPromoterFeedOption
     }
   }
 
-  items = dedupe(items).slice(0, 120);
+  items = dedupe(items).slice(0, MAX_ITEMS);
   const asOf = new Date().toISOString();
 
   if (!items.length) {
@@ -131,6 +161,6 @@ export async function fetchPromoterDisclosureFeed(opts?: FetchPromoterFeedOption
     asOf,
     collectorsUsed: [...collectorsUsed],
     dataStatus: "AVAILABLE",
-    message: `${items.length} disclosure-related items (RSS${opts?.deep ? " + crawler" : ""}). Verify on NSE/BSE before acting.`,
+    message: `${items.length} disclosure-related items (${native.items.length ? `NSE API ${native.items.length} + ` : ""}news RSS${opts?.deep ? " + crawler" : ""}${native.failed.length ? `; NSE sources unavailable: ${native.failed.join(", ")}` : ""}). Verify on NSE/BSE before acting.`,
   };
 }
