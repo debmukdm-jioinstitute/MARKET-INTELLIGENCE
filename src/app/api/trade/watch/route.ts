@@ -1,4 +1,5 @@
 import { rateLimited } from "@/lib/api-guard";
+import { clientIp } from "@/lib/client-ip";
 import { getLab } from "@/lib/trade-lab/engine";
 import { TIMEFRAMES, type Timeframe } from "@/lib/trade-lab/types";
 import { NextResponse } from "next/server";
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
   if (!TIMEFRAMES.some((t) => t.id === tf)) return NextResponse.json({ error: "Invalid timeframe" }, { status: 400 });
   const symbols = [...new Set((sp.get("symbols") ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean))].slice(0, 12);
   if (!symbols.length) return NextResponse.json({ rows: [] });
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
+  const ip = clientIp(req);
   if (await rateLimited(`trade-watch:${ip}`, 30, 60)) return NextResponse.json({ error: "Too many requests — try again in a minute." }, { status: 429 });
   const rows = await Promise.all(
     symbols.map(async (symbol) => {

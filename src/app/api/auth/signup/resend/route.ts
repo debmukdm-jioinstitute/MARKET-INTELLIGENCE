@@ -1,15 +1,12 @@
 import { hasOutboundEmailConfigured, productionEmailMisconfiguredReason } from "@/lib/admin/email";
 import { rateLimited } from "@/lib/api-guard";
+import { clientIp } from "@/lib/client-ip";
 import { isKitEmailConfigured } from "@/lib/kit";
 import { generateSignupOtp, hashSignupOtp, sendSignupOtpEmail, SIGNUP_OTP_RESEND_SEC, SIGNUP_OTP_TTL_MIN } from "@/lib/auth/signup-otp";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-
-function clientIp(req: Request) {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
-}
 
 export async function POST(req: Request) {
   if (!hasDatabase()) {

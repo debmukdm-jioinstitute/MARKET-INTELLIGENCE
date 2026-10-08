@@ -1,5 +1,6 @@
 import type { SessionUser } from "@/lib/auth";
 import { verifySessionToken } from "@/lib/auth-crypto";
+import { clientIp } from "@/lib/client-ip";
 import { parseAccessToken } from "@/lib/mcp/oauth/crypto";
 import { createHash, timingSafeEqual } from "crypto";
 
@@ -57,7 +58,7 @@ export function resolveMcpCallContext(req: Request): McpCallContext {
   const xKey = req.headers.get("x-api-key")?.trim() ?? "";
   const xSession = req.headers.get("x-mi-session")?.trim() ?? "";
   const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() ?? "";
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+  const ip = clientIp(req, "unknown");
 
   let apiKey: string | null = null;
   let sessionToken = xSession;

@@ -1,4 +1,5 @@
 import { rateLimited } from "@/lib/api-guard";
+import { clientIp } from "@/lib/client-ip";
 import { backtestSymbol, STRATEGIES, type StrategyId } from "@/lib/trade-lab/backtest";
 import { NextResponse } from "next/server";
 
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
   if (!strategy || !STRATEGIES.some((s) => s.id === strategy)) {
     return NextResponse.json({ error: "strategy must be one of " + STRATEGIES.map((s) => s.id).join(", ") }, { status: 400 });
   }
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
+  const ip = clientIp(req);
   if (await rateLimited(`trade-bt:${ip}`, 30, 60)) {
     return NextResponse.json({ error: "Too many requests — try again in a minute." }, { status: 429 });
   }

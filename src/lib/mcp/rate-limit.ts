@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { clientIp as cloudflareAwareClientIp } from "@/lib/client-ip";
 
 const digest = (s: string) => createHash("sha256").update(s).digest("hex");
 
@@ -43,9 +44,10 @@ export function mcpRateLimited(key: string, maxPerMinute: number): boolean {
 }
 
 export function clientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0]?.trim() || "unknown";
-  return req.headers.get("x-real-ip")?.trim() || "unknown";
+  // Cloudflare-aware: trust CF-Connecting-IP first (spoof-proof behind the
+  // proxy); keep the historical "unknown" fallback so existing rate-limit
+  // keys and log lines keep their shape.
+  return cloudflareAwareClientIp(req, "unknown");
 }
 
 /** Higher cap when owner issued MCP_API_KEY or user signed in. */
