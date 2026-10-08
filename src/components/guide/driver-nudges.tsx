@@ -311,7 +311,9 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
                     <div className="flex items-center gap-1.5 mt-3 text-xs font-medium text-foreground/80">
                       <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       <span>
-                        {card.evidenceCount} reference headline{card.evidenceCount === 1 ? "" : "s"}
+                        {card.evidenceCount === 0
+                          ? "No recent headlines"
+                          : `${card.evidenceCount} reference headline${card.evidenceCount === 1 ? "" : "s"}`}
                       </span>
                     </div>
 
@@ -363,8 +365,13 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
               {/* Related coverage section */}
               <div className="space-y-2">
                 <h4 className="text-xs font-bold text-foreground">Related coverage</h4>
-                <div className="space-y-2.5">
-                  {currentSelectedCard.evidence.slice(0, 3).map((item, idx) => (
+                {currentSelectedCard.evidence.length === 0 ? (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    No recent headlines matched this driver in the last 30 days.
+                  </p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {currentSelectedCard.evidence.slice(0, 3).map((item, idx) => (
                     <div
                       key={idx}
                       className="rounded-xl border border-border/60 bg-background/80 p-3 space-y-1.5 transition-colors hover:border-border"
@@ -394,7 +401,8 @@ export function DriverNudges({ symbol, name }: { symbol: string; name: string })
                       </div>
                     </div>
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Check Relevance Box */}
