@@ -74,7 +74,7 @@ export default function IntelligencePage() {
           modelUsed: data.modelUsed,
         },
       ]);
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {

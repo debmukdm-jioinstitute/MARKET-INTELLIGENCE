@@ -212,15 +212,7 @@ export function PortfolioDashboardView({
     return positions.reduce((sum, p) => sum + p.pnlInr, 0);
   }, [positions]);
 
-  const totalCostBasisInr = useMemo(() => {
-    return positions.reduce((sum, p) => {
-      const cost = p.shares * p.avgCost;
-      const rate = p.currency === "USD" && p.last > 0 ? p.lastInr / p.last : 1;
-      return sum + cost * rate;
-    }, 0);
-  }, [positions]);
 
-  const yourReturnFraction = totalCostBasisInr > 0 ? unrealizedPnlInr / totalCostBasisInr : 0;
 
   // Benchmark Return & Metrics
   const currentBenchmark = data?.settings.benchmark ?? "NIFTY50";
@@ -254,19 +246,20 @@ export function PortfolioDashboardView({
   // IRR & XIRR
   // XIRR from the dated cash flows the user entered: deposits are outflows, withdrawals inflows,
   // and today's portfolio value is the terminal inflow. Needs at least one flow older than today.
+  const [nowMs] = useState(() => Date.now());
   const xirr = useMemo(() => {
     if (!cashFlows.length || navInr <= 0) return null;
     const sorted = [...cashFlows].sort((a, b) => a.date.localeCompare(b.date));
     const t0 = new Date(sorted[0]!.date).getTime();
     const day = 24 * 3600 * 1000;
-    const terminalDays = (Date.now() - t0) / day;
+    const terminalDays = (nowMs - t0) / day;
     if (!(terminalDays >= 1)) return null;
     const flows = sorted.map((c) => ({
       amount: c.type === "DEPOSIT" ? -c.amountInr : c.amountInr,
       days: (new Date(c.date).getTime() - t0) / day,
     }));
     return moneyWeightedIrr(flows, navInr, terminalDays);
-  }, [cashFlows, navInr]);
+  }, [cashFlows, navInr, nowMs]);
   const xirrDisplay = xirr != null && Number.isFinite(xirr) ? formatPct(xirr) : "—";
 
   const irrMetric = useMemo(() => findMetric(data?.categories, "mwrIrr"), [data]);

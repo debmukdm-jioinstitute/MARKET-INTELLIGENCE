@@ -12,8 +12,6 @@ import {
   Database,
   Calendar,
   ShieldCheck,
-  ChevronRight,
-  Calculator,
   Globe,
   Sparkles,
   Eye,

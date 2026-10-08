@@ -111,7 +111,7 @@ export function formatNewsSource(source: string): string {
 export function explainHeadlineSentiment(
   title: string,
   label: SentimentLabel,
-  source?: string,
+  _source?: string,
 ): string {
   const lower = title.toLowerCase();
 
@@ -174,9 +174,7 @@ export function computeMultiPillarSentiment(params: {
   // 1. DOMESTIC EQUITIES PILLAR
   const nifty = findItem("nifty");
   const sensex = findItem("sensex");
-  const bankNifty = findItem("banknifty");
   const midcap = findItem("midcap");
-  const smallcap = findItem("smallcap");
   const vixIn = findItem("vix_in");
   const auto = findItem("nifty_auto");
   const metal = findItem("nifty_metal");
