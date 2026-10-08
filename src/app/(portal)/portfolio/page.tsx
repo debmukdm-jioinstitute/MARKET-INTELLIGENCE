@@ -1,31 +1,11 @@
 "use client";
 
-import { Donut } from "@/components/charts/terminal-charts";
-import { PageHeader, Panel } from "@/components/layout/page-header";
-import { AddHoldingDialog } from "@/components/my-portfolio/add-holding-dialog";
-import { AttributionPanel } from "@/components/my-portfolio/attribution-panel";
-import { BookDriverNudges } from "@/components/guide/book-driver-nudges";
-import { HoldingsList } from "@/components/my-portfolio/holdings-list";
-import { MetricsCatalog } from "@/components/my-portfolio/metrics-catalog";
-import { PerformanceChart } from "@/components/my-portfolio/performance-chart";
-import { PortfolioOverview } from "@/components/my-portfolio/portfolio-overview";
-import { RiskExposurePanel } from "@/components/my-portfolio/risk-exposure-panel";
-import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
-import { BenchmarkSelect } from "@/components/my-portfolio/benchmark-select";
-import { PortfolioHubExtras } from "@/components/my-portfolio/portfolio-hub-extras";
-import { PortfolioSummaryBar } from "@/components/my-portfolio/portfolio-summary-bar";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
-import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
-import { Lock } from "lucide-react";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { PortfolioDashboardView } from "@/components/my-portfolio/portfolio-dashboard-view";
 
 export default function PortfolioPage() {
   const {
     data,
-    loading,
-    refreshing,
-    error,
     locked,
     addHolding,
     removeHolding,
@@ -37,172 +17,22 @@ export default function PortfolioPage() {
     sellHolding,
     updatePortfolioName,
     updateCashInr,
-    syncFromAccount,
   } = useMyPortfolio();
-  const hasBook = Boolean(data?.hasHoldings && data.positions.length > 0);
-  const [benchBusy, setBenchBusy] = useState(false);
-  const bookItems = useMemo(
-    () => (data?.positions ?? []).filter((p) => p.currency === "INR").map((p) => ({ symbol: p.symbol, name: p.name, weight: p.marketValueInr })),
-    [data?.positions],
-  );
 
   return (
-    <div className="portal-page">
-      <PageHeader
-
-        title={data?.settings.name ?? "My portfolio"}
-        subtitle="Live prices, how your money is split, and where your risk sits. Hover any ⓘ to see how a number is worked out."
-      />
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-muted-foreground">
-            {hasBook ? (
-              <span className="font-bold text-blue-600">{data!.positions.length} active positions</span>
-            ) : (
-              <span className="font-semibold text-foreground">Your portfolio is empty — add a holding or try the sample book.</span>
-            )}
-          </p>
-          {data && hasBook ? (
-            <BenchmarkSelect
-              value={data.settings.benchmark}
-              disabled={locked || benchBusy}
-              onChange={(id) => {
-                setBenchBusy(true);
-                void updateBenchmark(id).finally(() => setBenchBusy(false));
-              }}
-            />
-          ) : null}
-        </div>
-
-        {hasBook && !locked ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={clearHoldings}
-              className="rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-rose-600 hover:border-rose-600/40 transition-colors"
-            >
-              Clear Book
-            </button>
-            <BrokerImportDialog onImport={importHoldings} />
-            <AddHoldingDialog onAdd={addHolding} triggerLabel="Add holding" />
-          </div>
-        ) : null}
-      </div>
-
-      {data && !hasBook ? (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Once you add names, you get live marks, allocation, performance vs a benchmark, and risk metrics — without a wall of empty N/A cards.
-          </p>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Track India and US tickers in one book (INR base).</li>
-            <li>See how much each name contributed to return.</li>
-            <li>Open Risk for VaR and drawdown on the same holdings.</li>
-          </ul>
-          <div className="flex flex-wrap gap-3">
-            {locked ? (
-              <>
-                <Link
-                  href="/login?next=/portfolio"
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
-                >
-                  <Lock className="size-3.5" />
-                  Add your first holding
-                </Link>
-                <Link
-                  href="/signup?next=/portfolio"
-                  className="inline-flex min-h-10 items-center rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-accent"
-                >
-                  Create account
-                </Link>
-              </>
-            ) : (
-              <>
-                <AddHoldingDialog onAdd={addHolding} triggerLabel="Add your first holding" />
-                <button
-                  type="button"
-                  onClick={() => void trySampleHoldings()}
-                  className="inline-flex min-h-10 items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
-                >
-                  Try sample holdings
-                </button>
-                <BrokerImportDialog onImport={importHoldings} />
-              </>
-            )}
-          </div>
-        </div>
-      ) : null}
-
-      {loading && !data ? <p className="text-sm text-muted-foreground">Loading your book…</p> : null}
-      {refreshing && data?.hasHoldings ? (
-        <p className="text-xs text-muted-foreground">Updating live exchange prices…</p>
-      ) : null}
-      {error && !data ? <p className="text-sm text-rose-600">{error}</p> : null}
-      {error && data ? (
-        <p className="text-xs text-amber-700">Live refresh failed — showing cached book. {error}</p>
-      ) : null}
-
-      {data && hasBook ? (
-        <>
-          <PortfolioSummaryBar
-            data={data}
-            locked={locked}
-            onRename={updatePortfolioName}
-            onCashChange={updateCashInr}
-            onSync={syncFromAccount}
-          />
-          <PortfolioOverview metrics={data.overview} />
-
-          <BookDriverNudges items={bookItems} scope="portfolio" />
-
-          <div className="grid gap-4 xl:grid-cols-3">
-            <Panel title="Performance" subtitle="Portfolio vs benchmark, rebased to your first holding" className="xl:col-span-2">
-              <PerformanceChart data={data.navSeries} benchmarkLabel={BENCHMARK_LABEL[data.settings.benchmark] ?? "Benchmark"} />
-            </Panel>
-            <Panel title="Allocation" subtitle="India vs US, by market value">
-              <div className="h-[280px]">
-                {data.allocation.length ? (
-                  <Donut data={data.allocation} />
-                ) : (
-                  <p className="p-4 text-sm text-muted-foreground">Add a holding to see allocation.</p>
-                )}
-              </div>
-            </Panel>
-          </div>
-
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Panel title="Risk | Exposure" subtitle="Headline risk and positioning">
-              <RiskExposurePanel categories={data.categories} />
-            </Panel>
-            <Panel title="Attribution" subtitle="Top contributors to total return">
-              <AttributionPanel attribution={data.attribution} />
-            </Panel>
-          </div>
-
-          <PortfolioHubExtras data={data} />
-
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="border-b border-border px-4 py-3">
-              <h3 className="font-heading text-sm font-semibold">Holdings</h3>
-              <p className="text-sm text-muted-foreground">Live marks · your book · INR</p>
-            </div>
-            <HoldingsList
-              positions={data.positions}
-              onRemove={removeHolding}
-              onEdit={editHolding}
-              onSell={sellHolding}
-              readOnly={locked}
-              emptyAction={locked ? null : <AddHoldingDialog onAdd={addHolding} triggerLabel="Add your first holding" />}
-            />
-          </div>
-
-          <div>
-            <h3 className="mb-2 font-heading text-sm font-semibold">Full metrics catalog</h3>
-            <MetricsCatalog categories={data.categories} />
-          </div>
-        </>
-      ) : null}
-    </div>
+    <PortfolioDashboardView
+      data={data}
+      locked={locked}
+      onAddHolding={addHolding}
+      onRemoveHolding={removeHolding}
+      onClearHoldings={clearHoldings}
+      onImportHoldings={importHoldings}
+      onTrySampleHoldings={trySampleHoldings}
+      onUpdateBenchmark={updateBenchmark}
+      onEditHolding={editHolding}
+      onSellHolding={sellHolding}
+      onUpdateName={updatePortfolioName}
+      onUpdateCash={updateCashInr}
+    />
   );
 }
