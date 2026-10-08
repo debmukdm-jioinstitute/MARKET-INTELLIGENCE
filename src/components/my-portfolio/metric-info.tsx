@@ -52,7 +52,7 @@ export function MetricInfo({ id, value, className }: { id: string; value?: strin
             </div>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">How it is calculated</p>
-              <p className="mt-1 rounded-lg bg-stone-50 p-2.5 font-mono text-xs text-stone-700">{entry.formula}</p>
+              <p className="mt-1 rounded-lg bg-stone-50 p-2.5 text-xs text-stone-700">{entry.formula}</p>
             </div>
           </div>
         </DialogContent>
