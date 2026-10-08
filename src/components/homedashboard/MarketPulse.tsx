@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowDown,
   ArrowUp,
@@ -99,17 +100,26 @@ function sparklinePoints(values: number[], width = 200, height = 48): string {
 function ExchangeMark({ exchange }: { exchange: "NSE" | "BSE" }) {
   const isNse = exchange === "NSE";
   return (
-    <div className="flex items-center gap-1.5">
-      <span
-        className={cn(
-          "inline-flex size-6 items-center justify-center rounded-md text-[9px] font-bold text-white",
-          isNse ? "bg-[#1B3A8C]" : "bg-[#C45B1C]",
-        )}
-        aria-hidden
-      >
-        {isNse ? "N" : "B"}
-      </span>
-      <span className="text-[11px] font-semibold text-stone-600">{exchange}</span>
+    <div className="flex h-8 items-center" title={exchange}>
+      {isNse ? (
+        <Image
+          src="/images/exchanges/nse.png"
+          alt="NSE"
+          width={88}
+          height={30}
+          className="h-5 w-auto object-contain"
+          priority
+        />
+      ) : (
+        <Image
+          src="/images/exchanges/bse.png"
+          alt="BSE"
+          width={48}
+          height={30}
+          className="h-7 w-auto object-contain"
+          priority
+        />
+      )}
     </div>
   );
 }
@@ -161,7 +171,7 @@ function PulseIndexCard({
         tint,
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <ExchangeMark exchange={config.exchange} />
         <Link
           href={config.overviewHref}
