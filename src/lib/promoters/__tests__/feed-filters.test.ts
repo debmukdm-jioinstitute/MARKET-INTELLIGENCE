@@ -27,3 +27,19 @@ describe("nseDateToIso", () => {
     expect(nseDateToIso(null)).toBeNull();
   });
 });
+
+import { parsePitXbrl } from "@/lib/promoters/nse-native";
+
+describe("parsePitXbrl", () => {
+  it("groups tags by disclosure context", () => {
+    const xml = `<in-bse-co:NameOfThePerson contextRef="Disclosure1">A B</in-bse-co:NameOfThePerson>
+      <in-bse-co:SecuritiesAcquiredOrDisposedNumberOfSecurity contextRef="Disclosure1" unitRef="shares">2101</in-bse-co:SecuritiesAcquiredOrDisposedNumberOfSecurity>
+      <in-bse-co:NameOfThePerson contextRef="Disclosure2">C D</in-bse-co:NameOfThePerson>
+      <in-bse-co:Symbol contextRef="MainI">X</in-bse-co:Symbol>`;
+    const r = parsePitXbrl(xml);
+    expect(r.Disclosure1!.NameOfThePerson).toBe("A B");
+    expect(r.Disclosure1!.SecuritiesAcquiredOrDisposedNumberOfSecurity).toBe("2101");
+    expect(r.Disclosure2!.NameOfThePerson).toBe("C D");
+    expect(r.MainI).toBeUndefined();
+  });
+});
