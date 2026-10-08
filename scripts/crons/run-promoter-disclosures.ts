@@ -45,6 +45,7 @@ async function main() {
       ok: snapshot.dataStatus === "AVAILABLE",
       count: snapshot.items.length,
       collectorsUsed: snapshot.collectorsUsed,
+      message: snapshot.message,
       ms: Date.now() - t0,
     }),
   );
