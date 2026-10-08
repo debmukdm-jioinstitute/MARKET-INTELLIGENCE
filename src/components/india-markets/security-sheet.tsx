@@ -40,6 +40,7 @@ const RANGE_LABEL: Record<CandleRange, string> = {
   "3M": "3 months",
   "6M": "6 months",
   "1Y": "1 year",
+  "5Y": "5 years",
 };
 
 export function SecuritySheet({
