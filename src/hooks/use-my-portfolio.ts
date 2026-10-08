@@ -1,7 +1,7 @@
 "use client";
 
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
-import { DEFAULT_PORTFOLIO_SETTINGS, REALISTIC_DEFAULT_HOLDINGS } from "@/lib/my-portfolio/defaults";
+import { DEFAULT_PORTFOLIO_SETTINGS } from "@/lib/my-portfolio/defaults";
 import { consolidateHoldings, holdingMatchKey, mergeHoldingIntoList } from "@/lib/my-portfolio/merge-holding";
 import {
   provisionalPortfolioAnalysis,
@@ -468,10 +468,6 @@ export function useMyPortfolio(refreshMs = 60_000) {
     [reload, requireAccount],
   );
 
-  const trySampleHoldings = useCallback(async () => {
-    return importHoldings(REALISTIC_DEFAULT_HOLDINGS, "replace");
-  }, [importHoldings]);
-
   const updatePortfolioName = useCallback(
     async (name: string) => {
       const trimmed = name.trim();
@@ -544,7 +540,6 @@ export function useMyPortfolio(refreshMs = 60_000) {
     resetToDefault,
     clearHoldings,
     importHoldings,
-    trySampleHoldings,
     updateBenchmark,
     sellHolding,
     updatePortfolioName,

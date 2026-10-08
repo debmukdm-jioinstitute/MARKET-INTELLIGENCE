@@ -1,5 +1,4 @@
 import { INDIA_EQUITIES } from "@/lib/feeds/india/instruments";
-import { weightsFor } from "@/lib/my-portfolio/benchmarks";
 import type { BrinsonSectorRow, PortfolioSettings, PositionRow } from "@/lib/my-portfolio/types";
 import { getInstrument } from "@/lib/universe";
 
@@ -42,7 +41,7 @@ function aggregateBenchmarkSectorWeights(
   benchmark: PortfolioSettings["benchmark"],
   benchStock?: Record<string, number>,
 ): Map<string, number> {
-  const stock = benchStock ?? weightsFor(benchmark);
+  const stock = benchStock ?? {};
   const map = new Map<string, number>();
   let sum = 0;
   for (const [sym, w] of Object.entries(stock)) {
@@ -85,7 +84,7 @@ export function computeBrinsonSectorAttribution(input: {
   benchStock?: Record<string, number>;
 }): BrinsonSectorRow[] {
   const { positions, symbolReturns, benchmark, benchmarkReturn, benchStock: benchStockIn } = input;
-  const benchStock = benchStockIn ?? weightsFor(benchmark);
+  const benchStock = benchStockIn ?? {};
   const wBenchSector = aggregateBenchmarkSectorWeights(benchmark, benchStock);
 
   const wPortSector = new Map<string, number>();

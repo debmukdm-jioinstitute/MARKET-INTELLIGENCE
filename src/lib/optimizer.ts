@@ -1,13 +1,7 @@
 import { covariance, stdev } from "@/lib/analytics";
-import { getReturns } from "@/lib/market";
 import { getInstrument } from "@/lib/universe";
 
 export type OptimizeGoal = "maxSharpe" | "minVol" | "riskParity";
-
-export function optimizeWeights(symbols: string[], goal: OptimizeGoal) {
-  const rets = symbols.map((symbol) => getReturns(symbol));
-  return optimizeWeightsFromReturns(symbols, rets, goal);
-}
 
 export function optimizeWeightsFromReturns(symbols: string[], rets: number[][], goal: OptimizeGoal) {
   if (symbols.length === 0) {
@@ -47,7 +41,7 @@ export function optimizeWeightsFromReturns(symbols: string[], rets: number[][], 
   return {
     weights: symbols.map((symbol, i) => ({
       symbol,
-      name: getInstrument(symbol).name,
+      name: getInstrument(symbol)?.name ?? symbol,
       weight: weights[i]!,
     })),
     stats: {

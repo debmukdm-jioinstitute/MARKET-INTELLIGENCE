@@ -11,7 +11,6 @@ export default function PortfolioPage() {
     removeHolding,
     clearHoldings,
     importHoldings,
-    trySampleHoldings,
     updateBenchmark,
     editHolding,
     sellHolding,
@@ -27,7 +26,6 @@ export default function PortfolioPage() {
       onRemoveHolding={removeHolding}
       onClearHoldings={clearHoldings}
       onImportHoldings={importHoldings}
-      onTrySampleHoldings={trySampleHoldings}
       onUpdateBenchmark={updateBenchmark}
       onEditHolding={editHolding}
       onSellHolding={sellHolding}

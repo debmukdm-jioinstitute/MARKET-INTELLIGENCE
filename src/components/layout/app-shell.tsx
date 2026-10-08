@@ -9,7 +9,6 @@ import { UpdatesBanner } from "@/components/layout/updates-banner";
 import { PageviewTracker } from "@/components/layout/pageview-tracker";
 import { LiveStreamTicker } from "@/components/macro/live-stream-ticker";
 import { TopBar } from "@/components/layout/top-bar";
-import { PortfolioProvider } from "@/components/providers/portfolio-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PortalPageGuard } from "@/components/layout/portal-page-guard";
 import { PortalPageTransition } from "@/components/layout/portal-page-transition";
@@ -33,7 +32,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
       <IndiaDashboardWarmup />
-      <PortfolioProvider>
         <CommandPaletteProvider>
           <MobileNavProvider>
             <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -61,7 +59,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <PageviewTracker />
           </MobileNavProvider>
         </CommandPaletteProvider>
-      </PortfolioProvider>
     </TooltipProvider>
   );
 }

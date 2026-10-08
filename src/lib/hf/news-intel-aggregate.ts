@@ -334,7 +334,9 @@ export function computeMultiPillarSentiment(params: {
   const gold = findItem("gold");
   const silver = findItem("silver");
 
-  const brentPrice = brent?.price ?? dashboardPulse?.brent?.value ?? 80;
+  /** Missing live quotes stay NaN (comparisons are false) and print as an em dash, never as a made-up price. */
+  const f2 = (v: number) => (Number.isFinite(v) ? v.toFixed(2) : "—");
+  const brentPrice = brent?.price ?? dashboardPulse?.brent?.value ?? NaN;
   const brentPct = (brent?.changePct ?? dashboardPulse?.brent?.changePct ?? 0) * 100;
 
   // Economic logic for India:
@@ -360,13 +362,13 @@ export function computeMultiPillarSentiment(params: {
     label: commodityLabel,
     impact: commodityLabel === "positive" ? "+ve" : commodityLabel === "negative" ? "-ve" : "neutral",
     badge: brentPrice >= 95 ? "High Crude Drag" : brentPct > 1.5 ? "Energy Spike" : "Commodity Stable",
-    headline: `Brent Crude ${brentPrice.toFixed(2)} (${formatPct(brentPct / 100)}) · Gold ${gold?.price?.toFixed(0) ?? "—"} (${formatPct(gold?.changePct ?? 0)})`,
+    headline: `Brent Crude ${f2(brentPrice)} (${formatPct(brentPct / 100)}) · Gold ${gold?.price?.toFixed(0) ?? "—"} (${formatPct(gold?.changePct ?? 0)})`,
     details:
       brentPrice >= 95 || brentPct > 1.0
-        ? `Surging Brent Crude above $${brentPrice.toFixed(2)}/bbl (+${brentPct.toFixed(2)}%) directly escalates India's oil import bill, increases domestic transport costs, and threatens corporate profit margins.`
-        : `Crude oil prices holding steady around $${brentPrice.toFixed(2)}/bbl, providing stable input cost conditions for Indian manufacturers.`,
+        ? `Surging Brent Crude above $${f2(brentPrice)}/bbl (+${brentPct.toFixed(2)}%) directly escalates India's oil import bill, increases domestic transport costs, and threatens corporate profit margins.`
+        : `Crude oil prices holding steady around $${f2(brentPrice)}/bbl, providing stable input cost conditions for Indian manufacturers.`,
     metrics: [
-      { label: "Brent Crude", value: `${brentPrice.toFixed(2)}`, changePct: brentPct / 100, isPositive: brentPct <= 0 },
+      { label: "Brent Crude", value: `${f2(brentPrice)}`, changePct: brentPct / 100, isPositive: brentPct <= 0 },
       { label: "WTI Crude", value: wti?.price ? `$${wti.price.toFixed(2)}` : "—", changePct: wti?.changePct, isPositive: (wti?.changePct ?? 0) <= 0 },
       { label: "Gold (Safe Haven)", value: gold?.price ? `$${gold.price.toFixed(0)}` : "—", changePct: gold?.changePct, isPositive: true },
       { label: "Silver", value: silver?.price ? `$${silver.price.toFixed(2)}` : "—", changePct: silver?.changePct, isPositive: true },
@@ -379,9 +381,9 @@ export function computeMultiPillarSentiment(params: {
   const dxy = findItem("dxy");
   const eurInr = findItem("eur_inr");
 
-  const usdInrPrice = usdInr?.price ?? dashboardPulse?.usdInr?.value ?? 83.5;
+  const usdInrPrice = usdInr?.price ?? dashboardPulse?.usdInr?.value ?? NaN;
   const usdInrPct = (usdInr?.changePct ?? dashboardPulse?.usdInr?.changePct ?? 0) * 100;
-  const dxyPrice = dxy?.price ?? 102;
+  const dxyPrice = dxy?.price ?? NaN;
   const dxyPct = (dxy?.changePct ?? 0) * 100;
 
   // Rupee weakening (USD/INR rising) is negative for imported inflation & FII flows
@@ -406,14 +408,14 @@ export function computeMultiPillarSentiment(params: {
     label: currencyLabel,
     impact: currencyLabel === "positive" ? "+ve" : currencyLabel === "negative" ? "-ve" : "neutral",
     badge: usdInrPct > 0.25 ? "Rupee Weakness" : dxyPct > 0.3 ? "Strong Dollar" : "FX Stable",
-    headline: `USD/INR ₹${usdInrPrice.toFixed(2)} (${formatPct(usdInrPct / 100)}) · DXY ${dxyPrice.toFixed(2)} (${formatPct(dxy?.changePct ?? 0)})`,
+    headline: `USD/INR ₹${f2(usdInrPrice)} (${formatPct(usdInrPct / 100)}) · DXY ${f2(dxyPrice)} (${formatPct(dxy?.changePct ?? 0)})`,
     details:
       usdInrPct > 0.25
-        ? `The Indian Rupee weakened to ₹${usdInrPrice.toFixed(2)} (+${usdInrPct.toFixed(2)}%), compounding imported inflation pressure and reflecting foreign institutional capital outflows.`
-        : `USD/INR trading at ₹${usdInrPrice.toFixed(2)}, maintaining manageable currency stability alongside the US Dollar Index at ${dxyPrice.toFixed(2)}.`,
+        ? `The Indian Rupee weakened to ₹${f2(usdInrPrice)} (+${usdInrPct.toFixed(2)}%), compounding imported inflation pressure and reflecting foreign institutional capital outflows.`
+        : `USD/INR trading at ₹${f2(usdInrPrice)}, maintaining manageable currency stability alongside the US Dollar Index at ${f2(dxyPrice)}.`,
     metrics: [
-      { label: "USD/INR", value: `₹${usdInrPrice.toFixed(2)}`, changePct: usdInrPct / 100, isPositive: usdInrPct <= 0 },
-      { label: "Dollar Index (DXY)", value: dxyPrice.toFixed(2), changePct: dxy?.changePct, isPositive: (dxy?.changePct ?? 0) <= 0 },
+      { label: "USD/INR", value: `₹${f2(usdInrPrice)}`, changePct: usdInrPct / 100, isPositive: usdInrPct <= 0 },
+      { label: "Dollar Index (DXY)", value: f2(dxyPrice), changePct: dxy?.changePct, isPositive: (dxy?.changePct ?? 0) <= 0 },
       { label: "EUR/INR", value: eurInr?.price ? `₹${eurInr.price.toFixed(2)}` : "—", changePct: eurInr?.changePct, isPositive: (eurInr?.changePct ?? 0) <= 0 },
     ],
     href: "/macro/currency",
@@ -476,7 +478,7 @@ export function computeMultiPillarSentiment(params: {
     rationale = `Market sentiment is Bearish / Risk-Off (-ve · ${confPct}% confidence). Domestic benchmarks experienced heavy selling pressure with NIFTY 50 sliding ${formatPct(nifty?.changePct ?? 0)} and SENSEX dropping ${formatPct(sensex?.changePct ?? 0)}, accompanied by weak market breadth where ${(declineRatio * 100).toFixed(0)}% of stocks declined (${dec.toLocaleString("en-IN")} declines vs ${adv.toLocaleString("en-IN")} advances). Key cyclical sectors took deep hits led by ${weakestSector.label} (${weakestSector.chg.toFixed(2)}%), while INDIA VIX expanded ${formatPct(vixIn?.changePct ?? 0)} reflecting heightened hedging demand.`;
 
     if (brentPrice >= 95 || brentPct > 1.0) {
-      rationale += ` Macro pressures are amplified by Brent Crude surging to $${brentPrice.toFixed(2)}/bbl (${formatPct(brent?.changePct ?? 0)}), intensifying imported inflation risks alongside Rupee depreciation (USD/INR at ₹${usdInrPrice.toFixed(2)}).`;
+      rationale += ` Macro pressures are amplified by Brent Crude surging to $${f2(brentPrice)}/bbl (${formatPct(brent?.changePct ?? 0)}), intensifying imported inflation risks alongside Rupee depreciation (USD/INR at ₹${f2(usdInrPrice)}).`;
     }
 
     if (isHighDisparity) {
@@ -541,7 +543,7 @@ export function computeMultiPillarSentiment(params: {
   if (brentPrice >= 95 || brentPct > 1.5) {
     drivers.negative.push({
       id: "driver-brent-spike",
-      title: `Brent Crude spiked +${brentPct.toFixed(2)}% to $${brentPrice.toFixed(2)}/barrel`,
+      title: `Brent Crude spiked +${brentPct.toFixed(2)}% to $${f2(brentPrice)}/barrel`,
       url: "/macro/commodities#brent",
       source: "commodities",
       sourceLabel: "ICE Brent",
@@ -563,7 +565,7 @@ export function computeMultiPillarSentiment(params: {
   if (usdInrPct > 0.25) {
     drivers.negative.push({
       id: "driver-usd-inr-depreciation",
-      title: `Indian Rupee weakened to ₹${usdInrPrice.toFixed(2)} against USD (+${usdInrPct.toFixed(2)}%)`,
+      title: `Indian Rupee weakened to ₹${f2(usdInrPrice)} against USD (+${usdInrPct.toFixed(2)}%)`,
       url: "/macro/currency#usd_inr",
       source: "fx",
       sourceLabel: "Forex Market",

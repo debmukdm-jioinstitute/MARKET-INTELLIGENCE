@@ -7,8 +7,9 @@ import { OFFICIAL_MOSPI_CPI_MONTHLY_INDEX, cpiYoYFromIndex } from "@/lib/macro/d
  */
 export async function fetchMospiMacro(): Promise<LiveMacroSeries[]> {
   const yoyPoints = cpiYoYFromIndex(OFFICIAL_MOSPI_CPI_MONTHLY_INDEX);
-  const latest = yoyPoints[yoyPoints.length - 1]?.value ?? 4.82;
-  const prev = yoyPoints[yoyPoints.length - 2]?.value ?? 4.45;
+  const latest = yoyPoints[yoyPoints.length - 1]?.value;
+  const prev = yoyPoints[yoyPoints.length - 2]?.value;
+  if (latest == null || prev == null) return [];
 
   return [
     {

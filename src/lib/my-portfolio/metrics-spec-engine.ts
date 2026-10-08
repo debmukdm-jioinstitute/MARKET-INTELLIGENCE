@@ -200,6 +200,78 @@ export function jensenAlphaOLS(p: number[], b: number[], rfAnnual: number, A = T
   return { alphaDaily, beta: betaHat };
 }
 
+/**
+ * Every intermediate of the beta and Jensen's alpha calculations, exactly as computed by
+ * `beta` and `jensenAlphaOLS`, so the UI can show the worked derivation with the user's own numbers.
+ */
+export type RegressionInputs = {
+  /** Number of paired daily observations. */
+  n: number;
+  periodsPerYear: number;
+  riskFreeAnnual: number;
+  riskFreeDaily: number;
+  /** Mean daily return of portfolio / benchmark (raw, not excess). */
+  meanPortfolio: number;
+  meanBenchmark: number;
+  /** Sample (n-1) statistics of the raw daily returns. */
+  covPB: number;
+  varB: number;
+  sigmaP: number;
+  sigmaB: number;
+  correlation: number | null;
+  beta: number | null;
+  /** Mean daily excess returns y = Rp - Rf, x = Rm - Rf. */
+  meanExcessPortfolio: number;
+  meanExcessBenchmark: number;
+  alphaDaily: number;
+  alphaAnnual: number;
+  /** Annualised arithmetic returns (mean daily x A) for the CAPM comparison. */
+  portfolioAnnual: number;
+  benchmarkAnnual: number;
+  capmExpectedAnnual: number;
+  /** R-squared of the daily regression: share of portfolio variance explained by the benchmark. */
+  rSquared: number | null;
+};
+
+export function regressionInputs(p: number[], b: number[], rfAnnual: number, A = TRADING_DAYS_PER_YEAR): RegressionInputs | null {
+  const n = Math.min(p.length, b.length);
+  if (n < 3) return null;
+  const pp = p.slice(-n);
+  const bb = b.slice(-n);
+  const rfD = rfAnnual / A;
+  const bt = beta(pp, bb);
+  const { alphaDaily } = jensenAlphaOLS(pp, bb, rfAnnual, A);
+  const mP = mean(pp);
+  const mB = mean(bb);
+  const sP = stdevSample(pp);
+  const sB = stdevSample(bb);
+  const cov = covarianceSample(pp, bb);
+  const corr = sP > 1e-12 && sB > 1e-12 ? cov / (sP * sB) : null;
+  const btUsed = bt ?? 0;
+  return {
+    n,
+    periodsPerYear: A,
+    riskFreeAnnual: rfAnnual,
+    riskFreeDaily: rfD,
+    meanPortfolio: mP,
+    meanBenchmark: mB,
+    covPB: cov,
+    varB: sB ** 2,
+    sigmaP: sP,
+    sigmaB: sB,
+    correlation: corr,
+    beta: bt,
+    meanExcessPortfolio: mP - rfD,
+    meanExcessBenchmark: mB - rfD,
+    alphaDaily,
+    alphaAnnual: alphaDaily * A,
+    portfolioAnnual: mP * A,
+    benchmarkAnnual: mB * A,
+    capmExpectedAnnual: rfAnnual + btUsed * (mB * A - rfAnnual),
+    rSquared: corr != null ? corr * corr : null,
+  };
+}
+
 /** §2.5 IR */
 export function informationRatioAnn(p: number[], b: number[], A = TRADING_DAYS_PER_YEAR) {
   const n = Math.min(p.length, b.length);

@@ -84,6 +84,8 @@ export type BrinsonSectorRow = {
   total: number;
 };
 
+export type { RegressionInputs } from "./metrics-spec-engine";
+
 export type PortfolioAnalysis = {
   fetchedAt: string;
   settings: PortfolioSettings;
@@ -101,4 +103,6 @@ export type PortfolioAnalysis = {
   riskContribution: { symbol: string; name: string; riskShare: number }[];
   /** Brinson-Fachler sector effects over the NAV history window. */
   sectorAttribution: BrinsonSectorRow[];
+  /** Exact inputs behind beta and Jensen's alpha; absent until there is enough price history. */
+  regression?: import("./metrics-spec-engine").RegressionInputs | null;
 };

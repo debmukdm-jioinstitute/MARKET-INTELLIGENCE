@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useMathInspector } from "@/components/providers/math-inspector-provider";
 import { getMetric, type MetricDefinition } from "@/lib/metrics-catalog";
 import type { FieldSource } from "@/lib/feeds/india/types";
 import { cn } from "@/lib/utils";
@@ -43,8 +42,6 @@ export interface MetricInfoProps {
   iconSize?: "xs" | "sm" | "md";
   value?: string | number | null;
   unit?: string;
-  contextData?: Record<string, any>;
-  showInspectorButton?: boolean;
 }
 
 export function MetricInfo({
@@ -68,10 +65,7 @@ export function MetricInfo({
   iconSize,
   value,
   unit,
-  contextData,
-  showInspectorButton = true,
 }: MetricInfoProps) {
-  const { openInspector } = useMathInspector();
   const [open, setOpen] = React.useState(false);
 
   const metricKey = id ?? metric ?? "data_quality";
@@ -274,31 +268,6 @@ export function MetricInfo({
             <div className="rounded-r-lg border-l-2 border-primary bg-primary/5 p-2.5 text-[11px] italic text-muted-foreground/90 leading-relaxed">
               <span>{effectiveUtility}</span>
             </div>
-          ) : null}
-
-          {/* Institutional Math Proof Action */}
-          {showInspectorButton ? (
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                openInspector({
-                  metricId: metricKey,
-                  title,
-                  currentValue: value,
-                  contextData,
-                  source: sourceOverride ?? effectiveProvider,
-                  category: def.category,
-                });
-              }}
-              className="flex w-full items-center justify-between rounded-xl border border-border/60 bg-muted/20 hover:bg-accent/60 p-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all duration-150 group cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <Calculator className="size-3.5 text-primary group-hover:scale-110 transition-transform" />
-                <span>Quantitative Math Proof & Variables</span>
-              </span>
-              <ChevronRight className="size-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-            </button>
           ) : null}
 
           <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-[11px] text-muted-foreground">

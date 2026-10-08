@@ -1,7 +1,7 @@
 import type { WorldIndexQuote } from "@/lib/macro/build-world-indices";
 
 /**
- * Isolated development fixtures representing the reference snapshot from section 6.
+ * Test-only fixtures representing the reference snapshot from section 6.
  * NOT to be used as production fallback or hardcoded market facts.
  */
 export const REFERENCE_SNAPSHOT_FIXTURES: WorldIndexQuote[] = [

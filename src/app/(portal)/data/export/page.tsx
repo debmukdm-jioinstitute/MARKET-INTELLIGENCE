@@ -84,7 +84,7 @@ const GROUPS: { title: string; blurb: string; sheets: [string, string][] }[] = [
 ];
 
 const NOT_INCLUDED = [
-  ["Sectors and Economic Calendar pages", "They currently show illustrative sample values, not live data, so they are not exported as market data."],
+  ["Sectors and Economic Calendar pages", "Both are live pages but are not part of the export workbook yet."],
   ["Portfolio pages", "They show each person's private holdings and are never exported."],
 ];
 

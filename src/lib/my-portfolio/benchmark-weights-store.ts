@@ -1,7 +1,8 @@
 import { hasDatabase, sql } from "@/lib/db";
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 
-export type BenchmarkWeightMethod = "cap_yahoo" | "equal_weight" | "static_fallback";
+/** cap_yahoo: NSE/BSE constituents weighted by live market cap. unavailable: no live source answered. */
+export type BenchmarkWeightMethod = "cap_yahoo" | "unavailable";
 
 export type BenchmarkWeightsRow = {
   benchmark: BenchmarkId;
@@ -51,6 +52,8 @@ export async function loadBenchmarkWeights(benchmark: BenchmarkId): Promise<Benc
     }[];
     const row = rows[0];
     if (!row?.weights || typeof row.weights !== "object") return null;
+    // Rows from the removed static / equal-weight fallbacks are not real index weights.
+    if (row.method !== "cap_yahoo") return null;
     return {
       benchmark: row.benchmark as BenchmarkId,
       weights: row.weights,

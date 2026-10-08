@@ -1,5 +1,5 @@
 import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
-import { computeSpecMetrics } from "@/lib/my-portfolio/metrics-spec-engine";
+import { computeSpecMetrics, regressionInputs } from "@/lib/my-portfolio/metrics-spec-engine";
 import {
   candleRangeToDates,
   fetchUpstoxFullQuotes,
@@ -480,13 +480,10 @@ export async function computePortfolioAnalysis(
   }
 
   const benchLabel = BENCHMARK_LABEL[settings.benchmark] ?? settings.benchmark;
-  const benchWeightNote =
-    benchSnapshot.method === "static_fallback"
-      ? "static fallback"
-      : benchSnapshot.method === "cap_yahoo"
-        ? `NSE constituents, cap-weight proxy (${benchSnapshot.asOf})`
-        : `NSE constituents, equal-weight (${benchSnapshot.asOf})`;
-  if (benchmarkSupportsActiveShare(settings.benchmark)) {
+  const benchWeightNote = `index constituents weighted by live market cap (${benchSnapshot.asOf})`;
+  if (benchmarkSupportsActiveShare(settings.benchmark) && Object.keys(benchWeights).length === 0) {
+    set(NA("activeShare", `Live ${benchLabel} constituent weights are unavailable right now.`));
+  } else if (benchmarkSupportsActiveShare(settings.benchmark)) {
     const names = new Set([...positions.map((r) => r.symbol), ...Object.keys(benchWeights)]);
     let activeShareSum = 0;
     for (const sym of names) {
@@ -607,9 +604,13 @@ export async function computePortfolioAnalysis(
       set(m("positionAdv", worst.posAdv, num(worst.posAdv, 3), "approx", undefined, `Largest single-holding ratio shown (${worst.s.holding.symbol}); India uses today's volume as an ADV proxy.`));
       const days = worst.posAdv / 0.2;
       set(m("daysToLiquidate", days, `${days.toFixed(2)} days`, "approx", undefined, "Assumes a 20% max-participation rate — a standard rule of thumb, not a guarantee."));
-      const vol = volEntries.find((e) => e.weight > 0)?.vol ?? 0.25;
-      const impact = 1 * vol * Math.sqrt(Math.max(worst.posAdv, 0));
-      set(m("marketImpact", impact, pct(impact, 2), "approx", undefined, "Illustrative square-root model estimate — not a measurement of real trading impact."));
+      const vol = volEntries.find((e) => e.weight > 0)?.vol;
+      if (vol != null) {
+        const impact = 1 * vol * Math.sqrt(Math.max(worst.posAdv, 0));
+        set(m("marketImpact", impact, pct(impact, 2), "approx", undefined, "Square-root model estimate from your own volatility and volume: not a measurement of real trading impact."));
+      } else {
+        set(NA("marketImpact", "Needs price history to estimate volatility."));
+      }
     } else {
       set(NA("positionAdv", "No volume data available yet."));
       set(NA("daysToLiquidate", "No volume data available yet."));
@@ -893,7 +894,7 @@ export async function computePortfolioAnalysis(
 
   const riskWeighted = seriesList.map((s) => {
     const rets = returnsFromPrices(s.history.map((h) => h.value));
-    const volAnn = rets.length >= 5 ? stdev(rets) * Math.sqrt(252) : 0.25;
+    const volAnn = rets.length >= 5 ? stdev(rets) * Math.sqrt(252) : 0;
     const weight = positions.find((r) => r.symbol === s.holding.symbol)?.weight ?? 0;
     return {
       symbol: s.holding.symbol,
@@ -939,5 +940,6 @@ export async function computePortfolioAnalysis(
     attribution,
     riskContribution,
     sectorAttribution,
+    regression: hasHistory ? regressionInputs(p, b, RF_ANNUAL) : null,
   };
 }

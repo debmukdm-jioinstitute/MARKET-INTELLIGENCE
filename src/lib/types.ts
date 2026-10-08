@@ -33,16 +33,6 @@ export type Instrument = {
   sector: Sector;
   region: Region;
   currency: "USD";
-  betaMkt: number;
-  betaRates: number;
-  betaGrowth: number;
-  betaValue: number;
-  betaCmdty: number;
-  vol: number;
-  drift: number;
-  startPrice: number;
-  pe?: number;
-  yieldPct?: number;
   description: string;
 };
 

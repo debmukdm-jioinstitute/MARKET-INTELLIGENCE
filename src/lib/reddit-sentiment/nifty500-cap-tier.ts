@@ -1,4 +1,4 @@
-import { NIFTY50_WEIGHTS } from "@/lib/my-portfolio/benchmark-constituents";
+import { NIFTY50_CORE_SYMBOLS } from "@/lib/my-portfolio/benchmark-constituents";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 
 export type Nifty500CapTier = "LARGE_CAP" | "MID_CAP" | "SMALL_CAP";
@@ -7,7 +7,7 @@ const NIFTY500_SET = new Set(NIFTY_500.map(([s]) => s.toUpperCase()));
 
 /** Nifty 50 + Sensex overlap — treated as large cap for retail sentiment filters. */
 const LARGE_CAP_SYMBOLS = new Set([
-  ...Object.keys(NIFTY50_WEIGHTS),
+  ...NIFTY50_CORE_SYMBOLS,
   "RELIANCE",
   "TCS",
   "HDFCBANK",
