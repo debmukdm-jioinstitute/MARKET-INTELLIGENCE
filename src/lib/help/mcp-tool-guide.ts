@@ -36,6 +36,7 @@ const ASK: Partial<Record<string, string>> = {
   get_security_risk: "Risk profile for RELIANCE.",
   get_stock_research: "Research summary for TCS.",
   get_stock_drivers: "What regulations or policies move PB Fintech right now?",
+  get_research_analytics: "Financial X-Ray, DNA score, red flags and valuation bands for RELIANCE.",
   get_price_history: "TCS price history for 3 months.",
   get_key_ratios: "Key ratios for ISIN INE467B01029.",
   get_earnings_calendar: "Who reports earnings soon?",

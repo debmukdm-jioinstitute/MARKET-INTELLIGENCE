@@ -38,6 +38,13 @@ const FinancialsPanel = dynamic(() => import("@/components/research/financials-p
   ssr: false,
   loading: chartBox(480),
 });
+const ResearchAnalyticsSection = dynamic(
+  () => import("@/components/research/research-analytics-section").then((m) => m.ResearchAnalyticsSection),
+  {
+    ssr: false,
+    loading: chartBox(480),
+  },
+);
 const OwnershipPanel = dynamic(() => import("@/components/research/ownership-panel").then((m) => m.OwnershipPanel), {
   ssr: false,
   loading: chartBox(420),
@@ -303,6 +310,11 @@ export function ResearchSymbolClient({
           {/* 1. Full Financial Statements & Ratios (P&L, BS, CF, Quarterly Performance, Working Capital) */}
           <LazyMount anchorId="financial-statements" minHeight={480}>
             <FinancialsPanel symbol={symbol} />
+          </LazyMount>
+
+          {/* 1b. Financial Analytics: X-Ray, MI Financial DNA, Red Flag Engine, Historical Valuation */}
+          <LazyMount anchorId="financial-analytics" minHeight={480}>
+            <ResearchAnalyticsSection symbol={symbol} />
           </LazyMount>
 
           {/* 2. Shareholding Pattern Donut Chart & Quarterly Trends & Risk Flags */}
