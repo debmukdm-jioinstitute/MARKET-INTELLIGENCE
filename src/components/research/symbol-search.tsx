@@ -241,6 +241,9 @@ export function SymbolSearch({
         return;
       }
       if (e.code === "Space" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        // Only hijack Space if this is the hero search variant on the landing/hub page.
+        // On normal content pages (variant === "bar" or "default"), Space is standard page scrolling.
+        if (variant !== "hero") return;
         e.preventDefault();
         wrapRef.current?.querySelector<HTMLInputElement>("input")?.focus();
       }
