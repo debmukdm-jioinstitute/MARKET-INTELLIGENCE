@@ -67,17 +67,15 @@ export async function enrichDisclosuresWithAi(
 
     // Heuristic sentiment enhancement for corporate developments
     let sentiment: SentimentLabel = s?.label ?? "neutral";
-    let score = s?.score ?? 0.82;
+    // Confidence is FinBERT's own score. Without a model result it is 0 (unknown), never an assumed value.
+    const score = s?.score ?? 0;
 
     if (filingType === "CONTRACT_WIN" || /allotment|dividend|expansion|growth|beat|win/i.test(item.headline)) {
       sentiment = "positive";
-      score = Math.max(score, 0.88);
     } else if (/loss|penalty|default|raid|investigation|warning/i.test(item.headline)) {
       sentiment = "negative";
-      score = Math.max(score, 0.85);
     } else if (filingType === "CONCALL") {
       sentiment = "positive";
-      score = Math.max(score, 0.86);
     }
 
     const summary =

@@ -16,7 +16,7 @@ export function PortfolioRiskCard() {
   let totalHoldingsVal = 0;
 
   for (const p of positions) {
-    const sector = p.sector || (p.market === "US" ? "US Tech & Growth" : "Diversified Equity");
+    const sector = p.sector || "Unclassified";
     const val = p.marketValueInr || 0;
     sectorMap[sector] = (sectorMap[sector] || 0) + val;
     totalHoldingsVal += val;
@@ -38,18 +38,11 @@ export function PortfolioRiskCard() {
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 4);
 
-  // If empty book, show foundational portfolio sectors
-  const displaySectors =
-    sectors.length > 0
-      ? sectors
-      : [
-          { name: "Banking & Financials", pct: 32, color: "bg-blue-600" },
-          { name: "Information Technology", pct: 28, color: "bg-emerald-600" },
-          { name: "Energy & Petrochemicals", pct: 22, color: "bg-blue-700" },
-          { name: "Telecommunications", pct: 18, color: "bg-sky-400" },
-        ];
+  const displaySectors = sectors;
 
   const top2Weight = displaySectors.slice(0, 2).reduce((sum, s) => sum + s.pct, 0);
+  const metricById = (id: string) =>
+    data?.overview?.find((m) => m.id === id) ?? data?.categories?.flatMap((c) => c.metrics).find((m) => m.id === id);
 
   return (
     <div className="bento-card-shell bento-card-stack bg-card">
@@ -80,7 +73,7 @@ export function PortfolioRiskCard() {
                 <MetricInfo metric="concentration" />
               </div>
               <p className="text-muted-foreground mt-0.5 text-sm leading-relaxed">
-                Top 2 sleeves account for <span className="text-blue-600 font-bold">{top2Weight}%</span> of total book allocation.
+                Top 2 sleeves account for <span className="text-blue-600 font-bold">{displaySectors.length ? `${top2Weight}%` : "—"}</span> of total book allocation.
               </p>
             </div>
           </div>
@@ -95,6 +88,9 @@ export function PortfolioRiskCard() {
               <span>ALLOCATION %</span>
             </div>
 
+            {displaySectors.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Add holdings to see your sector split.</p>
+            ) : null}
             {displaySectors.map((sector) => (
               <div key={sector.name} className="space-y-1">
                 <div className="flex justify-between text-sm">
@@ -118,7 +114,7 @@ export function PortfolioRiskCard() {
                 <span className="text-muted-foreground">Top 2 Concentration</span>
                 <MetricInfo metric="concentration" />
               </div>
-              <span className="font-bold text-blue-600">{top2Weight}%</span>
+              <span className="font-bold text-blue-600">{displaySectors.length ? `${top2Weight}%` : "—"}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -126,7 +122,7 @@ export function PortfolioRiskCard() {
                 <span className="text-muted-foreground">Portfolio Beta</span>
                 <MetricInfo metric="beta" />
               </div>
-              <span className="font-bold text-foreground">{data?.overview?.find(m => m.id === "beta")?.formatted ?? "0.98"}</span>
+              <span className="font-bold text-foreground">{metricById("beta")?.formatted ?? "—"}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -134,7 +130,7 @@ export function PortfolioRiskCard() {
                 <span className="text-muted-foreground">Annualized Volatility</span>
                 <MetricInfo metric="vix" customTitle="Annualized Volatility" />
               </div>
-              <span className="font-bold text-foreground">{data?.overview?.find(m => m.id === "volatility")?.formatted ?? "13.8%"}</span>
+              <span className="font-bold text-foreground">{metricById("volatility")?.formatted ?? "—"}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -142,7 +138,7 @@ export function PortfolioRiskCard() {
                 <span className="text-muted-foreground">Max Drawdown</span>
                 <MetricInfo metric="max_drawdown" />
               </div>
-              <span className="font-bold text-rose-600">{data?.overview?.find(m => m.id === "max_drawdown")?.formatted ?? "-6.4%"}</span>
+              <span className="font-bold text-rose-600">{metricById("maxDrawdown")?.formatted ?? "—"}</span>
             </div>
           </div>
         </div>

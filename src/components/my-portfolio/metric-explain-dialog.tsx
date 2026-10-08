@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Eye } from "lucide-react";
 import "katex/dist/katex.min.css";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,6 +8,10 @@ import { Latex } from "@/components/ui/latex";
 import { EXPLAIN_ALIAS, EXPLAINABLE, explainMetric } from "@/lib/my-portfolio/metric-explain";
 import type { RegressionInputs } from "@/lib/my-portfolio/types";
 import { cn } from "@/lib/utils";
+
+/** Lets any metric eye on the page reach the user's real regression inputs without prop drilling. */
+const ExplainContext = createContext<{ benchmark: string; regression?: RegressionInputs | null }>({ benchmark: "NIFTY 50" });
+export const MetricExplainProvider = ExplainContext.Provider;
 
 export const isExplainable = (id: string) => EXPLAINABLE.has(EXPLAIN_ALIAS[id] ?? id);
 
@@ -30,10 +34,13 @@ export function MetricEyeButton({
 }: {
   id: string;
   value: string;
-  benchmark: string;
+  benchmark?: string;
   regression?: RegressionInputs | null;
   className?: string;
 }) {
+  const ctx = useContext(ExplainContext);
+  benchmark = benchmark ?? ctx.benchmark;
+  regression = regression === undefined ? ctx.regression : regression;
   const [open, setOpen] = useState(false);
   const info = open ? explainMetric(id, { value, benchmark, regression }) : null;
   if (!isExplainable(id)) return null;

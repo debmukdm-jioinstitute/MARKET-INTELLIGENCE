@@ -1,6 +1,5 @@
 import { fetchLiveCompanySentiment, type LiveCompanySentiment } from "./fetch-live";
 import { getCachedSentiment, saveCachedSentiment } from "./store";
-import { SEED_REDDIT_SENTIMENT, buildSynthesizedCompanySentiment } from "./seed-data";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { getNifty500CapTier } from "./nifty500-cap-tier";
 
@@ -9,10 +8,9 @@ import { getNifty500CapTier } from "./nifty500-cap-tier";
  * 1. Memory Map cache (15 min)
  * 2. PostgreSQL cache (`reddit_sentiment_cache`)
  * 3. Live Reddit Crawler (attempted if cache expired or forceRefresh)
- * 4. Verified Bellwether Seed Data (fallback on Reddit 429/403/block)
- * 5. High-integrity Sector Synthesizer (fallback for any unseeded ticker)
  *
- * Guarantees zero 429 error states for visitors.
+ * There is NO seeded or synthesized fallback: when Reddit cannot be reached the caller gets an honest
+ * "could not check" record (zero mentions plus fetchIssue), never invented mentions or percentages.
  */
 const TTL_MS = 15 * 60_000;
 const memoryCache = new Map<string, { at: number; data: LiveCompanySentiment }>();
@@ -53,25 +51,28 @@ export async function getLiveCompanySentimentCached(
     return liveData;
   }
 
-  // 4. Fallback on Reddit 429/403 or empty result:
-  // First check if seed data exists for this symbol (e.g. RELIANCE, TCS, INFY, etc.)
-  if (SEED_REDDIT_SENTIMENT[symbol]) {
-    const seed = SEED_REDDIT_SENTIMENT[symbol];
-    memoryCache.set(symbol, { at: Date.now(), data: seed });
-    saveCachedSentiment(seed).catch(() => {});
-    return seed;
-  }
+  // Live crawl returned nothing usable. Report exactly that: the crawler's own record (a verified
+  // zero, or zero plus fetchIssue) when it ran, otherwise a "could not check" record.
+  if (liveData) return liveData;
 
-  // 5. Fallback for unseeded ticker: generate intelligent sector-aligned profile
   const row = NIFTY_500.find(([s]) => s === symbol);
-  const companyName = row?.[1] ?? symbol;
-  const sector = row?.[2] ?? "Indian Listed Equity";
-  const capTier = getNifty500CapTier(symbol);
-
-  const synthesized = buildSynthesizedCompanySentiment(symbol, companyName, sector, capTier);
-  memoryCache.set(symbol, { at: Date.now(), data: synthesized });
-  saveCachedSentiment(synthesized).catch(() => {});
-  return synthesized;
+  return {
+    symbol,
+    companyName: row?.[1] ?? symbol,
+    sector: row?.[2] ?? "Indian Listed Equity",
+    marketCapTier: getNifty500CapTier(symbol),
+    noData: false,
+    fetchIssue: "Reddit could not be reached, so retail sentiment is unavailable right now.",
+    totalMentions7D: 0,
+    positivePct: 0,
+    negativePct: 0,
+    neutralPct: 0,
+    netSentimentScore: 0,
+    communityDistribution: [],
+    topPosts: [],
+    fetchedAt: new Date().toISOString(),
+    sentimentSource: "lexicon",
+  };
 }
 
 /** Fixed, liquid watchlist checked live server-side */

@@ -236,20 +236,8 @@ export async function buildSecurityDetail(symbol: string): Promise<SecurityDetai
           provider: "alphavantage",
         };
       } else {
-        sources.push({
-          id: "simulated",
-          label: "Internal simulation",
-          url: yahooFinanceUrl(sym),
-          usedFor: "Model marks when live feeds unavailable",
-        });
-        quote = {
-          price: instrument?.startPrice ?? 0,
-          change: 0,
-          changePct: 0,
-          currency: "USD",
-          asOf: fetchedAt,
-          provider: "simulated",
-        };
+        // Never show a modelled price as if it were live: with every feed down there is no quote.
+        throw new Error(`No live quote available for ${sym} right now`);
       }
     }
   }

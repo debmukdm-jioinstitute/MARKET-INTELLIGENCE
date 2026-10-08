@@ -296,7 +296,7 @@ export function AuthForm({
         <div className="mt-4 rounded-lg border border-blue-600/20 bg-blue-600/5 px-4 py-3 text-sm text-foreground">
           <p className="font-semibold text-blue-700">Saving after demo</p>
           <p className="mt-1 text-muted-foreground">
-            Demo mode uses sample books only. After sign-up, your real watchlists, portfolio holdings, and alert rules will save to this account.
+            Guest mode does not save anything. After sign-up, your watchlists, portfolio holdings, and alert rules will save to this account.
           </p>
         </div>
       ) : null}
@@ -490,7 +490,7 @@ export function AuthForm({
       {mode === "login" && guestAllowed ? (
         <div className="mt-6 rounded-xl border-2 border-primary/15 bg-muted/40 p-4">
           <p className="text-sm font-semibold text-foreground">Just exploring?</p>
-          <p className="mt-1 text-sm text-muted-foreground">Open the demo desk with sample books — no account required.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Browse live market data as a guest — no account required.</p>
           <button
             type="button"
             disabled={guestPending || pending}

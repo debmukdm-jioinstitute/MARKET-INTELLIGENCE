@@ -16,7 +16,6 @@ import {
   Layers,
   MoreHorizontal,
   Pencil,
-  RefreshCw,
   Search,
   Target,
   Trash2,
@@ -33,13 +32,14 @@ import type {
   RegressionInputs,
 } from "@/lib/my-portfolio/types";
 import { BENCHMARK_OPTIONS, type BenchmarkId, BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
+import { moneyWeightedIrr } from "@/lib/my-portfolio/metrics-spec-engine";
 import { GLOSSARY } from "@/lib/my-portfolio/glossary";
 import { AddHoldingDialog } from "@/components/my-portfolio/add-holding-dialog";
 import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
 import { EditHoldingDialog } from "@/components/my-portfolio/edit-holding-dialog";
 import { SellHoldingDialog } from "@/components/my-portfolio/sell-holding-dialog";
 import { HoldingsList } from "@/components/my-portfolio/holdings-list";
-import { MetricEyeButton } from "@/components/my-portfolio/metric-explain-dialog";
+import { MetricEyeButton, MetricExplainProvider } from "@/components/my-portfolio/metric-explain-dialog";
 import { MetricsBento } from "@/components/my-portfolio/metrics-bento";
 import { exportHoldingsCsv } from "@/lib/my-portfolio/india-tax-estimate";
 import {
@@ -122,7 +122,6 @@ interface PortfolioDashboardViewProps {
   onRemoveHolding: (id: string) => void;
   onClearHoldings: () => void;
   onImportHoldings: (holdings: Holding[], mode: "replace" | "append") => Promise<unknown>;
-  onTrySampleHoldings: () => Promise<unknown>;
   onUpdateBenchmark: (id: BenchmarkId) => Promise<unknown>;
   onEditHolding: (id: string, patch: { shares: number; avgCost: number }) => Promise<unknown>;
   onSellHolding: (id: string, input: { shares: number; price: number; tradeDate?: string }) => Promise<unknown>;
@@ -137,7 +136,6 @@ export function PortfolioDashboardView({
   onRemoveHolding,
   onClearHoldings,
   onImportHoldings,
-  onTrySampleHoldings,
   onUpdateBenchmark,
   onEditHolding,
   onSellHolding,
@@ -232,24 +230,45 @@ export function PortfolioDashboardView({
     return data?.overview?.find((m) => m.id === "benchmarkReturn") ?? findMetric(data?.categories, "benchmarkReturn");
   }, [data]);
 
-  const displayYourReturn = yourReturnFraction !== 0 ? yourReturnFraction : -0.1736;
-  const displayBenchmarkReturn = benchmarkReturnMetric?.value != null ? benchmarkReturnMetric.value : -0.0975;
+  // Both returns cover the same window (first to last NAV date) so the comparison is like for like.
+  const periodReturnMetric = useMemo(() => findMetric(data?.categories, "absoluteReturn"), [data]);
+  const yourReturn = periodReturnMetric?.status === "na" ? null : (periodReturnMetric?.value ?? null);
+  const benchReturn = benchmarkReturnMetric?.status === "na" ? null : (benchmarkReturnMetric?.value ?? null);
+  const periodStart = data?.navSeries?.[0]?.date;
+  const periodEnd = data?.navSeries?.[data.navSeries.length - 1]?.date;
 
-  const diffPoints = Math.abs((displayYourReturn - displayBenchmarkReturn) * 100).toFixed(2);
-  const isBehind = displayYourReturn < displayBenchmarkReturn;
+  const diffPoints = yourReturn != null && benchReturn != null ? Math.abs((yourReturn - benchReturn) * 100).toFixed(2) : null;
+  const isBehind = yourReturn != null && benchReturn != null && yourReturn < benchReturn;
 
   // Volatility & Max Drawdown
   const volMetric = useMemo(() => findMetric(data?.categories, "volatility"), [data]);
-  const volDisplay = volMetric?.value != null ? `${(volMetric.value * 100).toFixed(1)}%` : "14.1%";
+  const volDisplay = volMetric?.value != null ? `${(volMetric.value * 100).toFixed(1)}%` : "—";
 
   const mddMetric = useMemo(() => findMetric(data?.categories, "maxDrawdown"), [data]);
-  const mddDisplay = mddMetric?.value != null ? formatPct(mddMetric.value) : "−23.53%";
+  const mddDisplay = mddMetric?.value != null ? formatPct(mddMetric.value) : "—";
 
   // Active Share
   const activeShareMetric = useMemo(() => findMetric(data?.categories, "activeShare"), [data]);
-  const activeShareDisplay = activeShareMetric?.value != null ? `${Math.round(activeShareMetric.value * 100)}%` : "82%";
+  const activeShareDisplay = activeShareMetric?.value != null ? `${Math.round(activeShareMetric.value * 100)}%` : "—";
 
   // IRR & XIRR
+  // XIRR from the dated cash flows the user entered: deposits are outflows, withdrawals inflows,
+  // and today's portfolio value is the terminal inflow. Needs at least one flow older than today.
+  const xirr = useMemo(() => {
+    if (!cashFlows.length || navInr <= 0) return null;
+    const sorted = [...cashFlows].sort((a, b) => a.date.localeCompare(b.date));
+    const t0 = new Date(sorted[0]!.date).getTime();
+    const day = 24 * 3600 * 1000;
+    const terminalDays = (Date.now() - t0) / day;
+    if (!(terminalDays >= 1)) return null;
+    const flows = sorted.map((c) => ({
+      amount: c.type === "DEPOSIT" ? -c.amountInr : c.amountInr,
+      days: (new Date(c.date).getTime() - t0) / day,
+    }));
+    return moneyWeightedIrr(flows, navInr, terminalDays);
+  }, [cashFlows, navInr]);
+  const xirrDisplay = xirr != null && Number.isFinite(xirr) ? formatPct(xirr) : "—";
+
   const irrMetric = useMemo(() => findMetric(data?.categories, "mwrIrr"), [data]);
   const irrDisplay = irrMetric?.value != null ? formatPct(irrMetric.value) : "—";
 
@@ -288,6 +307,7 @@ export function PortfolioDashboardView({
   };
 
   return (
+    <MetricExplainProvider value={{ benchmark: benchmarkLabel, regression: data?.regression }}>
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       {/* 1. Brand & Header */}
       <div>
@@ -336,13 +356,6 @@ export function PortfolioDashboardView({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5 shadow-lg">
-                <DropdownMenuItem
-                  onClick={() => void onTrySampleHoldings()}
-                  className="rounded-lg text-xs font-semibold cursor-pointer"
-                >
-                  <RefreshCw className="mr-2 size-3.5 text-blue-600" />
-                  Try sample holdings (9 names)
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setShowRenameDialog(true)}
                   className="rounded-lg text-xs font-semibold cursor-pointer"
@@ -449,7 +462,7 @@ export function PortfolioDashboardView({
 
             {/* Big Value */}
             <p className="my-4 text-[34px] sm:text-[40px] font-extrabold tracking-tight text-stone-900 tabular-nums">
-              {formatInr(navInr || 862335)}
+              {formatInr(navInr)}
             </p>
 
             {/* Divided KPI row */}
@@ -460,10 +473,10 @@ export function PortfolioDashboardView({
                   <MetricInfoTrigger term="Today's change" text="Mark-to-market gain or loss recorded across your holdings during today's trading session." />
                 </div>
                 <p className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
-                  {todayPnlInr ? formatInr(todayPnlInr, { showSign: true }) : "₹0"}
+                  {formatInr(todayPnlInr, { showSign: true })}
                 </p>
                 <p className="mt-1 text-xs font-medium text-stone-500">
-                  {todayPct ? `${todayPct.toFixed(2)}% · ${todayPct >= 0 ? "Up today" : "Down today"}` : "0.00% · Unchanged"}
+                  {`${todayPct.toFixed(2)}% · ${todayPct > 0 ? "Up today" : todayPct < 0 ? "Down today" : "Unchanged"}`}
                 </p>
               </div>
 
@@ -475,10 +488,10 @@ export function PortfolioDashboardView({
                 <p
                   className={cn(
                     "mt-1 text-xl sm:text-2xl font-bold tracking-tight tabular-nums",
-                    unrealizedPnlInr < 0 ? "text-[#E11D48]" : unrealizedPnlInr > 0 ? "text-emerald-600" : "text-[#E11D48]",
+                    unrealizedPnlInr < 0 ? "text-[#E11D48]" : unrealizedPnlInr > 0 ? "text-emerald-600" : "text-stone-900",
                   )}
                 >
-                  {unrealizedPnlInr ? formatInr(unrealizedPnlInr) : "−₹1,70,436"}
+                  {formatInr(unrealizedPnlInr)}
                 </p>
                 <p className="mt-1 text-xs font-medium text-stone-500">
                   {unrealizedPnlInr >= 0 ? "Gain on holdings you have not sold." : "Loss on holdings you have not sold."}
@@ -526,7 +539,7 @@ export function PortfolioDashboardView({
                     You vs the market
                   </h2>
                   <p className="text-xs sm:text-[13px] text-stone-500 font-normal">
-                    Over the same period.
+                    {periodStart && periodEnd ? `Over the same period · ${periodStart} to ${periodEnd}` : "Over the same period."}
                   </p>
                 </div>
               </div>
@@ -564,9 +577,9 @@ export function PortfolioDashboardView({
                 <p className="text-xs font-medium text-stone-500">Your return</p>
                 <p className={cn(
                   "mt-1 text-2xl sm:text-[28px] font-bold tabular-nums",
-                  displayYourReturn < 0 ? "text-[#E11D48]" : "text-emerald-600",
+                  yourReturn == null ? "text-stone-300" : yourReturn < 0 ? "text-[#E11D48]" : "text-emerald-600",
                 )}>
-                  {formatPct(displayYourReturn)}
+                  {yourReturn != null ? formatPct(yourReturn) : "—"}
                 </p>
               </div>
 
@@ -574,9 +587,9 @@ export function PortfolioDashboardView({
                 <p className="text-xs font-medium text-stone-500">{benchmarkLabel}</p>
                 <p className={cn(
                   "mt-1 text-2xl sm:text-[28px] font-bold tabular-nums",
-                  displayBenchmarkReturn < 0 ? "text-[#E11D48]" : "text-emerald-600",
+                  benchReturn == null ? "text-stone-300" : benchReturn < 0 ? "text-[#E11D48]" : "text-emerald-600",
                 )}>
-                  {formatPct(displayBenchmarkReturn)}
+                  {benchReturn != null ? formatPct(benchReturn) : "—"}
                 </p>
               </div>
             </div>
@@ -592,7 +605,9 @@ export function PortfolioDashboardView({
                 Key insight
               </p>
               <p className="text-sm sm:text-base font-bold text-stone-900">
-                {diffPoints} percentage points {isBehind ? "behind" : "ahead of"} {benchmarkLabel}.
+                {diffPoints != null
+                  ? `${diffPoints} percentage points ${isBehind ? "behind" : "ahead of"} ${benchmarkLabel}.`
+                  : "Needs more price history to compare."}
               </p>
             </div>
           </div>
@@ -622,13 +637,13 @@ export function PortfolioDashboardView({
                 <MetricInfoTrigger term="XIRR" text="Extended Internal Rate of Return: Annualized compound rate of return that accounts for the exact dates and amounts of every cash inflow and outflow." />
               </div>
               <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-stone-900">
-                —
+                {xirrDisplay}
               </p>
               <p className="mt-2 text-xs font-medium text-stone-600">
                 Annualized return using the dates money goes in or out.
               </p>
               <p className="mt-0.5 text-[11px] text-stone-400">
-                Add dated cash flows to calculate.
+                {xirr == null ? "Add dated cash flows to calculate." : `From ${cashFlows.length} cash flow${cashFlows.length === 1 ? "" : "s"} you entered plus today's value.`}
               </p>
             </div>
           </div>
@@ -994,14 +1009,7 @@ export function PortfolioDashboardView({
           <div className="flex-1 overflow-y-auto p-6 space-y-3">
             {filteredPositions.length === 0 ? (
               <div className="py-12 text-center text-stone-500">
-                <p className="text-sm font-semibold">No holdings found.</p>
-                <button
-                  type="button"
-                  onClick={() => void onTrySampleHoldings()}
-                  className="mt-3 text-xs font-bold text-blue-600 hover:underline"
-                >
-                  Load 9 sample bluechip holdings
-                </button>
+                <p className="text-sm font-semibold">No holdings match.</p>
               </div>
             ) : (
               filteredPositions.map((p) => (
@@ -1315,6 +1323,7 @@ export function PortfolioDashboardView({
         </DialogContent>
       </Dialog>
     </div>
+    </MetricExplainProvider>
   );
 }
 

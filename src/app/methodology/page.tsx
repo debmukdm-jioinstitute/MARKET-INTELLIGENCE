@@ -83,8 +83,8 @@ const SECTIONS: Section[] = [
   },
   {
     id: "demo",
-    title: "Guest and demo portfolios",
-    body: ["Guest mode uses simulated books. Trades and settings are not saved to an account and involve no real money or brokerage."],
+    title: "Guest mode",
+    body: ["Guest mode shows the same live market data, but holdings and settings you enter are not saved to an account. Portfolios here involve no real money or brokerage."],
   },
   {
     id: "disclaimer",

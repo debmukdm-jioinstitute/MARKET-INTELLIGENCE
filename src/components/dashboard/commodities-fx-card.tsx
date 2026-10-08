@@ -28,8 +28,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       name: "BRENT CRUDE",
       category: "Energy",
       metricKey: "brent",
-      price: brent?.value ?? 99.29,
-      changePct: brent?.changePct ?? -0.0064,
+      price: brent?.value ?? null,
+      changePct: brent?.changePct ?? null,
       prefix: "$",
       source: brent?.source,
       route: "/markets/india/brent",
@@ -38,8 +38,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       name: "GOLD",
       category: "Precious Metals",
       metricKey: "gold",
-      price: gold?.value ?? 4424.9,
-      changePct: gold?.changePct ?? 0.0057,
+      price: gold?.value ?? null,
+      changePct: gold?.changePct ?? null,
       prefix: "$",
       source: gold?.source,
       route: "/markets/india/gold",
@@ -48,8 +48,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       name: "SILVER",
       category: "Precious Metals",
       metricKey: "gold",
-      price: silver?.value ?? 38.21,
-      changePct: silver?.changePct ?? 0.017,
+      price: silver?.value ?? null,
+      changePct: silver?.changePct ?? null,
       prefix: "$",
       source: silver?.source,
       route: "/markets/india/silver",
@@ -58,8 +58,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
       name: "COPPER",
       category: "Industrial Metals",
       metricKey: "brent",
-      price: copper?.value ?? 4.42,
-      changePct: copper?.changePct ?? -0.004,
+      price: copper?.value ?? null,
+      changePct: copper?.changePct ?? null,
       prefix: "$",
       source: copper?.source,
       route: "/markets/india/copper",
@@ -70,8 +70,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
     {
       name: "USD/INR SPOT",
       metricKey: "usdinr",
-      price: usdInr?.value ?? 95.88,
-      changePct: usdInr?.changePct ?? -0.0004,
+      price: usdInr?.value ?? null,
+      changePct: usdInr?.changePct ?? null,
       prefix: "₹",
       source: usdInr?.source,
       route: "/markets/india/usdinr",
@@ -79,8 +79,8 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
     {
       name: "DOLLAR INDEX (DXY)",
       metricKey: "dxy",
-      price: dxy?.value ?? 101.4,
-      changePct: dxy?.changePct ?? -0.0022,
+      price: dxy?.value ?? null,
+      changePct: dxy?.changePct ?? null,
       prefix: "",
       source: dxy?.source,
       route: "/markets/india/dxy",
@@ -113,7 +113,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
               GLOBAL COMMODITIES (REAL-TIME NYMEX / ICE)
             </span>
             {commodities.map((c) => {
-              const isPos = c.changePct >= 0;
+              const isPos = (c.changePct ?? 0) >= 0;
               return (
                 <div
                   key={c.name}
@@ -128,16 +128,15 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="font-medium text-foreground">
-                      {c.prefix}
-                      {c.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {c.price == null ? "—" : `${c.prefix}${c.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </span>
                     <span
                       className={cn(
                         "rounded px-1.5 py-0.5 text-sm font-bold",
-                        isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
+                        c.changePct == null ? "text-muted-foreground" : isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
-                      {formatPct(c.changePct)}
+                      {c.changePct == null ? "—" : formatPct(c.changePct)}
                     </span>
                   </div>
                 </div>
@@ -151,7 +150,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
               FOREIGN EXCHANGE & DOLLAR
             </span>
             {currencies.map((fx) => {
-              const isPos = fx.changePct >= 0;
+              const isPos = (fx.changePct ?? 0) >= 0;
               return (
                 <div
                   key={fx.name}
@@ -165,16 +164,15 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="font-medium text-foreground">
-                      {fx.prefix}
-                      {fx.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {fx.price == null ? "—" : `${fx.prefix}${fx.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </span>
                     <span
                       className={cn(
                         "rounded px-1.5 py-0.5 text-sm font-bold",
-                        isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
+                        fx.changePct == null ? "text-muted-foreground" : isPos ? "text-emerald-600 bg-emerald-500/10" : "text-rose-600 bg-rose-500/10",
                       )}
                     >
-                      {formatPct(fx.changePct)}
+                      {fx.changePct == null ? "—" : formatPct(fx.changePct)}
                     </span>
                   </div>
                 </div>

@@ -127,7 +127,6 @@ export default function IntelligencePage() {
                 provider="Hugging Face Free Inference API (FinBERT, BART, MiniLM, MNLI)"
                 sourceUrl="/api/hf/copilot"
                 asOf={feedData?.fetchedAt}
-                showInspectorButton={false}
                 iconSize="xs"
               />
             </div>

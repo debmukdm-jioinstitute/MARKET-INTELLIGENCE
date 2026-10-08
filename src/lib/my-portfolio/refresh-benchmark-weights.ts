@@ -4,7 +4,7 @@ import {
 } from "@/lib/feeds/india/nse-index-constituents";
 import { fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
-import { SENSEX_CONSTITUENT_SYMBOLS, benchmarkStockWeights } from "@/lib/my-portfolio/benchmark-constituents";
+import { SENSEX_CONSTITUENT_SYMBOLS } from "@/lib/my-portfolio/benchmark-constituents";
 import {
   saveBenchmarkWeights,
   type BenchmarkWeightMethod,
@@ -59,7 +59,7 @@ async function buildMarketCapMap(symbols: string[], preferBse: boolean): Promise
 function weightsFromSymbols(
   symbols: string[],
   capMap: Map<string, number>,
-): { weights: Record<string, number>; method: BenchmarkWeightMethod } {
+): { weights: Record<string, number>; method: BenchmarkWeightMethod } | null {
   let capSum = 0;
   const caps: Record<string, number> = {};
   for (const sym of symbols) {
@@ -69,13 +69,10 @@ function weightsFromSymbols(
       capSum += c;
     }
   }
-  if (capSum > 0) {
-    const weights = Object.fromEntries(Object.entries(caps).map(([k, v]) => [k, v / capSum]));
-    return { weights, method: "cap_yahoo" };
-  }
-  const w = 1 / symbols.length;
-  const weights = Object.fromEntries(symbols.map((s) => [s.toUpperCase(), w]));
-  return { weights, method: "equal_weight" };
+  // No equal-weight guess. Also refuse a basket where too many caps are missing: weights would be skewed.
+  if (capSum <= 0 || Object.keys(caps).length < symbols.length * 0.9) return null;
+  const weights = Object.fromEntries(Object.entries(caps).map(([k, v]) => [k, v / capSum]));
+  return { weights, method: "cap_yahoo" };
 }
 
 export async function refreshBenchmarkWeights(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow | null> {
@@ -90,22 +87,14 @@ export async function refreshBenchmarkWeights(benchmark: BenchmarkId): Promise<B
   } else if (benchmark === "SENSEX") {
     symbols = [...SENSEX_CONSTITUENT_SYMBOLS];
     sourceUrl = "https://www.bseindia.com/indices/IndexArchive/16";
-  } else if (benchmark === "SPX" || benchmark === "NDX") {
-    const weights = benchmarkStockWeights(benchmark);
-    return {
-      benchmark,
-      weights,
-      asOf: new Date().toISOString().slice(0, 10),
-      sourceUrl: "static:us-large-cap-snapshot",
-      method: "static_fallback",
-      fetchedAt: new Date().toISOString(),
-    };
   } else {
     return null;
   }
 
   const capMap = await buildMarketCapMap(symbols, preferBse);
-  const { weights, method } = weightsFromSymbols(symbols, capMap);
+  const computed = weightsFromSymbols(symbols, capMap);
+  if (!computed) return null;
+  const { weights, method } = computed;
   const row: BenchmarkWeightsRow = {
     benchmark,
     weights: normalizeWeights(weights),
@@ -155,7 +144,12 @@ export async function refreshAllIndiaBenchmarkWeights(): Promise<RefreshBenchmar
   for (const [benchmark, symbols] of symbolLists) {
     try {
       const caps = benchmark === "SENSEX" ? sensexCap : capMap;
-      const { weights, method } = weightsFromSymbols(symbols, caps);
+      const computed = weightsFromSymbols(symbols, caps);
+      if (!computed) {
+        results.push({ benchmark, ok: false, error: "Too few live market caps to weight this index" });
+        continue;
+      }
+      const { weights, method } = computed;
       const csv = NSE_BENCHMARK_CSV[benchmark];
       const sourceUrl =
         benchmark === "SENSEX"

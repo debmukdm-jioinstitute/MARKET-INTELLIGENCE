@@ -13,8 +13,6 @@ export default function WorldIndicesPage() {
   const searchParams = useSearchParams();
   const { data, loading, error, reload } = useWorldIndices();
 
-  const isFixtureMode =
-    searchParams.get("preview") === "fixtures" || searchParams.get("mockup") === "1";
 
   const rawFocus = searchParams.get("focus");
   const focusFromUrl = rawFocus === "volatility" ? "volatility" : parseIndexFocusParam(rawFocus);
@@ -40,7 +38,7 @@ export default function WorldIndicesPage() {
 
   return (
     <div className="-mx-3 -mt-3 mb-0 flex min-h-[calc(100dvh-8.5rem)] min-w-0 flex-col bg-[#F6F5F1] p-2 sm:-mx-4 sm:-mt-4 sm:p-2 md:-mx-5 md:-mt-5 md:p-2 min-[1100px]:h-[calc(100dvh-10.75rem)] min-[1100px]:max-h-[calc(100dvh-10.75rem)] min-[1100px]:overflow-hidden">
-      {loading && !data && !isFixtureMode ? (
+      {loading && !data ? (
         <div className="w-full space-y-3 pt-2">
           <MacroTapeSkeleton count={6} />
         </div>
@@ -53,7 +51,6 @@ export default function WorldIndicesPage() {
           onRefresh={reload}
           initialFocus={focus}
           onFocusChange={setFocus}
-          isFixtureMode={isFixtureMode}
         />
       )}
     </div>

@@ -1,21 +1,22 @@
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
-import { benchmarkStockWeights } from "@/lib/my-portfolio/benchmark-constituents";
 import { loadBenchmarkWeights, type BenchmarkWeightsRow } from "@/lib/my-portfolio/benchmark-weights-store";
 import { refreshBenchmarkWeights } from "@/lib/my-portfolio/refresh-benchmark-weights";
 
 const MEMORY_TTL_MS = 6 * 60 * 60_000;
 const STALE_MS = 26 * 60 * 60_000;
+const FIRST_LOAD_WAIT_MS = 25_000;
 
 const memory = new Map<BenchmarkId, { row: BenchmarkWeightsRow; at: number }>();
-const inflight = new Map<BenchmarkId, Promise<BenchmarkWeightsRow>>();
+const inflight = new Map<BenchmarkId, Promise<BenchmarkWeightsRow | null>>();
 
-function fromStatic(benchmark: BenchmarkId): BenchmarkWeightsRow {
+/** Honest empty answer: no live source produced weights, so active share and Brinson show N/A. */
+function unavailable(benchmark: BenchmarkId): BenchmarkWeightsRow {
   return {
     benchmark,
-    weights: benchmarkStockWeights(benchmark),
-    asOf: "2026-06-01",
-    sourceUrl: "static:fallback-snapshot",
-    method: "static_fallback",
+    weights: {},
+    asOf: "",
+    sourceUrl: "",
+    method: "unavailable",
     fetchedAt: new Date().toISOString(),
   };
 }
@@ -25,7 +26,7 @@ function isFresh(row: BenchmarkWeightsRow, maxAgeMs: number): boolean {
   return Number.isFinite(t) && Date.now() - t < maxAgeMs;
 }
 
-async function refreshOne(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow> {
+function refreshOne(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow | null> {
   const existing = inflight.get(benchmark);
   if (existing) return existing;
   const job = (async () => {
@@ -36,22 +37,15 @@ async function refreshOne(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow> 
         return live;
       }
     } catch {
-      // fall through
+      // unavailable below
     }
-    const db = await loadBenchmarkWeights(benchmark);
-    if (db?.weights && Object.keys(db.weights).length) {
-      memory.set(benchmark, { row: db, at: Date.now() });
-      return db;
-    }
-    const fallback = fromStatic(benchmark);
-    memory.set(benchmark, { row: fallback, at: Date.now() });
-    return fallback;
+    return null;
   })().finally(() => inflight.delete(benchmark));
   inflight.set(benchmark, job);
   return job;
 }
 
-/** Live NSE constituent list + cap-weight proxy (DB-backed, cron-refreshed). Never blocks on network refresh. */
+/** Live NSE/BSE constituent list x market cap (DB-backed, cron-refreshed). Never a hard-coded snapshot. */
 export async function getBenchmarkWeightsSnapshot(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow> {
   const cached = memory.get(benchmark);
   if (cached && Date.now() - cached.at < MEMORY_TTL_MS) return cached.row;
@@ -63,10 +57,9 @@ export async function getBenchmarkWeightsSnapshot(benchmark: BenchmarkId): Promi
     return db;
   }
 
-  const fallback = fromStatic(benchmark);
-  memory.set(benchmark, { row: fallback, at: Date.now() });
-  void refreshOne(benchmark);
-  return fallback;
+  // Nothing stored yet: wait (bounded) for the first live computation instead of showing a made-up basket.
+  const live = await Promise.race([refreshOne(benchmark), new Promise<null>((r) => setTimeout(() => r(null), FIRST_LOAD_WAIT_MS))]);
+  return live ?? unavailable(benchmark);
 }
 
 export async function getBenchmarkStockWeights(benchmark: BenchmarkId): Promise<Record<string, number>> {
