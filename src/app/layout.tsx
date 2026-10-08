@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Google_Sans } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { McpClaudeLaunchBanner } from "@/components/layout/mcp-claude-launch-banner";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { PortalMascot } from "@/components/mascot/portal-mascot";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <PortalMascot />
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
