@@ -33,16 +33,38 @@ const KeyRatiosPanel = dynamic(
   () => import("@/components/fundamentals/key-ratios-panel").then((m) => m.KeyRatiosPanel),
   { ssr: false, loading: chartBox(240) },
 );
-const FinancialsPanel = dynamic(() => import("@/components/research/financials-panel").then((m) => m.FinancialsPanel));
-const OwnershipPanel = dynamic(() => import("@/components/research/ownership-panel").then((m) => m.OwnershipPanel));
-const DocumentsPanel = dynamic(() => import("@/components/research/documents-panel").then((m) => m.DocumentsPanel));
-const RatingsPanel = dynamic(() => import("@/components/research/ratings-panel").then((m) => m.RatingsPanel));
-const ConcallPanel = dynamic(() => import("@/components/research/concall-panel").then((m) => m.ConcallPanel));
-const ResearchIntelligencePanels = dynamic(() =>
-  import("@/components/research/research-intelligence-panels").then((m) => m.ResearchIntelligencePanels),
+const FinancialsPanel = dynamic(() => import("@/components/research/financials-panel").then((m) => m.FinancialsPanel), {
+  ssr: false,
+  loading: chartBox(480),
+});
+const OwnershipPanel = dynamic(() => import("@/components/research/ownership-panel").then((m) => m.OwnershipPanel), {
+  ssr: false,
+  loading: chartBox(420),
+});
+const DocumentsPanel = dynamic(() => import("@/components/research/documents-panel").then((m) => m.DocumentsPanel), {
+  ssr: false,
+  loading: chartBox(360),
+});
+const RatingsPanel = dynamic(() => import("@/components/research/ratings-panel").then((m) => m.RatingsPanel), {
+  ssr: false,
+  loading: chartBox(240),
+});
+const ConcallPanel = dynamic(() => import("@/components/research/concall-panel").then((m) => m.ConcallPanel), {
+  ssr: false,
+  loading: chartBox(280),
+});
+const ResearchIntelligencePanels = dynamic(
+  () => import("@/components/research/research-intelligence-panels").then((m) => m.ResearchIntelligencePanels),
+  { ssr: false, loading: chartBox(400) },
 );
-const SecurityRiskPanel = dynamic(() => import("@/components/research/security-risk-panel").then((m) => m.SecurityRiskPanel));
-const SimilarStocksPanel = dynamic(() => import("@/components/hf-ai/similar-stocks-panel").then((m) => m.SimilarStocksPanel));
+const SecurityRiskPanel = dynamic(() => import("@/components/research/security-risk-panel").then((m) => m.SecurityRiskPanel), {
+  ssr: false,
+  loading: chartBox(280),
+});
+const SimilarStocksPanel = dynamic(() => import("@/components/hf-ai/similar-stocks-panel").then((m) => m.SimilarStocksPanel), {
+  ssr: false,
+  loading: chartBox(160),
+});
 
 /**
  * Session-level guard so a StrictMode double-mount (dev) doesn't fire the
@@ -182,7 +204,7 @@ export function ResearchSymbolClient({
         title={data ? `${data.symbol} · ${data.name}` : symbol}
         subtitle="Live intelligence from Upstox & official NSE regulatory filings (XBRL), with Yahoo / SEC fallbacks for US names."
       />
-      <SymbolSearch initialQuery={symbol} variant="bar" className="max-w-3xl" />
+      <SymbolSearch initialQuery={symbol} variant="bar" showShortcut={false} className="max-w-3xl" />
 
       {data ? <StockPriceBento data={data} /> : null}
 
