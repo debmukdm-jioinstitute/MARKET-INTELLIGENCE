@@ -30,6 +30,7 @@ import type {
   MetricResult,
   PortfolioAnalysis,
   PositionRow,
+  RegressionInputs,
 } from "@/lib/my-portfolio/types";
 import { BENCHMARK_OPTIONS, type BenchmarkId, BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { GLOSSARY } from "@/lib/my-portfolio/glossary";
@@ -37,6 +38,9 @@ import { AddHoldingDialog } from "@/components/my-portfolio/add-holding-dialog";
 import { BrokerImportDialog } from "@/components/my-portfolio/broker-import-dialog";
 import { EditHoldingDialog } from "@/components/my-portfolio/edit-holding-dialog";
 import { SellHoldingDialog } from "@/components/my-portfolio/sell-holding-dialog";
+import { HoldingsList } from "@/components/my-portfolio/holdings-list";
+import { MetricEyeButton } from "@/components/my-portfolio/metric-explain-dialog";
+import { MetricsBento } from "@/components/my-portfolio/metrics-bento";
 import { exportHoldingsCsv } from "@/lib/my-portfolio/india-tax-estimate";
 import {
   Dialog,
@@ -799,49 +803,73 @@ export function PortfolioDashboardView({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <DeepMetricCard
                 title="Jensen's Alpha"
-                value={findMetric(data?.categories, "alpha")?.formatted ?? "+1.84%"}
+                explainId="alpha"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "alpha")?.formatted ?? "—"}
                 desc="Excess return generated beyond benchmark risk exposure."
                 formula="α = Rp − [Rf + β(Rm − Rf)]"
               />
               <DeepMetricCard
                 title="Portfolio Beta"
-                value={findMetric(data?.categories, "beta")?.formatted ?? "0.94"}
+                explainId="beta"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "beta")?.formatted ?? "—"}
                 desc="Sensitivity of returns relative to the benchmark."
                 formula="β = Cov(Rp, Rm) / Var(Rm)"
               />
               <DeepMetricCard
                 title="Sharpe Ratio"
-                value={findMetric(data?.categories, "sharpe")?.formatted ?? "0.82"}
+                explainId="sharpe"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "sharpe")?.formatted ?? "—"}
                 desc="Excess return earned per unit of total risk."
                 formula="Sharpe = (Rp − Rf) / σp"
               />
               <DeepMetricCard
                 title="Sortino Ratio"
-                value={findMetric(data?.categories, "sortino")?.formatted ?? "1.15"}
+                explainId="sortino"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "sortino")?.formatted ?? "—"}
                 desc="Return generated per unit of downside risk."
                 formula="Sortino = (Rp − Rf) / σ_down"
               />
               <DeepMetricCard
                 title="Treynor Ratio"
-                value={findMetric(data?.categories, "treynor")?.formatted ?? "0.12"}
+                explainId="treynor"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "treynor")?.formatted ?? "—"}
                 desc="Excess return per unit of systematic beta risk."
                 formula="Treynor = (Rp − Rf) / β"
               />
               <DeepMetricCard
                 title="Information Ratio"
-                value={findMetric(data?.categories, "informationRatio")?.formatted ?? "0.45"}
+                explainId="informationRatio"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "informationRatio")?.formatted ?? "—"}
                 desc="Active return earned per unit of tracking error."
                 formula="IR = (Rp − Rm) / Tracking Error"
               />
               <DeepMetricCard
                 title="VaR (95% 1-Day)"
-                value={findMetric(data?.categories, "var")?.formatted ?? "−2.15%"}
-                desc="Maximum estimated one-day loss with 95% confidence."
-                formula="Parametric VaR @ 95%"
+                explainId="var"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "var")?.formatted ?? "—"}
+                desc="Loss exceeded on only 1 day in 20, in rupees."
+                formula="Historical VaR @ 95% × portfolio value"
               />
               <DeepMetricCard
                 title="Tracking Error"
-                value={findMetric(data?.categories, "trackingError")?.formatted ?? "6.2%"}
+                explainId="trackingError"
+                benchmark={benchmarkLabel}
+                regression={data?.regression}
+                value={findMetric(data?.categories, "trackingError")?.formatted ?? "—"}
                 desc="Standard deviation of active returns vs benchmark."
                 formula="σ(Rp − Rm)"
               />
@@ -882,6 +910,42 @@ export function PortfolioDashboardView({
           </div>
         )}
       </div>
+
+      {/* 5b. Holdings: the full list with every detail, inline */}
+      {holdingsCount > 0 ? (
+        <section id="holdings" className="rounded-2xl border border-stone-200 bg-white shadow-2xs overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 px-4 py-3.5 sm:px-5">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-stone-900">Holdings ({holdingsCount})</h3>
+              <p className="text-xs text-stone-500">Live marks · your book · INR</p>
+            </div>
+            {!_locked ? (
+              <div className="flex items-center gap-2">
+                <AddHoldingDialog onAdd={onAddHolding} triggerLabel="Add" />
+                <BrokerImportDialog onImport={onImportHoldings} triggerLabel="Import" />
+              </div>
+            ) : null}
+          </div>
+          <HoldingsList
+            positions={positions}
+            onRemove={onRemoveHolding}
+            onEdit={onEditHolding}
+            onSell={onSellHolding}
+            readOnly={_locked}
+          />
+        </section>
+      ) : null}
+
+      {/* 5c. Every metric, one bento card per category */}
+      {data && data.categories.length > 0 && holdingsCount > 0 ? (
+        <section id="all-metrics" className="space-y-3">
+          <div className="px-1">
+            <h3 className="text-sm sm:text-base font-bold text-stone-900">All metrics</h3>
+            <p className="text-xs text-stone-500">Tap the eye on a metric to see how it is worked out.</p>
+          </div>
+          <MetricsBento categories={data.categories} benchmark={benchmarkLabel} regression={data.regression} />
+        </section>
+      ) : null}
 
       {/* 6. Holdings Slide-over Sheet */}
       <Sheet open={showHoldingsDrawer} onOpenChange={setShowHoldingsDrawer}>
@@ -1281,16 +1345,23 @@ function DeepMetricCard({
   value,
   desc,
   formula,
+  explainId,
+  benchmark,
+  regression,
 }: {
   title: string;
   value: string;
   desc: string;
   formula: string;
+  explainId: string;
+  benchmark: string;
+  regression?: RegressionInputs | null;
 }) {
   return (
     <div className="rounded-xl border border-stone-200/80 bg-stone-50/40 p-3.5 hover:bg-stone-50 transition-colors">
-      <div className="flex items-center justify-between gap-1">
+      <div className="flex items-center gap-1">
         <span className="text-xs font-semibold text-stone-600">{title}</span>
+        <MetricEyeButton id={explainId} value={value} benchmark={benchmark} regression={regression} />
       </div>
       <p className="mt-1 text-lg font-extrabold text-stone-900 tabular-nums">
         {value}

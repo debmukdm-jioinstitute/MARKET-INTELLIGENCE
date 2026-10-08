@@ -1,5 +1,5 @@
 import { covariance, mean, returnsFromPrices, stdev } from "@/lib/analytics";
-import { computeSpecMetrics } from "@/lib/my-portfolio/metrics-spec-engine";
+import { computeSpecMetrics, regressionInputs } from "@/lib/my-portfolio/metrics-spec-engine";
 import {
   candleRangeToDates,
   fetchUpstoxFullQuotes,
@@ -939,5 +939,6 @@ export async function computePortfolioAnalysis(
     attribution,
     riskContribution,
     sectorAttribution,
+    regression: hasHistory ? regressionInputs(p, b, RF_ANNUAL) : null,
   };
 }
