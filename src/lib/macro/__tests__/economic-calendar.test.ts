@@ -1,53 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { getEconomicCalendar } from "../economic-calendar";
+import { buildPayload, mapFeedRows } from "../economic-calendar";
 
-describe("Economic Calendar & Sovereign Releases Engine", () => {
-  it("generates a comprehensive sovereign release schedule extending well past September 30", async () => {
-    const calendar = await getEconomicCalendar();
+const NOW = new Date("2026-10-08T12:00:00Z").getTime();
+const rows = [
+  { title: "Core CPI m/m", country: "USD", date: "2026-10-09T08:30:00-04:00", impact: "High", forecast: "0.3%", previous: "0.2%" },
+  { title: "Bank Holiday", country: "CNY", date: "2026-10-09T19:01:00-04:00", impact: "Holiday", forecast: "", previous: "" },
+  { title: "German GDP", country: "EUR", date: "2026-10-05T03:00:00-04:00", impact: "Medium", forecast: "", previous: "0.1%" },
+  { title: "Broken", country: "XXX", date: "not-a-date", impact: "High" },
+];
 
-    expect(calendar.events.length).toBeGreaterThanOrEqual(25);
-    expect(calendar.counts.total).toBe(calendar.events.length);
-    expect(calendar.counts.india).toBeGreaterThan(10);
-    expect(calendar.counts.usa).toBeGreaterThan(5);
+describe("economic calendar (live feed mapper)", () => {
+  const events = mapFeedRows(rows, NOW);
 
-    // Verify events exist in October 2026 and November 2026
-    const octoberEvents = calendar.events.filter((e) => e.date.startsWith("Oct"));
-    const novemberEvents = calendar.events.filter((e) => e.date.startsWith("Nov"));
-
-    expect(octoberEvents.length).toBeGreaterThan(10);
-    expect(novemberEvents.length).toBeGreaterThan(3);
-
-    // Verify key sovereign events are present
-    const rbiMpc = calendar.events.find((e) => e.id.includes("rbi-mpc-2026-10-09"));
-    expect(rbiMpc).toBeDefined();
-    expect(rbiMpc?.country).toBe("IND");
-    expect(rbiMpc?.event).toContain("RBI MPC Rate Decision");
-
-    const indiaCpi = calendar.events.find((e) => e.id.includes("ind-cpi-2026-10-12"));
-    expect(indiaCpi).toBeDefined();
-    expect(indiaCpi?.country).toBe("IND");
-    expect(indiaCpi?.event).toContain("CPI Inflation Rate");
-
-    const fomc = calendar.events.find((e) => e.id.includes("usa-fomc-rate-2026-10-28"));
-    expect(fomc).toBeDefined();
-    expect(fomc?.country).toBe("USA");
+  it("keeps only valid scored events (drops holidays and malformed rows)", () => {
+    expect(events.map((e) => e.event)).toEqual(["German GDP", "Core CPI m/m"]);
   });
 
-  it("filters correctly by region and impact level", async () => {
-    const indiaOnly = await getEconomicCalendar({ region: "IND" });
-    expect(indiaOnly.events.every((e) => e.region === "IND")).toBe(true);
-
-    const highImpact = await getEconomicCalendar({ impact: "HIGH" });
-    expect(highImpact.events.every((e) => e.impact === "HIGH")).toBe(true);
+  it("never invents numbers: missing forecast or actual is an em dash", () => {
+    const gdp = events.find((e) => e.event === "German GDP")!;
+    expect(gdp.forecast).toBe("—");
+    expect(gdp.actual).toBe("—");
+    expect(events.find((e) => e.event === "Core CPI m/m")!.forecast).toBe("0.3%");
   });
 
-  it("formats dates properly into Indian Standard Time (IST)", async () => {
-    const calendar = await getEconomicCalendar();
-    for (const event of calendar.events) {
-      expect(event.date).toMatch(/^[A-Z][a-z]{2} \d{2}, \d{2}:\d{2}$/);
-      expect(event.isoDate).toBeDefined();
-      expect(event.impact).toMatch(/^(HIGH|MEDIUM|LOW)$/);
-      expect(event.status).toMatch(/^(reported|today|upcoming)$/);
-    }
+  it("resolves status from the clock and sorts chronologically", () => {
+    expect(events[0]!.status).toBe("reported");
+    expect(events[1]!.status).toBe("upcoming");
+    expect(events[1]!.region).toBe("USA");
+  });
+
+  it("counts match and India is empty until a real India source exists", () => {
+    const p = buildPayload(events, NOW);
+    expect(p.counts.total).toBe(2);
+    expect(p.counts.india).toBe(0);
   });
 });

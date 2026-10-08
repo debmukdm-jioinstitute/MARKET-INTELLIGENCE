@@ -1,6 +1,5 @@
 import { sql, hasDatabase } from "@/lib/db";
 import type { LiveCompanySentiment } from "./fetch-live";
-import { SEED_REDDIT_SENTIMENT } from "./seed-data";
 
 let ready: Promise<void> | null = null;
 
@@ -103,15 +102,13 @@ export async function getCachedSentiment(symbolRaw: string): Promise<LiveCompany
       if (rows.length > 0) {
         const r = rows[0] as Record<string, unknown>;
         const rawTopPosts = Array.isArray(r.top_posts) ? (r.top_posts as { url?: string }[]) : [];
+        // Rows written by the removed seed/synthesizer paths are not real observations: ignore them.
         const hasFabricatedUrls = rawTopPosts.some(
           (p) => typeof p.url === "string" && /comments\/1[a-z0-9]+/i.test(p.url)
         );
-        if (hasFabricatedUrls && SEED_REDDIT_SENTIMENT[symbol]) {
-          const seed = SEED_REDDIT_SENTIMENT[symbol];
-          memoryCache.set(symbol, { at: Date.now(), data: seed });
-          saveCachedSentiment(seed).catch(() => {});
-          return seed;
-        }
+        const isLegacySynthesized =
+          Number(r.total_mentions) === 18 && Number(r.positive_pct) === 52 && Number(r.negative_pct) === 22 && Number(r.neutral_pct) === 26;
+        if (hasFabricatedUrls || isLegacySynthesized) return null;
 
         const data: LiveCompanySentiment = {
           symbol: String(r.symbol),
@@ -136,13 +133,6 @@ export async function getCachedSentiment(symbolRaw: string): Promise<LiveCompany
     } catch (err) {
       console.warn("[reddit-sentiment/store] DB read failed:", err);
     }
-  }
-
-  // 3. Fallback: Seed data
-  if (SEED_REDDIT_SENTIMENT[symbol]) {
-    const seed = SEED_REDDIT_SENTIMENT[symbol];
-    memoryCache.set(symbol, { at: Date.now(), data: seed });
-    return seed;
   }
 
   return null;

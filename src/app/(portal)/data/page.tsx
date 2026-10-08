@@ -5,7 +5,6 @@ import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 interface DataSource {
   metricId?: string;
@@ -13,10 +12,7 @@ interface DataSource {
   provider: string;
   type: "Exchange Licensed" | "Official Regulatory" | "Open Web API";
   coverage: string;
-  latency: string;
   freshness: string;
-  qualityScore: number;
-  status: "ONLINE" | "DEGRADED" | "STANDBY";
   url: string;
 }
 
@@ -27,10 +23,7 @@ const SOURCES: DataSource[] = [
     provider: "Upstox (RKSV Securities)",
     type: "Exchange Licensed",
     coverage: "NSE Equities, NIFTY/BANKNIFTY Indices, Option Greeks",
-    latency: "120 ms",
     freshness: "Tick-by-tick / 1s",
-    qualityScore: 99.8,
-    status: "ONLINE",
     url: "https://upstox.com/developer/api-documentation",
   },
   {
@@ -39,10 +32,7 @@ const SOURCES: DataSource[] = [
     provider: "National Stock Exchange of India",
     type: "Official Regulatory",
     coverage: "Material Disclosures, Board Meetings, Earnings, Filings",
-    latency: "1.2 s",
     freshness: "Real-time RSS",
-    qualityScore: 99.4,
-    status: "ONLINE",
     url: "https://www.nseindia.com",
   },
   {
@@ -51,10 +41,7 @@ const SOURCES: DataSource[] = [
     provider: "Bombay Stock Exchange",
     type: "Official Regulatory",
     coverage: "SENSEX 30, Regulatory Submissions, Dividends, M&A",
-    latency: "1.4 s",
     freshness: "Real-time RSS",
-    qualityScore: 99.2,
-    status: "ONLINE",
     url: "https://www.bseindia.com",
   },
   {
@@ -63,10 +50,7 @@ const SOURCES: DataSource[] = [
     provider: "RBI Data Warehouse & RSS",
     type: "Official Regulatory",
     coverage: "Monetary Policy, Liquidity Operations, FX Reserves, Repo",
-    latency: "15 min",
     freshness: "Daily / Fortnightly",
-    qualityScore: 100.0,
-    status: "ONLINE",
     url: "https://www.rbi.org.in",
   },
   {
@@ -75,10 +59,7 @@ const SOURCES: DataSource[] = [
     provider: "Ministry of Statistics & Programme Implementation",
     type: "Official Regulatory",
     coverage: "CPI Inflation, IIP Industrial Production, Quarterly GDP",
-    latency: "Batch",
     freshness: "Monthly release cycle",
-    qualityScore: 98.9,
-    status: "ONLINE",
     url: "https://mospi.gov.in",
   },
   {
@@ -87,10 +68,7 @@ const SOURCES: DataSource[] = [
     provider: "Yahoo Finance API / Stooq",
     type: "Open Web API",
     coverage: "S&P 500, NASDAQ, Brent Crude, Gold, US 10Y, DXY",
-    latency: "600 ms",
     freshness: "15s delayed / EOD",
-    qualityScore: 97.4,
-    status: "ONLINE",
     url: "https://finance.yahoo.com",
   },
   {
@@ -99,10 +77,7 @@ const SOURCES: DataSource[] = [
     provider: "Federal Reserve Bank of St. Louis",
     type: "Official Regulatory",
     coverage: "Global Macro, OECD Sovereign Yields, CBOE VIX",
-    latency: "Batch CSV",
     freshness: "Daily close",
-    qualityScore: 99.9,
-    status: "ONLINE",
     url: "https://fred.stlouisfed.org",
   },
 ];
@@ -113,54 +88,15 @@ export default function DataPage() {
       <PageHeader
 
         title="Where our data comes from"
-        subtitle="Illustrative provider overview (design mockup). For measured feed health — latency probes and degraded sources — use Feed health."
+        subtitle="The providers behind the numbers, and how often each updates. For measured latency and degraded sources, see Feed health."
       />
 
-      <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
-        KPI tiles below are static placeholders, not live telemetry.{" "}
+      <p className="text-sm text-muted-foreground">
+        Live latency, freshness and failures are measured on{" "}
         <Link href="/data/feeds" className="font-semibold text-primary hover:underline">
-          Open feed health →
+          Feed health →
         </Link>
       </p>
-
-      {/* KPI Overview Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-        <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground uppercase">SYSTEM HEALTH SCORE</span>
-            <MetricInfo id="data_quality" iconSize="xs" />
-          </div>
-          <div className="text-2xl font-bold text-emerald-600">99.4%</div>
-          <span className="text-sm text-muted-foreground">Across 7 upstream providers</span>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground uppercase">AVG INGESTION LATENCY</span>
-            <MetricInfo id="feed_latency" iconSize="xs" />
-          </div>
-          <div className="text-2xl font-bold text-foreground">340 ms</div>
-          <span className="text-sm text-emerald-600">P95 below 850 ms</span>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground uppercase">ACTIVE DATA STREAMS</span>
-            <MetricInfo id="data_quality" name="Active Data Streams Telemetry" iconSize="xs" />
-          </div>
-          <div className="text-2xl font-bold text-foreground">Illustrative</div>
-          <span className="text-sm text-muted-foreground">See /data/feeds for live source status</span>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-4 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground uppercase">REDUNDANCY WATERFALL</span>
-            <MetricInfo id="data_quality" name="Multi-tier Failover Architecture" iconSize="xs" />
-          </div>
-          <div className="text-2xl font-bold text-primary">3-Tier Active</div>
-          <span className="text-sm text-muted-foreground">Upstox → Yahoo → TrueData</span>
-        </div>
-      </div>
 
       {/* Sources Table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -171,20 +107,7 @@ export default function DataPage() {
               <TableHead>Provider</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Coverage</TableHead>
-              <TableHead className="text-right">
-                <span className="inline-flex items-center gap-1 justify-end">
-                  Latency
-                  <MetricInfo id="feed_latency" iconSize="xs" />
-                </span>
-              </TableHead>
               <TableHead className="text-right">Freshness</TableHead>
-              <TableHead className="text-right">
-                <span className="inline-flex items-center gap-1 justify-end">
-                  Quality Score
-                  <MetricInfo id="data_quality" iconSize="xs" />
-                </span>
-              </TableHead>
-              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">Source</TableHead>
             </TableRow>
           </TableHeader>
@@ -208,19 +131,7 @@ export default function DataPage() {
                   </span>
                 </TableCell>
                 <TableCell className="text-muted-foreground max-w-[220px] truncate">{s.coverage}</TableCell>
-                <TableCell className="text-right font-medium text-foreground">{s.latency}</TableCell>
                 <TableCell className="text-right text-muted-foreground">{s.freshness}</TableCell>
-                <TableCell className="text-right font-bold text-emerald-600">{s.qualityScore}%</TableCell>
-                <TableCell className="text-center">
-                  <span
-                    className={cn(
-                      "rounded px-2 py-0.5 text-sm font-bold uppercase",
-                      s.status === "ONLINE" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-600/10 text-blue-600",
-                    )}
-                  >
-                    {s.status}
-                  </span>
-                </TableCell>
                 <TableCell className="text-right">
                   <a
                     href={s.url}

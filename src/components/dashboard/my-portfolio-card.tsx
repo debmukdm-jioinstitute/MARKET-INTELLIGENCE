@@ -21,10 +21,12 @@ export function MyPortfolioCard() {
   const showLock = ready && (isGuest || (!loading && !hasHoldings));
 
   // Extract key KPIs from computed institutional analysis
-  const alphaMetric = data?.overview?.find((m) => m.id === "alpha");
-  const betaMetric = data?.overview?.find((m) => m.id === "beta");
-  const sharpeMetric = data?.overview?.find((m) => m.id === "sharpe");
-  const mddMetric = data?.overview?.find((m) => m.id === "max_drawdown");
+  const metricById = (id: string) =>
+    data?.overview?.find((m) => m.id === id) ?? data?.categories?.flatMap((c) => c.metrics).find((m) => m.id === id);
+  const alphaMetric = metricById("alpha");
+  const betaMetric = metricById("beta");
+  const sharpeMetric = metricById("sharpe");
+  const mddMetric = metricById("maxDrawdown");
   // "absoluteReturn" is the book's cumulative return; there is no separate "total_return" metric.
   const totalReturnMetric = data?.overview?.find((m) => m.id === "absoluteReturn");
 
@@ -153,7 +155,7 @@ export function MyPortfolioCard() {
                     totalReturnPct >= 0 ? "text-emerald-600/90" : "text-rose-600/90",
                   )}
                 >
-                  {totalReturnMetric?.formatted ?? "+0.00%"} CUMULATIVE
+                  {totalReturnMetric?.formatted ?? "—"} CUMULATIVE
                 </span>
               </div>
             </div>
@@ -163,35 +165,35 @@ export function MyPortfolioCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Portfolio Alpha (CAPM)</span>
-                <MetricInfo metric="alpha" value={hasHoldings ? (alphaMetric?.formatted ?? "+0.00%") : "0.00%"} />
+                <MetricInfo metric="alpha" value={alphaMetric?.formatted ?? "—"} />
               </div>
-              <span className={cn("font-bold", (hasHoldings ? (alphaMetric?.value ?? 0) : 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                {hasHoldings ? (alphaMetric?.formatted ?? "+0.00%") : "0.00%"}
+              <span className={cn("font-bold", (alphaMetric?.value ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                {alphaMetric?.formatted ?? "—"}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Systematic Beta vs {data?.settings.benchmark ?? "NIFTY50"}</span>
-                <MetricInfo metric="beta" value={hasHoldings ? (betaMetric?.formatted ?? "1.00") : "0.00"} />
+                <MetricInfo metric="beta" value={betaMetric?.formatted ?? "—"} />
               </div>
-              <span className="font-bold text-blue-600">{hasHoldings ? (betaMetric?.formatted ?? "1.00") : "0.00"}</span>
+              <span className="font-bold text-blue-600">{betaMetric?.formatted ?? "—"}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Sharpe Ratio (Ex. G-Sec)</span>
-                <MetricInfo metric="sharpe" value={hasHoldings ? (sharpeMetric?.formatted ?? "1.45") : "0.00"} />
+                <MetricInfo metric="sharpe" value={sharpeMetric?.formatted ?? "—"} />
               </div>
-              <span className="font-bold text-foreground">{hasHoldings ? (sharpeMetric?.formatted ?? "1.45") : "0.00"}</span>
+              <span className="font-bold text-foreground">{sharpeMetric?.formatted ?? "—"}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="text-muted-foreground">Peak-To-Trough Max DD</span>
-                <MetricInfo metric="max_drawdown" value={hasHoldings ? (mddMetric?.formatted ?? "-6.4%") : "0.0%"} />
+                <MetricInfo metric="max_drawdown" value={mddMetric?.formatted ?? "—"} />
               </div>
-              <span className="font-bold text-rose-600">{hasHoldings ? (mddMetric?.formatted ?? "-6.4%") : "0.0%"}</span>
+              <span className="font-bold text-rose-600">{mddMetric?.formatted ?? "—"}</span>
             </div>
           </div>
         </div>

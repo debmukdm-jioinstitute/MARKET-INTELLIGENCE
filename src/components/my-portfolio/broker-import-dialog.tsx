@@ -49,15 +49,8 @@ const BROKER_OPTIONS = [
   { value: "generic", label: "Generic Broker / Standard Spreadsheet" },
 ];
 
-const SAMPLE_CSV = `Instrument,ISIN,Qty.,Avg. cost
-RELIANCE,INE002A01018,50,2850.50
-TCS,INE467B01029,25,3820.00
-HDFCBANK,INE040A01034,60,1650.00
-INFY,INE009A01021,80,1480.00
-ITC,INE154A01025,120,435.50
-SBIN,INE062A01020,70,795.00
-LT,INE018A01030,20,3520.00
-TITAN,INE280A01028,15,3240.00`;
+/** Column layout only: no example rows, so nothing fabricated ever reaches a user's book. */
+const TEMPLATE_CSV = "Instrument,ISIN,Qty.,Avg. cost\n";
 
 export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" }: Props) {
   const [open, setOpen] = useState(false);
@@ -210,7 +203,7 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
   }
 
   function handleDownloadTemplate() {
-    const blob = new Blob([SAMPLE_CSV], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([TEMPLATE_CSV], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -452,13 +445,6 @@ export function BrokerImportDialog({ onImport, triggerLabel = "Import Holdings" 
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       Paste CSV, TSV, or copied table rows:
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => setPastedText(SAMPLE_CSV)}
-                      className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <Sparkles className="h-3 w-3" /> Load Sample Holdings
-                    </button>
                   </div>
                   <textarea
                     rows={8}

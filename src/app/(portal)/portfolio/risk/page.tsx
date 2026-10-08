@@ -5,27 +5,12 @@ import { PortfolioCreditRiskPanel } from "@/components/credit/portfolio-credit-r
 
 import { Bars } from "@/components/charts/terminal-charts";
 import { PageHeader, Panel } from "@/components/layout/page-header";
-import { Progress } from "@/components/ui/progress";
 import { MetricInfo } from "@/components/ui/metric-info";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
 import { BENCHMARK_LABEL } from "@/lib/my-portfolio/benchmark-options";
 import { findMetric } from "@/lib/my-portfolio/find-metric";
-import { formatPct } from "@/lib/format";
 import Link from "next/link";
 import { useMemo } from "react";
-
-/** Policy limits for progress bars (illustrative desk budgets). */
-const POLICY = {
-  vol: 0.2,
-  maxDrawdown: 0.35,
-  trackingError: 0.08,
-  varNavPct: 0.02,
-};
-
-function budgetPct(value: number | null | undefined, limit: number): number {
-  if (value == null || !Number.isFinite(value) || limit <= 0) return 0;
-  return Math.min(100, (Math.abs(value) / limit) * 100);
-}
 
 export default function RiskPage() {
   const { data, loading, error, locked } = useMyPortfolio();
@@ -52,12 +37,6 @@ export default function RiskPage() {
       })),
     [data?.riskContribution],
   );
-
-  const varLimitInr = data?.navInr ? data.navInr * POLICY.varNavPct : null;
-  const varUsed =
-    var95?.value != null && varLimitInr != null && varLimitInr > 0
-      ? budgetPct(var95.value, varLimitInr)
-      : 0;
 
   const bench = data?.settings.benchmark ? BENCHMARK_LABEL[data.settings.benchmark] : "benchmark";
 
@@ -126,32 +105,28 @@ export default function RiskPage() {
               label="Volatility"
               value={vol?.formatted ?? "—"}
               note={vol?.note}
-              used={budgetPct(vol?.value ?? null, POLICY.vol)}
-              cap="20% ann. policy"
+              cap="Annualised, from daily returns"
             />
             <RiskStat
               metricId="maxDrawdown"
               label="Max drawdown"
               value={mdd?.formatted ?? "—"}
               note={mdd?.note}
-              used={budgetPct(mdd?.value ?? null, POLICY.maxDrawdown)}
-              cap="35% limit"
+              cap="Largest peak-to-trough fall in the window"
             />
             <RiskStat
               metricId="var"
               label="1-day 95% VaR"
               value={var95?.formatted ?? "—"}
-              note={var95?.note ?? (varLimitInr ? `Policy band ≈ ${Math.round(varLimitInr).toLocaleString("en-IN")} INR (2% NAV)` : undefined)}
-              used={varUsed}
-              cap="Historical · 2% NAV band"
+              note={var95?.note}
+              cap="Historical, in rupees at today's value"
             />
             <RiskStat
               metricId="trackingError"
               label="Tracking error"
               value={te?.formatted ?? "—"}
               note={te?.note}
-              used={budgetPct(te?.value ?? null, POLICY.trackingError)}
-              cap={`8% TE vs ${bench}`}
+              cap={`Annualised vs ${bench}`}
             />
           </div>
 
@@ -196,14 +171,12 @@ function RiskStat({
   label,
   value,
   note,
-  used,
   cap,
 }: {
   metricId: string;
   label: string;
   value: string;
   note?: string;
-  used: number;
   cap: string;
 }) {
   return (
@@ -213,10 +186,7 @@ function RiskStat({
         <MetricInfo id={metricId} name={label} iconSize="xs" />
       </div>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
-      <Progress value={used} className="mt-3" />
-      <p className="mt-2 text-sm text-muted-foreground">
-        {cap} · {formatPct(used / 100, 0)} utilized
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground">{cap}</p>
       {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
     </div>
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { REFERENCE_SNAPSHOT_FIXTURES } from "../fixtures";
+import { REFERENCE_SNAPSHOT_FIXTURES } from "./fixtures";
 import {
   computeRangePosition,
   formatLargeVolume,

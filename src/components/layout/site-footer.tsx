@@ -76,7 +76,7 @@ export function SiteFooter({ variant = "portal", className }: SiteFooterProps) {
         <p className={cn("mt-8 max-w-3xl text-xs leading-5", marketing ? "text-gray-500" : "text-muted-foreground")}>
           Market Intelligence provides descriptive data and analytics for information and education only. It is not
           investment advice or an offer to buy or sell any security. Quotes may be delayed and can contain errors;
-          verify with your broker or the exchange before acting. Guest and demo portfolios are simulated.
+          verify with your broker or the exchange before acting. Portfolios involve no real money or brokerage.
         </p>
         <div
           className={cn(

@@ -4,7 +4,6 @@ import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { ComparisonModal } from "./comparison-modal";
-import { REFERENCE_SNAPSHOT_FIXTURES } from "./fixtures";
 import { HeroCard } from "./hero-card";
 import { LowerCards } from "./lower-cards";
 import { OverviewModal } from "./overview-modal";
@@ -29,7 +28,6 @@ interface GlobalMarketsDashboardProps {
   onRefresh: () => void | Promise<unknown>;
   initialFocus?: string | null;
   onFocusChange?: (focus: string) => void;
-  isFixtureMode?: boolean;
 }
 
 export function GlobalMarketsDashboard({
@@ -40,13 +38,11 @@ export function GlobalMarketsDashboard({
   onRefresh,
   initialFocus,
   onFocusChange,
-  isFixtureMode = false,
 }: GlobalMarketsDashboardProps) {
   // Use isolated fixtures only if explicitly requested
   const allData = useMemo(() => {
-    if (isFixtureMode) return REFERENCE_SNAPSHOT_FIXTURES;
     return quotes;
-  }, [isFixtureMode, quotes]);
+  }, [quotes]);
 
   // Selected region tab
   const validInitialTab: GlobalMarketsTab =
@@ -186,19 +182,10 @@ export function GlobalMarketsDashboard({
 
         {/* Right: Freshness and Refresh button */}
         <div className="flex items-center gap-2">
-          {isFixtureMode ? (
-            <span
-              role="status"
-              className="rounded-full border border-[#151515]/20 bg-[#FCFCFA] px-2 py-0.5 text-[10px] font-semibold text-[#151515]"
-            >
-              Sample snapshot · not live
-            </span>
-          ) : (
             <div className="hidden sm:flex flex-col text-right text-[10px] text-[#62656B]">
               <span className="font-semibold text-[#151515]">{formattedFreshness}</span>
               <span className="text-[9px]">Delayed quotes · Last close</span>
             </div>
-          )}
 
           <button
             type="button"

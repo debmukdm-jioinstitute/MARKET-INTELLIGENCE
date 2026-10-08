@@ -81,7 +81,7 @@ export const PORTAL_TIPS: { prefix: string; tip: MascotTip }[] = [
   { prefix: "/help", tip: { text: "Stuck? Search here, or ask the assistant bottom-right.", gesture: "wave" } },
   { prefix: "/methodology", tip: { text: "How every number is sourced and computed.", gesture: "inspect" } },
   { prefix: "/signup", tip: { text: "Free to start. No card needed.", gesture: "wave" } },
-  { prefix: "/login", tip: { text: "Welcome back. Or try the demo desk without an account.", gesture: "wave" } },
+  { prefix: "/login", tip: { text: "Welcome back. Or browse as a guest without an account.", gesture: "wave" } },
   { prefix: "/Home", tip: { text: "Your 2-minute brief is at the top. Start there.", gesture: "wave" } },
   { prefix: "/profile", tip: { text: "Tune your watchlists and alerts here.", gesture: "point" } },
 ];

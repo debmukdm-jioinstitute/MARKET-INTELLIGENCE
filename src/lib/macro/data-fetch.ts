@@ -264,16 +264,11 @@ export function inflationMomentum(points: { date: string; value: number }[]) {
   const pts = points.length ? points : OFFICIAL_MOSPI_CPI_MONTHLY_INDEX;
   const last = pts[pts.length - 1];
   if (!last) {
-    return {
-      yoy: 4.82,
-      m1: 4.87,
-      m3: 5.68,
-      m6: 5.63,
-    };
+    return { yoy: null, m1: null, m3: null, m6: null };
   }
   const idx = (lag: number) => pts[pts.length - 1 - lag]?.value;
   const yoyPt = cpiYoYFromIndex(pts);
-  const yoy = yoyPt[yoyPt.length - 1]?.value ?? 4.82;
+  const yoy = yoyPt[yoyPt.length - 1]?.value ?? null;
   const v0 = last.value;
   const ann = (lag: number, power: number) => {
     const v = idx(lag);
@@ -281,10 +276,10 @@ export function inflationMomentum(points: { date: string; value: number }[]) {
     return Number(((Math.pow(v0 / v, power) - 1) * 100).toFixed(2));
   };
   return {
-    yoy: yoy ?? 4.82,
-    m1: ann(1, 12) ?? 4.87,
-    m3: ann(3, 4) ?? 5.68,
-    m6: ann(6, 2) ?? 5.63,
+    yoy,
+    m1: ann(1, 12),
+    m3: ann(3, 4),
+    m6: ann(6, 2),
   };
 }
 

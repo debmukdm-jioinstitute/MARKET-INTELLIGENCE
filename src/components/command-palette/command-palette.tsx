@@ -103,8 +103,8 @@ export function CommandPalette() {
           {view.type === "option-chain" ? (
             <OptionChainResultView underlyingKey={view.key} label={view.label} />
           ) : null}
-          {view.type === "global-quote" ? (
-            <GlobalQuoteResultView instrument={getInstrument(view.symbol)} />
+          {view.type === "global-quote" && getInstrument(view.symbol) ? (
+            <GlobalQuoteResultView instrument={getInstrument(view.symbol)!} />
           ) : null}
         </div>
       ) : (
