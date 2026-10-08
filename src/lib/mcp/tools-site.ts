@@ -23,6 +23,7 @@ import { buildFeedHub } from "@/lib/feeds/hub";
 import { getSourceHealth } from "@/lib/health/sources";
 import { buildResearchDetail } from "@/lib/feeds/research-detail";
 import { buildDrivers } from "@/lib/guide/drivers-service";
+import { getResearchAnalytics } from "@/lib/research/analytics-service";
 import { buildSecurityDetail } from "@/lib/feeds/security-detail";
 import { buildSecurityRisk } from "@/lib/feeds/security-risk";
 import { enrichIpoListWithGmp } from "@/lib/feeds/ipo/enrich-gmp";
@@ -433,6 +434,14 @@ export const SITE_TOOLS: Tool[] = [
       const p = await buildDrivers(SymbolArg.parse(a).symbol.toUpperCase());
       return { ...p, drivers: p.drivers.map((d) => ({ ...d, evidence: d.evidence.map((e) => ({ title: e.title, source: e.source, link: e.link, publishedAt: e.publishedAt })) })) };
     },
+  },
+  {
+    name: "get_research_analytics",
+    title: "Financial analytics (X-Ray, DNA, red flags, valuation)",
+    category: "Research",
+    description: "Deterministic financial analytics for an NSE stock: Financial X-Ray (growth, profitability, health, cash quality, efficiency), MI Financial DNA score (0-100, rules-based), Red Flag Engine findings with evidence, and historical valuation bands (P/E, P/B, EV/EBITDA) vs the company's own history. Null when no filing data exists.",
+    inputSchema: { type: "object", properties: { symbol: sym }, required: ["symbol"], additionalProperties: false },
+    run: async (a) => (await getResearchAnalytics(SymbolArg.parse(a).symbol.toUpperCase())) ?? { status: "unavailable", reason: "No analytics available for symbol" },
   },
   {
     name: "get_price_history",

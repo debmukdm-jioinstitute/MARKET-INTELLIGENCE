@@ -155,13 +155,13 @@ export function FinancialsPanel({ symbol }: { symbol: string }) {
           </div>
 
           {/* TAB 1: EXECUTIVE FORENSIC HEALTH */}
-          {activeTab === "forensic" && <ForensicHealth analysis={data.forensicAnalysis} />}
+          {activeTab === "forensic" && <ForensicHealth analysis={data.forensicAnalysis} companyName={data.companyName} />}
 
           {activeTab === "quarterly_perf" && <QuarterlyView quarters={data.quarters} plRows={data.pl.quarters} ratios={data.ratios.quarters} />}
           {activeTab === "pl" && <StatementView kind="pl" rows={plRows} cols={cols} />}
           {activeTab === "bs" && <StatementView kind="bs" rows={bsRows} cols={cols} />}
           {activeTab === "cf" && <StatementView kind="cf" rows={cfRows} cols={cols} />}
-          {activeTab === "ratios" && <RatiosView wc={wcList} ratios={ratioList} />}
+          {activeTab === "ratios" && <RatiosView wc={wcList} ratios={ratioList} cols={cols} annualized={periodType === "quarter"} />}
 
           {/* Official Verification & Regulatory Source Links */}
           <Fold title="Where these numbers come from (official filings)">

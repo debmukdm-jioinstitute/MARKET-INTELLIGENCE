@@ -10,7 +10,8 @@ export type ResearchPanelName =
   | "announcements"
   | "ratings"
   | "concall"
-  | "security-risk";
+  | "security-risk"
+  | "analytics";
 
 export const dossierCacheKey = (sym: string) => `dossier:v1:${sym}`;
 export const panelCacheKey = (name: ResearchPanelName, sym: string) =>

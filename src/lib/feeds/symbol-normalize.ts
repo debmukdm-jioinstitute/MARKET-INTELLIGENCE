@@ -42,7 +42,6 @@ const ALIASES: Record<string, string> = {
   LT: "LT",
   "LARSEN": "LT",
   "LARSEN AND TOUBRO": "LT",
-  "L&T": "LT",
 };
 
 export function normalizeSymbolQuery(raw: string): string {

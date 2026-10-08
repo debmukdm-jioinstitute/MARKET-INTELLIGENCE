@@ -1,3 +1,4 @@
+import type { Basis } from "./xbrl";
 import type { Layout, LineKind, LineUnit } from "./lines";
 
 export type PeriodType = "quarter" | "annual";
@@ -9,6 +10,8 @@ export type StatementColumn = {
   endDate: string;
   periodKind: PeriodType;
   audited: boolean | null;
+  /** Consolidated filings win over standalone for the same period; shown per column. */
+  basis: Basis | null;
   filingDate?: string;
   xbrlUrl?: string;
   ixbrlUrl?: string;
@@ -63,12 +66,16 @@ export type AnnualReportDoc = {
   submissionType: string | null;
 };
 
+export type ForensicMetricId = "debt" | "cash-cycle" | "margin" | "cash-backing" | "other";
+
 export type ForensicFlag = {
   type: "warning" | "strength" | "neutral";
   category: "solvency" | "governance" | "cash_flow" | "working_capital" | "profitability";
   title: string;
   detail: string;
   metricValue?: string;
+  /** Stable id for tile labeling (replaces suffix-regex heuristics). */
+  metricId: ForensicMetricId;
 };
 
 export type ExecutiveForensicAnalysis = {
@@ -79,6 +86,8 @@ export type ExecutiveForensicAnalysis = {
   flags: ForensicFlag[];
   workingCapitalSummary: string;
   cashFlowQuality: "High" | "Moderate" | "Weak";
+  /** True when no XBRL statements were parsed: score/rating must not be shown as a verdict. */
+  insufficientData?: boolean;
 };
 
 export type FinancialsPayload = {
