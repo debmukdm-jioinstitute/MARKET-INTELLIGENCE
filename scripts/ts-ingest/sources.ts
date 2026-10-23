@@ -16,6 +16,10 @@ export type SourceCfg = {
   /** Dataset staleness tolerance in days before state flips current → behind. */
   lagDays: number;
   nseCookie?: boolean;
+  /** Page to GET first for session cookies (ASP.NET sites). */
+  warm?: string;
+  /** Send a full browser User-Agent. */
+  browser?: boolean;
   parser: ParserName | EventParserName;
   /** Parser yields calendar events (ts_events) instead of numeric series. */
   events?: boolean;
@@ -69,11 +73,11 @@ const niftyReq = (path: string, kind: "tri" | "pepb") => (c: ReqCtx): Req[] =>
 
 SOURCES.push(
   {
-    id: "niftyindices_tri", urls: () => [], reqs: niftyReq("getTotalReturnIndexString", "tri"), perDate: false, fmt: "json", freq: "daily", lagDays: 4,
+    id: "niftyindices_tri", urls: () => [], reqs: niftyReq("getTotalReturnIndexString", "tri"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
     parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_tri",
   },
   {
-    id: "niftyindices_pepb", urls: () => [], reqs: niftyReq("getpepbHistoricaldataDBtoString", "pepb"), perDate: false, fmt: "json", freq: "daily", lagDays: 4,
+    id: "niftyindices_pepb", urls: () => [], reqs: niftyReq("getpepbHistoricaldataDBtoString", "pepb"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
     parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_pe",
   },
   {
@@ -85,7 +89,7 @@ SOURCES.push(
     parser: "bisPolicy", dataset: "bis", anchorSeries: "ts_bis_policy_in",
   },
   {
-    id: "oecd", urls: () => ["https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/IND+USA+CHN+DEU+JPN+GBR.M.LI...AA...H?format=csvfile&startPeriod=2000-01"], perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
+    id: "oecd", urls: () => ["IND", "USA", "CHN", "DEU", "JPN", "GBR"].map((c) => `https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/${c}.M.LI...AA...H?startPeriod=2000-01&format=csvfile`), perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
     parser: "oecdCli", dataset: "oecd", anchorSeries: "ts_oecd_cli_ind",
   },
 );

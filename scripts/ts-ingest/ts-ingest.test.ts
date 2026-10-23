@@ -94,3 +94,15 @@ describe("events + worldbank", () => {
     expect(r[0].obs.map((o) => o.date)).toEqual(["2023-12-31", "2024-12-31"]);
   });
 });
+
+import { looksLikeHtml, bodyHead } from "./http";
+describe("html sniffing", () => {
+  it("detects soft-404 pages, not data", () => {
+    expect(looksLikeHtml(Buffer.from("  <!DOCTYPE html><html>..."))).toBe(true);
+    expect(looksLikeHtml(Buffer.from("<html lang=en>"))).toBe(true);
+    expect(looksLikeHtml(Buffer.from("Client Type,Future Index Long"))).toBe(false);
+    expect(looksLikeHtml(Buffer.from([0x50, 0x4b, 3, 4]))).toBe(false);
+    expect(looksLikeHtml(Buffer.from('{"d":"[]"}'))).toBe(false);
+  });
+  it("bodyHead collapses whitespace", () => expect(bodyHead(Buffer.from("a\n  b\tc"), 20)).toBe("a b c"));
+});

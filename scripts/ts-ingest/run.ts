@@ -11,7 +11,7 @@ import type { SeriesResult } from "@/lib/collector/types";
 import { SOURCES, type Req, type SourceCfg } from "./sources";
 import { EVENT_PARSERS, PARSERS, type EventRow, type EventParserName, type ParserName } from "./parsers";
 import { candidateDates, todayIst } from "./dates";
-import { politeFetch } from "./http";
+import { bodyHead, looksLikeHtml, politeFetch } from "./http";
 
 const arg = (n: string) => process.argv.find((a) => a.startsWith(`--${n}=`))?.slice(n.length + 3) || undefined;
 const DRY = process.argv.includes("--dry");
@@ -43,6 +43,7 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
   const out = new Map<string, SeriesResult>();
   const events = new Map<string, EventRow>();
   let error: string | null = null;
+  let lastHead = "";
   try {
     if (src.needsEnv && !process.env[src.needsEnv]) throw new Error(`${src.needsEnv} not set`);
     const st = await meta(src);
@@ -54,11 +55,15 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
         const url = rq.url;
         const key = rq.body ? `${url}#${createHash("sha1").update(rq.body).digest("hex").slice(0, 12)}` : url;
         const prev = known.get(key);
-        const res = await politeFetch(url, { nse: src.nseCookie, method: rq.method, body: rq.body, headers: rq.headers, prev });
+        const res = await politeFetch(url, { nse: src.nseCookie, warm: src.warm, browser: src.browser, method: rq.method, body: rq.body, headers: rq.headers, prev });
+        lastHead = bodyHead(res.buf);
         const safeUrl = key.replace(/api_key=[^&]+/, "api_key=***");
         if (res.status === 304 || (prev?.sha256 && prev.sha256 === res.sha256)) { log({ src: src.id, url: safeUrl, skip: "unchanged" }); continue; }
         if (res.status === 404 && src.perDate) { log({ src: src.id, date: d, skip: "not published (holiday/late)" }); continue; }
-        if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status}`);
+        if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status}: ${bodyHead(res.buf)}`);
+        // Archives answer 200 with an HTML page for dates with no file (holidays, not yet published): skip, never parse.
+        if (src.perDate && looksLikeHtml(res.buf)) { log({ src: src.id, date: d, skip: "HTML page instead of file (holiday / not published)" }); continue; }
+        if (looksLikeHtml(res.buf)) throw new Error(`${safeUrl} → got an HTML page, not ${src.fmt}: ${bodyHead(res.buf)}`);
         if (src.events) {
           for (const e of EVENT_PARSERS[src.parser as EventParserName](res.buf, { date: d, url, meta: rq.meta })) events.set(e.id, e);
         } else for (const s of PARSERS[src.parser as ParserName](res.buf, { date: d, url, meta: rq.meta })) {
@@ -69,9 +74,10 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
       }
     }
   } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
+    error = (e instanceof Error ? e.message : String(e)) + (lastHead ? ` [body: ${lastHead}]` : "");
   }
   const series = [...out.values()].filter((s) => s.obs.length);
+  if (error) console.log(`::warning title=ts-ingest ${src.id} failed::${error.slice(0, 300)}`);
   log({ src: src.id, events: events.size, series: series.length, obs: series.reduce((n, s) => n + s.obs.length, 0), error, ms: Date.now() - t0, dry: DRY });
   if (!DRY && secret) {
     try {
