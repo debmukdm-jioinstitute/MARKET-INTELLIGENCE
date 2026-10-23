@@ -1010,3 +1010,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---- ts-charts tokens (CLAUDE_BUILD_SPEC §6.1) ---- */
+:root{--paper:#ffffff;--paper-2:#f5f5f5;--ink:#161616;--ink-2:#474747;--ink-3:#6b6b6b;--rule:#e3e3e3;--rule-2:#d2d2d2;--grid:#ececec;--axis:#c8c8c8;--hist:#a8a8a8;--brand:#0b6f7a;--focus:#3b59d9;--s1:#3d7abc;--s2:#cb6443;--s3:#51ac8c;--s4:#695ca3;--s5:#daa542;--s6:#a5598d;--s7:#76964a;--s8:#53b1d8;--s11:#89461b;--s12:#dd8898;--neg:#c04941;--good:#0ca30c;--critical:#d03b3b;
+--t-price:#b64b65;--t-breadth:#c45e39;--t-buyers:#ad7c1d;--t-froth:#57833d;--t-money:#208979;--t-economy:#336cb5;--t-world:#6154a8;--t-products:#954886;
+--h:var(--s1);--h-band:color-mix(in oklab,var(--h) 9%,var(--paper));--h-edge:color-mix(in oklab,var(--h) 38%,var(--paper))}
+.dark,[data-theme=dark]{--paper:#151515;--paper-2:#1d1d1d;--ink:#ededed;--ink-2:#b8b8b8;--ink-3:#979797;--rule:#2b2b2b;--rule-2:#383838;--grid:#222222;--axis:#404040;--hist:#5c5c5c;--brand:#3fb3bd;--focus:#8ea2ff;--s1:#508ed1;--s2:#c65f3f;--s3:#49a988;--s4:#7b6fb8;--s5:#bd891c;--s6:#b7699e;--s7:#749448;--s8:#46a0c4;--s11:#975329;--s12:#ca7787;--neg:#df6c62;
+--t-price:#d1647c;--t-breadth:#df7752;--t-buyers:#c7943c;--t-froth:#6e9b55;--t-money:#40a291;--t-economy:#4e87d3;--t-world:#8378cf;--t-products:#b566a5;--h-edge:color-mix(in oklab,var(--h) 40%,var(--paper))}
+.ts-chart{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums;touch-action:pan-y}
+.ts-chart text{paint-order:stroke;stroke:var(--paper);stroke-width:4px;stroke-linejoin:round}
+@media print{.ts-chart{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
