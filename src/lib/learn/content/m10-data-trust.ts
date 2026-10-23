@@ -39,6 +39,10 @@ export const DATA_TRUST: LearnModule = {
       tools: [
         { label: "Sources & Status", href: "/data", blurb: "Feed health and data freshness." },
         { label: "Data Health", href: "/data/health", blurb: "Freshness and provenance of every series." },
+        { label: "Dataset Status", href: "/data/status", blurb: "Latest observation and state of each ingested dataset." },
+        { label: "Indicators", href: "/indicators", blurb: "Long-history indicators against their usual range." },
+        { label: "Index P/E and P/B", href: "/valuation", blurb: "Multiples against their usual range." },
+        { label: "Market Activity", href: "/activity", blurb: "Cash turnover and index-futures positioning." },
         { label: "Data Feeds", href: "/data/feeds", blurb: "Every connected market-data provider." },
         { label: "Methodology", href: "/methodology", blurb: "Coverage, freshness rules and corrections." },
       ],

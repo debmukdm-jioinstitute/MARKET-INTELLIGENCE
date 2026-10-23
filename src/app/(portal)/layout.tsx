@@ -4,6 +4,7 @@ import { SiteContentProvider } from "@/components/providers/site-content-provide
 import { AppShell } from "@/components/layout/app-shell";
 import { LiveEditOverlay } from "@/components/site/live-edit-overlay";
 import { HeartbeatMount } from "@/components/gamification/heartbeat-mount";
+import { TsRoutePanel } from "@/components/ts-charts/ts-route-panel";
 import { Suspense } from "react";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -27,7 +28,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             }
           >
             <SiteContentProvider>
-              <AppShell>{children}</AppShell>
+              <AppShell>
+                {children}
+                <TsRoutePanel />
+              </AppShell>
               <LiveEditOverlay />
             </SiteContentProvider>
           </Suspense>

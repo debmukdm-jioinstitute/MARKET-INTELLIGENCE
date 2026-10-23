@@ -60,6 +60,7 @@ const ASK: Partial<Record<string, string>> = {
     "What are today's AI signals for NIFTY and other F&O indices, including ensemble lean and BTST/STBT names?",
   get_scanner_backtest: "Which scanner has the best backtested edge?",
   get_data_health: "Is any of the data stale?",
+  get_ts_indicator: "Is the Nifty 50 P/E inside its usual range?",
   get_latest_update: "What's new on the site?",
   mi_sign_in: "Sign in with my Market Intelligence email and password.",
   mi_session_status: "Who am I signed in as on MCP?",

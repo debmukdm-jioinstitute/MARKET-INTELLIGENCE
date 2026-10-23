@@ -47,3 +47,26 @@ describe("parsers", () => {
     expect(s.url).not.toContain("SECRET");
   });
 });
+
+import { niftyIndices, ecbEurInr, bisPolicy, oecdCli } from "./parsers";
+describe("more parsers", () => {
+  it("niftyindices TRI + PE/PB (json-in-string)", () => {
+    const tri = JSON.stringify({ d: JSON.stringify([{ Date: "23 Oct 2026", TotalReturnsIndex: "30,123.45" }, { Date: "22 Oct 2026", TotalReturnsIndex: "-" }]) });
+    const [s] = niftyIndices(Buffer.from(tri), { url: "u", meta: { slug: "nifty50", kind: "tri" } });
+    expect(s.id).toBe("ts_niftyidx_nifty50_tri");
+    expect(s.obs).toEqual([{ date: "2026-10-23", value: 30123.45 }]);
+    const pe = JSON.stringify({ d: JSON.stringify([{ DATE: "23 Oct 2026", pe: "22.4", pb: "3.5", divYield: "1.2" }]) });
+    expect(niftyIndices(Buffer.from(pe), { url: "u", meta: { slug: "nifty50", kind: "pepb" } }).map((x) => [x.id, x.obs[0].value])).toEqual([["ts_niftyidx_nifty50_pe", 22.4], ["ts_niftyidx_nifty50_pb", 3.5]]);
+  });
+  it("ecb csv", () => {
+    const [s] = ecbEurInr(Buffer.from("KEY,TIME_PERIOD,OBS_VALUE\nEXR.D,2026-10-22,97.5\nEXR.D,2026-10-23,\n"), { url: "u" });
+    expect(s.obs).toEqual([{ date: "2026-10-22", value: 97.5 }]);
+  });
+  it("bis + oecd split by area", () => {
+    const b = bisPolicy(Buffer.from("REF_AREA,TIME_PERIOD,OBS_VALUE\nIN,2026-10,5.5\nXM,2026-10,2\n"), { url: "u" });
+    expect(b.map((s) => s.id).sort()).toEqual(["ts_bis_policy_ea", "ts_bis_policy_in"]);
+    const o = oecdCli(Buffer.from("REF_AREA,TIME_PERIOD,OBS_VALUE\nIND,2026-09,100.4\nUSA,2026-09,99\n"), { url: "u" });
+    expect(o.map((s) => s.id).sort()).toEqual(["ts_oecd_cli_ind", "ts_oecd_cli_usa"]);
+    expect(o[0].obs[0].date).toBe("2026-09-01");
+  });
+});

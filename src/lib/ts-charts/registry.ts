@@ -17,6 +17,8 @@ export type ChartDef = {
   source: string;
   methodUrl?: string;
   page: string;
+  /** Extra routes that show this chart. */
+  also?: string[];
 };
 
 const ind = (id: string, title: string, dataset: string, col: string, fmt: Fmt, digits: number, source: string, page: string): ChartDef => ({
@@ -27,25 +29,60 @@ const ind = (id: string, title: string, dataset: string, col: string, fmt: Fmt, 
  * Chart registry. Only rows whose series ids are actually produced by a ts-ingest parser belong here;
  * extend alongside new parsers (CLAUDE_BUILD_SPEC §6.4). Unknown / empty series render "Source unavailable".
  */
+const NIFTY: [string, string][] = [
+  ["nifty50", "Nifty 50"], ["nifty500", "Nifty 500"], ["niftymidcap150", "Nifty Midcap 150"],
+  ["niftysmallcap250", "Nifty Smallcap 250"], ["niftybank", "Nifty Bank"], ["niftyit", "Nifty IT"],
+];
+const tri = (slugs: string[]) => slugs.map((s) => ({ col: `ts_niftyidx_${s}_tri`, label: NIFTY.find(([k]) => k === s)![1] }));
+const IDX_SRC = "NSE Indices (total return index)";
+
 export const REGISTRY: ChartDef[] = [
-  ind("i.us10y", "US 10-year yield", "fred", "ts_fred_dgs10", "pct", 2, "FRED", "/macro/global"),
-  ind("i.us_real10y", "US 10-year real yield", "fred", "ts_fred_dfii10", "pct", 2, "FRED", "/macro/global"),
-  ind("i.dxy_broad", "Broad US dollar index", "fred", "ts_fred_dtwexbgs", "num", 1, "FRED", "/macro/global"),
-  ind("i.nfci", "Chicago Fed financial conditions", "fred", "ts_fred_nfci", "num", 2, "FRED", "/macro/stress"),
+  // ---- valuation: P/E and P/B vs usual range, per index
+  ...NIFTY.flatMap(([slug, name]): ChartDef[] => [
+    { ...ind(`i.${slug}_pe`, `${name} P/E`, "niftyindices", `ts_niftyidx_${slug}_pe`, "x", 1, "NSE Indices", "/valuation"), also: slug === "nifty50" ? ["/markets/india"] : undefined },
+    ind(`i.${slug}_pb`, `${name} P/B`, "niftyindices", `ts_niftyidx_${slug}_pb`, "x", 2, "NSE Indices", "/valuation"),
+  ]),
+  // ---- Indian indices
+  { id: "idx.growth", kind: "line", title: "Growth of 100 (total return)", dataset: "niftyindices", fmt: "num", digits: 0, transform: { type: "rebase", base: 100 }, series: tri(["nifty50", "nifty500", "niftymidcap150", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
+  { id: "idx.dd", kind: "line", title: "Drawdown from previous peak", dataset: "niftyindices", fmt: "pct", digits: 1, transform: { type: "drawdown" }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
+  { id: "idx.roll1y", kind: "line", title: "Rolling 1-year return", dataset: "niftyindices", fmt: "pct", digits: 0, transform: { type: "rolling", window: 252 }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india", also: ["/markets"] },
+  // ---- flows, breadth, activity
   {
-    id: "flows.cum_by_type", kind: "line", title: "Cumulative net cash purchases, FII vs DII", dataset: "nse_fiidii", fmt: "crore", digits: 0,
-    transform: { type: "cumsum" },
+    id: "flows.cum_by_type", kind: "line", title: "Cumulative net cash purchases, FII vs DII", dataset: "nse_fiidii", fmt: "crore", digits: 0, transform: { type: "cumsum" },
     series: [{ col: "ts_flows_fii_net", label: "FII" }, { col: "ts_flows_dii_net", label: "DII" }], source: "NSE India (since collection began)", page: "/intelligence/institutional",
   },
   {
     id: "mk.advances_declines", kind: "line", title: "Advancing vs declining stocks", dataset: "nse_bhavcopy", fmt: "count", digits: 0,
-    series: [{ col: "ts_breadth_advances", label: "Advances" }, { col: "ts_breadth_declines", label: "Declines" }], source: "NSE bhavcopy", page: "/markets/breadth",
+    series: [{ col: "ts_breadth_advances", label: "Advances" }, { col: "ts_breadth_declines", label: "Declines" }], source: "NSE bhavcopy", page: "/markets/breadth", also: ["/markets"],
   },
+  ind("act.cash_value", "Cash market traded value (daily)", "nse_bhavcopy", "ts_cash_traded_value", "crore", 0, "NSE bhavcopy", "/activity"),
   {
     id: "act.fno_index_fut_net", kind: "line", title: "Net index futures OI by participant", dataset: "nse_participant_oi", fmt: "int", digits: 0,
     series: [{ col: "ts_fno_fii_index_fut_net", label: "FII" }, { col: "ts_fno_dii_index_fut_net", label: "DII" }, { col: "ts_fno_pro_index_fut_net", label: "Pro" }, { col: "ts_fno_client_index_fut_net", label: "Client" }],
-    source: "NSE participant OI", page: "/markets/derivatives",
+    source: "NSE participant OI", page: "/markets/derivatives", also: ["/activity"],
   },
+  // ---- macro / global
+  {
+    id: "macro.policy_rates", kind: "line", title: "Central bank policy rates", dataset: "bis", fmt: "pct", digits: 2,
+    series: [{ col: "ts_bis_policy_in", label: "India" }, { col: "ts_bis_policy_us", label: "US" }, { col: "ts_bis_policy_ea", label: "Euro area" }, { col: "ts_bis_policy_gb", label: "UK" }, { col: "ts_bis_policy_jp", label: "Japan" }],
+    source: "BIS", page: "/macro/rbi",
+  },
+  {
+    id: "macro.cli", kind: "line", title: "OECD composite leading indicators", dataset: "oecd", fmt: "num", digits: 1,
+    series: ["ind", "usa", "chn", "deu", "jpn", "gbr"].map((a) => ({ col: `ts_oecd_cli_${a}`, label: a.toUpperCase() })), source: "OECD", page: "/macro/global",
+  },
+  ind("i.us10y", "US 10-year yield", "fred", "ts_fred_dgs10", "pct", 2, "FRED", "/macro/global"),
+  ind("i.us_real10y", "US 10-year real yield", "fred", "ts_fred_dfii10", "pct", 2, "FRED", "/macro/global"),
+  ind("i.dxy_broad", "Broad US dollar index", "fred", "ts_fred_dtwexbgs", "num", 1, "FRED", "/macro/currency"),
+  ind("i.usdinr", "USD/INR (Fed H.10)", "fred", "ts_fred_dexinus", "rs", 2, "FRED", "/macro/currency"),
+  ind("i.eur_inr", "EUR/INR (ECB reference)", "ecb", "ts_ecb_eurinr", "rs", 2, "ECB", "/macro/currency"),
+  ind("i.fed_assets", "Fed balance sheet (US$ mn)", "fred", "ts_fred_walcl", "int", 0, "FRED", "/macro/global"),
+  ind("i.vix", "VIX", "fred", "ts_fred_vixcls", "num", 1, "FRED", "/macro/stress"),
+  ind("i.nfci", "Chicago Fed financial conditions", "fred", "ts_fred_nfci", "num", 2, "FRED", "/macro/stress"),
 ];
+
+/** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */
+export const INDICATORS = REGISTRY.filter((c) => c.kind === "indicator" && c.id.startsWith("i."));
+export const chartsForPath = (path: string) => REGISTRY.filter((c) => c.page === path || c.also?.includes(path));
 
 export const getChartDef = (id: string) => REGISTRY.find((c) => c.id === id);

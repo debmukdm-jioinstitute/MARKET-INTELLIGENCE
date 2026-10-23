@@ -14,7 +14,7 @@ async function warmNse() {
 }
 
 /** Polite fetch: >=1 s per host, 30 s timeout, 3 retries (2/8/30 s). NSE gets cookie warm-up + one re-warm on 403. Returns the final response; never throws on HTTP status. */
-export async function politeFetch(url: string, opts: { nse?: boolean; prev?: { etag?: string | null; last_modified?: string | null } } = {}): Promise<Fetched> {
+export async function politeFetch(url: string, opts: { nse?: boolean; method?: string; body?: string; headers?: Record<string, string>; prev?: { etag?: string | null; last_modified?: string | null } } = {}): Promise<Fetched> {
   const host = new URL(url).host;
   const backoff = [2000, 8000, 30000];
   let lastErr: unknown;
@@ -26,9 +26,10 @@ export async function politeFetch(url: string, opts: { nse?: boolean; prev?: { e
       if (opts.nse && !nseCookie) await warmNse();
       const headers: Record<string, string> = { "user-agent": UA, accept: "*/*" };
       if (opts.nse) { headers.referer = "https://www.nseindia.com/"; headers.cookie = nseCookie; }
+      Object.assign(headers, opts.headers);
       if (opts.prev?.etag) headers["if-none-match"] = opts.prev.etag;
       if (opts.prev?.last_modified) headers["if-modified-since"] = opts.prev.last_modified;
-      const res = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) });
+      const res = await fetch(url, { method: opts.method ?? "GET", body: opts.body, headers, signal: AbortSignal.timeout(30_000) });
       if (res.status === 403 && opts.nse && attempt === 0) { nseCookie = ""; continue; }
       if (res.status >= 500 || res.status === 429) throw new Error(`HTTP ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());

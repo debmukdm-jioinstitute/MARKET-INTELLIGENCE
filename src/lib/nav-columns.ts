@@ -158,6 +158,8 @@ export const NAV_SECTIONS: NavSection[] = [
         items: [
           { label: "Sector Map", href: "/markets/sectors", desc: "Sector performance and comparables." },
           { label: "Valuation", href: "/markets/sectors?tab=valuation", desc: "Index multiples and the 10-year G-Sec." },
+          { label: "Index P/E and P/B", href: "/valuation", desc: "Multiples against their usual range.", badge: "NEW" },
+          { label: "Market Activity", href: "/activity", desc: "Cash turnover and index-futures positioning.", badge: "NEW" },
         ],
       },
     ],
@@ -198,6 +200,8 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Where the numbers come from.",
         items: [
           { label: "Sources & Status", href: "/data", desc: "Feed health and data freshness." },
+          { label: "Indicators", href: "/indicators", desc: "Long-history indicators vs their usual range.", badge: "NEW" },
+          { label: "Dataset Status", href: "/data/status", desc: "Latest observation and state of each ingested dataset." },
           { label: "Data Health", href: "/data/health", desc: "Freshness and provenance of every series." },
           { label: "Data Feeds", href: "/data/feeds", desc: "Every connected market-data provider." },
           { label: "World Bank Data", href: "/data/data360", desc: "World Bank macro series for India and the US." },

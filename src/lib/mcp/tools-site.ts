@@ -1064,6 +1064,24 @@ export const SITE_TOOLS: Tool[] = [
     },
   },
 
+  // ---- Long-history indicators (ts-ingest) ----
+  {
+    name: "get_ts_indicator",
+    title: "Indicator vs usual range",
+    category: "Markets",
+    description: "Long-history indicator (index P/E and P/B, US yields, VIX, FX, FII/DII flows, breadth) with its usual 10th-90th percentile range, record high/low and the last 12 observations. Omit `id` to list available chart ids and their latest dataset status.",
+    inputSchema: { type: "object", properties: { id: { type: "string", description: "Chart id, e.g. i.nifty50_pe, i.us10y, flows.cum_by_type" } }, additionalProperties: false },
+    run: async (a) => {
+      const args = z.object({ id: z.string().max(60).optional() }).parse(a ?? {});
+      const { REGISTRY, getChartDef } = await import("@/lib/ts-charts/registry");
+      if (!args.id) return { charts: REGISTRY.map((c) => ({ id: c.id, title: c.title, kind: c.kind, source: c.source })) };
+      if (!getChartDef(args.id)) return { error: `Unknown chart id: ${args.id}` };
+      const { buildChart } = await import("@/lib/ts-charts/server");
+      const p = await buildChart(args.id);
+      if (!p || !p.rows.length) return { id: args.id, status: "unavailable", reason: "No observations stored yet" };
+      return { id: p.id, title: p.title, source: p.source, updated: p.updated, fmt: p.fmt, usualRange: p.band ?? null, records: p.records ?? null, recent: p.rows.slice(-12) };
+    },
+  },
   // ---- Updates ----
   {
     name: "get_latest_update",

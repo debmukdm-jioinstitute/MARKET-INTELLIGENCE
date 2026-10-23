@@ -6,8 +6,9 @@
  * /api/collector/ingest, bookkeeping to /api/ts/ingest-meta. Never synthesises missing dates.
  * Exit 1 only if every selected source failed.
  */
+import { createHash } from "node:crypto";
 import type { SeriesResult } from "@/lib/collector/types";
-import { SOURCES, type SourceCfg } from "./sources";
+import { SOURCES, type Req, type SourceCfg } from "./sources";
 import { PARSERS } from "./parsers";
 import { candidateDates, todayIst } from "./dates";
 import { politeFetch } from "./http";
@@ -46,14 +47,17 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
     const known = new Map(st.files.map((f) => [f.url, f]));
     const dates = src.perDate ? candidateDates(st.latestObs, todayIst(), arg("since")) : [undefined];
     for (const d of dates) {
-      for (const url of src.urls(d)) {
-        const prev = known.get(url);
-        const res = await politeFetch(url, { nse: src.nseCookie, prev });
-        const safeUrl = url.replace(/api_key=[^&]+/, "api_key=***");
+      const reqs: Req[] = src.reqs ? src.reqs({ date: d, latest: st.latestObs, today: todayIst() }) : src.urls(d).map((url) => ({ url }));
+      for (const rq of reqs) {
+        const url = rq.url;
+        const key = rq.body ? `${url}#${createHash("sha1").update(rq.body).digest("hex").slice(0, 12)}` : url;
+        const prev = known.get(key);
+        const res = await politeFetch(url, { nse: src.nseCookie, method: rq.method, body: rq.body, headers: rq.headers, prev });
+        const safeUrl = key.replace(/api_key=[^&]+/, "api_key=***");
         if (res.status === 304 || (prev?.sha256 && prev.sha256 === res.sha256)) { log({ src: src.id, url: safeUrl, skip: "unchanged" }); continue; }
         if (res.status === 404 && src.perDate) { log({ src: src.id, date: d, skip: "not published (holiday/late)" }); continue; }
         if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status}`);
-        for (const s of PARSERS[src.parser](res.buf, { date: d, url })) {
+        for (const s of PARSERS[src.parser](res.buf, { date: d, url, meta: rq.meta })) {
           const prevS = out.get(s.id);
           if (prevS) prevS.obs.push(...s.obs); else out.set(s.id, { ...s, obs: [...s.obs] });
         }

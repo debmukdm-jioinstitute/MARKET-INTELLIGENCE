@@ -2,7 +2,7 @@ import { unzipSync } from "fflate";
 import type { SeriesResult } from "@/lib/collector/types";
 import { parseDmy } from "./dates";
 
-export type ParseCtx = { date?: string; url: string };
+export type ParseCtx = { date?: string; url: string; meta?: Record<string, string> };
 export type Parser = (buf: Buffer, ctx: ParseCtx) => SeriesResult[];
 
 const num = (v: unknown): number | null => {
@@ -104,5 +104,62 @@ export const fredObs: Parser = (buf, ctx) => {
   return [{ id: `ts_fred_${id.toLowerCase()}`, label: `FRED ${id}`, unit: "", category: "macro", provider: "FRED", url: ctx.url.replace(/api_key=[^&]+/, "api_key=***"), obs }];
 };
 
-export const PARSERS = { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
+/** niftyindices "DD Mon YYYY" / "DD-Mon-YYYY" → ISO. */
+const nDate = (s: string | undefined) => parseDmy(String(s ?? "").trim().replace(/\s+/g, "-"));
+
+/** niftyindices backend: body `{d: "<json string>"}`. TRI rows {Date,TotalReturnsIndex}; PE/PB rows {DATE,pe,pb,divYield}. */
+export const niftyIndices: Parser = (buf, ctx) => {
+  const slug = ctx.meta?.slug, kind = ctx.meta?.kind;
+  if (!slug || !kind) throw new Error("niftyIndices needs meta.slug/kind");
+  const outer = JSON.parse(stripBom(buf.toString("utf8"))) as { d?: string };
+  const rows = JSON.parse(outer.d ?? "[]") as Record<string, string>[];
+  const pick = (r: Record<string, string>, k: string) => r[Object.keys(r).find((x) => x.toLowerCase() === k.toLowerCase()) ?? ""];
+  const mkS = (suffix: string, label: string, unit: string, f: (r: Record<string, string>) => string | undefined): SeriesResult => ({
+    id: `ts_niftyidx_${slug}_${suffix}`, label: `${label}`, unit, category: "valuation", provider: "NSE Indices", url: ctx.url,
+    obs: rows.flatMap((r) => { const d = nDate(pick(r, "date")), v = num(f(r)); return d && v != null ? [{ date: d, value: v }] : []; }),
+  });
+  if (kind === "tri") return [mkS("tri", `${slug} total return index`, "index", (r) => pick(r, "TotalReturnsIndex"))];
+  return [mkS("pe", `${slug} P/E`, "x", (r) => pick(r, "pe")), mkS("pb", `${slug} P/B`, "x", (r) => pick(r, "pb"))].filter((s) => s.obs.length);
+};
+
+/** ECB SDMX csvdata: columns TIME_PERIOD, OBS_VALUE. */
+export const ecbEurInr: Parser = (buf, ctx) => {
+  const rows = csvRows(buf.toString("utf8"));
+  const h = rows[0], iT = h.indexOf("TIME_PERIOD"), iV = h.indexOf("OBS_VALUE");
+  if (iT < 0 || iV < 0) throw new Error("ecb columns missing");
+  const obs = rows.slice(1).flatMap((r) => { const v = num(r[iV]); return /^\d{4}-\d{2}-\d{2}$/.test(r[iT] ?? "") && v != null ? [{ date: r[iT], value: v }] : []; });
+  return [{ id: "ts_ecb_eurinr", label: "EUR/INR reference rate", unit: "₹ per €", category: "market", provider: "ECB", url: ctx.url, obs }];
+};
+
+/** BIS WS_CBPOL monthly csv: REF_AREA, TIME_PERIOD (YYYY-MM), OBS_VALUE. */
+export const bisPolicy: Parser = (buf, ctx) => {
+  const rows = csvRows(buf.toString("utf8"));
+  const h = rows[0], iA = h.indexOf("REF_AREA"), iT = h.indexOf("TIME_PERIOD"), iV = h.indexOf("OBS_VALUE");
+  if (iA < 0 || iT < 0 || iV < 0) throw new Error("bis columns missing");
+  const by = new Map<string, { date: string; value: number }[]>();
+  for (const r of rows.slice(1)) {
+    const v = num(r[iV]);
+    if (v == null || !/^\d{4}-\d{2}/.test(r[iT] ?? "")) continue;
+    const a = r[iA].toLowerCase();
+    (by.get(a) ?? by.set(a, []).get(a)!).push({ date: `${r[iT].slice(0, 7)}-01`, value: v });
+  }
+  return [...by].map(([a, obs]) => ({ id: `ts_bis_policy_${a === "xm" ? "ea" : a}`, label: `Policy rate (${a.toUpperCase()})`, unit: "%", category: "rates" as const, provider: "BIS", url: ctx.url, obs }));
+};
+
+/** OECD CLI csvfile: REF_AREA, TIME_PERIOD (YYYY-MM), OBS_VALUE. */
+export const oecdCli: Parser = (buf, ctx) => {
+  const rows = csvRows(buf.toString("utf8"));
+  const h = rows[0], iA = h.indexOf("REF_AREA"), iT = h.indexOf("TIME_PERIOD"), iV = h.indexOf("OBS_VALUE");
+  if (iA < 0 || iT < 0 || iV < 0) throw new Error("oecd columns missing");
+  const by = new Map<string, { date: string; value: number }[]>();
+  for (const r of rows.slice(1)) {
+    const v = num(r[iV]);
+    if (v == null || !/^\d{4}-\d{2}/.test(r[iT] ?? "")) continue;
+    const a = r[iA].toLowerCase();
+    (by.get(a) ?? by.set(a, []).get(a)!).push({ date: `${r[iT].slice(0, 7)}-01`, value: v });
+  }
+  return [...by].map(([a, obs]) => ({ id: `ts_oecd_cli_${a}`, label: `Composite leading indicator (${a.toUpperCase()})`, unit: "index", category: "macro" as const, provider: "OECD", url: ctx.url, obs }));
+};
+
+export const PARSERS = { niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;
