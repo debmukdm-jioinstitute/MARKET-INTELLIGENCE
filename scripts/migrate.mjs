@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { neon } from "@neondatabase/serverless";
+import { readdirSync, readFileSync } from "node:fs";
 
 const conn =
   process.env.DATABASE_URL ??
@@ -226,6 +227,14 @@ async function migrate() {
   await sql`CREATE TABLE IF NOT EXISTS rate_limits (key text NOT NULL, hit_at timestamptz NOT NULL DEFAULT now())`;
   await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_key ON rate_limits(key, hit_at DESC)`;
   await sql`CREATE TABLE IF NOT EXISTS feature_flags (flag text PRIMARY KEY, enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())`;
+
+  // File migrations (idempotent .sql, one statement per ";" line end).
+  const dir = new URL("./migrations/", import.meta.url);
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) {
+    console.log(`  → Applying migrations/${f}...`);
+    const stmts = readFileSync(new URL(f, dir), "utf8").split("\n").filter((l) => !l.trim().startsWith("--")).join("\n").split(/;\s*(?:\n|$)/).map((x) => x.trim()).filter(Boolean);
+    for (const st of stmts) await sql.query(st);
+  }
 
   console.log(`✅ All database tables and indexes verified successfully in ${Date.now() - start}ms.`);
 }

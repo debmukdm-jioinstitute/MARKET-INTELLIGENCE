@@ -15,6 +15,7 @@ import { ChartDesk } from "@/components/homedashboard/ChartDesk";
 import { BriefTeaser } from "@/components/homedashboard/BriefTeaser";
 import { SignatureFive } from "@/components/homedashboard/SignatureFive";
 import { MissionsCard } from "@/components/homedashboard/MissionsCard";
+import { TsStructure } from "@/components/homedashboard/TsStructure";
 import { SmartMoney } from "@/components/homedashboard/SmartMoney";
 import { LearnNudge } from "@/components/homedashboard/LearnNudge";
 import { PortfolioTeaser } from "@/components/homedashboard/PortfolioTeaser";
@@ -90,6 +91,7 @@ export default function DashboardPage() {
       <WelcomeStrip progress={progress} />
       <MarketPulse data={data} now={now} />
       {portfolioUpTop ? <PortfolioTeaser portfolio={visiblePortfolio} /> : null}
+      <TsStructure />
       <ChartDesk />
       <BriefTeaser
         data={brief}
