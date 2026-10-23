@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import type { SeriesResult } from "@/lib/collector/types";
 import { SOURCES, type Req, type SourceCfg } from "./sources";
-import { PARSERS } from "./parsers";
+import { EVENT_PARSERS, PARSERS, type EventRow, type EventParserName, type ParserName } from "./parsers";
 import { candidateDates, todayIst } from "./dates";
 import { politeFetch } from "./http";
 
@@ -20,6 +20,7 @@ const secret = process.env.CRON_SECRET;
 const auth = { authorization: `Bearer ${secret ?? ""}`, "content-type": "application/json" };
 
 type FileRow = { url: string; sha256: string | null; etag: string | null; last_modified: string | null };
+const chunk = <T,>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, (i + 1) * n));
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify(o));
 
 async function meta(src: SourceCfg): Promise<{ latestObs: string | null; files: FileRow[] }> {
@@ -40,6 +41,7 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
   const t0 = Date.now();
   const files: Record<string, unknown>[] = [];
   const out = new Map<string, SeriesResult>();
+  const events = new Map<string, EventRow>();
   let error: string | null = null;
   try {
     if (src.needsEnv && !process.env[src.needsEnv]) throw new Error(`${src.needsEnv} not set`);
@@ -57,7 +59,9 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
         if (res.status === 304 || (prev?.sha256 && prev.sha256 === res.sha256)) { log({ src: src.id, url: safeUrl, skip: "unchanged" }); continue; }
         if (res.status === 404 && src.perDate) { log({ src: src.id, date: d, skip: "not published (holiday/late)" }); continue; }
         if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status}`);
-        for (const s of PARSERS[src.parser](res.buf, { date: d, url, meta: rq.meta })) {
+        if (src.events) {
+          for (const e of EVENT_PARSERS[src.parser as EventParserName](res.buf, { date: d, url, meta: rq.meta })) events.set(e.id, e);
+        } else for (const s of PARSERS[src.parser as ParserName](res.buf, { date: d, url, meta: rq.meta })) {
           const prevS = out.get(s.id);
           if (prevS) prevS.obs.push(...s.obs); else out.set(s.id, { ...s, obs: [...s.obs] });
         }
@@ -68,13 +72,14 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
     error = e instanceof Error ? e.message : String(e);
   }
   const series = [...out.values()].filter((s) => s.obs.length);
-  log({ src: src.id, series: series.length, obs: series.reduce((n, s) => n + s.obs.length, 0), error, ms: Date.now() - t0, dry: DRY });
+  log({ src: src.id, events: events.size, series: series.length, obs: series.reduce((n, s) => n + s.obs.length, 0), error, ms: Date.now() - t0, dry: DRY });
   if (!DRY && secret) {
     try {
       for (let i = 0; i < series.length; i++) {
         const s = series[i];
         for (let o = 0; o < s.obs.length; o += 5000) await post("/api/collector/ingest", { series: [{ ...s, obs: s.obs.slice(o, o + 5000) }] });
       }
+      if (events.size) for (const batch of chunk([...events.values()], 500)) await post("/api/ts/ingest-meta", { events: batch });
       await post("/api/ts/ingest-meta", { files, status: [{ dataset: src.dataset, anchor: src.anchorSeries, lagDays: src.lagDays, error, runMs: Date.now() - t0 }] });
     } catch (e) {
       error = error ?? (e instanceof Error ? e.message : String(e));

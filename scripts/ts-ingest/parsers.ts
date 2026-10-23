@@ -161,5 +161,46 @@ export const oecdCli: Parser = (buf, ctx) => {
   return [...by].map(([a, obs]) => ({ id: `ts_oecd_cli_${a}`, label: `Composite leading indicator (${a.toUpperCase()})`, unit: "index", category: "macro" as const, provider: "OECD", url: ctx.url, obs }));
 };
 
-export const PARSERS = { niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
+export type EventRow = { id: string; kind: string; symbol: string | null; title: string; event_date: string; meta?: Record<string, unknown> };
+export type EventParser = (buf: Buffer, ctx: ParseCtx) => EventRow[];
+
+/** NSE holiday-master?type=trading → {CM:[{tradingDate:"DD-Mon-YYYY",description,...}]}. */
+export const nseHolidays: EventParser = (buf) => {
+  const j = JSON.parse(stripBom(buf.toString("utf8"))) as { CM?: { tradingDate?: string; description?: string }[] };
+  return (j.CM ?? []).flatMap((h) => {
+    const d = parseDmy(h.tradingDate);
+    return d ? [{ id: `holiday:${d}`, kind: "holiday", symbol: null, title: (h.description ?? "Market holiday").trim(), event_date: d }] : [];
+  });
+};
+
+/** NSE corporates-corporateActions: [{symbol,subject,exDate,recDate,series,comp}]. kind from subject text. */
+export const nseCorpActions: EventParser = (buf) => {
+  const rows = JSON.parse(stripBom(buf.toString("utf8"))) as { symbol?: string; subject?: string; exDate?: string; recDate?: string; comp?: string }[];
+  return rows.flatMap((r) => {
+    const d = parseDmy(r.exDate);
+    if (!d || !r.symbol || !r.subject) return [];
+    const t = r.subject.toLowerCase();
+    const kind = t.includes("dividend") ? "dividend" : t.includes("split") || t.includes("sub-division") ? "split" : t.includes("bonus") ? "bonus" : t.includes("rights") ? "rights" : t.includes("buyback") || t.includes("buy back") ? "buyback" : "action";
+    return [{ id: `${kind}:${r.symbol}:${d}:${r.subject.slice(0, 40)}`, kind, symbol: r.symbol, title: r.subject.trim(), event_date: d, meta: { company: r.comp ?? null, recordDate: parseDmy(r.recDate) } }];
+  });
+};
+export const EVENT_PARSERS = { nseHolidays, nseCorpActions } satisfies Record<string, EventParser>;
+export type EventParserName = keyof typeof EVENT_PARSERS;
+
+/** World Bank API: [meta, [{countryiso3code,date:"2023",value}]] → one series per country, dated YYYY-12-31. */
+export const worldBank: Parser = (buf, ctx) => {
+  const ind = new URL(ctx.url).pathname.split("/").filter(Boolean).at(-1) ?? "";
+  const j = JSON.parse(stripBom(buf.toString("utf8"))) as [unknown, { countryiso3code?: string; date?: string; value?: number | null }[] | null];
+  const by = new Map<string, { date: string; value: number }[]>();
+  for (const r of j[1] ?? []) {
+    if (r.value == null || !r.countryiso3code || !/^\d{4}$/.test(r.date ?? "")) continue;
+    const k = r.countryiso3code.toLowerCase();
+    (by.get(k) ?? by.set(k, []).get(k)!).push({ date: `${r.date}-12-31`, value: r.value });
+  }
+  const label = ind === "NY.GDP.MKTP.KD.ZG" ? "Real GDP growth" : ind === "FP.CPI.TOTL.ZG" ? "CPI inflation" : ind;
+  const key = ind === "NY.GDP.MKTP.KD.ZG" ? "gdp_growth" : ind === "FP.CPI.TOTL.ZG" ? "cpi" : ind.toLowerCase().replace(/\W/g, "_");
+  return [...by].map(([c, obs]) => ({ id: `ts_wb_${key}_${c}`, label: `${label} (${c.toUpperCase()})`, unit: "%", category: "macro" as const, provider: "World Bank", url: ctx.url, obs: obs.sort((a, b) => a.date.localeCompare(b.date)) }));
+};
+
+export const PARSERS = { worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

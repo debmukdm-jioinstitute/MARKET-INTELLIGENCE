@@ -77,6 +77,19 @@ export const REGISTRY: ChartDef[] = [
   ind("i.usdinr", "USD/INR (Fed H.10)", "fred", "ts_fred_dexinus", "rs", 2, "FRED", "/macro/currency"),
   ind("i.eur_inr", "EUR/INR (ECB reference)", "ecb", "ts_ecb_eurinr", "rs", 2, "ECB", "/macro/currency"),
   ind("i.fed_assets", "Fed balance sheet (US$ mn)", "fred", "ts_fred_walcl", "int", 0, "FRED", "/macro/global"),
+  ind("i.t10y2y", "US 10-year minus 2-year yield", "fred", "ts_fred_t10y2y", "pct", 2, "FRED", "/macro/yields"),
+  ind("i.fed_funds", "Fed funds effective rate", "fred", "ts_fred_dff", "pct", 2, "FRED", "/macro/global"),
+  ind("i.us_unemployment", "US unemployment rate", "fred", "ts_fred_unrate", "pct", 1, "FRED", "/macro/global"),
+  ind("i.brent", "Brent crude (US$/bbl, EIA via FRED)", "fred", "ts_fred_dcoilbrenteu", "num", 1, "FRED", "/macro/commodities"),
+  ind("i.hy_spread", "US high-yield credit spread", "fred", "ts_fred_bamlh0a0hym2", "pct", 2, "FRED", "/macro/stress"),
+  {
+    id: "wb.gdp_growth", kind: "line", title: "Real GDP growth, annual", dataset: "worldbank", fmt: "pct", digits: 1,
+    series: ["ind", "usa", "chn", "jpn", "deu", "gbr"].map((a) => ({ col: `ts_wb_gdp_growth_${a}`, label: a.toUpperCase() })), source: "World Bank", page: "/macro/global", also: ["/macro"],
+  },
+  {
+    id: "wb.cpi", kind: "line", title: "CPI inflation, annual", dataset: "worldbank", fmt: "pct", digits: 1,
+    series: ["ind", "usa", "chn", "jpn", "deu", "gbr"].map((a) => ({ col: `ts_wb_cpi_${a}`, label: a.toUpperCase() })), source: "World Bank", page: "/macro/global", also: ["/macro"],
+  },
   ind("i.vix", "VIX", "fred", "ts_fred_vixcls", "num", 1, "FRED", "/macro/stress"),
   ind("i.nfci", "Chicago Fed financial conditions", "fred", "ts_fred_nfci", "num", 2, "FRED", "/macro/stress"),
 ];

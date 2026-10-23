@@ -1,5 +1,5 @@
 import { addDays, fmtDmy, fmtYmd } from "./dates";
-import type { ParserName } from "./parsers";
+import type { EventParserName, ParserName } from "./parsers";
 
 export type Req = { url: string; method?: "GET" | "POST"; body?: string; headers?: Record<string, string>; meta?: Record<string, string> };
 export type ReqCtx = { date?: string; latest: string | null; today: string };
@@ -16,14 +16,16 @@ export type SourceCfg = {
   /** Dataset staleness tolerance in days before state flips current → behind. */
   lagDays: number;
   nseCookie?: boolean;
-  parser: ParserName;
+  parser: ParserName | EventParserName;
+  /** Parser yields calendar events (ts_events) instead of numeric series. */
+  events?: boolean;
   dataset: string;
   /** Series whose max(obs_date) defines the dataset's latest_obs. */
   anchorSeries: string;
   needsEnv?: string;
 };
 
-const FRED_IDS = ["DGS10", "DFII10", "DTWEXBGS", "DEXINUS", "VIXCLS", "WALCL", "NFCI"];
+const FRED_IDS = ["DGS10", "DFII10", "DTWEXBGS", "DEXINUS", "VIXCLS", "WALCL", "NFCI", "T10Y2Y", "DFF", "UNRATE", "CPIAUCSL", "DCOILBRENTEU", "BAMLH0A0HYM2"];
 const fred = (id: string): SourceCfg => ({
   id: `fred_${id.toLowerCase()}`,
   urls: () => [`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${process.env.FRED_API_KEY ?? ""}&file_type=json`],
@@ -85,5 +87,22 @@ SOURCES.push(
   {
     id: "oecd", urls: () => ["https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/IND+USA+CHN+DEU+JPN+GBR.M.LI...AA...H?format=csvfile&startPeriod=2000-01"], perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
     parser: "oecdCli", dataset: "oecd", anchorSeries: "ts_oecd_cli_ind",
+  },
+);
+
+const WB_COUNTRIES = "IND;USA;CHN;JPN;DEU;GBR;BRA;IDN";
+const wb = (ind: string) => `https://api.worldbank.org/v2/country/${WB_COUNTRIES}/indicator/${ind}?format=json&per_page=2000&date=1990:2030`;
+SOURCES.push(
+  {
+    id: "worldbank", urls: () => [wb("NY.GDP.MKTP.KD.ZG"), wb("FP.CPI.TOTL.ZG")], perDate: false, fmt: "json", freq: "monthly", lagDays: 400,
+    parser: "worldBank", dataset: "worldbank", anchorSeries: "ts_wb_gdp_growth_ind",
+  },
+  {
+    id: "nse_holidays", urls: () => ["https://www.nseindia.com/api/holiday-master?type=trading"], perDate: false, fmt: "json", freq: "monthly", lagDays: 400,
+    nseCookie: true, parser: "nseHolidays", events: true, dataset: "nse_holidays", anchorSeries: "events:holiday",
+  },
+  {
+    id: "nse_corp_actions", urls: () => ["https://www.nseindia.com/api/corporates-corporateActions?index=equities"], perDate: false, fmt: "json", freq: "daily", lagDays: 45,
+    nseCookie: true, parser: "nseCorpActions", events: true, dataset: "nse_corp_actions", anchorSeries: "events:action",
   },
 );

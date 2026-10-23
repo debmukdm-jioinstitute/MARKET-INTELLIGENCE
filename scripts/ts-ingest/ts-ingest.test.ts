@@ -70,3 +70,27 @@ describe("more parsers", () => {
     expect(o[0].obs[0].date).toBe("2026-09-01");
   });
 });
+
+import { nseHolidays, nseCorpActions, worldBank } from "./parsers";
+describe("events + worldbank", () => {
+  it("holidays", () => {
+    const j = JSON.stringify({ CM: [{ tradingDate: "26-Jan-2027", description: "Republic Day" }, { tradingDate: "bad" }] });
+    expect(nseHolidays(Buffer.from(j), ctx)).toEqual([{ id: "holiday:2027-01-26", kind: "holiday", symbol: null, title: "Republic Day", event_date: "2027-01-26" }]);
+  });
+  it("corporate actions kinds", () => {
+    const j = JSON.stringify([
+      { symbol: "ABC", subject: "Dividend - Rs 5 Per Share", exDate: "30-Oct-2026", recDate: "31-Oct-2026", comp: "ABC Ltd" },
+      { symbol: "XYZ", subject: "Face Value Split (Sub-Division) - From Rs 10/- To Rs 2/-", exDate: "02-Nov-2026" },
+      { symbol: "NOPE", subject: "x", exDate: "garbage" },
+    ]);
+    const r = nseCorpActions(Buffer.from(j), ctx);
+    expect(r.map((e) => [e.symbol, e.kind, e.event_date])).toEqual([["ABC", "dividend", "2026-10-30"], ["XYZ", "split", "2026-11-02"]]);
+  });
+  it("world bank by country", () => {
+    const j = JSON.stringify([{ page: 1 }, [{ countryiso3code: "IND", date: "2024", value: 6.5 }, { countryiso3code: "IND", date: "2023", value: 8.2 }, { countryiso3code: "USA", date: "2024", value: null }]]);
+    const r = worldBank(Buffer.from(j), { url: "https://api.worldbank.org/v2/country/IND;USA/indicator/NY.GDP.MKTP.KD.ZG?format=json" });
+    expect(r).toHaveLength(1);
+    expect(r[0].id).toBe("ts_wb_gdp_growth_ind");
+    expect(r[0].obs.map((o) => o.date)).toEqual(["2023-12-31", "2024-12-31"]);
+  });
+});
