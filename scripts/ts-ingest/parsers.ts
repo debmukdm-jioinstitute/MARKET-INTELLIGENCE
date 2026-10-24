@@ -296,7 +296,7 @@ export const nseIndexHistory: Parser = (buf, ctx) => {
   const out: SeriesResult[] = [];
   for (const r of rows.slice(1)) {
     const name = String(r[iName] ?? "").toUpperCase().replace(/\s+/g, " ").trim();
-    const slug = NIFTY_SLUGS[name];
+    const slug = NIFTY_SLUGS[name] ?? name.toLowerCase().replace(/[^a-z0-9]+/g, "");
     if (!slug) continue;
     const d = (iDate >= 0 ? parseDmy(r[iDate]) : null) ?? ctx.date;
     const px = num(r[iClose]);

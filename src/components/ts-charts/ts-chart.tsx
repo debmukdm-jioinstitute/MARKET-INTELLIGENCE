@@ -12,7 +12,7 @@ const TsBars = dynamic(() => import("./ts-bars").then((m) => m.TsBars), { ssr: f
 const TsIndicator = dynamic(() => import("./ts-indicator").then((m) => m.TsIndicator), { ssr: false, loading: Skel });
 
 /** The only chart component pages use: fetch by registry id, apply page range + transform, dispatch by kind. */
-export function TsChart({ id, narrowAt = 456 }: { id: string; narrowAt?: number }) {
+export function TsChart({ id, narrowAt = 456, compact = false }: { id: string; narrowAt?: number; compact?: boolean }) {
   const { from, to } = useRange();
   const { data, error } = useChartData(id);
   if (error) return <p className="text-sm" style={{ color: "var(--ink-3)" }}>Data unavailable right now.</p>;
@@ -30,7 +30,7 @@ export function TsChart({ id, narrowAt = 456 }: { id: string; narrowAt?: number 
         <ChartActions id={id} title={data.title} rows={rows} />
       </header>
       {data.kind === "indicator" && band ? (
-        <TsIndicator rows={rows.map((r) => ({ date: r.date, v: r[cols[0]] as number }))} recentFrom={recentFrom} band={band} fmt={data.fmt} digits={data.digits} />
+        <TsIndicator rows={rows.map((r) => ({ date: r.date, v: r[cols[0]] as number }))} recentFrom={recentFrom} band={band} fmt={data.fmt} digits={data.digits} compact={compact} />
       ) : data.kind === "line" ? (
         <TsLine rows={rows} series={data.series} band={band} fmt={data.fmt} digits={data.digits} narrow={narrow} />
       ) : (

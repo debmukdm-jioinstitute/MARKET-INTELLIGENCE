@@ -46,6 +46,41 @@ export const REGISTRY: ChartDef[] = [
   { id: "idx.growth", kind: "line", title: "Growth of 100 (price index)", dataset: "nse_indexhistory", fmt: "num", digits: 0, transform: { type: "rebase", base: 100 }, series: tri(["nifty50", "nifty500", "niftymidcap150", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
   { id: "idx.dd", kind: "line", title: "Drawdown from previous peak", dataset: "nse_indexhistory", fmt: "pct", digits: 1, transform: { type: "drawdown" }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
   { id: "idx.roll1y", kind: "line", title: "Rolling 1-year return", dataset: "nse_indexhistory", fmt: "pct", digits: 0, transform: { type: "rolling", window: 252 }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india", also: ["/markets"] },
+  // ---- breadth indicators (/markets/breadth & /Home)
+  { ...ind("i.above200dma", "NSE stocks above 200 DMA", "nse_bhavcopy", "ts_breadth_above_200dma", "pct", 1, "NSE Bhavcopy", "/markets/breadth"), also: ["/Home"] },
+  { ...ind("i.net_new_highs", "Net new 52-week highs", "nse_bhavcopy", "ts_breadth_net_new_highs", "num", 0, "NSE Bhavcopy", "/markets/breadth"), also: ["/Home"] },
+  {
+    id: "home.fng", kind: "indicator", title: "Market Fear & Greed Index", dataset: "sentiment", fmt: "num", digits: 0,
+    series: [
+      { col: "ts_breadth_advances", label: "Advances" },
+      { col: "ts_breadth_declines", label: "Declines" },
+      { col: "ts_derivatives_pcr", label: "PCR" },
+      { col: "ts_flows_fii_net", label: "FII Flows" },
+      { col: "ts_fred_vixcls", label: "VIX" },
+      { col: "ts_niftyidx_nifty50_px", label: "Nifty 50" },
+    ],
+    source: "MarketIntelligence Model", page: "/fear-and-greed", also: ["/Home"],
+    band: "p10p90",
+  },
+  // ---- IPO Analytics (/research/ipo)
+  {
+    id: "ipo.day1_gain", kind: "bars", title: "IPO Day-1 listing gains distribution", dataset: "nse_ipo", fmt: "pct", digits: 1,
+    series: [{ col: "ts_ipo_day1_gain", label: "Day-1 Gain (%)" }], source: "NSE India (Public Issues)", page: "/research/ipo",
+  },
+  {
+    id: "ipo.listings_per_month", kind: "bars", title: "Mainboard IPO listings per month", dataset: "nse_ipo", fmt: "num", digits: 0,
+    series: [{ col: "ts_ipo_listings_count", label: "Listings" }], source: "NSE India (Public Issues)", page: "/research/ipo",
+  },
+  {
+    id: "ipo.post_listing_return", kind: "line", title: "Average post-listing performance", dataset: "nse_ipo", fmt: "pct", digits: 1,
+    series: [
+      { col: "ts_ipo_return_30d", label: "30-Day Return" },
+      { col: "ts_ipo_return_90d", label: "90-Day Return" },
+      { col: "ts_ipo_return_1y", label: "1-Year Return" },
+    ],
+    source: "NSE India + Bhavcopy", page: "/research/ipo",
+  },
+
   // ---- flows, breadth, activity
   {
     id: "flows.cum_by_type", kind: "line", title: "Cumulative net cash purchases, FII vs DII", dataset: "nse_fiidii", fmt: "crore", digits: 0, transform: { type: "cumsum" },

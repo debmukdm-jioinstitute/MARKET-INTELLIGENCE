@@ -53,6 +53,7 @@ export const DATA_TRUST: LearnModule = {
         { label: "ETF Spreads", href: "/etf", blurb: "Price to NAV premium and discount." },
         { label: "Market Activity", href: "/activity", blurb: "Cash turnover and index-futures positioning." },
         { label: "Data Feeds", href: "/data/feeds", blurb: "Every connected market-data provider." },
+        { label: "Fear & Greed Index", href: "/fear-and-greed", blurb: "Multi-factor market sentiment model." },
         { label: "Methodology", href: "/methodology", blurb: "Coverage, freshness rules and corrections." },
       ],
       related: ["market-foundations/trading-hours-and-market-states"],

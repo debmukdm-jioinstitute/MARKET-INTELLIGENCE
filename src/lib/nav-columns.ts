@@ -72,6 +72,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Buzz & Sentiment",
         desc: "What retail and search data say.",
         items: [
+          { label: "Fear & Greed Index", href: "/fear-and-greed", desc: "Multi-factor sentiment model across breadth, momentum, VIX, PCR and FII flows.", badge: "NEW" },
           { label: "Retail Sentiment", href: "/intelligence/reddit", desc: "Reddit chatter, mention spikes and bull/bear theses." },
           { label: "Search Trends", href: "/intelligence/search-trends", desc: "Google search interest in companies, IPOs and sectors." },
         ],

@@ -9,6 +9,7 @@ import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { useMacroHub } from "@/hooks/use-macro-hub";
 import { metricsWithHistory, sectionMetrics } from "@/lib/macro/metric-tree";
 import Link from "next/link";
+import { GLOBAL_23_COUNTRIES } from "@/lib/macro/countries";
 
 export default function GlobalMacroPage() {
   const { data, loading, error } = useIndiaDashboard(45_000);
@@ -39,6 +40,24 @@ export default function GlobalMacroPage() {
         <GlobalMacroCard data={data} />
         {data ? <GlobalRadar data={data} /> : null}
       </div>
+
+
+      <section className="mt-8 space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">Major Global Economies (23 Countries)</h2>
+        <p className="text-xs text-muted-foreground">Sovereign macroeconomic profiles: GDP growth, CPI inflation, policy rates, 10Y sovereign yields, and credit gap.</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          {GLOBAL_23_COUNTRIES.map((cty) => (
+            <Link
+              key={cty.iso}
+              href={`/macro/global/${cty.iso}`}
+              className="flex items-center gap-2 rounded-lg border border-border p-2.5 text-xs font-medium hover:border-primary/50 hover:bg-muted/50 transition-colors"
+            >
+              <span className="text-xl leading-none" role="img" aria-label={cty.name}>{cty.flag}</span>
+              <span className="truncate">{cty.name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {hub.data && globalSection ? (
         <div className="mt-8 space-y-4">

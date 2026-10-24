@@ -60,6 +60,14 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    id: "fng",
+    title: "Market Fear & Greed Index",
+    body: [
+      "The Market Fear & Greed Index synthesizes 5 objective inputs into a single 0–100 scale: Market Breadth (NSE advancing vs declining stocks), 20-day Price Momentum of Nifty 50, Market Volatility (VIX inverted: low volatility indicates complacency, high volatility indicates fear), Options Sentiment (NSE Put-Call Ratio), and Institutional Flows (FII/FPI net cash purchases).",
+      "Each input is normalized into a standard score and mapped to a 0–100 scale. Equal weighting is applied across available components. Readings below 25 denote Extreme Fear; 25–45 Fear; 45–55 Neutral; 55–75 Greed; and above 75 Extreme Greed.",
+    ],
+  },
+  {
     id: "ai",
     title: "AI methodology",
     body: [

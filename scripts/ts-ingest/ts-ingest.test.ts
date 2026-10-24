@@ -146,14 +146,15 @@ describe("indexhistory + registry of sources", () => {
     const buf = readFileSync("scripts/ts-ingest/__fixtures__/ind_close_all.csv");
     const r = nseIndexHistory(buf, ctx);
     const px = r.filter((s) => s.id.endsWith("_px"));
-    expect(px.map((s) => s.id).sort()).toEqual([
+    expect(px.length).toBeGreaterThan(100);
+    expect(px.map((s) => s.id)).toEqual(expect.arrayContaining([
       "ts_niftyidx_nifty500_px",
       "ts_niftyidx_nifty50_px",
       "ts_niftyidx_niftybank_px",
       "ts_niftyidx_niftyit_px",
       "ts_niftyidx_niftymidcap150_px",
       "ts_niftyidx_niftysmallcap250_px",
-    ]);
+    ]));
     expect(r.find((s) => s.id === "ts_niftyidx_nifty50_px")!.obs[0]).toEqual({ date: "2026-10-23", value: 22600 });
     expect(r.find((s) => s.id === "ts_niftyidx_nifty50_pe")!.obs[0]).toEqual({ date: "2026-10-23", value: 19.05 });
   });
