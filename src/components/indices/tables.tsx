@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export const href = (slug: string) => `/markets/india/indices/${slug}`;
+/** Index page for a table row: its own link, else a lookup of the label in the index list. */
+const slugFor = (r: { label: string; href?: string }, slugs?: Record<string, string>) => r.href?.split("/")[2] ?? slugs?.[r.label];
+
 export const val = (c: Cell) => c.v ?? parseFloat(c.t.replace("−", "-").replace(/[^\d.\-]/g, ""));
 const ink3 = { color: "var(--ink-3)" } as const;
 
@@ -24,7 +27,7 @@ function Wrap({ caption, children }: { caption?: string; children: React.ReactNo
 const th = "whitespace-nowrap px-3 py-2 font-medium";
 
 /** Plain data table: first column left, the rest right-aligned; index names link to their pages. */
-export function SimpleTable({ t }: { t: TableOut }) {
+export function SimpleTable({ t, slugs }: { t: TableOut; slugs?: Record<string, string> }) {
   return (
     <Wrap caption={t.caption}>
       <table className="w-full min-w-[480px] border-collapse text-sm tabular-nums">
@@ -37,7 +40,7 @@ export function SimpleTable({ t }: { t: TableOut }) {
           {t.rows.map((r, ri) => (
             <tr key={ri} className="border-b last:border-0" style={{ borderColor: "var(--rule)" }}>
               <th scope="row" className="sticky left-0 bg-card px-3 py-2 text-left font-normal">
-                {r.href ? <Link href={href(r.href.split("/")[2])} className="underline decoration-border underline-offset-4">{r.label}</Link> : r.label}
+                {slugFor(r, slugs) ? <Link href={href(slugFor(r, slugs)!)} className="underline decoration-border underline-offset-4">{r.label}</Link> : r.label}
               </th>
               {r.cells.map((c, i) => <td key={i} className="px-3 py-2 text-right">{c.t}</td>)}
             </tr>
@@ -49,7 +52,7 @@ export function SimpleTable({ t }: { t: TableOut }) {
 }
 
 /** Period grid shaded by value (calendar years, falls within a year, months). */
-export function HeatTable({ t, sat, oldestFirst }: { t: TableOut; sat: number; oldestFirst: boolean }) {
+export function HeatTable({ t, sat, oldestFirst, slugs }: { t: TableOut; sat: number; oldestFirst: boolean; slugs?: Record<string, string> }) {
   const idx = t.headers.map((_, i) => i).slice(1);
   const order = oldestFirst ? [...idx].reverse() : idx;
   return (
@@ -65,7 +68,7 @@ export function HeatTable({ t, sat, oldestFirst }: { t: TableOut; sat: number; o
           {t.rows.map((r, ri) => (
             <tr key={ri} className="border-b last:border-0" style={{ borderColor: "var(--rule)" }}>
               <th scope="row" className="sticky left-0 z-10 bg-card px-3 py-1.5 text-left font-normal">
-                {r.href ? <Link href={href(r.href.split("/")[2])} className="underline decoration-border underline-offset-4">{r.label}</Link> : r.label}
+                {slugFor(r, slugs) ? <Link href={href(slugFor(r, slugs)!)} className="underline decoration-border underline-offset-4">{r.label}</Link> : r.label}
               </th>
               {order.map((i) => {
                 const c = r.cells[i - 1];

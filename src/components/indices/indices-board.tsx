@@ -118,7 +118,7 @@ function IndexTable({ d }: { d: ListPage }) {
   );
 }
 
-function Heat({ title, intro, tables, sat }: { title: string; intro: string; tables: TableOut[]; sat: number }) {
+function Heat({ title, intro, tables, sat, slugs }: { title: string; intro: string; tables: TableOut[]; sat: number; slugs: Record<string, string> }) {
   const [i, setI] = useState(0);
   const [old, setOld] = useState(false);
   const t = tables[i];
@@ -131,7 +131,7 @@ function Heat({ title, intro, tables, sat }: { title: string; intro: string; tab
         <Segmented value={String(i)} onChange={(v) => setI(Number(v))} label="Family" items={tables.map((x, k) => [String(k), `${FAM_NAMES[k] ?? k} ${x.rows.length}`] as const)} />
         <button type="button" aria-pressed={old} onClick={() => setOld(!old)} className="min-h-11 rounded-full border px-3.5 text-sm sm:min-h-9" style={{ borderColor: "var(--rule)" }}>Show oldest first</button>
       </div>
-      <HeatTable t={t} sat={sat} oldestFirst={old} />
+      <HeatTable t={t} sat={sat} oldestFirst={old} slugs={slugs} />
       <p className="text-xs" style={ink3}>{t.caption.replace(/Show oldest first$/, "")}</p>
     </section>
   );
@@ -143,6 +143,7 @@ export default function IndicesBoard() {
   if (error) return <p className="py-10 text-center text-sm" style={ink3}>Index data is unavailable right now. Try again shortly.</p>;
   if (!data) return <p className="py-10 text-center text-sm" style={ink3} aria-busy>Loading indices…</p>;
   const by = (re: RegExp) => data.tables.filter((t) => re.test(t.caption) && t.headers[0] === "");
+  const slugs = Object.fromEntries(data.rows.map((r) => [r.name, r.slug]));
   const launch = data.tables.filter((t) => t.headers[0] === "Group" || t.headers[0] === "Index");
   return (
     <div className="space-y-8" style={{ color: "var(--ink)" }}>
@@ -157,13 +158,13 @@ export default function IndicesBoard() {
         <section className="space-y-3 border-t pt-6" style={{ borderColor: "var(--rule)" }}>
           <h3 className="text-xl font-semibold tracking-tight">Before and after launch</h3>
           <p className="max-w-3xl text-sm" style={{ color: "var(--ink-2)" }}>Most NSE indices come with history calculated before they existed. Each index's lead over the Nifty 500 before its launch date is compared with its lead after.</p>
-          {launch.map((t, i) => <SimpleTable key={i} t={t} />)}
+          {launch.map((t, i) => <SimpleTable key={i} t={t} slugs={slugs} />)}
         </section>
       ) : null}
 
-      <Heat title="Calendar years" intro="Every index's return in each calendar year, with dividends. Read down a column to see what led in a year, across a row to see how uneven one index's years are." tables={by(/^Calendar-year/)} sat={50} />
-      <Heat title="The falls within each year" intro="The largest fall from a peak within each calendar year, counting the previous year-end as the first peak." tables={by(/largest fall/)} sat={40} />
-      <Heat title="The last 12 months" intro="The same families month by month, on a tighter colour scale. The latest month is month to date." tables={by(/monthly/)} sat={10} />
+      <Heat title="Calendar years" intro="Every index's return in each calendar year, with dividends. Read down a column to see what led in a year, across a row to see how uneven one index's years are." tables={by(/^Calendar-year/)} sat={50} slugs={slugs} />
+      <Heat title="The falls within each year" intro="The largest fall from a peak within each calendar year, counting the previous year-end as the first peak." tables={by(/largest fall/)} sat={40} slugs={slugs} />
+      <Heat title="The last 12 months" intro="The same families month by month, on a tighter colour scale. The latest month is month to date." tables={by(/monthly/)} sat={10} slugs={slugs} />
 
       {data.charts.length ? (
         <RangeProvider initial="10Y">
