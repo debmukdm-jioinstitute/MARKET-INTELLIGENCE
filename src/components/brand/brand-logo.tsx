@@ -55,6 +55,7 @@ export function BrandLogo({
     <Link
       href={href}
       onClick={onClick}
+      aria-label="Market Intelligence Home"
       className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
     >
       {img}

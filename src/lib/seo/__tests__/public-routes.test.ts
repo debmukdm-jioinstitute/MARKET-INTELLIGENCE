@@ -25,6 +25,9 @@ describe("isGuestReadablePortalPath", () => {
     expect(isGuestReadablePortalPath("/intelligence")).toBe(true);
     expect(isGuestReadablePortalPath("/intelligence/scanner")).toBe(true);
     expect(isGuestReadablePortalPath("/data")).toBe(true);
+    expect(isGuestReadablePortalPath("/funds")).toBe(true);
+    expect(isGuestReadablePortalPath("/indicators/nifty50_pe")).toBe(true);
+    expect(isGuestReadablePortalPath("/fear-and-greed")).toBe(true);
   });
 
   it("blocks private portal routes that require authentication", () => {

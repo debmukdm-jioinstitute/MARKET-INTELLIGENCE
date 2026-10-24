@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mutual Funds Intelligence | Market Intelligence",
   description: "Monthly SIP contributions, industry AUM trends, category inflows and net asset movements sourced directly from AMFI.",
-};
+  path: "/funds",
+});
 
 export default function Page() {
   return (

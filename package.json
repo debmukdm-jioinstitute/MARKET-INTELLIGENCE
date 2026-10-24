@@ -15,7 +15,9 @@
     "check:mcp-tools": "vitest run src/lib/mcp/__tests__/tools-registry.test.ts",
     "db:migrate": "node scripts/migrate.mjs",
     "test": "vitest run",
-    "competition:seed": "vitest run scripts/competition/seed-fake-season.test.ts"
+    "competition:seed": "vitest run scripts/competition/seed-fake-season.test.ts",
+    "test:e2e": "playwright test",
+    "audit:lhci": "lhci autorun"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.75",
@@ -62,6 +64,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pdfkit": "^0.17.6",

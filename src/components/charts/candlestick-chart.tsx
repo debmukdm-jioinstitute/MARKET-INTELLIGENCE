@@ -84,5 +84,5 @@ export function CandlestickChart({ candles, height = 280 }: { candles: Candle[];
     };
   }, [candles, height]);
 
-  return <div ref={containerRef} className="w-full" />;
+  return <div ref={containerRef} className="w-full" aria-hidden="true" />;
 }

@@ -32,7 +32,7 @@ function TickerCell({ item }: { item: LiveTickerItem }) {
         <span
           className={cn(
             "rounded px-1.5 py-0.5 text-sm tabular-nums",
-            up ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600",
+            up ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium" : "bg-rose-500/15 text-rose-700 dark:text-rose-400 font-medium",
           )}
         >
           {up ? "+" : ""}

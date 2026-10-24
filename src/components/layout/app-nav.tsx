@@ -277,7 +277,7 @@ export function AppNavTrigger() {
       }}
       aria-expanded={open}
       id="nav-menu-trigger"
-      aria-label="Open navigation"
+      aria-label="Open navigation menu"
       className={cn(
         "inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
         open ? "border-primary/40 bg-accent text-primary" : "border-border text-foreground hover:bg-accent hover:text-primary",

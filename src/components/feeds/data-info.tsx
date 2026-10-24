@@ -44,7 +44,7 @@ export function DataInfo({
         <button
           type="button"
           className={cn(
-            "ml-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground/80 hover:bg-blue-600/20 hover:text-blue-500 transition-all focus:outline-none focus:ring-1 focus:ring-blue-500/50 cursor-pointer select-none",
+            "ml-1 inline-flex size-6 min-h-[24px] min-w-[24px] shrink-0 items-center justify-center rounded-full text-muted-foreground/80 hover:bg-blue-600/20 hover:text-blue-500 transition-all focus:outline-none focus:ring-1 focus:ring-blue-500/50 cursor-pointer select-none",
             className
           )}
           aria-label={`Data source and provenance for ${name ?? source.provider}`}
@@ -53,7 +53,7 @@ export function DataInfo({
             e.stopPropagation();
           }}
         >
-          <Eye className="size-4 select-none transition-transform hover:scale-125" aria-hidden />
+          <Eye className="size-3.5 select-none transition-transform hover:scale-125" aria-hidden />
         </button>
       </PopoverTrigger>
 

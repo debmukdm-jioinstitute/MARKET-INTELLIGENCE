@@ -17,6 +17,13 @@ const GUEST_PORTAL_PREFIXES = [
   "/intelligence",
   "/data",
   "/pricing",
+  "/funds",
+  "/indicators",
+  "/fear-and-greed",
+  "/leverage",
+  "/etf",
+  "/valuation",
+  "/activity",
 ] as const;
 
 /** Guest-readable portal paths (Option A — public research & market hubs). */

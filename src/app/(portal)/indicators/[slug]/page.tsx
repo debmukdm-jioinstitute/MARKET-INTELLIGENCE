@@ -7,10 +7,17 @@ import { IndicatorView } from "@/components/ts-charts/indicator-view";
 export const dynamicParams = false;
 export const generateStaticParams = () => INDICATORS.map((c) => ({ slug: c.id.slice(2) }));
 
+import { pageMetadata } from "@/lib/seo/metadata";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const def = INDICATORS.find((c) => c.id === `i.${slug}`);
-  return { title: def ? `${def.title} | Market Intelligence` : "Indicator" };
+  const title = def ? `${def.title} | Market Intelligence` : "Indicator";
+  return pageMetadata({
+    title,
+    description: `${title} historical series and statistics.`,
+    path: `/indicators/${slug}`,
+  });
 }
 
 export default async function IndicatorPage({ params }: { params: Promise<{ slug: string }> }) {

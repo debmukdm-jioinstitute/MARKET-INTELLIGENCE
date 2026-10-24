@@ -6,7 +6,6 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { PortalMascot } from "@/components/mascot/portal-mascot";
 import { JsonLd } from "@/components/seo/json-ld";
 import { absoluteUrl, pageMetadata } from "@/lib/seo/metadata";
-import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const googleSans = Google_Sans({

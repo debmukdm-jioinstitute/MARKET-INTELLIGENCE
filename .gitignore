@@ -50,3 +50,8 @@ next-env.d.ts
 .research-cache/
 .notify-cache/
 .env.vercel.production
+
+# test artifacts
+.lighthouseci/
+test-results/
+playwright-report/

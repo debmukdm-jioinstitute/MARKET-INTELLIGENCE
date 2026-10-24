@@ -221,8 +221,7 @@ export function MiMascot({
                 alt="Mi, the Market Intelligence owl"
                 width={96}
                 height={96}
-                priority
-                unoptimized
+                loading="lazy"
                 className="h-full w-full object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.25)]"
                 draggable={false}
               />

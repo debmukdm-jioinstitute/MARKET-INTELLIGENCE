@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Fear & Greed Index | Market Intelligence",
   description: "Indian stock market sentiment indicator combining breadth, momentum, VIX, PCR, and FII flows.",
-};
+  path: "/fear-and-greed",
+});
 
 const FACTORS = [
   { name: "Market Breadth", desc: "Share of advancing stocks vs declining stocks across NSE EQ series." },
