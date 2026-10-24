@@ -63,7 +63,7 @@ export default function IndexDetail({ slug }: { slug: string }) {
     const h = window.location.hash.slice(1);
     if (h) setTab(h);
   }, []);
-  if (error) return <p className="py-10 text-center text-sm" style={ink3}>This index is unavailable right now. <Link className="underline" href="/markets/india">Back to all indices</Link></p>;
+  if (error) return <p className="py-10 text-center text-sm" style={ink3}>This index is unavailable right now. <Link className="underline" href="/markets?section=india">Back to all indices</Link></p>;
   if (!data) return <p className="py-10 text-center text-sm" style={ink3} aria-busy>Loading index…</p>;
   const active = data.sections.find((x) => x.id === tab) ?? data.sections[0];
   const short = data.title.replace(/^Nifty /, "");
@@ -71,7 +71,7 @@ export default function IndexDetail({ slug }: { slug: string }) {
     <div className="space-y-8 pb-12" style={{ color: "var(--ink)" }}>
       <header className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-sm" style={{ ...ink3, borderColor: "var(--ink)" }}>
-          <nav aria-label="Breadcrumb"><Link href="/markets" className="underline-offset-4 hover:underline">Markets</Link> / <Link href="/markets/india" className="underline-offset-4 hover:underline">Indices</Link> / {short}</nav>
+          <nav aria-label="Breadcrumb"><Link href="/markets" className="underline-offset-4 hover:underline">Markets</Link> / <Link href="/markets?section=india" className="underline-offset-4 hover:underline">Indices</Link> / {short}</nav>
           <span>Data to {asOfDmy(data.asOf)}</span>
         </div>
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">{data.title}</h1>

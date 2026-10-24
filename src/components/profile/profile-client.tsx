@@ -694,7 +694,7 @@ export function ProfileClient() {
                   value={bug.pageUrl}
                   onChange={(e) => setBug({ ...bug, pageUrl: e.target.value })}
                   maxLength={300}
-                  placeholder="/markets/india"
+                  placeholder="/markets?section=india"
                   className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>

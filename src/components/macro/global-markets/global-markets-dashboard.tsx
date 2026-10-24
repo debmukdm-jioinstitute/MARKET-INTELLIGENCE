@@ -146,7 +146,7 @@ export function GlobalMarketsDashboard({
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-0.5">
         {/* Left: Brand lockup and Global markets title */}
         <div className="flex items-center gap-2.5">
-          <BrandLogo variant="lockup" size="sm" href="/macro" priority invertOnDark={false} />
+          <BrandLogo variant="lockup" size="sm" href="/economy" priority invertOnDark={false} />
           <h1 className="text-xl font-bold tracking-tight text-[#151515] sm:text-2xl lg:text-[24px] leading-tight">
             Global markets
           </h1>

@@ -45,7 +45,7 @@ export default function AttributionPage() {
         <div className="rounded-lg border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
           {locked ? (
             <>
-              <Link href="/login?next=/portfolio/attribution" className="font-semibold text-blue-600 hover:underline">
+              <Link href="/login?next=%2Fportfolio%3Fsection%3Dattribution" className="font-semibold text-blue-600 hover:underline">
                 Log in
               </Link>{" "}
               to import holdings.

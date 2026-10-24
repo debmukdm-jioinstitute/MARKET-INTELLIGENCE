@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 const HEADER_OFFSET = 112; // top bar + sticky jump chips
@@ -48,13 +49,23 @@ export function alignTo(id: string): () => void {
   };
 }
 
-/** Reads `?section=<id>` (or `#id`) once on mount, scrolls to it via `alignTo`. */
+/**
+ * Follows `?section=<id>` (or `#id`): scrolls to it on load AND whenever a link changes the param while the visitor is already
+ * on the hub (client navigation does not remount the page, so a mount-only effect would ignore it).
+ */
 export function useHubSectionParam(onTarget?: (id: string) => void) {
+  const section = useSearchParams().get("section");
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("section") || window.location.hash.replace(/^#/, "");
+    const id = section || window.location.hash.replace(/^#/, "");
     if (!id) return;
     onTarget?.(id);
     return alignTo(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [section]);
+}
+
+/** Renders nothing; lives in its own Suspense boundary because useSearchParams needs one on statically rendered hubs. */
+export function HubSectionParam({ onTarget }: { onTarget?: (id: string) => void }) {
+  useHubSectionParam(onTarget);
+  return null;
 }

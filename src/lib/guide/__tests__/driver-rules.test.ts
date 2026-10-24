@@ -16,7 +16,7 @@ describe("buildNudges", () => {
   it("nudges Reliance toward crude first with implied move", () => {
     const { nudges } = buildNudges("RELIANCE", "Reliance Industries", betas, { brent: 2 });
     expect(nudges[0].factor).toBe("brent");
-    expect(nudges[0].href).toBe("/macro/commodities");
+    expect(nudges[0].href).toBe("/markets?section=commodities");
     expect(nudges[0].impliedPct).toBeCloseTo(0.6);
   });
   it("works with no data (instant, curated only)", () => {

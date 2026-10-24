@@ -29,7 +29,7 @@ const missions: {
     id: "read-brief",
     title: "Read today’s brief",
     detail: "Get the story behind the session",
-    href: "/intelligence/brief",
+    href: "/Home?section=brief",
     iconClass: "text-blue-600",
     tileClass: "bg-blue-50",
     Icon: FileText,

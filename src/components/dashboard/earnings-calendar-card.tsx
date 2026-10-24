@@ -84,7 +84,7 @@ export function EarningsCalendarCard() {
             Refresh
           </button>
           <Link
-            href="/research"
+            href="/companies?section=broker-consensus"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             View Research Desk
@@ -97,7 +97,7 @@ export function EarningsCalendarCard() {
         {items.length === 0 && !isLoading ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             No earnings in the next 14 days across Nifty 500 — check{" "}
-            <Link href="/research" className="text-primary underline">
+            <Link href="/companies?section=broker-consensus" className="text-primary underline">
               research desk
             </Link>
             .

@@ -5,7 +5,7 @@ export const metadata = pageMetadata({
   title: "Search-trend intelligence — Attention Index",
   description:
     "Google Trends search interest for Indian companies, IPOs, sectors, commodities, macro indicators, policy, CEOs, and products — composite Attention Index with momentum.",
-  path: "/intelligence/search-trends",
+  path: "/companies?section=search-trends",
 });
 
 export default function SearchTrendsPage() {

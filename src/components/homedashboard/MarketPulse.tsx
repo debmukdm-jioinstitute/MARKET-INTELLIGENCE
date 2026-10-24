@@ -362,7 +362,7 @@ export function MarketPulse({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             prefetch={false}
-            href="/markets/india"
+            href="/markets?section=india"
             className="inline-flex min-h-9 items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-1.5 text-sm font-semibold text-sky-900 transition-colors hover:bg-sky-100"
           >
             India depth

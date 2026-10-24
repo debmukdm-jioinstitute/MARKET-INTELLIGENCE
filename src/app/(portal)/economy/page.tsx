@@ -25,12 +25,12 @@ export default function EconomyHub() {
       hub="economy"
       minHeights={{ "global-board": 480 }}
       slots={{
-        "global-board": (<><GlobalBoard /><TsPathCharts path="/macro" /></>),
-        "india-macro": (<><IndiaMacro /><TsPathCharts path="/macro/india" /></>),
-        rbi: (<><Rbi /><TsPathCharts path="/macro/rbi" /><RbiDesk /></>),
-        yields: (<><Yields /><TsPathCharts path="/macro/yields" /></>),
-        "global-data": (<><GlobalData /><TsPathCharts path="/macro/global" /><div id="world-bank" className="mt-8 scroll-mt-28"><WorldBank /></div></>),
-        "macro-stress": (<><MacroStress /><TsPathCharts path="/macro/stress" /></>),
+        "global-board": (<><GlobalBoard /><TsPathCharts path="/economy" /></>),
+        "india-macro": (<><IndiaMacro /><TsPathCharts path="/economy?section=india-macro" /></>),
+        rbi: (<><Rbi /><TsPathCharts path="/economy?section=rbi" /><RbiDesk /></>),
+        yields: (<><Yields /><TsPathCharts path="/economy?section=yields" /></>),
+        "global-data": (<><GlobalData /><TsPathCharts path="/economy?section=global-data" /><div id="world-bank" className="mt-8 scroll-mt-28"><WorldBank /></div></>),
+        "macro-stress": (<><MacroStress /><TsPathCharts path="/economy?section=macro-stress" /></>),
         scenarios: <Scenarios />,
         transmission: <Transmission />,
         calendar: <CalendarSection />,

@@ -166,7 +166,7 @@ export function PrimaryMarketSneakPeek() {
                 Live IPO pipeline with Upstox exchange sync and Grey Market Premium (GMP) estimates.
               </span>
               <Link
-                href="/research/ipo"
+                href="/companies?section=ipo"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
               >
                 View Full IPO Tracker & Allotment <ArrowUpRight className="size-3.5" />
@@ -234,7 +234,7 @@ export function PrimaryMarketSneakPeek() {
                 Non-Convertible Debentures (NCDs) offering fixed predictable yields backed by corporate balance sheets.
               </span>
               <Link
-                href="/research/offers"
+                href="/companies?section=offers"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
               >
                 Explore NCD Calendar & Subscriptions <ArrowUpRight className="size-3.5" />
@@ -300,7 +300,7 @@ export function PrimaryMarketSneakPeek() {
                 Cash returned to shareholders at a premium to prevailing market prices.
               </span>
               <Link
-                href="/research/offers"
+                href="/companies?section=offers"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
               >
                 View All Buybacks, Rights & OFS <ArrowUpRight className="size-3.5" />

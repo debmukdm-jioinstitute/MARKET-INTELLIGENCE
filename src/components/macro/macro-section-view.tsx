@@ -86,7 +86,7 @@ export function MacroSectionView({
     <div className="space-y-4">
       <MacroSectionFreshness section={section} hubFetchedAt={data.fetchedAt} />
       <div>
-        <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
+        <Link href="/economy" className="text-sm text-primary hover:underline">← Macro home</Link>
         <h2 className="mt-2 font-heading text-2xl">{meta.title}</h2>
         <p className="text-sm text-muted-foreground">
           {typeof section.subtitle === "string" ? section.subtitle : meta.subtitle}

@@ -29,7 +29,7 @@ export function MarketDriverNudges({ marketKey, name, sectors }: { marketKey: st
           cta: { label: top.cta, href: top.href },
         }
       : factor && exposure.length
-        ? { gesture: "inspect", text: `${exposure[0].label} feels ${DRIVER_META[factor].short} most. See who else is exposed.`, cta: { label: "Sector exposure", href: "/macro/transmission" } }
+        ? { gesture: "inspect", text: `${exposure[0].label} feels ${DRIVER_META[factor].short} most. See who else is exposed.`, cta: { label: "Sector exposure", href: "/economy?section=transmission" } }
         : null,
   );
 
@@ -50,7 +50,7 @@ export function MarketDriverNudges({ marketKey, name, sectors }: { marketKey: st
             </li>
           ))}
         </ul>
-        <Link href="/macro/transmission" className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">Full sector map →</Link>
+        <Link href="/economy?section=transmission" className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">Full sector map →</Link>
       </Panel>
     );
   }

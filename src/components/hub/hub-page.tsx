@@ -1,9 +1,9 @@
 "use client";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { HUBS, type HubKey, type HubSlots } from "@/lib/hubs";
 import { HubJumpNav } from "./hub-jump-nav";
 import { HubSection } from "./hub-section";
-import { useHubSectionParam } from "./use-hub-section-param";
+import { HubSectionParam } from "./use-hub-section-param";
 
 /** One long scroll page: sticky jump chips + one lazily mounted section per slot. Section ids and order come from src/lib/hubs.ts. */
 export function HubPage<K extends HubKey>({ hub, slots, fullHrefs, minHeights, intro }: {
@@ -20,7 +20,6 @@ export function HubPage<K extends HubKey>({ hub, slots, fullHrefs, minHeights, i
     return s?.id ?? anchor;
   }, [def]);
   const onTarget = useCallback((id: string) => setForce(owner(id)), [owner]);
-  useHubSectionParam(onTarget);
   const chips = useMemo(() => def.sections.map((s) => ({ id: s.id, label: s.label })), [def]);
   const bySlot = slots as Record<string, ReactNode>;
 
@@ -31,6 +30,7 @@ export function HubPage<K extends HubKey>({ hub, slots, fullHrefs, minHeights, i
         <p className="mt-1 text-sm text-muted-foreground">{def.tagline}</p>
       </header>
       {intro}
+      <Suspense fallback={null}><HubSectionParam onTarget={onTarget} /></Suspense>
       <HubJumpNav chips={chips} label={def.title} onJump={onTarget} />
       <div className="space-y-8">
         {def.sections.map((s) => (

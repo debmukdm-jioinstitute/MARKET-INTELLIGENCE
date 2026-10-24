@@ -26,7 +26,7 @@ export function IndicesStrip({ rows }: { rows: WorldIndexQuote[] }) {
     <Panel
       title="World indices"
       action={
-        <Link href="/macro/indices" className="text-sm text-primary hover:underline">
+        <Link href="/markets?section=world" className="text-sm text-primary hover:underline">
           Dashboard →
         </Link>
       }

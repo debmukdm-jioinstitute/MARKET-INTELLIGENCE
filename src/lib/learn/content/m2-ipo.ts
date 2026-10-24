@@ -45,8 +45,8 @@ export const IPO_PRIMARY: LearnModule = {
         "Listing happens a few days after the issue closes.",
       ],
       tools: [
-        { label: "IPO Pipeline", href: "/research/ipo", blurb: "Upcoming IPOs, GMP and subscription tracking." },
-        { label: "Search Trends", href: "/intelligence/search-trends", blurb: "See which IPOs are drawing search interest." },
+        { label: "IPO Pipeline", href: "/companies?section=ipo", blurb: "Upcoming IPOs, GMP and subscription tracking." },
+        { label: "Search Trends", href: "/companies?section=search-trends", blurb: "See which IPOs are drawing search interest." },
       ],
       related: ["ipo-primary-market/ipo-price-band-explained", "ipo-primary-market/what-is-ipo-gmp"],
     },
@@ -81,7 +81,7 @@ export const IPO_PRIMARY: LearnModule = {
         "Pre-apply does not guarantee an allotment.",
       ],
       tools: [
-        { label: "IPO Pipeline", href: "/research/ipo", blurb: "Price bands, lot sizes and dates for open and upcoming issues." },
+        { label: "IPO Pipeline", href: "/companies?section=ipo", blurb: "Price bands, lot sizes and dates for open and upcoming issues." },
       ],
       related: ["ipo-primary-market/ipo-subscription-allotment-listing"],
     },
@@ -116,8 +116,8 @@ export const IPO_PRIMARY: LearnModule = {
         "Listing gain is not the same as long-term return.",
       ],
       tools: [
-        { label: "IPO Pipeline", href: "/research/ipo", blurb: "Live GMP, subscription status and listing dates." },
-        { label: "Retail Sentiment", href: "/intelligence/reddit", blurb: "How retail investors are talking about new issues." },
+        { label: "IPO Pipeline", href: "/companies?section=ipo", blurb: "Live GMP, subscription status and listing dates." },
+        { label: "Retail Sentiment", href: "/companies?section=retail-sentiment", blurb: "How retail investors are talking about new issues." },
       ],
       related: ["ipo-primary-market/ipo-subscription-allotment-listing", "sentiment-and-ai/retail-sentiment-reddit"],
     },
@@ -151,7 +151,7 @@ export const IPO_PRIMARY: LearnModule = {
         "Listing gain and long-term return are different things.",
       ],
       tools: [
-        { label: "IPO Pipeline", href: "/research/ipo", blurb: "Day-by-day subscription tracking." },
+        { label: "IPO Pipeline", href: "/companies?section=ipo", blurb: "Day-by-day subscription tracking." },
         { label: "AI Desk", href: "/research/ai-desk", blurb: "Have the AI analysts debate a recently listed stock." },
       ],
       related: ["ipo-primary-market/what-is-ipo-gmp"],
@@ -193,8 +193,8 @@ export const IPO_PRIMARY: LearnModule = {
         "Always check record dates and entitlement ratios.",
       ],
       tools: [
-        { label: "Bonds, Rights & Buybacks", href: "/research/offers", blurb: "Debenture, rights, buyback and OFS calendars." },
-        { label: "Credit Radar", href: "/intelligence/credit", blurb: "Rating changes for bond issuers." },
+        { label: "Bonds, Rights & Buybacks", href: "/companies?section=offers", blurb: "Debenture, rights, buyback and OFS calendars." },
+        { label: "Credit Radar", href: "/companies?section=credit", blurb: "Rating changes for bond issuers." },
       ],
       related: ["ownership-and-risk/credit-ratings-explained"],
     },

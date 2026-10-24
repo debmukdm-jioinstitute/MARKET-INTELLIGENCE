@@ -51,7 +51,7 @@ export function MacroSectionFreshness({
             <span className="text-amber-800 dark:text-amber-200"> · {staleCount} series may need update</span>
           ) : null}
         </p>
-        <Link href="/data/health" className="text-xs font-medium text-primary hover:underline">
+        <Link href="/data?section=health" className="text-xs font-medium text-primary hover:underline">
           Collector health →
         </Link>
         <DataInfo

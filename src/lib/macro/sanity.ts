@@ -4,7 +4,7 @@ import { sectionMetrics } from "@/lib/macro/metric-tree";
 /** Public macro section pages we sanity-check in cron + ops. */
 export const MACRO_HUB_SECTION_PATHS: { id: MacroSectionId; path: string }[] = [
   { id: "employment", path: "/macro/employment" },
-  { id: "global", path: "/macro/global" },
+  { id: "global", path: "/economy?section=global-data" },
   { id: "rates-liquidity", path: "/macro/rates-liquidity" },
   { id: "consumer", path: "/macro/consumer" },
   { id: "corporate", path: "/macro/corporate" },

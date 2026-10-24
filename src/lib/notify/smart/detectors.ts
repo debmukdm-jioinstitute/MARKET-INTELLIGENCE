@@ -37,7 +37,7 @@ const NIFTY50 = new Set(
 );
 
 const isNifty50 = (s?: string | null) => !!s && NIFTY50.has(s.toUpperCase().replace(/[^A-Z0-9]/g, ""));
-const companyHref = (symbol?: string | null) => (symbol ? `/research/${encodeURIComponent(symbol)}` : "/research");
+const companyHref = (symbol?: string | null) => (symbol ? `/research/${encodeURIComponent(symbol)}` : "/companies?section=broker-consensus");
 const day = (d: unknown) => { try { return formatDate(new Date(d as string)); } catch { return ""; } };
 const inr = (n: unknown) => { const v = Number(n); return Number.isFinite(v) ? `₹${v.toLocaleString("en-IN", { maximumFractionDigits: 0 })}` : ""; };
 
@@ -229,7 +229,7 @@ export async function detectIpoMilestones(db: Db): Promise<DetectedEvent[]> {
         importance: importance(65, rarityFirstTime(), 60), symbol: null,
         title: `IPO: ${co} → ${r.stage}`,
         body: `${co} moved to stage "${r.stage}"`,
-        href: "/research/ipo",
+        href: "/companies?section=ipo",
         why: `${co}'s IPO moved to "${r.stage}" on ${day(r.seen_at)} — the pipeline funnel just shifted.`,
         source_url: null,
       });
@@ -247,7 +247,7 @@ export async function detectIpoMilestones(db: Db): Promise<DetectedEvent[]> {
         importance: importance(70, rarityFirstTime(), 60), symbol: null,
         title: `${co} subscribed ${Number(r.total_x).toFixed(1)}×`,
         body: `Total subscription ${Number(r.total_x).toFixed(2)}× as of ${day(r.snapshot_at)}`,
-        href: "/research/ipo",
+        href: "/companies?section=ipo",
         why: `${co} is ${Number(r.total_x).toFixed(1)}× subscribed — heavy demand, but subscription is not a listing-gain prediction.`,
         source_url: null,
       });

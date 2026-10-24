@@ -169,7 +169,7 @@ function Data360ExplorerInner() {
           World Bank Data360
         </a>
         {" · "}
-        <Link href="/data/feeds" className="text-blue-600 hover:underline">
+        <Link href="/data?section=feeds" className="text-blue-600 hover:underline">
           Feed health
         </Link>
       </p>

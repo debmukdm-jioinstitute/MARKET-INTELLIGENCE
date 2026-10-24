@@ -179,14 +179,14 @@ export function SocialsSentimentSneakPeek() {
         </span>
         <div className="flex items-center gap-3">
           <Link
-            href="/intelligence/search-trends"
+            href="/companies?section=search-trends"
             className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline touch-manipulation"
           >
             <Search className="size-3" />
             Search trends
           </Link>
           <Link
-            href="/intelligence/reddit"
+            href="/companies?section=retail-sentiment"
             className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
           >
             Open retail sentiment engine

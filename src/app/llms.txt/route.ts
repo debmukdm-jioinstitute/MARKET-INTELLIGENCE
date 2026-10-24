@@ -20,13 +20,13 @@ All data on this platform is accessible via:
 ## Key Web Pages & Data Views
 - Nifty 50 Markets & Intraday Trajectory: https://getmarketintelligence.in/markets/india/nifty50
   - Live 5-minute Upstox candles, 50 Nifty constituents, and complete 13 sector weights breakdown.
-- AI Copilot Terminal: https://getmarketintelligence.in/intelligence
+- AI Copilot Terminal: https://getmarketintelligence.in/Home?section=feed
   - Multimodal research assistant powered by ProsusAI/FinBERT and BART summarization.
 - Credit Intelligence & Risk: https://getmarketintelligence.in/credit
   - Debt risk modeling, Altman Z-score, interest coverage, and liquidity metrics across Nifty 500.
 - Macro Stress & Transmission Engine: https://getmarketintelligence.in/stress & https://getmarketintelligence.in/transmission
   - Macro stress index, cross-asset betas (Brent, USD/INR, US10Y), and scenario shock simulation.
-- Institutional intelligence (FII/DII, ownership signals): https://getmarketintelligence.in/intelligence/institutional
+- Institutional intelligence (FII/DII, ownership signals): https://getmarketintelligence.in/funds?section=institutional
 
 ## Claude & LLM Integration Options
 

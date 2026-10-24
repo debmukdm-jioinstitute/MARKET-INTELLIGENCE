@@ -108,7 +108,7 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
             <MetricInfo metric="cpi" customTitle="India Sovereign Macroeconomic Suite" />
           </div>
           <Link
-            href="/macro/india"
+            href="/economy?section=india-macro"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             <EditableCopy id="card.india-macro.cta" label="India macro CTA">
@@ -180,10 +180,10 @@ export function IndiaMacroCard({ data }: { data?: IndiaDashboardPayload | null }
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm font-sans">
         {[
-          { label: "GDP", href: "/macro/india" },
-          { label: "Inflation", href: "/macro/india" },
-          { label: "RBI Policy", href: "/macro/rbi" },
-          { label: "Calendar", href: "/macro/india?view=calendar" },
+          { label: "GDP", href: "/economy?section=india-macro" },
+          { label: "Inflation", href: "/economy?section=india-macro" },
+          { label: "RBI Policy", href: "/economy?section=rbi" },
+          { label: "Calendar", href: "/economy?section=calendar" },
         ].map((sub) => (
           <Link
             key={sub.label}

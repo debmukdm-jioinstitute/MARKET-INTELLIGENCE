@@ -71,27 +71,27 @@ const WORKFLOWS: { name: string; schedule: string; what: string; via: string }[]
 
 function viewFor(s: { id: string; category: string; provider: string }): string {
   const id = s.id.toLowerCase();
-  if (id.includes("stress")) return "/macro/stress";
+  if (id.includes("stress")) return "/economy?section=macro-stress";
   if (id.includes("options") || s.category === "options") return "/research/options-flow";
-  if (id.includes("scan")) return "/research/scanner";
-  if (s.provider === "datagov" || id.startsWith("datagov")) return "/data/feeds";
-  if (s.provider === "data360" || id.startsWith("data360")) return "/data/feeds";
-  if (id.includes("ipo")) return "/research/ipo";
-  if (s.category === "macro" || /^(in_|rbi_|us_|cboe_|eurusd|ecb_|ea_|cot_|amfi_|damodaran_)/.test(id)) return "/macro";
+  if (id.includes("scan")) return "/intelligence/scanner";
+  if (s.provider === "datagov" || id.startsWith("datagov")) return "/data?section=feeds";
+  if (s.provider === "data360" || id.startsWith("data360")) return "/data?section=feeds";
+  if (id.includes("ipo")) return "/companies?section=ipo";
+  if (s.category === "macro" || /^(in_|rbi_|us_|cboe_|eurusd|ecb_|ea_|cot_|amfi_|damodaran_)/.test(id)) return "/economy";
   return "/markets";
 }
 
 const JOB_VIEW: Record<string, string> = {
-  collect: "/data/feeds",
+  collect: "/data?section=feeds",
   "warm-feed-hub": "/",
-  stress: "/macro/stress",
-  alerts: "/intelligence/alerts",
+  stress: "/economy?section=macro-stress",
+  alerts: "/trade?section=alerts",
   scan: "/research/scanner",
   signals: "/research/scanner",
   "options-flow": "/research/options-flow",
-  brief: "/intelligence/brief",
-  datagov: "/data/feeds",
-  data360: "/data/feeds",
+  brief: "/Home?section=brief",
+  datagov: "/data?section=feeds",
+  data360: "/data?section=feeds",
 };
 
 export async function GET() {

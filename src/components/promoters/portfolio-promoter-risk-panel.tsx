@@ -36,7 +36,7 @@ export function PortfolioPromoterRiskPanel({ positions }: PortfolioPromoterRiskP
         </div>
 
         <Link
-          href="/intelligence/promoters"
+          href="/companies?section=promoters"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <span>Open Promoter Tracker Desk</span>

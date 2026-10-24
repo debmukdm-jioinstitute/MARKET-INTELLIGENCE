@@ -37,7 +37,7 @@ export function YieldCurveCard({
     <Panel
       title="Yield curve"
       action={
-        <Link href="/macro/yields" className="text-sm text-primary hover:underline">
+        <Link href="/economy?section=yields" className="text-sm text-primary hover:underline">
           Full curve →
         </Link>
       }

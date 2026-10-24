@@ -450,7 +450,7 @@ export function AiSignals() {
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (isAuthRequiredError(error)) {
-    return <SignInRequiredBanner feature="AI signals" nextPath="/intelligence/ai-signals" />;
+    return <SignInRequiredBanner feature="AI signals" nextPath="/trade?section=ai-signals" />;
   }
   if (error) {
     return (
@@ -480,7 +480,7 @@ export function AiSignals() {
           </span>
           <span className="text-muted-foreground">Walk-forward run on NSE history — not a trade feed.</span>
         </div>
-        <Link href="/intelligence/alerts" className="font-semibold text-primary hover:underline">
+        <Link href="/trade?section=alerts" className="font-semibold text-primary hover:underline">
           Set up alerts →
         </Link>
       </div>

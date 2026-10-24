@@ -88,7 +88,7 @@ export function briefHeadlines(
       ...annotate(h.title),
       title: h.title,
       source: h.source,
-      href: h.link ?? "/intelligence/brief",
+      href: h.link ?? "/Home?section=brief",
       time: h.timeAgo,
       publishedAt: h.publishedAt,
       severity: headlineSeverityScore(h.title),

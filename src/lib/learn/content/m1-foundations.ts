@@ -47,7 +47,7 @@ export const FOUNDATIONS: LearnModule = {
       ],
       tools: [
         { label: "Markets overview", href: "/markets", blurb: "Equities, rates and FX on one board." },
-        { label: "India Markets", href: "/markets/india", blurb: "NSE / BSE headline pulse and index depth." },
+        { label: "India Markets", href: "/markets?section=india", blurb: "NSE / BSE headline pulse and index depth." },
       ],
       related: ["market-foundations/indices-sensex-nifty", "ipo-primary-market/what-is-an-ipo"],
     },
@@ -86,9 +86,9 @@ export const FOUNDATIONS: LearnModule = {
         "Use a benchmark to judge whether your returns are skill or just market beta.",
       ],
       tools: [
-        { label: "India Markets", href: "/markets/india", blurb: "Index levels, constituents and depth." },
-        { label: "World Indices", href: "/macro/indices", blurb: "Global benchmarks, ranges and 52-week tape." },
-        { label: "Sector Map", href: "/markets/sectors", blurb: "Sector performance and comparables." },
+        { label: "India Markets", href: "/markets?section=india", blurb: "Index levels, constituents and depth." },
+        { label: "World Indices", href: "/markets?section=world", blurb: "Global benchmarks, ranges and 52-week tape." },
+        { label: "Sector Map", href: "/markets?section=sectors", blurb: "Sector performance and comparables." },
       ],
       related: ["market-foundations/market-cap-large-mid-small", "fundamental-analysis/nifty-pe-ratio-explained"],
     },
@@ -128,7 +128,7 @@ export const FOUNDATIONS: LearnModule = {
       ],
       tools: [
         { label: "Methodology", href: "/methodology", blurb: "Freshness rules and market states in full." },
-        { label: "Data Health", href: "/data/health", blurb: "Freshness and provenance of every series." },
+        { label: "Data Health", href: "/data?section=health", blurb: "Freshness and provenance of every series." },
       ],
       related: ["data-trust-and-ai/data-freshness-and-provenance"],
     },
@@ -167,7 +167,7 @@ export const FOUNDATIONS: LearnModule = {
       ],
       tools: [
         { label: "Stock Scanner", href: "/intelligence/scanner", blurb: "Scan the Nifty 500 and filter by cap bucket." },
-        { label: "Sector Map", href: "/markets/sectors", blurb: "Compare companies within a sector." },
+        { label: "Sector Map", href: "/markets?section=sectors", blurb: "Compare companies within a sector." },
       ],
       related: ["fundamental-analysis/valuation-ratios-pe-pb-ev", "portfolio-and-risk/diversification-basics"],
     },
@@ -197,8 +197,8 @@ export const FOUNDATIONS: LearnModule = {
         "Index circuit breakers pause all trading during extreme moves.",
       ],
       tools: [
-        { label: "India Markets", href: "/markets/india", blurb: "Spot movers and market depth." },
-        { label: "Breadth & Momentum", href: "/markets/breadth", blurb: "How wide a move is across stocks." },
+        { label: "India Markets", href: "/markets?section=india", blurb: "Spot movers and market depth." },
+        { label: "Breadth & Momentum", href: "/markets?section=breadth", blurb: "How wide a move is across stocks." },
       ],
       related: ["technical-analysis/volume-and-liquidity"],
     },

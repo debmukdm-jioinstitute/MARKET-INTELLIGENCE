@@ -41,12 +41,12 @@ function formatAlert(s: SourceHealth): string {
     `⚠️ Source failing: ${s.label} — ${s.failStreak} consecutive failures.\n` +
     `Last success: ${lastOk} IST.\n` +
     `Error: ${s.lastError ?? "unknown"}\n` +
-    `${siteUrl()}/data/feeds`
+    `${siteUrl()}/data?section=feeds`
   );
 }
 
 function formatRecovery(s: SourceHealth): string {
-  return `✅ Recovered: ${s.label} is reporting healthy again.\n${siteUrl()}/data/feeds`;
+  return `✅ Recovered: ${s.label} is reporting healthy again.\n${siteUrl()}/data?section=feeds`;
 }
 
 /**

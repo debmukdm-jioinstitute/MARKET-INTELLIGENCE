@@ -70,17 +70,17 @@ const INVESTOR_TASKS = [
   {
     q: "Search a stock",
     a: "Open Research, type a company name or NSE ticker (e.g. Reliance or RELIANCE), pick a match, then read quote, chart, and news.",
-    href: "/research",
+    href: "/companies?section=broker-consensus",
   },
   {
     q: "Read a chart",
     a: "From any symbol page, use the price chart range buttons. Hover for exact time, price, and source freshness.",
-    href: "/markets/india",
+    href: "/markets?section=india",
   },
   {
     q: "Set an alert",
     a: "Signed-in users: Intelligence → Alerts. Choose symbol, condition, and delivery channel.",
-    href: "/intelligence/alerts",
+    href: "/trade?section=alerts",
   },
   {
     q: "Understand data labels",
@@ -338,7 +338,7 @@ export function HelpGuide({ tools, sitemapSectionCount, accountTools, portalOnly
                 World Monitor
               </a>{" "}
               as a git submodule and embed the finance variant at{" "}
-              <Link href="/intelligence/world-monitor" className="text-blue-600 hover:underline">
+              <Link href="/Home?section=world-monitor" className="text-blue-600 hover:underline">
                 /intelligence/world-monitor
               </Link>
               .

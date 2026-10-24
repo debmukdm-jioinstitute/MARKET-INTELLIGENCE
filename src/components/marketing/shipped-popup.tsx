@@ -13,7 +13,7 @@ const SHIPPED: { emoji: string; title: string; text: string; href?: string; cta?
     emoji: "📊",
     title: "Portfolio benchmarks that match the index",
     text: "Pick Nifty 50, Bank, IT, Midcap 150, Sensex, or US indices. Brinson sector attribution and active share now use live NSE constituent lists (refreshed daily), not a Nifty 50 proxy for every benchmark.",
-    href: "/portfolio/attribution",
+    href: "/portfolio?section=attribution",
     cta: "See attribution",
   },
   {
@@ -53,7 +53,7 @@ const SHIPPED: { emoji: string; title: string; text: string; href?: string; cta?
     emoji: "🛡️",
     title: "Portfolio crash fixes",
     text: "Fixed attribution blowing up on full index constituent lists, stopped portfolio API from blocking on slow NSE refresh, and added proper error screens instead of a black “page couldn't load”.",
-    href: "/portfolio/risk",
+    href: "/portfolio?section=risk",
     cta: "Risk desk",
   },
   {

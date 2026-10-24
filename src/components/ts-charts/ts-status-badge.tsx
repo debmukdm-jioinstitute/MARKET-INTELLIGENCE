@@ -12,7 +12,7 @@ export function TsStatusBadge() {
   const cur = data.filter((d) => d.state === "current").length;
   const bad = data.some((d) => d.state === "failing");
   return (
-    <a href="/data/status" className="inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs" style={{ borderColor: "var(--rule)", color: "var(--ink-2)" }}>
+    <a href="/data?section=sources" className="inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs" style={{ borderColor: "var(--rule)", color: "var(--ink-2)" }}>
       <span aria-hidden style={{ width: 8, height: 8, borderRadius: 4, background: bad ? "var(--critical)" : cur === data.length ? "var(--good)" : "var(--s5)" }} />
       {cur}/{data.length} datasets current
     </a>

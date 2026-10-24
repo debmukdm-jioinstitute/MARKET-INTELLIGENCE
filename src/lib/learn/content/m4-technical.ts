@@ -74,7 +74,7 @@ export const TECHNICAL: LearnModule = {
       ],
       tools: [
         { label: "Stock Scanner", href: "/intelligence/scanner", blurb: "Volume gainers and lowest-volume scans." },
-        { label: "Breadth & Momentum", href: "/markets/breadth", blurb: "Participation across the market." },
+        { label: "Breadth & Momentum", href: "/markets?section=breadth", blurb: "Participation across the market." },
       ],
       related: ["market-foundations/what-is-a-circuit-limit"],
     },
@@ -107,7 +107,7 @@ export const TECHNICAL: LearnModule = {
       ],
       tools: [
         { label: "Stock Scanner", href: "/intelligence/scanner", blurb: "Golden cross and death cross scans." },
-        { label: "Backtesting", href: "/intelligence/backtesting", blurb: "Test crossover rules against history." },
+        { label: "Backtesting", href: "/trade?section=backtesting", blurb: "Test crossover rules against history." },
       ],
       related: ["technical-analysis/rsi-macd-momentum"],
     },
@@ -222,7 +222,7 @@ export const TECHNICAL: LearnModule = {
       ],
       tools: [
         { label: "Stock Scanner", href: "/intelligence/scanner", blurb: "Nifty 500 scans: breakouts, momentum, patterns." },
-        { label: "Backtesting", href: "/intelligence/backtesting", blurb: "Test scanner ideas against history." },
+        { label: "Backtesting", href: "/trade?section=backtesting", blurb: "Test scanner ideas against history." },
       ],
       related: ["technical-analysis/backtesting-basics", "technical-analysis/alerts-guide"],
     },
@@ -261,8 +261,8 @@ export const TECHNICAL: LearnModule = {
         "Prefer simple rules that hold across regimes.",
       ],
       tools: [
-        { label: "Backtesting", href: "/intelligence/backtesting", blurb: "Test scanner ideas against history." },
-        { label: "AI Signals", href: "/intelligence/ai-signals", blurb: "A next-day model with its published track record." },
+        { label: "Backtesting", href: "/trade?section=backtesting", blurb: "Test scanner ideas against history." },
+        { label: "AI Signals", href: "/trade?section=ai-signals", blurb: "A next-day model with its published track record." },
         { label: "Trade Lab", href: "/intelligence/trade-lab", blurb: "Backtest patterns for any index or F&O stock." },
       ],
       related: ["sentiment-and-ai/ai-signals-explained"],
@@ -294,8 +294,8 @@ export const TECHNICAL: LearnModule = {
         "Combine with volume and trend.",
       ],
       tools: [
-        { label: "Breadth & Momentum", href: "/markets/breadth", blurb: "Advance/decline and trend leaders in one view." },
-        { label: "Sector Map", href: "/markets/sectors", blurb: "Where participation is strongest." },
+        { label: "Breadth & Momentum", href: "/markets?section=breadth", blurb: "Advance/decline and trend leaders in one view." },
+        { label: "Sector Map", href: "/markets?section=sectors", blurb: "Where participation is strongest." },
       ],
       related: ["market-foundations/indices-sensex-nifty"],
     },
@@ -329,7 +329,7 @@ export const TECHNICAL: LearnModule = {
       ],
       tools: [
         { label: "Trade Lab", href: "/intelligence/trade-lab", blurb: "Indicators, patterns and backtests for any index or F&O stock." },
-        { label: "Backtesting", href: "/intelligence/backtesting", blurb: "Test scanner ideas against history." },
+        { label: "Backtesting", href: "/trade?section=backtesting", blurb: "Test scanner ideas against history." },
       ],
       related: ["technical-analysis/rsi-macd-momentum", "technical-analysis/backtesting-basics"],
     },
@@ -360,7 +360,7 @@ export const TECHNICAL: LearnModule = {
         "An alert is a prompt to look, not an instruction to trade.",
       ],
       tools: [
-        { label: "Alerts", href: "/intelligence/alerts", blurb: "Breakout and scan alerts on your schedule." },
+        { label: "Alerts", href: "/trade?section=alerts", blurb: "Breakout and scan alerts on your schedule." },
         { label: "Stock Scanner", href: "/intelligence/scanner", blurb: "Create alerts from scan results." },
       ],
       related: ["technical-analysis/how-stock-screeners-work"],

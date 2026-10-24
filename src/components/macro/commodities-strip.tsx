@@ -22,7 +22,7 @@ export function CommoditiesStrip({ rows }: { rows: TapeQuote[] }) {
     <Panel
       title="Commodities"
       action={
-        <Link href="/macro/commodities" className="text-sm text-primary hover:underline">
+        <Link href="/markets?section=commodities" className="text-sm text-primary hover:underline">
           Dashboard →
         </Link>
       }

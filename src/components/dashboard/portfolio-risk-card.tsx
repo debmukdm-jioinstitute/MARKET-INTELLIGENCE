@@ -53,7 +53,7 @@ export function PortfolioRiskCard() {
             <MetricInfo metric="concentration" customTitle="Sector & Asset Concentration Risk" />
           </div>
           <Link
-            href="/portfolio/risk"
+            href="/portfolio?section=risk"
             className="group flex items-center gap-1.5 rounded-lg border border-blue-600/40 bg-blue-600/10 px-3 py-1 text-sm font-bold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
             <EditableCopy id="card.portfolio-risk.cta" label="Risk card CTA">
@@ -152,7 +152,7 @@ export function PortfolioRiskCard() {
             -₹{Math.round((totalHoldingsVal || 3800000) * 0.0165).toLocaleString("en-IN")}
           </span>
         </div>
-        <Link href="/portfolio/risk" className="text-blue-600 hover:text-blue-600 transition-colors font-bold underline decoration-blue-600/50">
+        <Link href="/portfolio?section=risk" className="text-blue-600 hover:text-blue-600 transition-colors font-bold underline decoration-blue-600/50">
           Full VaR Deck →
         </Link>
       </div>

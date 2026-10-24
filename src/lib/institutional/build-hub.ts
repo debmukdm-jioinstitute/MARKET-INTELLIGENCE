@@ -88,7 +88,7 @@ function buildTrackers(moneyFlow: InstitutionalIntelligencePayload["moneyFlow"])
       coverage: "unavailable",
       summary: "MF accumulation radar unavailable — AMC portfolio disclosures not yet ingested.",
       sources: [amfi, sebi],
-      href: "/intelligence/institutional",
+      href: "/funds?section=institutional",
     },
     {
       id: "insurance",

@@ -21,10 +21,10 @@ export function LandingHeader() {
             <BrandLogo size="md" priority invertOnDark={false} />
           </div>
           <nav className="hidden items-center gap-5 text-sm font-medium text-[#3d3d3d] md:flex">
-            <Link href="/research" className="hover:text-[#141414]">
+            <Link href="/companies?section=broker-consensus" className="hover:text-[#141414]">
               Research
             </Link>
-            <Link href="/markets/india" className="hover:text-[#141414]">
+            <Link href="/markets?section=india" className="hover:text-[#141414]">
               Markets
             </Link>
             <Link href="/portfolio" className="hover:text-[#141414]">

@@ -54,14 +54,14 @@ export const REENGAGEMENT_FEATURES: FeatureHighlight[] = [
     title: "Macro Monitor & RBI Policy Transmission",
     badge: "🌐 Policy & Yields",
     description: "Monitor banking system liquidity, sovereign yield curves, credit growth, and sectoral macro transmission models.",
-    path: "/macro",
+    path: "/economy",
   },
   {
     key: "reports",
     title: "Institutional Research & Consensus",
     badge: "📑 Analyst Coverage",
     description: "Browse consensus price targets, earnings revision momentum, and institutional equity research coverage notes.",
-    path: "/research-reports",
+    path: "/companies?section=research-notes",
   },
 ];
 

@@ -14,8 +14,7 @@ describe("isGuestReadablePortalPath", () => {
   it("allows research hubs and company deep dives", () => {
     expect(isGuestReadablePortalPath("/research")).toBe(true);
     expect(isGuestReadablePortalPath("/research/RELIANCE")).toBe(true);
-    expect(isGuestReadablePortalPath("/research/ipo")).toBe(true);
-    expect(isGuestReadablePortalPath("/research/offers")).toBe(true);
+    expect(isGuestReadablePortalPath("/research/ai-desk")).toBe(true);
     expect(isGuestReadablePortalPath("/research/ai-desk")).toBe(true);
   });
 
@@ -27,7 +26,7 @@ describe("isGuestReadablePortalPath", () => {
     expect(isGuestReadablePortalPath("/data")).toBe(true);
     expect(isGuestReadablePortalPath("/funds")).toBe(true);
     expect(isGuestReadablePortalPath("/indicators/nifty50_pe")).toBe(true);
-    expect(isGuestReadablePortalPath("/fear-and-greed")).toBe(true);
+    expect(isGuestReadablePortalPath("/companies")).toBe(true);
   });
 
   it("blocks private portal routes that require authentication", () => {

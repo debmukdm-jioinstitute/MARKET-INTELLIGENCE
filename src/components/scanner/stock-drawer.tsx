@@ -122,7 +122,7 @@ export function StockDrawer({
             <span className="block text-sm font-bold text-blue-700">Backtest it in Trade Lab →</span>
             <span className="block text-xs text-stone-500">Run fixed-rule strategies on {row.symbol}’s real price history.</span>
           </Link>
-          <Link href="/intelligence/alerts" className="rounded-xl border border-stone-200 bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md">
+          <Link href="/trade?section=alerts" className="rounded-xl border border-stone-200 bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md">
             <span className="block text-sm font-bold text-blue-700">Watch it with Alerts →</span>
             <span className="block text-xs text-stone-500">Get notified when {row.symbol}’s price, volume, or RSI moves.</span>
           </Link>

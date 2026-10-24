@@ -1,49 +1,27 @@
-const TAB_TITLES: Record<string, Record<string, string>> = {
-  "/markets/sectors": {
-    performance: "Sector performance",
-    rotation: "Sector rotation",
-    valuation: "Sector valuation",
-    fundamentals: "Sector fundamentals",
-  },
-  "/markets/breadth": {
-    breadth: "Market breadth",
-    momentum: "Market momentum",
-  },
-};
+import { HUBS } from "@/lib/hubs";
 
+/** Deep tools that are not hub sections. */
 const PATH_TITLES: Record<string, string> = {
-  "/Home": "Home",
-  "/markets/india": "Indian markets",
-  "/markets/sectors": "Sector intelligence",
-  "/markets/breadth": "Market breadth",
-  "/markets/derivatives": "Derivatives",
-  "/macro": "Macro board",
-  "/macro/india": "India macro",
-  "/macro/rbi": "RBI & liquidity",
-  "/macro/indices": "World indices",
-  "/macro/currency": "Currency",
-  "/macro/commodities": "Commodities",
-  "/macro/global": "Global macro",
-  "/macro/stress": "Macro stress",
-  "/intelligence/world-monitor": "World Monitor",
-  "/intelligence/brief": "Daily brief",
+  "/Home": "Today",
   "/intelligence/scanner": "Stock scanner",
-  "/portfolio": "Portfolio",
-  "/research": "Research",
+  "/intelligence/trade-lab": "Trade Lab",
+  "/research/ai-desk": "AI Desk",
+  "/research/options-flow": "Options flow",
+  "/macro/stress/backtest": "Stress backtest",
+  "/pricing": "Pricing",
+  "/profile": "Profile",
   "/help": "Help",
 };
 
+/** Browser-tab title: hub pages are named by their `?section=` (e.g. "RBI · Economy"), deep tools by path. */
 export function portalDocumentTitle(pathname: string, search: URLSearchParams): string {
-  const viewKey = pathname === "/macro/india" && search.get("view") === "calendar" ? null : search.get("tab") ?? search.get("view");
-  const tabMap = TAB_TITLES[pathname];
-  const tabLabel = viewKey && tabMap?.[viewKey];
-
-  const base =
-    tabLabel ??
-    (pathname === "/macro/india" && search.get("view") === "calendar"
-      ? "Economic calendar"
-      : (PATH_TITLES[pathname] ?? pathname.split("/").filter(Boolean).slice(-1)[0]?.replace(/-/g, " ") ?? "Desk"));
-
-  const titled = base.charAt(0).toUpperCase() + base.slice(1);
-  return `${titled} · Market Intelligence`;
+  const hub = Object.values(HUBS).find((h) => h.route === pathname);
+  let base: string;
+  if (hub) {
+    const label = hub.sections.find((s) => s.id === search.get("section"))?.label;
+    base = label && pathname !== "/Home" ? `${label} · ${hub.title}` : hub.title;
+  } else {
+    base = PATH_TITLES[pathname] ?? pathname.split("/").filter(Boolean).slice(-1)[0]?.replace(/-/g, " ") ?? "Desk";
+  }
+  return `${base.charAt(0).toUpperCase()}${base.slice(1)} · Market Intelligence`;
 }

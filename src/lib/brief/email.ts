@@ -29,7 +29,7 @@ export function briefHtml(b: Brief, email: string): string {
     badge: b.kind === "pre" ? "PRE-MARKET BRIEF" : "POST-CLOSE BRIEF",
     title: b.headline,
     contentHtml,
-    primaryCta: { label: "Read full brief →", href: `${site}/intelligence/brief` },
+    primaryCta: { label: "Read full brief →", href: `${site}/Home?section=brief` },
     siteUrl: site,
   });
   return withUnsubscribeFooter(doc, email);

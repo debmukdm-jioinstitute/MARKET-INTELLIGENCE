@@ -202,9 +202,9 @@ export function MyPortfolioCard() {
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-2 text-sm">
         {[
           { label: "Book & Holdings", href: "/portfolio" },
-          { label: "Asset Allocation", href: "/portfolio/allocation" },
-          { label: "Risk & VaR", href: "/portfolio/risk" },
-          { label: "Factor Attribution", href: "/portfolio/attribution" },
+          { label: "Asset Allocation", href: "/portfolio?section=allocation" },
+          { label: "Risk & VaR", href: "/portfolio?section=risk" },
+          { label: "Factor Attribution", href: "/portfolio?section=attribution" },
         ].map((sub) => (
           <Link
             key={sub.label}

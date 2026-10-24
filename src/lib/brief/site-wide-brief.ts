@@ -194,7 +194,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         },
       ],
       featuredEntities: brokerFeatured,
-      deepDiveUrl: "/research",
+      deepDiveUrl: "/companies?section=broker-consensus",
       deepDiveLabel: "Open Research Notes Feed",
     },
 
@@ -211,7 +211,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         { label: "Status", value: "Unavailable" },
       ],
       featuredEntities: [],
-      deepDiveUrl: "/intelligence/promoters",
+      deepDiveUrl: "/companies?section=promoters",
       deepDiveLabel: "Open Promoter & Insider Tracker",
     },
 
@@ -228,7 +228,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         { label: "Status", value: "Unavailable" },
       ],
       featuredEntities: [],
-      deepDiveUrl: "/intelligence/credit",
+      deepDiveUrl: "/companies?section=credit",
       deepDiveLabel: "View Credit Actions & Rating Changes",
     },
 
@@ -245,7 +245,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         { label: "Status", value: "Unavailable" },
       ],
       featuredEntities: [],
-      deepDiveUrl: "/intelligence/company",
+      deepDiveUrl: "/companies?section=company",
       deepDiveLabel: "Explore Corporate Timelines & Concall Tone",
     },
 
@@ -262,7 +262,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
         { label: "Status", value: "Unavailable" },
       ],
       featuredEntities: [],
-      deepDiveUrl: "/intelligence/institutional",
+      deepDiveUrl: "/funds?section=institutional",
       deepDiveLabel: "Open institutional intelligence",
     },
 
@@ -301,7 +301,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
                 sentiment: "NEUTRAL" as const,
               },
             ],
-      deepDiveUrl: "/intelligence/reddit",
+      deepDiveUrl: "/companies?section=retail-sentiment",
       deepDiveLabel: "Open Retail Sentiment & Reddit Radar",
     },
 
@@ -340,7 +340,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
             },
           ]
         : [{ name: "Macro tape unavailable right now", keyFact: "Live fetch failed — check /macro directly.", sentiment: "NEUTRAL" }],
-      deepDiveUrl: "/macro",
+      deepDiveUrl: "/economy",
       deepDiveLabel: "Explore Macro Dashboard & RBI Transmission",
     },
 
@@ -413,7 +413,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
             sentiment: (ipo.gmpPct ?? 0) > 5 ? ("BULLISH" as const) : (ipo.gmpPct ?? 0) < -5 ? ("BEARISH" as const) : ("NEUTRAL" as const),
           }))
         : [{ name: "No open IPOs right now", keyFact: "Check /research/ipo for upcoming issues.", sentiment: "NEUTRAL" }],
-      deepDiveUrl: "/research/ipo",
+      deepDiveUrl: "/companies?section=ipo",
       deepDiveLabel: "Track Live IPO Pipeline & Grey Market Premiums",
     },
 
@@ -439,7 +439,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
             sentiment: c.potentialImpact === "high" ? ("NEGATIVE" as const) : c.potentialImpact === "medium" ? ("NEUTRAL" as const) : ("POSITIVE" as const),
           }))
         : [{ name: "No tracked legal/regulatory cases right now", keyFact: "Real-time feed found nothing flagged — check /intelligence/legal-risk directly.", sentiment: "NEUTRAL" }],
-      deepDiveUrl: "/intelligence/legal-risk",
+      deepDiveUrl: "/companies?section=legal-risk",
       deepDiveLabel: "Inspect Legal Risk & NCLT Insolvency Radar",
     },
   ];

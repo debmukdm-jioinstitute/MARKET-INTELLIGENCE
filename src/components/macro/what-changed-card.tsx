@@ -44,7 +44,7 @@ function buildItems(seed: BriefingSeed, prev: Stored | null): BriefingItem[] {
         : down
           ? `10Y G-Sec yield eased (${seed.gsec10y.toFixed(2)}%).`
           : `10Y G-Sec steady at ${seed.gsec10y.toFixed(2)}%.`,
-      href: "/macro/yields",
+      href: "/economy?section=yields",
     });
   }
 
@@ -84,7 +84,7 @@ function buildItems(seed: BriefingSeed, prev: Stored | null): BriefingItem[] {
     items.push({
       n: "05",
       text: "Open the commodity dashboard for Brent and metals.",
-      href: "/macro/commodities",
+      href: "/markets?section=commodities",
     });
   }
 

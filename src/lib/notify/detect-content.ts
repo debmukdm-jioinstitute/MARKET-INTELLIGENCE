@@ -14,7 +14,7 @@ export async function detectContent(): Promise<NewEvent[]> {
     if (last) {
       for (const r of rows) {
         if (Number(r.id) > last.id)
-          ev.push({ key: `brief:${r.id}`, category: "brief", severity: "info", title: `${r.kind === "pre" ? "Pre-market" : "Post-close"} brief published`, body: String(r.headline ?? ""), href: "/intelligence/brief" });
+          ev.push({ key: `brief:${r.id}`, category: "brief", severity: "info", title: `${r.kind === "pre" ? "Pre-market" : "Post-close"} brief published`, body: String(r.headline ?? ""), href: "/Home?section=brief" });
       }
     }
     await setState("content_brief", { id: newest });

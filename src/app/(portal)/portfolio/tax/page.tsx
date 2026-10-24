@@ -50,7 +50,7 @@ export default function PortfolioTaxPage() {
 
       {locked ? (
         <p className="text-sm text-muted-foreground">
-          <Link href="/login?next=/portfolio/tax" className="font-semibold text-blue-600 hover:underline">
+          <Link href="/login?next=%2Fportfolio%3Fsection%3Dtax" className="font-semibold text-blue-600 hover:underline">
             Log in
           </Link>{" "}
           to see estimates on your holdings.

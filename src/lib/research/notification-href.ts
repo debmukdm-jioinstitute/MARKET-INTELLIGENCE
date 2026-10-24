@@ -8,7 +8,7 @@ export function researchReportNotificationHref(row: {
   const url = row.url?.trim();
   if (url && /^https?:\/\//i.test(url) && /\.pdf(\?|#|$)/i.test(url)) return url;
   if (url && /^https?:\/\//i.test(url)) return url;
-  return "/research";
+  return "/companies?section=broker-consensus";
 }
 
 export function isExternalNotificationHref(href: string): boolean {

@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand/brand-logo";
 
 const EXPLORE_LINKS = [
-  { label: "Markets", href: "/markets/india" },
-  { label: "Macro", href: "/macro" },
+  { label: "Markets", href: "/markets?section=india" },
+  { label: "Macro", href: "/economy" },
   { label: "Portfolio", href: "/portfolio" },
-  { label: "Research", href: "/research" },
-  { label: "Intelligence", href: "/intelligence" },
+  { label: "Research", href: "/companies?section=broker-consensus" },
+  { label: "Intelligence", href: "/Home?section=feed" },
 ];
 
 export function MobileNav({ tone = "light" }: { tone?: "light" | "dark" }) {

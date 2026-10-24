@@ -31,7 +31,7 @@ export const RETAIL_INVESTOR_PROBLEMS: RetailInvestorProblemInsight[] = [
       "Conventional datasets treat earnings as purely quantitative time series (EPS, Revenue, EBITDA) and ignore the linguistic tone inflection and guidance delta in audio calls.",
     miSolutionFeature: {
       featureTitle: "Concall Intelligence & Management Tone Tracker",
-      href: "/intelligence/company",
+      href: "/companies?section=company",
       howItSolves:
         "Not available yet — no verified concall transcript feed is connected, so no concall summaries or tone scores are shown rather than estimated ones.",
     },
@@ -85,7 +85,7 @@ export const RETAIL_INVESTOR_PROBLEMS: RetailInvestorProblemInsight[] = [
       "Global terminal providers (Bloomberg, Koyfin, TradingView) have zero integration with India's Finance Act provisions, Section 112A, or CBDT tax harvesting rules.",
     miSolutionFeature: {
       featureTitle: "India Tax Engine & Capital Gains Estimator",
-      href: "/portfolio/tax",
+      href: "/portfolio?section=tax",
       howItSolves:
         "Interactive tax modeling applying post-Budget 2024 rules (12.5% LTCG, 20% STCG, ₹1.25L exemption threshold) with automated tax-loss harvesting recommendations.",
     },
@@ -112,7 +112,7 @@ export const RETAIL_INVESTOR_PROBLEMS: RetailInvestorProblemInsight[] = [
       "Financial news focuses almost exclusively on earnings announcements and price charts, treating credit rating rationales and SEBI SAST pledge filings as specialized debt-desk disclosures.",
     miSolutionFeature: {
       featureTitle: "Credit & Solvency Radar + Promoter Activity Tracker",
-      href: "/intelligence/credit",
+      href: "/companies?section=credit",
       howItSolves:
         "Not available yet — no verified rating-agency or promoter-disclosure feed is connected, so no rating actions or promoter activity are shown rather than estimated ones.",
     },

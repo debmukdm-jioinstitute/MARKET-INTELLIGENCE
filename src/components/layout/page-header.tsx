@@ -42,7 +42,7 @@ export function PageHeader({
 
   return (
     <div className={cn("portal-header-enter mb-4 sm:mb-5", className)}>
-      {kicker ? <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-primary">{kicker}</p> : null}
+      {kicker ? <p data-page-kicker className="mb-1 text-sm font-semibold uppercase tracking-wide text-primary">{kicker}</p> : null}
       {leading ? (
         <div className="flex items-center gap-3">
           {leading}
@@ -50,6 +50,7 @@ export function PageHeader({
           data-mi-slot={titleSlot}
           data-mi-field="title"
           data-mi-label="Page title"
+          data-page-title
           className="font-heading text-2xl font-bold tracking-tight text-foreground"
         >
           {displayTitle}
@@ -60,6 +61,7 @@ export function PageHeader({
         data-mi-slot={titleSlot}
         data-mi-field="title"
         data-mi-label="Page title"
+        data-page-title
         className="font-heading text-2xl font-bold tracking-tight text-foreground"
       >
         {displayTitle}

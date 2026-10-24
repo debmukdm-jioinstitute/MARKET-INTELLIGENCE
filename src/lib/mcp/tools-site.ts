@@ -975,7 +975,7 @@ export const SITE_TOOLS: Tool[] = [
       "Link and status for the integrated World Monitor global intelligence dashboard (news, maps, CII, finance variant).",
     inputSchema: empty,
     run: async () => ({
-      portalPath: "/intelligence/world-monitor",
+      portalPath: "/Home?section=world-monitor",
       launchPath: worldMonitorLaunchPath(),
       externalUrl: worldMonitorExternalUrl(),
       upstream: WORLDMONITOR_UPSTREAM_REPO,
@@ -1074,7 +1074,7 @@ export const SITE_TOOLS: Tool[] = [
       status: "ok",
       provider: "AMFI & NSE",
       indicators: ["i.sip_inflow", "i.sip_stoppage", "funds.aum", "etf.niftybees"],
-      routes: ["/funds", "/etf"],
+      routes: ["/funds", "/funds?section=etf"],
     }),
   },
 

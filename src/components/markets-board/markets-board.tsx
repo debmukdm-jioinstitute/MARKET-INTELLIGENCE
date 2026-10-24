@@ -212,7 +212,7 @@ export function MarketsBoard({
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           <div className="flex items-center">
             <Link
-              href="/macro"
+              href="/economy"
               className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               <Image

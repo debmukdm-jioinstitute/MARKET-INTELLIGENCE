@@ -16,21 +16,21 @@ interface Prev {
 // where a visitor can see each metric
 const HREF: Partial<Record<MetricId, string>> = {
   india_vix: "/markets/india/vix",
-  us_vix: "/macro/global",
+  us_vix: "/economy?section=global-data",
   nifty: "/markets/india/nifty50",
   nifty_1d_pct: "/markets/india/nifty50",
-  usdinr: "/macro/currency",
-  usdinr_1d_pct: "/macro/currency",
-  brent: "/macro/commodities",
-  brent_1d_pct: "/macro/commodities",
-  us10y: "/macro/yields",
-  gsec10y: "/macro/yields",
-  dxy_1d_pct: "/macro/currency",
-  fii_net: "/macro/india",
-  dii_net: "/macro/india",
-  rbi_net_liquidity: "/macro/rbi",
-  stress_score: "/macro/stress",
-  convergence_score: "/macro/stress",
+  usdinr: "/markets?section=currency",
+  usdinr_1d_pct: "/markets?section=currency",
+  brent: "/markets?section=commodities",
+  brent_1d_pct: "/markets?section=commodities",
+  us10y: "/economy?section=yields",
+  gsec10y: "/economy?section=yields",
+  dxy_1d_pct: "/markets?section=currency",
+  fii_net: "/economy?section=india-macro",
+  dii_net: "/economy?section=india-macro",
+  rbi_net_liquidity: "/economy?section=rbi",
+  stress_score: "/economy?section=macro-stress",
+  convergence_score: "/economy?section=macro-stress",
 };
 
 /** Round levels whose crossing is worth a line. `step` = size of one bucket. */
@@ -139,7 +139,7 @@ export function diffMarket(prev: Prev, cur: { metrics: MetricValues; families: F
   }
   for (const fam of cur.families) {
     if (!prev.families.includes(fam))
-      ev.push({ key: `family:${fam}:${date}`, category: "macro", severity: "medium", title: `${FAMILY_LABEL[fam]} stress is now firing`, body: "One of the seven stress families crossed its alert level. Several firing together is a stronger warning.", href: "/macro/stress" });
+      ev.push({ key: `family:${fam}:${date}`, category: "macro", severity: "medium", title: `${FAMILY_LABEL[fam]} stress is now firing`, body: "One of the seven stress families crossed its alert level. Several firing together is a stronger warning.", href: "/economy?section=macro-stress" });
   }
   return ev;
 }

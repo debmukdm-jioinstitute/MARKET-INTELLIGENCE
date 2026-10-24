@@ -34,7 +34,7 @@ const TABLE_HREF: Record<string, string> = {
   alert_events: "/admin/alerts",
   push_subscriptions: "/admin/notifications",
   newsletter_subscribers: "/admin/newsletters",
-  research_reports: "/research-reports",
+  research_reports: "/companies?section=research-notes",
   scan_latest: "/intelligence/scanner",
 };
 

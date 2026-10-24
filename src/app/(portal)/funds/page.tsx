@@ -25,16 +25,16 @@ export default function FundsHub() {
     <HubPage
       hub="funds"
       slots={{
-        institutional: (<><Institutional /><TsPathCharts path="/intelligence/institutional" /></>),
+        institutional: (<><Institutional /><TsPathCharts path="/funds?section=institutional" /></>),
         "funds-overview": (<><FundsOverview /><TsPathCharts path="/funds" /></>),
-        categories: (<><Categories /><TsPathCharts path="/funds/categories" /></>),
-        "nfo-distribution": (<><Distribution /><TsPathCharts path="/funds/distribution" /></>),
-        sip: (<><Owners /><TsPathCharts path="/funds/owners" /></>),
-        passive: (<><Passive /><TsPathCharts path="/funds/passive" /></>),
-        "geo-aum": (<><States /><TsPathCharts path="/funds/states" /></>),
-        "scheme-size": (<><Size /><TsPathCharts path="/funds/size" /></>),
-        etf: (<><Etf /><TsPathCharts path="/etf" /></>),
-        mtf: (<><Leverage /><TsPathCharts path="/leverage" /><LeverageMtf /><TsPathCharts path="/leverage/mtf" /><HubCta href="/trade?section=leverage" title="Margin trading for traders" text="See the same margin book next to the scanner and derivatives tools." cta="Open Trade" /></>),
+        categories: (<><Categories /><TsPathCharts path="/funds?section=categories" /></>),
+        "nfo-distribution": (<><Distribution /><TsPathCharts path="/funds?section=nfo-distribution" /></>),
+        sip: (<><Owners /><TsPathCharts path="/funds?section=sip" /></>),
+        passive: (<><Passive /><TsPathCharts path="/funds?section=passive" /></>),
+        "geo-aum": (<><States /><TsPathCharts path="/funds?section=geo-aum" /></>),
+        "scheme-size": (<><Size /><TsPathCharts path="/funds?section=scheme-size" /></>),
+        etf: (<><Etf /><TsPathCharts path="/funds?section=etf" /></>),
+        mtf: (<><Leverage /><TsPathCharts path="/funds?section=mtf" /><LeverageMtf /><TsPathCharts path="/funds?section=mtf" /><HubCta href="/trade?section=leverage" title="Margin trading for traders" text="See the same margin book next to the scanner and derivatives tools." cta="Open Trade" /></>),
       }}
     />
   );

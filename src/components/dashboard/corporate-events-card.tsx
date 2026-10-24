@@ -131,7 +131,7 @@ export function CorporateEventsCard() {
         </div>
 
         <Link
-          href="/intelligence"
+          href="/Home?section=feed"
           className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
         >
           View All Desk

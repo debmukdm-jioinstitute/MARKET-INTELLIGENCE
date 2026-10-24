@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { resolvePageProvenance } from "@/lib/feeds/page-provenance";
 
 describe("resolvePageProvenance", () => {
-  it("maps research-reports not to generic research", () => {
-    const p = resolvePageProvenance("/research-reports");
+  it("gives each hub section its own sources", () => {
+    const p = resolvePageProvenance("/companies?section=research-notes");
     expect(p?.summary).toMatch(/Broker research/i);
   });
 

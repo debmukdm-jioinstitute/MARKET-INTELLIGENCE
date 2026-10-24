@@ -1,33 +1,15 @@
 import type { MetadataRoute } from "next";
 import { NIFTY_500 } from "@/lib/prowess/nifty500";
 import { LEARN_MODULES } from "@/lib/learn/curriculum";
+import { HUBS } from "@/lib/hubs";
 import { siteUrl } from "@/lib/seo/site-url";
 
 type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
-const PRIVATE_PORTAL_PREFIXES = ["/portfolio", "/profile", "/algo", "/onboarding"] as const;
+const PRIVATE_PORTAL_PREFIXES = ["/portfolio", "/profile", "/onboarding"] as const;
 
-const GUEST_PORTAL_PREFIXES = [
-  "/Home",
-  "/loader-preview",
-  "/research",
-  "/research-reports",
-  "/markets",
-  "/macro",
-  "/intelligence",
-  "/data",
-  "/pricing",
-  "/funds",
-  "/economy",
-  "/companies",
-  "/trade",
-  "/indicators",
-  "/fear-and-greed",
-  "/leverage",
-  "/etf",
-  "/valuation",
-  "/activity",
-] as const;
+/** Hub roots and the deep routes that still exist (company pages, country macro, deep tools). Old section URLs are in legacy-routes.ts and are not listed here. */
+const GUEST_PORTAL_PREFIXES = [...Object.values(HUBS).map((h) => h.route), "/loader-preview", "/research", "/macro", "/intelligence", "/pricing", "/indicators"] as const;
 
 /** Guest-readable portal paths (Option A — public research & market hubs). */
 export function isGuestReadablePortalPath(pathname: string): boolean {
@@ -39,21 +21,18 @@ export function isGuestReadablePortalPath(pathname: string): boolean {
 
 export const PUBLIC_SITEMAP_STATIC: { path: string; changeFrequency: ChangeFrequency; priority: number }[] = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
-  { path: "/Home", changeFrequency: "hourly", priority: 0.95 },
-  { path: "/markets", changeFrequency: "hourly", priority: 0.95 },
-  { path: "/economy", changeFrequency: "daily", priority: 0.9 },
-  { path: "/funds", changeFrequency: "daily", priority: 0.85 },
-  { path: "/companies", changeFrequency: "daily", priority: 0.9 },
-  { path: "/trade", changeFrequency: "daily", priority: 0.85 },
-  { path: "/intelligence", changeFrequency: "hourly", priority: 0.8 },
+  { path: HUBS.today.route, changeFrequency: "hourly", priority: 0.95 },
+  { path: HUBS.markets.route, changeFrequency: "hourly", priority: 0.95 },
+  { path: HUBS.economy.route, changeFrequency: "daily", priority: 0.9 },
+  { path: HUBS.funds.route, changeFrequency: "daily", priority: 0.85 },
+  { path: HUBS.companies.route, changeFrequency: "daily", priority: 0.9 },
+  { path: HUBS.trade.route, changeFrequency: "daily", priority: 0.85 },
+  { path: HUBS.data.route, changeFrequency: "daily", priority: 0.6 },
   { path: "/intelligence/scanner", changeFrequency: "daily", priority: 0.85 },
-  { path: "/pricing", changeFrequency: "weekly", priority: 0.75 },
   { path: "/intelligence/trade-lab", changeFrequency: "daily", priority: 0.9 },
   { path: "/research/ai-desk", changeFrequency: "daily", priority: 0.95 },
-  { path: "/intelligence/alerts", changeFrequency: "daily", priority: 0.8 },
   { path: "/research/options-flow", changeFrequency: "daily", priority: 0.8 },
-  { path: "/intelligence/brief", changeFrequency: "daily", priority: 0.85 },
-  { path: "/intelligence/ai-signals", changeFrequency: "daily", priority: 0.75 },
+  { path: "/pricing", changeFrequency: "weekly", priority: 0.75 },
   { path: "/learn", changeFrequency: "weekly", priority: 0.8 },
   { path: "/help", changeFrequency: "weekly", priority: 0.7 },
   { path: "/methodology", changeFrequency: "monthly", priority: 0.7 },
@@ -105,6 +84,6 @@ export const ROBOTS_DISALLOW_PREFIXES = [
   "/onboarding",
   "/portfolio/",
   "/profile",
-  "/algo",
+  "/intelligence/scanner",
   "/worldmonitor",
 ];

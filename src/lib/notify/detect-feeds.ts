@@ -55,7 +55,7 @@ export async function detectFeedUpdates(): Promise<NewEvent[]> {
           severity: c.totalMentions7D >= 15 ? "high" : "medium",
           title: `Retail Reddit activity: ${c.symbol} (${c.totalMentions7D} posts this week)`,
           body: `${c.totalMentions7D} real Reddit mentions across tracked India communities. Net sentiment (keyword-based): ${c.netSentimentScore > 0 ? "+" : ""}${c.netSentimentScore}.`,
-          href: "/intelligence/reddit",
+          href: "/companies?section=retail-sentiment",
         });
       }
     }

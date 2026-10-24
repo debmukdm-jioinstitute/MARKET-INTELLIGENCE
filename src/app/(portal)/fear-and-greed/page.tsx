@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = pageMetadata({
   title: "Fear & Greed Index | Market Intelligence",
   description: "Indian stock market sentiment indicator combining breadth, momentum, VIX, PCR, and FII flows.",
-  path: "/fear-and-greed",
+  path: "/markets?section=fear-greed",
 });
 
 const FACTORS = [

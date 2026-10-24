@@ -20,7 +20,7 @@ export default function PortfolioHub() {
   return (
     <HubPage
       hub="portfolio"
-      fullHrefs={{ watchlist: "/portfolio/watchlist", allocation: "/portfolio/allocation", activity: "/portfolio/activity", risk: "/portfolio/risk", attribution: "/portfolio/attribution", factors: "/portfolio/quant", optimizer: "/portfolio/optimizer", tax: "/portfolio/tax" }}
+      fullHrefs={{ watchlist: "/portfolio?section=watchlist", allocation: "/portfolio?section=allocation", activity: "/portfolio?section=activity", risk: "/portfolio?section=risk", attribution: "/portfolio?section=attribution", factors: "/portfolio?section=factors", optimizer: "/portfolio?section=optimizer", tax: "/portfolio?section=tax" }}
       slots={{
         overview: <Overview />,
         watchlist: <Watchlist />,

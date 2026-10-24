@@ -119,7 +119,7 @@ const PROVENANCE: Record<FeedSourceId, FeedSourceProvenance> = {
   },
   rsswire: {
     provider: "Custom RSS",
-    url: "https://getmarketintelligence.in/data/feeds",
+    url: "https://getmarketintelligence.in/data?section=feeds",
     fetchMethod: "Extra feeds from FEED_RSS_URLS — `src/lib/feeds/open-news-config.ts`",
   },
 };

@@ -30,7 +30,7 @@ export default function WatchlistPage() {
         subtitle="Names you're keeping an eye on — add from a research page, the command palette, or ask Ask Deb."
       />
 
-      {locked ? <SignInRequiredBanner feature="a watchlist" nextPath="/portfolio/watchlist" /> : null}
+      {locked ? <SignInRequiredBanner feature="a watchlist" nextPath="/portfolio?section=watchlist" /> : null}
       {!locked && !dbConfigured ? (
         <p className="rounded-lg border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
           Watchlists need a database, which isn't configured on this deployment yet.

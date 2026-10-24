@@ -74,7 +74,7 @@ export const MACRO_SECTIONS: {
     id: "global",
     title: "Global macro",
     subtitle: "US, China, Europe, crude, DXY, VIX, US 10Y",
-    href: "/macro/global",
+    href: "/economy?section=global-data",
     accent: "#a78bfa",
   },
 ];

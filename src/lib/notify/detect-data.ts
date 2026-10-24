@@ -50,14 +50,14 @@ export function diffSignals(prev: SignalsRun | null, cur: SignalsRun): NewEvent[
       severity: "medium",
       title: `Nifty model lean turned ${b.toLowerCase()} for the next session`,
       body: `P(up) ${(cur.nifty.pUp1 * 100).toFixed(0)}% (was ${a}). Check the model's track record before relying on it — it has not beaten the always-up baseline.`,
-      href: "/intelligence/ai-signals",
+      href: "/trade?section=ai-signals",
     });
   }
   if (prev && prev.lastBar !== cur.lastBar) {
     const before = new Set(prev.stocks.btst.map((x) => x.symbol));
     const fresh = cur.stocks.btst.filter((x) => !before.has(x.symbol) && x.pUp >= 0.8);
     if (fresh.length >= 3)
-      ev.push({ key: `ai:btst:${cur.lastBar}`, category: "ai", severity: "info", title: `${fresh.length} new high-conviction BTST candidates`, body: `${list(fresh)} (model P(up) ≥ 80%).`, href: "/intelligence/ai-signals" });
+      ev.push({ key: `ai:btst:${cur.lastBar}`, category: "ai", severity: "info", title: `${fresh.length} new high-conviction BTST candidates`, body: `${list(fresh)} (model P(up) ≥ 80%).`, href: "/trade?section=ai-signals" });
   }
   return ev;
 }

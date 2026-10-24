@@ -537,13 +537,13 @@ PDF: ${d.pdfUrl}` : ""}`;
       {/* 4. Bottom Navigation Links */}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
         <Link
-          href="/research"
+          href="/companies?section=broker-consensus"
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 shadow-2xs"
         >
           Research a company <ArrowUpRight className="size-4" />
         </Link>
         <Link
-          href="/intelligence"
+          href="/Home?section=feed"
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted/50"
         >
           Back to Intelligence Hub

@@ -36,7 +36,10 @@ export function HubSection({ id, title, fullHref, force = false, minHeight = 320
           </Link>
         ) : null}
       </div>
-      <Deferred force={force} minHeight={minHeight}>{children}</Deferred>
+      {/* The section heading above is the title; embedded pages keep theirs for screen readers only. */}
+      <div className="[&_[data-page-kicker]]:hidden [&_[data-page-title]]:sr-only [&_h1]:sr-only">
+        <Deferred force={force} minHeight={minHeight}>{children}</Deferred>
+      </div>
     </section>
   );
 }

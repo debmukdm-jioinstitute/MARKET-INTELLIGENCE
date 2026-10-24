@@ -53,7 +53,7 @@ export function BacktestDashboard() {
 
   if (isLoading) return <div className="py-8 flex justify-center"><GlassLoader variant="card" message="Loading quantitative backtest..." detail="Evaluating rule performance and Sharpe metrics across historical data" statusBadge="QUANT BACKTEST ENGINE" /></div>;
   if (isAuthRequiredError(error)) {
-    return <SignInRequiredBanner feature="scanner backtests" nextPath="/intelligence/backtesting" />;
+    return <SignInRequiredBanner feature="scanner backtests" nextPath="/trade?section=backtesting" />;
   }
   if (!run) {
     return (

@@ -114,7 +114,7 @@ export default function AdminPortalPagesPage() {
 <button
             type="button"
             disabled={busy !== null}
-            onClick={() => bulkPrefix("/macro", { enabled: true, locked: false })}
+            onClick={() => bulkPrefix("/economy", { enabled: true, locked: false })}
             className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             Enable all macro routes

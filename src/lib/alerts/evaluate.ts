@@ -43,7 +43,7 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
     if (rule.channels.includes("push") && hasPushConfigured()) {
       const subs = (await db`SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_email = ${rule.userEmail}`) as PushSubscriptionRow[];
       for (const sub of subs) {
-        const r = await sendPush(sub, { title: `Alert: ${rule.name}`, body: detail.join(" · "), url: "/intelligence/alerts" });
+        const r = await sendPush(sub, { title: `Alert: ${rule.name}`, body: detail.join(" · "), url: "/trade?section=alerts" });
         if (r.ok) pushSent++;
         else if (r.expired) await db`DELETE FROM push_subscriptions WHERE endpoint = ${sub.endpoint}`;
       }
@@ -56,7 +56,7 @@ export async function evaluateRules(metrics: MetricValues, dry = false): Promise
         badge: "ALERT",
         title: safeName,
         contentHtml: `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3c4043;">${detailHtml}</p>`,
-        primaryCta: { label: "Manage alert rules →", href: `${site}/intelligence/alerts` },
+        primaryCta: { label: "Manage alert rules →", href: `${site}/trade?section=alerts` },
         footnote: "Rules are checked every 3 hours. Not investment advice.",
         siteUrl: site,
       });

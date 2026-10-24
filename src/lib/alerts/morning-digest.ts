@@ -61,7 +61,7 @@ export async function sendMorningAlertDigests(): Promise<{ usersDigested: number
             contentHtml:
               `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3c4043;">${digest.replace(/</g, "&lt;")}</p>` +
               attention,
-            primaryCta: { label: "Manage alert rules →", href: `${site}/intelligence/alerts` },
+            primaryCta: { label: "Manage alert rules →", href: `${site}/trade?section=alerts` },
             footnote: "Not investment advice.",
             siteUrl: site,
           }),

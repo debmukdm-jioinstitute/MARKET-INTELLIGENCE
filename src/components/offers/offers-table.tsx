@@ -328,7 +328,7 @@ export function OffersHubLinks() {
   return (
     <p className="text-sm text-muted-foreground">
       Also see{" "}
-      <Link href="/research/ipo" className="font-medium text-primary hover:underline">
+      <Link href="/companies?section=ipo" className="font-medium text-primary hover:underline">
         IPO tracker (Upstox + GMP)
       </Link>
       .

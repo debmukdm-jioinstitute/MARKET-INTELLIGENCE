@@ -4,6 +4,7 @@ import { formatDate } from "@/lib/format";
 import { breadthHeadline, indexHeadline } from "@/lib/story";
 
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import useSWR from "swr";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -33,7 +34,7 @@ import { HUBS } from "@/lib/hubs";
 import { HubJumpNav } from "@/components/hub/hub-jump-nav";
 import { HubSection } from "@/components/hub/hub-section";
 import { StartHere } from "@/components/hub/start-here";
-import { useHubSectionParam } from "@/components/hub/use-hub-section-param";
+import { HubSectionParam } from "@/components/hub/use-hub-section-param";
 import CalendarSection from "@/components/hub/calendar-section";
 import DailyBrief from "@/app/(portal)/intelligence/brief/page";
 import IntelligenceFeed from "@/app/(portal)/intelligence/page";
@@ -81,10 +82,10 @@ export default function DashboardPage() {
   const portfolioUpTop = authenticated && portfolio.holdings.length > 0;
   const [force, setForce] = useState<string | null>(null);
   const onTarget = useCallback((id: string) => setForce(id), []);
-  useHubSectionParam(onTarget);
   const chips = HUBS.today.sections.map((x) => ({ id: x.id, label: x.label }));
   return (
     <>
+    <Suspense fallback={null}><HubSectionParam onTarget={onTarget} /></Suspense>
     <HubJumpNav chips={chips} label="Today" onJump={onTarget} />
     <div
       data-home-dashboard
@@ -142,10 +143,10 @@ export default function DashboardPage() {
       {authenticated ? <InstallAppPrompt /> : null}
     </div>
     <div className="mx-auto mt-8 max-w-[1440px] space-y-8 px-3 pb-12 sm:px-6">
-      <HubSection id="brief" title="Daily brief" force={force === "brief"} fullHref="/intelligence/brief"><DailyBrief /></HubSection>
-      <HubSection id="calendar" title="Calendar" force={force === "calendar"}><CalendarSection /></HubSection>
-      <HubSection id="feed" title="Intelligence feed" force={force === "feed"} fullHref="/intelligence"><IntelligenceFeed /></HubSection>
-      <HubSection id="world-monitor" title="World monitor" force={force === "world-monitor"} fullHref="/intelligence/world-monitor"><WorldMonitorPageShell><WorldMonitorFreeDashboard /></WorldMonitorPageShell></HubSection>
+      <HubSection id="brief" title="Daily brief" force={force === "brief"}><DailyBrief /></HubSection>
+      <HubSection id="calendar" title="Economic calendar" force={force === "calendar"}><CalendarSection /></HubSection>
+      <HubSection id="feed" title="Intelligence feed" force={force === "feed"}><IntelligenceFeed /></HubSection>
+      <HubSection id="world-monitor" title="World monitor" force={force === "world-monitor"}><WorldMonitorPageShell><WorldMonitorFreeDashboard /></WorldMonitorPageShell></HubSection>
       <HubSection id="start-here" title="Start here" force={force === "start-here"}><StartHere /></HubSection>
     </div>
     </>

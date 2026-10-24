@@ -74,7 +74,7 @@ export function IpoPanel({ symbol, currentPrice }: IpoPanelProps) {
       title="IPO & Listing History"
       subtitle="Public offering parameters and cumulative post-listing performance."
       action={
-        <Link href="/research/ipo" className="text-sm font-semibold text-primary hover:underline">
+        <Link href="/companies?section=ipo" className="text-sm font-semibold text-primary hover:underline">
           IPO & GMP Tracker →
         </Link>
       }

@@ -37,7 +37,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.nifty?.change, pulse?.nifty?.changePct),
       isUp: (pulse?.nifty?.changePct ?? 0) >= 0,
       neutral: pulse?.nifty?.changePct == null,
-      href: "/markets/india",
+      href: "/markets?section=india",
       category: "DOMESTIC",
     },
     {
@@ -47,7 +47,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.sensex?.change, pulse?.sensex?.changePct),
       isUp: (pulse?.sensex?.changePct ?? 0) >= 0,
       neutral: pulse?.sensex?.changePct == null,
-      href: "/markets/india",
+      href: "/markets?section=india",
       category: "DOMESTIC",
     },
     {
@@ -57,7 +57,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.bankNifty?.change, pulse?.bankNifty?.changePct),
       isUp: (pulse?.bankNifty?.changePct ?? 0) >= 0,
       neutral: pulse?.bankNifty?.changePct == null,
-      href: "/markets/india",
+      href: "/markets?section=india",
       category: "DOMESTIC",
     },
     {
@@ -67,7 +67,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.indiaVix?.change, pulse?.indiaVix?.changePct),
       isUp: (pulse?.indiaVix?.changePct ?? 0) < 0, // lower VIX is green for equity
       neutral: pulse?.indiaVix?.changePct == null,
-      href: "/markets/india",
+      href: "/markets?section=india",
       category: "DOMESTIC",
     },
     {
@@ -77,7 +77,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(spx?.change, spx?.changePct),
       isUp: (spx?.changePct ?? 0) >= 0,
       neutral: spx?.changePct == null,
-      href: "/macro/indices",
+      href: "/markets?section=world",
       category: "GLOBAL",
     },
     {
@@ -87,7 +87,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(ndx?.change, ndx?.changePct),
       isUp: (ndx?.changePct ?? 0) >= 0,
       neutral: ndx?.changePct == null,
-      href: "/macro/indices",
+      href: "/markets?section=world",
       category: "GLOBAL",
     },
     {
@@ -97,7 +97,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: "Neutral",
       isUp: true,
       neutral: true,
-      href: "/macro/yields",
+      href: "/economy?section=yields",
       category: "MACRO",
     },
     {
@@ -107,7 +107,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(us10y?.change, us10y?.changePct),
       isUp: (us10y?.changePct ?? 0) <= 0,
       neutral: us10y?.changePct == null,
-      href: "/macro/yields",
+      href: "/economy?section=yields",
       category: "MACRO",
     },
     {
@@ -117,7 +117,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.usdInr?.change, pulse?.usdInr?.changePct),
       isUp: (pulse?.usdInr?.changePct ?? 0) <= 0, // lower USDINR is stronger Rupee
       neutral: pulse?.usdInr?.changePct == null,
-      href: "/macro/currency",
+      href: "/markets?section=currency",
       category: "COMMODITY",
     },
     {
@@ -127,7 +127,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.brent?.change, pulse?.brent?.changePct),
       isUp: (pulse?.brent?.changePct ?? 0) <= 0, // lower crude is positive for India
       neutral: pulse?.brent?.changePct == null,
-      href: "/macro/commodities",
+      href: "/markets?section=commodities",
       category: "COMMODITY",
     },
     {
@@ -137,7 +137,7 @@ export function HomeTickerTape({ data }: HomeTickerTapeProps) {
       change: fmtMove(pulse?.gold?.change, pulse?.gold?.changePct),
       isUp: (pulse?.gold?.changePct ?? 0) >= 0,
       neutral: pulse?.gold?.changePct == null,
-      href: "/macro/commodities",
+      href: "/markets?section=commodities",
       category: "COMMODITY",
     },
   ];

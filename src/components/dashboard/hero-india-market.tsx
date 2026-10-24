@@ -200,10 +200,10 @@ export function HeroIndiaMarket({ data }: HeroIndiaMarketProps) {
           { label: "NIFTY 50", href: "/markets/india/nifty50" },
           { label: "SENSEX", href: "/markets/india/sensex" },
           { label: "BANK NIFTY", href: "/markets/india/banknifty" },
-          { label: "Breadth Desk", href: "/markets/breadth" },
-          { label: "Valuation", href: "/markets/sectors?tab=valuation" },
+          { label: "Breadth Desk", href: "/markets?section=breadth" },
+          { label: "Valuation", href: "/markets?section=valuation" },
           { label: "Momentum", href: "/markets/breadth#momentum" },
-          { label: "F&O Desk", href: "/markets/derivatives" },
+          { label: "F&O Desk", href: "/trade?section=derivatives" },
         ].map((sub) => (
           <Link
             key={sub.label}

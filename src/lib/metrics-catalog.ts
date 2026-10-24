@@ -792,7 +792,7 @@ cpi: {
     name: "Jensen's Alpha (vs NIFTY 50)",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/attribution",
+    defaultUrl: "/portfolio?section=attribution",
     calculation:
       "Jensen's Alpha = Portfolio Return − [Risk-Free Rate + Beta × (Benchmark Return − Risk-Free Rate)], annualized over 252 trading days.",
     laymanExplanation:
@@ -805,7 +805,7 @@ cpi: {
     name: "Portfolio Beta",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/risk",
+    defaultUrl: "/portfolio?section=risk",
     calculation:
       "Beta = Covariance(Daily Portfolio Returns, Daily Benchmark Returns) ÷ Variance(Daily Benchmark Returns). Calculated over trailing 252 trading sessions.",
     laymanExplanation:
@@ -818,7 +818,7 @@ cpi: {
     name: "Sharpe Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/quant",
+    defaultUrl: "/portfolio?section=factors",
     calculation:
       "Sharpe Ratio = (Annualized Portfolio Return − Annualized Risk-Free Rate) ÷ Annualized Portfolio Volatility (Standard Deviation × √252).",
     laymanExplanation:
@@ -831,7 +831,7 @@ cpi: {
     name: "Maximum Drawdown (Peak-to-Trough Loss)",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/risk",
+    defaultUrl: "/portfolio?section=risk",
     calculation:
       "MDD = Min [(NAV_t − Peak NAV_τ) ÷ Peak NAV_τ] for all τ ≤ t over the historical evaluation window.",
     laymanExplanation:
@@ -844,7 +844,7 @@ cpi: {
     name: "Sector / Asset Concentration",
     category: "Portfolio Risk",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/allocation",
+    defaultUrl: "/portfolio?section=allocation",
     calculation:
       "Sector Weight % = [Σ (Market Value of Holdings in Sector_k) ÷ Total Portfolio NAV] × 100.",
     laymanExplanation:
@@ -898,7 +898,7 @@ cpi: {
     name: "Bond-Equity Yield Spread",
     category: "Valuation Multiples",
     provider: "Antigravity Cross-Asset Engine",
-    defaultUrl: "/markets/sectors?tab=valuation",
+    defaultUrl: "/markets?section=valuation",
     calculation:
       "Yield Spread (bps) = 10Y G-Sec Sovereign Yield − NIFTY 50 Earnings Yield (where Earnings Yield = 1 / P/E × 100).",
     laymanExplanation:
@@ -1060,7 +1060,7 @@ cpi: {
     name: "McClellan Oscillator",
     category: "Market Internals",
     provider: "Computed on NSE Daily Net Advances",
-    defaultUrl: "/markets/breadth",
+    defaultUrl: "/markets?section=breadth",
     calculation:
       "McClellan Oscillator = 19-Day EMA of (Advances − Declines) − 39-Day EMA of (Advances − Declines).",
     laymanExplanation:
@@ -1112,7 +1112,7 @@ cpi: {
     name: "Earnings Yield (E/P)",
     category: "Valuation Multiples",
     provider: "NSE India / Valuation Desk",
-    defaultUrl: "/markets/sectors?tab=valuation",
+    defaultUrl: "/markets?section=valuation",
     calculation:
       "Earnings Yield % = (1 ÷ P/E Ratio) × 100 = Aggregate Net Profits (PAT) ÷ Total Market Capitalization.",
     laymanExplanation:
@@ -1125,7 +1125,7 @@ cpi: {
     name: "Buffett Indicator (Market Cap to GDP)",
     category: "Valuation Multiples",
     provider: "MOSPI & BSE Listed Equities Aggregate",
-    defaultUrl: "/markets/sectors?tab=valuation",
+    defaultUrl: "/markets?section=valuation",
     calculation:
       "Buffett Indicator % = (Total Market Capitalization of all domestic listed companies ÷ Nominal Annual GDP) × 100.",
     laymanExplanation:
@@ -1138,7 +1138,7 @@ cpi: {
     name: "Buffett Indicator (Market Cap to GDP)",
     category: "Valuation Multiples",
     provider: "MOSPI & BSE Listed Equities Aggregate",
-    defaultUrl: "/markets/sectors?tab=valuation",
+    defaultUrl: "/markets?section=valuation",
     calculation:
       "Buffett Indicator % = (Total Market Capitalization of all domestic listed companies ÷ Nominal Annual GDP) × 100.",
     laymanExplanation:
@@ -1177,7 +1177,7 @@ cpi: {
     name: "Value at Risk (95% 1-Day VaR)",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Risk Engine",
-    defaultUrl: "/portfolio/risk",
+    defaultUrl: "/portfolio?section=risk",
     calculation:
       "Parametric VaR = NAV × [Z_0.95 × σ_daily − μ_daily], where Z_0.95 = 1.645, based on rolling 252-day covariance matrix.",
     laymanExplanation:
@@ -1190,7 +1190,7 @@ cpi: {
     name: "Conditional VaR / Expected Shortfall (CVaR 95%)",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Risk Engine",
-    defaultUrl: "/portfolio/risk",
+    defaultUrl: "/portfolio?section=risk",
     calculation:
       "CVaR = Expected value of loss given that the loss exceeds the 95% VaR cutoff: E[Loss | Loss > VaR_0.95].",
     laymanExplanation:
@@ -1203,7 +1203,7 @@ cpi: {
     name: "Sortino Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/portfolio/quant",
+    defaultUrl: "/portfolio?section=factors",
     calculation:
       "Sortino Ratio = (Portfolio Return − Risk-Free Rate) ÷ Downside Deviation (Semi-standard deviation of negative returns only).",
     laymanExplanation:
@@ -1216,7 +1216,7 @@ cpi: {
     name: "Treynor Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/portfolio/quant",
+    defaultUrl: "/portfolio?section=factors",
     calculation:
       "Treynor Ratio = (Portfolio Return − Risk-Free Rate) ÷ Portfolio Beta.",
     laymanExplanation:
@@ -1229,7 +1229,7 @@ cpi: {
     name: "Tracking Error",
     category: "Portfolio Risk",
     provider: "Antigravity Quantitative Engine",
-    defaultUrl: "/portfolio/attribution",
+    defaultUrl: "/portfolio?section=attribution",
     calculation:
       "Tracking Error = Annualized standard deviation of the difference between portfolio returns and benchmark returns: σ(R_p − R_b) × √252.",
     laymanExplanation:
@@ -1242,7 +1242,7 @@ cpi: {
     name: "Information Ratio",
     category: "Portfolio Performance",
     provider: "Antigravity Institutional Analytics",
-    defaultUrl: "/portfolio/attribution",
+    defaultUrl: "/portfolio?section=attribution",
     calculation:
       "Information Ratio = Active Return (Portfolio Return − Benchmark Return) ÷ Tracking Error.",
     laymanExplanation:
@@ -1268,7 +1268,7 @@ cpi: {
     name: "IPO Grey Market Premium (GMP)",
     category: "Corporate Disclosures",
     provider: "Unofficial Inter-dealer OTC Desk / Exchange Surveillance",
-    defaultUrl: "/research/ipo",
+    defaultUrl: "/companies?section=ipo",
     calculation:
       "GMP = Unofficial OTC forward price quoted before stock listing − Official IPO issue price. Expected listing gain % = (GMP ÷ Issue Price) × 100.",
     laymanExplanation:
@@ -1281,7 +1281,7 @@ cpi: {
     name: "IPO Subscription Bidding Multiple",
     category: "Corporate Disclosures",
     provider: "NSE / BSE Official Bidding Platforms",
-    defaultUrl: "/research/ipo",
+    defaultUrl: "/companies?section=ipo",
     calculation:
       "Subscription Multiple = Total Number of Shares Applied For ÷ Total Number of Shares Offered in the Tranche (QIB, NII/HNI, Retail).",
     laymanExplanation:

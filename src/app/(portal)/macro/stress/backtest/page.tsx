@@ -24,7 +24,7 @@ export default function StressBacktestPage() {
         title="Does the Stress Index Predict Anything?"
         subtitle="A historical test of the stress index's market-based inputs against what NIFTY did over the following 5–10 trading days. It is published whichever way the answer comes out."
       />
-      <Link href="/macro/stress" className="text-sm text-blue-600 hover:underline">← Back to the Stress Index</Link>
+      <Link href="/economy?section=macro-stress" className="text-sm text-blue-600 hover:underline">← Back to the Stress Index</Link>
       {isLoading ? <p className="text-sm text-muted-foreground">Running the backtest… (about 10 seconds the first time)</p> : null}
       {error ? <p className="text-sm text-rose-600">Unavailable: {error.message}</p> : null}
 

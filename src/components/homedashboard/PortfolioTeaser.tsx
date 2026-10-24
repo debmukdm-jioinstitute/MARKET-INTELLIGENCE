@@ -50,7 +50,7 @@ export function PortfolioTeaser({
               </div>
             </div>
             <HomeLink
-              href="/portfolio/watchlist"
+              href="/portfolio?section=watchlist"
               onClick={homeActions.trackStock}
             >
               Create a free watchlist

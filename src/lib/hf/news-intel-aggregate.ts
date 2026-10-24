@@ -258,7 +258,7 @@ export function computeMultiPillarSentiment(params: {
       { label: "INDIA VIX", value: vixPrice ? vixPrice.toFixed(2) : "—", changePct: vixPct / 100, isPositive: vixPct <= 0 },
       { label: "Declines/Adv", value: totalTraded > 0 ? `${dec.toLocaleString("en-IN")} / ${adv.toLocaleString("en-IN")}` : "—", isPositive: declineRatio < 0.5 },
     ],
-    href: "/markets/india",
+    href: "/markets?section=india",
   };
 
   // 2. GLOBAL MARKETS & DISPARITY PILLAR
@@ -323,7 +323,7 @@ export function computeMultiPillarSentiment(params: {
       { label: "NIKKEI 225", value: nikkei?.price ? nikkei.price.toFixed(1) : "—", changePct: nikkei?.changePct, isPositive: (nikkei?.changePct ?? 0) >= 0 },
       { label: "Regional Spread", value: `${disparitySpread.toFixed(2)}%`, isPositive: !isHighDisparity },
     ],
-    href: "/macro/global",
+    href: "/economy?section=global-data",
   };
 
   // 3. COMMODITY & ENERGY PILLAR
@@ -371,7 +371,7 @@ export function computeMultiPillarSentiment(params: {
       { label: "Gold (Safe Haven)", value: gold?.price ? `$${gold.price.toFixed(0)}` : "—", changePct: gold?.changePct, isPositive: true },
       { label: "Silver", value: silver?.price ? `$${silver.price.toFixed(2)}` : "—", changePct: silver?.changePct, isPositive: true },
     ],
-    href: "/macro/commodities",
+    href: "/markets?section=commodities",
   };
 
   // 4. CURRENCY & CAPITAL FLOWS (FX) PILLAR
@@ -416,7 +416,7 @@ export function computeMultiPillarSentiment(params: {
       { label: "Dollar Index (DXY)", value: f2(dxyPrice), changePct: dxy?.changePct, isPositive: (dxy?.changePct ?? 0) <= 0 },
       { label: "EUR/INR", value: eurInr?.price ? `₹${eurInr.price.toFixed(2)}` : "—", changePct: eurInr?.changePct, isPositive: (eurInr?.changePct ?? 0) <= 0 },
     ],
-    href: "/macro/currency",
+    href: "/markets?section=currency",
   };
 
   // 5. NEWS & REGULATORY PILLAR
@@ -520,7 +520,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.negative.push({
       id: `driver-sector-${weakestSector.label.toLowerCase()}`,
       title: `${weakestSector.label} sector plunged ${weakestSector.chg.toFixed(2)}% under heavy selling`,
-      url: "/markets/sectors",
+      url: "/markets?section=sectors",
       source: "nse",
       sourceLabel: "NSE Sectors",
       reason: "Cyclical sector liquidation exerting downside index drag (-ve)",
@@ -531,7 +531,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.positive.push({
       id: `driver-sector-${strongestSector.label.toLowerCase()}`,
       title: `${strongestSector.label} sector surged +${strongestSector.chg.toFixed(2)}% showing defensive strength`,
-      url: "/markets/sectors",
+      url: "/markets?section=sectors",
       source: "nse",
       sourceLabel: "NSE Sectors",
       reason: "Outperforming sectoral tailwind cushioning downside (+ve)",
@@ -553,7 +553,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.negative.push({
       id: "driver-vix-spike",
       title: `INDIA VIX spiked +${vixPct.toFixed(2)}% to ${vixPrice?.toFixed(2)}`,
-      url: "/markets/india",
+      url: "/markets?section=india",
       source: "nse",
       sourceLabel: "NSE India",
       reason: "Volatility expansion reflecting heightened hedging demand (-ve)",
@@ -575,7 +575,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.positive.push({
       id: "driver-nikkei-resilience",
       title: `Japan Nikkei 225 surged +${nikkeiPct.toFixed(2)}% to ${nikkei?.price?.toFixed(0)}`,
-      url: "/macro/global",
+      url: "/economy?section=global-data",
       source: "tse",
       sourceLabel: "Tokyo Stock Exchange",
       reason: "Global disparity outlier showing selective Asian equity resilience (+ve)",

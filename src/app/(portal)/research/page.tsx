@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
   title: "Broker Research Notes Aggregator",
   description:
     "Equity research notes collected from public publications of Indian institutional desks (Motilal Oswal, Kotak, ICICI Sec, HDFC Sec, etc.), with target prices and recommendations exactly as published.",
-  path: "/research",
+  path: "/companies?section=broker-consensus",
 });
 
 /** Real ingested research notes (research_reports table). Empty array when none ingested. */
@@ -148,15 +148,15 @@ export default async function ResearchPage() {
           Learn guides
         </Link>{" "}
         ·{" "}
-        <Link href="/research/ipo" className="font-medium text-primary hover:underline">
+        <Link href="/companies?section=ipo" className="font-medium text-primary hover:underline">
           IPO tracker
         </Link>{" "}
         ·{" "}
-        <Link href="/research/offers" className="font-medium text-primary hover:underline">
+        <Link href="/companies?section=offers" className="font-medium text-primary hover:underline">
           NCD · rights · buyback · OFS
         </Link>{" "}
         ·{" "}
-        <Link href="/research-reports" className="font-medium text-primary hover:underline">
+        <Link href="/companies?section=research-notes" className="font-medium text-primary hover:underline">
           Raw Research PDFs Archive
         </Link>
       </p>

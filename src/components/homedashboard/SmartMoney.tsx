@@ -11,7 +11,7 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
         title="Where is the big money going?"
         detail="Foreign and domestic institutions. Look for the pattern, not just the number."
         action={
-          <HomeLink href="/intelligence/institutional">
+          <HomeLink href="/funds?section=institutional">
             Follow the money
           </HomeLink>
         }

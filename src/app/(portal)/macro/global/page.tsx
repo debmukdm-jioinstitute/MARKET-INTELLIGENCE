@@ -30,7 +30,7 @@ export default function GlobalMacroPage() {
 
       <p className="mb-4 text-sm text-muted-foreground">
         Live equity benchmarks (Americas, Europe, Asia, India) with ranges and charts on{" "}
-        <Link href="/macro/indices" className="font-medium text-primary hover:underline">
+        <Link href="/markets?section=world" className="font-medium text-primary hover:underline">
           World indices
         </Link>
         .

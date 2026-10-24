@@ -223,7 +223,7 @@ export function ResearchSymbolClient({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
-          <Link href="/research" className="text-primary hover:underline font-medium">← Research home</Link>
+          <Link href="/companies?section=broker-consensus" className="text-primary hover:underline font-medium">← Research home</Link>
           {data?.fetchedAt ? ` · Updated ${new Date(data.fetchedAt).toLocaleString()}` : null}
         </p>
       </div>

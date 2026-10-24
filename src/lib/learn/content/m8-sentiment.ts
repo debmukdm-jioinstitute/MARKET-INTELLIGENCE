@@ -38,8 +38,8 @@ export const SENTIMENT: LearnModule = {
         "Use the brief as a map; verify what matters.",
       ],
       tools: [
-        { label: "Daily Brief", href: "/intelligence/brief", blurb: "Pre-market and post-close brief with cited sources." },
-        { label: "Intelligence Feed", href: "/intelligence", blurb: "News scored for sentiment and relevance." },
+        { label: "Daily Brief", href: "/Home?section=brief", blurb: "Pre-market and post-close brief with cited sources." },
+        { label: "Intelligence Feed", href: "/Home?section=feed", blurb: "News scored for sentiment and relevance." },
       ],
       related: ["sentiment-and-ai/retail-sentiment-reddit"],
     },
@@ -71,8 +71,8 @@ export const SENTIMENT: LearnModule = {
         "Cross-check with price, volume and fundamentals.",
       ],
       tools: [
-        { label: "Retail Sentiment", href: "/intelligence/reddit", blurb: "Reddit chatter, mention spikes and bull/bear theses." },
-        { label: "Search Trends", href: "/intelligence/search-trends", blurb: "Search interest in companies, IPOs and sectors." },
+        { label: "Retail Sentiment", href: "/companies?section=retail-sentiment", blurb: "Reddit chatter, mention spikes and bull/bear theses." },
+        { label: "Search Trends", href: "/companies?section=search-trends", blurb: "Search interest in companies, IPOs and sectors." },
       ],
       related: ["sentiment-and-ai/search-trends-attention"],
     },
@@ -100,8 +100,8 @@ export const SENTIMENT: LearnModule = {
         "Best used to gauge crowding and IPO interest.",
       ],
       tools: [
-        { label: "Search Trends", href: "/intelligence/search-trends", blurb: "Google search interest in companies, IPOs and sectors." },
-        { label: "IPO Pipeline", href: "/research/ipo", blurb: "See the search buzz behind upcoming listings." },
+        { label: "Search Trends", href: "/companies?section=search-trends", blurb: "Google search interest in companies, IPOs and sectors." },
+        { label: "IPO Pipeline", href: "/companies?section=ipo", blurb: "See the search buzz behind upcoming listings." },
       ],
       related: ["ipo-primary-market/what-is-ipo-gmp"],
     },
@@ -169,8 +169,8 @@ export const SENTIMENT: LearnModule = {
         "Signals are information, not instructions.",
       ],
       tools: [
-        { label: "AI Signals", href: "/intelligence/ai-signals", blurb: "Next-day model with its published track record." },
-        { label: "Backtesting", href: "/intelligence/backtesting", blurb: "Test ideas against history." },
+        { label: "AI Signals", href: "/trade?section=ai-signals", blurb: "Next-day model with its published track record." },
+        { label: "Backtesting", href: "/trade?section=backtesting", blurb: "Test ideas against history." },
       ],
       related: ["technical-analysis/backtesting-basics"],
     },

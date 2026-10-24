@@ -887,28 +887,28 @@ export function PortfolioDashboardView({
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-stone-100">
               <span className="text-xs font-semibold text-stone-500">Explore in depth:</span>
               <Link
-                href="/portfolio/allocation"
+                href="/portfolio?section=allocation"
                 className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
               >
                 <span>Allocation</span>
                 <ArrowRight className="size-3" />
               </Link>
               <Link
-                href="/portfolio/risk"
+                href="/portfolio?section=risk"
                 className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
               >
                 <span>Risk & VaR</span>
                 <ArrowRight className="size-3" />
               </Link>
               <Link
-                href="/portfolio/attribution"
+                href="/portfolio?section=attribution"
                 className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
               >
                 <span>Attribution</span>
                 <ArrowRight className="size-3" />
               </Link>
               <Link
-                href="/portfolio/quant"
+                href="/portfolio?section=factors"
                 className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
               >
                 <span>Quant</span>

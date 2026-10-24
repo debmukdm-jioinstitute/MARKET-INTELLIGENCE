@@ -55,7 +55,7 @@ export function PortfolioHubExtras({ data }: { data: PortfolioAnalysis }) {
         ) : (
           <p className="text-sm text-muted-foreground">Needs more NAV history.</p>
         )}
-        <Link href="/portfolio/attribution" className="mt-3 inline-block text-sm font-semibold text-blue-600 hover:underline">
+        <Link href="/portfolio?section=attribution" className="mt-3 inline-block text-sm font-semibold text-blue-600 hover:underline">
           Full attribution →
         </Link>
       </Panel>

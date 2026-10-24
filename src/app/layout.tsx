@@ -57,7 +57,7 @@ const orgJsonLd = {
       url: absoluteUrl("/"),
       potentialAction: {
         "@type": "SearchAction",
-        target: `${absoluteUrl("/research")}?q={search_term_string}`,
+        target: `${absoluteUrl("/companies?section=broker-consensus")}?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },

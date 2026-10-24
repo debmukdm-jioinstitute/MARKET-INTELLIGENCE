@@ -79,7 +79,7 @@ export function WhatChangedModule() {
             Refresh
           </button>
           <Link
-            href="/intelligence"
+            href="/Home?section=feed"
             className="group flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
           >
             View Full Intelligence Journal

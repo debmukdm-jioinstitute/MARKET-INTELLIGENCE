@@ -41,7 +41,7 @@ export const PORTFOLIO: LearnModule = {
       ],
       tools: [
         { label: "Portfolio", href: "/portfolio", blurb: "Live positions, NAV and P&L (sign in to save)." },
-        { label: "Allocation", href: "/portfolio/allocation", blurb: "Actual exposure versus your targets." },
+        { label: "Allocation", href: "/portfolio?section=allocation", blurb: "Actual exposure versus your targets." },
       ],
       related: ["portfolio-and-risk/portfolio-risk-metrics", "ownership-and-risk/mutual-fund-holdings-and-overlap"],
     },
@@ -76,8 +76,8 @@ export const PORTFOLIO: LearnModule = {
       ],
       tools: [
         { label: "Portfolio overview", href: "/portfolio", blurb: "Live positions, NAV and P&L." },
-        { label: "Watchlist", href: "/portfolio/watchlist", blurb: "Names you are tracking without a position." },
-        { label: "Activity", href: "/portfolio/activity", blurb: "Every trade and corporate action in one log." },
+        { label: "Watchlist", href: "/portfolio?section=watchlist", blurb: "Names you are tracking without a position." },
+        { label: "Activity", href: "/portfolio?section=activity", blurb: "Every trade and corporate action in one log." },
       ],
       related: ["technical-analysis/alerts-guide"],
     },
@@ -111,8 +111,8 @@ export const PORTFOLIO: LearnModule = {
         "Sharpe compares risk-adjusted return across portfolios.",
       ],
       tools: [
-        { label: "Portfolio Risk", href: "/portfolio/risk", blurb: "Volatility, drawdowns and worst-case estimates." },
-        { label: "Stress Index", href: "/macro/stress", blurb: "Market-wide stress to pair with your own risk." },
+        { label: "Portfolio Risk", href: "/portfolio?section=risk", blurb: "Volatility, drawdowns and worst-case estimates." },
+        { label: "Stress Index", href: "/economy?section=macro-stress", blurb: "Market-wide stress to pair with your own risk." },
       ],
       related: ["portfolio-and-risk/attribution-and-factors"],
     },
@@ -144,8 +144,8 @@ export const PORTFOLIO: LearnModule = {
         "Hidden tilts are hidden risks.",
       ],
       tools: [
-        { label: "Attribution", href: "/portfolio/attribution", blurb: "What drove your returns: sectors or stock picks." },
-        { label: "Factor Exposure", href: "/portfolio/quant", blurb: "Value, momentum and size tilts in your portfolio." },
+        { label: "Attribution", href: "/portfolio?section=attribution", blurb: "What drove your returns: sectors or stock picks." },
+        { label: "Factor Exposure", href: "/portfolio?section=factors", blurb: "Value, momentum and size tilts in your portfolio." },
       ],
       related: ["portfolio-and-risk/rebalancing-and-optimizer"],
     },
@@ -173,8 +173,8 @@ export const PORTFOLIO: LearnModule = {
         "Account for tax and costs before trading.",
       ],
       tools: [
-        { label: "Optimizer", href: "/portfolio/optimizer", blurb: "Rebalance suggestions for your risk level." },
-        { label: "Allocation", href: "/portfolio/allocation", blurb: "See drift against targets." },
+        { label: "Optimizer", href: "/portfolio?section=optimizer", blurb: "Rebalance suggestions for your risk level." },
+        { label: "Allocation", href: "/portfolio?section=allocation", blurb: "See drift against targets." },
       ],
       related: ["portfolio-and-risk/capital-gains-tax-india"],
     },
@@ -211,8 +211,8 @@ export const PORTFOLIO: LearnModule = {
         "Estimates are not tax advice; rules change.",
       ],
       tools: [
-        { label: "Tax", href: "/portfolio/tax", blurb: "Capital-gains view of your holdings." },
-        { label: "Activity", href: "/portfolio/activity", blurb: "Trade log that feeds the estimate." },
+        { label: "Tax", href: "/portfolio?section=tax", blurb: "Capital-gains view of your holdings." },
+        { label: "Activity", href: "/portfolio?section=activity", blurb: "Trade log that feeds the estimate." },
       ],
       related: ["portfolio-and-risk/tracking-holdings-and-watchlist"],
     },

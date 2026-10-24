@@ -26,15 +26,15 @@ export default function MarketsHub() {
       hub="markets"
       minHeights={{ india: 520 }}
       slots={{
-        india: (<><IndiaMarkets /><TsPathCharts path="/markets/india" /><TsPathCharts path="/markets" title="Market breadth history" /></>),
-        world: (<><WorldIndices /><TsPathCharts path="/macro/stress" title="Global stress: US volatility, financial conditions and credit" /><StressSlice kind="global" /></>),
-        currency: (<><Currency /><TsPathCharts path="/macro/currency" /></>),
-        commodities: (<><Commodities /><TsPathCharts path="/macro/commodities" /></>),
-        breadth: (<><Breadth /><TsPathCharts path="/markets/breadth" /></>),
+        india: (<><IndiaMarkets /><TsPathCharts path="/markets?section=india" /><TsPathCharts path="/markets" title="Market breadth history" /></>),
+        world: (<><WorldIndices /><TsPathCharts path="/economy?section=macro-stress" title="Global stress: US volatility, financial conditions and credit" /><StressSlice kind="global" /></>),
+        currency: (<><Currency /><TsPathCharts path="/markets?section=currency" /></>),
+        commodities: (<><Commodities /><TsPathCharts path="/markets?section=commodities" /></>),
+        breadth: (<><Breadth /><TsPathCharts path="/markets?section=breadth" /></>),
         sectors: <Sectors />,
-        valuation: (<><Valuation /><TsPathCharts path="/valuation" title="Index P/E and P/B against their usual range" /></>),
-        activity: (<><Activity /><TsPathCharts path="/activity" /></>),
-        "fear-greed": (<><FearGreed /><TsPathCharts path="/fear-and-greed" /></>),
+        valuation: (<><Valuation /><TsPathCharts path="/markets?section=valuation" title="Index P/E and P/B against their usual range" /></>),
+        activity: (<><Activity /><TsPathCharts path="/markets?section=activity" /></>),
+        "fear-greed": (<><FearGreed /><TsPathCharts path="/markets?section=fear-greed" /></>),
         "market-stress": <StressSlice kind="market" />,
         "flows-teaser": (
           <>

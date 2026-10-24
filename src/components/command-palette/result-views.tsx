@@ -43,7 +43,7 @@ export function IndiaQuoteResultView({ instrument }: { instrument: IndiaInstrume
           <ChangeTag value={quote.ohlc.close ? (quote.ltp - quote.ohlc.close) / quote.ohlc.close : 0} />
         </div>
       ) : null}
-      <Link href="/markets/india" className="inline-block text-sm text-primary hover:underline">
+      <Link href="/markets?section=india" className="inline-block text-sm text-primary hover:underline">
         Open full quote, depth & candles →
       </Link>
     </div>
@@ -68,7 +68,7 @@ export function IndiaFundamentalsResultView({ instrument }: { instrument: IndiaI
           ))}
         </dl>
       ) : null}
-      <Link href="/markets/india" className="inline-block text-sm text-primary hover:underline">
+      <Link href="/markets?section=india" className="inline-block text-sm text-primary hover:underline">
         Open full fundamentals & sector radar →
       </Link>
     </div>
@@ -94,7 +94,7 @@ export function OptionChainResultView({ underlyingKey, label }: { underlyingKey:
           <Stat k="Max pain" v={data.maxPain != null ? data.maxPain.toLocaleString("en-IN") : "—"} />
         </div>
       ) : null}
-      <Link href="/markets/derivatives" className="inline-block text-sm text-primary hover:underline">
+      <Link href="/trade?section=derivatives" className="inline-block text-sm text-primary hover:underline">
         Open full chain with Greeks & IV smile →
       </Link>
     </div>
@@ -127,7 +127,7 @@ export function GlobalQuoteResultView({ instrument }: { instrument: Instrument }
       ) : (
         <p className="text-sm text-muted-foreground">No live quote — simulated tape only.</p>
       )}
-      <Link href="/markets/india" className="inline-block text-sm text-primary hover:underline">
+      <Link href="/markets?section=india" className="inline-block text-sm text-primary hover:underline">
         Open investable universe →
       </Link>
     </div>

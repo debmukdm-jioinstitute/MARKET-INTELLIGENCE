@@ -66,7 +66,7 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
             <LayoutDashboard className="size-3.5" />
             <span>Terminal</span>
           </Link>
-          <Link href="/markets/india" className="transition hover:text-foreground">
+          <Link href="/markets?section=india" className="transition hover:text-foreground">
             Markets
           </Link>
           <Link href="/alpha-league" className="transition hover:text-foreground">Alpha League</Link>
@@ -125,14 +125,14 @@ export function PublicHeader({ backHref, backLabel = "Back" }: PublicHeaderProps
               <span>Terminal Dashboard (/Home)</span>
             </Link>
             <Link
-              href="/markets/india"
+              href="/markets?section=india"
               onClick={() => setMobileMenuOpen(false)}
               className="flex min-h-11 items-center px-3 text-sm font-medium text-foreground hover:bg-accent"
             >
               Live Markets
             </Link>
             <Link
-              href="/macro"
+              href="/economy"
               onClick={() => setMobileMenuOpen(false)}
               className="flex min-h-11 items-center px-3 text-sm font-medium text-foreground hover:bg-accent"
             >

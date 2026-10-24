@@ -25,9 +25,9 @@ export default async function CountryMacroPage({ params }: { params: Promise<{ i
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-1 py-4">
       <div className="flex items-center gap-2 text-xs" style={{ color: "var(--ink-3)" }}>
-        <Link href="/macro" className="hover:underline">Macro</Link>
+        <Link href="/economy" className="hover:underline">Macro</Link>
         <span>/</span>
-        <Link href="/macro/global" className="hover:underline">Global</Link>
+        <Link href="/economy?section=global-data" className="hover:underline">Global</Link>
         <span>/</span>
         <span style={{ color: "var(--ink)" }}>{country.name}</span>
       </div>
@@ -42,7 +42,7 @@ export default async function CountryMacroPage({ params }: { params: Promise<{ i
             </p>
           </div>
         </div>
-        <Link href="/macro/global" className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted" style={{ borderColor: "var(--rule)", color: "var(--ink)" }}>
+        <Link href="/economy?section=global-data" className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-muted" style={{ borderColor: "var(--rule)", color: "var(--ink)" }}>
           ← All 23 countries
         </Link>
       </header>

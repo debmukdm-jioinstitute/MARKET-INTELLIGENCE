@@ -4,10 +4,10 @@ import type { Shocks } from "@/lib/transmission/scenario";
 
 /** Where each global driver is analysed on the site (one click away). */
 export const DRIVER_META: Record<FactorId, { label: string; short: string; href: string; cta: string; unitNote: string }> = {
-  brent: { label: "Brent crude", short: "crude", href: "/macro/commodities", cta: "See crude prices", unitNote: "per +1% in Brent" },
-  usdinr: { label: "USD/INR", short: "the rupee", href: "/macro/currency", cta: "See rupee & currency", unitNote: "per +1% in USD/INR" },
-  us10y: { label: "US 10Y yield", short: "US yields", href: "/macro/yields", cta: "See yields", unitNote: "per +10bp in US 10Y" },
-  spx: { label: "S&P 500", short: "Wall Street", href: "/macro/global", cta: "See global markets", unitNote: "per +1% in S&P 500" },
+  brent: { label: "Brent crude", short: "crude", href: "/markets?section=commodities", cta: "See crude prices", unitNote: "per +1% in Brent" },
+  usdinr: { label: "USD/INR", short: "the rupee", href: "/markets?section=currency", cta: "See rupee & currency", unitNote: "per +1% in USD/INR" },
+  us10y: { label: "US 10Y yield", short: "US yields", href: "/economy?section=yields", cta: "See yields", unitNote: "per +10bp in US 10Y" },
+  spx: { label: "S&P 500", short: "Wall Street", href: "/economy?section=global-data", cta: "See global markets", unitNote: "per +1% in S&P 500" },
 };
 
 type Profile = { sector: SectorId; drivers: FactorId[]; why: string };

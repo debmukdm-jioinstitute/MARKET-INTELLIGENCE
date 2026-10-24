@@ -43,7 +43,7 @@ export default function PortfolioActivityPage() {
 
       {locked ? (
         <p className="text-sm text-muted-foreground">
-          <Link href="/login?next=/portfolio/activity" className="font-semibold text-blue-600 hover:underline">
+          <Link href="/login?next=%2Fportfolio%3Fsection%3Dactivity" className="font-semibold text-blue-600 hover:underline">
             Log in
           </Link>{" "}
           to view your ledger.

@@ -31,7 +31,7 @@ export function PortfolioCreditRiskPanel({ positions }: PortfolioCreditRiskPanel
         </div>
 
         <Link
-          href="/intelligence/credit"
+          href="/companies?section=credit"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <span>Open Credit Intelligence Desk</span>

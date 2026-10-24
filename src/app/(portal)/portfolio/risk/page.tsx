@@ -73,13 +73,13 @@ export default function RiskPage() {
             {locked ? (
               <>
                 <Link
-                  href="/login?next=/portfolio/risk"
+                  href="/login?next=%2Fportfolio%3Fsection%3Drisk"
                   className="inline-flex min-h-10 items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-600/90"
                 >
                   Log in
                 </Link>
                 <Link
-                  href="/signup?next=/portfolio/risk"
+                  href="/signup?next=%2Fportfolio%3Fsection%3Drisk"
                   className="inline-flex min-h-10 items-center rounded-md border border-border px-4 py-2 font-semibold hover:bg-accent"
                 >
                   Create account

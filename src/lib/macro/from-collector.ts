@@ -105,7 +105,7 @@ export async function loadCollectorMacroMap(ids: string[]): Promise<Map<string, 
       history: obsToHistory(hist),
       source: {
         provider: m?.provider ?? "Collector",
-        url: m?.url ?? "/data/health",
+        url: m?.url ?? "/data?section=health",
         asOf: pt?.date ?? last?.date ?? undefined,
       },
     });

@@ -96,7 +96,7 @@ export function CommoditiesFxCard({ data }: CommoditiesFxCardProps) {
             <MetricInfo metric="brent" customTitle="Global Commodity & FX Feeds" />
           </div>
           <Link
-            href="/markets/india"
+            href="/markets?section=india"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             <EditableCopy id="card.commodities.cta" label="Commodities CTA">

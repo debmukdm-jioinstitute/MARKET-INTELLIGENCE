@@ -66,13 +66,13 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
   }
 
   const extras: Omit<PortalPageRegistryEntry, "sortOrder">[] = [
-    { href: "/macro/yields", label: "Yield curves", navSection: "Economy", navGroup: "Macro Board", appliesToChildren: false },
+    { href: "/economy?section=yields", label: "Yield curves", navSection: "Economy", navGroup: "Macro Board", appliesToChildren: false },
     { href: "/macro/stress/backtest", label: "Stress backtest", navSection: "Economy", navGroup: "Stress & Scenarios", appliesToChildren: false },
-    { href: "/macro/currency", label: "Currency dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/macro/commodities", label: "Commodities dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/macro/indices", label: "World indices", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/markets/india", label: "India equity detail pages", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: true },
-    { href: "/research", label: "Research symbol pages", navSection: "Companies", navGroup: "Research", appliesToChildren: true },
+    { href: "/markets?section=currency", label: "Currency dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/markets?section=commodities", label: "Commodities dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/markets?section=world", label: "World indices", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/markets?section=india", label: "India equity detail pages", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: true },
+    { href: "/companies?section=broker-consensus", label: "Research symbol pages", navSection: "Companies", navGroup: "Research", appliesToChildren: true },
   ];
 
   for (const e of extras) {

@@ -40,14 +40,14 @@ function chips(...ids: FeedSourceId[]): PageProvenanceChip[] {
 /** Longest matching prefix wins. */
 const RULES: { prefix: string; match: PageProvenance }[] = [
   {
-    prefix: "/data/feeds",
+    prefix: "/data?section=feeds",
     match: {
       summary: "Live health for every upstream feed merged by the hub.",
       chips: [FEED_HUB_CHIP, ...chips("nse", "bse", "rbi", "reddit", "livemint", "fred", "upstox")],
     },
   },
   {
-    prefix: "/data/health",
+    prefix: "/data?section=health",
     match: {
       summary: "Collector run status and macro ingestion pipelines.",
       chips: [
@@ -62,7 +62,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/data/data360",
+    prefix: "/economy?section=global-data",
     match: {
       summary: "World Bank Data360 mirror stored in project DB.",
       chips: chips("data360", "worldbank"),
@@ -76,7 +76,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/legal-risk",
+    prefix: "/companies?section=legal-risk",
     match: {
       summary: "Legal/insolvency headline classifier over feed hub — NCLT, courts, SEBI, CCI, ED, RBI chains.",
       chips: [
@@ -91,7 +91,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/reddit",
+    prefix: "/companies?section=retail-sentiment",
     match: {
       summary: "Retail sentiment engine & alternative data — Reddit discussion NLP across r/IndiaInvestments, r/IndianStreetBets, r/IndianStockMarket, and investor problems radar.",
       chips: [
@@ -106,7 +106,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/company",
+    prefix: "/companies?section=company",
     match: {
       summary: "Company-specific intelligence — live NSE corporate-announcement feed, collected twice daily; concall filings highlighted.",
       chips: [
@@ -121,7 +121,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/credit",
+    prefix: "/companies?section=credit",
     match: {
       summary: "Credit & risk intelligence — agency rating actions via Google News RSS with optional Firecrawl/Crawl4AI on cron.",
       chips: [
@@ -136,7 +136,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/promoters",
+    prefix: "/companies?section=promoters",
     match: {
       summary: "Promoter activity tracker — disclosure signals via Google News RSS with optional Firecrawl/Crawl4AI on NSE/BSE.",
       chips: [
@@ -151,7 +151,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/institutional",
+    prefix: "/funds?section=institutional",
     match: {
       summary: "NSE FII/DII cash flows, smart-money score, and exchange filing links. Mutual-fund accumulation is unavailable until AMC disclosures are ingested.",
       chips: [
@@ -166,7 +166,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/search-trends",
+    prefix: "/companies?section=search-trends",
     match: {
       summary: "Google Trends search interest (India) → Attention Index by topic category.",
       chips: [
@@ -180,7 +180,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/intelligence/world-monitor",
+    prefix: "/Home?section=world-monitor",
     match: {
       summary: "Free global RSS, Yahoo indices, FRED CSV, MI what-changed cache.",
       chips: [
@@ -220,7 +220,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/research-reports",
+    prefix: "/companies?section=research-notes",
     match: {
       summary: "Broker research scraped and aggregated from public portals.",
       chips: [
@@ -235,7 +235,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/research/offers",
+    prefix: "/companies?section=offers",
     match: {
       summary: "Buyback, OFS, and NCD offer data from Chittorgarh and exchange filings.",
       chips: [
@@ -249,7 +249,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/research/ipo",
+    prefix: "/companies?section=ipo",
     match: {
       summary: "Upstox IPO calendar, GMP enrich, DRHP/RHP text extract, intelligence dossier, analyst memo.",
       chips: [
@@ -291,7 +291,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/research",
+    prefix: "/companies?section=broker-consensus",
     match: {
       summary: "Broker research notes aggregator: real collected notes from public desk publications, plus Nifty 500 earnings calendar.",
       chips: [
@@ -319,46 +319,46 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/markets/derivatives",
+    prefix: "/trade?section=derivatives",
     match: {
       summary: "F&O chain, PCR, and expiries from Upstox.",
       chips: [INDIA_DASH, ...chips("upstox", "nse")],
     },
   },
   {
-    prefix: "/markets/breadth",
+    prefix: "/markets?section=breadth",
     match: { summary: "Market breadth from Upstox live tape.", chips: [INDIA_DASH, ...chips("upstox", "nse")] },
   },
   {
-    prefix: "/markets/sectors",
+    prefix: "/markets?section=sectors",
     match: { summary: "Sector rotation from India dashboard sector map.", chips: [INDIA_DASH, ...chips("upstox", "yahoo")] },
   },
   {
-    prefix: "/markets/india",
+    prefix: "/markets?section=india",
     match: { summary: "India equity list and live quotes.", chips: [INDIA_DASH, ...chips("upstox", "biquote")] },
   },
   {
-    prefix: "/macro/rbi",
+    prefix: "/economy?section=rbi",
     match: { summary: "RBI liquidity and policy series.", chips: [INDIA_DASH, ...chips("rbi", "fred")] },
   },
   {
-    prefix: "/macro/global",
+    prefix: "/economy?section=global-data",
     match: { summary: "Global macro hub and world indices.", chips: [...chips("fred", "imf", "oecd", "worldbank"), INDIA_DASH] },
   },
   {
-    prefix: "/macro/indices",
+    prefix: "/markets?section=world",
     match: { summary: "Index levels and history.", chips: [...chips("yahoo", "biquote"), INDIA_DASH] },
   },
   {
-    prefix: "/macro/commodities",
+    prefix: "/markets?section=commodities",
     match: { summary: "Commodity futures via Yahoo symbols.", chips: chips("yahoo", "fred") },
   },
   {
-    prefix: "/macro/currency",
+    prefix: "/markets?section=currency",
     match: { summary: "FX crosses via Yahoo Finance.", chips: chips("yahoo", "fred") },
   },
   {
-    prefix: "/macro/india",
+    prefix: "/economy?section=india-macro",
     match: { summary: "India macro hub sections from collectors + FRED.", chips: [...chips("mospi", "fred", "rbi"), INDIA_DASH] },
   },
   {
@@ -377,7 +377,7 @@ const RULES: { prefix: string; match: PageProvenance }[] = [
     },
   },
   {
-    prefix: "/macro",
+    prefix: "/economy",
     match: { summary: "Macro landing — policy, growth, external.", chips: chips("fred", "mospi", "rbi", "imf") },
   },
   {
@@ -413,19 +413,23 @@ const SKIP_PREFIXES = ["/profile", "/help"];
 
 function pathMatchesRule(path: string, prefix: string): boolean {
   if (path === prefix) return true;
+  if (prefix.includes("?")) return false; // hub-section rule: only an exact /hub?section=id key matches
   if (prefix.endsWith("/")) return path.startsWith(prefix);
   return path.startsWith(`${prefix}/`);
 }
 
+/** Provenance for a page. Hub pages pass `/hub?section=id` so each section gets its own sources; any other query is ignored. */
 export function resolvePageProvenance(pathname: string): PageProvenance | null {
-  const path = pathname.split("?")[0] ?? pathname;
-  if (SKIP_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`))) return null;
-  if (path === "/" || path === "") {
+  const [base = pathname, query = ""] = pathname.split("?");
+  const section = new URLSearchParams(query).get("section");
+  const path = section ? `${base}?section=${section}` : base;
+  if (SKIP_PREFIXES.some((p) => base === p || base.startsWith(`${p}/`))) return null;
+  if (base === "/" || base === "") {
     return RULES.find((r) => r.prefix === "/Home")!.match;
   }
   const sorted = [...RULES].sort((a, b) => b.prefix.length - a.prefix.length);
   for (const rule of sorted) {
-    if (pathMatchesRule(path, rule.prefix)) {
+    if (pathMatchesRule(path, rule.prefix) || (!rule.prefix.includes("?") && pathMatchesRule(base, rule.prefix))) {
       return rule.match;
     }
   }

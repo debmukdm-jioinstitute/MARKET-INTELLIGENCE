@@ -3,20 +3,20 @@ import type { RazorpayPlanId } from "@/lib/payments/plans";
 export type PlanFeatureLink = { label: string; path: string; teaser: string };
 
 const BASE: PlanFeatureLink[] = [
-  { label: "India dashboard", path: "/markets/india", teaser: "Live indices, flows, macro pulse" },
-  { label: "Research workspace", path: "/research", teaser: "Company intel, signals, narratives" },
+  { label: "India dashboard", path: "/markets?section=india", teaser: "Live indices, flows, macro pulse" },
+  { label: "Research workspace", path: "/companies?section=broker-consensus", teaser: "Company intel, signals, narratives" },
   { label: "Portfolio tools", path: "/portfolio", teaser: "Holdings, risk, attribution" },
 ];
 
 const PAID: PlanFeatureLink[] = [
   { label: "AI Desk", path: "/research/ai-desk", teaser: "Unlimited analyses (Free caps at 5/mo)" },
-  { label: "Options Flow", path: "/markets/derivatives", teaser: "Full screener, not preview-only" },
+  { label: "Options Flow", path: "/trade?section=derivatives", teaser: "Full screener, not preview-only" },
   { label: "Claude MCP", path: "/connect/claude", teaser: "Live tools inside Claude, Cursor, Claude Code" },
   { label: "Telegram alerts", path: "/help#telegram", teaser: "Catalyst pings when markets move" },
 ];
 
 const PRO_ONLY: PlanFeatureLink[] = [
-  { label: "Morning briefing", path: "/intelligence/brief", teaser: "Pre-market brief on Pro yearly" },
+  { label: "Morning briefing", path: "/Home?section=brief", teaser: "Pre-market brief on Pro yearly" },
 ];
 
 export function planFeatureLinks(planId: RazorpayPlanId, siteUrl: string): PlanFeatureLink[] {

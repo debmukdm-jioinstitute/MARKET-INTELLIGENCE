@@ -109,7 +109,7 @@ export default function FeedsPage() {
           >
             <div className="grid gap-4 md:grid-cols-3">
               <Link
-                href="/intelligence"
+                href="/Home?section=feed"
                 className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
               >
                 <div className="space-y-2">
@@ -131,7 +131,7 @@ export default function FeedsPage() {
               </Link>
 
               <Link
-                href="/markets/india"
+                href="/markets?section=india"
                 className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
               >
                 <div className="space-y-2">
@@ -153,7 +153,7 @@ export default function FeedsPage() {
               </Link>
 
               <Link
-                href="/macro/rbi"
+                href="/economy?section=rbi"
                 className="group flex flex-col justify-between rounded-xl border border-border bg-card/60 p-4 transition-all hover:bg-accent/40 hover:border-primary/50 shadow-xs"
               >
                 <div className="space-y-2">

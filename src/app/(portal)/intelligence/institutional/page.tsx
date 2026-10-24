@@ -5,7 +5,7 @@ export const metadata = pageMetadata({
   title: "Institutional investor intelligence — FII, DII, MF smart money",
   description:
     "Track FII/FPI and DII flows, mutual-fund accumulation, and ownership signals with NSE, AMFI, and exchange filing sources.",
-  path: "/intelligence/institutional",
+  path: "/funds?section=institutional",
 });
 
 export default function InstitutionalIntelligencePage() {

@@ -93,11 +93,11 @@ export function OptionStratPanel({
       >
         <p className="text-sm text-muted-foreground">
           {indexLabel} has no Upstox index chain in this app yet. Switch to{" "}
-          <Link href="/intelligence/ai-signals" className="text-primary hover:underline">
+          <Link href="/trade?section=ai-signals" className="text-primary hover:underline">
             NIFTY 50
           </Link>
           , BANK NIFTY, or FINNIFTY, or open the full{" "}
-          <Link href="/markets/derivatives" className="text-primary hover:underline">
+          <Link href="/trade?section=derivatives" className="text-primary hover:underline">
             derivatives
           </Link>{" "}
           chain viewer.

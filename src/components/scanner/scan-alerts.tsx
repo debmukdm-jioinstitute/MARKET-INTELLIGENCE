@@ -27,7 +27,7 @@ export function ScanAlerts() {
   const [busy, setBusy] = useState(false);
 
   if (isAuthRequiredError(error)) {
-    return <SignInRequiredBanner feature="scan alerts" nextPath="/intelligence/alerts" />;
+    return <SignInRequiredBanner feature="scan alerts" nextPath="/trade?section=alerts" />;
   }
 
   const actionable = (data?.scanners ?? []).filter((s) => s.bias !== "watch" && s.matches > 0);

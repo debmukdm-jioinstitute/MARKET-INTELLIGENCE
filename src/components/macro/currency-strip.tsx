@@ -32,7 +32,7 @@ export function CurrencyStrip({ rows }: { rows: TapeQuote[] }) {
     <Panel
       title="Currency"
       action={
-        <Link href="/macro/currency" className="text-sm text-primary hover:underline">
+        <Link href="/markets?section=currency" className="text-sm text-primary hover:underline">
           Dashboard →
         </Link>
       }

@@ -98,7 +98,7 @@ export function MarketValuationCard() {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
-        <Link href="/macro/india" className="text-primary hover:underline text-sm">
+        <Link href="/economy?section=india-macro" className="text-primary hover:underline text-sm">
           India macro & G-Sec context →
         </Link>
       </div>

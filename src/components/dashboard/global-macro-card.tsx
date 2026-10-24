@@ -57,7 +57,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
             <MetricInfo metric="sp500" customTitle="Global Cross-Asset Telemetry" />
           </div>
           <Link
-            href="/macro/global"
+            href="/economy?section=global-data"
             className="group flex items-center gap-1 rounded-lg border border-border bg-accent/30 px-3 py-1 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:border-primary/50"
           >
             <EditableCopy id="card.global-macro.cta" label="Global macro CTA">
@@ -142,9 +142,9 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-sm">
         {[
-          { label: "US Markets", href: "/macro/global" },
-          { label: "Yield Spreads", href: "/macro/global" },
-          { label: "Dollar Dynamics", href: "/macro/global" },
+          { label: "US Markets", href: "/economy?section=global-data" },
+          { label: "Yield Spreads", href: "/economy?section=global-data" },
+          { label: "Dollar Dynamics", href: "/economy?section=global-data" },
         ].map((sub) => (
           <Link
             key={sub.label}

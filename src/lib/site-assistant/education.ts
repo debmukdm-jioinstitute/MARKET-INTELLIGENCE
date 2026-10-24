@@ -76,7 +76,7 @@ export type DidYouKnow = { fact: string; href?: string; label?: string };
 export const DID_YOU_KNOW: DidYouKnow[] = [
   {
     fact: "The Daily Brief is a 2-minute, source-cited read — a good first stop every morning.",
-    href: "/intelligence/brief",
+    href: "/Home?section=brief",
     label: "Open Daily Brief",
   },
   {
@@ -89,22 +89,22 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
   },
   {
     fact: "AI Signals shows its walk-forward track record next to the prediction — no hidden confidence theater.",
-    href: "/intelligence/ai-signals",
+    href: "/trade?section=ai-signals",
     label: "See AI Signals",
   },
   {
     fact: "Macro Stress Index combines volatility, FX, rates, and flows into one India stress score.",
-    href: "/macro/stress",
+    href: "/economy?section=macro-stress",
     label: "Stress index",
   },
   {
     fact: "Data Health tells you how fresh every feed is — no silent stale numbers.",
-    href: "/data/health",
+    href: "/data?section=health",
     label: "Data Health",
   },
   {
     fact: "Backtesting replays scanner setups over two years with honest out-of-sample checks.",
-    href: "/intelligence/backtesting",
+    href: "/trade?section=backtesting",
     label: "Backtests",
   },
   {
@@ -114,37 +114,37 @@ export const DID_YOU_KNOW: DidYouKnow[] = [
   },
   {
     fact: "Institutional intelligence tracks FII/DII cash, ownership signals, and filing sources — MF portfolio disclosures when ingested.",
-    href: "/intelligence/institutional",
+    href: "/funds?section=institutional",
     label: "Institutional flows",
   },
   {
     fact: "Promoter Tracker surfaces real-time insider buying, open-market sales, and pledge risk directly from SEBI & NSE disclosures.",
-    href: "/intelligence/promoters",
+    href: "/companies?section=promoters",
     label: "Promoter tracker",
   },
   {
     fact: "Credit Watch flags rating downgrades and negative credit outlooks from CRISIL, ICRA, and CARE across listed corporate debt.",
-    href: "/intelligence/credit",
+    href: "/companies?section=credit",
     label: "Credit risk",
   },
   {
     fact: "Broker Research aggregates consensus targets and upside % across 11 top institutional brokerages including Motilal, ICICI, and Kotak.",
-    href: "/research",
+    href: "/companies?section=broker-consensus",
     label: "Broker research",
   },
   {
     fact: "The Retail Sentiment Engine monitors 10 Indian retail investing communities to track social momentum, mention velocity, and thesis debates.",
-    href: "/intelligence/reddit",
+    href: "/companies?section=retail-sentiment",
     label: "Retail sentiment",
   },
   {
     fact: "Earnings Call Intelligence extracts management confidence inflection, margin guidance, and concall transcripts for covered companies.",
-    href: "/intelligence/company",
+    href: "/companies?section=company",
     label: "Concall intel",
   },
   {
     fact: "Primary Deals monitors upcoming IPOs with Grey Market Premiums (GMP), NCD corporate debt issues, and share buybacks in real time.",
-    href: "/research/offers",
+    href: "/companies?section=offers",
     label: "Primary deals",
   },
 ];
@@ -160,33 +160,33 @@ const BEGINNER_NUDGES: Nudge[] = [
   {
     title: "Start with Today",
     body: "Read the Daily Brief for a plain-English snapshot of the day.",
-    href: "/intelligence/brief",
+    href: "/Home?section=brief",
     cta: "Daily Brief",
     badge: "AI",
   },
   {
     title: "See the market",
     body: "Market Snapshot shows indices, rupee, and commodities in one place.",
-    href: "/markets/india",
+    href: "/markets?section=india",
     cta: "Market Snapshot",
   },
   {
     title: "Look up a company",
     body: "Company Workbench explains a stock without jargon overload.",
-    href: "/research",
+    href: "/companies?section=broker-consensus",
     cta: "Research",
   },
   {
     title: "Institutional flows",
     body: "FII/DII cash, smart-money signals, and where filings come from.",
-    href: "/intelligence/institutional",
+    href: "/funds?section=institutional",
     cta: "Institutional desk",
     badge: "NEW",
   },
   {
     title: "Primary Deals & IPOs",
     body: "Track live IPOs, grey market premiums, NCD debentures, and buyback offers.",
-    href: "/research/offers",
+    href: "/companies?section=offers",
     cta: "Primary Deals",
     badge: "NEW",
   },
@@ -196,38 +196,38 @@ const INTERMEDIATE_NUDGES: Nudge[] = [
   {
     title: "Sector & valuation",
     body: "Check if the market looks cheap and which sectors are leading.",
-    href: "/markets/sectors?tab=valuation",
+    href: "/markets?section=valuation",
     cta: "Valuation",
   },
   {
     title: "Breadth & momentum",
     body: "See if the rally is broad or only a few names.",
-    href: "/markets/breadth",
+    href: "/markets?section=breadth",
     cta: "Breadth",
   },
   {
     title: "India macro",
     body: "Growth, inflation, RBI — tied to how stocks behave.",
-    href: "/macro/india",
+    href: "/economy?section=india-macro",
     cta: "India macro",
   },
   {
     title: "Promoter Insider Actions",
     body: "Monitor insider buying, open market selling, and promoter pledge risk before earnings.",
-    href: "/intelligence/promoters",
+    href: "/companies?section=promoters",
     cta: "Promoter Tracker",
     badge: "NEW",
   },
   {
     title: "Broker Consensus Targets",
     body: "Check consensus price targets and ratings across 11 institutional brokerages.",
-    href: "/research",
+    href: "/companies?section=broker-consensus",
     cta: "Broker Consensus",
   },
   {
     title: "Credit Solvency Watch",
     body: "Catch debt downgrades and rating watch alerts from CRISIL, ICRA, and CARE.",
-    href: "/intelligence/credit",
+    href: "/companies?section=credit",
     cta: "Credit Risk",
     badge: "NEW",
   },
@@ -251,7 +251,7 @@ const ADVANCED_NUDGES: Nudge[] = [
   {
     title: "Portfolio quant",
     body: "Factors, attribution, and mean-variance optimization.",
-    href: "/portfolio/quant",
+    href: "/portfolio?section=factors",
     cta: "Quant",
   },
   {
@@ -264,21 +264,21 @@ const ADVANCED_NUDGES: Nudge[] = [
   {
     title: "Smart Money Accumulation",
     body: "MF accumulation radar when AMC disclosures are connected — track institutional ownership signals today.",
-    href: "/intelligence/institutional",
+    href: "/funds?section=institutional",
     cta: "Institutional desk",
     badge: "NEW",
   },
   {
     title: "Earnings Call Management Tone",
     body: "NLP score of executive confidence, capex guidance deltas, and filing timelines.",
-    href: "/intelligence/company",
+    href: "/companies?section=company",
     cta: "Concall Intel",
     badge: "NEW",
   },
   {
     title: "Alternative Retail Sentiment",
     body: "Detect social mention spikes and contrarian sentiment divergences across 10 subreddits.",
-    href: "/intelligence/reddit",
+    href: "/companies?section=retail-sentiment",
     cta: "Reddit Sentiment",
     badge: "NEW",
   },

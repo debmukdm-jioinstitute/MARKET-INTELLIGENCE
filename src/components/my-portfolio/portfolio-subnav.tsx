@@ -6,14 +6,14 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/portfolio", label: "Overview" },
-  { href: "/portfolio/allocation", label: "Allocation" },
-  { href: "/portfolio/risk", label: "Risk" },
-  { href: "/portfolio/attribution", label: "Attribution" },
-  { href: "/portfolio/quant", label: "Quant" },
-  { href: "/portfolio/optimizer", label: "Optimizer" },
-  { href: "/portfolio/activity", label: "Activity" },
-  { href: "/portfolio/tax", label: "Tax" },
-  { href: "/portfolio/watchlist", label: "Watchlist" },
+  { href: "/portfolio?section=allocation", label: "Allocation" },
+  { href: "/portfolio?section=risk", label: "Risk" },
+  { href: "/portfolio?section=attribution", label: "Attribution" },
+  { href: "/portfolio?section=factors", label: "Quant" },
+  { href: "/portfolio?section=optimizer", label: "Optimizer" },
+  { href: "/portfolio?section=activity", label: "Activity" },
+  { href: "/portfolio?section=tax", label: "Tax" },
+  { href: "/portfolio?section=watchlist", label: "Watchlist" },
 ] as const;
 
 export function PortfolioSubnav() {

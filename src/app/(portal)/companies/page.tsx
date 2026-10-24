@@ -33,8 +33,8 @@ export default function CompaniesHub() {
         company: <Suspense fallback={fallback}><CompanyPage /></Suspense>,
         "company-stress": (
           <div className="space-y-6">
-            <HubSub id="promoters" title="Promoter tracker"><Promoters /><TsPathCharts path="/intelligence/promoters" /></HubSub>
-            <HubSub id="credit" title="Credit radar"><Credit /><TsPathCharts path="/intelligence/credit" /></HubSub>
+            <HubSub id="promoters" title="Promoter tracker"><Promoters /><TsPathCharts path="/companies?section=promoters" /></HubSub>
+            <HubSub id="credit" title="Credit radar"><Credit /><TsPathCharts path="/companies?section=credit" /></HubSub>
             <HubSub id="legal-risk" title="Legal risk"><LegalRisk /></HubSub>
           </div>
         ),
@@ -43,7 +43,7 @@ export default function CompaniesHub() {
         "research-notes": <ResearchNotes />,
         "retail-sentiment": <Reddit />,
         "search-trends": <SearchTrends />,
-        ipo: (<><Ipo /><TsPathCharts path="/research/ipo" /></>),
+        ipo: (<><Ipo /><TsPathCharts path="/companies?section=ipo" /></>),
         offers: <Offers />,
       }}
     />

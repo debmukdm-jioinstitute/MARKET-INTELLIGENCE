@@ -6,7 +6,7 @@ import { TsChart } from "./ts-chart";
 import { LazyMount } from "./lazy-mount";
 import { TsStatusBadge } from "./ts-status-badge";
 
-/** Long-history charts registered for a given original route (e.g. "/valuation"). Renders nothing when none are registered. */
+/** Long-history charts registered for a given original route (e.g. "/markets?section=valuation"). Renders nothing when none are registered. */
 export function TsPathCharts({ path, title = "Long-run data", initial = "10Y" }: { path: string; title?: string; initial?: string }) {
   const defs = chartsForPath(path);
   if (!defs.length) return null;

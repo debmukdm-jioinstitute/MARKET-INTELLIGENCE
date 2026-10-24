@@ -218,12 +218,12 @@ export function LandingMacroSection() {
     {
       title: repo?.indicator ?? "RBI policy rate",
       sub: repo?.current != null ? `${repo.current}${repo.unit === "%" ? "%" : ""}` : "WHY IT MATTERS →",
-      href: "/macro/rbi",
+      href: "/economy?section=rbi",
     },
     {
       title: "Foreign flows",
       sub: fii != null ? `FII ${fii >= 0 ? "+" : ""}${Math.round(fii)} Cr today` : "FOLLOW THE MONEY →",
-      href: "/macro/india",
+      href: "/economy?section=india-macro",
     },
     {
       title: "Oil & the rupee",
@@ -231,7 +231,7 @@ export function LandingMacroSection() {
         pulse?.usdInr?.value != null && pulse?.brent?.value != null
           ? `₹${pulse.usdInr.value.toFixed(2)} · Brent ${pulse.brent.value.toFixed(1)}`
           : "READ THE LINK →",
-      href: "/macro/currency",
+      href: "/markets?section=currency",
     },
   ];
   return (

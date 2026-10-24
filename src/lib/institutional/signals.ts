@@ -94,7 +94,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
       direction: smartDir,
       headline: smartMoneyLabel(score).label,
       detail: smartMoneyLabel(score).summary,
-      href: "/intelligence/institutional",
+      href: "/funds?section=institutional",
     },
     {
       id: "institutional_ownership",
@@ -114,7 +114,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
           : instOwnDir === "down"
             ? "Cross-fund net capital flow is negative this disclosure cycle."
             : "Mutual-fund book changes net to roughly zero across the tracked universe.",
-      href: "/intelligence/institutional",
+      href: "/funds?section=institutional",
     },
     {
       id: "promoter_ownership",
@@ -139,7 +139,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
       detail: !hasMfData
         ? "Net capital movement across schemes is unavailable until AMC portfolio disclosures are ingested from a verified source."
         : `Net capital movement across tracked schemes: ₹${input.mfNetCapitalCr!.toFixed(0)} cr (monthly portfolio disclosure).`,
-      href: "/intelligence/institutional",
+      href: "/funds?section=institutional",
     },
     {
       id: "fii_ownership",
@@ -155,7 +155,7 @@ export function deriveInstitutionalSignals(input: SignalInputs): InstitutionalSi
         input.fiiM1 != null
           ? `~22-session FII net cash: ₹${input.fiiM1.toLocaleString("en-IN")} cr (NSE FII/DII).`
           : "FII/DII history needs collector DB for rollups — today’s print still live from NSE.",
-      href: "/markets/india",
+      href: "/markets?section=india",
     },
     {
       id: "insider_activity",

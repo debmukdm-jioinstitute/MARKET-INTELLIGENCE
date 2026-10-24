@@ -94,7 +94,7 @@ export default function SourcesSection() {
 
       <p className="text-sm text-muted-foreground">
         Live latency, freshness and failures are measured on{" "}
-        <Link href="/data/feeds" className="font-semibold text-primary hover:underline">
+        <Link href="/data?section=feeds" className="font-semibold text-primary hover:underline">
           Feed health →
         </Link>
       </p>

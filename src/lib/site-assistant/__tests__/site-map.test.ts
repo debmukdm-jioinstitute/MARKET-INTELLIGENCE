@@ -3,19 +3,19 @@ import { isAllowedHref, searchPages } from "@/lib/site-assistant/site-map";
 
 describe("isAllowedHref", () => {
   it("allows nav paths with query strings", () => {
-    expect(isAllowedHref("/macro/india?view=calendar")).toBe(true);
-    expect(isAllowedHref("/macro/india")).toBe(true);
-    expect(isAllowedHref("/markets/breadth?view=momentum")).toBe(true);
+    expect(isAllowedHref("/economy?section=calendar")).toBe(true);
+    expect(isAllowedHref("/economy?section=india-macro")).toBe(true);
+    expect(isAllowedHref("/markets?section=breadth")).toBe(true);
   });
 
   it("allows newly integrated intelligence pages", () => {
     expect(isAllowedHref("/funds")).toBe(true);
-    expect(isAllowedHref("/intelligence/institutional")).toBe(true);
-    expect(isAllowedHref("/intelligence/promoters")).toBe(true);
-    expect(isAllowedHref("/intelligence/credit")).toBe(true);
-    expect(isAllowedHref("/intelligence/company")).toBe(true);
-    expect(isAllowedHref("/intelligence/reddit")).toBe(true);
-    expect(isAllowedHref("/research/offers")).toBe(true);
+    expect(isAllowedHref("/funds?section=institutional")).toBe(true);
+    expect(isAllowedHref("/companies?section=promoters")).toBe(true);
+    expect(isAllowedHref("/companies?section=credit")).toBe(true);
+    expect(isAllowedHref("/companies?section=company")).toBe(true);
+    expect(isAllowedHref("/companies?section=retail-sentiment")).toBe(true);
+    expect(isAllowedHref("/companies?section=offers")).toBe(true);
   });
 
   it("rejects external URLs", () => {
@@ -31,15 +31,15 @@ describe("searchPages", () => {
 
   it("finds mutual fund, promoter, credit, and reddit pages", () => {
     const mfHits = searchPages("mutual fund", 5);
-    expect(mfHits.some((h) => h.href.includes("/intelligence/institutional"))).toBe(true);
+    expect(mfHits.some((h) => h.href.includes("section=institutional"))).toBe(true);
 
     const promoterHits = searchPages("promoter", 5);
-    expect(promoterHits.some((h) => h.href.includes("/intelligence/promoters"))).toBe(true);
+    expect(promoterHits.some((h) => h.href.includes("section=promoters"))).toBe(true);
 
     const creditHits = searchPages("credit risk", 5);
-    expect(creditHits.some((h) => h.href.includes("/intelligence/credit"))).toBe(true);
+    expect(creditHits.some((h) => h.href.includes("section=credit"))).toBe(true);
 
     const redditHits = searchPages("reddit sentiment", 5);
-    expect(redditHits.some((h) => h.href.includes("/intelligence/reddit"))).toBe(true);
+    expect(redditHits.some((h) => h.href.includes("section=retail-sentiment"))).toBe(true);
   });
 });

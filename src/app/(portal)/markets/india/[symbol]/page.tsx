@@ -45,7 +45,7 @@ export default async function IndexDrilldownPage({
     // Legacy commodity/FX pages (usdinr, brent, gold) have no index
     // definition and their old content was fabricated — send users back
     // to the live index list instead of a dead end.
-    if (LEGACY_LABELS[key]) redirect("/markets/india");
+    if (LEGACY_LABELS[key]) redirect("/markets?section=india");
     notFound();
   }
 

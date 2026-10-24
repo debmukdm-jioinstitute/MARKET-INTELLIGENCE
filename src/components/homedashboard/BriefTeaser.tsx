@@ -51,7 +51,7 @@ export function BriefTeaser({
         detail="What happened — and why it deserves a place on your radar."
         action={
           <HomeLink
-            href="/intelligence/brief"
+            href="/Home?section=brief"
             onClick={() => homeActions.mission("read-brief")}
           >
             Read the full brief
@@ -69,7 +69,7 @@ export function BriefTeaser({
               const safeHref =
                 /^(https?:\/\/|\/)/.test(h.href) && !h.href.startsWith("//")
                   ? h.href
-                  : "/intelligence/brief";
+                  : "/Home?section=brief";
               return (
                 <article key={h.title} className="py-4 first:pt-0 last:pb-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-stone-500">
@@ -129,7 +129,7 @@ export function BriefTeaser({
                 latest published market context.
               </p>
               <HomeLink
-                href="/intelligence/brief"
+                href="/Home?section=brief"
                 onClick={() => homeActions.mission("read-brief")}
               >
                 Open today’s brief

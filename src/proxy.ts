@@ -30,6 +30,12 @@ function parseSession(raw: string | undefined) {
   return verifySessionToken<{ guest?: boolean; email?: string; role?: string }>(raw);
 }
 
+/** Where to send the visitor after login: the path plus a hub `?section=` so a deep link survives the detour. */
+function nextWithSection(request: NextRequest, path: string): string {
+  const section = request.nextUrl.searchParams.get("section");
+  return section && /^[a-z0-9-]{1,40}$/.test(section) ? `${path}?section=${section}` : path;
+}
+
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const isAdminHost = host.startsWith("admin.") || host.startsWith("admin:");
@@ -100,7 +106,8 @@ export async function proxy(request: NextRequest) {
       : (() => {
           const url = request.nextUrl.clone();
           url.pathname = "/signup";
-          url.searchParams.set("next", realPathname);
+          url.searchParams.set("next", nextWithSection(request, realPathname));
+    url.searchParams.delete("section");
           return NextResponse.redirect(url);
         })();
     res.cookies.set("mi_session", "", { httpOnly: true, path: "/", maxAge: 0 });
@@ -110,7 +117,8 @@ export async function proxy(request: NextRequest) {
   if (!isPublic && !session) {
     const url = request.nextUrl.clone();
     url.pathname = requireAccount ? "/signup" : "/login";
-    url.searchParams.set("next", realPathname);
+    url.searchParams.set("next", nextWithSection(request, realPathname));
+    url.searchParams.delete("section");
     if (staleSession) {
       url.searchParams.set("expired", "1");
     }

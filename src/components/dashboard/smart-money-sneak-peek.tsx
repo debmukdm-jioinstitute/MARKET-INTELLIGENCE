@@ -32,7 +32,7 @@ export function SmartMoneySneakPeek() {
         </p>
         <div className="flex flex-col sm:flex-row gap-2">
           <Link
-            href="/intelligence/institutional"
+            href="/funds?section=institutional"
             className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline touch-manipulation"
           >
             Open institutional intelligence <ArrowUpRight className="size-3.5" />

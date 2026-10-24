@@ -27,7 +27,7 @@ export default function YieldsMacroPage() {
         deck={curveDeck(data?.usYieldCurve ?? [])}
         howToRead="a yield is the annual return on a government bond bought today. A wider India-over-US gap makes Indian bonds more attractive to foreign money."
       />
-      <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
+      <Link href="/economy" className="text-sm text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={2} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       {data ? (

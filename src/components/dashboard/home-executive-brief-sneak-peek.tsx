@@ -80,7 +80,7 @@ export function HomeExecutiveBriefSneakPeek() {
         {/* Right Side: CTA Button */}
         <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end justify-end gap-2 border-t lg:border-t-0 lg:border-l border-border/60 pt-3 lg:pt-0 lg:pl-5">
           <Link
-            href="/intelligence/brief"
+            href="/Home?section=brief"
             className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs sm:text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95 transition-all touch-manipulation active:scale-[0.98]"
           >
             Read Intelligence Brief

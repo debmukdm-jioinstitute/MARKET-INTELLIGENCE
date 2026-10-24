@@ -297,7 +297,7 @@ export function SignatureFive({
           icon={Bell}
           name="Alerts"
           desc="The market taps you on the shoulder."
-          href="/intelligence/alerts?new=1"
+          href="/trade?section=alerts"
           onNavigate={() => homeActions.bonus("first-alert")}
           art={<BellArt className="w-[104px] sm:w-[120px] min-[1100px]:w-[132px]" />}
           artClass=""

@@ -292,7 +292,7 @@ function IndiaMacroIndicators({ data }: { data: IndiaDashboardPayload }) {
           </div>
         </div>
         <Link
-          href="/macro"
+          href="/economy"
           className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
         >
           Explore Macro <ArrowUpRight className="size-3.5" aria-hidden />
@@ -371,9 +371,9 @@ function IndiaMacroIndicators({ data }: { data: IndiaDashboardPayload }) {
 
       <div className="mt-4 flex flex-wrap gap-2 border-t border-border/50 pt-3.5">
         {[
-          { label: "GDP", href: "/macro/india", Icon: TrendingUp },
-          { label: "Inflation", href: "/macro/india", Icon: BarChart3 },
-          { label: "RBI Policy", href: "/macro/rbi", Icon: Landmark },
+          { label: "GDP", href: "/economy?section=india-macro", Icon: TrendingUp },
+          { label: "Inflation", href: "/economy?section=india-macro", Icon: BarChart3 },
+          { label: "RBI Policy", href: "/economy?section=rbi", Icon: Landmark },
           { label: "Calendar", href: "#calendar", Icon: CalendarDays },
         ].map(({ label, href, Icon }) => (
           <Link
@@ -457,7 +457,7 @@ function RbiLiquidityWatch({ data }: { data: IndiaDashboardPayload }) {
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <MetricInfo metric="liquidity" iconSize="xs" />
-          <Link href="/macro/rbi" aria-label="RBI policy page" className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <Link href="/economy?section=rbi" aria-label="RBI policy page" className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
             <MoreVertical className="size-4" aria-hidden />
           </Link>
         </div>

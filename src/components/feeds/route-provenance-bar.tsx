@@ -7,12 +7,13 @@ import {
   resolvePageProvenance,
 } from "@/lib/feeds/page-provenance";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 /** Route-level external data sources — shown on every portal page (except profile). */
 export function RouteProvenanceBar() {
-  const path = usePathname();
-  const resolved = resolvePageProvenance(path);
+  const pathname = usePathname();
+  const section = useSearchParams().get("section");
+  const resolved = resolvePageProvenance(section ? `${pathname}?section=${section}` : pathname);
   if (!resolved) return null;
 
   return (
@@ -43,7 +44,7 @@ export function RouteProvenanceBar() {
           ),
         )}
       </span>
-      <Link href="/data/feeds" className="ml-auto shrink-0 font-medium text-primary hover:underline">
+      <Link href="/data?section=feeds" className="ml-auto shrink-0 font-medium text-primary hover:underline">
         All feeds →
       </Link>
     </div>

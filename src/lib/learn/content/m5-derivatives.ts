@@ -50,7 +50,7 @@ export const DERIVATIVES: LearnModule = {
         "Time decay works against buyers every day.",
       ],
       tools: [
-        { label: "Derivatives", href: "/markets/derivatives", blurb: "F&O open interest and positioning." },
+        { label: "Derivatives", href: "/trade?section=derivatives", blurb: "F&O open interest and positioning." },
         { label: "Trade Lab", href: "/intelligence/trade-lab", blurb: "Chart any F&O stock with indicators." },
       ],
       related: ["derivatives-and-options/open-interest-and-pcr", "derivatives-and-options/option-chain-and-greeks"],
@@ -85,7 +85,7 @@ export const DERIVATIVES: LearnModule = {
         "OI walls shape expiry-week behaviour.",
       ],
       tools: [
-        { label: "Derivatives", href: "/markets/derivatives", blurb: "Open interest and positioning by contract." },
+        { label: "Derivatives", href: "/trade?section=derivatives", blurb: "Open interest and positioning by contract." },
         { label: "Options Flow", href: "/research/options-flow", blurb: "Unusual activity across the options tape." },
       ],
       related: ["derivatives-and-options/option-chain-and-greeks"],
@@ -125,7 +125,7 @@ export const DERIVATIVES: LearnModule = {
       ],
       tools: [
         { label: "Options Flow", href: "/research/options-flow", blurb: "Chains, flow and flags." },
-        { label: "Derivatives", href: "/markets/derivatives", blurb: "Positioning across expiries." },
+        { label: "Derivatives", href: "/trade?section=derivatives", blurb: "Positioning across expiries." },
       ],
       related: ["derivatives-and-options/option-strategies"],
     },
@@ -195,7 +195,7 @@ export const DERIVATIVES: LearnModule = {
       ],
       tools: [
         { label: "Options Flow", href: "/research/options-flow", blurb: "Unusual activity across the options tape." },
-        { label: "Alerts", href: "/intelligence/alerts", blurb: "Be notified when conditions hit." },
+        { label: "Alerts", href: "/trade?section=alerts", blurb: "Be notified when conditions hit." },
       ],
       related: ["derivatives-and-options/open-interest-and-pcr"],
     },
