@@ -1,4 +1,7 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { formatDate } from "@/lib/format";
+import { breadthHeadline, indexHeadline } from "@/lib/story";
 
 import dynamic from "next/dynamic";
 import useSWR from "swr";
@@ -62,16 +65,18 @@ export default function DashboardPage() {
     fetchOptions,
   );
   const now = useHomeClock();
+  const p = data?.pulse;
+  const b = p?.breadth;
+  const movers = [
+    { name: "Nifty 50", changePct: p?.nifty?.changePct },
+    { name: "Bank Nifty", changePct: p?.bankNifty?.changePct },
+    { name: "Sensex", changePct: p?.sensex?.changePct },
+  ];
   const progress = useHomeProgress(now);
   // Signed-in holders see their portfolio right under the market pulse (0-tap glance);
   // everyone else keeps the existing order with the teaser at the bottom.
   const dateLabel = now
-    ? now.toLocaleDateString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      })
+    ? formatDate(now)
     : "Your daily view";
   const portfolioUpTop = authenticated && portfolio.holdings.length > 0;
   const [force, setForce] = useState<string | null>(null);
@@ -109,6 +114,13 @@ export default function DashboardPage() {
       <WelcomeStrip progress={progress} />
       </div>
       <div id="pulse" className="scroll-mt-28 space-y-8 sm:space-y-10">
+      <DataStory
+        kicker="Market today"
+        asOf={data?.fetchedAt}
+        headline={indexHeadline(movers)}
+        deck={breadthHeadline(b?.advances, b?.declines) ? `${breadthHeadline(b?.advances, b?.declines)}.` : null}
+        howToRead="index moves are against the previous close; the breadth line counts every NSE stock once."
+      />
       <MarketPulse data={data} now={now} />
       {portfolioUpTop ? <PortfolioTeaser portfolio={visiblePortfolio} /> : null}
       <TsStructure />

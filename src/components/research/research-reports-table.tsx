@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { RESEARCH_SOURCE_LABELS } from "@/lib/research/source-labels";
 import { cn } from "@/lib/utils";
@@ -112,7 +113,7 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
                 {r.upside_pct != null ? `${r.upside_pct >= 0 ? "+" : ""}${r.upside_pct.toFixed(1)}%` : "—"}
               </td>
               <td className="px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">
-                {r.published_at ? new Date(r.published_at).toLocaleDateString("en-IN") : "—"}
+                {r.published_at ? formatDate(new Date(r.published_at)) : "—"}
               </td>
             </tr>
           ))}
@@ -162,7 +163,7 @@ export function ResearchReportsTable({ rows }: { rows: ResearchReportRow[] }) {
                 <span>—</span>
               )}
               <span className="shrink-0 tabular-nums">
-                {r.published_at ? new Date(r.published_at).toLocaleDateString("en-IN") : "—"}
+                {r.published_at ? formatDate(new Date(r.published_at)) : "—"}
               </span>
             </div>
           </article>

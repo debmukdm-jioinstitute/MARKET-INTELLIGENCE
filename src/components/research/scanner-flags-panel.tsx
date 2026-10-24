@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -131,7 +132,7 @@ export function ScannerFlagsPanel({ symbol }: { symbol: string }) {
         <div className="flex items-center gap-2">
           {isStale ? (
             <Badge variant="outline" className="border-amber-500/40 text-amber-600 bg-amber-500/10 text-sm">
-              Stale scan ({asOfDate?.toLocaleDateString()})
+              Stale scan ({formatDate(asOfDate!)})
             </Badge>
           ) : asOfDate ? (
             <span className="text-sm text-muted-foreground">

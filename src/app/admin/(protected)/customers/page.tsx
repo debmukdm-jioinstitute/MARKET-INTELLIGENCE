@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { BrandLogo } from "@/components/brand/brand-logo";
@@ -479,11 +480,7 @@ export default function AdminCustomersPage() {
                         </span>
                       </td>
                       <td className="py-2.5 pr-3 text-xs text-gray-500">
-                        {new Date(c.created_at).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {formatDate(new Date(c.created_at))}
                       </td>
                       <td className="py-2.5 pr-3">
                         <div className="flex items-center gap-2">
@@ -495,7 +492,7 @@ export default function AdminCustomersPage() {
                           </span>
                           {c.last_login_at ? (
                             <span className="text-xs text-gray-400">
-                              ({new Date(c.last_login_at).toLocaleDateString()})
+                              ({formatDate(new Date(c.last_login_at))})
                             </span>
                           ) : null}
                         </div>

@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import Link from "next/link";
@@ -57,7 +58,7 @@ function EngagementBars({ days }: { days: { day: string; minutes: number }[] }) 
         {cells.map((c, i) => (
           <div
             key={i}
-            title={`${c.date.toLocaleDateString("en-IN")}: ${c.minutes} min`}
+            title={`${formatDate(c.date)}: ${c.minutes} min`}
             className={`flex-1 rounded-t ${c.minutes >= 10 ? "bg-gray-900" : c.minutes >= 5 ? "bg-gray-500" : c.minutes > 0 ? "bg-gray-300" : "bg-gray-100"}`}
             style={{ height: `${Math.max(4, (c.minutes / max) * 100)}%` }}
           />
@@ -148,7 +149,7 @@ export default function AdminUserDossierPage({ params }: { params: Promise<{ ema
         <AdminStat label="Level" value={d.xp.level} />
         <AdminStat label="XP events" value={d.xp.events} />
         <AdminStat label="Day streak" value={d.xp.streak} />
-        <AdminStat label="Last XP event" value={d.xp.last_event_at ? new Date(d.xp.last_event_at).toLocaleDateString("en-IN") : "—"} />
+        <AdminStat label="Last XP event" value={d.xp.last_event_at ? formatDate(new Date(d.xp.last_event_at)) : "—"} />
       </div>
 
       {(d.highlights.redemptions.length > 0 || d.highlights.referralEvents.length > 0) && (

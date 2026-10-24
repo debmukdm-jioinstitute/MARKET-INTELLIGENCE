@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Fold, Takeaway, type Tone } from "@/components/guide/explain";
@@ -54,23 +55,12 @@ async function loadConcall(url: string): Promise<ConcallResponse> {
 }
 
 const fmtDay = (iso: string) =>
-  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 
 function getCallDateDisplay(isoDate: string | null): string {
   if (!isoDate) return "Date not verified";
   try {
-    return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    });
+    return formatDate(new Date(`${isoDate}T00:00:00Z`), { tz: "UTC" });
   } catch {
     return isoDate;
   }

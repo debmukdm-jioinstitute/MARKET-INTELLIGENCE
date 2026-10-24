@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 export type ImpactLevel = "HIGH" | "MEDIUM" | "LOW";
 export type EventStatus = "reported" | "today" | "upcoming";
 export type EventRegion = "IND" | "USA" | "GLOBAL";
@@ -50,14 +51,7 @@ const CACHE_TTL_MS = 5 * 60_000;
 function formatIst(isoUtc: string): string {
   try {
     const d = new Date(isoUtc);
-    return new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Kolkata",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(d);
+    return formatDate(d, { time: true });
   } catch {
     return isoUtc;
   }

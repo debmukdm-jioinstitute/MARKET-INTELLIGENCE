@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
@@ -80,7 +81,7 @@ export default function PortfolioActivityPage() {
                   <tbody>
                     {trades.map((t, i) => (
                       <tr key={`${t.symbol}-${t.date}-${i}`} className="border-b border-border/60">
-                        <td className="py-2 pr-3">{t.date}</td>
+                        <td className="py-2 pr-3">{isoToDmy(t.date)}</td>
                         <td className="py-2 pr-3 font-medium"><span className="inline-flex items-center gap-2"><CompanyLogo symbol={t.symbol} name={t.symbol} size={24} />{t.symbol}</span></td>
                         <td className="py-2 pr-3">{t.side}</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{t.shares}</td>

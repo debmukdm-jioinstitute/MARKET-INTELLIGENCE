@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 /**
  * Historical Valuation presentation component for /research/[symbol].
@@ -87,13 +88,13 @@ function ordinal(n: number): string {
 function shortDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", { month: "short", year: "2-digit", timeZone: "UTC" });
+  return formatDate(d, { tz: "UTC" });
 }
 
 function fullDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+  return formatDate(d, { tz: "UTC" });
 }
 
 type StatRowProps = {

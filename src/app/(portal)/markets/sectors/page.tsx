@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { rankDeck } from "@/lib/story";
 
 import { Suspense, useMemo } from "react";
 import { useUrlQueryEnum } from "@/lib/react/use-url-query-enum";
@@ -112,7 +114,19 @@ function SectorMatrix() {
   if (loading && !rows.some((r) => r.price != null)) return <p className="p-6 text-sm text-muted-foreground">Loading live sector indices…</p>;
   if (error && !rows.some((r) => r.price != null)) return <p className="p-6 text-sm text-rose-600">Live sector indices unavailable: {error}</p>;
 
+  const moves = rows.map((r) => ({ name: r.label.replace(/^Nifty /, ""), changePct: r.changePct == null ? null : r.changePct / 100 }));
+  const risen = moves.filter((m) => (m.changePct ?? 0) > 0).length;
+  const deck = rankDeck(moves, "sectors")?.replace(/^\d+ of \d+ sectors rose\. /, "") ?? null;
+
   return (
+    <>
+    <DataStory
+      kicker="Sectors"
+      asOf={feed?.fetchedAt}
+      headline={rows.some((r) => r.changePct != null) ? `${risen} of ${rows.length} sector indices rose` : null}
+      deck={deck}
+      howToRead="each row is a sector index's move since the previous close; the vs Nifty 50 column shows who beat the benchmark today."
+    />
     <Table>
       <TableHeader>
         <TableRow>
@@ -141,6 +155,7 @@ function SectorMatrix() {
         ))}
       </TableBody>
     </Table>
+    </>
   );
 }
 

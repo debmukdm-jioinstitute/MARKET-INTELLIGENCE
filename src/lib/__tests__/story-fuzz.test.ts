@@ -1,7 +1,6 @@
 import { it, expect } from "vitest";
 import * as S from "@/lib/story";
 import { formatDate, isoToDmy } from "@/lib/format";
-import { rotationStage } from "@/lib/feeds/india/sectors";
 const bad: any[] = [NaN, Infinity, -Infinity, null, undefined, 0, -0, 1e21, "x"];
 it("never throws / never prints NaN", () => {
   const out: string[] = [];
@@ -16,7 +15,6 @@ it("never throws / never prints NaN", () => {
       () => S.macroDeck([{ indicator: "i", current: a, previous: b, unit: "%" }]),
       () => S.yieldHeadline([{ tenor: "10Y", value: a }], [{ tenor: "10Y", value: b }]),
       () => S.curveDeck([{ tenor: "10Y", value: a }, { tenor: "2Y", value: b }]),
-      () => rotationStage(a, b),
     ];
     for (const c of calls) { const r = c(); if (typeof r === "string") out.push(r); }
   }

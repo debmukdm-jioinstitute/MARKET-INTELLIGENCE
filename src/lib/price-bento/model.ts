@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 /**
  * Pure state model for the Price Bento (hero + chart + range + previous close + takeaway).
  * No React, no fetching — everything here is unit-tested.
@@ -136,7 +137,7 @@ export function nearestIndex(len: number, frac: number): number {
 export function fmtStamp(ms: number, tz: "Asia/Kolkata" | "America/New_York", tf: BentoTf): string {
   const d = new Date(ms);
   if (tf === "1D") return d.toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
-  return d.toLocaleDateString("en-GB", { timeZone: tz, day: "numeric", month: "short", year: tf === "1Y" ? "2-digit" : undefined });
+  return formatDate(d, { tz });
 }
 
 /** "Closed 15:30 IST · 7 Oct 2026" / "Updated 11:42 IST · 7 Oct 2026". */
@@ -146,7 +147,7 @@ export function fmtSessionLine(asOf: string | number | null | undefined, session
   if (!Number.isFinite(ms)) return null;
   const d = new Date(ms);
   const time = d.toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
-  const date = d.toLocaleDateString("en-GB", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
+  const date = formatDate(d, { tz });
   const zone = tz === "Asia/Kolkata" ? "IST" : "ET";
   return `${session === "open" ? "Updated" : "Market closed · as of"} ${time} ${zone} · ${date}`;
 }

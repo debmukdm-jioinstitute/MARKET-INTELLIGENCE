@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -79,11 +80,7 @@ async function loadConcallJson(url: string): Promise<ConcallDocResponse> {
 
 const fmtDate = (iso: string) => {
   try {
-    return new Date(iso).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return formatDate(new Date(iso));
   } catch {
     return iso;
   }

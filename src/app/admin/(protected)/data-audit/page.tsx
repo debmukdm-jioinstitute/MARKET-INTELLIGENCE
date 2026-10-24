@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { AdminCard } from "@/components/admin/admin-card";
 import Link from "next/link";
@@ -71,13 +72,7 @@ function rel(iso: string | null): string {
 
 function ist(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDate(iso, { time: true });
 }
 
 function dur(s: number | null): string {

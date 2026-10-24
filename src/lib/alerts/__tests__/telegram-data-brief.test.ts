@@ -49,15 +49,17 @@ describe("fmtNum", () => {
 });
 
 describe("fmtDate", () => {
-  it("renders 2026-09-30 as 30 Sep", () => {
-    expect(fmtDate("2026-09-30")).toBe("30 Sep");
-    expect(fmtDate("2026-01-05")).toBe("5 Jan");
+  it("renders 2026-09-30 as 30-09-2026", () => {
+    expect(fmtDate("2026-09-30")).toBe("30-09-2026");
+    expect(fmtDate("2026-01-05")).toBe("05-01-2026");
   });
   it("passes through malformed input", () => {
     expect(fmtDate("n/a")).toBe("n/a");
   });
 });
 
+const today = new Date().toISOString().slice(0, 10);
+const todayDmy = today.split("-").reverse().join("-");
 const meta = (over: Record<string, unknown> = {}) => ({
   id: "rbi_repo",
   label: "RBI policy repo rate",
@@ -72,12 +74,12 @@ describe("formatLine", () => {
   const refTime = new Date("2026-09-30T12:00:00Z").getTime();
 
   it("shows value, unit, date and delta", () => {
-    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: "2026-09-30", value: 5.5, prev: 5.75 }, refTime);
-    expect(line).toBe("RBI policy repo rate: 5.5% (30 Sep, -0.25 vs prev)");
+    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: today, value: 5.5, prev: 5.75 }, refTime);
+    expect(line).toBe(`RBI policy repo rate: 5.5% (${todayDmy}, -0.25 vs prev)`);
   });
   it("omits delta when unchanged", () => {
-    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: "2026-09-30", value: 5.5, prev: 5.5 }, refTime);
-    expect(line).toBe("RBI policy repo rate: 5.5% (30 Sep)");
+    const line = formatLine(meta({ last_ok: new Date(refTime).toISOString() }), { date: today, value: 5.5, prev: 5.5 }, refTime);
+    expect(line).toBe(`RBI policy repo rate: 5.5% (${todayDmy})`);
   });
   it("labels stale series honestly", () => {
     const line = formatLine(meta({ last_ok: "2020-01-01T00:00:00Z" }), {

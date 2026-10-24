@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -146,7 +147,7 @@ export function TrendPanel({ candles, symbol }: TrendPanelProps) {
       subtitle="Computed client-side across 5-year daily candles. No additional network latency."
       action={
         <span className="text-sm text-muted-foreground">
-          {lastDate ? `Session as of ${new Date(lastDate).toLocaleDateString()} (IST · UTC+05:30)` : ""}
+          {lastDate ? `Session as of ${formatDate(new Date(lastDate))} (IST · UTC+05:30)` : ""}
         </span>
       }
     >

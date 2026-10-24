@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import type { RazorpayPlanId } from "@/lib/payments/plans";
 import {
   escapeMiEmailHtml,
@@ -52,7 +53,7 @@ const GRANT_COPY: Record<
 function formatExpiresShort(expiresAtIso: string): string {
   const expires = new Date(expiresAtIso);
   if (!Number.isFinite(expires.getTime())) return "soon";
-  return expires.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return formatDate(expires);
 }
 
 export function renderGrantEmail(

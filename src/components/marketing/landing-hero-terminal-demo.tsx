@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { cn } from "@/lib/utils";
@@ -8,7 +9,7 @@ type View = "market" | "vix" | "flows";
 
 const fmtLabel = (iso: string | undefined) =>
   iso
-    ? new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false })
+    ? formatDate(new Date(iso), { time: true })
     : "—";
 
 /** Real series to an SVG path in a 400x80 box. Returns null when there are fewer than 2 points. */

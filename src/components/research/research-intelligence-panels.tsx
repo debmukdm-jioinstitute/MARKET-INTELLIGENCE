@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +78,7 @@ export function ResearchIntelligencePanels({
                     <ImpactIcon impact={n.impact} />
                     <div className="min-w-0 flex-1">
                       <a href={n.link} target="_blank" rel="noopener noreferrer" className="block text-base font-medium hover:text-primary">{n.title}</a>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{n.sourceLabel}{n.publishedAt ? ` · ${new Date(n.publishedAt).toLocaleDateString()}` : ""}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{n.sourceLabel}{n.publishedAt ? ` · ${formatDate(new Date(n.publishedAt))}` : ""}</p>
                     </div>
                   </li>
                 ))}

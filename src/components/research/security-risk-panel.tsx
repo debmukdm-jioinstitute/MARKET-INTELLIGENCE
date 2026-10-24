@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import type { SecurityRisk } from "@/lib/feeds/security-risk";
 import { MetricInfo } from "@/components/ui/metric-info";
@@ -153,7 +154,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
             />
           </div>
           <p className="mt-0.5 text-foreground">
-            {r.nextEarnings ? `${r.nextEarnings.date}${r.nextEarnings.isEstimate ? " (estimated)" : ""}` : r.market === "IN" ? "Not on file" : "Not shown for US names here"}
+            {r.nextEarnings ? `${isoToDmy(r.nextEarnings.date)}${r.nextEarnings.isEstimate ? " (estimated)" : ""}` : r.market === "IN" ? "Not on file" : "Not shown for US names here"}
           </p>
         </div>
         <div className="rounded-lg border border-border/70 p-3">
@@ -173,7 +174,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
             <ul className="mt-0.5 space-y-0.5">
               {r.insiderFilings.slice(0, 5).map((f) => (
                 <li key={f.url}>
-                  <span className="tabular-nums text-muted-foreground">{f.date}</span>{" "}
+                  <span className="tabular-nums text-muted-foreground">{isoToDmy(f.date)}</span>{" "}
                   <a href={f.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{f.form}</a>
                 </li>
               ))}
@@ -183,7 +184,7 @@ export function SecurityRiskPanel({ symbol }: { symbol: string }) {
           )}
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">{r.method} As of {r.asOf}. Not a rating or recommendation.</p>
+      <p className="text-sm text-muted-foreground">{r.method} As of {isoToDmy(r.asOf)}. Not a rating or recommendation.</p>
     </div>
   );
 }

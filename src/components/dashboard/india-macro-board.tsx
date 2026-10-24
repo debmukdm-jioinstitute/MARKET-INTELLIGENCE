@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { MetricInfo } from "@/components/ui/metric-info";
 import type { FieldSource, IndiaDashboardPayload, MacroRow } from "@/lib/feeds/india/types";
@@ -517,7 +518,7 @@ function LiquidityBars({ daily, range }: { daily: { date: string; valueCr: numbe
   const labelEvery = Math.max(1, Math.ceil(pts.length / 6));
   const fmtDate = (iso: string) => {
     const d = new Date(`${iso}T00:00:00`);
-    return Number.isNaN(d.getTime()) ? iso.slice(5) : d.toLocaleDateString("en-IN", { month: "short", day: "2-digit" });
+    return Number.isNaN(d.getTime()) ? iso.slice(5) : formatDate(d);
   };
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Daily net liquidity, last ${range} days`} className="h-auto w-full">

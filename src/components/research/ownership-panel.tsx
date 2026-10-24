@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Fold, Takeaway, type Tone } from "@/components/guide/explain";
@@ -31,7 +32,7 @@ async function loadOwnership(url: string): Promise<OwnershipResponse> {
 }
 
 const COLORS = { promoter: "#1a73e8", foreign: "#0f9d58", domestic: "#f9ab00", other: "#9aa0a6" } as const;
-const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+const fmtDay = (iso: string) => formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 const pct = (n: number | null | undefined) => (n == null ? "—" : `${n.toFixed(2)}%`);
 const SRC = "NSE shareholding pattern filing (XBRL)";
 

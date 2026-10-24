@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { flowHeadline, macroDeck } from "@/lib/story";
 
 import { EconomicCalendarSection } from "@/components/dashboard/economic-calendar-section";
 import { IndiaMacroBoard } from "@/components/dashboard/india-macro-board";
@@ -14,6 +16,14 @@ export default function IndiaMacroPage() {
       <Suspense fallback={null}>
         <ScrollToUrlSection />
       </Suspense>
+
+      <DataStory
+        kicker="India macro"
+        asOf={data?.fetchedAt}
+        headline={flowHeadline(data?.moneyFlow.fii.today, data?.moneyFlow.dii.today)}
+        deck={macroDeck(data?.indiaMacro ?? [])}
+        howToRead="the headline is the latest net equity flow in ₹ crore by investor type; the line below lists the indicators that changed in their latest release."
+      />
 
       {loading && !data ? <p className="text-sm text-muted-foreground mb-4">Loading India macro…</p> : null}
       {error ? <p className="text-sm text-rose-600 mb-4">{error}</p> : null}

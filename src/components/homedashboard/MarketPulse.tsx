@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import useSWR from "swr";
 import Link from "next/link";
@@ -56,15 +57,7 @@ function deriveChangeFraction(quote?: QuoteField): number | null {
 function formatAsOfIst(iso?: string | null): string | null {
   if (!iso) return null;
   try {
-    return new Date(iso).toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return formatDate(iso, { time: true });
   } catch {
     return null;
   }
