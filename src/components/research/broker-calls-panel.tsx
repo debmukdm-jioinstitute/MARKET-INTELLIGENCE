@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { fmtInr } from "@/lib/format-india";
@@ -32,7 +33,7 @@ const BUCKET_TONE: Record<RatingBucket, string> = {
   sell: "bg-rose-100 text-rose-800",
 };
 
-const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+const fmtDay = (iso: string) => formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 
 function verdictText(d: BrokerCallsResponse): string {
   const buy = d.distribution.strong_buy + d.distribution.buy;

@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { STALE_AFTER_MINUTES } from "@/lib/provenance";
 
 export type MarketStateKind = "live" | "delayed" | "closed" | "stale" | "unavailable" | "estimated";
@@ -39,13 +40,13 @@ export function nextNseSession(now = Date.now()): string {
   else if (weekday === "Sat") addDays = 2;
   else if (weekday === "Sun") addDays = 1;
   const d = new Date(now + addDays * 86_400_000);
-  const label = d.toLocaleDateString("en-GB", { timeZone: TZ, weekday: "short", day: "2-digit", month: "short" });
+  const label = `${d.toLocaleDateString("en-GB", { timeZone: TZ, weekday: "short" })}, ${formatDate(d)}`;
   return `${label}, 09:15 IST`;
 }
 
 function fmtTime(iso: string) {
   const d = new Date(iso);
-  return `${d.toLocaleDateString("en-GB", { timeZone: TZ, day: "2-digit", month: "short" })}, ${d.toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false })} IST`;
+  return `${formatDate(d, { time: true })} IST`;
 }
 
 export function resolveMarketState(input: {

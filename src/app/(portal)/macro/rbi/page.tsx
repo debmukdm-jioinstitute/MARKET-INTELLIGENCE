@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { corridorDeck, rbiHeadline } from "@/lib/story";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { RbiLiquidity } from "@/components/dashboard/rbi-liquidity";
@@ -27,6 +29,13 @@ export default function RbiPolicyPage() {
         subtitle="Monetary policy corridor, system liquidity, and RBI press releases — no placeholder policy rates."
         trust={{ source: "Reserve Bank of India", asOf: data?.fetchedAt }}
         />
+      <DataStory
+        kicker="RBI"
+        asOf={data?.fetchedAt}
+        headline={rbiHeadline(data?.rbiLiquidity.corridor?.repo, data?.rbiLiquidity.systemLiquidity.value)}
+        deck={corridorDeck(data?.rbiLiquidity.corridor)}
+        howToRead="the repo rate is what banks pay to borrow from the RBI; the standing facilities set the floor and ceiling around it. Liquidity shows whether the banking system holds a surplus or a shortage of cash."
+      />
 
       {loading && !data ? <p className="text-sm text-muted-foreground">Loading RBI dashboard…</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

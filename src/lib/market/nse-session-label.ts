@@ -25,6 +25,5 @@ export function nextNseOpenLabel(ist: Date): string {
 }
 
 export function formatHolidayShort(isoDate: string): string {
-  const d = new Date(`${isoDate}T12:00:00`);
-  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  return isoDate.slice(0, 10).split("-").reverse().join("-");
 }

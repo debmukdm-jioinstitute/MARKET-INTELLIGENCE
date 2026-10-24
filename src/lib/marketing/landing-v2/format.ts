@@ -1,18 +1,11 @@
+import { formatDate } from "@/lib/format";
 import type { FieldSource, QuoteField } from "@/lib/feeds/india/types";
 
 export function formatIstTimestamp(iso?: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return formatDate(d, { time: true });
 }
 
 export function sourceLabel(source?: FieldSource | null): string {

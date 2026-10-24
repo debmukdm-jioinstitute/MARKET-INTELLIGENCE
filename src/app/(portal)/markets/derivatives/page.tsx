@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { pcrHeadline } from "@/lib/story";
 
 import { DataInfo } from "@/components/feeds/data-info";
 import { SourceLink } from "@/components/dashboard/source-link";
@@ -31,6 +33,13 @@ export default function DerivativesPage() {
         subtitle="Option chain with live Greeks (Upstox) — delta, gamma, theta, vega, IV, PCR, and max pain, across Nifty, Bank Nifty, Fin Nifty, and individual F&O stocks."
         trust={{ source: snapshot?.source.provider ?? "Upstox", asOf: snapshot?.source.asOf, note: "Greeks are model-derived. Not investment advice" }}
         />
+      <DataStory
+        kicker="F&O"
+        asOf={legacy?.fetchedAt}
+        headline={pcrHeadline("Nifty", fo?.nifty.pcr, fo?.nifty.maxPain)}
+        deck={pcrHeadline("Bank Nifty", fo?.bankNifty.pcr, fo?.bankNifty.maxPain)}
+        howToRead="put-call ratio is open put contracts divided by open call contracts. Max pain is the strike where option buyers lose most at expiry."
+      />
       <Link href="/Home" className="text-sm text-primary hover:underline">
         ← Back to dashboard
       </Link>

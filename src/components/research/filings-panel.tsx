@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ async function loadAnnouncements(url: string): Promise<AnnouncementsResponse> {
 }
 
 const istDate = (iso: string) =>
-  `${new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })} IST`;
+  `${formatDate(new Date(iso), { time: true })} IST`;
 
 const linkLabel = (url: string) => (/\.pdf($|\?)/i.test(url) ? "PDF" : "Filing");
 

@@ -1,15 +1,11 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import type { BacktestResult } from "@/lib/trade-lab/backtest";
 import { useId } from "react";
 
 const istDate = (epochSec: number) =>
-  new Date(epochSec * 1000).toLocaleDateString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "numeric",
-    month: "short",
-    year: "2-digit",
-  });
+  formatDate(new Date(epochSec * 1000));
 
 /**
  * Equity curve built ONLY from the API's real trades: each point compounds

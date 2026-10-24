@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { DataInfo } from "@/components/feeds/data-info";
@@ -155,7 +156,7 @@ function DetailDrawer({
               <p className="tabular-nums text-2xl font-bold">
                 {detail.row.latest != null ? `${detail.row.latest.toFixed(2)} ${detail.row.unit}` : "—"}
               </p>
-              {detail.row.date ? <p className="text-muted-foreground tabular-nums">As of {detail.row.date}</p> : null}
+              {detail.row.date ? <p className="text-muted-foreground tabular-nums">As of {isoToDmy(detail.row.date)}</p> : null}
               <SourceTag>FRED public CSV</SourceTag>
             </>
           )}
@@ -412,7 +413,7 @@ export function WorldMonitorFreeDashboard() {
                       <span className="min-w-0 flex-1 break-words text-sm text-foreground">{s.name}</span>
                       <span className="shrink-0 text-sm tabular-nums font-medium text-foreground">
                         {s.latest != null ? `${s.latest.toFixed(2)} ${s.unit}` : "—"}
-                        {s.date ? <span className="ml-1 text-xs font-normal text-muted-foreground">{s.date}</span> : null}
+                        {s.date ? <span className="ml-1 text-xs font-normal text-muted-foreground">{isoToDmy(s.date)}</span> : null}
                       </span>
                     </button>
                   </li>

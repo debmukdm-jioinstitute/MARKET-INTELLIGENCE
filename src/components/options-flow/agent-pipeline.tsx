@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { DataInfo } from "@/components/feeds/data-info";
 import { Badge } from "@/components/ui/badge";
@@ -27,14 +28,7 @@ function Field({ field, fmt }: { field: SourcedField<number>; fmt?: (v: number) 
 function formatAsOf(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return formatDate(d, { time: true });
 }
 
 function DataStageBody({ result }: { result: OptionsFlowResult }) {

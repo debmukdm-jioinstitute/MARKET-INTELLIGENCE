@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import type { SessionUser } from "@/lib/auth";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { getProEntitlement, isProUser } from "@/lib/payments/pro-entitlement";
@@ -27,7 +28,7 @@ export function freeAiPeriodKey(now = new Date()): string {
 function periodLabel(periodKey: string): string {
   const [y, m] = periodKey.split("-").map(Number);
   if (!y || !m) return periodKey;
-  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-IN", { month: "long", year: "numeric", timeZone: "UTC" });
+  return formatDate(new Date(Date.UTC(y, m - 1, 1)), { tz: "UTC" });
 }
 
 function memKey(email: string, periodKey: string): string {

@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -100,7 +101,7 @@ export function GlobalMacroCard({ data }: { data?: IndiaDashboardPayload | null 
                       </span>
                       {idx.source?.asOf ? (
                         <span className="text-[10px] font-normal text-muted-foreground tabular-nums">
-                          {String(idx.source.asOf).slice(0, 10)}
+                          {isoToDmy(String(idx.source.asOf).slice(0, 10))}
                         </span>
                       ) : null}
                     </div>

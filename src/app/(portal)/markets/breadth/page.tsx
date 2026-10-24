@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { breadthDeck, breadthHeadline } from "@/lib/story";
 
 import { MarketMomentumCard } from "@/components/dashboard/market-momentum-card";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -68,6 +70,14 @@ function MarketBreadthView() {
         subtitle="Advance/decline and 52-week expansion from the India dashboard feed; NIFTY trend from daily closes."
         trust={{ source: breadthSource?.provider ?? "NSE India", asOf }}
         />
+
+      <DataStory
+        kicker="Breadth"
+        asOf={asOf}
+        headline={breadthHeadline(adv, dec)}
+        deck={breadthDeck(adv, dec, unch, h52, l52)}
+        howToRead="each stock counts once, however large. Many more risers than fallers means the move is broad; the reverse means a few heavyweights may be hiding wider weakness."
+      />
 
       {asOf ? (
         <p className="mb-3 text-xs text-muted-foreground tabular-nums" role="status">

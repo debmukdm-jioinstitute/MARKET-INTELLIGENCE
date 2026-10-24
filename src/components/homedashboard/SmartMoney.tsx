@@ -1,3 +1,4 @@
+import { isoToDmy } from "@/lib/format";
 import type { IndiaDashboardPayload } from "@/lib/feeds/india/types";
 import { flowInsight } from "@/lib/homedashboard/insights";
 import { DataInfo } from "@/components/feeds/data-info";
@@ -39,7 +40,7 @@ export function SmartMoney({ data }: { data: IndiaDashboardPayload | null }) {
                   </div>
                   <p className="mt-1 text-xs text-stone-500">
                     {row?.source.asOf
-                      ? `Reported ${row.source.asOf}`
+                      ? `Reported ${isoToDmy(row.source.asOf)}`
                       : "Latest cash-market report"}
                   </p>
                 </div>

@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -196,7 +197,7 @@ function IndexModelSection({ horizon, model, indexLabel }: { horizon: SignalHori
         </p>
         <p className="mt-1 text-muted-foreground">
           Walk-forward ensemble (Lorentzian k-NN + ridge logistic + momentum + mean-reversion), tuned on prior {v.tuneDays ?? TUNE_TRADING_DAYS} sessions then scored on{" "}
-          {v.days} trading days (target {v.oosTargetDays ?? OOS_TRADING_DAYS}, every session in range) ({v.from} → {v.to}).
+          {v.days} trading days (target {v.oosTargetDays ?? OOS_TRADING_DAYS}, every session in range) ({isoToDmy(v.from)} → {isoToDmy(v.to)}).
           {leanN > 0 ? (
             <>
               {" "}

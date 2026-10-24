@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { AnalystCredibilityPanel } from "@/components/research/analyst-credibility-panel";
@@ -36,7 +37,7 @@ function timeAgo(iso: string | null): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.round(hours / 24);
   if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+  return formatDate(new Date(iso));
 }
 
 export default function ResearchReportsPage() {

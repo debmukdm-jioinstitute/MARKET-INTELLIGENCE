@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { SignInRequiredBanner } from "@/components/auth/sign-in-required-banner";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -10,7 +11,7 @@ import { CompanyLogo } from "@/components/CompanyLogo";
 
 function fmtAddedIst(iso: string): string {
   try {
-    return new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " IST";
+    return formatDate(new Date(iso), { time: true }) + " IST";
   } catch {
     return iso;
   }

@@ -28,14 +28,13 @@ const n1 = nf(1);
 const n2 = nf(2);
 const n4 = nf(4);
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function monthLabel(ym: string) {
   const [y, m] = ym.split("-");
-  return `${MONTHS[Number(m) - 1] ?? m} ${y}`;
+  return `01-${m}-${y}`;
 }
 function dayLabel(iso: string) {
   const [y, m, d] = iso.split("-");
-  return `${Number(d)} ${MONTHS[Number(m) - 1] ?? m} ${y}`;
+  return `${d}-${m}-${y}`;
 }
 
 /** A figure that always links to the page it came from. */

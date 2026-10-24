@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { ErrorBanner, SetupBanner } from "@/components/ai-desk/setup-banner";
 import { Badge } from "@/components/ui/badge";
@@ -182,7 +183,7 @@ export function SentimentPortfolioPanel() {
 
       {result && result.hasHoldings ? (
         <div className="space-y-3">
-          <p className="text-sm text-stone-400">Scored {result.asOf}. Newest headlines first.</p>
+          <p className="text-sm text-stone-400">Scored {isoToDmy(result.asOf)}. Newest headlines first.</p>
           {result.holdings.map((h) => (
             <div key={h.symbol} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">

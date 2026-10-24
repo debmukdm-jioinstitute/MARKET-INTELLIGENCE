@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { STAGE_LABEL, STAGES, type Momentum, type StageId } from "@/lib/research/ipos";
@@ -36,7 +37,7 @@ async function loadIpos(url: string): Promise<IposResponse> {
   return json;
 }
 
-const fmtDay = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", timeZone: "UTC" }) : "—");
+const fmtDay = (iso: string | null) => (iso ? formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" }) : "—");
 const CATEGORY_LABEL: Record<string, string> = { capex: "Building / equipment", "debt-repayment": "Paying down debt", "working-capital": "Day-to-day working capital", ofs: "Existing holders selling", "general-corporate": "General corporate use", other: "Other" };
 
 
@@ -106,7 +107,7 @@ function GmpGauge({ gmp, disclaimer, explainer }: { gmp: NonNullable<Ipo["gmp"]>
           What is grey market? ↗
         </a>
       </p>
-      <p className="text-[11px] text-muted-foreground">Sources: {gmp.sources.join(" + ") || "—"}{gmp.updatedAt ? ` · ${new Date(gmp.updatedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata", hour12: false })} IST` : ""}</p>
+      <p className="text-[11px] text-muted-foreground">Sources: {gmp.sources.join(" + ") || "—"}{gmp.updatedAt ? ` · ${formatDate(new Date(gmp.updatedAt), { time: true })} IST` : ""}</p>
     </div>
   );
 }

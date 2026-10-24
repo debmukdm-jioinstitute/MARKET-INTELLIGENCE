@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import type { FeedSourceId, NewsItem } from "@/lib/feeds/types";
 
 /** Parse RSS/Atom date strings to epoch ms; missing/unparseable → 0 (sorts last). */
@@ -50,11 +51,7 @@ export function formatNewsPublishedAt(raw: string | undefined): string {
   const ms = newsPublishedAtMs(raw);
   if (!ms) return raw?.trim() ?? "";
   const d = new Date(ms);
-  const datePart = d.toLocaleString("en-IN", {
-    day: "numeric",
-    month: "short",
-    timeZone: "Asia/Kolkata",
-  });
+  const datePart = formatDate(d);
   const timePart = d
     .toLocaleString("en-IN", {
       hour: "numeric",

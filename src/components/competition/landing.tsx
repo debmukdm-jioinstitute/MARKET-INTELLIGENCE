@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 import useSWR from "swr";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -30,7 +31,7 @@ function Countdown({
     return (
       <span>
         Starts{" "}
-        {new Date(at).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}
+        {formatDate(new Date(at))}
       </span>
     );
   const seconds = Math.max(0, Math.floor((Date.parse(at) - now) / 1000));

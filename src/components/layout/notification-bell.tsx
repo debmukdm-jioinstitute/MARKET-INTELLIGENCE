@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { usePushSubscription } from "@/components/layout/push-notifications-toggle";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -99,7 +100,7 @@ function dayLabel(iso: string): string {
   const d = new Date(iso);
   const today = new Date();
   const diff = Math.round((new Date(today.toDateString()).getTime() - new Date(d.toDateString()).getTime()) / DAY);
-  return diff <= 0 ? "Today" : diff === 1 ? "Yesterday" : d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  return diff <= 0 ? "Today" : diff === 1 ? "Yesterday" : formatDate(d);
 }
 
 /** Notification centre: every meaningful change in the site's data, with a link to where it is shown. */

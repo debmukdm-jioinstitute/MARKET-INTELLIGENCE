@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { flowHeadline, flowPeriodDeck } from "@/lib/story";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -132,6 +134,14 @@ export function InstitutionalIntelligenceDashboard() {
           methodology:
             "Smart Money score blends ~22-session DII and MF net capital vs FII cash; promoter/insider cards stay honest until shareholding feeds ship.",
         }}
+      />
+
+      <DataStory
+        kicker="Latest session"
+        asOf={data?.fetchedAt}
+        headline={flowHeadline(data?.moneyFlow.fii.today, data?.moneyFlow.dii.today)}
+        deck={data ? flowPeriodDeck(data.moneyFlow.fii, data.moneyFlow.dii) : null}
+        howToRead="flows are net equity buying or selling in ₹ crore. Foreign investors are FIIs/FPIs; domestic institutions are mutual funds, insurers and similar."
       />
 
       <div className="flex justify-end">

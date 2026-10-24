@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 /**
  * Smart notifications — event detectors.
  *
@@ -37,7 +38,7 @@ const NIFTY50 = new Set(
 
 const isNifty50 = (s?: string | null) => !!s && NIFTY50.has(s.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 const companyHref = (symbol?: string | null) => (symbol ? `/research/${encodeURIComponent(symbol)}` : "/research");
-const day = (d: unknown) => { try { return new Date(d as string).toLocaleDateString("en-IN", { day: "numeric", month: "short" }); } catch { return ""; } };
+const day = (d: unknown) => { try { return formatDate(new Date(d as string)); } catch { return ""; } };
 const inr = (n: unknown) => { const v = Number(n); return Number.isFinite(v) ? `₹${v.toLocaleString("en-IN", { maximumFractionDigits: 0 })}` : ""; };
 
 async function safe<T>(fn: () => Promise<T[]>): Promise<T[]> {

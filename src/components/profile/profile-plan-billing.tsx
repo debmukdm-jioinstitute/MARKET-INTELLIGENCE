@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -56,11 +57,7 @@ export function ProfilePlanBilling({ onUpgraded }: { onUpgraded?: () => void }) 
         <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
           Full access active
           {billing.pro.expiresAt
-            ? ` until ${new Date(billing.pro.expiresAt).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}`
+            ? ` until ${formatDate(new Date(billing.pro.expiresAt))}`
             : ""}
           . You can extend with another plan below.
         </p>

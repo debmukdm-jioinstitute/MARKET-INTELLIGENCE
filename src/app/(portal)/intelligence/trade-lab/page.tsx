@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { PageHeader, Panel } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
@@ -69,13 +70,7 @@ const biasBadge: Record<Bias, string> = {
 const biasLabel: Record<Bias, string> = { bullish: "Bullish", bearish: "Bearish", neutral: "Neutral" };
 
 const ist = (epochSec: number, intraday: boolean) =>
-  new Date(epochSec * 1000).toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "2-digit",
-    month: "short",
-    year: intraday ? undefined : "numeric",
-    ...(intraday ? { hour: "2-digit", minute: "2-digit", hour12: false } : {}),
-  });
+  formatDate(epochSec * 1000, { time: intraday });
 const money = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = (n: number | null, d = 1) => (n === null ? "—" : `${n > 0 ? "+" : ""}${n.toFixed(d)}%`);
 

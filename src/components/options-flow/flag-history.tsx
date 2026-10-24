@@ -21,9 +21,8 @@ function monthKey(isoDate: string): string {
 }
 
 function monthLabel(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  const d = new Date(y, (m || 1) - 1, 1);
-  return d.toLocaleString("en-IN", { month: "short", year: "2-digit" });
+  const [y, m] = key.split("-");
+  return `01-${m}-${y}`;
 }
 
 /**

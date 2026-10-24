@@ -1,4 +1,6 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, RefreshCw } from "lucide-react";
@@ -27,11 +29,7 @@ async function loadPanel(): Promise<Panel> {
 
 function fmtAsOf(iso: string) {
   try {
-    return new Date(iso).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "Asia/Kolkata",
-    });
+    return formatDate(new Date(iso), { time: true });
   } catch {
     return iso;
   }
@@ -128,7 +126,7 @@ export function EarningsCalendarCard() {
                         <CompanyLogo symbol={item.symbol} name={item.symbol} size={24} />
                         <span className="font-bold text-foreground text-sm">{item.symbol}</span>
                         <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground tabular-nums">
-                          {item.date}
+                          {isoToDmy(item.date)}
                         </span>
                         <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground">
                           {item.timing}

@@ -1,4 +1,6 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -64,7 +66,7 @@ export function BacktestDashboard() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        {run.symbols} Nifty 500 stocks · {run.from} → {run.to} · {run.sessions} sessions · updated {new Date(run.asOf).toLocaleDateString()}
+        {run.symbols} Nifty 500 stocks · {isoToDmy(run.from)} → {isoToDmy(run.to)} · {run.sessions} sessions · updated {formatDate(new Date(run.asOf))}
       </p>
 
       <Panel title="Growth of ₹10,000" subtitle="Compounded daily on the average next-session return of every signal, vs the equal-weight Nifty 500 baseline. Pick up to 5 scanners.">
@@ -199,7 +201,7 @@ export function BacktestDashboard() {
       </Panel>
 
 
-      <Panel title="Edge research: what survived out-of-sample" subtitle="Research run of 25 Sep 2026 · scripts/edge-search.ts and scripts/edge-holdout.ts in the repository">
+      <Panel title="Edge research: what survived out-of-sample" subtitle="Research run of 25-09-2026 · scripts/edge-search.ts and scripts/edge-holdout.ts in the repository">
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
             <span className="font-semibold text-foreground">Search.</span> 648 scanner, scanner+filter and scanner-pair rules were tested at 1- and 5-session horizons on 5 years of Nifty 500 data, measured against the same-day average stock so market direction cannot fake an edge. Rules were ranked on the first 60% of dates; the 40 strongest were then judged on the untouched last 40% with a multiple-testing threshold.

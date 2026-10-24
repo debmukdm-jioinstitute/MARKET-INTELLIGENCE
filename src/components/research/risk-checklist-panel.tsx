@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import type { RiskItem, RiskSeverity } from "@/lib/research/legal-risk";
@@ -15,7 +16,7 @@ async function loadLegalRisk(url: string): Promise<LegalRiskResponse> {
   return json;
 }
 
-const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+const fmtDay = (iso: string) => formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 const CHIP: Record<RiskSeverity, { text: string; cls: string; row: string }> = {
   high: { text: "Look closely", cls: "bg-rose-600 text-white", row: "border-rose-300 bg-rose-50" },
   review: { text: "Worth reading", cls: "bg-amber-500 text-white", row: "border-amber-300 bg-amber-50" },

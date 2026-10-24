@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 import useSWR from "swr";
 import { Clock3, ExternalLink, Newspaper } from "lucide-react";
 import type { BriefResponse, HomeHeadline } from "@/lib/homedashboard/brief";
@@ -76,7 +77,7 @@ export function BriefTeaser({
                     <span className="flex items-center gap-1">
                       <Clock3 className="size-3" />
                       {h.publishedAt
-                        ? `${new Date(h.publishedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} IST · brief time`
+                        ? `${formatDate(new Date(h.publishedAt), { time: true })} IST · brief time`
                         : h.time}
                     </span>
                     {(h.severity ?? 0) >= 35 ? (

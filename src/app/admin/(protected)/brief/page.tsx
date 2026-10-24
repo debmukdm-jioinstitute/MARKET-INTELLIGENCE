@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { AdminCard } from "@/components/admin/admin-card";
 import { useEffect, useState } from "react";
@@ -53,7 +54,7 @@ export default function AdminBriefPage() {
               <div key={s.email} className="flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
                 <div>
                   <p className="text-gray-900">{s.email}</p>
-                  <p className="text-gray-500">Joined {new Date(s.created_at).toLocaleDateString()}</p>
+                  <p className="text-gray-500">Joined {formatDate(new Date(s.created_at))}</p>
                 </div>
                 <div className="flex items-center gap-4 text-gray-800">
                   <label className="flex items-center gap-1"><input type="checkbox" checked={s.pre} onChange={(e) => patch(s.email, { pre: e.target.checked })} /> Pre</label>

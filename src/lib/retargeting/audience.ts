@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { isProEntitlementActive } from "@/lib/payments/pro-entitlement";
 import { formatInrFromPaise, getRazorpayPlan, getRazorpayPlans, parseActivePlanId, type RazorpayPlanId, yearlySavingsCopy } from "@/lib/payments/plans";
 import type { RetargetingCustomer, RetargetingCustomerRow, RetargetingSegment } from "@/lib/retargeting/types";
@@ -109,7 +110,7 @@ export function buildTemplateVars(customer: RetargetingCustomer, templateTargetP
   let expiresPhrase = "already";
   let expiresAtShort = "soon";
   if (expiresAt && Number.isFinite(expiresAt.getTime())) {
-    expiresAtShort = expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    expiresAtShort = formatDate(expiresAt);
     expiresPhrase = customer.entitlementActive
       ? `on ${expiresAtShort}`
       : `on ${expiresAtShort}`;

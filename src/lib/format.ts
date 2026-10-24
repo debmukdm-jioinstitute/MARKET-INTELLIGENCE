@@ -60,3 +60,20 @@ export function toneFromSigned(value: number): "up" | "down" | "neutral" {
   if (value < -0.0000001) return "down";
   return "neutral";
 }
+
+type DateInput = Date | string | number;
+
+/** Site-wide date format: DD-MM-YYYY (+ " HH:mm" when `time`). Default zone IST; pass "UTC" for date-only ISO strings. */
+export function formatDate(value: DateInput, opts: { time?: boolean; tz?: string } = {}): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const timeZone = opts.tz ?? "Asia/Kolkata";
+  const date = d.toLocaleDateString("en-GB", { timeZone, day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", "-");
+  if (!opts.time) return date;
+  return `${date} ${d.toLocaleTimeString("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hour12: false })}`;
+}
+
+/** Rewrites every YYYY-MM-DD in a string as DD-MM-YYYY (for ISO dates straight from the API). */
+export function isoToDmy(s: string | null | undefined): string {
+  return (s ?? "").replace(/(\d{4})-(\d{2})-(\d{2})/g, "$3-$2-$1");
+}

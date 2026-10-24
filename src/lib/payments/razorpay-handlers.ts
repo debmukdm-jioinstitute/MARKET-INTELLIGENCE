@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { getRazorpayPlan, PAID_PLAN_IDS, type RazorpayPlanId } from "@/lib/payments/plans";
 import { grantProSubscription, grantProDays, getRazorpayOrderMeta } from "@/lib/payments/pro-entitlement";
 import { createRazorpayOrder, isRazorpayConfigured, verifyRazorpayPaymentSignature } from "@/lib/payments/razorpay";
@@ -199,7 +200,7 @@ export async function handleVerifyRazorpayPayment(
     paymentId: razorpay_payment_id,
     pro,
     message: pro?.active
-      ? `Pro active until ${pro.expiresAt ? new Date(pro.expiresAt).toLocaleDateString("en-IN") : "—"}.`
+      ? `Pro active until ${pro.expiresAt ? formatDate(new Date(pro.expiresAt)) : "—"}.`
       : "Payment verified.",
   };
 }

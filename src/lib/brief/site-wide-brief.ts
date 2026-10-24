@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { ensureSchema, hasDatabase, sql } from "@/lib/db";
 import { mapResearchRow, type ApiResearchReport } from "@/lib/research/api-map";
 import { getWatchlistLiveSentiment } from "@/lib/reddit-sentiment/live-cache";
@@ -151,12 +152,7 @@ export async function buildSiteWideExecutiveBrief(): Promise<SiteWideExecutiveBr
   const stance: SiteWideExecutiveBrief["stance"] = stanceScore >= 60 ? "Bullish" : stanceScore <= 40 ? "Defensive" : "Neutral";
 
   const now = new Date();
-  const istDate = now.toLocaleDateString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const istDate = formatDate(now);
   const istTime = now.toLocaleTimeString("en-IN", {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",

@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/seo/site-url";
 
@@ -48,8 +49,8 @@ export function pageMetadata(input: {
 }
 
 export function formatSeoDate(iso: string | undefined): string {
-  if (!iso) return new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  if (!iso) return formatDate(new Date());
   const ms = Date.parse(iso);
   if (!Number.isFinite(ms)) return iso.slice(0, 10);
-  return new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return formatDate(new Date(ms));
 }

@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { PlanCheckoutGrid } from "@/components/payments/plan-checkout-grid";
@@ -54,11 +55,7 @@ export default function PricingPage() {
   const activePlanId =
     billing?.isPro && billing.pro.active ? parseActivePlanId(billing.pro.planId) : null;
 
-  const pricingDate = new Date().toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const pricingDate = formatDate(new Date());
 
   return (
     <div className="portal-page max-w-5xl space-y-10">
@@ -72,7 +69,7 @@ export default function PricingPage() {
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
           Full access active
           {billing.pro.expiresAt
-            ? ` until ${new Date(billing.pro.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}`
+            ? ` until ${formatDate(new Date(billing.pro.expiresAt), { time: true })}`
             : ""}
           .
         </div>

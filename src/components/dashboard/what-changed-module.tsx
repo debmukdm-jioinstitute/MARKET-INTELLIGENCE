@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -25,11 +26,7 @@ function useWhatChangedSummaries() {
 
 function formatUpdated(iso: string) {
   try {
-    return new Date(iso).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "Asia/Kolkata",
-    });
+    return formatDate(new Date(iso), { time: true });
   } catch {
     return iso;
   }

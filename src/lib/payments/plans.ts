@@ -5,7 +5,7 @@ export type RazorpayPlanId = (typeof PAID_PLAN_IDS)[number];
 export const PLUS_LAUNCH_OFFER_END_ISO = "2026-10-31T23:59:59.999+05:30";
 
 export const PLUS_LAUNCH_OFFER_NOTE =
-  "Launch offer: ₹99 for your first month. Subscribe by 31 Oct 2026 and get 2 extra months free (3 months total).";
+  "Launch offer: ₹99 for your first month. Subscribe by 31-10-2026 and get 2 extra months free (3 months total).";
 
 export function plusLaunchOfferActive(at = new Date()): boolean {
   return at.getTime() <= new Date(PLUS_LAUNCH_OFFER_END_ISO).getTime();

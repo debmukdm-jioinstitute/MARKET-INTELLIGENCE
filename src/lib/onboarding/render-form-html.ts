@@ -1,3 +1,4 @@
+import { formatDate as fmtIst } from "@/lib/format";
 import { GOOGLE_SANS_FONT_STACK } from "@/lib/typography";
 import type { OnboardingFormModel } from "@/lib/onboarding/build-form-model";
 
@@ -12,7 +13,7 @@ function esc(s: string): string {
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    return fmtIst(new Date(iso), { time: true });
   } catch {
     return iso;
   }

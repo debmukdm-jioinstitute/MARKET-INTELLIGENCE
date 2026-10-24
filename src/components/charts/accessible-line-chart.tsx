@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { SignedPct } from "@/components/ui/signed-value";
 import { cn } from "@/lib/utils";
@@ -11,8 +12,8 @@ const TZ = "Asia/Kolkata";
 function fmtWhen(ts: string, intraday: boolean) {
   const d = new Date(ts);
   return intraday
-    ? `${d.toLocaleDateString("en-GB", { timeZone: TZ, day: "2-digit", month: "short" })}, ${d.toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false })} IST`
-    : d.toLocaleDateString("en-GB", { timeZone: TZ, day: "2-digit", month: "short", year: "numeric" });
+    ? `${formatDate(d)}, ${d.toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false })} IST`
+    : formatDate(d);
 }
 
 function csvEscape(v: string) {

@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/layout/page-header";
 import { disclosuresMeta, latestDisclosures } from "@/lib/disclosures/store";
 import { CompanyDisclosuresView } from "@/components/company/company-disclosures-view";
@@ -14,14 +15,7 @@ function formatAsOf(iso: string | null): string {
   if (!iso) return "Live";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "Live";
-  return d.toLocaleString("en-IN", {
-    day: "numeric",
-    month: "short",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  });
+  return formatDate(d, { time: true });
 }
 
 export default async function CompanyIntelligencePage() {

@@ -15,6 +15,11 @@ type IndexRow = {
   yearLow?: number;
   intraDayHigh?: number;
   intraDayLow?: number;
+  pe?: number | string;
+  pb?: number | string;
+  dy?: number | string;
+  perChange30d?: number | string;
+  perChange365d?: number | string;
 };
 
 export async function fetchNseAllIndices(): Promise<IndexRow[]> {

@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { useMemo, useState } from "react";
 import type { ApiResearchReport } from "@/lib/research/api-map";
@@ -162,16 +163,8 @@ export function BrokerAggregatorFeed({ reports }: Props) {
               <span className="text-[11px] text-muted-foreground tabular-nums flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
                 {r.published_at
-                  ? new Date(r.published_at).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : `Collected ${new Date(r.scraped_at).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}`}
+                  ? formatDate(new Date(r.published_at))
+                  : `Collected ${formatDate(new Date(r.scraped_at))}`}
               </span>
 
               <div className="flex items-center gap-2">

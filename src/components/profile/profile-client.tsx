@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -27,7 +28,7 @@ type ApiProfile = { profile: ProfileData; documents: ProfileDocument[]; founder:
 const fmtDate = (iso: string | null) => {
   if (!iso) return "Not recorded";
   try {
-    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    return formatDate(new Date(iso));
   } catch {
     return iso;
   }
@@ -35,7 +36,7 @@ const fmtDate = (iso: string | null) => {
 
 const fmtDateTime = (iso: string) => {
   try {
-    return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" }) + " IST";
+    return formatDate(new Date(iso), { time: true }) + " IST";
   } catch {
     return iso;
   }
@@ -204,7 +205,7 @@ function timeAgo(iso: string): string {
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}d ago`;
   try {
-    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    return formatDate(new Date(iso));
   } catch {
     return "";
   }

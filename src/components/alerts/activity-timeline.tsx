@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { BellRing } from "lucide-react";
 
@@ -7,7 +8,7 @@ export type AlertEvent = { id: string; fired_at: string; message: string };
 function fmtWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return formatDate(d, { time: true });
 }
 
 /** Recent fired alerts as a simple activity timeline. Data comes straight from /api/alerts. */

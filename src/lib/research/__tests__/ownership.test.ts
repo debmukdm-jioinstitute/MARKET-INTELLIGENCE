@@ -16,7 +16,7 @@ describe("computeOwnershipFlags", () => {
     expect(f).toHaveLength(1);
     expect(f[0].severity).toBe("medium");
     expect(f[0].detail).toContain("rose from 8% to 14%");
-    expect(f[0].detail).toContain("Dec 2025");
+    expect(f[0].detail).toContain("31-12-2025");
   });
   it("merges level + rise into one high flag and keeps the rise wording", () => {
     const f = computeOwnershipFlags([row("2026-01-20", "2025-12-31", 50, 8), row("2026-04-20", "2026-03-31", 50, 26)]);

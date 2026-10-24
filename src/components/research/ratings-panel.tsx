@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { Fold, Takeaway, Tile, type Tone } from "@/components/guide/explain";
@@ -17,7 +18,7 @@ export async function loadRatings(url: string): Promise<RatingsResponse> {
 }
 export const ratingsKey = (symbol: string) => `/api/research/ratings?symbol=${encodeURIComponent(symbol)}&v=2`;
 
-const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+const fmtDay = (iso: string) => formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const NOTCH_TONE: Record<string, string> = {
   AAA: "bg-emerald-100 text-emerald-800",

@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { Bars, Donut, Lines } from "@/components/charts/terminal-charts";
 import { MacroHistoryGrid } from "@/components/macro/macro-history-grid";
@@ -52,7 +53,7 @@ export function MacroSectionView({
               <tbody>
                 {data.regime.history.slice().reverse().slice(0, 12).map((h) => (
                   <tr key={h.date} className="border-b border-border/50">
-                    <td className="py-2 pr-4">{h.date}</td>
+                    <td className="py-2 pr-4">{isoToDmy(h.date)}</td>
                     <td className="py-2 pr-4">{h.label}</td>
                     <td className="py-2 pr-4">{h.growthScore.toFixed(1)}%</td>
                     <td className="py-2">{h.inflationScore.toFixed(1)}%</td>
@@ -250,7 +251,7 @@ function MetricCard({ metric, large }: { metric: MacroMetric; large?: boolean })
             </>
           ) : null}
           {" · "}
-          {metric.source.asOf}
+          {isoToDmy(metric.source.asOf)}
         </p>
       ) : null}
       {metric.history.length > 1 ? (

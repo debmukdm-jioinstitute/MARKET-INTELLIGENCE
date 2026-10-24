@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { GlassLoader } from "@/components/ui/glass-loader";
 
@@ -92,7 +93,7 @@ export function MarketMomentumCard() {
               </div>
             </div>
             {momentum.asOf ? (
-              <p className="text-xs text-muted-foreground">As of last daily close: {momentum.asOf}</p>
+              <p className="text-xs text-muted-foreground">As of last daily close: {isoToDmy(momentum.asOf)}</p>
             ) : null}
           </div>
         ) : null}

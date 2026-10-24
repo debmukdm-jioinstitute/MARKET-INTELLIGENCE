@@ -1,4 +1,6 @@
 "use client";
+import { DataStory } from "@/components/ui/data-story";
+import { curveDeck, yieldHeadline } from "@/lib/story";
 
 import { YieldCurveCard } from "@/components/macro/yield-curve-card";
 import { PageHeader, Panel } from "@/components/layout/page-header";
@@ -18,6 +20,13 @@ export default function YieldsMacroPage() {
         subtitle="India government bond yields vs US curve — US rates often steer global capital flows into or out of India."
         trust={{ source: "FRED, RBI (live 10Y G-Sec)", asOf: data?.fetchedAt, delayed: "Daily series; latest print may lag 1 business day" }}
         />
+      <DataStory
+        kicker="Yields"
+        asOf={data?.fetchedAt}
+        headline={yieldHeadline(data?.indiaYieldCurve ?? [], data?.usYieldCurve ?? [])}
+        deck={curveDeck(data?.usYieldCurve ?? [])}
+        howToRead="a yield is the annual return on a government bond bought today. A wider India-over-US gap makes Indian bonds more attractive to foreign money."
+      />
       <Link href="/macro" className="text-sm text-primary hover:underline">← Macro home</Link>
       {loading && !data ? <MacroTapeSkeleton count={2} /> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

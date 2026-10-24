@@ -27,11 +27,10 @@ export const PLEDGE_HIGH_PCT = 20;
 export const PLEDGE_RISE_PP = 5;
 export const PROMOTER_DROP_PP = 2;
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-/** "2026-06-30" → "Jun 2026" (falls back to the filing date's month). */
+/** "2026-06-30" → "30-06-2026" (falls back to the filing date). */
 export const quarterLabel = (r: Pick<OwnershipRow, "quarterEnd" | "broadcastDate">): string => {
   const d = r.quarterEnd ?? r.broadcastDate;
-  return `${MONTHS[Number(d.slice(5, 7)) - 1] ?? "?"} ${d.slice(0, 4)}`;
+  return d.slice(0, 10).split("-").reverse().join("-");
 };
 
 const r1 = (n: number) => Math.round(n * 10) / 10;

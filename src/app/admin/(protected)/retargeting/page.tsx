@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { AdminCard, AdminStat } from "@/components/admin/admin-card";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -475,10 +476,10 @@ export default function AdminRetargetingPage() {
                     <td className="py-2 pr-2">{MEMBER_KIND_LABEL[m.memberKind] ?? m.memberKind}</td>
                     <td className="py-2 pr-2">{m.currentPlanLabel}</td>
                     <td className="py-2 pr-2 tabular-nums">
-                      {m.expiresAt ? new Date(m.expiresAt).toLocaleDateString("en-IN") : "—"}
+                      {m.expiresAt ? formatDate(new Date(m.expiresAt)) : "—"}
                     </td>
                     <td className="py-2 pr-2 tabular-nums text-gray-500">
-                      {new Date(m.createdAt).toLocaleDateString("en-IN")}
+                      {formatDate(new Date(m.createdAt))}
                     </td>
                     <td className="py-2">
                       <button
@@ -524,7 +525,7 @@ export default function AdminRetargetingPage() {
                     <td className="py-2 pr-2">{SEGMENT_LABEL[c.segment] ?? c.segment}</td>
                     <td className="py-2 pr-2">{c.currentPlanLabel}</td>
                     <td className="py-2 pr-2 tabular-nums">
-                      {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString("en-IN") : "—"}
+                      {c.expiresAt ? formatDate(new Date(c.expiresAt)) : "—"}
                     </td>
                     <td className="py-2 pr-2 text-xs text-gray-500">{c.suggestedTemplateId || "—"}</td>
                     <td className="py-2">

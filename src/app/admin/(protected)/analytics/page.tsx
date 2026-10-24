@@ -1,4 +1,5 @@
 "use client";
+import { isoToDmy } from "@/lib/format";
 
 import { AnalyticsMetricInfo } from "@/components/admin/analytics-metric-info";
 import { ANALYTICS_SECTIONS, type AnalyticsDashboardPayload } from "@/lib/admin/analytics-catalog";
@@ -115,9 +116,9 @@ export default function AdminAnalyticsPage() {
                 <div
                   className="w-full rounded-t bg-blue-600/70"
                   style={{ height: `${Math.max(4, (d.n / maxDaily) * 140)}px` }}
-                  title={`${d.day}: ${d.n}`}
+                  title={`${isoToDmy(d.day)}: ${d.n}`}
                 />
-                <span className="text-sm text-gray-500">{d.day.slice(5)}</span>
+                <span className="text-sm text-gray-500">{isoToDmy(d.day)}</span>
               </div>
             ))}
             {data && data.daily.length === 0 ? <p className="text-sm text-gray-500">No traffic recorded yet.</p> : null}

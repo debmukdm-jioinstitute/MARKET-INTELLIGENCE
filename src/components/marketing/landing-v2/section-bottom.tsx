@@ -368,7 +368,7 @@ export function LandingPricingSection() {
               {yearly
                 ? `${PRICING_PLAN_BULLETS.pro_annual[0]}. ${MARKETING_PLAN_SAVINGS}`
                 : MARKETING_PLUS_LAUNCH_ACTIVE
-                  ? `${PRICING_PLAN_BULLETS.pro_monthly[0]}. 3 months access if you subscribe by 31 Oct 2026.`
+                  ? `${PRICING_PLAN_BULLETS.pro_monthly[0]}. 3 months access if you subscribe by 31-10-2026.`
                   : `${PRICING_PLAN_BULLETS.pro_monthly.slice(0, 2).join(" · ")}`}
             </p>
             <PrimaryButton href="/pricing" className="mt-6 w-full">

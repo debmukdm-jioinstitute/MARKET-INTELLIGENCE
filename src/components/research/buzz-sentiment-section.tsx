@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { Panel } from "@/components/layout/page-header";
 import { ALL_SOURCES, overlaySeries, QUADRANT_LABEL, quadrantOf, SOURCE_LABEL, type QuadrantPoint, type SourceDigest, type SourceId } from "@/lib/research/sentiment";
@@ -21,7 +22,7 @@ async function loadJson<T>(url: string): Promise<T> {
 const loadTrends = (url: string) => loadJson<TrendsResponse>(url);
 const loadSentiment = (url: string) => loadJson<SentimentResponse>(url);
 
-const fmtDay = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit", timeZone: "UTC" });
+const fmtDay = (iso: string) => formatDate(new Date(`${iso}T00:00:00Z`), { tz: "UTC" });
 
 /* ------------------------------------------------------------------ */
 

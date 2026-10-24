@@ -1,4 +1,5 @@
 "use client";
+import { formatDate } from "@/lib/format";
 
 import { ConsensusBar, type ResearchReportRow } from "@/components/research/research-reports-table";
 import { RESEARCH_SOURCE_LABELS } from "@/lib/research/source-labels";
@@ -18,16 +19,12 @@ export function timeAgo(iso: string | null): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.round(hours / 24);
   if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+  return formatDate(new Date(iso));
 }
 
 export function fmtDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDate(new Date(iso));
 }
 
 function fmtPrice(val: number | null | undefined): string {

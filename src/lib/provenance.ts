@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 export const DATA_ISSUE_EMAIL = "Deb@getmarketintelligence.in";
 
 /** Ages beyond this with no stated delay are flagged stale. Documented on /methodology#freshness. */
@@ -12,7 +13,7 @@ export function formatAsOfIst(iso: string | null | undefined): string | null {
   const time = d.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false });
   const day = d.toLocaleDateString("en-CA", { timeZone: tz });
   const today = new Date().toLocaleDateString("en-CA", { timeZone: tz });
-  return day === today ? `${time} IST` : `${d.toLocaleDateString("en-GB", { timeZone: tz, day: "2-digit", month: "short", year: "numeric" })}, ${time} IST`;
+  return day === today ? `${time} IST` : `${formatDate(d)}, ${time} IST`;
 }
 
 export type Freshness = { label: string; tone: "live" | "delayed" | "stale" | "unknown" };
