@@ -29,7 +29,7 @@ import { z } from "zod";
 
 const skillSchema = z.enum(["beginner", "intermediate", "advanced"]);
 
-const sectionSchema = z.enum(["Today", "Stocks", "Trade", "Macro & Flows", "Portfolio", "Data & Tools", "all"]);
+const sectionSchema = z.enum(["Today", "Markets", "Economy", "Funds & Flows", "Companies", "Trade", "Portfolio", "Data", "all"]);
 
 async function loadPortalControls(): Promise<PortalPageControlRow[]> {
   if (!hasDatabase()) return [];
@@ -96,7 +96,7 @@ export function createServerSiteAssistantTools(user: SessionUser | null) {
     }),
     list_portal_offerings: tool({
       description:
-        "List the full portal menu: sections (Today, Stocks, Trade, Macro & Flows, Portfolio, Data & Tools), task groups, pages, Start Here shortcuts, and AI-tagged tools. Use when explaining what the site offers or matching user goals.",
+        "List the full portal menu: sections (Today, Markets, Economy, Funds & Flows, Companies, Trade, Portfolio, Data), task groups, pages, Start Here shortcuts, and AI-tagged tools. Use when explaining what the site offers or matching user goals.",
       inputSchema: z.object({
         section: sectionSchema.optional().describe("Filter to one section, or omit for all"),
         skillLevel: skillSchema.optional().describe("Tailors Start Here shortcuts to learner level"),

@@ -1,5 +1,6 @@
 import {
   findGroup,
+  pathOf,
   sectionLandingHref,
   type NavLink,
   type NavSection,
@@ -15,7 +16,6 @@ export type PortalWayfinding = {
 };
 
 function sectionShortTitle(title: string) {
-  if (title === "Data & Tools") return "Tools";
   return title;
 }
 
@@ -23,8 +23,9 @@ function longestMatchingItem(group: { items: NavLink[] }, path: string): NavLink
   let best: NavLink | null = null;
   for (const item of group.items) {
     if (item.external) continue;
-    if (path === item.href || path.startsWith(`${item.href}/`)) {
-      if (!best || item.href.length > best.href.length) best = item;
+    const base = pathOf(item.href);
+    if (path === base || path.startsWith(`${base}/`)) {
+      if (!best || base.length > pathOf(best.href).length) best = item;
     }
   }
   return best;

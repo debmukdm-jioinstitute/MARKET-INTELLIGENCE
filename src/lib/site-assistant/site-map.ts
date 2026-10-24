@@ -1,5 +1,5 @@
 import { METRIC_COMMANDS, PAGE_COMMANDS, type PageCommand } from "@/lib/command-registry";
-import { NAV_SECTIONS } from "@/lib/nav-columns";
+import { ALL_NAV_SECTIONS } from "@/lib/nav-columns";
 
 export type PageSearchResult = Pick<PageCommand, "href" | "label" | "description">;
 
@@ -10,7 +10,7 @@ export const PORTAL_PATH_IN_TEXT =
 const STATIC_HREFS = new Set(PAGE_COMMANDS.map((p) => p.href.toLowerCase()));
 
 const NAV_HREFS = new Set<string>();
-for (const section of NAV_SECTIONS) {
+for (const section of ALL_NAV_SECTIONS) {
   for (const group of section.groups) {
     for (const item of group.items) {
       if (item.external) continue;
@@ -65,7 +65,7 @@ export function isAllowedHref(href: string): boolean {
   return false;
 }
 
-const NAV_SEARCH_PAGES: PageCommand[] = NAV_SECTIONS.flatMap((section) =>
+const NAV_SEARCH_PAGES: PageCommand[] = ALL_NAV_SECTIONS.flatMap((section) =>
   section.groups.flatMap((group) =>
     group.items
       .filter((item) => !item.external)

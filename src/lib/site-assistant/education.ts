@@ -1,4 +1,4 @@
-import { NAV_SECTIONS, START_HERE, type NavSection } from "@/lib/nav-columns";
+import { ALL_NAV_SECTIONS, START_HERE, type NavSection } from "@/lib/nav-columns";
 
 export type SkillLevel = "beginner" | "intermediate" | "advanced";
 
@@ -342,7 +342,7 @@ export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLe
   const sections: OfferingGroup[] = [];
   const aiTools: { href: string; label: string; desc: string }[] = [];
 
-  for (const section of NAV_SECTIONS) {
+  for (const section of ALL_NAV_SECTIONS) {
     if (sectionFilter && sectionFilter !== "all" && section.title !== sectionFilter) continue;
     for (const group of section.groups) {
       const pages = group.items.map((i) => ({
@@ -370,7 +370,7 @@ export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLe
 
   let startHere = [...START_HERE];
   if (skillLevel === "beginner") {
-    startHere = startHere.filter((s) => s.href === "/intelligence/brief" || s.href === "/research/ai-desk");
+    startHere = startHere.filter((s) => s.href === "/Home?section=brief" || s.href === "/research/ai-desk");
   } else if (skillLevel === "advanced") {
     startHere = startHere.filter((s) => s.href === "/intelligence/scanner" || s.href === "/intelligence/trade-lab" || s.href === "/portfolio");
   }
@@ -378,9 +378,9 @@ export function listPortalOfferings(sectionFilter?: string, skillLevel?: SkillLe
   return { startHere, sections, aiTools };
 }
 
-export function offeringsOutlineForPrompt(maxSections: NavSection[] = NAV_SECTIONS): string {
+export function offeringsOutlineForPrompt(maxSections: NavSection[] = ALL_NAV_SECTIONS): string {
   const lines: string[] = [
-    "Portal map (Today / Stocks / Trade / Macro & Flows / Portfolio / Data & Tools):",
+    "Portal map (Today / Markets / Economy / Funds & Flows / Companies / Trade / Portfolio; Data is a utility hub). Each hub is one long page; links use ?section=<id>:",
     ...START_HERE.map((s) => `Start here: ${s.label} → ${s.href} (${s.cta})`),
   ];
   for (const section of maxSections) {

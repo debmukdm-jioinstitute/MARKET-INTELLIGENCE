@@ -5,6 +5,7 @@ import { useMobileNav } from "@/components/layout/mobile-nav-provider";
 import { usePortalPages } from "@/components/providers/portal-page-provider";
 import {
   NAV_SECTIONS,
+  UTILITY_SECTIONS,
   START_HERE,
   findGroup,
   sectionLandingHref,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/nav-columns";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Briefcase, Bug, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, Search, TrendingUp, X } from "lucide-react";
+import { BarChart3, Briefcase, Bug, Building2, Landmark, Settings2, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, Search, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
@@ -36,25 +37,29 @@ type DynamicTab = {
 type Accent = { text: string; dot: string; hoverBg: string; ring: string };
 const ACCENTS: Record<string, Accent> = {
   Today: { text: "text-blue-600", dot: "bg-blue-500", hoverBg: "hover:bg-blue-50", ring: "border-blue-200" },
-  Stocks: { text: "text-emerald-600", dot: "bg-emerald-500", hoverBg: "hover:bg-emerald-50", ring: "border-emerald-200" },
+  Markets: { text: "text-sky-600", dot: "bg-sky-500", hoverBg: "hover:bg-sky-50", ring: "border-sky-200" },
+  Economy: { text: "text-cyan-600", dot: "bg-cyan-500", hoverBg: "hover:bg-cyan-50", ring: "border-cyan-200" },
+  "Funds & Flows": { text: "text-teal-600", dot: "bg-teal-500", hoverBg: "hover:bg-teal-50", ring: "border-teal-200" },
+  Companies: { text: "text-emerald-600", dot: "bg-emerald-500", hoverBg: "hover:bg-emerald-50", ring: "border-emerald-200" },
   Trade: { text: "text-rose-600", dot: "bg-rose-500", hoverBg: "hover:bg-rose-50", ring: "border-rose-200" },
-  "Macro & Flows": { text: "text-cyan-600", dot: "bg-cyan-500", hoverBg: "hover:bg-cyan-50", ring: "border-cyan-200" },
   Portfolio: { text: "text-violet-600", dot: "bg-violet-500", hoverBg: "hover:bg-violet-50", ring: "border-violet-200" },
-  "Data & Tools": { text: "text-amber-600", dot: "bg-amber-500", hoverBg: "hover:bg-amber-50", ring: "border-amber-200" },
+  Data: { text: "text-amber-600", dot: "bg-amber-500", hoverBg: "hover:bg-amber-50", ring: "border-amber-200" },
   Profile: { text: "text-indigo-600", dot: "bg-indigo-500", hoverBg: "hover:bg-indigo-50", ring: "border-indigo-200" },
 };
 const DEFAULT_ACCENT: Accent = { text: "text-blue-600", dot: "bg-blue-500", hoverBg: "hover:bg-blue-50", ring: "border-blue-200" };
 const SECTION_ICONS: Record<string, typeof CalendarDays> = {
   Today: CalendarDays,
-  Stocks: TrendingUp,
+  Markets: TrendingUp,
+  Economy: Globe,
+  "Funds & Flows": Landmark,
+  Companies: Building2,
   Trade: LineChart,
-  "Macro & Flows": Globe,
   Portfolio: Briefcase,
-  "Data & Tools": Database,
+  Data: Database,
 };
 
 /** Old admin-created tabs used earlier section names; map them onto the current ones. */
-const LEGACY_SECTION: Record<string, string> = { markets: "Today", macro: "Macro & Flows", research: "Stocks", intelligence: "Trade", portfolio: "Portfolio", invest: "Stocks", "my portfolio": "Portfolio" };
+const LEGACY_SECTION: Record<string, string> = { macro: "Economy", research: "Companies", stocks: "Companies", "macro & flows": "Economy", intelligence: "Trade", portfolio: "Portfolio", invest: "Companies", "my portfolio": "Portfolio", "data & tools": "Data" };
 
 function filterNavItems(items: NavLink[], hrefAllowed: (href: string) => boolean): NavLink[] {
   return items.filter((i) => i.external || hrefAllowed(i.href));
@@ -91,7 +96,8 @@ function loadDynamicTabs(): Promise<DynamicTab[]> {
 }
 
 /** Static sections plus any admin-created tabs from /api/tabs (each becomes its own single-page group). Shared by the desktop bar, the full menu and the bottom bar. */
-export function useNavSections(): NavSection[] {
+export function useNavSections(opts?: { includeUtility?: boolean }): NavSection[] {
+  const includeUtility = opts?.includeUtility ?? false;
   const { hrefAllowed } = usePortalPages();
   const [dynamicTabs, setDynamicTabs] = useState<DynamicTab[]>([]);
 
@@ -106,7 +112,7 @@ export function useNavSections(): NavSection[] {
   }, []);
 
   return useMemo(() => {
-    const sections: NavSection[] = NAV_SECTIONS.map((s) => ({ ...s, groups: [...s.groups] }));
+    const sections: NavSection[] = [...NAV_SECTIONS, ...(includeUtility ? UTILITY_SECTIONS : [])].map((s) => ({ ...s, groups: [...s.groups] }));
     for (const tab of dynamicTabs) {
       const link = { label: tab.label, href: tab.href, desc: "", badge: (tab.badge ?? undefined) as "AI" | "NEW" | undefined, external: tab.external };
       const group: NavGroup = { label: tab.label, desc: "", badge: link.badge, items: [link] };
@@ -116,7 +122,7 @@ export function useNavSections(): NavSection[] {
       else sections.push({ title: tab.section, tagline: "", groups: [group] });
     }
     return filterSections(sections, hrefAllowed);
-  }, [dynamicTabs, hrefAllowed]);
+  }, [dynamicTabs, hrefAllowed, includeUtility]);
 }
 
 export function useStartHereLinks() {
@@ -228,6 +234,15 @@ export function MegaNavBar() {
             </div>
           );
         })}
+        <Link
+          href="/data"
+          id="nav-data-utility"
+          aria-label="Data: sources, freshness and export"
+          title="Data"
+          className={cn("ml-1 inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", path === "/data" || path.startsWith("/data/") ? "bg-accent text-primary" : "")}
+        >
+          <Settings2 className="size-4" />
+        </Link>
       </nav>
 
       <div
@@ -290,19 +305,17 @@ export function AppNavTrigger() {
 }
 
 /** Sections pinned to the phone bottom bar; everything else lives behind "More" (the full menu). */
-const BOTTOM_TAB_TITLES = ["Today", "Stocks", "Trade", "Portfolio"];
+const BOTTOM_TAB_TITLES = ["Today", "Markets", "Funds & Flows", "Trade", "Portfolio"];
 
-/** Phone/tablet bottom tab bar (liquid-glass): Today · Stocks · Trade · [Search] · Portfolio · More · Profile. Search sits exactly in the middle as a raised glass button opening the global command palette. */
+/** Phone/tablet bottom tab bar (liquid-glass): Today · Markets · Funds · [Search] · Trade · Portfolio · More (Companies, Economy, Data, Help and Account live behind More). Search sits exactly in the middle as a raised glass button opening the global command palette. */
 export function BottomTabBar() {
   const allSections = useNavSections();
-  const sections = allSections.filter((s) => BOTTOM_TAB_TITLES.includes(s.title));
+  const sections = BOTTOM_TAB_TITLES.map((t) => allSections.find((s) => s.title === t)).filter((s): s is NavSection => Boolean(s));
   const path = usePathname();
   const { setOpen, openSection } = useMobileNav();
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const { hrefAllowed } = usePortalPages();
   const current = findGroup(sections, path);
-  const profileOn = path === "/profile" || path.startsWith("/profile/") || path.startsWith("/profile?");
-  const profileAccent = ACCENTS["Profile"] ?? DEFAULT_ACCENT;
 
   const tabClass = (on: boolean, accent: Accent) =>
     cn(
@@ -413,26 +426,6 @@ export function BottomTabBar() {
           <span className="relative max-w-full truncate">More</span>
         </button>
 
-        <Link
-          id="nav-bottom-profile"
-          href="/profile"
-          onClick={() => {
-            openSection(null);
-            setOpen(false);
-          }}
-          aria-current={profileOn ? "page" : undefined}
-          className={tabClass(profileOn, profileAccent)}
-        >
-          {profileOn ? (
-            <motion.span
-              layoutId="bottom-tab-glass-pill"
-              className={cn("absolute inset-x-1 top-1 bottom-1 rounded-2xl", profileAccent.dot, "opacity-15")}
-              transition={{ type: "spring", stiffness: 420, damping: 32 }}
-            />
-          ) : null}
-          <UserRound className={cn("relative size-5 transition-transform duration-200", profileOn && "scale-110")} />
-          <span className="relative max-w-full truncate">Profile</span>
-        </Link>
       </div>
     </nav>
   );
@@ -572,7 +565,7 @@ export function AppNav() {
 
               {/* Desktop: columns — each section uses a horizontal grid when expanded in menu */}
               <div className="mx-auto mt-6 hidden max-w-7xl border-t border-border px-6 pt-6 lg:block">
-                <div className="grid grid-cols-5 gap-x-4">
+                <div className="grid grid-cols-4 gap-x-4 gap-y-6 xl:grid-cols-7">
                 {sections.map((sec) => {
                   const accent = ACCENTS[sec.title] ?? DEFAULT_ACCENT;
                   return (
@@ -595,6 +588,22 @@ export function AppNav() {
             </div>
 
             <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-wrap items-center justify-end gap-1 border-t border-border px-4 py-2 sm:px-6">
+              <Link
+                href="/data"
+                onClick={close}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              >
+                <Database className="size-3.5" />
+                Data
+              </Link>
+              <Link
+                href="/help"
+                onClick={close}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              >
+                <Search className="size-3.5" />
+                Help
+              </Link>
               <Link
                 href="/profile"
                 onClick={close}

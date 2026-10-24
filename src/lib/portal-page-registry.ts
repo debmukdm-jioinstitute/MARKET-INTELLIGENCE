@@ -1,5 +1,6 @@
 import { MACRO_SECTIONS } from "@/lib/macro/sections-meta";
-import { NAV_SECTIONS } from "@/lib/nav-columns";
+import { ALL_NAV_SECTIONS, pathOf } from "@/lib/nav-columns";
+import { HUBS } from "@/lib/hubs";
 
 export type PortalPageRegistryEntry = {
   href: string;
@@ -33,12 +34,16 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
     appliesToChildren: false,
   });
 
-  for (const section of NAV_SECTIONS) {
+  for (const hub of Object.values(HUBS)) {
+    pushUnique(map, { href: hub.route, label: hub.title, navSection: hub.title, navGroup: "Hub", sortOrder: order++, appliesToChildren: false });
+  }
+
+  for (const section of ALL_NAV_SECTIONS) {
     for (const group of section.groups) {
       for (const item of group.items) {
         if (item.external) continue;
         pushUnique(map, {
-          href: item.href,
+          href: pathOf(item.href),
           label: item.label,
           navSection: section.title,
           navGroup: group.label,
@@ -53,7 +58,7 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
     pushUnique(map, {
       href: macro.href,
       label: macro.title,
-      navSection: "Macro & Flows",
+      navSection: "Economy",
       navGroup: "Macro Board (sections)",
       sortOrder: order++,
       appliesToChildren: false,
@@ -61,13 +66,13 @@ export function buildPortalPageRegistry(): PortalPageRegistryEntry[] {
   }
 
   const extras: Omit<PortalPageRegistryEntry, "sortOrder">[] = [
-    { href: "/macro/yields", label: "Yield curves", navSection: "Macro & Flows", navGroup: "Macro Board", appliesToChildren: false },
-    { href: "/macro/stress/backtest", label: "Stress backtest", navSection: "Macro & Flows", navGroup: "Stress & Scenarios", appliesToChildren: false },
-    { href: "/macro/currency", label: "Currency dashboard", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/macro/commodities", label: "Commodities dashboard", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/macro/indices", label: "World indices", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: false },
-    { href: "/markets/india", label: "India equity detail pages", navSection: "Today", navGroup: "Market Snapshot", appliesToChildren: true },
-    { href: "/research", label: "Research symbol pages", navSection: "Stocks", navGroup: "Research", appliesToChildren: true },
+    { href: "/macro/yields", label: "Yield curves", navSection: "Economy", navGroup: "Macro Board", appliesToChildren: false },
+    { href: "/macro/stress/backtest", label: "Stress backtest", navSection: "Economy", navGroup: "Stress & Scenarios", appliesToChildren: false },
+    { href: "/macro/currency", label: "Currency dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/macro/commodities", label: "Commodities dashboard", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/macro/indices", label: "World indices", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: false },
+    { href: "/markets/india", label: "India equity detail pages", navSection: "Markets", navGroup: "Market Snapshot", appliesToChildren: true },
+    { href: "/research", label: "Research symbol pages", navSection: "Companies", navGroup: "Research", appliesToChildren: true },
   ];
 
   for (const e of extras) {

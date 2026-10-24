@@ -4,6 +4,7 @@ import { useNavSections } from "@/components/layout/app-nav";
 import { SectionNav } from "@/components/layout/section-nav";
 import { buildPortalWayfinding } from "@/lib/nav-wayfinding";
 import { findGroup } from "@/lib/nav-columns";
+import { isHubRoute } from "@/lib/hubs";
 import { usePortalPages } from "@/components/providers/portal-page-provider";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, Home } from "lucide-react";
@@ -13,7 +14,7 @@ import { usePathname } from "next/navigation";
 /** Back link + Home link + breadcrumb + sibling tabs — every portal page except Home. */
 export function PortalWayfinding() {
   const path = usePathname();
-  const sections = useNavSections();
+  const sections = useNavSections({ includeUtility: true });
   const { hrefAllowed } = usePortalPages();
   const trail = buildPortalWayfinding(path, sections, hrefAllowed);
   const hit = findGroup(sections, path);
@@ -24,7 +25,7 @@ export function PortalWayfinding() {
       badge: i.badge,
     })) ?? [];
 
-  if (path === "/Home") return null;
+  if (path === "/Home" || isHubRoute(path)) return null;
 
   if (!trail) {
     return (

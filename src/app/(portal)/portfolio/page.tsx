@@ -1,36 +1,37 @@
-"use client";
+import { HubPage } from "@/components/hub/hub-page";
+import { pageMetadata } from "@/lib/seo/metadata";
+import Overview from "@/app/(portal)/portfolio/portfolio-overview";
+import Watchlist from "@/app/(portal)/portfolio/watchlist/page";
+import Allocation from "@/app/(portal)/portfolio/allocation/page";
+import TradeLog from "@/app/(portal)/portfolio/activity/page";
+import Risk from "@/app/(portal)/portfolio/risk/page";
+import Attribution from "@/app/(portal)/portfolio/attribution/page";
+import Quant from "@/app/(portal)/portfolio/quant/page";
+import Optimizer from "@/app/(portal)/portfolio/optimizer/page";
+import Tax from "@/app/(portal)/portfolio/tax/page";
 
-import { useMyPortfolio } from "@/hooks/use-my-portfolio";
-import { PortfolioDashboardView } from "@/components/my-portfolio/portfolio-dashboard-view";
+export const metadata = pageMetadata({
+  title: "My Portfolio: holdings, risk and tax",
+  description: "Track holdings, allocation, trade log, risk, attribution, factor exposure, optimizer and tax on one page.",
+  path: "/portfolio",
+});
 
-export default function PortfolioPage() {
-  const {
-    data,
-    locked,
-    addHolding,
-    removeHolding,
-    clearHoldings,
-    importHoldings,
-    updateBenchmark,
-    editHolding,
-    sellHolding,
-    updatePortfolioName,
-    updateCashInr,
-  } = useMyPortfolio();
-
+export default function PortfolioHub() {
   return (
-    <PortfolioDashboardView
-      data={data}
-      locked={locked}
-      onAddHolding={addHolding}
-      onRemoveHolding={removeHolding}
-      onClearHoldings={clearHoldings}
-      onImportHoldings={importHoldings}
-      onUpdateBenchmark={updateBenchmark}
-      onEditHolding={editHolding}
-      onSellHolding={sellHolding}
-      onUpdateName={updatePortfolioName}
-      onUpdateCash={updateCashInr}
+    <HubPage
+      hub="portfolio"
+      fullHrefs={{ watchlist: "/portfolio/watchlist", allocation: "/portfolio/allocation", activity: "/portfolio/activity", risk: "/portfolio/risk", attribution: "/portfolio/attribution", factors: "/portfolio/quant", optimizer: "/portfolio/optimizer", tax: "/portfolio/tax" }}
+      slots={{
+        overview: <Overview />,
+        watchlist: <Watchlist />,
+        allocation: <Allocation />,
+        activity: <TradeLog />,
+        risk: <Risk />,
+        attribution: <Attribution />,
+        factors: <Quant />,
+        optimizer: <Optimizer />,
+        tax: <Tax />,
+      }}
     />
   );
 }

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import useSWR from "swr";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useIndiaDashboard } from "@/hooks/use-india-dashboard";
 import { useMyPortfolio } from "@/hooks/use-my-portfolio";
@@ -25,6 +26,16 @@ import {
 } from "@/components/homedashboard/useHomeProgress";
 import { fetchOptions, homeJson } from "@/components/homedashboard/shared";
 import type { BriefResponse } from "@/lib/homedashboard/brief";
+import { HUBS } from "@/lib/hubs";
+import { HubJumpNav } from "@/components/hub/hub-jump-nav";
+import { HubSection } from "@/components/hub/hub-section";
+import { StartHere } from "@/components/hub/start-here";
+import { useHubSectionParam } from "@/components/hub/use-hub-section-param";
+import CalendarSection from "@/components/hub/calendar-section";
+import DailyBrief from "@/app/(portal)/intelligence/brief/page";
+import IntelligenceFeed from "@/app/(portal)/intelligence/page";
+import { WorldMonitorFreeDashboard } from "@/components/worldmonitor/world-monitor-free-dashboard";
+import { WorldMonitorPageShell } from "@/components/worldmonitor/world-monitor-page-shell";
 
 // Client-only, loaded after the dashboard so it never competes with first paint.
 const InstallAppPrompt = dynamic(
@@ -63,11 +74,18 @@ export default function DashboardPage() {
       })
     : "Your daily view";
   const portfolioUpTop = authenticated && portfolio.holdings.length > 0;
+  const [force, setForce] = useState<string | null>(null);
+  const onTarget = useCallback((id: string) => setForce(id), []);
+  useHubSectionParam(onTarget);
+  const chips = HUBS.today.sections.map((x) => ({ id: x.id, label: x.label }));
   return (
+    <>
+    <HubJumpNav chips={chips} label="Today" onJump={onTarget} />
     <div
       data-home-dashboard
       className="mx-auto max-w-[1440px] space-y-8 rounded-2xl bg-[#FAFAF9] px-3 py-5 pb-12 text-stone-900 [color-scheme:light] sm:space-y-10 sm:px-6"
     >
+      <div id="hero" className="scroll-mt-28 space-y-8 sm:space-y-10">
       {welcomeVisible(progress) ? (
         <>
           <h1 className="sr-only">A clearer view. A smarter start.</h1>
@@ -89,9 +107,12 @@ export default function DashboardPage() {
         </header>
       )}
       <WelcomeStrip progress={progress} />
+      </div>
+      <div id="pulse" className="scroll-mt-28 space-y-8 sm:space-y-10">
       <MarketPulse data={data} now={now} />
       {portfolioUpTop ? <PortfolioTeaser portfolio={visiblePortfolio} /> : null}
       <TsStructure />
+      </div>
       <ChartDesk />
       <BriefTeaser
         data={brief}
@@ -108,5 +129,13 @@ export default function DashboardPage() {
       {portfolioUpTop ? null : <PortfolioTeaser portfolio={visiblePortfolio} />}
       {authenticated ? <InstallAppPrompt /> : null}
     </div>
+    <div className="mx-auto mt-8 max-w-[1440px] space-y-8 px-3 pb-12 sm:px-6">
+      <HubSection id="brief" title="Daily brief" force={force === "brief"} fullHref="/intelligence/brief"><DailyBrief /></HubSection>
+      <HubSection id="calendar" title="Calendar" force={force === "calendar"}><CalendarSection /></HubSection>
+      <HubSection id="feed" title="Intelligence feed" force={force === "feed"} fullHref="/intelligence"><IntelligenceFeed /></HubSection>
+      <HubSection id="world-monitor" title="World monitor" force={force === "world-monitor"} fullHref="/intelligence/world-monitor"><WorldMonitorPageShell><WorldMonitorFreeDashboard /></WorldMonitorPageShell></HubSection>
+      <HubSection id="start-here" title="Start here" force={force === "start-here"}><StartHere /></HubSection>
+    </div>
+    </>
   );
 }

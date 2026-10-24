@@ -1,0 +1,159 @@
+"use client";
+
+import { PageHeader } from "@/components/layout/page-header";
+import { MetricInfo } from "@/components/ui/metric-info";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { TsStatusTable } from "@/components/ts-charts/ts-status-badge";
+
+interface DataSource {
+  metricId?: string;
+  name: string;
+  provider: string;
+  type: "Exchange Licensed" | "Official Regulatory" | "Open Web API";
+  coverage: string;
+  freshness: string;
+  url: string;
+}
+
+const SOURCES: DataSource[] = [
+  {
+    metricId: "nifty50",
+    name: "Upstox WebSocket & REST Feed",
+    provider: "Upstox (RKSV Securities)",
+    type: "Exchange Licensed",
+    coverage: "NSE Equities, NIFTY/BANKNIFTY Indices, Option Greeks",
+    freshness: "Tick-by-tick / 1s",
+    url: "https://upstox.com/developer/api-documentation",
+  },
+  {
+    metricId: "corporate_announcement",
+    name: "NSE India Corporate Announcements",
+    provider: "National Stock Exchange of India",
+    type: "Official Regulatory",
+    coverage: "Material Disclosures, Board Meetings, Earnings, Filings",
+    freshness: "Real-time RSS",
+    url: "https://www.nseindia.com",
+  },
+  {
+    metricId: "sensex",
+    name: "BSE India Corporate Announcements",
+    provider: "Bombay Stock Exchange",
+    type: "Official Regulatory",
+    coverage: "SENSEX 30, Regulatory Submissions, Dividends, M&A",
+    freshness: "Real-time RSS",
+    url: "https://www.bseindia.com",
+  },
+  {
+    metricId: "repo",
+    name: "Reserve Bank of India (RBI)",
+    provider: "RBI Data Warehouse & RSS",
+    type: "Official Regulatory",
+    coverage: "Monetary Policy, Liquidity Operations, FX Reserves, Repo",
+    freshness: "Daily / Fortnightly",
+    url: "https://www.rbi.org.in",
+  },
+  {
+    metricId: "cpi",
+    name: "MOSPI Macro Data Portal",
+    provider: "Ministry of Statistics & Programme Implementation",
+    type: "Official Regulatory",
+    coverage: "CPI Inflation, IIP Industrial Production, Quarterly GDP",
+    freshness: "Monthly release cycle",
+    url: "https://mospi.gov.in",
+  },
+  {
+    metricId: "sp500",
+    name: "Yahoo Finance Global Market Feeds",
+    provider: "Yahoo Finance API / Stooq",
+    type: "Open Web API",
+    coverage: "S&P 500, NASDAQ, Brent Crude, Gold, US 10Y, DXY",
+    freshness: "15s delayed / EOD",
+    url: "https://finance.yahoo.com",
+  },
+  {
+    metricId: "gsec10y",
+    name: "FRED (Federal Reserve Economic Data)",
+    provider: "Federal Reserve Bank of St. Louis",
+    type: "Official Regulatory",
+    coverage: "Global Macro, OECD Sovereign Yields, CBOE VIX",
+    freshness: "Daily close",
+    url: "https://fred.stlouisfed.org",
+  },
+];
+
+export default function SourcesSection() {
+  return (
+    <div className="portal-page pb-10">
+      <PageHeader
+
+        title="Where our data comes from"
+        subtitle="The providers behind the numbers, and how often each updates. For measured latency and degraded sources, see Feed health."
+      />
+
+      <p className="text-sm text-muted-foreground">
+        Live latency, freshness and failures are measured on{" "}
+        <Link href="/data/feeds" className="font-semibold text-primary hover:underline">
+          Feed health →
+        </Link>
+      </p>
+
+      {/* Sources Table */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Data Feed Source</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Coverage</TableHead>
+              <TableHead className="text-right">Freshness</TableHead>
+              <TableHead className="text-right">Source</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {SOURCES.map((s) => (
+              <TableRow key={s.name} className="text-sm hover:bg-accent/40">
+                <TableCell className="font-bold text-foreground flex items-center gap-1.5">
+                  <span>{s.name}</span>
+                  <MetricInfo
+                    id={s.metricId ?? "data_quality"}
+                    name={s.name}
+                    provider={s.provider}
+                    sourceUrl={s.url}
+                    iconSize="xs"
+                  />
+                </TableCell>
+                <TableCell className="text-muted-foreground">{s.provider}</TableCell>
+                <TableCell>
+                  <span className="rounded bg-accent/60 px-1.5 py-0.5 text-sm text-muted-foreground">
+                    {s.type}
+                  </span>
+                </TableCell>
+                <TableCell className="text-muted-foreground max-w-[220px] truncate">{s.coverage}</TableCell>
+                <TableCell className="text-right text-muted-foreground">{s.freshness}</TableCell>
+                <TableCell className="text-right">
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-0.5"
+                  >
+                    API <ExternalLink className="size-3" />
+                  </a>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="mt-10 space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">Dataset status catalogue</h2>
+        <p className="text-xs text-muted-foreground">Live state, latest observation date, and publication lag for every ingested market and macro dataset.</p>
+        <TsStatusTable />
+      </div>
+    </div>
+  );
+}

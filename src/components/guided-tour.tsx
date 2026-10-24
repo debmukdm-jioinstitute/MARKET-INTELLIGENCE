@@ -6,16 +6,17 @@ import { X, Play } from "lucide-react";
 import { slug } from "@/lib/nav-columns";
 
 /** Sections that have their own phone bottom-bar tab; the rest are reached via "More". */
-const MOBILE_BOTTOM_TABS: string[] = ["Today", "Stocks", "Trade", "Portfolio"];
+const MOBILE_BOTTOM_TABS: string[] = ["Today", "Markets", "Funds & Flows", "Trade", "Portfolio"];
 
 /** One tour stop per top-level menu section, in menu order. Plain language, no jargon. */
 const TOUR_SECTIONS = [
   { title: "Today", heading: "Today: what's happening now", text: "Your daily starting point. Check the market snapshot (indices, rupee, oil, gold) and read the AI Daily Brief — a 2-minute summary with sources." },
-  { title: "Stocks", heading: "Stocks: research any company", text: "Ask the AI Desk to debate a stock, read broker consensus and company disclosures, check promoter and credit risk, and track IPOs." },
+  { title: "Markets", heading: "Markets: tape, breadth and valuation", text: "India and world indices, currency, commodities, breadth, sectors, valuation, fear and greed, and market stress on one long page with jump chips." },
+  { title: "Economy", heading: "Economy: macro, RBI and yields", text: "Check growth, inflation, RBI and yields, then stress-test shocks like oil or the rupee. Find it under More on a phone." },
+  { title: "Funds & Flows", heading: "Funds & Flows: where the money goes", text: "Follow FII/DII flows, mutual fund SIPs and AUM, ETF spreads and margin trading." },
+  { title: "Companies", heading: "Companies: research any name", text: "Ask the AI Desk to debate a stock, read broker consensus and company disclosures, check promoter and credit risk, and track IPOs. Find it under More on a phone." },
   { title: "Trade", heading: "Trade: short-term ideas", text: "Scan Nifty 500 for breakouts, check any index or F&O stock in Trade Lab, set alerts, follow AI signals and unusual options activity, then backtest an idea on history." },
-  { title: "Macro & Flows", heading: "Macro & Flows: the economy and big money", text: "Check growth, inflation, RBI and yields, stress-test shocks like oil or the rupee, and follow FII/DII and institutional money." },
   { title: "Portfolio", heading: "Portfolio: your own holdings", text: "See your value and profit & loss, then check risk, what drove your returns, tax, and how you could rebalance. Import holdings or statements from your brokerage house." },
-  { title: "Data & Tools", heading: "Data & Tools: sources and downloads", text: "See where every number comes from and how fresh it is, or download all the data as one Excel workbook." },
 ] as const;
 
 export function GuidedTour() {
