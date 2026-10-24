@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { alignTo } from "./use-hub-section-param";
 
 export type HubChip = { id: string; label: string };
 
@@ -28,16 +29,14 @@ export function HubJumpNav({ chips, onJump, label }: { chips: HubChip[]; onJump?
     btn?.scrollIntoView({ inline: "center", block: "nearest" });
   }, [active]);
 
+  const cancel = useRef<() => void>(() => {});
+  useEffect(() => () => cancel.current(), []);
   const jump = (id: string) => {
     onJump?.(id);
     setActive(id);
-    // Wait a frame so an eagerly mounted section exists before scrolling.
-    requestAnimationFrame(() => {
-      const el = document.getElementById(id);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      el?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-      window.history.replaceState(null, "", `${window.location.pathname}#${id}`);
-    });
+    cancel.current();
+    // Sections above the target lazy-mount and grow mid-scroll, so a one-shot smooth scroll lands short; pin instead.
+    cancel.current = alignTo(id);
   };
 
   return (

@@ -5,6 +5,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import GlobalBoard from "@/app/(portal)/macro/page";
 import IndiaMacro from "@/components/hub/india-macro-section";
 import Rbi from "@/app/(portal)/macro/rbi/page";
+import RbiDesk from "@/components/rbi/rbi-desk";
 import Yields from "@/app/(portal)/macro/yields/page";
 import GlobalData from "@/app/(portal)/macro/global/page";
 import WorldBank from "@/app/(portal)/data/data360/page";
@@ -26,7 +27,7 @@ export default function EconomyHub() {
       slots={{
         "global-board": (<><GlobalBoard /><TsPathCharts path="/macro" /></>),
         "india-macro": (<><IndiaMacro /><TsPathCharts path="/macro/india" /></>),
-        rbi: (<><Rbi /><TsPathCharts path="/macro/rbi" /></>),
+        rbi: (<><Rbi /><TsPathCharts path="/macro/rbi" /><RbiDesk /></>),
         yields: (<><Yields /><TsPathCharts path="/macro/yields" /></>),
         "global-data": (<><GlobalData /><TsPathCharts path="/macro/global" /><div id="world-bank" className="mt-8 scroll-mt-28"><WorldBank /></div></>),
         "macro-stress": (<><MacroStress /><TsPathCharts path="/macro/stress" /></>),

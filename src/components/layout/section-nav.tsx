@@ -15,6 +15,11 @@ export interface SectionNavItem {
 export function SectionNav({ items, className }: { items: SectionNavItem[]; className?: string }) {
   const path = usePathname();
   const reduce = useReducedMotion();
+  // Only the most specific match is active, else "/intelligence" lights up on "/intelligence/world-monitor".
+  const base = (href: string) => href.split("?")[0]!;
+  const activeHref = items
+    .filter((i) => path === base(i.href) || path.startsWith(`${base(i.href)}/`))
+    .sort((a, b) => base(b.href).length - base(a.href).length)[0]?.href;
 
   return (
     <nav
@@ -25,7 +30,7 @@ export function SectionNav({ items, className }: { items: SectionNavItem[]; clas
       aria-label="Section pages"
     >
       {items.map((item) => {
-        const active = path === item.href || path.startsWith(`${item.href}/`);
+        const active = item.href === activeHref;
         return (
           <Link
             key={item.href}
