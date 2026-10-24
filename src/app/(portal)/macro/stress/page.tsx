@@ -6,7 +6,7 @@ import type { StressResult } from "@/lib/stress/compute";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { TsLine } from "@/components/ts-charts/ts-line";
 
 type Payload = { current: StressResult; history: StressPoint[]; alerts: AlertRow[] };
 
@@ -128,17 +128,16 @@ export default function StressIndexPage() {
 
           <Panel title="30-day history" subtitle="Snapshots are stored every 3 hours; the chart fills in as data accumulates.">
             {data.history.length > 1 ? (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.history.map((p) => ({ ...p, label: new Date(p.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) }))}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="score" name="Stress" stroke="#e11d48" fill="#e11d48" fillOpacity={0.15} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              <TsLine
+                rows={data.history.map((p) => ({
+                  date: new Date(p.ts).toISOString().slice(0, 10),
+                  score: p.score,
+                }))}
+                series={[{ col: "score", label: "Stress Score" }]}
+                band={[25, 65]}
+                fmt="num"
+                digits={0}
+              />
             ) : (
               <p className="text-sm text-muted-foreground">Not enough history yet — the scheduled job records a point every 3 hours.</p>
             )}

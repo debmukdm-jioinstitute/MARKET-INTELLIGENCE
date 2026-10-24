@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cronUnauthorized } from "@/lib/api-guard";
 import { hasDatabase, sql, toDateString } from "@/lib/db";
 import { ensureTsSchema } from "@/lib/ts-charts/server";
+import { INDICATORS } from "@/lib/ts-charts/registry";
+import { indicatorStats } from "@/lib/ts-charts/transform";
 
 export const dynamic = "force-dynamic";
 
@@ -62,5 +64,25 @@ export async function POST(req: Request) {
       ON CONFLICT (dataset) DO UPDATE SET latest_obs = EXCLUDED.latest_obs, expected_lag_days = EXCLUDED.expected_lag_days,
         state = EXCLUDED.state, last_run = now(), run_ms = EXCLUDED.run_ms, last_error = EXCLUDED.last_error`;
   }
+  // Populate ts_indicator_stats for all indicators
+  try {
+    for (const ind of INDICATORS) {
+      const col = ind.series[0]?.col;
+      if (!col) continue;
+      const raw = (await db`SELECT obs_date, value FROM collected_obs WHERE series_id = ${col} AND value IS NOT NULL ORDER BY obs_date ASC`) as unknown as { obs_date: unknown; value: number }[];
+      if (!raw.length) continue;
+      const pts = raw.map((r) => ({ date: toDateString(r.obs_date), v: Number(r.value) }));
+      const st = indicatorStats(pts);
+      if (!st) continue;
+      await db`INSERT INTO ts_indicator_stats (series_id, band_lo, band_hi, rec_hi, rec_hi_date, rec_lo, rec_lo_date, latest, latest_date, position, updated_at)
+        VALUES (${col}, ${st.bandLo}, ${st.bandHi}, ${st.recHi.v}, ${st.recHi.date}::date, ${st.recLo.v}, ${st.recLo.date}::date, ${st.latest.v}, ${st.latest.date}::date, ${st.position}, now())
+        ON CONFLICT (series_id) DO UPDATE SET band_lo = EXCLUDED.band_lo, band_hi = EXCLUDED.band_hi,
+          rec_hi = EXCLUDED.rec_hi, rec_hi_date = EXCLUDED.rec_hi_date, rec_lo = EXCLUDED.rec_lo, rec_lo_date = EXCLUDED.rec_lo_date,
+          latest = EXCLUDED.latest, latest_date = EXCLUDED.latest_date, position = EXCLUDED.position, updated_at = now()`;
+    }
+  } catch (err) {
+    console.error("Failed to populate ts_indicator_stats:", err);
+  }
+
   return NextResponse.json({ ok: true });
 }

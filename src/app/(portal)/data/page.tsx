@@ -5,6 +5,7 @@ import { MetricInfo } from "@/components/ui/metric-info";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { TsStatusTable } from "@/components/ts-charts/ts-status-badge";
 
 interface DataSource {
   metricId?: string;
@@ -146,6 +147,12 @@ export default function DataPage() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="mt-10 space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">Dataset status catalogue</h2>
+        <p className="text-xs text-muted-foreground">Live state, latest observation date, and publication lag for every ingested market and macro dataset.</p>
+        <TsStatusTable />
       </div>
     </div>
   );

@@ -102,6 +102,28 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
 }
 
 async function main() {
+  const isHealth = process.argv.includes("--health") || arg("only") === "--health";
+  if (isHealth) {
+    log({ mode: "health-check", msg: "running health verification on datasets" });
+    try {
+      const r = await fetch(`${site}/api/ts/status`, { headers: auth });
+      if (!r.ok) {
+        console.error(`::error::Health status check failed with HTTP ${r.status}`);
+        process.exit(1);
+      }
+      const datasets = (await r.json()) as { dataset: string; state: string; last_error?: string | null }[];
+      const failing = datasets.filter((d) => d.state === "failing");
+      if (failing.length > 0) {
+        console.error(`::error::Failing datasets detected: ${failing.map((d) => `${d.dataset} (${d.last_error ?? "error"})`).join(", ")}`);
+        process.exit(1);
+      }
+      log({ mode: "health-check", status: "ok", count: datasets.length });
+      process.exit(0);
+    } catch (e) {
+      console.error(`::error::Health check exception: ${e}`);
+      process.exit(1);
+    }
+  }
   if (!DRY && !secret) { console.error("CRON_SECRET not set (use --dry to parse without posting)"); process.exit(2); }
   const only = (arg("only") ?? process.env.ONLY ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const list = only.length ? SOURCES.filter((s) => only.includes(s.id) || only.includes(s.dataset)) : SOURCES;
