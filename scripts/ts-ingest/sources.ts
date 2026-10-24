@@ -138,21 +138,15 @@ export const DISABLED_SOURCES: SourceCfg[] = [
   },
 ];
 
-const dmyDash = (iso: string) => `${iso.slice(8, 10)}-${iso.slice(5, 7)}-${iso.slice(0, 4)}`;
-/** NSE historical index closes (price index, excludes dividends). Windows of <=360 days per request. First run starts 2015-01-01 unless --since is given. */
+/** NSE historical index closes via daily ind_close_all_{DDMMYYYY}.csv archives. */
 SOURCES.push({
-  id: "nse_indexhistory", urls: () => [], perDate: false, fmt: "json", freq: "daily", lagDays: 4, nseCookie: true,
-  reqs: (c) => {
-    const out: Req[] = [];
-    for (const [slug, name] of NIFTY_INDICES) {
-      let from = c.since ?? (c.latest ? addDays(c.latest, 1) : "2015-01-01");
-      while (from <= c.today) {
-        const to = addDays(from, 359) < c.today ? addDays(from, 359) : c.today;
-        out.push({ url: `https://www.nseindia.com/api/historical/indicesHistory?indexType=${encodeURIComponent(name)}&from=${dmyDash(from)}&to=${dmyDash(to)}`, meta: { slug } });
-        from = addDays(to, 1);
-      }
-    }
-    return out;
-  },
-  parser: "nseIndexHistory", dataset: "nse_indexhistory", anchorSeries: "ts_niftyidx_nifty50_px",
+  id: "nse_indexhistory",
+  urls: (d) => [`https://nsearchives.nseindia.com/content/indices/ind_close_all_${fmtDmy(d!)}.csv`],
+  perDate: true,
+  fmt: "csv",
+  freq: "daily",
+  lagDays: 4,
+  parser: "nseIndexHistory",
+  dataset: "nse_indexhistory",
+  anchorSeries: "ts_niftyidx_nifty50_px",
 });

@@ -222,19 +222,48 @@ export const nseAllIndices: Parser = (buf, ctx) => {
   return out;
 };
 
-/** NSE api/historical/indicesHistory → {data:{indexCloseOnlineRecords:[{EOD_CLOSE_INDEX_VAL, EOD_TIMESTAMP "24-Oct-2025" | TIMESTAMP ISO}]}}. Tolerant of both date styles. */
+/** NSE historical index closes: supports ind_close_all_*.csv archives or JSON indicesHistory. */
 export const nseIndexHistory: Parser = (buf, ctx) => {
-  const slug = ctx.meta?.slug;
-  if (!slug) throw new Error("nseIndexHistory needs meta.slug");
-  const j = JSON.parse(stripBom(buf.toString("utf8"))) as { data?: { indexCloseOnlineRecords?: Record<string, unknown>[] } | Record<string, unknown>[] };
-  const recs = (Array.isArray(j.data) ? j.data : j.data?.indexCloseOnlineRecords) ?? [];
-  const obs = recs.flatMap((r) => {
-    const raw = String(r.EOD_TIMESTAMP ?? r.TIMESTAMP ?? r.timestamp ?? "");
-    const d = /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : parseDmy(raw);
-    const v = num(r.EOD_CLOSE_INDEX_VAL ?? r.CLOSE ?? r.close);
-    return d && v != null ? [{ date: d, value: v }] : [];
-  });
-  return [{ id: `ts_niftyidx_${slug}_px`, label: `${slug} price index`, unit: "index", category: "market", provider: "NSE India", url: ctx.url, obs }];
+  const text = stripBom(buf.toString("utf8")).trim();
+  if (text.startsWith("{")) {
+    const slug = ctx.meta?.slug;
+    if (!slug) throw new Error("nseIndexHistory needs meta.slug");
+    const j = JSON.parse(text) as { data?: { indexCloseOnlineRecords?: Record<string, unknown>[] } | Record<string, unknown>[] };
+    const recs = (Array.isArray(j.data) ? j.data : j.data?.indexCloseOnlineRecords) ?? [];
+    const obs = recs.flatMap((r) => {
+      const raw = String(r.EOD_TIMESTAMP ?? r.TIMESTAMP ?? r.timestamp ?? "");
+      const d = /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : parseDmy(raw);
+      const v = num(r.EOD_CLOSE_INDEX_VAL ?? r.CLOSE ?? r.close);
+      return d && v != null ? [{ date: d, value: v }] : [];
+    });
+    return [{ id: `ts_niftyidx_${slug}_px`, label: `${slug} price index`, unit: "index", category: "market", provider: "NSE India", url: ctx.url, obs }];
+  }
+
+  const rows = csvRows(text);
+  if (!rows.length) return [];
+  const h = rows[0].map((c) => c.toLowerCase());
+  const iName = h.findIndex((c) => c.includes("index name"));
+  const iDate = h.findIndex((c) => c.includes("index date"));
+  const iClose = h.findIndex((c) => c.includes("closing index value"));
+  const iPe = h.findIndex((c) => c === "p/e");
+  const iPb = h.findIndex((c) => c === "p/b");
+  if (iName < 0 || iClose < 0) throw new Error("ind_close_all columns missing");
+
+  const out: SeriesResult[] = [];
+  for (const r of rows.slice(1)) {
+    const name = String(r[iName] ?? "").toUpperCase().replace(/\s+/g, " ").trim();
+    const slug = NIFTY_SLUGS[name];
+    if (!slug) continue;
+    const d = (iDate >= 0 ? parseDmy(r[iDate]) : null) ?? ctx.date;
+    const px = num(r[iClose]);
+    if (!d || px == null) continue;
+    out.push(mk(`ts_niftyidx_${slug}_px`, `${slug} price index`, "index", "NSE India", ctx.url, d, px, "market"));
+    const pe = iPe >= 0 ? num(r[iPe]) : null;
+    const pb = iPb >= 0 ? num(r[iPb]) : null;
+    if (pe != null && pe > 0) out.push(mk(`ts_niftyidx_${slug}_pe`, `${slug} P/E`, "x", "NSE India", ctx.url, d, pe, "valuation"));
+    if (pb != null && pb > 0) out.push(mk(`ts_niftyidx_${slug}_pb`, `${slug} P/B`, "x", "NSE India", ctx.url, d, pb, "valuation"));
+  }
+  return out;
 };
 
 export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;

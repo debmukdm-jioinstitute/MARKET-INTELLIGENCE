@@ -19,7 +19,7 @@ export const fmtYmd = (iso: string) => iso.replace(/-/g, "");
 export const fmtDmy = (iso: string) => `${iso.slice(8, 10)}${iso.slice(5, 7)}${iso.slice(0, 4)}`;
 
 /** Candidate trading dates (weekdays) strictly after `latest` up to `today` inclusive; capped to `max`. */
-export function candidateDates(latest: string | null, today: string, since?: string, max = 40): string[] {
+export function candidateDates(latest: string | null, today: string, since?: string, max = since ? 5000 : 40): string[] {
   const start = since ?? (latest ? addDays(latest, 1) : addDays(today, -7));
   const out: string[] = [];
   for (let d = start; d <= today; d = addDays(d, 1)) if (!isWeekend(d)) out.push(d);

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { zipSync, strToU8 } from "fflate";
 import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } from "./parsers";
@@ -136,12 +137,25 @@ describe("indexhistory + registry of sources", () => {
     expect(s.id).toBe("ts_niftyidx_nifty50_px");
     expect(s.obs).toEqual([{ date: "2026-10-23", value: 25000.5 }, { date: "2026-10-22", value: 24900 }]);
   });
-  it("windows requests to <=360 days and covers today", () => {
+  it("formats ind_close_all URL for candidate dates", () => {
     const src = SOURCES.find((x) => x.id === "nse_indexhistory")!;
-    const reqs = src.reqs!({ latest: null, today: "2026-10-24" }).filter((r) => r.meta?.slug === "nifty50");
-    expect(reqs.length).toBeGreaterThan(8);
-    expect(reqs.at(-1)!.url).toContain("to=24-10-2026");
-    expect(reqs[0].url).toContain("from=01-01-2015");
+    expect(src.perDate).toBe(true);
+    expect(src.urls("2026-10-23")[0]).toBe("https://nsearchives.nseindia.com/content/indices/ind_close_all_23102026.csv");
+  });
+  it("parses ind_close_all.csv for tracked indices and valuation", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/ind_close_all.csv");
+    const r = nseIndexHistory(buf, ctx);
+    const px = r.filter((s) => s.id.endsWith("_px"));
+    expect(px.map((s) => s.id).sort()).toEqual([
+      "ts_niftyidx_nifty500_px",
+      "ts_niftyidx_nifty50_px",
+      "ts_niftyidx_niftybank_px",
+      "ts_niftyidx_niftyit_px",
+      "ts_niftyidx_niftymidcap150_px",
+      "ts_niftyidx_niftysmallcap250_px",
+    ]);
+    expect(r.find((s) => s.id === "ts_niftyidx_nifty50_px")!.obs[0]).toEqual({ date: "2026-10-23", value: 22600 });
+    expect(r.find((s) => s.id === "ts_niftyidx_nifty50_pe")!.obs[0]).toEqual({ date: "2026-10-23", value: 19.05 });
   });
   it("disabled sources are not scheduled", () => {
     expect(SOURCES.some((x) => x.id.startsWith("niftyindices") || x.id === "oecd")).toBe(false);
