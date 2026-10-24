@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { zipSync, strToU8 } from "fflate";
-import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } from "./parsers";
+import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, nsdlFpi, nsdlDepo, cdslBo, nseShareholding } from "./parsers";
 import { candidateDates, parseDmy } from "./dates";
 
 const ctx = { url: "https://x/y", date: "2026-10-23" };
@@ -308,5 +308,70 @@ describe("rbi parsers", () => {
     const mpc = r.find((s) => s.id === "ts_rbi_mpc_votes");
     expect(mpc).toBeDefined();
     expect(mpc!.obs[0].value).toBe(6.0);
+  });
+});
+
+
+describe("flows and ownership parsers", () => {
+  it("nsdlFpi parses monthly net equity and debt flows", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nsdl_fpi_monthly_sample.html");
+    const r = nsdlFpi(buf, { url: "https://www.fpi.nsdl.co.in/web/Reports/Monthly.aspx", date: "2026-10-23" });
+    const eq = r.find((s) => s.id === "ts_nsdl_fpi_net_equity_m");
+    const debt = r.find((s) => s.id === "ts_nsdl_fpi_net_debt_m");
+    expect(eq).toBeDefined();
+    expect(eq!.obs[0].value).toBe(-48056.33);
+    expect(debt).toBeDefined();
+    expect(debt!.obs[0].value).toBe(-1452.68);
+  });
+
+  it("nsdlFpi parses fortnightly sector equity AUC", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nsdl_fpi_sector_sample.html");
+    const r = nsdlFpi(buf, { url: "https://www.fpi.nsdl.co.in/web/StaticReports/Fortnightly_Sector_wise_FII_Investment_Data/FIIInvestSector_Oct152026.html", date: "2026-10-15" });
+    const fin = r.find((s) => s.id === "ts_nsdl_fpi_sector_fin");
+    const itSec = r.find((s) => s.id === "ts_nsdl_fpi_sector_it");
+    const auto = r.find((s) => s.id === "ts_nsdl_fpi_sector_auto");
+    expect(fin).toBeDefined();
+    expect(fin!.obs[0].value).toBe(2001020);
+    expect(itSec).toBeDefined();
+    expect(itSec!.obs[0].value).toBe(358900);
+    expect(auto).toBeDefined();
+    expect(auto!.obs[0].value).toBe(498295);
+  });
+
+  it("nsdlDepo parses active client accounts and custody value", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nsdl_stats_sample.html");
+    const r = nsdlDepo(buf, { url: "https://nsdl.com/about-us/statistics", date: "2026-10-24" });
+    const active = r.find((s) => s.id === "ts_nsdl_client_accounts");
+    const custody = r.find((s) => s.id === "ts_nsdl_custody_val");
+    expect(active).toBeDefined();
+    expect(active!.obs[0].value).toBe(47183877);
+    expect(custody).toBeDefined();
+    expect(custody!.obs[0].value).toBe(536.45);
+  });
+
+  it("cdslBo parses active BO accounts and total demat accounts", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/cdsl_update_sample.js");
+    const r = cdslBo(buf, { url: "https://www.cdslindia.com/IncludesNew/js/Home/cdslupdate.js", date: "2026-09-30" });
+    const bo = r.find((s) => s.id === "ts_cdsl_bo_accounts");
+    const total = r.find((s) => s.id === "ts_depo_total_accounts");
+    expect(bo).toBeDefined();
+    expect(bo!.obs[0].value).toBe(193406915);
+    expect(total).toBeDefined();
+    expect(total!.obs[0].value).toBe(240590792);
+  });
+
+  it("nseShareholding parses market ownership distribution", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/shareholding_sample.xml");
+    const r = nseShareholding(buf, { url: "https://www.nseindia.com/api/corporate-share-holdings-master?index=equities&symbol=RELIANCE", date: "2026-09-30" });
+    const prom = r.find((s) => s.id === "ts_ownership_promoter");
+    const fii = r.find((s) => s.id === "ts_ownership_fii");
+    const dii = r.find((s) => s.id === "ts_ownership_dii");
+    const mf = r.find((s) => s.id === "ts_ownership_mf");
+    const pub = r.find((s) => s.id === "ts_ownership_retail");
+    expect(prom!.obs[0].value).toBe(50.48);
+    expect(fii!.obs[0].value).toBe(19.25);
+    expect(dii!.obs[0].value).toBe(16.1);
+    expect(mf!.obs[0].value).toBe(9.65);
+    expect(pub!.obs[0].value).toBe(14.17);
   });
 });

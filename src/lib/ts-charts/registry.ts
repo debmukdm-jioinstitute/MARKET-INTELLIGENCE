@@ -196,6 +196,54 @@ export const REGISTRY: ChartDef[] = [
     ],
     source: "Reserve Bank of India (Sectoral Deployment)", page: "/intelligence/credit",
   },
+  // ---- Flows and Ownership (/intelligence/institutional & /intelligence/promoters)
+  { ...ind("i.fpi_net_eq", "FPI Monthly Net Equity Flow", "nsdl_fpi", "ts_nsdl_fpi_net_equity_m", "crore", 0, "NSDL FPI", "/intelligence/institutional"), also: ["/Home", "/macro"] },
+  ind("i.fpi_net_debt", "FPI Monthly Net Debt Flow", "nsdl_fpi", "ts_nsdl_fpi_net_debt_m", "crore", 0, "NSDL FPI", "/intelligence/institutional"),
+  {
+    id: "fpi.flows_monthly", kind: "bars", title: "FPI monthly net flows into equity and debt", dataset: "nsdl_fpi", fmt: "crore", digits: 0,
+    series: [
+      { col: "ts_nsdl_fpi_net_equity_m", label: "Equity" },
+      { col: "ts_nsdl_fpi_net_debt_m", label: "Debt" },
+    ],
+    source: "NSDL FPI", page: "/intelligence/institutional",
+  },
+  {
+    id: "fpi.sector_auc", kind: "bars", title: "FPI sector equity assets under custody (AUC)", dataset: "nsdl_fpi", fmt: "crore", digits: 0,
+    series: [
+      { col: "ts_nsdl_fpi_sector_fin", label: "Financial Services" },
+      { col: "ts_nsdl_fpi_sector_it", label: "Information Technology" },
+      { col: "ts_nsdl_fpi_sector_pharma", label: "Healthcare" },
+      { col: "ts_nsdl_fpi_sector_auto", label: "Automobile" },
+      { col: "ts_nsdl_fpi_sector_capgoods", label: "Capital Goods" },
+      { col: "ts_nsdl_fpi_sector_oil", label: "Oil & Gas" },
+      { col: "ts_nsdl_fpi_sector_fmcg", label: "FMCG" },
+      { col: "ts_nsdl_fpi_sector_power", label: "Power" },
+    ],
+    source: "NSDL FPI (Fortnightly)", page: "/intelligence/institutional",
+  },
+  ind("i.nsdl_active_accounts", "NSDL Active Demat Accounts", "nsdl_depo", "ts_nsdl_client_accounts", "num", 0, "National Securities Depository Limited", "/intelligence/institutional"),
+  ind("i.cdsl_active_accounts", "CDSL Active Demat Accounts", "cdsl_bo", "ts_cdsl_bo_accounts", "num", 0, "Central Depository Services Limited", "/intelligence/institutional"),
+  { ...ind("i.demat_total", "Total Demat Accounts (CDSL + NSDL)", "cdsl_bo", "ts_depo_total_accounts", "num", 0, "CDSL & NSDL", "/intelligence/institutional"), also: ["/Home"] },
+  {
+    id: "flows.cumulative", kind: "line", title: "Cumulative net market flows by investor type", dataset: "nse_fiidii", fmt: "crore", digits: 0,
+    transform: { type: "cumsum" },
+    series: [
+      { col: "ts_flows_fii_net", label: "FII / FPI Net" },
+      { col: "ts_flows_dii_net", label: "DII Net" },
+    ],
+    source: "NSE India (FII/DII Trading Data)", page: "/intelligence/institutional",
+  },
+  {
+    id: "ownership.market_share", kind: "share", title: "Equity ownership share by investor class", dataset: "shareholding", fmt: "pct", digits: 1,
+    series: [
+      { col: "ts_ownership_promoter", label: "Promoter & Group" },
+      { col: "ts_ownership_fii", label: "Foreign Portfolio (FPI)" },
+      { col: "ts_ownership_dii", label: "Domestic Institutions (DII)" },
+      { col: "ts_ownership_mf", label: "Mutual Funds" },
+      { col: "ts_ownership_retail", label: "Retail & Public" },
+    ],
+    source: "NSE Shareholding Filings (XBRL)", page: "/intelligence/institutional", also: ["/intelligence/promoters"],
+  },
 ];
 
 /** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xbrl xmlns:in-bse-shp="http://www.bseindia.com/xbrl/shp/2026-03-31/in-bse-shp">
+  <in-bse-shp:DateOfReport contextRef="MainI">2026-09-30</in-bse-shp:DateOfReport>
+  <in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="ShareholdingOfPromoterAndPromoterGroup_ContextI">0.5048</in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares>
+  <in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="InstitutionsForeign_ContextI">0.1925</in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares>
+  <in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="InstitutionsDomestic_ContextI">0.1610</in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares>
+  <in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="MutualFunds_ContextI">0.0965</in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares>
+  <in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="PublicShareholding_ContextI">0.1417</in-bse-shp:ShareholdingAsAPercentageOfTotalNumberOfShares>
+  <in-bse-shp:NumberOfShareholders contextRef="ShareholdingPattern_ContextI">4520180</in-bse-shp:NumberOfShareholders>
+</xbrl>

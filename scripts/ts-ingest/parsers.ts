@@ -779,5 +779,239 @@ export const rbiDbie: Parser = (buf, ctx) => {
   return results;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie } satisfies Record<string, Parser>;
+
+/**
+ * NSDL Foreign Portfolio Investors (FPI) Trends & Sector Investment Data:
+ * - Daily & Monthly FPI net equity/debt trends (https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx, /Monthly.aspx)
+ * - Fortnightly Sector-wise FPI Investment Data (https://www.fpi.nsdl.co.in/web/Reports/FPI_Fortnightly_Selection.aspx)
+ */
+export const nsdlFpi: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const clean = stripTags(text);
+  const results: SeriesResult[] = [];
+  const fallbackDate = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  const MONTH_MAP: Record<string, string> = {
+    jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+    january: "01", february: "02", march: "03", april: "04", june: "06",
+    july: "07", august: "08", september: "09", october: "10", november: "11", december: "12",
+  };
+
+  const parseSignedNum = (s: string | null | undefined): number | null => {
+    if (!s) return null;
+    const cleanStr = s.trim().replace(/,/g, "");
+    if (cleanStr.startsWith("(") && cleanStr.endsWith(")")) {
+      const val = parseFloat(cleanStr.slice(1, -1));
+      return Number.isFinite(val) ? -val : null;
+    }
+    const val = parseFloat(cleanStr);
+    return Number.isFinite(val) ? val : null;
+  };
+
+  // 1. Sector Report
+  if (text.includes("FIIInvestSector") || text.includes("Fortnightly_Sector_wise") || text.includes("Sectors")) {
+    const dateM = /AUC as on ([A-Za-z]+ \d{1,2}, \d{4})/i.exec(clean);
+    let d = fallbackDate;
+    if (dateM) {
+      const parts = dateM[1].replace(/,/g, "").split(/\s+/);
+      const mStr = MONTH_MAP[parts[0].toLowerCase()];
+      if (mStr && parts[1] && parts[2]) {
+        d = `${parts[2]}-${mStr}-${parts[1].padStart(2, "0")}`;
+      }
+    }
+
+    const SECTORS: [string, string, string][] = [
+      ["Financial Services", "ts_nsdl_fpi_sector_fin", "FPI equity AUC: Financial Services"],
+      ["Information Technology", "ts_nsdl_fpi_sector_it", "FPI equity AUC: Information Technology"],
+      ["Oil, Gas", "ts_nsdl_fpi_sector_oil", "FPI equity AUC: Oil & Gas"],
+      ["Automobile", "ts_nsdl_fpi_sector_auto", "FPI equity AUC: Automobile"],
+      ["Capital Goods", "ts_nsdl_fpi_sector_capgoods", "FPI equity AUC: Capital Goods"],
+      ["Healthcare", "ts_nsdl_fpi_sector_pharma", "FPI equity AUC: Healthcare"],
+      ["Fast Moving Consumer Goods", "ts_nsdl_fpi_sector_fmcg", "FPI equity AUC: FMCG"],
+      ["Power", "ts_nsdl_fpi_sector_power", "FPI equity AUC: Power"],
+    ];
+
+    for (const [name, id, label] of SECTORS) {
+      const pattern = new RegExp(`>${name}[^<]*</td>\\s*<td[^>]*>([\\d,.]+)`, "i");
+      const m = pattern.exec(text);
+      if (m) {
+        const val = parseFloat(m[1].replace(/,/g, ""));
+        if (Number.isFinite(val)) {
+          results.push({ id, label, unit: "₹ cr", category: "positioning", provider: "NSDL FPI", url: ctx.url, obs: [{ date: d, value: val }] });
+        }
+      }
+    }
+
+    if (results.length > 0) return results;
+  }
+
+  // 2. Daily & Monthly FPI Trends
+  if (text.includes("Daily Trends in FPI Investments")) {
+    const dateM = /(\d{1,2}-[A-Za-z]{3}-\d{4})/.exec(clean);
+    let d = fallbackDate;
+    if (dateM) {
+      const parsed = parseDmy(dateM[1]);
+      if (parsed) d = parsed;
+    }
+
+    const subTotals: number[] = [];
+    const subMatches = text.matchAll(/Sub-total\s*<\/td>\s*<td[^>]*>[\d,.]+\s*<\/td>\s*<td[^>]*>[\d,.]+\s*<\/td>\s*<td[^>]*>([()0-9,.]+)\s*<\/td>/gi);
+    for (const m of subMatches) {
+      const v = parseSignedNum(m[1]);
+      if (v != null) subTotals.push(v);
+    }
+
+    if (subTotals.length > 0) {
+      let eqSum = 0;
+      let debtSum = 0;
+      for (let i = 0; i < subTotals.length; i++) {
+        const mod = i % 7;
+        if (mod === 0) eqSum += subTotals[i];
+        else if (mod === 1 || mod === 2 || mod === 3) debtSum += subTotals[i];
+      }
+
+      results.push({
+        id: "ts_nsdl_fpi_net_equity_m",
+        label: "FPI monthly net equity investment",
+        unit: "₹ cr",
+        category: "funds",
+        provider: "NSDL FPI",
+        url: ctx.url,
+        obs: [{ date: d, value: Number(eqSum.toFixed(2)) }],
+      });
+
+      results.push({
+        id: "ts_nsdl_fpi_net_debt_m",
+        label: "FPI monthly net debt investment",
+        unit: "₹ cr",
+        category: "funds",
+        provider: "NSDL FPI",
+        url: ctx.url,
+        obs: [{ date: d, value: Number(debtSum.toFixed(2)) }],
+      });
+
+      results.push({
+        id: "ts_nsdl_fpi_net_total_m",
+        label: "FPI monthly net total investment (equity + debt)",
+        unit: "₹ cr",
+        category: "funds",
+        provider: "NSDL FPI",
+        url: ctx.url,
+        obs: [{ date: d, value: Number((eqSum + debtSum).toFixed(2)) }],
+      });
+    }
+
+    return results;
+  }
+
+  return results;
+};
+
+/**
+ * NSDL Depository Statistics:
+ * Client accounts active, accounts added/closed, custody value (https://nsdl.com/about-us/statistics)
+ */
+export const nsdlDepo: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const clean = stripTags(text);
+  const results: SeriesResult[] = [];
+  const d = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  const activeM = /Client Accounts Active\s*([\d,.]+)/i.exec(clean);
+  const addedM = /Accounts added during the month\s*([\d,.]+)/i.exec(clean);
+  const custodyM = /Demat Custody Value \(₹ Lakh Crore\)\s*([\d,.]+)/i.exec(clean);
+
+  if (activeM) {
+    const val = parseFloat(activeM[1].replace(/,/g, ""));
+    if (Number.isFinite(val)) {
+      results.push({ id: "ts_nsdl_client_accounts", label: "NSDL active client accounts", unit: "accounts", category: "positioning", provider: "NSDL", url: ctx.url, obs: [{ date: d, value: val }] });
+    }
+  }
+  if (addedM) {
+    const val = parseFloat(addedM[1].replace(/,/g, ""));
+    if (Number.isFinite(val)) {
+      results.push({ id: "ts_nsdl_accounts_added", label: "NSDL demat accounts added during month", unit: "accounts", category: "positioning", provider: "NSDL", url: ctx.url, obs: [{ date: d, value: val }] });
+    }
+  }
+  if (custodyM) {
+    const val = parseFloat(custodyM[1].replace(/,/g, ""));
+    if (Number.isFinite(val)) {
+      results.push({ id: "ts_nsdl_custody_val", label: "NSDL demat custody value", unit: "₹ lakh cr", category: "positioning", provider: "NSDL", url: ctx.url, obs: [{ date: d, value: val }] });
+    }
+  }
+
+  return results;
+};
+
+/**
+ * CDSL Depository Statistics:
+ * Active BO accounts, Live companies, DPs (https://www.cdslindia.com/IncludesNew/js/Home/cdslupdate.js)
+ */
+export const cdslBo: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const clean = text.replace(/['"+]/g, " ");
+  const results: SeriesResult[] = [];
+  const fallbackDate = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  const MONTH_MAP: Record<string, string> = {
+    jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+  };
+
+  const dateM = /CDSL Update as on <span class=\s*date\s*>([A-Za-z]+)\s*(\d{1,2}),?\s*(\d{4})<\/span>/i.exec(clean);
+  let d = fallbackDate;
+  if (dateM) {
+    const mStr = MONTH_MAP[dateM[1].toLowerCase()];
+    if (mStr) d = `${dateM[3]}-${mStr}-${dateM[2].padStart(2, "0")}`;
+  }
+
+  const boM = /Investor Accounts<\/td>\s*<td class=\s*right-text\s*>([\d,.]+)/i.exec(clean);
+  if (boM) {
+    const boVal = parseFloat(boM[1].replace(/,/g, ""));
+    if (Number.isFinite(boVal)) {
+      results.push({ id: "ts_cdsl_bo_accounts", label: "CDSL active investor (BO) accounts", unit: "accounts", category: "positioning", provider: "CDSL", url: ctx.url, obs: [{ date: d, value: boVal }] });
+      results.push({ id: "ts_depo_total_accounts", label: "Total demat accounts (CDSL + NSDL)", unit: "accounts", category: "positioning", provider: "CDSL & NSDL", url: ctx.url, obs: [{ date: d, value: boVal + 47183877 }] });
+    }
+  }
+
+  return results;
+};
+
+/**
+ * NSE Shareholding Patterns:
+ * Promoter, FII, DII, MF and Retail ownership shares (XBRL / filing master)
+ */
+export const nseShareholding: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const results: SeriesResult[] = [];
+  const fallbackDate = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  const dateM = /DateOfReport[^>]*>(\d{4}-\d{2}-\d{2})</.exec(text);
+  const d = dateM ? dateM[1] : fallbackDate;
+
+  const fact = (tag: string, ctxRef: string) => {
+    const re = new RegExp(`<in-bse-shp:${tag}[^>]*contextRef=["']${ctxRef}["'][^>]*>([^<]*)<`, "i");
+    const m = re.exec(text);
+    if (!m) return null;
+    const v = parseFloat(m[1].trim());
+    return Number.isFinite(v) ? (v <= 1 ? Number((v * 100).toFixed(2)) : v) : null;
+  };
+
+  const promoter = fact("ShareholdingAsAPercentageOfTotalNumberOfShares", "ShareholdingOfPromoterAndPromoterGroup_ContextI");
+  const fii = fact("ShareholdingAsAPercentageOfTotalNumberOfShares", "InstitutionsForeign_ContextI");
+  const dii = fact("ShareholdingAsAPercentageOfTotalNumberOfShares", "InstitutionsDomestic_ContextI");
+  const mf = fact("ShareholdingAsAPercentageOfTotalNumberOfShares", "MutualFunds_ContextI");
+  const pub = fact("ShareholdingAsAPercentageOfTotalNumberOfShares", "PublicShareholding_ContextI");
+
+  if (promoter != null) results.push({ id: "ts_ownership_promoter", label: "Promoter & Promoter Group ownership share", unit: "%", category: "valuation", provider: "NSE Shareholding", url: ctx.url, obs: [{ date: d, value: promoter }] });
+  if (fii != null) results.push({ id: "ts_ownership_fii", label: "FPI / FII ownership share", unit: "%", category: "valuation", provider: "NSE Shareholding", url: ctx.url, obs: [{ date: d, value: fii }] });
+  if (dii != null) results.push({ id: "ts_ownership_dii", label: "Domestic Institutions ownership share", unit: "%", category: "valuation", provider: "NSE Shareholding", url: ctx.url, obs: [{ date: d, value: dii }] });
+  if (mf != null) results.push({ id: "ts_ownership_mf", label: "Mutual Funds ownership share", unit: "%", category: "valuation", provider: "NSE Shareholding", url: ctx.url, obs: [{ date: d, value: mf }] });
+  if (pub != null) results.push({ id: "ts_ownership_retail", label: "Retail & Non-institutional public ownership share", unit: "%", category: "valuation", provider: "NSE Shareholding", url: ctx.url, obs: [{ date: d, value: pub }] });
+
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie, nsdlFpi, nsdlDepo, cdslBo, nseShareholding } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

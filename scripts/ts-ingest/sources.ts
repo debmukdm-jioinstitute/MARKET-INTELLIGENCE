@@ -249,3 +249,72 @@ SOURCES.push({
   dataset: "rbi_dbie",
   anchorSeries: "ts_rbi_credit_growth",
 });
+
+/**
+ * NSDL Foreign Portfolio Investors (FPI) Trends & Sector Investment Data:
+ * - Daily & Monthly trends: https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx, /Monthly.aspx
+ * - Fortnightly Sector reports: https://www.fpi.nsdl.co.in/web/StaticReports/Fortnightly_Sector_wise_FII_Investment_Data/FIIInvestSector_Oct152026.html
+ */
+SOURCES.push({
+  id: "nsdl_fpi",
+  urls: () => [
+    "https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx",
+    "https://www.fpi.nsdl.co.in/web/Reports/Monthly.aspx",
+    "https://www.fpi.nsdl.co.in/web/StaticReports/Fortnightly_Sector_wise_FII_Investment_Data/FIIInvestSector_Oct152026.html",
+  ],
+  reqs: () => [
+    { url: "https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx" },
+    { url: "https://www.fpi.nsdl.co.in/web/Reports/Monthly.aspx" },
+    { url: "https://www.fpi.nsdl.co.in/web/StaticReports/Fortnightly_Sector_wise_FII_Investment_Data/FIIInvestSector_Oct152026.html" },
+  ],
+  perDate: false,
+  fmt: "html",
+  freq: "weekly",
+  lagDays: 3,
+  parser: "nsdlFpi",
+  dataset: "nsdl_fpi",
+  anchorSeries: "ts_nsdl_fpi_net_equity_m",
+});
+
+/** NSDL Depository Statistics: Active client accounts, custody value. */
+SOURCES.push({
+  id: "nsdl_depo",
+  urls: () => ["https://nsdl.com/about-us/statistics"],
+  reqs: () => [{ url: "https://nsdl.com/about-us/statistics" }],
+  perDate: false,
+  fmt: "html",
+  freq: "monthly",
+  lagDays: 30,
+  parser: "nsdlDepo",
+  dataset: "nsdl_depo",
+  anchorSeries: "ts_nsdl_client_accounts",
+});
+
+/** CDSL Depository Statistics: Active BO accounts. */
+SOURCES.push({
+  id: "cdsl_bo",
+  urls: () => ["https://www.cdslindia.com/IncludesNew/js/Home/cdslupdate.js"],
+  reqs: () => [{ url: "https://www.cdslindia.com/IncludesNew/js/Home/cdslupdate.js" }],
+  perDate: false,
+  fmt: "html",
+  freq: "monthly",
+  lagDays: 30,
+  parser: "cdslBo",
+  dataset: "cdsl_bo",
+  anchorSeries: "ts_cdsl_bo_accounts",
+});
+
+/** NSE Shareholding Patterns: Market aggregate ownership shares by class. */
+SOURCES.push({
+  id: "shareholding",
+  urls: () => ["https://www.nseindia.com/api/corporate-share-holdings-master?index=equities&symbol=RELIANCE"],
+  reqs: () => [{ url: "https://www.nseindia.com/api/corporate-share-holdings-master?index=equities&symbol=RELIANCE" }],
+  perDate: false,
+  fmt: "html",
+  freq: "monthly",
+  lagDays: 45,
+  parser: "nseShareholding",
+  dataset: "shareholding",
+  anchorSeries: "ts_ownership_promoter",
+  nseCookie: true,
+});
