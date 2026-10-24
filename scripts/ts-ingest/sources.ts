@@ -189,3 +189,23 @@ SOURCES.push({
   dataset: "amfi_sip",
   anchorSeries: "ts_amfi_sip_inflow",
 });
+
+/** MoSPI macro: CPI, WPI, IIP, GDP, and PLFS from official eSankhyiki APIs. */
+SOURCES.push({
+  id: "mospi",
+  urls: () => ["https://api.mospi.gov.in/api/cpi/getCPIIndex?base_year=2012&series=Current&sector_code=3&state_code=99&limit=100"],
+  reqs: () => [
+    { url: "https://api.mospi.gov.in/api/cpi/getCPIIndex?base_year=2012&series=Current&sector_code=3&state_code=99&limit=100", meta: { kind: "cpi" } },
+    { url: "https://api.mospi.gov.in/api/wpi/getWpiRecords?base_year=2011-12&major_group_code=1000000000&Format=JSON", meta: { kind: "wpi" } },
+    { url: "https://api.mospi.gov.in/api/iip/getIipData?base_year=2011-12&frequency=Monthly&type=General&Format=JSON", meta: { kind: "iip" } },
+    { url: "https://api.mospi.gov.in/api/nas/getNASData?base_year=2011-12&series=Current&frequency_code=Quarterly&indicator_code=22&Format=JSON", meta: { kind: "gdp" } },
+    { url: "https://api.mospi.gov.in/api/plfs/getData?indicator_code=3&frequency_code=2&state_code=99&sector_code=2&gender_code=3&Format=JSON", meta: { kind: "plfs" } },
+  ],
+  perDate: false,
+  fmt: "json",
+  freq: "monthly",
+  lagDays: 60,
+  parser: "mospi",
+  dataset: "mospi",
+  anchorSeries: "ts_mospi_cpi_yoy",
+});

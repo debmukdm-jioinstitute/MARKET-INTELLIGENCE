@@ -1,0 +1,132 @@
+{
+  "data": [
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2025-26",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q1",
+      "current_price": "8.8",
+      "constant_price": "7.8",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2025-26",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q2",
+      "current_price": "8.7",
+      "constant_price": "8.2",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2024-25",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q1",
+      "current_price": "9.6",
+      "constant_price": "6.5",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2024-25",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q2",
+      "current_price": "8.2",
+      "constant_price": "5.6",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2024-25",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q3",
+      "current_price": "10.2",
+      "constant_price": "6.3",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2024-25",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q4",
+      "current_price": "10.7",
+      "constant_price": "7.3",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2023-24",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q1",
+      "current_price": "10.9",
+      "constant_price": "9.6",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2023-24",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q2",
+      "current_price": "12.1",
+      "constant_price": "9.3",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2023-24",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q3",
+      "current_price": "12.9",
+      "constant_price": "9.5",
+      "unit": "%"
+    },
+    {
+      "base_year": "2011-12",
+      "series": "Current",
+      "year": "2023-24",
+      "indicator": "GDP Growth Rate",
+      "frequency": "Quarterly",
+      "revision": null,
+      "quarter": "Q4",
+      "current_price": "12.0",
+      "constant_price": "8.3",
+      "unit": "%"
+    }
+  ],
+  "meta_data": {
+    "page": 1,
+    "totalRecords": 58,
+    "totalPages": 6,
+    "recordPerPage": 10
+  },
+  "msg": "Data fetched successfully",
+  "statusCode": true
+}

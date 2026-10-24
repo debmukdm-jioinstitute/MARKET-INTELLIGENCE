@@ -1,4 +1,12 @@
-import { createHash } from "node:crypto";
+import { constants, createHash } from "node:crypto";
+import { Agent } from "undici";
+
+const legacyDispatcher = new Agent({
+  connect: {
+    secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+    ciphers: "DEFAULT@SECLEVEL=1",
+  },
+});
 
 const UA = "Mozilla/5.0 (MarketIntelligence)";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
@@ -45,7 +53,12 @@ export async function politeFetch(url: string, opts: { nse?: boolean; warm?: str
       Object.assign(headers, opts.headers);
       if (opts.prev?.etag) headers["if-none-match"] = opts.prev.etag;
       if (opts.prev?.last_modified) headers["if-modified-since"] = opts.prev.last_modified;
-      const res = await fetch(url, { method: opts.method ?? "GET", body: opts.body, headers, signal: AbortSignal.timeout(30_000) });
+      const fetchOpts: RequestInit = { method: opts.method ?? "GET", body: opts.body, headers, signal: AbortSignal.timeout(30_000) };
+      if (host === "api.mospi.gov.in" || (opts as { legacySsl?: boolean }).legacySsl) {
+        // @ts-expect-error undici dispatcher
+        fetchOpts.dispatcher = legacyDispatcher;
+      }
+      const res = await fetch(url, fetchOpts);
       if (res.status === 403 && opts.nse && attempt === 0) { nseCookie = ""; continue; }
       const buf = Buffer.from(await res.arrayBuffer());
       // Retry transient statuses, but hand the last response back so the caller can log its body.

@@ -124,7 +124,7 @@ describe("allIndices", () => {
   it("fails loudly without a timestamp", () => expect(() => nseAllIndices(Buffer.from('{"data":[]}'), ctx)).toThrow());
 });
 
-import { nseIndexHistory, amfiNav, amfiMonthly, amfiSip } from "./parsers";
+import { nseIndexHistory, amfiNav, amfiMonthly, amfiSip, mospi } from "./parsers";
 import { SOURCES } from "./sources";
 describe("indexhistory + registry of sources", () => {
   it("parses both timestamp styles", () => {
@@ -196,5 +196,57 @@ describe("amfi parsers", () => {
     expect(sipInflow!.obs[0].value).toBe(32490);
     expect(stoppage).toBeDefined();
     expect(stoppage!.obs[0].value).toBe(78.5);
+  });
+});
+
+describe("mospi parser", () => {
+  it("mospi parses CPI headline, core, and contributions", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/mospi_cpi_sample.json");
+    const r = mospi(buf, { url: "https://api.mospi.gov.in/api/cpi/getCPIIndex", date: "2025-12-01" });
+    const cpi = r.find((s) => s.id === "ts_mospi_cpi_yoy");
+    const core = r.find((s) => s.id === "ts_mospi_core_cpi");
+    const food = r.find((s) => s.id === "ts_mospi_cpi_food_contrib");
+    expect(cpi).toBeDefined();
+    expect(cpi!.obs.length).toBeGreaterThan(0);
+    expect(core).toBeDefined();
+    expect(core!.obs.length).toBeGreaterThan(0);
+    expect(food).toBeDefined();
+    expect(food!.obs.length).toBeGreaterThan(0);
+  });
+
+  it("mospi parses WPI wholesale price inflation", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/mospi_wpi_sample.json");
+    const r = mospi(buf, { url: "https://api.mospi.gov.in/api/wpi/getWpiRecords", date: "2026-04-01" });
+    const wpi = r.find((s) => s.id === "ts_mospi_wpi");
+    expect(wpi).toBeDefined();
+    expect(wpi!.obs.length).toBeGreaterThan(0);
+    expect(wpi!.unit).toBe("%");
+  });
+
+  it("mospi parses IIP industrial production growth", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/mospi_iip_sample.json");
+    const r = mospi(buf, { url: "https://api.mospi.gov.in/api/iip/getIipData", date: "2026-03-01" });
+    const iip = r.find((s) => s.id === "ts_mospi_iip");
+    expect(iip).toBeDefined();
+    expect(iip!.obs.length).toBe(10);
+    expect(iip!.obs[iip!.obs.length - 1].value).toBe(4.1);
+  });
+
+  it("mospi parses NAS real GDP growth", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/mospi_gdp_sample.json");
+    const r = mospi(buf, { url: "https://api.mospi.gov.in/api/nas/getNASData", date: "2025-06-01" });
+    const gdp = r.find((s) => s.id === "ts_mospi_gdp_real");
+    expect(gdp).toBeDefined();
+    expect(gdp!.obs.length).toBe(10);
+    expect(gdp!.obs.find((o) => o.date === "2025-06-01")?.value).toBe(7.8);
+  });
+
+  it("mospi parses PLFS urban unemployment rate", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/mospi_plfs_sample.json");
+    const r = mospi(buf, { url: "https://api.mospi.gov.in/api/plfs/getData", date: "2018-06-01" });
+    const plfs = r.find((s) => s.id === "ts_mospi_plfs_ur");
+    expect(plfs).toBeDefined();
+    expect(plfs!.obs.length).toBeGreaterThan(0);
+    expect(plfs!.unit).toBe("%");
   });
 });

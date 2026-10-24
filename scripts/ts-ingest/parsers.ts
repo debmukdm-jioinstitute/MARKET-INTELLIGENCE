@@ -441,5 +441,199 @@ export const amfiSip: Parser = (buf, ctx) => {
   return results;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip } satisfies Record<string, Parser>;
+
+export const mospi: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  if (!text.trim().startsWith("{")) return [];
+  const json = JSON.parse(text);
+  const rows: Record<string, unknown>[] = Array.isArray(json.data) ? json.data : [];
+  if (!rows.length) return [];
+
+  const MONTH_NUM: Record<string, string> = {
+    january: "01", february: "02", march: "03", april: "04", may: "05", june: "06",
+    july: "07", august: "08", september: "09", october: "10", november: "11", december: "12",
+  };
+
+  const results: SeriesResult[] = [];
+  const url = ctx.url;
+
+  // 1. CPI: /api/cpi/
+  if (url.includes("/api/cpi/") || (ctx.meta as { kind?: string })?.kind === "cpi" || rows[0].baseyear != null) {
+    const headlineObs: SeriesResult["obs"] = [];
+    const foodObs: SeriesResult["obs"] = [];
+    const fuelObs: SeriesResult["obs"] = [];
+    const housingObs: SeriesResult["obs"] = [];
+    const clothingObs: SeriesResult["obs"] = [];
+    const miscObs: SeriesResult["obs"] = [];
+    const panObs: SeriesResult["obs"] = [];
+    const groupMap = new Map<string, { pan?: number; clothing?: number; housing?: number; misc?: number; status?: string }>();
+
+    for (const r of rows) {
+      if (r.sector !== "Combined") continue;
+      const mStr = String(r.month ?? "").toLowerCase();
+      const m = MONTH_NUM[mStr];
+      const y = r.year;
+      if (!m || !y) continue;
+      const date = `${y}-${m}-01`;
+      const inf = typeof r.inflation === "string" ? parseFloat(r.inflation) : typeof r.inflation === "number" ? r.inflation : NaN;
+      if (isNaN(inf)) continue;
+      const isProv = r.status === "P";
+
+      if (r.group === "General" && (r.subgroup === "General-Overall" || !r.subgroup)) {
+        headlineObs.push({ date, value: inf, meta: isProv ? { revised: true } : undefined });
+      }
+
+      if (!groupMap.has(date)) groupMap.set(date, {});
+      const grp = groupMap.get(date)!;
+      if (isProv) grp.status = "P";
+
+      const sub = String(r.subgroup ?? "");
+      const isOverall = sub.includes("Overall") || !r.subgroup;
+
+      if (r.group === "Food and Beverages" && isOverall) {
+        foodObs.push({ date, value: Number(((45.86 / 100) * inf).toFixed(2)) });
+      } else if (r.group === "Fuel and Light" && isOverall) {
+        fuelObs.push({ date, value: Number(((6.84 / 100) * inf).toFixed(2)) });
+      } else if (r.group === "Housing" && isOverall) {
+        housingObs.push({ date, value: Number(((10.07 / 100) * inf).toFixed(2)) });
+      } else if (r.group === "Clothing and Footwear" && isOverall) {
+        clothingObs.push({ date, value: Number(((6.53 / 100) * inf).toFixed(2)) });
+        grp.clothing = inf;
+      } else if (r.group === "Miscellaneous" && isOverall) {
+        miscObs.push({ date, value: Number(((28.32 / 100) * inf).toFixed(2)) });
+        grp.misc = inf;
+      } else if (r.group === "Pan, Tobacco and Intoxicants" && isOverall) {
+        panObs.push({ date, value: Number(((2.38 / 100) * inf).toFixed(2)) });
+        grp.pan = inf;
+      }
+    }
+
+    const sortObs = (arr: SeriesResult["obs"]) => arr.sort((a, b) => a.date.localeCompare(b.date));
+    if (headlineObs.length) {
+      results.push({ id: "ts_mospi_cpi_yoy", label: "CPI Inflation (YoY)", unit: "%", category: "macro", provider: "MoSPI", url, obs: sortObs(headlineObs) });
+    }
+    if (foodObs.length) results.push({ id: "ts_mospi_cpi_food_contrib", label: "CPI Food & Beverages contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(foodObs) });
+    if (fuelObs.length) results.push({ id: "ts_mospi_cpi_fuel_contrib", label: "CPI Fuel & Light contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(fuelObs) });
+    if (housingObs.length) results.push({ id: "ts_mospi_cpi_housing_contrib", label: "CPI Housing contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(housingObs) });
+    if (clothingObs.length) results.push({ id: "ts_mospi_cpi_clothing_contrib", label: "CPI Clothing & Footwear contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(clothingObs) });
+    if (miscObs.length) results.push({ id: "ts_mospi_cpi_misc_contrib", label: "CPI Miscellaneous contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(miscObs) });
+    if (panObs.length) results.push({ id: "ts_mospi_cpi_pan_contrib", label: "CPI Pan & Tobacco contribution", unit: "% pts", category: "macro", provider: "MoSPI", url, obs: sortObs(panObs) });
+
+    const coreObs: SeriesResult["obs"] = [];
+    for (const [date, g] of groupMap.entries()) {
+      if (g.pan != null && g.clothing != null && g.misc != null) {
+        const housingVal = g.housing ?? 0;
+        const coreVal = (2.38 * g.pan + 6.53 * g.clothing + 10.07 * housingVal + 28.32 * g.misc) / 47.30;
+        coreObs.push({ date, value: Number(coreVal.toFixed(2)), meta: g.status === "P" ? { revised: true } : undefined });
+      }
+    }
+    if (coreObs.length) {
+      results.push({ id: "ts_mospi_core_cpi", label: "Core CPI Inflation (YoY)", unit: "%", category: "macro", provider: "MoSPI (Computed Non-Food Non-Fuel)", url, obs: sortObs(coreObs) });
+    }
+  }
+
+  // 2. WPI: /api/wpi/
+  if (url.includes("/api/wpi/") || (ctx.meta as { kind?: string })?.kind === "wpi" || rows[0].majorgroup != null) {
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const mStr = String(r.month ?? "").toLowerCase();
+      const m = MONTH_NUM[mStr];
+      const y = r.year;
+      if (!m || !y) continue;
+      const idxVal = typeof r.index_value === "string" ? parseFloat(r.index_value) : typeof r.index_value === "number" ? r.index_value : NaN;
+      if (!isNaN(idxVal)) map.set(`${y}-${m}-01`, idxVal);
+    }
+    const wpiObs: SeriesResult["obs"] = [];
+    for (const [d, val] of map.entries()) {
+      const [y, m, day] = d.split("-");
+      const prevDate = `${Number(y) - 1}-${m}-${day}`;
+      if (map.has(prevDate)) {
+        const prevVal = map.get(prevDate)!;
+        const yoy = ((val - prevVal) / prevVal) * 100;
+        wpiObs.push({ date: d, value: Number(yoy.toFixed(2)) });
+      } else {
+        wpiObs.push({ date: d, value: val });
+      }
+    }
+    wpiObs.sort((a, b) => a.date.localeCompare(b.date));
+    if (wpiObs.length) {
+      results.push({ id: "ts_mospi_wpi", label: "WPI Inflation (YoY)", unit: "%", category: "macro", provider: "MoSPI", url, obs: wpiObs });
+    }
+  }
+
+  // 3. IIP: /api/iip/
+  if (url.includes("/api/iip/") || (ctx.meta as { kind?: string })?.kind === "iip" || rows[0].growth_rate != null) {
+    const iipObs: SeriesResult["obs"] = [];
+    for (const r of rows) {
+      const mStr = String(r.month ?? "").toLowerCase();
+      const m = MONTH_NUM[mStr];
+      const y = r.year;
+      if (!m || !y) continue;
+      const gr = typeof r.growth_rate === "string" ? parseFloat(r.growth_rate) : typeof r.growth_rate === "number" ? r.growth_rate : NaN;
+      if (!isNaN(gr)) {
+        iipObs.push({ date: `${y}-${m}-01`, value: gr });
+      }
+    }
+    iipObs.sort((a, b) => a.date.localeCompare(b.date));
+    if (iipObs.length) {
+      results.push({ id: "ts_mospi_iip", label: "IIP Growth (YoY)", unit: "%", category: "macro", provider: "MoSPI", url, obs: iipObs });
+    }
+  }
+
+  // 4. NAS GDP: /api/nas/
+  if (url.includes("/api/nas/") || (ctx.meta as { kind?: string })?.kind === "gdp" || rows[0].constant_price != null) {
+    const gdpObs: SeriesResult["obs"] = [];
+    for (const r of rows) {
+      const yStr = String(r.year ?? "");
+      const startYear = parseInt(yStr.slice(0, 4));
+      if (isNaN(startYear)) continue;
+      const q = String(r.quarter ?? "").toUpperCase();
+      let date = "";
+      if (q === "Q1") date = `${startYear}-06-01`;
+      else if (q === "Q2") date = `${startYear}-09-01`;
+      else if (q === "Q3") date = `${startYear}-12-01`;
+      else if (q === "Q4") date = `${startYear + 1}-03-01`;
+      if (!date) continue;
+
+      const cp = typeof r.constant_price === "string" ? parseFloat(r.constant_price) : typeof r.constant_price === "number" ? r.constant_price : NaN;
+      if (!isNaN(cp)) {
+        gdpObs.push({ date, value: cp, meta: r.revision ? { revised: true } : undefined });
+      }
+    }
+    gdpObs.sort((a, b) => a.date.localeCompare(b.date));
+    if (gdpObs.length) {
+      results.push({ id: "ts_mospi_gdp_real", label: "Real GDP Growth (YoY)", unit: "%", category: "macro", provider: "MoSPI", url, obs: gdpObs });
+    }
+  }
+
+  // 5. PLFS: /api/plfs/
+  if (url.includes("/api/plfs/") || (ctx.meta as { kind?: string })?.kind === "plfs" || rows[0].indicator?.toString().includes("UR")) {
+    const plfsObs: SeriesResult["obs"] = [];
+    for (const r of rows) {
+      const age = String(r.AgeGroup ?? "");
+      if (age && !age.includes("15 years and above") && !age.includes("All ages")) continue;
+      const y = parseInt(String(r.year ?? ""));
+      if (isNaN(y)) continue;
+      const q = String(r.quarter ?? "");
+      let m = "01";
+      if (q.includes("Jan-Mar")) m = "03";
+      else if (q.includes("Apr-Jun")) m = "06";
+      else if (q.includes("Jul-Sep")) m = "09";
+      else if (q.includes("Oct-Dec")) m = "12";
+      const date = `${y}-${m}-01`;
+      const val = typeof r.value === "string" ? parseFloat(r.value) : typeof r.value === "number" ? r.value : NaN;
+      if (!isNaN(val)) {
+        plfsObs.push({ date, value: val });
+      }
+    }
+    plfsObs.sort((a, b) => a.date.localeCompare(b.date));
+    if (plfsObs.length) {
+      results.push({ id: "ts_mospi_plfs_ur", label: "Urban Unemployment Rate (PLFS)", unit: "%", category: "macro", provider: "MoSPI", url, obs: plfsObs });
+    }
+  }
+
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

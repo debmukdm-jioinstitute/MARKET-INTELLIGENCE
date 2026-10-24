@@ -145,6 +145,25 @@ export const REGISTRY: ChartDef[] = [
     ],
     source: "NSE Bhavcopy", page: "/etf",
   },
+  // ---- MoSPI India Macro (CPI, WPI, IIP, GDP, PLFS)
+  { ...ind("i.cpi_yoy", "CPI Inflation (YoY)", "mospi", "ts_mospi_cpi_yoy", "pct", 1, "MoSPI (eSankhyiki)", "/macro/india"), also: ["/macro", "/Home"] },
+  { ...ind("i.core_cpi", "Core CPI Inflation (YoY)", "mospi", "ts_mospi_core_cpi", "pct", 1, "MoSPI (Computed Non-Food Non-Fuel)", "/macro/india"), also: ["/macro"] },
+  { ...ind("i.wpi", "WPI Inflation (YoY)", "mospi", "ts_mospi_wpi", "pct", 1, "MoSPI (Wholesale Price Index)", "/macro/india"), also: ["/macro"] },
+  { ...ind("i.iip", "IIP Growth (YoY)", "mospi", "ts_mospi_iip", "pct", 1, "MoSPI (Index of Industrial Production)", "/macro/india"), also: ["/macro"] },
+  { ...ind("i.gdp_real", "Real GDP Growth (YoY)", "mospi", "ts_mospi_gdp_real", "pct", 1, "MoSPI (National Accounts Statistics)", "/macro/india"), also: ["/macro"] },
+  { ...ind("i.plfs_ur", "Urban Unemployment Rate (PLFS)", "mospi", "ts_mospi_plfs_ur", "pct", 1, "MoSPI (PLFS Quarterly Bulletin)", "/macro/india"), also: ["/macro"] },
+  {
+    id: "cpi.contributions", kind: "bars", title: "CPI inflation contributions by group", dataset: "mospi", fmt: "pct", digits: 2,
+    series: [
+      { col: "ts_mospi_cpi_food_contrib", label: "Food & Beverages" },
+      { col: "ts_mospi_cpi_fuel_contrib", label: "Fuel & Light" },
+      { col: "ts_mospi_cpi_housing_contrib", label: "Housing" },
+      { col: "ts_mospi_cpi_clothing_contrib", label: "Clothing & Footwear" },
+      { col: "ts_mospi_cpi_misc_contrib", label: "Miscellaneous" },
+      { col: "ts_mospi_cpi_pan_contrib", label: "Pan & Tobacco" },
+    ],
+    source: "MoSPI (eSankhyiki)", page: "/macro/india", also: ["/macro"],
+  },
 ];
 
 /** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */
