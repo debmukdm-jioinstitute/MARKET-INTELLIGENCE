@@ -202,5 +202,25 @@ export const worldBank: Parser = (buf, ctx) => {
   return [...by].map(([c, obs]) => ({ id: `ts_wb_${key}_${c}`, label: `${label} (${c.toUpperCase()})`, unit: "%", category: "macro" as const, provider: "World Bank", url: ctx.url, obs: obs.sort((a, b) => a.date.localeCompare(b.date)) }));
 };
 
-export const PARSERS = { worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
+const NIFTY_SLUGS: Record<string, string> = {
+  "NIFTY 50": "nifty50", "NIFTY 500": "nifty500", "NIFTY MIDCAP 150": "niftymidcap150",
+  "NIFTY SMALLCAP 250": "niftysmallcap250", "NIFTY BANK": "niftybank", "NIFTY IT": "niftyit",
+};
+/** NSE allIndices: {data:[{index,pe,pb,dy,...}], timestamp:"23-Oct-2026 15:30:00"} → P/E and P/B points for the tracked indices. */
+export const nseAllIndices: Parser = (buf, ctx) => {
+  const j = JSON.parse(stripBom(buf.toString("utf8"))) as { data?: { index?: string; indexSymbol?: string; pe?: string | number; pb?: string | number }[]; timestamp?: string };
+  const date = parseDmy(String(j.timestamp ?? "").trim().split(/\s+/)[0]);
+  if (!date) throw new Error("allIndices timestamp missing");
+  const out: SeriesResult[] = [];
+  for (const r of j.data ?? []) {
+    const slug = NIFTY_SLUGS[String(r.index ?? "").toUpperCase()];
+    if (!slug) continue;
+    const pe = num(r.pe), pb = num(r.pb);
+    if (pe != null && pe > 0) out.push(mk(`ts_niftyidx_${slug}_pe`, `${slug} P/E`, "x", "NSE India (allIndices)", ctx.url, date, pe, "valuation"));
+    if (pb != null && pb > 0) out.push(mk(`ts_niftyidx_${slug}_pb`, `${slug} P/B`, "x", "NSE India (allIndices)", ctx.url, date, pb, "valuation"));
+  }
+  return out;
+};
+
+export const PARSERS = { nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

@@ -106,3 +106,19 @@ describe("html sniffing", () => {
   });
   it("bodyHead collapses whitespace", () => expect(bodyHead(Buffer.from("a\n  b\tc"), 20)).toBe("a b c"));
 });
+
+import { nseAllIndices } from "./parsers";
+describe("allIndices", () => {
+  it("extracts tracked index P/E and P/B at the snapshot date", () => {
+    const j = JSON.stringify({ timestamp: "23-Oct-2026 15:30:00", data: [
+      { index: "NIFTY 50", pe: "22.41", pb: "3.52" },
+      { index: "NIFTY BANK", pe: "-", pb: "2.4" },
+      { index: "NIFTY AUTO", pe: "30", pb: "5" },
+    ] });
+    const r = nseAllIndices(Buffer.from(j), ctx);
+    expect(r.map((s) => [s.id, s.obs[0].date, s.obs[0].value])).toEqual([
+      ["ts_niftyidx_nifty50_pe", "2026-10-23", 22.41], ["ts_niftyidx_nifty50_pb", "2026-10-23", 3.52], ["ts_niftyidx_niftybank_pb", "2026-10-23", 2.4],
+    ]);
+  });
+  it("fails loudly without a timestamp", () => expect(() => nseAllIndices(Buffer.from('{"data":[]}'), ctx)).toThrow());
+});

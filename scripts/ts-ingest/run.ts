@@ -55,15 +55,21 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
         const url = rq.url;
         const key = rq.body ? `${url}#${createHash("sha1").update(rq.body).digest("hex").slice(0, 12)}` : url;
         const prev = known.get(key);
-        const res = await politeFetch(url, { nse: src.nseCookie, warm: src.warm, browser: src.browser, method: rq.method, body: rq.body, headers: rq.headers, prev });
+        const go = (r: Req) => politeFetch(r.url, { nse: src.nseCookie, warm: src.warm, browser: src.browser, method: r.method, body: r.body, headers: r.headers, prev });
+        let res = await go(rq);
+        // Primary got an HTML page or a server error: try the alternative request shape once.
+        if (rq.alt && (looksLikeHtml(res.buf) || res.status >= 500)) {
+          log({ src: src.id, level: "warn", msg: "primary request failed, trying alt", status: res.status, ct: res.contentType, head: bodyHead(res.buf, 120) });
+          res = await go(rq.alt);
+        }
         lastHead = bodyHead(res.buf);
         const safeUrl = key.replace(/api_key=[^&]+/, "api_key=***");
         if (res.status === 304 || (prev?.sha256 && prev.sha256 === res.sha256)) { log({ src: src.id, url: safeUrl, skip: "unchanged" }); continue; }
         if (res.status === 404 && src.perDate) { log({ src: src.id, date: d, skip: "not published (holiday/late)" }); continue; }
-        if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status}: ${bodyHead(res.buf)}`);
+        if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status} [ct=${res.contentType} server=${res.server}]: ${bodyHead(res.buf)}`);
         // Archives answer 200 with an HTML page for dates with no file (holidays, not yet published): skip, never parse.
         if (src.perDate && looksLikeHtml(res.buf)) { log({ src: src.id, date: d, skip: "HTML page instead of file (holiday / not published)" }); continue; }
-        if (looksLikeHtml(res.buf)) throw new Error(`${safeUrl} → got an HTML page, not ${src.fmt}: ${bodyHead(res.buf)}`);
+        if (looksLikeHtml(res.buf)) throw new Error(`${safeUrl} → got an HTML page, not ${src.fmt} [status ${res.status} ct=${res.contentType} server=${res.server} title=${(res.buf.toString("utf8").match(/<title[^>]*>([^<]{0,120})/i)?.[1] ?? "").trim()}]: ${bodyHead(res.buf)}`);
         if (src.events) {
           for (const e of EVENT_PARSERS[src.parser as EventParserName](res.buf, { date: d, url, meta: rq.meta })) events.set(e.id, e);
         } else for (const s of PARSERS[src.parser as ParserName](res.buf, { date: d, url, meta: rq.meta })) {

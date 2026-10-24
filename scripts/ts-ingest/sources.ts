@@ -1,7 +1,7 @@
 import { addDays, fmtDmy, fmtYmd } from "./dates";
 import type { EventParserName, ParserName } from "./parsers";
 
-export type Req = { url: string; method?: "GET" | "POST"; body?: string; headers?: Record<string, string>; meta?: Record<string, string> };
+export type Req = { /** Tried when the primary request returns an HTML page. */ alt?: Req; url: string; method?: "GET" | "POST"; body?: string; headers?: Record<string, string>; meta?: Record<string, string> };
 export type ReqCtx = { date?: string; latest: string | null; today: string };
 
 export type SourceCfg = {
@@ -62,14 +62,22 @@ export const NIFTY_INDICES: [string, string][] = [
   ["niftysmallcap250", "NIFTY SMALLCAP 250"], ["niftybank", "NIFTY BANK"], ["niftyit", "NIFTY IT"],
 ];
 
+const niftyHeaders = {
+  "content-type": "application/json; charset=UTF-8",
+  accept: "application/json, text/javascript, */*; q=0.01",
+  origin: "https://www.niftyindices.com",
+  referer: "https://www.niftyindices.com/reports/historical-data",
+  "x-requested-with": "XMLHttpRequest",
+};
+/** The site's own pages send cinfo as a single-quoted pseudo-JSON string; standard JSON is kept as the alt. */
 const niftyReq = (path: string, kind: "tri" | "pepb") => (c: ReqCtx): Req[] =>
-  NIFTY_INDICES.map(([slug, name]) => ({
-    url: `https://www.niftyindices.com/Backpage.aspx/${path}`,
-    method: "POST" as const,
-    headers: { "content-type": "application/json; charset=UTF-8", referer: "https://www.niftyindices.com/reports/historical-data", "x-requested-with": "XMLHttpRequest" },
-    body: JSON.stringify({ cinfo: JSON.stringify({ name, startDate: niftyDate(c.latest ? addDays(c.latest, 1) : "2005-01-01"), endDate: niftyDate(c.today), indexName: name }) }),
-    meta: { slug, kind },
-  }));
+  NIFTY_INDICES.map(([slug, name]) => {
+    const f = { name, startDate: niftyDate(c.latest ? addDays(c.latest, 1) : "2005-01-01"), endDate: niftyDate(c.today), indexName: name };
+    const url = `https://www.niftyindices.com/Backpage.aspx/${path}`;
+    const single = `{'name':'${f.name}','startDate':'${f.startDate}','endDate':'${f.endDate}','indexName':'${f.indexName}'}`;
+    const base = { url, method: "POST" as const, headers: niftyHeaders, meta: { slug, kind } };
+    return { ...base, body: JSON.stringify({ cinfo: single }), alt: { ...base, body: JSON.stringify({ cinfo: JSON.stringify(f) }) } };
+  });
 
 SOURCES.push(
   {
@@ -89,7 +97,11 @@ SOURCES.push(
     parser: "bisPolicy", dataset: "bis", anchorSeries: "ts_bis_policy_in",
   },
   {
-    id: "oecd", urls: () => ["IND", "USA", "CHN", "DEU", "JPN", "GBR"].map((c) => `https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/${c}.M.LI...AA...H?startPeriod=2000-01&format=csvfile`), perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
+    id: "oecd", urls: () => [],
+    reqs: () => ["IND", "USA", "CHN", "DEU", "JPN", "GBR"].map((c): Req => {
+      const base = `https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/${c}.M.LI...AA...H?startPeriod=2000-01`;
+      return { url: `${base}&format=csvfile`, alt: { url: base, headers: { accept: "application/vnd.sdmx.data+csv; charset=utf-8; version=2" } } };
+    }), perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
     parser: "oecdCli", dataset: "oecd", anchorSeries: "ts_oecd_cli_ind",
   },
 );
@@ -110,3 +122,9 @@ SOURCES.push(
     nseCookie: true, parser: "nseCorpActions", events: true, dataset: "nse_corp_actions", anchorSeries: "events:action",
   },
 );
+
+/** NSE allIndices: current P/E, P/B, yield for every index. A daily snapshot, so history builds from first run (niftyindices backfills older). */
+SOURCES.push({
+  id: "nse_allindices", urls: () => ["https://www.nseindia.com/api/allIndices"], perDate: false, fmt: "json", freq: "daily", lagDays: 4,
+  nseCookie: true, parser: "nseAllIndices", dataset: "nse_allindices", anchorSeries: "ts_niftyidx_nifty50_pe",
+});

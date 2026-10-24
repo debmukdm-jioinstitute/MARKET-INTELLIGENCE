@@ -5,7 +5,7 @@ const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 
 /** True when a body is an HTML page (soft-404 / WAF / error page) rather than data. */
 export const looksLikeHtml = (buf: Buffer): boolean => /^\s*(<!doctype html|<html|<head|<body)/i.test(buf.subarray(0, 200).toString("utf8"));
-export const bodyHead = (buf: Buffer, n = 160): string => buf.subarray(0, n).toString("utf8").replace(/\s+/g, " ").trim();
+export const bodyHead = (buf: Buffer, n = 400): string => buf.subarray(0, n).toString("utf8").replace(/\s+/g, " ").trim();
 
 const jars = new Map<string, string>();
 async function warmHost(warmUrl: string) {
@@ -18,7 +18,7 @@ async function warmHost(warmUrl: string) {
 const lastHit = new Map<string, number>();
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export type Fetched = { status: number; buf: Buffer; etag: string | null; lastModified: string | null; sha256: string; bytes: number };
+export type Fetched = { status: number; contentType: string | null; server: string | null; buf: Buffer; etag: string | null; lastModified: string | null; sha256: string; bytes: number };
 
 let nseCookie = "";
 async function warmNse() {
@@ -50,7 +50,7 @@ export async function politeFetch(url: string, opts: { nse?: boolean; warm?: str
       const buf = Buffer.from(await res.arrayBuffer());
       // Retry transient statuses, but hand the last response back so the caller can log its body.
       if ((res.status >= 500 || res.status === 429) && attempt < backoff.length) throw new Error(`HTTP ${res.status}`);
-      return { status: res.status, buf, etag: res.headers.get("etag"), lastModified: res.headers.get("last-modified"), sha256: createHash("sha256").update(buf).digest("hex"), bytes: buf.length };
+      return { status: res.status, contentType: res.headers.get("content-type"), server: res.headers.get("server"), buf, etag: res.headers.get("etag"), lastModified: res.headers.get("last-modified"), sha256: createHash("sha256").update(buf).digest("hex"), bytes: buf.length };
     } catch (e) {
       lastErr = e;
       if (attempt < backoff.length) await sleep(backoff[attempt]);

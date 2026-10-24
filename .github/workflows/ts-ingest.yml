@@ -54,7 +54,7 @@ jobs:
         id: map
         run: |
           case "${{ github.event.schedule }}" in
-            "0 14 * * 1-5")    ONLY="nse_bhavcopy,niftyindices,nse_fiidii,nse_participant_oi" ;;
+            "0 14 * * 1-5")    ONLY="nse_bhavcopy,niftyindices,nse_allindices,nse_fiidii,nse_participant_oi" ;;
             "30 15 * * 1-5")   ONLY="nse_mtf,nse_corp_actions,nse_ipo_past,nse_wdm,nse_cbm" ;;
             "0 18 * * 1-5")    ONLY="nse_bhavcopy,nse_mtf" ;;
             "0 18 * * *")      ONLY="amfi_nav,ecb,fred,wgc_gold" ;;
@@ -62,7 +62,7 @@ jobs:
             "30 5 1-15 * *")   ONLY="amfi_monthly,nsdl_depo,cdsl_bo,nse_business_growth,mospi,nse_ucc" ;;
             "30 5 25-31 * *")  ONLY="rbi_dbie,sebi_bulletin,nse_market_pulse" ;;
             "0 6 5 1,4,7,10 *") ONLY="imf,worldbank" ;;
-            "30 2 * * *")      ONLY="nse_fiidii,nse_bhavcopy,nse_participant_oi,fred" ;;
+            "30 2 * * *")      ONLY="nse_fiidii,nse_bhavcopy,nse_participant_oi,nse_allindices,fred" ;;
             *)                 ONLY="${{ inputs.only }}" ;;
           esac
           echo "only=${ONLY}" >> "$GITHUB_OUTPUT"
