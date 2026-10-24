@@ -16,9 +16,10 @@ export interface ScanRow {
   volRatio: number;
   rsi: number | null;
   note: string;
+  mtfCr?: number | null;
 }
 
-type SortKey = "symbol" | "ltp" | "changePct" | "volRatio" | "rsi" | "score";
+type SortKey = "symbol" | "ltp" | "changePct" | "volRatio" | "rsi" | "score" | "mtfCr";
 
 function csvEscape(v: string) {
   return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
@@ -64,6 +65,7 @@ export function ScanResults({
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" } | null>(null);
   const [showIndustry, setShowIndustry] = useState(false);
   const [showSignal, setShowSignal] = useState(true);
+  const [showMtf, setShowMtf] = useState(false);
 
   const scored = useMemo(
     () =>
@@ -148,6 +150,9 @@ export function ScanResults({
               <label className="flex items-center gap-2 text-foreground">
                 <input type="checkbox" checked={showSignal} onChange={(e) => setShowSignal(e.target.checked)} /> Signal note
               </label>
+              <label className="flex items-center gap-2 text-foreground">
+                <input type="checkbox" checked={showMtf} onChange={(e) => setShowMtf(e.target.checked)} /> MTF book (₹ cr)
+              </label>
             </div>
           </details>
           <button type="button" onClick={downloadCsv} className="text-blue-700 underline-offset-2 hover:underline">
@@ -173,6 +178,7 @@ export function ScanResults({
                   {sortBtn("score", "Setup", SETUP_SCORE_TOOLTIP)}
                 </span>
               </th>
+              {showMtf ? <th scope="col" className={thCls(true)}>{sortBtn("mtfCr", "MTF (₹ cr)", "Funded margin trading facility amount")}</th> : null}
               {showSignal ? <th scope="col" className={thCls(false)}>Why it matched</th> : null}
             </tr>
           </thead>

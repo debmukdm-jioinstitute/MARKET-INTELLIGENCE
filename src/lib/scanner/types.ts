@@ -18,6 +18,7 @@ export interface ScanRow {
   volRatio: number; // today's volume / 20-day average
   rsi: number | null;
   note: string;
+  mtfCr?: number | null;
 }
 
 export type Bias = "buy" | "sell" | "watch";

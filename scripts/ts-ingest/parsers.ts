@@ -61,12 +61,41 @@ export const nseParticipantOi: Parser = (buf, ctx) => {
   const head = rows[hi].map((h) => h.toLowerCase());
   const col = (p: string) => head.findIndex((h) => h.includes(p));
   const iFl = col("future index long"), iFs = col("future index short");
+  const iOic = col("option index call long");
+  const iOip = col("option index put long");
+  const iOsc = col("option stock call long");
+  const iOsp = col("option stock put long");
+  const iTot = col("total long contracts");
   const out: SeriesResult[] = [];
+
+  let totalLong = 0;
+  const totRow = rows.find((r) => r[0]?.toLowerCase() === "total");
+  if (totRow && iTot >= 0) {
+    totalLong = num(totRow[iTot]) ?? 0;
+    const oic = num(totRow[iOic]) ?? 0, oip = num(totRow[iOip]) ?? 0;
+    const osc = num(totRow[iOsc]) ?? 0, osp = num(totRow[iOsp]) ?? 0;
+    if (oic + osc > 0) {
+      const pcrTotal = Number(((oip + osp) / (oic + osc)).toFixed(2));
+      out.push(mk("ts_derivatives_pcr", "Total Put-Call Ratio (PCR)", "ratio", "NSE India", ctx.url, ctx.date, pcrTotal, "positioning"));
+    }
+    if (oic > 0) {
+      const pcrIndex = Number((oip / oic).toFixed(2));
+      out.push(mk("ts_derivatives_pcr_index", "Index Put-Call Ratio (PCR)", "ratio", "NSE India", ctx.url, ctx.date, pcrIndex, "positioning"));
+    }
+  }
+
   for (const r of rows.slice(hi + 1)) {
     const who = r[0]?.toLowerCase();
     if (!["client", "dii", "fii", "pro"].includes(who)) continue;
     const l = num(r[iFl]), s = num(r[iFs]);
     if (l != null && s != null) out.push(mk(`ts_fno_${who}_index_fut_net`, `${r[0]} net index futures OI`, "contracts", "NSE India", ctx.url, ctx.date, l - s, "positioning"));
+    if (totalLong > 0 && iTot >= 0) {
+      const participantTot = num(r[iTot]);
+      if (participantTot != null) {
+        const share = Number(((participantTot / totalLong) * 100).toFixed(1));
+        out.push(mk(`ts_fno_share_${who}`, `${r[0]} share of F&O open interest`, "%", "NSE India", ctx.url, ctx.date, share, "positioning"));
+      }
+    }
   }
   return out;
 };
@@ -1013,5 +1042,44 @@ export const nseShareholding: Parser = (buf, ctx) => {
   return results;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie, nsdlFpi, nsdlDepo, cdslBo, nseShareholding } satisfies Record<string, Parser>;
+
+/**
+ * NSE Margin Trading Facility (MTF) Daily Report (Margintrdg_{DDMMYY}.zip):
+ * Units in source file: Rs. In Lakhs. Converted to Rs. In Crore (/ 100).
+ * Emits: ts_mtf_book, ts_mtf_fresh_exposure, ts_mtf_liquidated, ts_mtf_book_mcap_pct.
+ */
+export const nseMtf: Parser = (buf, ctx) => {
+  const csvText = buf[0] === 0x50 && buf[1] === 0x4b ? firstCsvInZip(buf) : buf.toString("utf8");
+  const clean = stripTags(csvText);
+  const results: SeriesResult[] = [];
+  const fallbackDate = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  const dateM = /Reporting date\s*(\d{1,2}-[A-Za-z]{3}-\d{4})/i.exec(clean);
+  const d = (dateM ? parseDmy(dateM[1]) : null) ?? fallbackDate;
+
+  const bookM = /Net scripwise outstanding at the end of the day,\s*([\d.]+)/i.exec(clean);
+  const freshM = /Fresh Exposure taken during the day,\s*([\d.]+)/i.exec(clean);
+  const liqM = /Exposure liquidated during the day,\s*([\d.]+)/i.exec(clean);
+
+  if (bookM) {
+    const bookCr = Number((parseFloat(bookM[1]) / 100).toFixed(2));
+    results.push({ id: "ts_mtf_book", label: "Margin trading facility (MTF) funded book", unit: "₹ cr", category: "positioning", provider: "NSE India (MTF)", url: ctx.url, obs: [{ date: d, value: bookCr }] });
+    // MTF book to total equity market cap % (~45 lakh crore benchmark)
+    results.push({ id: "ts_mtf_book_mcap_pct", label: "MTF book to equity market cap", unit: "%", category: "positioning", provider: "NSE India (MTF)", url: ctx.url, obs: [{ date: d, value: Number((bookCr / 4500000 * 100).toFixed(2)) }] });
+  }
+
+  if (freshM) {
+    const freshCr = Number((parseFloat(freshM[1]) / 100).toFixed(2));
+    results.push({ id: "ts_mtf_fresh_exposure", label: "MTF daily fresh exposure funded", unit: "₹ cr", category: "positioning", provider: "NSE India (MTF)", url: ctx.url, obs: [{ date: d, value: freshCr }] });
+  }
+
+  if (liqM) {
+    const liqCr = Number((parseFloat(liqM[1]) / 100).toFixed(2));
+    results.push({ id: "ts_mtf_liquidated", label: "MTF daily liquidated exposure", unit: "₹ cr", category: "positioning", provider: "NSE India (MTF)", url: ctx.url, obs: [{ date: d, value: liqCr }] });
+  }
+
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

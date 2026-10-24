@@ -318,3 +318,26 @@ SOURCES.push({
   anchorSeries: "ts_ownership_promoter",
   nseCookie: true,
 });
+
+
+/**
+ * NSE Margin Trading Facility (MTF) Daily Archives:
+ * https://nsearchives.nseindia.com/archives/equities/margin/Margintrdg_{DDMMYY}.zip
+ */
+SOURCES.push({
+  id: "nse_mtf",
+  urls: (d) => {
+    if (!d) return [];
+    // Date format DDMMYY (e.g. 2026-10-22 -> 221026)
+    const ddmmyy = d.slice(8, 10) + d.slice(5, 7) + d.slice(2, 4);
+    return [`https://nsearchives.nseindia.com/archives/equities/margin/Margintrdg_${ddmmyy}.zip`];
+  },
+  perDate: true,
+  fmt: "csv",
+  freq: "daily",
+  lagDays: 4,
+  parser: "nseMtf",
+  dataset: "nse_mtf",
+  anchorSeries: "ts_mtf_book",
+  nseCookie: true,
+});

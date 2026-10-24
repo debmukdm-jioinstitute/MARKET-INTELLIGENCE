@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { zipSync, strToU8 } from "fflate";
-import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, nsdlFpi, nsdlDepo, cdslBo, nseShareholding } from "./parsers";
+import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf } from "./parsers";
 import { candidateDates, parseDmy } from "./dates";
 
 const ctx = { url: "https://x/y", date: "2026-10-23" };
@@ -373,5 +373,39 @@ describe("flows and ownership parsers", () => {
     expect(dii!.obs[0].value).toBe(16.1);
     expect(mf!.obs[0].value).toBe(9.65);
     expect(pub!.obs[0].value).toBe(14.17);
+  });
+});
+
+
+describe("derivatives and leverage parsers", () => {
+  it("nseMtf parses MTF book, fresh exposure and liquidation from zip", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nse_mtf_sample.zip");
+    const r = nseMtf(buf, { url: "https://nsearchives.nseindia.com/archives/equities/margin/Margintrdg_221026.zip", date: "2026-10-22" });
+    const book = r.find((s) => s.id === "ts_mtf_book");
+    const fresh = r.find((s) => s.id === "ts_mtf_fresh_exposure");
+    const liq = r.find((s) => s.id === "ts_mtf_liquidated");
+    expect(book).toBeDefined();
+    expect(book!.obs[0].value).toBe(146503.19);
+    expect(fresh).toBeDefined();
+    expect(fresh!.obs[0].value).toBe(2540.75);
+    expect(liq).toBeDefined();
+    expect(liq!.obs[0].value).toBe(3469.43);
+  });
+
+  it("nseParticipantOi parses PCR and participant shares", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nse_participant_oi_sample.csv");
+    const r = nseParticipantOi(buf, { url: "https://nsearchives.nseindia.com/content/nsccl/fao_participant_oi_22102026.csv", date: "2026-10-22" });
+    const pcr = r.find((s) => s.id === "ts_derivatives_pcr");
+    const pcrIdx = r.find((s) => s.id === "ts_derivatives_pcr_index");
+    const client = r.find((s) => s.id === "ts_fno_share_client");
+    const fii = r.find((s) => s.id === "ts_fno_share_fii");
+    expect(pcr).toBeDefined();
+    expect(pcr!.obs[0].value).toBe(0.79);
+    expect(pcrIdx).toBeDefined();
+    expect(pcrIdx!.obs[0].value).toBe(0.88);
+    expect(client).toBeDefined();
+    expect(client!.obs[0].value).toBe(52.6);
+    expect(fii).toBeDefined();
+    expect(fii!.obs[0].value).toBe(24.2);
   });
 });

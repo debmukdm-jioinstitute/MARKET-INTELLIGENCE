@@ -43,6 +43,7 @@ export const DATA_TRUST: LearnModule = {
         { label: "Indicators", href: "/indicators", blurb: "Long-history indicators against their usual range." },
         { label: "Index P/E and P/B", href: "/valuation", blurb: "Multiples against their usual range." },
         { label: "Mutual Funds", href: "/funds", blurb: "SIP inflows and industry AUM." },
+        { label: "Margin Trading", href: "/leverage", blurb: "System-wide MTF book and daily fresh exposure." },
         { label: "Fund Categories", href: "/funds/categories", blurb: "Category-wise flows." },
         { label: "NFO & Distribution", href: "/funds/distribution", blurb: "NFO collections." },
         { label: "SIP Accounts", href: "/funds/owners", blurb: "SIP accounts and stoppage ratio." },

@@ -244,6 +244,32 @@ export const REGISTRY: ChartDef[] = [
     ],
     source: "NSE Shareholding Filings (XBRL)", page: "/intelligence/institutional", also: ["/intelligence/promoters"],
   },
+  // ---- Derivatives & F&O (/markets/derivatives)
+  { ...ind("i.pcr", "Total Derivatives Put-Call Ratio (PCR)", "nse_participant_oi", "ts_derivatives_pcr", "num", 2, "NSE India", "/markets/derivatives"), also: ["/Home"] },
+  ind("i.pcr_index", "Index Options Put-Call Ratio (PCR)", "nse_participant_oi", "ts_derivatives_pcr_index", "num", 2, "NSE India", "/markets/derivatives"),
+  ind("i.retail_fno_share", "Retail Share of F&O Open Interest", "nse_participant_oi", "ts_fno_share_client", "pct", 1, "NSE India", "/markets/derivatives"),
+  {
+    id: "fno.who_trades", kind: "share", title: "Equity derivatives open interest by participant category", dataset: "nse_participant_oi", fmt: "pct", digits: 1,
+    series: [
+      { col: "ts_fno_share_client", label: "Retail (Client)" },
+      { col: "ts_fno_share_fii", label: "Foreign Portfolio (FII)" },
+      { col: "ts_fno_share_pro", label: "Proprietary Desks (Pro)" },
+      { col: "ts_fno_share_dii", label: "Domestic Institutions (DII)" },
+    ],
+    source: "NSE India (Participant OI)", page: "/markets/derivatives",
+  },
+  // ---- Margin Trading Facility (MTF) & Leverage (/leverage & /leverage/mtf)
+  { ...ind("i.mtf_book", "MTF Funded Margin Book", "nse_mtf", "ts_mtf_book", "crore", 0, "NSE India (MTF)", "/leverage"), also: ["/leverage/mtf"] },
+  { ...ind("i.mtf_fresh_exposure", "MTF Daily Fresh Exposure", "nse_mtf", "ts_mtf_fresh_exposure", "crore", 0, "NSE India (MTF)", "/leverage"), also: ["/leverage/mtf"] },
+  { ...ind("i.mtf_liquidated", "MTF Daily Liquidated Exposure", "nse_mtf", "ts_mtf_liquidated", "crore", 0, "NSE India (MTF)", "/leverage"), also: ["/leverage/mtf"] },
+  {
+    id: "mtf.book_and_flows", kind: "bars", title: "MTF daily fresh exposure and liquidations", dataset: "nse_mtf", fmt: "crore", digits: 0,
+    series: [
+      { col: "ts_mtf_fresh_exposure", label: "Fresh Exposure" },
+      { col: "ts_mtf_liquidated", label: "Liquidated" },
+    ],
+    source: "NSE India (SEBI Margin Trading Report)", page: "/leverage", also: ["/leverage/mtf"],
+  },
 ];
 
 /** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */

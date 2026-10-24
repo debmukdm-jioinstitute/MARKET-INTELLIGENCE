@@ -164,6 +164,7 @@ export const NAV_SECTIONS: NavSection[] = [
         desc: "Follow institutional money.",
         items: [
           { label: "Institutional Flows", href: "/intelligence/institutional", desc: "FII/DII cash, MF smart-money and ownership signals." },
+          { label: "Margin Trading (MTF)", href: "/leverage", desc: "System-wide funded margin book and daily exposure." },
         ],
       },
       {
