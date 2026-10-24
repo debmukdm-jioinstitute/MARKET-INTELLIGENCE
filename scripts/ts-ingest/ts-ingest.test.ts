@@ -122,3 +122,28 @@ describe("allIndices", () => {
   });
   it("fails loudly without a timestamp", () => expect(() => nseAllIndices(Buffer.from('{"data":[]}'), ctx)).toThrow());
 });
+
+import { nseIndexHistory } from "./parsers";
+import { SOURCES } from "./sources";
+describe("indexhistory + registry of sources", () => {
+  it("parses both timestamp styles", () => {
+    const j = JSON.stringify({ data: { indexCloseOnlineRecords: [
+      { EOD_CLOSE_INDEX_VAL: 25000.5, EOD_TIMESTAMP: "23-Oct-2026" },
+      { EOD_CLOSE_INDEX_VAL: "24,900", TIMESTAMP: "2026-10-22T00:00:00.000Z" },
+      { EOD_CLOSE_INDEX_VAL: "-", EOD_TIMESTAMP: "21-Oct-2026" },
+    ] } });
+    const [s] = nseIndexHistory(Buffer.from(j), { url: "u", meta: { slug: "nifty50" } });
+    expect(s.id).toBe("ts_niftyidx_nifty50_px");
+    expect(s.obs).toEqual([{ date: "2026-10-23", value: 25000.5 }, { date: "2026-10-22", value: 24900 }]);
+  });
+  it("windows requests to <=360 days and covers today", () => {
+    const src = SOURCES.find((x) => x.id === "nse_indexhistory")!;
+    const reqs = src.reqs!({ latest: null, today: "2026-10-24" }).filter((r) => r.meta?.slug === "nifty50");
+    expect(reqs.length).toBeGreaterThan(8);
+    expect(reqs.at(-1)!.url).toContain("to=24-10-2026");
+    expect(reqs[0].url).toContain("from=01-01-2015");
+  });
+  it("disabled sources are not scheduled", () => {
+    expect(SOURCES.some((x) => x.id.startsWith("niftyindices") || x.id === "oecd")).toBe(false);
+  });
+});

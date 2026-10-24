@@ -33,19 +33,19 @@ const NIFTY: [string, string][] = [
   ["nifty50", "Nifty 50"], ["nifty500", "Nifty 500"], ["niftymidcap150", "Nifty Midcap 150"],
   ["niftysmallcap250", "Nifty Smallcap 250"], ["niftybank", "Nifty Bank"], ["niftyit", "Nifty IT"],
 ];
-const tri = (slugs: string[]) => slugs.map((s) => ({ col: `ts_niftyidx_${s}_tri`, label: NIFTY.find(([k]) => k === s)![1] }));
-const IDX_SRC = "NSE Indices (total return index)";
+const tri = (slugs: string[]) => slugs.map((s) => ({ col: `ts_niftyidx_${s}_px`, label: NIFTY.find(([k]) => k === s)![1] }));
+const IDX_SRC = "NSE India (price index, excludes dividends)";
 
 export const REGISTRY: ChartDef[] = [
   // ---- valuation: P/E and P/B vs usual range, per index
   ...NIFTY.flatMap(([slug, name]): ChartDef[] => [
-    { ...ind(`i.${slug}_pe`, `${name} P/E`, "niftyindices", `ts_niftyidx_${slug}_pe`, "x", 1, "NSE Indices", "/valuation"), also: slug === "nifty50" ? ["/markets/india"] : undefined },
-    ind(`i.${slug}_pb`, `${name} P/B`, "niftyindices", `ts_niftyidx_${slug}_pb`, "x", 2, "NSE Indices", "/valuation"),
+    { ...ind(`i.${slug}_pe`, `${name} P/E`, "nse_allindices", `ts_niftyidx_${slug}_pe`, "x", 1, "NSE India (allIndices snapshots)", "/valuation"), also: slug === "nifty50" ? ["/markets/india"] : undefined },
+    ind(`i.${slug}_pb`, `${name} P/B`, "nse_allindices", `ts_niftyidx_${slug}_pb`, "x", 2, "NSE India (allIndices snapshots)", "/valuation"),
   ]),
   // ---- Indian indices
-  { id: "idx.growth", kind: "line", title: "Growth of 100 (total return)", dataset: "niftyindices", fmt: "num", digits: 0, transform: { type: "rebase", base: 100 }, series: tri(["nifty50", "nifty500", "niftymidcap150", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
-  { id: "idx.dd", kind: "line", title: "Drawdown from previous peak", dataset: "niftyindices", fmt: "pct", digits: 1, transform: { type: "drawdown" }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
-  { id: "idx.roll1y", kind: "line", title: "Rolling 1-year return", dataset: "niftyindices", fmt: "pct", digits: 0, transform: { type: "rolling", window: 252 }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india", also: ["/markets"] },
+  { id: "idx.growth", kind: "line", title: "Growth of 100 (price index)", dataset: "nse_indexhistory", fmt: "num", digits: 0, transform: { type: "rebase", base: 100 }, series: tri(["nifty50", "nifty500", "niftymidcap150", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
+  { id: "idx.dd", kind: "line", title: "Drawdown from previous peak", dataset: "nse_indexhistory", fmt: "pct", digits: 1, transform: { type: "drawdown" }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india" },
+  { id: "idx.roll1y", kind: "line", title: "Rolling 1-year return", dataset: "nse_indexhistory", fmt: "pct", digits: 0, transform: { type: "rolling", window: 252 }, series: tri(["nifty50", "nifty500", "niftysmallcap250"]), source: IDX_SRC, page: "/markets/india", also: ["/markets"] },
   // ---- flows, breadth, activity
   {
     id: "flows.cum_by_type", kind: "line", title: "Cumulative net cash purchases, FII vs DII", dataset: "nse_fiidii", fmt: "crore", digits: 0, transform: { type: "cumsum" },
@@ -66,10 +66,6 @@ export const REGISTRY: ChartDef[] = [
     id: "macro.policy_rates", kind: "line", title: "Central bank policy rates", dataset: "bis", fmt: "pct", digits: 2,
     series: [{ col: "ts_bis_policy_in", label: "India" }, { col: "ts_bis_policy_us", label: "US" }, { col: "ts_bis_policy_ea", label: "Euro area" }, { col: "ts_bis_policy_gb", label: "UK" }, { col: "ts_bis_policy_jp", label: "Japan" }],
     source: "BIS", page: "/macro/rbi",
-  },
-  {
-    id: "macro.cli", kind: "line", title: "OECD composite leading indicators", dataset: "oecd", fmt: "num", digits: 1,
-    series: ["ind", "usa", "chn", "deu", "jpn", "gbr"].map((a) => ({ col: `ts_oecd_cli_${a}`, label: a.toUpperCase() })), source: "OECD", page: "/macro/global",
   },
   ind("i.us10y", "US 10-year yield", "fred", "ts_fred_dgs10", "pct", 2, "FRED", "/macro/global"),
   ind("i.us_real10y", "US 10-year real yield", "fred", "ts_fred_dfii10", "pct", 2, "FRED", "/macro/global"),

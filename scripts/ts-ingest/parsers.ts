@@ -222,5 +222,20 @@ export const nseAllIndices: Parser = (buf, ctx) => {
   return out;
 };
 
-export const PARSERS = { nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
+/** NSE api/historical/indicesHistory → {data:{indexCloseOnlineRecords:[{EOD_CLOSE_INDEX_VAL, EOD_TIMESTAMP "24-Oct-2025" | TIMESTAMP ISO}]}}. Tolerant of both date styles. */
+export const nseIndexHistory: Parser = (buf, ctx) => {
+  const slug = ctx.meta?.slug;
+  if (!slug) throw new Error("nseIndexHistory needs meta.slug");
+  const j = JSON.parse(stripBom(buf.toString("utf8"))) as { data?: { indexCloseOnlineRecords?: Record<string, unknown>[] } | Record<string, unknown>[] };
+  const recs = (Array.isArray(j.data) ? j.data : j.data?.indexCloseOnlineRecords) ?? [];
+  const obs = recs.flatMap((r) => {
+    const raw = String(r.EOD_TIMESTAMP ?? r.TIMESTAMP ?? r.timestamp ?? "");
+    const d = /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : parseDmy(raw);
+    const v = num(r.EOD_CLOSE_INDEX_VAL ?? r.CLOSE ?? r.close);
+    return d && v != null ? [{ date: d, value: v }] : [];
+  });
+  return [{ id: `ts_niftyidx_${slug}_px`, label: `${slug} price index`, unit: "index", category: "market", provider: "NSE India", url: ctx.url, obs }];
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

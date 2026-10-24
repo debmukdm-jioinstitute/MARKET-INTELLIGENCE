@@ -50,7 +50,7 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
     const known = new Map(st.files.map((f) => [f.url, f]));
     const dates = src.perDate ? candidateDates(st.latestObs, todayIst(), arg("since")) : [undefined];
     for (const d of dates) {
-      const reqs: Req[] = src.reqs ? src.reqs({ date: d, latest: st.latestObs, today: todayIst() }) : src.urls(d).map((url) => ({ url }));
+      const reqs: Req[] = src.reqs ? src.reqs({ date: d, latest: st.latestObs, today: todayIst(), since: arg("since") }) : src.urls(d).map((url) => ({ url }));
       for (const rq of reqs) {
         const url = rq.url;
         const key = rq.body ? `${url}#${createHash("sha1").update(rq.body).digest("hex").slice(0, 12)}` : url;

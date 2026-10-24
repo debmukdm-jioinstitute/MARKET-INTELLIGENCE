@@ -2,7 +2,7 @@ import { addDays, fmtDmy, fmtYmd } from "./dates";
 import type { EventParserName, ParserName } from "./parsers";
 
 export type Req = { /** Tried when the primary request returns an HTML page. */ alt?: Req; url: string; method?: "GET" | "POST"; body?: string; headers?: Record<string, string>; meta?: Record<string, string> };
-export type ReqCtx = { date?: string; latest: string | null; today: string };
+export type ReqCtx = { date?: string; latest: string | null; today: string; since?: string };
 
 export type SourceCfg = {
   id: string;
@@ -81,28 +81,12 @@ const niftyReq = (path: string, kind: "tri" | "pepb") => (c: ReqCtx): Req[] =>
 
 SOURCES.push(
   {
-    id: "niftyindices_tri", urls: () => [], reqs: niftyReq("getTotalReturnIndexString", "tri"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
-    parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_tri",
-  },
-  {
-    id: "niftyindices_pepb", urls: () => [], reqs: niftyReq("getpepbHistoricaldataDBtoString", "pepb"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
-    parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_pe",
-  },
-  {
     id: "ecb", urls: () => ["https://data-api.ecb.europa.eu/service/data/EXR/D.INR.EUR.SP00.A?format=csvdata&startPeriod=2000-01-01"], perDate: false, fmt: "csv", freq: "daily", lagDays: 6,
     parser: "ecbEurInr", dataset: "ecb", anchorSeries: "ts_ecb_eurinr",
   },
   {
     id: "bis", urls: () => ["IN", "US", "XM", "GB", "JP"].map((a) => `https://stats.bis.org/api/v1/data/WS_CBPOL/M.${a}?format=csv`), perDate: false, fmt: "csv", freq: "monthly", lagDays: 60,
     parser: "bisPolicy", dataset: "bis", anchorSeries: "ts_bis_policy_in",
-  },
-  {
-    id: "oecd", urls: () => [],
-    reqs: () => ["IND", "USA", "CHN", "DEU", "JPN", "GBR"].map((c): Req => {
-      const base = `https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/${c}.M.LI...AA...H?startPeriod=2000-01`;
-      return { url: `${base}&format=csvfile`, alt: { url: base, headers: { accept: "application/vnd.sdmx.data+csv; charset=utf-8; version=2" } } };
-    }), perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
-    parser: "oecdCli", dataset: "oecd", anchorSeries: "ts_oecd_cli_ind",
   },
 );
 
@@ -127,4 +111,48 @@ SOURCES.push(
 SOURCES.push({
   id: "nse_allindices", urls: () => ["https://www.nseindia.com/api/allIndices"], perDate: false, fmt: "json", freq: "daily", lagDays: 4,
   nseCookie: true, parser: "nseAllIndices", dataset: "nse_allindices", anchorSeries: "ts_niftyidx_nifty50_pe",
+});
+
+/**
+ * Disabled, kept for reference (not run, not scheduled):
+ * - niftyindices_*: after the site redesign the Backpage.aspx endpoints return the home page (HTTP 200, title "NIFTY Indices") from GitHub runners.
+ * - oecd: sdmx.oecd.org answers HTTP 500 via Cloudflare to both request shapes from GitHub runners.
+ * Re-enable by moving an entry into SOURCES once a working request shape is known.
+ */
+export const DISABLED_SOURCES: SourceCfg[] = [
+  {
+    id: "niftyindices_tri", urls: () => [], reqs: niftyReq("getTotalReturnIndexString", "tri"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
+    parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_tri",
+  },
+  {
+    id: "niftyindices_pepb", urls: () => [], reqs: niftyReq("getpepbHistoricaldataDBtoString", "pepb"), perDate: false, fmt: "json", freq: "daily", lagDays: 4, warm: "https://www.niftyindices.com/reports/historical-data", browser: true,
+    parser: "niftyIndices", dataset: "niftyindices", anchorSeries: "ts_niftyidx_nifty50_pe",
+  },
+  {
+    id: "oecd", urls: () => [],
+    reqs: () => ["IND", "USA", "CHN", "DEU", "JPN", "GBR"].map((c): Req => {
+      const base = `https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI/${c}.M.LI...AA...H?startPeriod=2000-01`;
+      return { url: `${base}&format=csvfile`, alt: { url: base, headers: { accept: "application/vnd.sdmx.data+csv; charset=utf-8; version=2" } } };
+    }), perDate: false, fmt: "csv", freq: "monthly", lagDays: 75,
+    parser: "oecdCli", dataset: "oecd", anchorSeries: "ts_oecd_cli_ind",
+  },
+];
+
+const dmyDash = (iso: string) => `${iso.slice(8, 10)}-${iso.slice(5, 7)}-${iso.slice(0, 4)}`;
+/** NSE historical index closes (price index, excludes dividends). Windows of <=360 days per request. First run starts 2015-01-01 unless --since is given. */
+SOURCES.push({
+  id: "nse_indexhistory", urls: () => [], perDate: false, fmt: "json", freq: "daily", lagDays: 4, nseCookie: true,
+  reqs: (c) => {
+    const out: Req[] = [];
+    for (const [slug, name] of NIFTY_INDICES) {
+      let from = c.since ?? (c.latest ? addDays(c.latest, 1) : "2015-01-01");
+      while (from <= c.today) {
+        const to = addDays(from, 359) < c.today ? addDays(from, 359) : c.today;
+        out.push({ url: `https://www.nseindia.com/api/historical/indicesHistory?indexType=${encodeURIComponent(name)}&from=${dmyDash(from)}&to=${dmyDash(to)}`, meta: { slug } });
+        from = addDays(to, 1);
+      }
+    }
+    return out;
+  },
+  parser: "nseIndexHistory", dataset: "nse_indexhistory", anchorSeries: "ts_niftyidx_nifty50_px",
 });
