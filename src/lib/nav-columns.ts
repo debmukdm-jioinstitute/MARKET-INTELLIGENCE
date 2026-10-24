@@ -27,7 +27,6 @@ export const NAV_SECTIONS: NavSection[] = [
         badge: "AI",
         items: [
           L("Daily Brief", hubHref("today", "brief"), "Pre-market and post-close brief with cited sources.", "AI"),
-          L("Economic Calendar", hubHref("today", "calendar"), "Upcoming data releases, holidays and corporate actions."),
           L("Intelligence Feed", hubHref("today", "feed"), "News scored for sentiment and relevance.", "AI"),
           L("World Monitor", hubHref("today", "world-monitor"), "Global news, country risk and finance radar."),
         ],

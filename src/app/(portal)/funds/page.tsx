@@ -1,5 +1,4 @@
 import { HubPage } from "@/components/hub/hub-page";
-import { HubCta } from "@/components/hub/hub-section";
 import { TsPathCharts } from "@/components/ts-charts/ts-path-charts";
 import { pageMetadata } from "@/lib/seo/metadata";
 import Institutional from "@/app/(portal)/intelligence/institutional/page";
@@ -34,7 +33,7 @@ export default function FundsHub() {
         "geo-aum": (<><States /><TsPathCharts path="/funds?section=geo-aum" /></>),
         "scheme-size": (<><Size /><TsPathCharts path="/funds?section=scheme-size" /></>),
         etf: (<><Etf /><TsPathCharts path="/funds?section=etf" /></>),
-        mtf: (<><Leverage /><TsPathCharts path="/funds?section=mtf" /><LeverageMtf /><TsPathCharts path="/funds?section=mtf" /><HubCta href="/trade?section=leverage" title="Margin trading for traders" text="See the same margin book next to the scanner and derivatives tools." cta="Open Trade" /></>),
+        mtf: (<><Leverage /><LeverageMtf /><TsPathCharts path="/funds?section=mtf" /></>),
       }}
     />
   );

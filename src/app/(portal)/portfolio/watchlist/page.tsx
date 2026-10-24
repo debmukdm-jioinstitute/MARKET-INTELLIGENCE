@@ -73,7 +73,7 @@ export default function WatchlistPage() {
               {
                 key: "portfolio",
                 label: "",
-                render: (r) => (
+                render: () => (
                   <Link href="/portfolio" className="text-sm font-semibold text-blue-600 hover:underline">
                     Add to portfolio
                   </Link>

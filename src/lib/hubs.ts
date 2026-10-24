@@ -12,7 +12,6 @@ export const HUBS = {
       { id: "hero", label: "Overview" },
       { id: "pulse", label: "Pulse" },
       { id: "brief", label: "Daily brief" },
-      { id: "calendar", label: "Economic calendar" },
       { id: "feed", label: "Intelligence feed" },
       { id: "world-monitor", label: "World monitor" },
       { id: "start-here", label: "Start here" },
@@ -87,7 +86,6 @@ export const HUBS = {
       { id: "ai-signals", label: "AI signals" },
       { id: "backtesting", label: "Backtesting" },
       { id: "derivatives", label: "Derivatives" },
-      { id: "leverage", label: "Margin trading (MTF)" },
     ],
   },
   portfolio: {

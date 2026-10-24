@@ -3,7 +3,6 @@
 import { Panel } from "@/components/layout/page-header";
 import { hideWorldMonitorEmbedChrome } from "@/lib/worldmonitor/embed-chrome";
 import {
-  worldMonitorExternalUrl,
   worldMonitorLaunchPath,
   WORLDMONITOR_THEME_STORAGE_KEY,
 } from "@/lib/worldmonitor/public-url";
@@ -31,7 +30,6 @@ function applyEmbeddedLightTheme() {
 
 export function WorldMonitorFrame({ variant: _variant = "finance" }: Props) {
   const launchPath = worldMonitorLaunchPath();
-  const externalUrl = worldMonitorExternalUrl();
   const [iframeKey, setIframeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [embedReady, setEmbedReady] = useState(false);

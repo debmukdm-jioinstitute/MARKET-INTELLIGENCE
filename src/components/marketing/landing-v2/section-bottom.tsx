@@ -15,7 +15,7 @@ import { PLUS_LAUNCH_OFFER_NOTE } from "@/lib/payments/plans";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLandingAiDesk, useLandingDashboard, useLandingResearch, useLandingSiteBrief } from "./use-landing-data";
-import { BodyCopy, PrimaryButton, SecondaryButton, SectionTitle, SourceLine } from "./ui";
+import { BodyCopy, PrimaryButton, SecondaryButton, SectionTitle } from "./ui";
 
 export function LandingUseCasesSection() {
   const cards = [

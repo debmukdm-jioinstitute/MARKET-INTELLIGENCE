@@ -1,5 +1,5 @@
 import { feedFetch } from "@/lib/feeds/http";
-import { redditSubredditSearch, redditUserAgent, getRedditAccessToken } from "@/lib/reddit-sentiment/reddit-http";
+import { redditUserAgent, getRedditAccessToken } from "@/lib/reddit-sentiment/reddit-http";
 import { redditSubreddits } from "@/lib/feeds/open-news-config";
 import type { NewsItem } from "@/lib/feeds/types";
 

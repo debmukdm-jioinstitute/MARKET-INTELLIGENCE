@@ -45,7 +45,7 @@ export function HoldingsList({
 
   const filtered = useMemo(() => {
     const q = query.trim().toUpperCase();
-    let rows = q
+    const rows = q
       ? positions.filter((p) => p.symbol.toUpperCase().includes(q) || p.name.toUpperCase().includes(q))
       : [...positions];
     rows.sort((a, b) => {

@@ -34,7 +34,7 @@ export function classifyRetargetingSegment(input: {
   plansEverPurchased: RazorpayPlanId[];
   paidOrderCount: number;
 }): RetargetingSegment {
-  const { currentPlanId, entitlementActive, expiresAt, plansEverPurchased, paidOrderCount } = input;
+  const { currentPlanId, entitlementActive, expiresAt, paidOrderCount } = input;
   if (paidOrderCount === 0 && !currentPlanId) return "lapsed_paid";
 
   if (entitlementActive && expiresAt) {

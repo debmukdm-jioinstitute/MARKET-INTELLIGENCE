@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tenorSlug, parseParYield } from "../sources/fbil";
+import { tenorSlug } from "../sources/fbil";
 import { parseWorldBank } from "../sources/worldbank";
 import { parseUpiRows } from "../sources/upi-npci";
 import { parseSiamRelease } from "../sources/siam-auto";

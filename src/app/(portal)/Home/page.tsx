@@ -35,7 +35,6 @@ import { HubJumpNav } from "@/components/hub/hub-jump-nav";
 import { HubSection } from "@/components/hub/hub-section";
 import { StartHere } from "@/components/hub/start-here";
 import { HubSectionParam } from "@/components/hub/use-hub-section-param";
-import CalendarSection from "@/components/hub/calendar-section";
 import DailyBrief from "@/app/(portal)/intelligence/brief/page";
 import IntelligenceFeed from "@/app/(portal)/intelligence/page";
 import { WorldMonitorFreeDashboard } from "@/components/worldmonitor/world-monitor-free-dashboard";
@@ -144,7 +143,6 @@ export default function DashboardPage() {
     </div>
     <div className="mx-auto mt-8 max-w-[1440px] space-y-8 px-3 pb-12 sm:px-6">
       <HubSection id="brief" title="Daily brief" force={force === "brief"}><DailyBrief /></HubSection>
-      <HubSection id="calendar" title="Economic calendar" force={force === "calendar"}><CalendarSection /></HubSection>
       <HubSection id="feed" title="Intelligence feed" force={force === "feed"}><IntelligenceFeed /></HubSection>
       <HubSection id="world-monitor" title="World monitor" force={force === "world-monitor"}><WorldMonitorPageShell><WorldMonitorFreeDashboard /></WorldMonitorPageShell></HubSection>
       <HubSection id="start-here" title="Start here" force={force === "start-here"}><StartHere /></HubSection>

@@ -5,6 +5,7 @@ import { sectionMetrics } from "@/lib/macro/metric-tree";
 import { maxAgeDaysForMetric } from "@/lib/macro/sanity";
 import { formatAsOfIst, freshness } from "@/lib/provenance";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import Link from "next/link";
 import { DataInfo } from "@/components/feeds/data-info";
 
@@ -22,13 +23,14 @@ export function MacroSectionFreshness({
 }) {
   const metrics = sectionMetrics(section);
   const withHist = metrics.filter((m) => m.history.length > 1).length;
+  const [nowMs] = useState(() => Date.now());
   const hubFresh = freshness(hubFetchedAt);
   const staleCount = metrics.filter((m) => {
     const obs = latestObs(m);
     if (!obs) return false;
     const t = Date.parse(obs.length === 4 ? `${obs}-07-01` : obs.length === 7 ? `${obs}-15` : obs);
     if (Number.isNaN(t)) return false;
-    const ageDays = (Date.now() - t) / 86_400_000;
+    const ageDays = (nowMs - t) / 86_400_000;
     return ageDays > maxAgeDaysForMetric(m);
   }).length;
 

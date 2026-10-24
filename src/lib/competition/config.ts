@@ -16,7 +16,7 @@ export const marketClose = (day: string) => `${day}T10:00:00.000Z`;
 /** Next Mon–Fri block in IST, starting on the first Monday strictly after today (IST). */
 export function nextSeasonTradingWeek(): string[] {
   const istNow = new Date(Date.now() + 19_800_000);
-  let cursor = new Date(
+  const cursor = new Date(
     Date.UTC(
       istNow.getUTCFullYear(),
       istNow.getUTCMonth(),

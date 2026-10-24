@@ -76,14 +76,13 @@ export function ShippedPopup() {
 
   useEffect(() => {
     let cancelled = false;
-    let timer: ReturnType<typeof setTimeout>;
     try {
       if (localStorage.getItem(NOTE_ID)) return;
     } catch {
       return; // storage blocked: never nag
     }
     // Show the "What all we shipped in the last FEW WEEKS" note once after a short initial page load delay
-    timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (!cancelled) setOpen(true);
     }, 1800);
     return () => {

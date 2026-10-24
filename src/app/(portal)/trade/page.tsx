@@ -26,7 +26,6 @@ export default function TradeHub() {
         "ai-signals": <AiSignals />,
         backtesting: <Backtesting />,
         derivatives: (<><Derivatives /><TsPathCharts path="/trade?section=derivatives" /><HubCta href="/markets?section=activity" title="Market activity" text="Cash turnover and index-futures positioning sit under Markets." cta="Open Markets" /></>),
-        leverage: <HubCta href="/funds?section=mtf" title="Margin Trading (MTF)" text="System-wide funded margin book, book-to-market-cap and net exposure live under Funds & Flows." cta="Open MTF" />,
       }}
     />
   );

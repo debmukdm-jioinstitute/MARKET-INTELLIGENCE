@@ -134,7 +134,7 @@ export async function fetchLiveCompanySentiment(symbolRaw: string): Promise<Live
     }
   }
 
-  let fetchIssue =
+  const fetchIssue =
     failures.length > 0 && posts.length === 0
       ? `${failures.length}/${INDIA_SUBREDDITS.length} communities could not be reached (${failures[0]!.reason})${
           !isRedditOAuthConfigured() && failures.some((f) => f.reason.includes("403") || f.reason.includes("429"))

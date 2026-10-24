@@ -240,7 +240,7 @@ export const FUNDAMENTALS: LearnModule = {
       ],
       tools: [
         { label: "Company Page", href: "/companies?section=company", blurb: "IR disclosures, timeline and AI what-changed summaries." },
-        { label: "Economic Calendar", href: "/Home?section=calendar", blurb: "Upcoming releases that can move markets." },
+        { label: "Economic Calendar", href: "/economy?section=calendar", blurb: "Upcoming releases that can move markets." },
       ],
       related: ["ownership-and-risk/legal-and-regulatory-risk"],
     },

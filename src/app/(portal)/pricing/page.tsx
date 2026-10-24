@@ -10,7 +10,6 @@ import {
   PRICING_PLAN_BULLETS,
 } from "@/lib/marketing/pricing-marketing";
 import { parseActivePlanId, type RazorpayPlanId } from "@/lib/payments/plans";
-import Link from "next/link";
 import useSWR from "swr";
 
 type ConfigResponse = {

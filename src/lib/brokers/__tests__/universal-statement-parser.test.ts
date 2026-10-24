@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   parseStatementRows,
   textToRows,
-  findHeaderRow,
-  detectBrokerage,
   parseExcelBuffer,
 } from "@/lib/brokers/universal-statement-parser";
 import ExcelJS from "exceljs";

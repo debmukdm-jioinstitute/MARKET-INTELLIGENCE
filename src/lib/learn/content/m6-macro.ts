@@ -46,7 +46,7 @@ export const MACRO: LearnModule = {
       tools: [
         { label: "Global Board", href: "/economy", blurb: "Regime-first read on growth, inflation and liquidity." },
         { label: "India Macro", href: "/economy?section=india-macro", blurb: "MOSPI, RBI and fiscal data on one page." },
-        { label: "Economic Calendar", href: "/Home?section=calendar", blurb: "Upcoming data releases." },
+        { label: "Economic Calendar", href: "/economy?section=calendar", blurb: "Upcoming data releases." },
       ],
       related: ["macro-and-economy/rbi-repo-and-liquidity"],
     },

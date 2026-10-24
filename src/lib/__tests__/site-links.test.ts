@@ -72,7 +72,7 @@ describe("site links", () => {
 
   it("every hub section is reachable from the menus (or is a teaser for a deep tool)", () => {
     const linked = new Set(ALL_NAV_SECTIONS.flatMap((s) => s.groups.flatMap((g) => g.items.map((i) => i.href))));
-    const teasers = new Set(["today/hero", "today/pulse", "today/start-here", "markets/flows-teaser", "trade/scanner", "trade/lab", "trade/options-flow", "trade/leverage", "companies/ai-desk"]);
+    const teasers = new Set(["today/hero", "today/pulse", "today/start-here", "markets/flows-teaser", "trade/scanner", "trade/lab", "trade/options-flow", "companies/ai-desk"]);
     const orphans = Object.entries(HUBS as Record<string, Hub>).flatMap(([key, h]) => h.sections.filter((s) => !teasers.has(`${key}/${s.id}`)).filter((s) => ![s.id, ...(s.subs ?? [])].some((a) => linked.has(`${h.route}?section=${a}`))).map((s) => `${key}/${s.id}`));
     expect(orphans).toEqual([]);
   });
