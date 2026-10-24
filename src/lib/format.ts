@@ -77,3 +77,13 @@ export function formatDate(value: DateInput, opts: { time?: boolean; tz?: string
 export function isoToDmy(s: string | null | undefined): string {
   return (s ?? "").replace(/(\d{4})-(\d{2})-(\d{2})/g, "$3-$2-$1");
 }
+
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const mm = (name: string) => String(MONTHS.indexOf(name.slice(0, 3).toLowerCase()) + 1).padStart(2, "0");
+
+/** Rewrites "2 Jan 2008" as 02-01-2008 and "Mar 2020" as 01-03-2020 inside any text (month-only means the 1st). */
+export function dmy(s: string): string {
+  return s
+    .replace(/\b(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{4})\b/g, (_, d: string, m: string, y: string) => `${d.padStart(2, "0")}-${mm(m)}-${y}`)
+    .replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{4})\b/g, (_, m: string, y: string) => `01-${mm(m)}-${y}`);
+}

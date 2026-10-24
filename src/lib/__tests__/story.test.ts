@@ -78,3 +78,18 @@ it("period deck capitalises when only YTD exists; caps names get no 'The'", () =
   expect(flowPeriodDeck({ today: 1, m1: null, ytd: -5 }, { today: 1, m1: null, ytd: 7 })).toBe("Year to date, foreign investors net sold ₹5 cr and domestic institutions net bought ₹7 cr.");
   expect(indexHeadline([{ name: "BRENT CRUDE", changePct: 0.028 }], /brent/i)).toBe("BRENT CRUDE rose 2.8%");
 });
+
+import { glanceLine } from "@/lib/story";
+import { dmy } from "@/lib/format";
+describe("index overview helpers", () => {
+  it("glance", () => {
+    expect(glanceLine(-4.4, [12.4, 13.1, 15.2])).toBe("Down over one year. Positive annualised returns over longer periods.");
+    expect(glanceLine(5, [-1, 2])).toBe("Up over one year. Mixed annualised returns over longer periods.");
+    expect(glanceLine(null, [1])).toBeNull();
+  });
+  it("dmy", () => {
+    expect(dmy("from 2 Jan 2008 to 9 March 2009")).toBe("from 02-01-2008 to 09-03-2009");
+    expect(dmy("since Oct 2026")).toBe("since 01-10-2026");
+    expect(dmy("Since 2005")).toBe("Since 2005");
+  });
+});

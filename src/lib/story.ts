@@ -135,3 +135,11 @@ export function corridorDeck(c: { sdf?: string | null; msf?: string | null; crr?
   const parts = [["Standing deposit facility", c?.sdf], ["marginal standing facility", c?.msf], ["CRR", c?.crr]].filter((p): p is [string, string] => Boolean(p[1]));
   return parts.length ? `${parts.map(([k, v]) => `${k} ${v}`).join(", ")}.` : null;
 }
+
+/** One-line read of an index's returns: the last year, then the longer annualised periods. */
+export function glanceLine(oneYear: number | null, longer: number[]): string | null {
+  if (!ok(oneYear)) return null;
+  const l = longer.filter(ok);
+  const tail = !l.length ? "" : l.every((v) => v > 0) ? " Positive annualised returns over longer periods." : l.every((v) => v < 0) ? " Negative annualised returns over longer periods." : " Mixed annualised returns over longer periods.";
+  return `${oneYear < 0 ? "Down" : oneYear > 0 ? "Up" : "Flat"} over one year.${tail}`;
+}

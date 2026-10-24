@@ -1,6 +1,7 @@
 "use client";
 
 import type { Cell, TableOut } from "@/lib/indices/tipsheet-indices";
+import { dmy } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -18,7 +19,7 @@ export const heat = (v: number, sat: number) =>
 function Wrap({ caption, children }: { caption?: string; children: React.ReactNode }) {
   return (
     <div>
-      {caption ? <p className="mb-2 text-sm" style={ink3}>{caption}</p> : null}
+      {caption ? <p className="mb-2 text-sm" style={ink3}>{dmy(caption)}</p> : null}
       <div className="overflow-x-auto rounded-xl border" style={{ borderColor: "var(--rule)" }}>{children}</div>
     </div>
   );
@@ -33,16 +34,16 @@ export function SimpleTable({ t, slugs }: { t: TableOut; slugs?: Record<string, 
       <table className="w-full min-w-[480px] border-collapse text-sm tabular-nums">
         <thead style={ink3}>
           <tr className="border-b" style={{ borderColor: "var(--rule)" }}>
-            {t.headers.map((h, i) => <th key={i} scope="col" className={cn(th, i === 0 ? "text-left" : "text-right")}>{h}</th>)}
+            {t.headers.map((h, i) => <th key={i} scope="col" className={cn(th, i === 0 ? "text-left" : "text-right")}>{dmy(h)}</th>)}
           </tr>
         </thead>
         <tbody>
           {t.rows.map((r, ri) => (
             <tr key={ri} className="border-b last:border-0" style={{ borderColor: "var(--rule)" }}>
               <th scope="row" className="sticky left-0 bg-card px-3 py-2 text-left font-normal">
-                {slugFor(r, slugs) ? <Link href={href(slugFor(r, slugs)!)} className="underline decoration-border underline-offset-4">{r.label}</Link> : r.label}
+                {slugFor(r, slugs) ? <Link href={href(slugFor(r, slugs)!)} className="underline decoration-border underline-offset-4">{r.label}</Link> : dmy(r.label)}
               </th>
-              {r.cells.map((c, i) => <td key={i} className="px-3 py-2 text-right">{c.t}</td>)}
+              {r.cells.map((c, i) => <td key={i} className="px-3 py-2 text-right">{dmy(c.t)}</td>)}
             </tr>
           ))}
         </tbody>
@@ -61,7 +62,7 @@ export function HeatTable({ t, sat, oldestFirst, slugs }: { t: TableOut; sat: nu
         <thead style={ink3}>
           <tr className="border-b" style={{ borderColor: "var(--rule)" }}>
             <th className={cn(th, "sticky left-0 bg-card text-left")} />
-            {order.map((i) => <th key={i} scope="col" className={cn(th, "text-right")}>{t.headers[i]}</th>)}
+            {order.map((i) => <th key={i} scope="col" className={cn(th, "text-right")}>{dmy(t.headers[i])}</th>)}
           </tr>
         </thead>
         <tbody>
@@ -72,7 +73,7 @@ export function HeatTable({ t, sat, oldestFirst, slugs }: { t: TableOut; sat: nu
               </th>
               {order.map((i) => {
                 const c = r.cells[i - 1];
-                return <td key={i} style={c ? heat(val(c), sat) : undefined} className="px-2 py-1.5 text-right">{c?.t ?? ""}</td>;
+                return <td key={i} style={c ? heat(val(c), sat) : undefined} className="px-2 py-1.5 text-right">{dmy(c?.t ?? "")}</td>;
               })}
             </tr>
           ))}
