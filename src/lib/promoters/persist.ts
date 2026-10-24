@@ -8,7 +8,8 @@ export async function persistPromoterFeedItems(items: PromoterFeedItem[]): Promi
   if (!hasDatabase() || !items.length) return;
   await ensureSchema();
   const db = sql();
-  const rows = items.slice(0, 400);
+  // unnest + ON CONFLICT errors when one batch repeats an id (the same filing from two collectors); keep the last.
+  const rows = [...new Map(items.slice(0, 400).map((r) => [r.id, r])).values()];
 
   await db`
     INSERT INTO promoter_disclosure_feed (
