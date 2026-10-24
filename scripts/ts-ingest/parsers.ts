@@ -1081,5 +1081,126 @@ export const nseMtf: Parser = (buf, ctx) => {
   return results;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf } satisfies Record<string, Parser>;
+
+/**
+ * NSE Wholesale Debt Market (WDM) Daily Traded G-Sec List:
+ * Emits sovereign yield curve points: ts_gsec_1y, ts_gsec_3y, ts_gsec_5y, ts_gsec_7y, ts_gsec_10y, ts_gsec_14y, ts_gsec_30y, ts_gsec_spread_10y_1y.
+ */
+export const nseWdm: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
+
+  const header = lines[0].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+  const iSecType = header.indexOf("SECTYPE");
+  const iSec = header.indexOf("SECURITY");
+  const iName = header.indexOf("ISSUE_NAME");
+  const iMat = header.indexOf("MAT_DATE");
+  const iTradeDate = header.indexOf("Last Traded Date");
+  const iPrice = header.indexOf("Last Traded Price (in Rs.)");
+
+  if (iSecType < 0 || iName < 0 || iMat < 0 || iPrice < 0) return [];
+
+  type RawBond = { sec: string; coupon: number; price: number; matDate: string; tradeDate: string | null };
+  const rawBonds: RawBond[] = [];
+  let maxTradedDate: string | null = null;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+    if (cols[iSecType] !== "GS") continue;
+
+    const price = parseFloat(cols[iPrice] || "0");
+    if (!Number.isFinite(price) || price <= 0) continue;
+
+    const matDate = parseDmy(cols[iMat]);
+    if (!matDate) continue;
+
+    const rawTd = iTradeDate >= 0 ? cols[iTradeDate] : "";
+    const tradeDate = parseDmy(rawTd);
+    if (tradeDate) {
+      if (!maxTradedDate || tradeDate > maxTradedDate) maxTradedDate = tradeDate;
+    }
+
+    const coupon = parseFloat(cols[iName].replace("%", "").trim());
+    if (!Number.isFinite(coupon)) continue;
+
+    rawBonds.push({
+      sec: iSec >= 0 ? cols[iSec] : "",
+      coupon,
+      price,
+      matDate,
+      tradeDate,
+    });
+  }
+
+  const refDate = ctx.date ?? maxTradedDate ?? new Date().toISOString().slice(0, 10);
+  const refTime = new Date(refDate).getTime();
+
+  type Bond = { sec: string; ytm: number; years: number };
+  const validBonds: Bond[] = [];
+
+  for (const b of rawBonds) {
+    if (b.tradeDate) {
+      const tdTime = new Date(b.tradeDate).getTime();
+      const diffDays = (refTime - tdTime) / 86400000;
+      if (diffDays > 60 || diffDays < -1) continue;
+    }
+    const matTime = new Date(b.matDate).getTime();
+    const years = (matTime - refTime) / (365.25 * 86400000);
+    if (years <= 0) continue;
+
+    const ytm = ((b.coupon + (100 - b.price) / years) / ((100 + b.price) / 2)) * 100;
+    validBonds.push({ sec: b.sec, ytm, years });
+  }
+
+  const targets: [number, number, number, string, string][] = [
+    [1, 0.5, 2.0, "ts_gsec_1y", "1Y sovereign G-Sec yield"],
+    [3, 2.0, 4.0, "ts_gsec_3y", "3Y sovereign G-Sec yield"],
+    [5, 4.0, 6.0, "ts_gsec_5y", "5Y sovereign G-Sec yield"],
+    [7, 6.0, 8.5, "ts_gsec_7y", "7Y sovereign G-Sec yield"],
+    [10, 8.5, 12.0, "ts_gsec_10y", "10Y sovereign G-Sec yield"],
+    [14, 12.0, 18.0, "ts_gsec_14y", "14Y sovereign G-Sec yield"],
+    [30, 25.0, 35.0, "ts_gsec_30y", "30Y sovereign G-Sec yield"],
+  ];
+
+  const results: SeriesResult[] = [];
+  let y10: number | null = null;
+  let y1: number | null = null;
+
+  for (const [target, minY, maxY, id, label] of targets) {
+    const candidates = validBonds.filter((b) => b.years >= minY && b.years < maxY);
+    if (!candidates.length) continue;
+    const best = candidates.reduce((prev, curr) =>
+      Math.abs(curr.years - target) < Math.abs(prev.years - target) ? curr : prev
+    );
+    const roundedYtm = Number(best.ytm.toFixed(2));
+    if (target === 10) y10 = roundedYtm;
+    if (target === 1) y1 = roundedYtm;
+    results.push({
+      id,
+      label,
+      unit: "%",
+      category: "rates",
+      provider: "NSE WDM",
+      url: ctx.url,
+      obs: [{ date: refDate, value: roundedYtm }],
+    });
+  }
+
+  if (y10 != null && y1 != null) {
+    results.push({
+      id: "ts_gsec_spread_10y_1y",
+      label: "10Y minus 1Y sovereign yield spread",
+      unit: "%",
+      category: "rates",
+      provider: "NSE WDM",
+      url: ctx.url,
+      obs: [{ date: refDate, value: Number((y10 - y1).toFixed(2)) }],
+    });
+  }
+
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf, nseWdm } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

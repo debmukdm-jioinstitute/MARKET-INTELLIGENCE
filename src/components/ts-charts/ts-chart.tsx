@@ -19,7 +19,7 @@ export function TsChart({ id, narrowAt = 456 }: { id: string; narrowAt?: number 
   if (!data) return <Skel />;
   if (!data.rows.length) return <p className="text-sm" style={{ color: "var(--ink-3)" }}>Source unavailable: no observations stored yet.</p>;
   const cols = data.series.map((s) => s.col);
-  const rows = applyTf(sliceRange(data.rows, from, to), cols, data.transform);
+  const rows = data.kind === "curve" ? data.rows : applyTf(sliceRange(data.rows, from, to), cols, data.transform);
   const narrow = typeof window !== "undefined" && window.innerWidth < narrowAt;
   const recentFrom = rows.at(-Math.min(rows.length, 24))?.date ?? "";
   const band = data.band;

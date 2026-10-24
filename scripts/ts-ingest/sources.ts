@@ -341,3 +341,28 @@ SOURCES.push({
   anchorSeries: "ts_mtf_book",
   nseCookie: true,
 });
+
+
+const MON_UPPER = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+/**
+ * NSE Wholesale Debt Market (WDM) Daily Traded G-Sec List:
+ * https://nsearchives.nseindia.com/content/historical/WDM/{YYYY}/{MON}/wdmlist_{DDMMYYYY}.csv
+ */
+SOURCES.push({
+  id: "nse_wdm",
+  urls: (d) => {
+    if (!d) return [];
+    const mon = MON_UPPER[parseInt(d.slice(5, 7), 10) - 1];
+    const ddmmyyyy = d.slice(8, 10) + d.slice(5, 7) + d.slice(0, 4);
+    return [`https://nsearchives.nseindia.com/content/historical/WDM/${d.slice(0, 4)}/${mon}/wdmlist_${ddmmyyyy}.csv`];
+  },
+  perDate: true,
+  fmt: "csv",
+  freq: "daily",
+  lagDays: 4,
+  parser: "nseWdm",
+  dataset: "nse_wdm",
+  anchorSeries: "ts_gsec_10y",
+  nseCookie: true,
+});

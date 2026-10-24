@@ -258,6 +258,33 @@ export const REGISTRY: ChartDef[] = [
     ],
     source: "NSE India (Participant OI)", page: "/markets/derivatives",
   },
+  // ---- Rates, Sovereign Yields & Curves (/macro/yields)
+  { ...ind("i.in10y", "India 10-year sovereign G-Sec yield", "nse_wdm", "ts_gsec_10y", "pct", 2, "NSE WDM", "/macro/yields"), also: ["/macro", "/Home"] },
+  ind("i.gsec_spread_10y_1y", "India 10Y minus 1Y sovereign spread", "nse_wdm", "ts_gsec_spread_10y_1y", "pct", 2, "NSE WDM", "/macro/yields"),
+  {
+    id: "yields.gsec_curve", kind: "curve", title: "Traded sovereign G-Sec yield curve", dataset: "nse_wdm", fmt: "pct", digits: 2,
+    series: [
+      { col: "ts_gsec_1y", label: "1Y" },
+      { col: "ts_gsec_3y", label: "3Y" },
+      { col: "ts_gsec_5y", label: "5Y" },
+      { col: "ts_gsec_7y", label: "7Y" },
+      { col: "ts_gsec_10y", label: "10Y" },
+      { col: "ts_gsec_14y", label: "14Y" },
+      { col: "ts_gsec_30y", label: "30Y" },
+    ],
+    source: "NSE WDM Traded G-Secs", page: "/macro/yields",
+  },
+  {
+    id: "yields.gsec_history", kind: "line", title: "Sovereign G-Sec yields history across key tenors", dataset: "nse_wdm", fmt: "pct", digits: 2,
+    series: [
+      { col: "ts_gsec_1y", label: "1Y G-Sec" },
+      { col: "ts_gsec_5y", label: "5Y G-Sec" },
+      { col: "ts_gsec_10y", label: "10Y G-Sec" },
+      { col: "ts_gsec_30y", label: "30Y G-Sec" },
+    ],
+    source: "NSE WDM Traded G-Secs", page: "/macro/yields",
+  },
+
   // ---- Margin Trading Facility (MTF) & Leverage (/leverage & /leverage/mtf)
   { ...ind("i.mtf_book", "MTF Funded Margin Book", "nse_mtf", "ts_mtf_book", "crore", 0, "NSE India (MTF)", "/leverage"), also: ["/leverage/mtf"] },
   { ...ind("i.mtf_fresh_exposure", "MTF Daily Fresh Exposure", "nse_mtf", "ts_mtf_fresh_exposure", "crore", 0, "NSE India (MTF)", "/leverage"), also: ["/leverage/mtf"] },

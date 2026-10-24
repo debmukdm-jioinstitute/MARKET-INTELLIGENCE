@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { zipSync, strToU8 } from "fflate";
-import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf } from "./parsers";
+import { nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, nsdlFpi, nsdlDepo, cdslBo, nseShareholding, nseMtf, nseWdm } from "./parsers";
 import { candidateDates, parseDmy } from "./dates";
 
 const ctx = { url: "https://x/y", date: "2026-10-23" };
@@ -407,5 +407,28 @@ describe("derivatives and leverage parsers", () => {
     expect(client!.obs[0].value).toBe(52.6);
     expect(fii).toBeDefined();
     expect(fii!.obs[0].value).toBe(24.2);
+  });
+});
+
+
+describe("rates and bonds parsers", () => {
+  it("nseWdm parses traded sovereign yield curve and tenors", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/nse_wdm_sample.csv");
+    const r = nseWdm(buf, { url: "https://nsearchives.nseindia.com/content/historical/WDM/2026/OCT/wdmlist_22102026.csv", date: "2026-10-22" });
+    const y1 = r.find((s) => s.id === "ts_gsec_1y");
+    const y5 = r.find((s) => s.id === "ts_gsec_5y");
+    const y10 = r.find((s) => s.id === "ts_gsec_10y");
+    const y30 = r.find((s) => s.id === "ts_gsec_30y");
+    const spread = r.find((s) => s.id === "ts_gsec_spread_10y_1y");
+    expect(y1).toBeDefined();
+    expect(y1!.obs[0].value).toBe(6.38);
+    expect(y5).toBeDefined();
+    expect(y5!.obs[0].value).toBe(6.57);
+    expect(y10).toBeDefined();
+    expect(y10!.obs[0].value).toBe(7.42);
+    expect(y30).toBeDefined();
+    expect(y30!.obs[0].value).toBe(7.8);
+    expect(spread).toBeDefined();
+    expect(spread!.obs[0].value).toBe(1.04);
   });
 });

@@ -52,6 +52,23 @@ export async function buildChart(id: string, from?: string, to?: string): Promis
   const all = [...byDate.values()].sort((a, b) => (a.date as string).localeCompare(b.date as string)) as ChartPayload["rows"];
   const filled = all.map((r) => { const o = { ...r }; for (const c of cols) o[c] ??= null; return o; });
 
+  if (def.kind === "curve") {
+    const latest = filled[filled.length - 1];
+    const curveRows = latest
+      ? def.series.map((s) => ({
+          date: s.label,
+          yield: latest[s.col] as number | null,
+        }))
+      : [];
+    return {
+      id: def.id, kind: def.kind, title: def.title, source: def.source, methodUrl: def.methodUrl,
+      updated: latest ? (latest.date as string) : "never",
+      fmt: def.fmt, digits: def.digits,
+      series: [{ col: "yield", label: "Yield (%)" }],
+      rows: curveRows,
+    };
+  }
+
   let band: [number, number] | undefined;
   let records: ChartPayload["records"];
   if (def.band) {

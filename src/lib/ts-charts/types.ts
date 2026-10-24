@@ -1,7 +1,7 @@
 import type { Fmt } from "./format";
 import type { Tf } from "./transform";
 
-export type ChartKind = "line" | "indicator" | "bars" | "share" | "area" | "histogram";
+export type ChartKind = "line" | "indicator" | "bars" | "share" | "area" | "histogram" | "curve";
 export type ChartSeries = { col: string; label: string; slot?: number; tone?: "hist" };
 export type ChartPayload = {
   id: string;
