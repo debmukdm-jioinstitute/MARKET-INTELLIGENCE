@@ -1064,7 +1064,21 @@ export const SITE_TOOLS: Tool[] = [
     },
   },
 
-  // ---- Long-history indicators (ts-ingest) ----
+  {
+    name: "get_funds_intelligence",
+    title: "Mutual funds & ETF data",
+    category: "Markets",
+    description: "Latest mutual fund industry metrics (monthly SIP inflow, stoppage ratio, category AUM) and ETF price-to-NAV spreads.",
+    inputSchema: { type: "object", properties: { metric: { type: "string", description: "Optional metric: sip | aum | etf" } }, additionalProperties: false },
+    run: async () => ({
+      status: "ok",
+      provider: "AMFI & NSE",
+      indicators: ["i.sip_inflow", "i.sip_stoppage", "funds.aum", "etf.niftybees"],
+      routes: ["/funds", "/etf"],
+    }),
+  },
+
+    // ---- Long-history indicators (ts-ingest) ----
   {
     name: "get_ts_indicator",
     title: "Indicator vs usual range",

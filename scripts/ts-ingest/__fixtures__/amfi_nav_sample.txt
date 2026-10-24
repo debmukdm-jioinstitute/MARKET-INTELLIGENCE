@@ -1,0 +1,108 @@
+Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date
+ 
+Open Ended Schemes(Children’s Fund - Childrens' Fund)
+ 
+Axis Mutual Fund
+ 
+135762;INF846K01WO1;-;Axis Children's Fund;Direct Plan;Growth Option;28.6173;23-Oct-2026
+135765;INF846K01WP8;-;Axis Children's Fund;Direct Plan;IDCW Option;26.3617;23-Oct-2026
+135759;INF846K01WJ1;-;Axis Children's Fund;Regular Plan;Growth Option;24.8981;23-Oct-2026
+135760;INF846K01WK9;-;Axis Children's Fund;Regular Plan;IDCW Option;22.9705;23-Oct-2026
+135764;INF846K01WR4;-;Axis Children's Fund;Direct Plan;Growth Option;29.1646;23-Oct-2026
+135763;INF846K01WS2;INF846K01WQ6;Axis Children's Fund;Direct Plan;IDCW Option;26.4115;23-Oct-2026
+135766;INF846K01WM5;-;Axis Children's Fund;Regular Plan;Growth Option;24.8951;23-Oct-2026
+135761;INF846K01WN3;INF846K01WL7;Axis Children's Fund;Regular Plan;IDCW Option;22.9497;23-Oct-2026
+ 
+Open Ended Schemes(Debt Scheme - Banking and PSU Fund)
+ 
+Franklin Templeton Mutual Fund
+ 
+129008;INF090I01KR8;-;Franklin India Banking & PSU Debt Fund;Direct Plan;Growth;25.2720;23-Oct-2026
+129006;INF090I01KO5;-;Franklin India Banking & PSU Debt Fund;Regular Plan;Growth;24.0975;23-Oct-2026
+129009;INF090I01KS6;INF090I01KT4;Franklin India Banking & PSU Debt Fund;Direct Plan;IDCW;11.4358;23-Oct-2026
+129007;INF090I01KP2;INF090I01KQ0;Franklin India Banking & PSU Debt Fund;Regular Plan;IDCW;10.8187;23-Oct-2026
+ 
+HDFC Mutual Fund
+ 
+128628;INF179KA1JC4;-;HDFC Banking and PSU Debt Fund;Regular Plan;Growth Option;24.1943;23-Oct-2026
+128629;INF179KA1IZ7;-;HDFC Banking and PSU Debt Fund;Direct Plan;Growth Option;25.3147;23-Oct-2026
+128627;INF179KA1JD2;INF179KA1JE0;HDFC Banking and PSU Debt Fund;Regular Plan;IDCW Option;10.035;23-Oct-2026
+128626;INF179KA1JA8;INF179KA1JB6;HDFC Banking and PSU Debt Fund;Direct Plan;IDCW Option;9.9334;23-Oct-2026
+ 
+ITI Mutual Fund
+ 
+148534;INF00XX01861;-;ITI Banking & PSU Debt Fund;Direct Plan;Growth Option;14.1955;23-Oct-2026
+148536;INF00XX01879;INF00XX01887;ITI Banking & PSU Debt Fund;Direct Plan;IDCW Option;14.1939;23-Oct-2026
+148535;INF00XX01838;-;ITI Banking & PSU Debt Fund;Regular Plan;Growth Option;13.7365;23-Oct-2026
+148533;INF00XX01846;INF00XX01853;ITI Banking & PSU Debt Fund;Regular Plan;IDCW Option;13.7377;23-Oct-2026
+ 
+Kotak Mahindra Mutual Fund
+ 
+123690;INF174K01FO3;-;Kotak Banking and PSU Debt Fund;Regular Plan;Growth;69.1692;23-Oct-2026
+123691;INF174K01FQ8;INF174K01FP0;Kotak Banking and PSU Debt Fund;Regular Plan;Payout of Income Distribution cum capital withdrawal option- Direct;12.9955;23-Oct-2026
+123689;INF174K01KI5;INF174K01KJ3;Kotak Banking and PSU Debt Fund;Direct Plan;Annual Dividend;17.1427;15-Sep-2017
+123693;INF174K01KH7;-;Kotak Banking and PSU Debt Fund;Direct Plan;Growth;72.4015;23-Oct-2026
+123692;INF174K01KK1;INF174K01KL9;Kotak Banking and PSU Debt Fund;Direct Plan;Monthly Payout of Income Distribution cum capital withdrawal option;10.1699;23-Oct-2026
+ 
+Open Ended Schemes(Debt Scheme - Corporate Bond Fund)
+ 
+Aditya Birla Sun Life Mutual Fund
+ 
+119533;INF209K01S38;-;Aditya Birla Sun Life Corporate Bond Fund;Direct Plan;GROWTH;120.7874;23-Oct-2026
+103178;INF209K01785;-;Aditya Birla Sun Life Corporate Bond Fund;Regular Plan;GROWTH;118.4814;23-Oct-2026
+124832;INF209KA1KT0;-;Aditya Birla Sun Life Corporate Bond Fund;Direct Plan;IDCW Payout;9.9514;23-Oct-2026
+119532;INF209K01N90;INF209KA1KU8;Aditya Birla Sun Life Corporate Bond Fund;Direct Plan;Monthly IDCW Re-investment;12.6154;23-Oct-2026
+124833;INF209KA1KS2;-;Aditya Birla Sun Life Corporate Bond Fund;Regular Plan;IDCW Payout;11.1424;23-Oct-2026
+103183;INF209K01983;INF209K01DL8;Aditya Birla Sun Life Corporate Bond Fund;Regular Plan;Monthly IDCW Payout;12.3910;23-Oct-2026
+ 
+Bandhan Mutual Fund
+ 
+139201;INF194KA1T34;INF194KA1T42;BANDHAN Corporate Bond Fund;Direct Plan;Annual IDCW;10.5493;23-Oct-2026
+135916;INF194KA1M23;-;BANDHAN Corporate Bond Fund;Direct Plan;Growth;21.1747;23-Oct-2026
+139200;INF194KA1T00;INF194KA1T18;BANDHAN Corporate Bond Fund;Direct Plan;Half Yearly IDCW;11.4773;23-Oct-2026
+139198;INF194KA1S43;INF194KA1S50;BANDHAN Corporate Bond Fund;Direct Plan;Monthly IDCW;10.3193;23-Oct-2026
+135917;INF194KA1M31;INF194KA1M49;BANDHAN Corporate Bond Fund;Direct Plan;Periodic IDCW;14.0481;23-Oct-2026
+139199;INF194KA1S76;INF194KA1S84;BANDHAN Corporate Bond Fund;Direct Plan;Quarterly IDCW;10.6619;23-Oct-2026
+139204;INF194KA1S19;INF194KA1S27;BANDHAN Corporate Bond Fund;Regular Plan;Annual IDCW;10.5219;23-Oct-2026
+135914;INF194KA1L81;-;BANDHAN Corporate Bond Fund;Regular Plan;Growth;20.4771;23-Oct-2026
+139203;INF194KA1R85;INF194KA1R93;BANDHAN Corporate Bond Fund;Regular Plan;Half Yearly IDCW;10.8734;23-Oct-2026
+139202;INF194KA1R28;INF194KA1R36;BANDHAN Corporate Bond Fund;Regular Plan;Monthly IDCW;10.5702;23-Oct-2026
+135915;INF194KA1L99;INF194KA1M07;BANDHAN Corporate Bond Fund;Regular Plan;Periodic IDCW;13.8042;23-Oct-2026
+139205;INF194KA1R51;INF194KA1R69;BANDHAN Corporate Bond Fund;Regular Plan;Quarterly IDCW;10.6904;23-Oct-2026
+ 
+DSP Mutual Fund
+ 
+144646;INF740KA1KE8;-;DSP Corporate Bond Fund;Direct Plan;Growth;17.5542;23-Oct-2026
+144647;INF740KA1KF5;INF740KA1KG3;DSP Corporate Bond Fund;Direct Plan;IDCW;11.6675;23-Oct-2026
+144651;INF740KA1KH1;INF740KA1KI9;DSP Corporate Bond Fund;Direct Plan;Monthly IDCW;10.6377;23-Oct-2026
+144648;INF740KA1KJ7;INF740KA1KK5;DSP Corporate Bond Fund;Direct Plan;Quarterly IDCW;11.4229;23-Oct-2026
+144644;INF740KA1JX0;-;DSP Corporate Bond Fund;Regular Plan;Growth;17.1970;23-Oct-2026
+144650;INF740KA1JY8;INF740KA1JZ5;DSP Corporate Bond Fund;Regular Plan;IDCW;11.6280;23-Oct-2026
+144645;INF740KA1KA6;INF740KA1KB4;DSP Corporate Bond Fund;Regular Plan;Monthly IDCW;10.6112;23-Oct-2026
+144649;INF740KA1KC2;INF740KA1KD0;DSP Corporate Bond Fund;Regular Plan;Quarterly IDCW;10.7682;23-Oct-2026
+ 
+HDFC Mutual Fund
+ 
+113070;INF179K01DC2;-;HDFC Corporate Bond Fund;Regular Plan;Growth Option;34.0294;23-Oct-2026
+118987;INF179K01XD8;-;HDFC Corporate Bond Fund;Direct Plan;Growth Option;34.8874;23-Oct-2026
+132848;INF179KA1D33;INF179KA1D25;HDFC Corporate Bond Fund;Regular Plan;IDCW Option;20.6003;23-Oct-2026
+132849;INF179KA1D17;-;HDFC Corporate Bond Fund;Direct Plan;IDCW Option;21.3765;23-Oct-2026
+113071;INF179K01DD0;INF179K01DE8;HDFC Corporate Bond Fund;Regular Plan;Quarterly IDCW Option;10.4225;23-Oct-2026
+118986;INF179K01XB2;INF179K01XC0;HDFC Corporate Bond Fund;Direct Plan;Quarterly IDCW Option;10.3244;23-Oct-2026
+ 
+ICICI Prudential Mutual Fund
+ 
+130947;INF109KA1I84;-;ICICI Prudential Corporate Bond Fund;;;14.9782;24-Apr-2020
+111988;INF109K01CR9;-;ICICI Prudential Corporate Bond Fund;;;10.1065;16-Sep-2022
+120695;INF109K013B8;-;ICICI Prudential Corporate Bond Fund;;;10.1008;16-Sep-2022
+120696;INF109K014B6;INF109K015B3;ICICI Prudential Corporate Bond Fund;;;12.1669;16-Sep-2022
+120692;INF109K016B1;-;ICICI Prudential Corporate Bond Fund;Direct Plan;Growth;33.2878;23-Oct-2026
+131152;INF109KA1N38;INF109KA1N20;ICICI Prudential Corporate Bond Fund;;;12.8827;16-Sep-2022
+122639;INF879O01027;-;Parag Parikh Flexi Cap Fund;Direct Plan;Growth;88.9695;23-Oct-2026
+140088;INF204KB17I5;-;Nippon India ETF Gold BeES;Direct Plan;;116.0136;23-Oct-2026
+135853;INF179KC1965;-;HDFC NIFTY 50 ETF;;Growth Option;255.0443;23-Oct-2026
+140107;INF457M01133;-;CPSE ETF;Direct Plan;;85.9057;23-Oct-2026
+140084;INF204KB14I2;-;Nippon India ETF Nifty 50 BeES;Direct Plan;;257.8497;23-Oct-2026
+140087;INF204KB15I9;-;Nippon India ETF Nifty Bank BeES;Direct Plan;;562.7133;23-Oct-2026
+140085;INF732E01045;-;Nippon India ETF Nifty Next 50 Junior BeES;Direct Plan;;712.7028;23-Oct-2026
+135106;INF200KA1FS1;-;SBI Nifty 50 ETF;Regular Plan;IDCW;243.6749;23-Oct-2026

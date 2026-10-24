@@ -146,6 +146,20 @@ export const NAV_SECTIONS: NavSection[] = [
         ],
       },
       {
+        label: "Mutual Funds & ETFs",
+        desc: "SIP inflows, AUM scale and ETF spreads.",
+        items: [
+          { label: "Funds Intelligence", href: "/funds", desc: "SIP trends and industry AUM." },
+          { label: "Fund Categories", href: "/funds/categories", desc: "Equity, debt, hybrid and passive flows." },
+          { label: "NFO & Distribution", href: "/funds/distribution", desc: "New fund offerings mobilized." },
+          { label: "SIP Ownership", href: "/funds/owners", desc: "Contributing accounts and stoppage ratio." },
+          { label: "Passive & Index", href: "/funds/passive", desc: "Passive AUM and ETF expansion." },
+          { label: "Geographic AUM", href: "/funds/states", desc: "State-wise fund adoption." },
+          { label: "Scheme Size", href: "/funds/size", desc: "Scheme asset concentration." },
+          { label: "ETF Spreads", href: "/etf", desc: "Price to NAV premium/discount and turnover.", badge: "NEW" },
+        ],
+      },
+      {
         label: "Big Flows",
         desc: "Follow institutional money.",
         items: [

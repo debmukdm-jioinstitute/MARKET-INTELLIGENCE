@@ -69,7 +69,7 @@ async function runSource(src: SourceCfg): Promise<{ ok: boolean; series: number 
         if (res.status !== 200) throw new Error(`${safeUrl} → HTTP ${res.status} [ct=${res.contentType} server=${res.server}]: ${bodyHead(res.buf)}`);
         // Archives answer 200 with an HTML page for dates with no file (holidays, not yet published): skip, never parse.
         if (src.perDate && looksLikeHtml(res.buf)) { log({ src: src.id, date: d, skip: "HTML page instead of file (holiday / not published)" }); continue; }
-        if (looksLikeHtml(res.buf)) throw new Error(`${safeUrl} → got an HTML page, not ${src.fmt} [status ${res.status} ct=${res.contentType} server=${res.server} title=${(res.buf.toString("utf8").match(/<title[^>]*>([^<]{0,120})/i)?.[1] ?? "").trim()}]: ${bodyHead(res.buf)}`);
+        if (src.fmt !== "html" && looksLikeHtml(res.buf)) throw new Error(`${safeUrl} → got an HTML page, not ${src.fmt} [status ${res.status} ct=${res.contentType} server=${res.server} title=${(res.buf.toString("utf8").match(/<title[^>]*>([^<]{0,120})/i)?.[1] ?? "").trim()}]: ${bodyHead(res.buf)}`);
         if (src.events) {
           for (const e of EVENT_PARSERS[src.parser as EventParserName](res.buf, { date: d, url, meta: rq.meta })) events.set(e.id, e);
         } else for (const s of PARSERS[src.parser as ParserName](res.buf, { date: d, url, meta: rq.meta })) {

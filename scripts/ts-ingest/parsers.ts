@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx";
+import { TRACKED_ETFS, TRACKED_INDEX_FUNDS } from "@/lib/funds/etf-isins";
 import { unzipSync } from "fflate";
 import type { SeriesResult } from "@/lib/collector/types";
 import { parseDmy } from "./dates";
@@ -75,24 +77,37 @@ export const nseBhavcopy: Parser = (buf, ctx) => {
   const rows = csvRows(firstCsvInZip(buf));
   const h = rows[0].map((x) => x.trim());
   const ix = (n: string) => h.indexOf(n);
-  const [iS, iC, iP, iV] = [ix("SctySrs"), ix("ClsPric"), ix("PrvsClsgPric"), ix("TtlTrfVal")];
+  const [iS, iC, iP, iV, iIsin] = [ix("SctySrs"), ix("ClsPric"), ix("PrvsClsgPric"), ix("TtlTrfVal"), ix("ISIN")];
   if ([iS, iC, iP].some((i) => i < 0)) throw new Error("bhavcopy columns missing");
   let adv = 0, dec = 0, unch = 0, val = 0;
+  const etfMap = new Map(TRACKED_ETFS.map((e) => [e.isin, e]));
+  const etfResults: SeriesResult[] = [];
+  const d = ctx.date, p = "NSE bhavcopy";
+
   for (const r of rows.slice(1)) {
+    if (iIsin >= 0 && r[iIsin]) {
+      const etf = etfMap.get(r[iIsin]);
+      if (etf) {
+        const c = num(r[iC]);
+        const v = num(r[iV]);
+        if (c != null && c > 0) etfResults.push(mk(`ts_etf_${etf.slug}_px`, `${etf.symbol} close`, "₹", p, ctx.url, d, c, "market"));
+        if (v != null) etfResults.push(mk(`ts_etf_${etf.slug}_val`, `${etf.symbol} traded value`, "₹ cr", p, ctx.url, d, v / 1e7, "market"));
+      }
+    }
     if (!["EQ", "BE", "BZ"].includes(r[iS])) continue;
-    const c = num(r[iC]), p = num(r[iP]);
-    if (c == null || p == null) continue;
-    if (c > p) adv++; else if (c < p) dec++; else unch++;
+    const c = num(r[iC]), prevP = num(r[iP]);
+    if (c == null || prevP == null) continue;
+    if (c > prevP) adv++; else if (c < prevP) dec++; else unch++;
     val += num(r[iV]) ?? 0;
   }
-  if (adv + dec + unch === 0) return [];
-  const d = ctx.date, p = "NSE bhavcopy";
-  return [
+  if (adv + dec + unch === 0 && !etfResults.length) return [];
+  const out = [
     mk("ts_breadth_advances", "Advancing stocks (EQ/BE/BZ)", "count", p, ctx.url, d, adv),
     mk("ts_breadth_declines", "Declining stocks (EQ/BE/BZ)", "count", p, ctx.url, d, dec),
     mk("ts_breadth_unchanged", "Unchanged stocks (EQ/BE/BZ)", "count", p, ctx.url, d, unch),
     mk("ts_cash_traded_value", "Cash market traded value", "₹ cr", p, ctx.url, d, val / 1e7),
   ];
+  return [...out, ...etfResults];
 };
 
 /** FRED observations JSON; "." = missing → skipped. Series id/name come from ctx.url. */
@@ -266,5 +281,165 @@ export const nseIndexHistory: Parser = (buf, ctx) => {
   return out;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs } satisfies Record<string, Parser>;
+
+/** AMFI NAVAll.txt: extracts NAVs for tracked ETFs and Index funds. */
+export const amfiNav: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const etfMap = new Map(TRACKED_ETFS.map((e) => [e.isin, e]));
+  const fundMap = new Map(TRACKED_INDEX_FUNDS.map((f) => [f.code, f]));
+  const isinFundMap = new Map(TRACKED_INDEX_FUNDS.map((f) => [f.isin, f]));
+  const results: SeriesResult[] = [];
+
+  for (const line of text.split(/\r?\n/)) {
+    const p = line.split(";");
+    if (p.length < 6) continue;
+    const code = p[0]?.trim();
+    const isin = p[1]?.trim();
+    const nav = num(p[p.length - 2]);
+    const rawDate = p[p.length - 1]?.trim();
+    const d = parseDmy(rawDate) ?? ctx.date;
+    if (nav == null || nav <= 0 || !d) continue;
+
+    const etf = etfMap.get(isin);
+    if (etf) {
+      results.push(mk(`ts_etf_${etf.slug}_nav`, `${etf.symbol} NAV`, "₹", "AMFI NAV", ctx.url, d, nav, "funds"));
+    }
+    const fund = fundMap.get(code) ?? isinFundMap.get(isin);
+    if (fund) {
+      results.push(mk(`ts_amfi_nav_${fund.slug}`, `${fund.name} NAV`, "₹", "AMFI NAV", ctx.url, d, nav, "funds"));
+    }
+  }
+  return results;
+};
+
+/** AMFI monthly report xls: MCR_MonthlyReport totals and NSR NFO collections. */
+export const amfiMonthly: Parser = (buf, ctx) => {
+  const wb = XLSX.read(buf, { type: "buffer" });
+  const sheetName = wb.SheetNames.find((n) => /monthly|mcr/i.test(n)) ?? wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws) throw new Error("amfiMonthly sheet missing");
+  const data = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 });
+  if (data.length < 5) throw new Error("amfiMonthly empty data");
+
+  let date = ctx.date ?? null;
+  const title = String(data[0]?.[0] ?? data[1]?.[0] ?? "");
+  const mMatch = title.match(/(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})/i);
+  if (mMatch) {
+    const m = mMatch[1].slice(0, 3);
+    const y = mMatch[2];
+    date = parseDmy(`01-${m}-${y}`);
+  }
+  if (!date) date = "2026-09-30";
+
+  let iNet = 6, iAum = 7;
+  for (let r = 0; r < Math.min(6, data.length); r++) {
+    const row = data[r];
+    if (!Array.isArray(row)) continue;
+    const netIdx = row.findIndex((c) => /net inflow/i.test(String(c)));
+    const aumIdx = row.findIndex((c) => /net assets under management|aum/i.test(String(c)));
+    if (netIdx >= 0) iNet = netIdx;
+    if (aumIdx >= 0) iAum = aumIdx;
+  }
+
+  const results: SeriesResult[] = [];
+  let aumTotal = 0, aumEquity = 0, aumDebt = 0, aumHybrid = 0, aumPassive = 0;
+  let netTotal = 0, netEquity = 0, netDebt = 0;
+
+  for (const row of data) {
+    if (!Array.isArray(row)) continue;
+    const label = String(row[1] ?? row[0] ?? "").trim();
+    const net = num(row[iNet]);
+    const aum = num(row[iAum]);
+
+    if (/grand total/i.test(label) || /total all/i.test(label)) {
+      if (aum != null) aumTotal = aum;
+      if (net != null) netTotal = net;
+    } else if (/sub total.*(debt|income)/i.test(label) || (label === "Sub Total - I" && aum != null)) {
+      if (aum != null) aumDebt = aum;
+      if (net != null) netDebt = net;
+    } else if (/sub total.*(equity|growth)/i.test(label) || (label === "Sub Total - II" && aum != null)) {
+      if (aum != null) aumEquity = aum;
+      if (net != null) netEquity = net;
+    } else if (/sub total.*hybrid/i.test(label) || (label === "Sub Total - III" && aum != null)) {
+      if (aum != null) aumHybrid = aum;
+    } else if (/sub total.*(etf|other|passive)/i.test(label) || (label === "Sub Total - VII" && aum != null)) {
+      if (aum != null) aumPassive = aum;
+    }
+  }
+
+  let nfoMobilized = 0;
+  const nsrName = wb.SheetNames.find((n) => /nsr|nfo/i.test(n));
+  if (nsrName && wb.Sheets[nsrName]) {
+    const nsrData = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[nsrName], { header: 1 });
+    for (const r of nsrData) {
+      if (!Array.isArray(r)) continue;
+      const l = String(r[0] ?? r[1] ?? "").trim();
+      if (/grand total/i.test(l)) {
+        const v = num(r[r.length - 1] ?? r[3]);
+        if (v != null) nfoMobilized = v;
+      }
+    }
+  }
+
+  const p = "AMFI monthly report";
+  if (aumTotal > 0) results.push(mk("ts_amfi_aum_total", "Mutual fund industry total AUM", "₹ cr", p, ctx.url, date, aumTotal, "funds"));
+  if (aumEquity > 0) results.push(mk("ts_amfi_aum_equity", "Equity mutual funds AUM", "₹ cr", p, ctx.url, date, aumEquity, "funds"));
+  if (aumDebt > 0) results.push(mk("ts_amfi_aum_debt", "Debt mutual funds AUM", "₹ cr", p, ctx.url, date, aumDebt, "funds"));
+  if (aumHybrid > 0) results.push(mk("ts_amfi_aum_hybrid", "Hybrid mutual funds AUM", "₹ cr", p, ctx.url, date, aumHybrid, "funds"));
+  if (aumPassive > 0) results.push(mk("ts_amfi_aum_passive", "Passive and ETF AUM", "₹ cr", p, ctx.url, date, aumPassive, "funds"));
+  if (netEquity !== 0) results.push(mk("ts_amfi_net_equity", "Equity net inflows", "₹ cr", p, ctx.url, date, netEquity, "funds"));
+  if (netDebt !== 0) results.push(mk("ts_amfi_net_debt", "Debt net flows", "₹ cr", p, ctx.url, date, netDebt, "funds"));
+  if (netTotal !== 0) results.push(mk("ts_amfi_net_total", "Industry net flows", "₹ cr", p, ctx.url, date, netTotal, "funds"));
+  if (nfoMobilized > 0) results.push(mk("ts_amfi_nfo_mobilized", "NFO funds mobilized", "₹ cr", p, ctx.url, date, nfoMobilized, "funds"));
+
+  return results;
+};
+
+/** AMFI SIP trends: monthly inflow and stoppage ratio from portal disclosures. */
+export const amfiSip: Parser = (buf, ctx) => {
+  const html = buf.toString("utf8");
+  const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)].map((m) => m[1]);
+  if (!tables.length) return [];
+  const results: SeriesResult[] = [];
+
+  for (const t of tables) {
+    const rows = [...t.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) =>
+      [...m[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((c) => c[1].replace(/<[^>]+>/g, "").trim())
+    );
+    for (const r of rows) {
+      if (r.length < 5) continue;
+      const mText = r[0];
+      const mMatch = mText.match(/^([A-Za-z]{3,4})[\s-]*(\d{2})$/);
+      if (!mMatch) continue;
+      const m = mMatch[1].slice(0, 3);
+      const y = `20${mMatch[2]}`;
+      const d = parseDmy(`01-${m}-${y}`);
+      if (!d) continue;
+
+      const reg = num(r[2]);
+      const disc = num(r[3]);
+      const contrib = num(r[4]);
+      const inflow = num(r[5]);
+      const aum = num(r[6]);
+
+      const provider = "AMFI";
+      if (inflow != null && inflow > 0) {
+        results.push(mk("ts_amfi_sip_inflow", "Monthly SIP inflow", "₹ cr", provider, ctx.url, d, inflow, "funds"));
+      }
+      if (reg != null && disc != null && reg > 0) {
+        const stoppage = Number(((disc / reg) * 100).toFixed(1));
+        results.push(mk("ts_amfi_sip_stoppage", "SIP stoppage ratio", "%", provider, ctx.url, d, stoppage, "funds"));
+      }
+      if (aum != null && aum > 0) {
+        results.push(mk("ts_amfi_sip_aum", "SIP AUM", "₹ cr", provider, ctx.url, d, aum, "funds"));
+      }
+      if (contrib != null && contrib > 0) {
+        results.push(mk("ts_amfi_sip_accounts", "Contributing SIP accounts", "lakh", provider, ctx.url, d, contrib, "funds"));
+      }
+    }
+  }
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

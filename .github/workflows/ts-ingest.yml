@@ -59,7 +59,7 @@ jobs:
             "0 18 * * 1-5")    ONLY="nse_bhavcopy,nse_mtf" ;;
             "0 18 * * *")      ONLY="amfi_nav,ecb,fred,wgc_gold" ;;
             "30 4 * * 6")      ONLY="nsdl_fpi,rbi_wss,bis,nse_holidays" ;;
-            "30 5 1-15 * *")   ONLY="amfi_monthly,nsdl_depo,cdsl_bo,nse_business_growth,mospi,nse_ucc" ;;
+            "30 5 1-15 * *")   ONLY="amfi_monthly,amfi_sip,nsdl_depo,cdsl_bo,nse_business_growth,mospi,nse_ucc" ;;
             "30 5 25-31 * *")  ONLY="rbi_dbie,sebi_bulletin,nse_market_pulse" ;;
             "0 6 5 1,4,7,10 *") ONLY="imf,worldbank" ;;
             "30 2 * * *")      ONLY="nse_fiidii,nse_bhavcopy,nse_participant_oi,nse_allindices,fred" ;;

@@ -11,7 +11,7 @@ export type SourceCfg = {
   /** One request per candidate date (daily-by-date archives) or a single url for snapshot APIs. */
   urls: (d?: string) => string[];
   perDate: boolean;
-  fmt: "csv" | "zip-csv" | "json";
+  fmt: "csv" | "zip-csv" | "json" | "text" | "binary" | "html";
   freq: "daily" | "weekly" | "monthly";
   /** Dataset staleness tolerance in days before state flips current → behind. */
   lagDays: number;
@@ -149,4 +149,43 @@ SOURCES.push({
   parser: "nseIndexHistory",
   dataset: "nse_indexhistory",
   anchorSeries: "ts_niftyidx_nifty50_px",
+});
+
+/** AMFI NAVAll.txt: daily NAV snapshots for tracked ETFs and Index funds. */
+SOURCES.push({
+  id: "amfi_nav",
+  urls: () => ["https://portal.amfiindia.com/spages/NAVAll.txt"],
+  perDate: false,
+  fmt: "text",
+  freq: "daily",
+  lagDays: 1,
+  parser: "amfiNav",
+  dataset: "amfi_nav",
+  anchorSeries: "ts_etf_niftybees_nav",
+});
+
+/** AMFI monthly reports: industry AUM by category, net flows, and NFO collections. */
+SOURCES.push({
+  id: "amfi_monthly",
+  urls: () => ["https://portal.amfiindia.com/spages/amsep2026repo.xls"],
+  perDate: false,
+  fmt: "binary",
+  freq: "monthly",
+  lagDays: 45,
+  parser: "amfiMonthly",
+  dataset: "amfi_monthly",
+  anchorSeries: "ts_amfi_aum_total",
+});
+
+/** AMFI SIP trends: monthly SIP inflows and stoppage ratio. */
+SOURCES.push({
+  id: "amfi_sip",
+  urls: () => ["https://www.amfiindia.com/mutual-fund"],
+  perDate: false,
+  fmt: "html",
+  freq: "monthly",
+  lagDays: 45,
+  parser: "amfiSip",
+  dataset: "amfi_sip",
+  anchorSeries: "ts_amfi_sip_inflow",
 });

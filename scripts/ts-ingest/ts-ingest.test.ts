@@ -124,7 +124,7 @@ describe("allIndices", () => {
   it("fails loudly without a timestamp", () => expect(() => nseAllIndices(Buffer.from('{"data":[]}'), ctx)).toThrow());
 });
 
-import { nseIndexHistory } from "./parsers";
+import { nseIndexHistory, amfiNav, amfiMonthly, amfiSip } from "./parsers";
 import { SOURCES } from "./sources";
 describe("indexhistory + registry of sources", () => {
   it("parses both timestamp styles", () => {
@@ -159,5 +159,42 @@ describe("indexhistory + registry of sources", () => {
   });
   it("disabled sources are not scheduled", () => {
     expect(SOURCES.some((x) => x.id.startsWith("niftyindices") || x.id === "oecd")).toBe(false);
+  });
+});
+
+describe("amfi parsers", () => {
+  it("amfiNav parses tracked ETFs and index funds", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/amfi_nav_sample.txt");
+    const r = amfiNav(buf, ctx);
+    expect(r.length).toBeGreaterThan(0);
+    const niftybees = r.find((s) => s.id === "ts_etf_niftybees_nav");
+    expect(niftybees).toBeDefined();
+    expect(niftybees!.obs[0].value).toBeGreaterThan(0);
+    expect(niftybees!.unit).toBe("₹");
+  });
+
+  it("amfiMonthly parses category AUM, flows and NFOs", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/amfi_monthly_sample.xls");
+    const r = amfiMonthly(buf, ctx);
+    const aumTotal = r.find((s) => s.id === "ts_amfi_aum_total");
+    const aumEquity = r.find((s) => s.id === "ts_amfi_aum_equity");
+    const nfo = r.find((s) => s.id === "ts_amfi_nfo_mobilized");
+    expect(aumTotal).toBeDefined();
+    expect(aumTotal!.obs[0].value).toBeGreaterThan(8000000); // > 80 lakh cr
+    expect(aumEquity).toBeDefined();
+    expect(aumEquity!.obs[0].value).toBeGreaterThan(3000000); // > 30 lakh cr
+    expect(nfo).toBeDefined();
+    expect(nfo!.obs[0].value).toBe(2708);
+  });
+
+  it("amfiSip parses monthly SIP contributions and stoppage ratio", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/amfi_sip_sample.html");
+    const r = amfiSip(buf, ctx);
+    const sipInflow = r.find((s) => s.id === "ts_amfi_sip_inflow");
+    const stoppage = r.find((s) => s.id === "ts_amfi_sip_stoppage");
+    expect(sipInflow).toBeDefined();
+    expect(sipInflow!.obs[0].value).toBe(32490);
+    expect(stoppage).toBeDefined();
+    expect(stoppage!.obs[0].value).toBe(78.5);
   });
 });

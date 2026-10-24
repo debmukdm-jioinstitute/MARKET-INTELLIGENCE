@@ -88,6 +88,63 @@ export const REGISTRY: ChartDef[] = [
   },
   ind("i.vix", "VIX", "fred", "ts_fred_vixcls", "num", 1, "FRED", "/macro/stress"),
   ind("i.nfci", "Chicago Fed financial conditions", "fred", "ts_fred_nfci", "num", 2, "FRED", "/macro/stress"),
+  // ---- Mutual funds and ETFs (AMFI)
+  ind("i.sip_inflow", "Monthly SIP Inflow", "amfi_sip", "ts_amfi_sip_inflow", "crore", 0, "AMFI", "/funds"),
+  ind("i.sip_stoppage", "SIP Stoppage Ratio", "amfi_sip", "ts_amfi_sip_stoppage", "pct", 1, "AMFI", "/funds"),
+  {
+    id: "funds.aum", kind: "line", title: "Mutual fund AUM by asset class", dataset: "amfi_monthly", fmt: "crore", digits: 0,
+    series: [
+      { col: "ts_amfi_aum_equity", label: "Equity" },
+      { col: "ts_amfi_aum_debt", label: "Debt" },
+      { col: "ts_amfi_aum_hybrid", label: "Hybrid" },
+      { col: "ts_amfi_aum_passive", label: "Passive / ETF" },
+    ],
+    source: "AMFI monthly report", page: "/funds", also: ["/funds/categories", "/funds/size"],
+  },
+  {
+    id: "funds.flows", kind: "bars", title: "Monthly net inflows, Equity vs Debt", dataset: "amfi_monthly", fmt: "crore", digits: 0,
+    series: [
+      { col: "ts_amfi_net_equity", label: "Equity Net Flow" },
+      { col: "ts_amfi_net_debt", label: "Debt Net Flow" },
+    ],
+    source: "AMFI monthly report", page: "/funds", also: ["/funds/categories"],
+  },
+  {
+    id: "funds.nfo", kind: "bars", title: "New Fund Offerings (NFO) mobilized", dataset: "amfi_monthly", fmt: "crore", digits: 0,
+    series: [{ col: "ts_amfi_nfo_mobilized", label: "NFO Collections" }],
+    source: "AMFI monthly report", page: "/funds", also: ["/funds/distribution"],
+  },
+  {
+    id: "funds.sip_trend", kind: "line", title: "Monthly SIP contributions", dataset: "amfi_sip", fmt: "crore", digits: 0,
+    series: [{ col: "ts_amfi_sip_inflow", label: "SIP Inflow" }],
+    source: "AMFI", page: "/funds", also: ["/funds/owners", "/funds/states"],
+  },
+  {
+    id: "etf.niftybees", kind: "line", title: "Nifty BeES: Market price vs NAV", dataset: "nse_bhavcopy", fmt: "rs", digits: 2,
+    series: [
+      { col: "ts_etf_niftybees_px", label: "NSE Close" },
+      { col: "ts_etf_niftybees_nav", label: "AMFI NAV" },
+    ],
+    source: "NSE Bhavcopy & AMFI NAV", page: "/etf", also: ["/funds/passive"],
+  },
+  {
+    id: "etf.bankbees", kind: "line", title: "Bank BeES: Market price vs NAV", dataset: "nse_bhavcopy", fmt: "rs", digits: 2,
+    series: [
+      { col: "ts_etf_bankbees_px", label: "NSE Close" },
+      { col: "ts_etf_bankbees_nav", label: "AMFI NAV" },
+    ],
+    source: "NSE Bhavcopy & AMFI NAV", page: "/etf", also: ["/funds/passive"],
+  },
+  {
+    id: "etf.volume", kind: "bars", title: "ETF daily traded value", dataset: "nse_bhavcopy", fmt: "crore", digits: 1,
+    series: [
+      { col: "ts_etf_niftybees_val", label: "NIFTYBEES" },
+      { col: "ts_etf_bankbees_val", label: "BANKBEES" },
+      { col: "ts_etf_goldbees_val", label: "GOLDBEES" },
+      { col: "ts_etf_cpseetf_val", label: "CPSEETF" },
+    ],
+    source: "NSE Bhavcopy", page: "/etf",
+  },
 ];
 
 /** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */

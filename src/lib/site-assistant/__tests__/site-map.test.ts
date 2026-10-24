@@ -9,7 +9,7 @@ describe("isAllowedHref", () => {
   });
 
   it("allows newly integrated intelligence pages", () => {
-    expect(isAllowedHref("/funds")).toBe(false);
+    expect(isAllowedHref("/funds")).toBe(true);
     expect(isAllowedHref("/intelligence/institutional")).toBe(true);
     expect(isAllowedHref("/intelligence/promoters")).toBe(true);
     expect(isAllowedHref("/intelligence/credit")).toBe(true);
