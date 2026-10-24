@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { publishHubSection } from "./active-section";
 import { alignTo } from "./use-hub-section-param";
 
 export type HubChip = { id: string; label: string };
@@ -25,6 +26,7 @@ export function HubJumpNav({ chips, onJump, label }: { chips: HubChip[]; onJump?
   }, [chips]);
 
   useEffect(() => {
+    if (active) publishHubSection(active);
     const btn = bar.current?.querySelector<HTMLElement>(`[data-chip="${active}"]`);
     btn?.scrollIntoView({ inline: "center", block: "nearest" });
   }, [active]);

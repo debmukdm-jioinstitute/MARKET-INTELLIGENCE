@@ -200,7 +200,7 @@ export async function buildMacroTape(): Promise<MacroTapePayload> {
       copyKey: "brent",
       beneficiaries: [
         { name: "ONGC", direction: (brentUp ? "up" : brentDown ? "down" : "mixed") as TransmissionRow["direction"], symbol: "ONGC", href: "/research/ONGC" },
-        { name: "Oil & gas E&P", direction: (brentUp ? "up" : "mixed") as TransmissionRow["direction"], href: "/macro/commodities#brent" },
+        { name: "Oil & gas E&P", direction: (brentUp ? "up" : "mixed") as TransmissionRow["direction"], href: "/markets?section=commodities" },
       ],
       pressured: [
         { name: "IOC", direction: "mixed" as TransmissionRow["direction"], symbol: "IOC", href: "/research/IOC" },

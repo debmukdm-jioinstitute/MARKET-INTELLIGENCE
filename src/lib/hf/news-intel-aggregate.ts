@@ -542,7 +542,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.negative.push({
       id: "driver-brent-spike",
       title: `Brent Crude spiked +${brentPct.toFixed(2)}% to $${f2(brentPrice)}/barrel`,
-      url: "/macro/commodities#brent",
+      url: "/markets?section=commodities",
       source: "commodities",
       sourceLabel: "ICE Brent",
       reason: "Energy import bill inflation & corporate margin compression (-ve)",
@@ -564,7 +564,7 @@ export function computeMultiPillarSentiment(params: {
     drivers.negative.push({
       id: "driver-usd-inr-depreciation",
       title: `Indian Rupee weakened to ₹${f2(usdInrPrice)} against USD (+${usdInrPct.toFixed(2)}%)`,
-      url: "/macro/currency#usd_inr",
+      url: "/markets?section=currency",
       source: "fx",
       sourceLabel: "Forex Market",
       reason: "Currency depreciation & foreign capital outflow pressure (-ve)",

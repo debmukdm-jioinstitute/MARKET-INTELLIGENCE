@@ -78,7 +78,7 @@ function buildItems(seed: BriefingSeed, prev: Stored | null): BriefingItem[] {
     items.push({
       n: "05",
       text: `Crude oil ${seed.brentChgPct >= 0 ? "rose" : "fell"} ${Math.abs(seed.brentChgPct * 100).toFixed(1)}%.`,
-      href: "/macro/commodities#brent",
+      href: "/markets?section=commodities",
     });
   } else {
     items.push({
@@ -92,7 +92,7 @@ function buildItems(seed: BriefingSeed, prev: Stored | null): BriefingItem[] {
     items[4] = {
       n: "05",
       text: `USD/INR moved — Rupee ${seed.usdInrChgPct > 0 ? "weaker" : "stronger"} vs last visit.`,
-      href: "/macro/currency#usd_inr",
+      href: "/markets?section=currency",
     };
   }
 

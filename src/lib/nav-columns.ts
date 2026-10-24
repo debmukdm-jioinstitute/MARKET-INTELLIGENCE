@@ -307,15 +307,18 @@ export const NAV_COLUMNS: NavColumn[] = NAV_SECTIONS.map((s) => ({
 }));
 
 /** Longest-prefix match of a pathname to the group it belongs to (for in-page tabs and active states). */
-export function findGroup(sections: NavSection[], path: string): { section: NavSection; group: NavGroup; href: string } | null {
+export function findGroup(sections: NavSection[], path: string, section?: string | null): { section: NavSection; group: NavGroup; href: string } | null {
   let best: { section: NavSection; group: NavGroup; href: string } | null = null;
-  for (const section of sections) {
-    for (const group of section.groups) {
+  for (const sec of sections) {
+    for (const group of sec.groups) {
       for (const item of group.items) {
         if (item.external) continue;
         const base = pathOf(item.href);
         if (path === base || path.startsWith(base + "/")) {
-          if (!best || base.length > pathOf(best.href).length) best = { section, group, href: item.href };
+          const bestBase = best ? pathOf(best.href).length : -1;
+          // On a hub every item shares one path: the one whose ?section= is on screen wins.
+          const here = Boolean(section) && item.href === `${base}?section=${section}`;
+          if (base.length > bestBase || (base.length === bestBase && here)) best = { section: sec, group, href: item.href };
         }
       }
     }

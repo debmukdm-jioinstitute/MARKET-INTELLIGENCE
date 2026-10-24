@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Briefcase, Bug, Building2, Landmark, Settings2, UserRound, CalendarDays, ChevronDown, Database, ExternalLink, Globe, LayoutDashboard, LineChart, LogOut, Menu, MoreHorizontal, Search, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
+import { useActiveHubSection } from "@/components/hub/active-section";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
 import { usePathname, useRouter } from "next/navigation";
@@ -189,7 +190,8 @@ export function MegaNavBar() {
   const path = usePathname();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const current = findGroup(sections, path);
+  const hubSection = useActiveHubSection();
+  const current = findGroup(sections, path, hubSection);
   const activeSection = activeIdx !== null ? sections[activeIdx] : null;
 
   function openCol(i: number) {
@@ -315,7 +317,8 @@ export function BottomTabBar() {
   const { setOpen, openSection } = useMobileNav();
   const { setOpen: setPaletteOpen } = useCommandPalette();
   const { hrefAllowed } = usePortalPages();
-  const current = findGroup(sections, path);
+  const hubSection = useActiveHubSection();
+  const current = findGroup(sections, path, hubSection);
 
   const tabClass = (on: boolean, accent: Accent) =>
     cn(
@@ -440,7 +443,8 @@ export function AppNav() {
   const sections = useNavSections();
   const startHere = useStartHereLinks();
   const [expanded, setExpanded] = useState<string | null | undefined>(undefined);
-  const current = findGroup(sections, path);
+  const hubSection = useActiveHubSection();
+  const current = findGroup(sections, path, hubSection);
 
   const openTitle = expanded === undefined ? (section ?? current?.section.title ?? null) : expanded;
 

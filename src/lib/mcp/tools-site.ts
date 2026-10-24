@@ -476,7 +476,7 @@ export const SITE_TOOLS: Tool[] = [
     run: async () => {
       const panel = await buildEarningsCalendarPanel();
       return {
-        portalPath: "/research#earnings-calendar",
+        portalPath: "/economy?section=calendar",
         asOf: panel.asOf,
         scanned: panel.scanned,
         items: panel.items.map((i) => ({

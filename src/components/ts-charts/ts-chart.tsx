@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { useRange } from "./range-context";
 import { applyTf, sliceRange } from "@/lib/ts-charts/transform";
 import { ChartActions } from "./chart-actions";
@@ -12,9 +13,13 @@ const TsBars = dynamic(() => import("./ts-bars").then((m) => m.TsBars), { ssr: f
 const TsIndicator = dynamic(() => import("./ts-indicator").then((m) => m.TsIndicator), { ssr: false, loading: Skel });
 
 /** The only chart component pages use: fetch by registry id, apply page range + transform, dispatch by kind. */
-export function TsChart({ id, narrowAt = 456, compact = false }: { id: string; narrowAt?: number; compact?: boolean }) {
+export function TsChart({ id, narrowAt = 456, compact = false, onEmpty }: { id: string; narrowAt?: number; compact?: boolean; /** Reports whether the chart has nothing to draw; the caller then hides it instead of showing a placeholder. */ onEmpty?: (id: string, empty: boolean) => void }) {
   const { from, to } = useRange();
   const { data, error } = useChartData(id);
+  const empty = Boolean(error) || (data !== undefined && data !== null && !data.rows.length);
+  const settled = Boolean(error) || (data !== undefined && data !== null);
+  useEffect(() => { if (settled) onEmpty?.(id, empty); }, [id, settled, empty, onEmpty]);
+  if (onEmpty && empty) return null;
   if (error) return <p className="text-sm" style={{ color: "var(--ink-3)" }}>Data unavailable right now.</p>;
   if (!data) return <Skel />;
   if (!data.rows.length) return <p className="text-sm" style={{ color: "var(--ink-3)" }}>Source unavailable: no observations stored yet.</p>;
