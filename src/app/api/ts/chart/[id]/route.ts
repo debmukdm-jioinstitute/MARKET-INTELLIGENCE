@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { buildChart } from "@/lib/ts-charts/server";
 import { getChartDef } from "@/lib/ts-charts/registry";
 import { buildTsrChart, isTsrId } from "@/lib/ts-charts/tipsheet-rbi";
+import { buildTsiChart, isTsiId } from "@/lib/indices/tipsheet-indices";
 
 export const dynamic = "force-dynamic";
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  if (isTsrId(id)) {
+  if (isTsrId(id) || isTsiId(id)) {
     try {
-      return NextResponse.json(await buildTsrChart(id), { headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400" } });
+      return NextResponse.json(await (isTsrId(id) ? buildTsrChart(id) : buildTsiChart(id)), { headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400" } });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : "chart failed" }, { status: 503 });
     }

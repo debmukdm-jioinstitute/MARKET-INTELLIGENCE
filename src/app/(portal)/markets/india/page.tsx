@@ -1,5 +1,5 @@
-import { IndexReturnsTable } from "@/components/india-markets/index-returns-table";
+import IndicesBoard from "@/components/indices/indices-board";
 
 export default function IndiaMarketsPage() {
-  return <IndexReturnsTable />;
+  return <IndicesBoard />;
 }
