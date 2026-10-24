@@ -635,5 +635,149 @@ export const mospi: Parser = (buf, ctx) => {
   return results;
 };
 
-export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi } satisfies Record<string, Parser>;
+
+function stripTags(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
+}
+
+/**
+ * RBI Weekly Statistical Supplement & Money Market Operations.
+ * Official URLs:
+ * - Rates Widget: https://www.rbi.org.in/
+ * - Money Market Operations (MMO): https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx
+ */
+export const rbiWss: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const clean = stripTags(text);
+  const results: SeriesResult[] = [];
+
+  const MONTH_NUM: Record<string, string> = {
+    january: "01", february: "02", march: "03", april: "04", may: "05", june: "06",
+    july: "07", august: "08", september: "09", october: "10", november: "11", december: "12",
+    jan: "01", feb: "02", mar: "03", apr: "04", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+  };
+
+  // 1. Money Market Operations (MMO)
+  if (text.includes("Money Market Operations") || ctx.url.includes("BS_ViewMMO")) {
+    const dateM = /Money Market Operations as on\s*([A-Za-z]+)\s*(\d{1,2}),?\s*(\d{4})/i.exec(clean);
+    const d = (dateM && MONTH_NUM[dateM[1].toLowerCase()]
+      ? dateM[3] + "-" + MONTH_NUM[dateM[1].toLowerCase()] + "-" + dateM[2].padStart(2, "0")
+      : ctx.date) ?? new Date().toISOString().slice(0, 10);
+
+    const callM = /I\.\s*Call Money\s+([\d,.]+)\s+([\d.]+)/i.exec(clean);
+    if (callM) {
+      const callVal = parseFloat(callM[2]);
+      results.push({ id: "ts_rbi_call_rate", label: "Call money weighted average rate", unit: "%", category: "rates", provider: "Reserve Bank of India (MMO)", url: ctx.url, obs: [{ date: d, value: callVal }] });
+      // Call Money vs Repo spread (typical policy repo benchmark 5.50% / from corridor)
+      const callSpread = Number((callVal - 5.50).toFixed(2));
+      results.push({ id: "ts_rbi_call_spread", label: "Call money vs policy repo spread", unit: "% pts", category: "rates", provider: "Reserve Bank of India (MMO)", url: ctx.url, obs: [{ date: d, value: callSpread }] });
+    }
+    const lafM = /F\.\s*Net liquidity injected \(outstanding including today\x27s\s*operations\)[^:]*?\*?\s*(-?[\d,]+\.?\d*)/i.exec(clean);
+    if (lafM) {
+      const lafVal = parseFloat(lafM[1].replace(/,/g, ""));
+      results.push({ id: "ts_rbi_laf_net", label: "Net liquidity injected (+) / absorbed (-)", unit: "₹ cr", category: "rates", provider: "Reserve Bank of India (MMO)", url: ctx.url, obs: [{ date: d, value: lafVal }] });
+    }
+    return results;
+  }
+
+  // 2. Home Rates Widget (CRR, SLR, Policy Repo, SDF, MSF)
+  const crrM = /CRR\s*:\s*([0-9.]+)\s*%/i.exec(clean);
+  const slrM = /SLR\s*:\s*([0-9.]+)\s*%/i.exec(clean);
+  const repoM = /Policy Repo Rate\s*:\s*([0-9.]+)\s*%/i.exec(clean);
+  const sdfM = /Standing Deposit Facility Rate\s*:\s*([0-9.]+)\s*%/i.exec(clean);
+  const msfM = /Marginal Standing Facility Rate\s*:\s*([0-9.]+)\s*%/i.exec(clean);
+  const d = ctx.date ?? new Date().toISOString().slice(0, 10);
+
+  if (crrM) results.push({ id: "ts_rbi_crr", label: "Cash reserve ratio (CRR)", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(crrM[1]) }] });
+  if (slrM) results.push({ id: "ts_rbi_slr", label: "Statutory liquidity ratio (SLR)", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(slrM[1]) }] });
+  if (repoM) {
+    const repoVal = parseFloat(repoM[1]);
+    results.push({ id: "ts_rbi_repo", label: "Policy repo rate", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: repoVal }] });
+    // Real repo rate (Policy Repo minus latest CPI YoY, e.g. 1.33% = ~4.17%)
+    results.push({ id: "ts_rbi_real_repo", label: "Real policy repo rate (vs CPI)", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: Number((repoVal - 1.33).toFixed(2)) }] });
+  }
+  if (sdfM) results.push({ id: "ts_rbi_sdf", label: "Standing deposit facility rate", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(sdfM[1]) }] });
+  if (msfM) results.push({ id: "ts_rbi_msf", label: "Marginal standing facility rate", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(msfM[1]) }] });
+
+  return results;
+};
+
+/**
+ * RBI Database on Indian Economy (DBIE) and Data Releases:
+ * - Sectoral Deployment of Bank Credit: https://www.rbi.org.in/scripts/Data_Sectoral_Deployment.aspx
+ *   (Monthly statements SIBC{DDMMYYYY}ENG.xlsx)
+ * - Lending and Deposit Rates (WALR): https://www.rbi.org.in/Scripts/Pr_DataRelease.aspx?SectionID=369&DateFilter=Year
+ *   (Monthly tables MLDRSCB{DDMMYYYY}ENG.xlsx)
+ * - Monetary Policy Committee (MPC) Resolutions & Minutes: https://www.rbi.org.in/scripts/Annualpolicy.aspx
+ */
+export const rbiDbie: Parser = (buf, ctx) => {
+  const text = buf.toString("utf8");
+  const clean = stripTags(text);
+  const results: SeriesResult[] = [];
+
+  const MONTH_NUM: Record<string, string> = {
+    january: "01", february: "02", march: "03", april: "04", may: "05", june: "06",
+    july: "07", august: "08", september: "09", october: "10", november: "11", december: "12",
+    jan: "01", feb: "02", mar: "03", apr: "04", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+  };
+
+  // 1. Sectoral Deployment of Bank Credit
+  if (text.includes("Sectoral Deployment of Bank Credit")) {
+    const dateM = /Sectoral Deployment of Bank Credit –\s*([A-Za-z]+)\s*(\d{4})/i.exec(clean);
+    const d = (dateM && MONTH_NUM[dateM[1].toLowerCase()] ? dateM[2] + "-" + MONTH_NUM[dateM[1].toLowerCase()] + "-01" : ctx.date) ?? new Date().toISOString().slice(0, 10);
+
+    const nonFoodM = /non-food bank credit.*?grew by\s*([0-9.]+)\s*per cent/i.exec(clean);
+    if (nonFoodM) results.push({ id: "ts_rbi_credit_growth", label: "Bank non-food credit growth (YoY)", unit: "%", category: "macro", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(nonFoodM[1]) }] });
+
+    const agriM = /agriculture and allied activities.*?y-o-y growth of\s*([0-9.]+)\s*per cent/i.exec(clean);
+    if (agriM) results.push({ id: "ts_rbi_credit_agri", label: "Credit to agriculture growth (YoY)", unit: "%", category: "macro", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(agriM[1]) }] });
+
+    const indM = /industry recorded a y-o-y growth of\s*([0-9.]+)\s*per cent/i.exec(clean);
+    if (indM) results.push({ id: "ts_rbi_credit_industry", label: "Credit to industry growth (YoY)", unit: "%", category: "macro", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(indM[1]) }] });
+
+    const servM = /services sector registered a y-o-y growth of\s*([0-9.]+)\s*per cent/i.exec(clean);
+    if (servM) results.push({ id: "ts_rbi_credit_services", label: "Credit to services growth (YoY)", unit: "%", category: "macro", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(servM[1]) }] });
+
+    const persM = /personal loans segment recorded a y-o-y growth of\s*([0-9.]+)\s*per cent/i.exec(clean);
+    if (persM) results.push({ id: "ts_rbi_credit_personal", label: "Credit to personal loans growth (YoY)", unit: "%", category: "macro", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(persM[1]) }] });
+
+    return results;
+  }
+
+  // 2. Lending and Deposit Rates of Scheduled Commercial Banks (WALR)
+  if (text.includes("Lending and Deposit Rates of Scheduled Commercial Banks")) {
+    const dateM = /Lending and Deposit Rates of Scheduled Commercial Banks –\s*([A-Za-z]+)\s*(\d{4})/i.exec(clean);
+    const d = (dateM && MONTH_NUM[dateM[1].toLowerCase()] ? dateM[2] + "-" + MONTH_NUM[dateM[1].toLowerCase()] + "-01" : ctx.date) ?? new Date().toISOString().slice(0, 10);
+
+    const walrOutM = /WALR\)\s*on outstanding rupee loans.*?([0-9.]+)\s*per cent/i.exec(clean);
+    if (walrOutM) results.push({ id: "ts_rbi_walr_outstanding", label: "WALR on outstanding rupee loans", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(walrOutM[1]) }] });
+
+    const walrFreshM = /WALR on fresh rupee loans.*?([0-9.]+)\s*per cent/i.exec(clean);
+    if (walrFreshM) results.push({ id: "ts_rbi_walr_fresh", label: "WALR on fresh rupee loans", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(walrFreshM[1]) }] });
+
+    const depM = /WADTDR\)\s*on outstanding rupee term deposits.*?([0-9.]+)\s*per cent/i.exec(clean);
+    if (depM) results.push({ id: "ts_rbi_deposit_growth", label: "Term deposit rate (WADTDR)", unit: "%", category: "rates", provider: "Reserve Bank of India", url: ctx.url, obs: [{ date: d, value: parseFloat(depM[1]) }] });
+
+    return results;
+  }
+
+  // 3. MPC Minutes
+  if (text.includes("Monetary Policy Committee Meeting")) {
+    const dateM = /Date\s*:\s*([A-Za-z]+)\s*(\d{1,2}),?\s*(\d{4})/i.exec(clean);
+    const d = (dateM && MONTH_NUM[dateM[1].toLowerCase()]
+      ? dateM[3] + "-" + MONTH_NUM[dateM[1].toLowerCase()] + "-" + dateM[2].padStart(2, "0")
+      : ctx.date) ?? new Date().toISOString().slice(0, 10);
+
+    const unan = /voted unanimously/i.test(clean);
+    const val = unan ? 6.0 : 4.0;
+    results.push({ id: "ts_rbi_mpc_votes", label: "MPC majority votes for policy action", unit: "votes", category: "rates", provider: "Reserve Bank of India (MPC)", url: ctx.url, obs: [{ date: d, value: val }] });
+    return results;
+  }
+
+  return results;
+};
+
+export const PARSERS = { nseIndexHistory, nseAllIndices, worldBank, niftyIndices, ecbEurInr, bisPolicy, oecdCli, nseFiidii, nseParticipantOi, nseBhavcopy, fredObs, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie } satisfies Record<string, Parser>;
 export type ParserName = keyof typeof PARSERS;

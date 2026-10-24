@@ -124,7 +124,7 @@ describe("allIndices", () => {
   it("fails loudly without a timestamp", () => expect(() => nseAllIndices(Buffer.from('{"data":[]}'), ctx)).toThrow());
 });
 
-import { nseIndexHistory, amfiNav, amfiMonthly, amfiSip, mospi } from "./parsers";
+import { nseIndexHistory, amfiNav, amfiMonthly, amfiSip, mospi, rbiWss, rbiDbie } from "./parsers";
 import { SOURCES } from "./sources";
 describe("indexhistory + registry of sources", () => {
   it("parses both timestamp styles", () => {
@@ -248,5 +248,65 @@ describe("mospi parser", () => {
     expect(plfs).toBeDefined();
     expect(plfs!.obs.length).toBeGreaterThan(0);
     expect(plfs!.unit).toBe("%");
+  });
+});
+
+describe("rbi parsers", () => {
+  it("rbiWss parses policy rates from home page", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/rbi_home_sample.html");
+    const r = rbiWss(buf, { url: "https://www.rbi.org.in/", date: "2026-10-24" });
+    const repo = r.find((s) => s.id === "ts_rbi_repo");
+    const crr = r.find((s) => s.id === "ts_rbi_crr");
+    const slr = r.find((s) => s.id === "ts_rbi_slr");
+    expect(repo).toBeDefined();
+    expect(repo!.obs[0].value).toBe(5.5);
+    expect(crr).toBeDefined();
+    expect(crr!.obs[0].value).toBe(3.0);
+    expect(slr).toBeDefined();
+    expect(slr!.obs[0].value).toBe(18.0);
+  });
+
+  it("rbiWss parses call money rate and net liquidity from MMO", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/rbi_mmo_sample.html");
+    const r = rbiWss(buf, { url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx", date: "2026-10-24" });
+    const call = r.find((s) => s.id === "ts_rbi_call_rate");
+    const laf = r.find((s) => s.id === "ts_rbi_laf_net");
+    expect(call).toBeDefined();
+    expect(call!.obs[0].value).toBe(5.69);
+    expect(laf).toBeDefined();
+    expect(laf!.obs[0].value).toBe(-31254.95);
+  });
+
+  it("rbiDbie parses sectoral credit growth and categories", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/rbi_sectoral_sample.html");
+    const r = rbiDbie(buf, { url: "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63697", date: "2026-08-31" });
+    const nonFood = r.find((s) => s.id === "ts_rbi_credit_growth");
+    const services = r.find((s) => s.id === "ts_rbi_credit_services");
+    expect(nonFood).toBeDefined();
+    expect(nonFood!.obs[0].value).toBe(18.8);
+    expect(services).toBeDefined();
+    expect(services!.obs[0].value).toBe(24.3);
+  });
+
+  it("rbiDbie parses WALR lending and term deposit rates", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/rbi_walr_sample.html");
+    const r = rbiDbie(buf, { url: "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63702", date: "2026-09-30" });
+    const walrOut = r.find((s) => s.id === "ts_rbi_walr_outstanding");
+    const walrFresh = r.find((s) => s.id === "ts_rbi_walr_fresh");
+    const deposit = r.find((s) => s.id === "ts_rbi_deposit_growth");
+    expect(walrOut).toBeDefined();
+    expect(walrOut!.obs[0].value).toBe(8.96);
+    expect(walrFresh).toBeDefined();
+    expect(walrFresh!.obs[0].value).toBe(8.61);
+    expect(deposit).toBeDefined();
+    expect(deposit!.obs[0].value).toBe(6.56);
+  });
+
+  it("rbiDbie parses MPC votes from minutes", () => {
+    const buf = readFileSync("scripts/ts-ingest/__fixtures__/rbi_mpc_sample.html");
+    const r = rbiDbie(buf, { url: "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63839", date: "2026-10-21" });
+    const mpc = r.find((s) => s.id === "ts_rbi_mpc_votes");
+    expect(mpc).toBeDefined();
+    expect(mpc!.obs[0].value).toBe(6.0);
   });
 });

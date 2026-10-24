@@ -209,3 +209,43 @@ SOURCES.push({
   dataset: "mospi",
   anchorSeries: "ts_mospi_cpi_yoy",
 });
+
+/** RBI Weekly Statistical Supplement & Market Trends (Home rates widget + MMO). */
+SOURCES.push({
+  id: "rbi_wss",
+  urls: () => ["https://www.rbi.org.in/"],
+  reqs: () => [
+    { url: "https://www.rbi.org.in/" },
+    { url: "https://www.rbi.org.in/Scripts/BS_ViewMMO.aspx" },
+  ],
+  perDate: false,
+  fmt: "html",
+  freq: "weekly",
+  lagDays: 7,
+  parser: "rbiWss",
+  dataset: "rbi_wss",
+  anchorSeries: "ts_rbi_repo",
+});
+
+/**
+ * RBI DBIE & Data Releases:
+ * - Sectoral Deployment of Bank Credit: https://www.rbi.org.in/scripts/Data_Sectoral_Deployment.aspx
+ * - Lending and Deposit Rates of Scheduled Commercial Banks (WALR): https://www.rbi.org.in/Scripts/Pr_DataRelease.aspx?SectionID=369&DateFilter=Year
+ * - Monetary Policy Committee Meeting Minutes: https://www.rbi.org.in/scripts/Annualpolicy.aspx
+ */
+SOURCES.push({
+  id: "rbi_dbie",
+  urls: () => ["https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63697"],
+  reqs: () => [
+    { url: "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63697" },
+    { url: "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63702" },
+    { url: "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63839" },
+  ],
+  perDate: false,
+  fmt: "html",
+  freq: "monthly",
+  lagDays: 45,
+  parser: "rbiDbie",
+  dataset: "rbi_dbie",
+  anchorSeries: "ts_rbi_credit_growth",
+});

@@ -164,6 +164,38 @@ export const REGISTRY: ChartDef[] = [
     ],
     source: "MoSPI (eSankhyiki)", page: "/macro/india", also: ["/macro"],
   },
+  // ---- RBI & Credit Intelligence (/macro/rbi & /intelligence/credit)
+  { ...ind("i.rbi_repo", "RBI Policy Repo Rate", "rbi_wss", "ts_rbi_repo", "pct", 2, "Reserve Bank of India", "/macro/rbi"), also: ["/macro"] },
+  ind("i.rbi_crr", "Cash Reserve Ratio (CRR)", "rbi_wss", "ts_rbi_crr", "pct", 2, "Reserve Bank of India", "/macro/rbi"),
+  ind("i.rbi_slr", "Statutory Liquidity Ratio (SLR)", "rbi_wss", "ts_rbi_slr", "pct", 2, "Reserve Bank of India", "/macro/rbi"),
+  { ...ind("i.rbi_laf_net", "Net System Liquidity (LAF)", "rbi_wss", "ts_rbi_laf_net", "crore", 0, "Reserve Bank of India (MMO)", "/macro/rbi"), also: ["/macro"] },
+  ind("i.rbi_call_spread", "Call Money vs Repo Spread", "rbi_wss", "ts_rbi_call_spread", "pct", 2, "Reserve Bank of India (MMO)", "/macro/rbi"),
+  { ...ind("i.rbi_real_repo", "Real Repo Rate (vs CPI)", "rbi_wss", "ts_rbi_real_repo", "pct", 2, "Reserve Bank of India", "/macro/rbi"), also: ["/macro"] },
+  ind("i.rbi_mpc_votes", "MPC Majority Votes", "rbi_dbie", "ts_rbi_mpc_votes", "num", 0, "Reserve Bank of India (MPC)", "/macro/rbi"),
+  {
+    id: "rbi.corridor", kind: "line", title: "RBI policy rate corridor and call rate", dataset: "rbi_wss", fmt: "pct", digits: 2,
+    series: [
+      { col: "ts_rbi_msf", label: "MSF (ceiling)" },
+      { col: "ts_rbi_repo", label: "Policy Repo" },
+      { col: "ts_rbi_sdf", label: "SDF (floor)" },
+      { col: "ts_rbi_call_rate", label: "Call Money (WAvg)" },
+    ],
+    source: "Reserve Bank of India (MMO)", page: "/macro/rbi", also: ["/macro"],
+  },
+  { ...ind("i.credit_growth", "Bank Credit Growth (YoY)", "rbi_dbie", "ts_rbi_credit_growth", "pct", 1, "Reserve Bank of India (Sectoral Deployment)", "/intelligence/credit"), also: ["/macro/india"] },
+  ind("i.deposit_growth", "Term Deposit Rate (WADTDR)", "rbi_dbie", "ts_rbi_deposit_growth", "pct", 2, "Reserve Bank of India", "/intelligence/credit"),
+  ind("i.walr_outstanding", "WALR on Outstanding Loans", "rbi_dbie", "ts_rbi_walr_outstanding", "pct", 2, "Reserve Bank of India", "/intelligence/credit"),
+  ind("i.walr_fresh", "WALR on Fresh Loans", "rbi_dbie", "ts_rbi_walr_fresh", "pct", 2, "Reserve Bank of India", "/intelligence/credit"),
+  {
+    id: "credit.sectoral", kind: "bars", title: "Sectoral credit growth (YoY)", dataset: "rbi_dbie", fmt: "pct", digits: 1,
+    series: [
+      { col: "ts_rbi_credit_services", label: "Services" },
+      { col: "ts_rbi_credit_industry", label: "Industry" },
+      { col: "ts_rbi_credit_agri", label: "Agriculture" },
+      { col: "ts_rbi_credit_personal", label: "Personal Loans" },
+    ],
+    source: "Reserve Bank of India (Sectoral Deployment)", page: "/intelligence/credit",
+  },
 ];
 
 /** Indicator charts addressable at /indicators/[slug] (slug = id without the "i." prefix). */
