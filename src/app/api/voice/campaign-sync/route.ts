@@ -3,7 +3,8 @@ import { listCandidates } from "@/lib/voice/schema";
 
 /** Vercel cron hits this daily with Authorization: Bearer CRON_SECRET. */
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`)
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`)
     return Response.json({ error: "unauthorized" }, { status: 401 });
 
   const now = new Date();
