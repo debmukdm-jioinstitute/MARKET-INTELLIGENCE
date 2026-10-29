@@ -114,10 +114,14 @@ export async function GET(req: Request) {
       [c.mobile, c.customerId, c.name].map(csvField).join(","),
     ),
   ].join("\n") + "\n";
+  // No app_variables: Indus v4 defines no customer_name variable, and
+  // Sarvam rejects the cohort upload with 422 if the transform references
+  // an app variable the agent does not define. The name column stays in
+  // the CSV; the agent looks the customer up by phone via Get Customer
+  // during the call.
   const transform = {
     phone_number: { column_name: "mobile", country_code: "IN" },
     user_identifier: { column_name: "customer_id", required: true },
-    app_variables: { customer_name: { column_name: "name" } },
   };
   const form = new FormData();
   // Sarvam's cohort upload takes cohort_name; "name" is sent as well
