@@ -59,7 +59,7 @@ export async function GET(req: Request) {
         name: cohortName,
         app_config: {
           app_id: agentId,
-          app_version: 4,
+          app_version: 5,
           app_type: "agent",
           attempts_per_second: 2,
           connection_configs: [
