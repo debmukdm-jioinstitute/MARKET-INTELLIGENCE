@@ -20,7 +20,7 @@ window is only 7 days (start = run time + 10 minutes, calling hours
 10:00-18:00 Asia/Kolkata, Monday-Saturday), and the next run creates
 its own campaign, so there is no fixed campaign to expire.
 
-- Agent: Indus v4 (`SAMVAAD_AGENT_ID` = `Conversatio-8248c458-307d`)
+- Agent: Indus v5 (`SAMVAAD_AGENT_ID` = `Conversatio-8248c458-307d`)
 - Connection: Sarvam Vobiz (`SAMVAAD_CONNECTION_ID` = `d024f85f-f1-48658df2-a961`)
 - Phone: `SAMVAAD_PHONE_NUMBER` = `+917965481718`
 - Campaign and cohort are both named `voice-YYYY-MM-DD` in IST.
