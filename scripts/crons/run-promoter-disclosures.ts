@@ -36,7 +36,10 @@ async function main() {
   // Fail the run (-> red in Actions) when the official NSE source produced nothing, so a silent
   // breakage can't hide behind news-RSS rows.
   if (!snapshot.collectorsUsed.includes("nse-api")) {
-    fail("NSE API returned no items — collector degraded to news RSS only", { collectorsUsed: snapshot.collectorsUsed });
+    fail("NSE API returned no items — collector degraded to news RSS only", {
+      collectorsUsed: snapshot.collectorsUsed,
+      message: snapshot.message,
+    });
   }
   console.log(
     JSON.stringify({

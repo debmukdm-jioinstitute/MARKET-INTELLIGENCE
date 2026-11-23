@@ -1,6 +1,8 @@
+import { mergeCookiesFromResponse } from "@/lib/feeds/cookie-jar";
 import { feedFetch } from "@/lib/feeds/http";
 import { parseRss } from "@/lib/feeds/rss";
 import type { LiveQuote, MacroPoint, NewsItem } from "@/lib/feeds/types";
+import { marketCapFromQuoteSummary, marketCapFromYahooQuote } from "@/lib/feeds/sources/yahoo-market-cap";
 
 const CHART_HEADERS = {
   "User-Agent":
@@ -80,21 +82,168 @@ type V7QuoteResponse = {
   quoteResponse?: { result?: (ChartMeta & { symbol?: string })[]; error?: unknown };
 };
 
-/** Single v7 batch request. Returns details keyed by the symbol Yahoo echoed. */
-async function fetchV7Batch(symbols: string[]): Promise<Map<string, YahooQuoteDetail>> {
-  const out = new Map<string, YahooQuoteDetail>();
-  if (!symbols.length) return out;
-  const url =
+type YahooAuth = { crumb: string; cookie: string };
+
+let yahooCookie: string | undefined;
+let yahooCrumb: string | undefined;
+let yahooAuthAt = 0;
+const YAHOO_AUTH_TTL_MS = 10 * 60_000;
+
+function rememberYahooCookies(res: Response) {
+  yahooCookie = mergeCookiesFromResponse(yahooCookie, res) ?? yahooCookie;
+}
+
+function v7Url(symbols: string[], crumb?: string): string {
+  const base =
     `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols.join(","))}` +
     `&fields=${V7_FIELDS}`;
-  const res = await feedFetch(url, { headers: CHART_HEADERS, timeoutMs: 10_000 });
-  if (!res.ok) throw new Error(`Yahoo v7 batch HTTP ${res.status}`);
-  const json = (await res.json()) as V7QuoteResponse;
+  return crumb ? `${base}&crumb=${encodeURIComponent(crumb)}` : base;
+}
+
+async function fetchCrumbFrom(host: string, cookie: string | undefined): Promise<string | null> {
+  // getcrumb returns text/plain and 406s if Accept is application/json (CHART_HEADERS).
+  const res = await feedFetch(`https://${host}/v1/test/getcrumb`, {
+    headers: {
+      "User-Agent": CHART_HEADERS["User-Agent"],
+      Accept: "text/plain,*/*",
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
+    timeoutMs: 8_000,
+    attempts: 2,
+  });
+  rememberYahooCookies(res);
+  if (!res.ok) return null;
+  const crumb = (await res.text()).trim();
+  if (!crumb || crumb.length > 80 || crumb.startsWith("<") || crumb.startsWith("{")) return null;
+  return crumb;
+}
+
+/**
+ * Yahoo Finance v7 started 401ing without a crumb (seen from GitHub runners
+ * since 19 Nov 2026). Cookie comes from fc.yahoo.com (A3); crumb from
+ * /v1/test/getcrumb.
+ */
+async function ensureYahooAuth(): Promise<YahooAuth | null> {
+  if (yahooCrumb && yahooCookie && Date.now() - yahooAuthAt < YAHOO_AUTH_TTL_MS) {
+    return { crumb: yahooCrumb, cookie: yahooCookie };
+  }
+  try {
+    const fc = await feedFetch("https://fc.yahoo.com/", {
+      headers: CHART_HEADERS,
+      timeoutMs: 8_000,
+      attempts: 2,
+    });
+    rememberYahooCookies(fc);
+    const crumb =
+      (await fetchCrumbFrom("query1.finance.yahoo.com", yahooCookie)) ??
+      (await fetchCrumbFrom("query2.finance.yahoo.com", yahooCookie));
+    if (!crumb) return null;
+    yahooCrumb = crumb;
+    yahooAuthAt = Date.now();
+    return { crumb, cookie: yahooCookie ?? "" };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchV7Response(symbols: string[], auth?: YahooAuth | null): Promise<Response> {
+  return feedFetch(v7Url(symbols, auth?.crumb), {
+    headers: { ...CHART_HEADERS, ...(auth?.cookie ? { Cookie: auth.cookie } : {}) },
+    timeoutMs: 10_000,
+  });
+}
+
+function parseV7Batch(json: V7QuoteResponse): Map<string, YahooQuoteDetail> {
+  const out = new Map<string, YahooQuoteDetail>();
   for (const row of json.quoteResponse?.result ?? []) {
     if (!row.symbol || row.regularMarketPrice == null) continue;
     out.set(row.symbol, { symbol: row.symbol, ...row });
   }
   return out;
+}
+
+/** Single v7 batch request. Returns details keyed by the symbol Yahoo echoed. */
+async function fetchV7Batch(symbols: string[]): Promise<Map<string, YahooQuoteDetail>> {
+  if (!symbols.length) return new Map();
+  let res = await fetchV7Response(symbols);
+  rememberYahooCookies(res);
+  if (res.status === 401 || res.status === 403) {
+    const auth = await ensureYahooAuth();
+    if (auth) {
+      res = await fetchV7Response(symbols, auth);
+      rememberYahooCookies(res);
+    }
+  }
+  if (!res.ok) throw new Error(`Yahoo v7 batch HTTP ${res.status}`);
+  return parseV7Batch((await res.json()) as V7QuoteResponse);
+}
+
+const QUOTE_SUMMARY_CONCURRENCY = 6;
+
+async function fetchQuoteSummaryCap(ticker: string, auth: YahooAuth | null): Promise<number | null> {
+  const crumbQ = auth?.crumb ? `&crumb=${encodeURIComponent(auth.crumb)}` : "";
+  const url =
+    `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}` +
+    `?modules=price,defaultKeyStatistics${crumbQ}`;
+  const res = await feedFetch(url, {
+    headers: { ...CHART_HEADERS, ...(auth?.cookie ? { Cookie: auth.cookie } : {}) },
+    timeoutMs: 10_000,
+    attempts: 2,
+  });
+  rememberYahooCookies(res);
+  if (!res.ok) return null;
+  const text = await res.text();
+  if (text.trimStart().startsWith("<")) return null;
+  try {
+    return marketCapFromQuoteSummary(JSON.parse(text) as unknown);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Live market caps keyed by the ticker we asked Yahoo for (e.g. RELIANCE.NS).
+ * v7 `marketCap` when present; otherwise quoteSummary floatShares × price.
+ */
+export async function fetchYahooMarketCapMap(tickers: string[]): Promise<Map<string, number>> {
+  const unique = [...new Set(tickers.map((s) => s.trim()).filter(Boolean))];
+  const out = new Map<string, number>();
+  if (!unique.length) return out;
+
+  const chunkSize = 40;
+  for (let i = 0; i < unique.length; i += chunkSize) {
+    const chunk = unique.slice(i, i + chunkSize);
+    try {
+      const batch = await fetchV7Batch(chunk);
+      for (const [sym, row] of batch) {
+        const cap = marketCapFromYahooQuote(row);
+        if (cap != null) out.set(sym, cap);
+      }
+    } catch {
+      /* quoteSummary below */
+    }
+  }
+
+  const missing = unique.filter((s) => !out.has(s));
+  if (!missing.length) return out;
+
+  const auth = await ensureYahooAuth();
+  for (let i = 0; i < missing.length; i += QUOTE_SUMMARY_CONCURRENCY) {
+    const chunk = missing.slice(i, i + QUOTE_SUMMARY_CONCURRENCY);
+    const caps = await Promise.all(chunk.map((t) => fetchQuoteSummaryCap(t, auth)));
+    for (let j = 0; j < chunk.length; j++) {
+      const cap = caps[j];
+      if (cap != null) out.set(chunk[j]!, cap);
+    }
+  }
+  return out;
+}
+
+/** Test hook — do not use in production code. */
+export function __resetYahooAuthForTests() {
+  yahooCookie = undefined;
+  yahooCrumb = undefined;
+  yahooAuthAt = 0;
 }
 
 /** In-memory quote cache (per serverless instance) + singleflight coalescing. */

@@ -1,6 +1,9 @@
 import { feedFetch } from "@/lib/feeds/http";
 
-const NSE_INDEX_CSV_BASE = "https://archives.nseindia.com/content/indices/";
+const NSE_INDEX_CSV_BASES = [
+  "https://archives.nseindia.com/content/indices/",
+  "https://nsearchives.nseindia.com/content/indices/",
+];
 
 const ARCHIVE_HEADERS = {
   "User-Agent":
@@ -25,18 +28,32 @@ export function parseNseIndexConstituentCsv(text: string): string[] {
 }
 
 export async function fetchNseIndexConstituentSymbols(csvFile: string): Promise<string[]> {
-  const url = `${NSE_INDEX_CSV_BASE}${csvFile}`;
-  const res = await feedFetch(url, { headers: ARCHIVE_HEADERS, timeoutMs: 30_000 });
-  if (!res.ok) throw new Error(`NSE index CSV ${csvFile} HTTP ${res.status}`);
-  const text = await res.text();
-  if (text.trimStart().startsWith("<!DOCTYPE") || text.trimStart().startsWith("<html")) {
-    throw new Error(`NSE index CSV ${csvFile} returned HTML`);
+  let lastErr: unknown;
+  for (const base of NSE_INDEX_CSV_BASES) {
+    try {
+      const res = await feedFetch(`${base}${csvFile}`, { headers: ARCHIVE_HEADERS, timeoutMs: 30_000 });
+      if (!res.ok) {
+        lastErr = new Error(`NSE index CSV ${csvFile} HTTP ${res.status} from ${base}`);
+        continue;
+      }
+      const text = await res.text();
+      if (text.trimStart().startsWith("<!DOCTYPE") || text.trimStart().startsWith("<html")) {
+        lastErr = new Error(`NSE index CSV ${csvFile} returned HTML from ${base}`);
+        continue;
+      }
+      const symbols = parseNseIndexConstituentCsv(text);
+      if (!symbols.length) {
+        lastErr = new Error(`NSE index CSV ${csvFile} had no symbols from ${base}`);
+        continue;
+      }
+      return symbols;
+    } catch (e) {
+      lastErr = e;
+    }
   }
-  const symbols = parseNseIndexConstituentCsv(text);
-  if (!symbols.length) throw new Error(`NSE index CSV ${csvFile} had no symbols`);
-  return symbols;
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
 }
 
 export function nseIndexConstituentSourceUrl(csvFile: string): string {
-  return `${NSE_INDEX_CSV_BASE}${csvFile}`;
+  return `${NSE_INDEX_CSV_BASES[0]}${csvFile}`;
 }

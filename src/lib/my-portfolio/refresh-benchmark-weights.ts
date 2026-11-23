@@ -2,7 +2,7 @@ import {
   fetchNseIndexConstituentSymbols,
   nseIndexConstituentSourceUrl,
 } from "@/lib/feeds/india/nse-index-constituents";
-import { fetchYahooQuoteDetail } from "@/lib/feeds/sources/yahoo";
+import { fetchYahooMarketCapMap } from "@/lib/feeds/sources/yahoo";
 import type { BenchmarkId } from "@/lib/my-portfolio/benchmark-options";
 import { SENSEX_CONSTITUENT_SYMBOLS } from "@/lib/my-portfolio/benchmark-constituents";
 import {
@@ -25,38 +25,37 @@ export const NSE_BENCHMARK_CSV: Partial<Record<BenchmarkId, string>> = {
 
 const INDIA_REFRESH_BENCHMARKS = Object.keys(NSE_BENCHMARK_CSV) as BenchmarkId[];
 
+/** Refuse a basket unless this fraction of constituents have a live cap. Do not lower. */
+export const MIN_LIVE_CAP_COVERAGE = 0.9;
+
 function normalizeWeights(raw: Record<string, number>): Record<string, number> {
   const sum = Object.values(raw).reduce((a, b) => a + b, 0);
   if (sum <= 0) return raw;
   return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / sum]));
 }
 
-async function yahooMarketCap(symbol: string, preferBse: boolean): Promise<number | null> {
-  const candidates = preferBse ? [`${symbol}.BO`, `${symbol}.NS`, symbol] : [`${symbol}.NS`, `${symbol}.BO`, symbol];
-  for (const cand of candidates) {
-    const meta = await fetchYahooQuoteDetail(cand).catch(() => null);
-    const cap = meta?.marketCap;
-    if (cap != null && cap > 0 && Number.isFinite(cap)) return cap;
-  }
-  return null;
+function yahooTickersFor(symbol: string, preferBse: boolean): string[] {
+  return preferBse ? [`${symbol}.BO`, `${symbol}.NS`] : [`${symbol}.NS`, `${symbol}.BO`];
 }
 
 async function buildMarketCapMap(symbols: string[], preferBse: boolean): Promise<Map<string, number>> {
   const map = new Map<string, number>();
-  const batchSize = 8;
-  for (let i = 0; i < symbols.length; i += batchSize) {
-    const chunk = symbols.slice(i, i + batchSize);
-    await Promise.all(
-      chunk.map(async (sym) => {
-        const cap = await yahooMarketCap(sym, preferBse);
-        if (cap != null) map.set(sym.toUpperCase(), cap);
-      }),
-    );
+  if (!symbols.length) return map;
+  const tickers = [...new Set(symbols.flatMap((s) => yahooTickersFor(s, preferBse)))];
+  const yahooCaps = await fetchYahooMarketCapMap(tickers);
+  for (const sym of symbols) {
+    for (const ticker of yahooTickersFor(sym, preferBse)) {
+      const cap = yahooCaps.get(ticker);
+      if (cap != null && cap > 0) {
+        map.set(sym.toUpperCase(), cap);
+        break;
+      }
+    }
   }
   return map;
 }
 
-function weightsFromSymbols(
+export function weightsFromSymbols(
   symbols: string[],
   capMap: Map<string, number>,
 ): { weights: Record<string, number>; method: BenchmarkWeightMethod } | null {
@@ -70,9 +69,14 @@ function weightsFromSymbols(
     }
   }
   // No equal-weight guess. Also refuse a basket where too many caps are missing: weights would be skewed.
-  if (capSum <= 0 || Object.keys(caps).length < symbols.length * 0.9) return null;
+  if (capSum <= 0 || Object.keys(caps).length < symbols.length * MIN_LIVE_CAP_COVERAGE) return null;
   const weights = Object.fromEntries(Object.entries(caps).map(([k, v]) => [k, v / capSum]));
   return { weights, method: "cap_yahoo" };
+}
+
+export function tooFewLiveCapsError(symbols: number, caps: number): string {
+  const need = Math.ceil(symbols * MIN_LIVE_CAP_COVERAGE);
+  return `Too few live market caps to weight this index (${caps}/${symbols}; need ≥ ${need})`;
 }
 
 export async function refreshBenchmarkWeights(benchmark: BenchmarkId): Promise<BenchmarkWeightsRow | null> {
@@ -139,6 +143,14 @@ export async function refreshAllIndiaBenchmarkWeights(): Promise<RefreshBenchmar
 
   const uniqueSymbols = [...new Set([...symbolLists.values()].flat())];
   const capMap = await buildMarketCapMap(uniqueSymbols, false);
+  console.log(
+    JSON.stringify({
+      level: "info",
+      msg: "yahoo market caps fetched",
+      symbols: uniqueSymbols.length,
+      caps: capMap.size,
+    }),
+  );
   const sensexCap = await buildMarketCapMap(symbolLists.get("SENSEX") ?? [], true);
 
   for (const [benchmark, symbols] of symbolLists) {
@@ -146,7 +158,13 @@ export async function refreshAllIndiaBenchmarkWeights(): Promise<RefreshBenchmar
       const caps = benchmark === "SENSEX" ? sensexCap : capMap;
       const computed = weightsFromSymbols(symbols, caps);
       if (!computed) {
-        results.push({ benchmark, ok: false, error: "Too few live market caps to weight this index" });
+        const have = symbols.filter((s) => caps.has(s.toUpperCase())).length;
+        results.push({
+          benchmark,
+          ok: false,
+          symbols: symbols.length,
+          error: tooFewLiveCapsError(symbols.length, have),
+        });
         continue;
       }
       const { weights, method } = computed;

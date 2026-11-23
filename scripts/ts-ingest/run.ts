@@ -8,7 +8,7 @@
  */
 import { createHash } from "node:crypto";
 import type { SeriesResult } from "@/lib/collector/types";
-import { SOURCES, type Req, type SourceCfg } from "./sources";
+import { failingActiveDatasets, SOURCES, type Req, type SourceCfg } from "./sources";
 import { EVENT_PARSERS, PARSERS, type EventRow, type EventParserName, type ParserName } from "./parsers";
 import { candidateDates, todayIst } from "./dates";
 import { bodyHead, looksLikeHtml, politeFetch } from "./http";
@@ -112,7 +112,7 @@ async function main() {
         process.exit(1);
       }
       const datasets = (await r.json()) as { dataset: string; state: string; last_error?: string | null }[];
-      const failing = datasets.filter((d) => d.state === "failing");
+      const failing = failingActiveDatasets(datasets);
       if (failing.length > 0) {
         console.error(`::error::Failing datasets detected: ${failing.map((d) => `${d.dataset} (${d.last_error ?? "error"})`).join(", ")}`);
         process.exit(1);

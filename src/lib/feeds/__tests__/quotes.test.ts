@@ -109,6 +109,9 @@ describe("yahoo v7 batch", () => {
   it("falls back to per-symbol v8 when v7 is blocked (401)", async () => {
     feedFetchMock.mockImplementation(async (url: string) => {
       if (url.includes("/v7/finance/quote")) return new Response("{}", { status: 401 });
+      if (url.includes("fc.yahoo.com") || url.includes("/v1/test/getcrumb")) {
+        throw new Error("crumb unavailable");
+      }
       if (url.includes("/v8/finance/chart/")) return v8ChartResponse(150);
       return new Response("{}", { status: 404 });
     });
@@ -116,8 +119,34 @@ describe("yahoo v7 batch", () => {
     const quotes = await fetchYahooQuotes(["AAPL"]);
     expect(quotes).toHaveLength(1);
     expect(quotes[0]!.price).toBe(150);
-    // 1 v7 attempt + 1 v8 fallback
-    expect(feedFetchMock).toHaveBeenCalledTimes(2);
+    expect(feedFetchMock.mock.calls.some((c) => String(c[0]).includes("/v8/finance/chart/"))).toBe(true);
+  });
+
+  it("retries v7 with a Yahoo crumb after 401", async () => {
+    feedFetchMock.mockImplementation(async (url: string) => {
+      if (url.includes("/v7/finance/quote")) {
+        if (url.includes("crumb=")) {
+          return v7Response([{ symbol: "AAPL", regularMarketPrice: 190, currency: "USD", marketCap: 3e12 }]);
+        }
+        return new Response("{}", { status: 401 });
+      }
+      if (url.includes("fc.yahoo.com")) {
+        return new Response("", { status: 404, headers: { "set-cookie": "A3=tok; Path=/" } });
+      }
+      if (url.includes("/v1/test/getcrumb")) {
+        return new Response("crumb123", { status: 200 });
+      }
+      return new Response("{}", { status: 404 });
+    });
+    const { fetchYahooQuotes } = await vi.importActual<typeof import("@/lib/feeds/sources/yahoo")>("@/lib/feeds/sources/yahoo");
+    const quotes = await fetchYahooQuotes(["AAPL"]);
+    expect(quotes).toHaveLength(1);
+    expect(quotes[0]!.price).toBe(190);
+    expect(feedFetchMock.mock.calls.some((c) => String(c[0]).includes("crumb=crumb123"))).toBe(true);
+    expect(feedFetchMock.mock.calls.some((c) => String(c[0]).includes("/v8/finance/chart/"))).toBe(false);
+    const crumbCall = feedFetchMock.mock.calls.find((c) => String(c[0]).includes("/v1/test/getcrumb"));
+    const crumbHeaders = (crumbCall?.[1] as { headers?: Record<string, string> } | undefined)?.headers ?? {};
+    expect(String(crumbHeaders.Accept ?? "")).not.toMatch(/application\/json/);
   });
 
   it("retries Indian symbols with .NS suffix in v7", async () => {
