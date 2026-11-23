@@ -161,6 +161,25 @@ describe("indexhistory + registry of sources", () => {
   it("disabled sources are not scheduled", () => {
     expect(SOURCES.some((x) => x.id.startsWith("niftyindices") || x.id === "oecd")).toBe(false);
   });
+  it("nsearchives MTF/WDM do not warm www.nseindia.com", () => {
+    expect(SOURCES.find((x) => x.id === "nse_mtf")!.nseCookie).toBeFalsy();
+    expect(SOURCES.find((x) => x.id === "nse_wdm")!.nseCookie).toBeFalsy();
+  });
+});
+
+import { DISABLED_DATASETS, failingActiveDatasets } from "./sources";
+describe("health check ignores retired datasets", () => {
+  it("does not fail the job for niftyindices/oecd leftover rows", () => {
+    expect(DISABLED_DATASETS.has("niftyindices")).toBe(true);
+    expect(DISABLED_DATASETS.has("oecd")).toBe(true);
+    const failing = failingActiveDatasets([
+      { dataset: "niftyindices", state: "failing", last_error: "HTML 200" },
+      { dataset: "oecd", state: "failing", last_error: "HTTP 500" },
+      { dataset: "nse_fiidii", state: "failing", last_error: "timeout" },
+      { dataset: "fred", state: "current" },
+    ]);
+    expect(failing.map((d) => d.dataset)).toEqual(["nse_fiidii"]);
+  });
 });
 
 describe("amfi parsers", () => {

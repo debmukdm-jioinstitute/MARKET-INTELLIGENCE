@@ -303,6 +303,15 @@ export const DISABLED_SOURCES: SourceCfg[] = [
   },
 ];
 
+/** Dataset ids that are intentionally not ingested. Health must ignore their leftover DB rows. */
+export const DISABLED_DATASETS = new Set(DISABLED_SOURCES.map((s) => s.dataset));
+
+export type DatasetHealthRow = { dataset: string; state: string; last_error?: string | null };
+
+export function failingActiveDatasets(datasets: DatasetHealthRow[]): DatasetHealthRow[] {
+  return datasets.filter((d) => d.state === "failing" && !DISABLED_DATASETS.has(d.dataset));
+}
+
 /** NSE historical index closes via daily ind_close_all_{DDMMYYYY}.csv archives. */
 SOURCES.push({
   id: "nse_indexhistory",
@@ -504,7 +513,6 @@ SOURCES.push({
   parser: "nseMtf",
   dataset: "nse_mtf",
   anchorSeries: "ts_mtf_book",
-  nseCookie: true,
 });
 
 
@@ -529,5 +537,4 @@ SOURCES.push({
   parser: "nseWdm",
   dataset: "nse_wdm",
   anchorSeries: "ts_gsec_10y",
-  nseCookie: true,
 });
